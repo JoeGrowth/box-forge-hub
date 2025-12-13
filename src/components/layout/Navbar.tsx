@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut, User } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const navLinks = [
   { name: "Home", path: "/" },
@@ -14,6 +15,7 @@ const navLinks = [
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { user, signOut, loading } = useAuth();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
@@ -46,12 +48,29 @@ export function Navbar() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/login">Log In</Link>
-            </Button>
-            <Button variant="teal" size="sm" asChild>
-              <Link to="/join">Get Started</Link>
-            </Button>
+            {!loading && (
+              user ? (
+                <>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <User size={16} />
+                    <span className="max-w-[120px] truncate">{user.email}</span>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={signOut}>
+                    <LogOut size={16} className="mr-1" />
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link to="/login">Log In</Link>
+                  </Button>
+                  <Button variant="teal" size="sm" asChild>
+                    <Link to="/auth?mode=signup">Get Started</Link>
+                  </Button>
+                </>
+              )
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -83,12 +102,23 @@ export function Navbar() {
                 </Link>
               ))}
               <div className="flex gap-2 px-4 pt-2">
-                <Button variant="outline" size="sm" className="flex-1" asChild>
-                  <Link to="/login">Log In</Link>
-                </Button>
-                <Button variant="teal" size="sm" className="flex-1" asChild>
-                  <Link to="/join">Get Started</Link>
-                </Button>
+                {!loading && (
+                  user ? (
+                    <Button variant="outline" size="sm" className="flex-1" onClick={() => { signOut(); setIsOpen(false); }}>
+                      <LogOut size={16} className="mr-1" />
+                      Sign Out
+                    </Button>
+                  ) : (
+                    <>
+                      <Button variant="outline" size="sm" className="flex-1" asChild>
+                        <Link to="/login" onClick={() => setIsOpen(false)}>Log In</Link>
+                      </Button>
+                      <Button variant="teal" size="sm" className="flex-1" asChild>
+                        <Link to="/auth?mode=signup" onClick={() => setIsOpen(false)}>Get Started</Link>
+                      </Button>
+                    </>
+                  )
+                )}
               </div>
             </div>
           </div>
