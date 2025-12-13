@@ -37,7 +37,7 @@ const Auth = () => {
 
   useEffect(() => {
     if (user) {
-      navigate("/");
+      navigate("/", { replace: true });
     }
   }, [user, navigate]);
 
@@ -94,7 +94,7 @@ const Auth = () => {
             title: "Welcome back!",
             description: "You have successfully logged in.",
           });
-          navigate("/");
+          // Redirect is handled by useEffect when user state updates
         }
       } else {
         const { error } = await signUp(email, password, fullName, selectedRole);
@@ -117,7 +117,7 @@ const Auth = () => {
             title: "Account Created!",
             description: "Welcome to B4 Platform. You're now logged in.",
           });
-          navigate("/");
+          // Redirect is handled by useEffect when user state updates
         }
       }
     } finally {
