@@ -1,8 +1,21 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Users, Rocket, Target } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 export function HeroSection() {
+  const { user } = useAuth();
+  const { onboardingState, needsOnboarding } = useOnboarding();
+
+  // User is logged in and has started co-builder journey (not completed)
+  const isInCoBuilderJourney = user && 
+    onboardingState?.primary_role === "cobuilder" && 
+    !onboardingState?.onboarding_completed;
+
+  const buttonText = isInCoBuilderJourney ? "Ready to Continue" : "Start Building";
+  const buttonLink = isInCoBuilderJourney ? "/onboarding" : "/join";
+
   return (
     <section className="relative min-h-screen flex items-center gradient-hero overflow-hidden">
       {/* Background decoration */}
@@ -35,8 +48,8 @@ export function HeroSection() {
 
             <div className="flex flex-wrap gap-4 mb-12 animate-fade-in" style={{ animationDelay: "0.3s" }}>
               <Button variant="hero" size="xl" asChild>
-                <Link to="/join">
-                  Start Building <ArrowRight className="ml-2" />
+                <Link to={buttonLink}>
+                  {buttonText} <ArrowRight className="ml-2" />
                 </Link>
               </Button>
               <Button variant="hero-outline" size="xl" asChild>

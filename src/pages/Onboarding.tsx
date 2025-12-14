@@ -8,6 +8,7 @@ import { ScalingStep } from "@/components/onboarding/steps/ScalingStep";
 import { CompletionStep } from "@/components/onboarding/steps/CompletionStep";
 import { EntrepreneurPlaceholder } from "@/components/onboarding/steps/EntrepreneurPlaceholder";
 import { PendingHelpStep } from "@/components/onboarding/steps/PendingHelpStep";
+import { JourneyOverview } from "@/components/onboarding/JourneyOverview";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -18,6 +19,7 @@ const Onboarding = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [showNotReady, setShowNotReady] = useState(false);
   const [showPendingHelp, setShowPendingHelp] = useState(false);
+  const [showOverview, setShowOverview] = useState(true);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -52,7 +54,19 @@ const Onboarding = () => {
   }
 
   const isEntrepreneur = onboardingState?.primary_role === "entrepreneur";
+  const isCoBuilder = onboardingState?.primary_role === "cobuilder";
   const totalSteps = isEntrepreneur ? 2 : 8;
+
+  // Show overview for returning users who have already started
+  if (showOverview && onboardingState && (onboardingState.current_step > 1 || onboardingState.primary_role)) {
+    return (
+      <JourneyOverview 
+        onboardingState={onboardingState}
+        naturalRole={naturalRole}
+        onContinue={() => setShowOverview(false)}
+      />
+    );
+  }
 
   const getStepLabel = () => {
     const labels: Record<number, string> = {
