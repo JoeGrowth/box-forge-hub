@@ -2,18 +2,13 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Users, Rocket, Target } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useOnboarding } from "@/hooks/useOnboarding";
 
 export function HeroSection() {
   const { user, loading: authLoading } = useAuth();
-  const { needsOnboarding, loading: onboardingLoading } = useOnboarding();
 
-  // While loading auth or onboarding data, logged-in users see "Continue Your Journey"
-  const isLoading = authLoading || onboardingLoading;
-  const shouldContinueJourney = user && (isLoading || needsOnboarding);
-
-  const buttonText = shouldContinueJourney ? "Continue Your Journey" : "Start Building";
-  const buttonLink = shouldContinueJourney ? "/onboarding" : "/join";
+  // For logged-in users, always show "Continue Your Journey"
+  const buttonText = user ? "Continue Your Journey" : "Start Building";
+  const buttonLink = user ? "/onboarding" : "/join";
 
   return (
     <section className="relative min-h-screen flex items-center gradient-hero overflow-hidden">
