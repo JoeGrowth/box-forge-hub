@@ -9,7 +9,8 @@ import { AdminNotificationsTab } from "@/components/admin/AdminNotificationsTab"
 import { AdminUsersTab } from "@/components/admin/AdminUsersTab";
 import { AdminApplicationsTab } from "@/components/admin/AdminApplicationsTab";
 import { AdminApprovalsTab } from "@/components/admin/AdminApprovalsTab";
-import { Shield, Bell, Users, FileText, UserCheck } from "lucide-react";
+import { AdminOpportunitiesTab } from "@/components/admin/AdminOpportunitiesTab";
+import { Shield, Bell, Users, FileText, UserCheck, Rocket } from "lucide-react";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -113,7 +114,7 @@ const Admin = () => {
 
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-4 mb-8">
+              <TabsList className="grid w-full grid-cols-5 mb-8">
                 <TabsTrigger value="applications" className="flex items-center gap-2">
                   <FileText className="w-4 h-4" />
                   Applications
@@ -121,6 +122,10 @@ const Admin = () => {
                 <TabsTrigger value="approvals" className="flex items-center gap-2">
                   <UserCheck className="w-4 h-4" />
                   To Check
+                </TabsTrigger>
+                <TabsTrigger value="opportunities" className="flex items-center gap-2">
+                  <Rocket className="w-4 h-4" />
+                  Opportunities
                 </TabsTrigger>
                 <TabsTrigger value="users" className="flex items-center gap-2">
                   <Users className="w-4 h-4" />
@@ -146,6 +151,10 @@ const Admin = () => {
 
               <TabsContent value="approvals">
                 <AdminApprovalsTab onRefresh={fetchUsers} />
+              </TabsContent>
+
+              <TabsContent value="opportunities">
+                <AdminOpportunitiesTab onRefresh={fetchUsers} />
               </TabsContent>
 
               <TabsContent value="users">
