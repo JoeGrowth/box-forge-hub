@@ -126,6 +126,7 @@ export type Database = {
         Row: {
           created_at: string | null
           current_step: number | null
+          entrepreneur_step: number | null
           id: string
           journey_status: string | null
           onboarding_completed: boolean | null
@@ -136,6 +137,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           current_step?: number | null
+          entrepreneur_step?: number | null
           id?: string
           journey_status?: string | null
           onboarding_completed?: boolean | null
@@ -146,6 +148,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           current_step?: number | null
+          entrepreneur_step?: number | null
           id?: string
           journey_status?: string | null
           onboarding_completed?: boolean | null
@@ -205,11 +208,14 @@ export type Database = {
       }
       startup_ideas: {
         Row: {
+          admin_notes: string | null
           created_at: string
           creator_id: string
           description: string
           id: string
           is_looking_for_cobuilders: boolean | null
+          review_status: string | null
+          reviewed_at: string | null
           roles_needed: string[] | null
           sector: string | null
           status: string | null
@@ -217,11 +223,14 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          admin_notes?: string | null
           created_at?: string
           creator_id: string
           description: string
           id?: string
           is_looking_for_cobuilders?: boolean | null
+          review_status?: string | null
+          reviewed_at?: string | null
           roles_needed?: string[] | null
           sector?: string | null
           status?: string | null
@@ -229,11 +238,14 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          admin_notes?: string | null
           created_at?: string
           creator_id?: string
           description?: string
           id?: string
           is_looking_for_cobuilders?: boolean | null
+          review_status?: string | null
+          reviewed_at?: string | null
           roles_needed?: string[] | null
           sector?: string | null
           status?: string | null
