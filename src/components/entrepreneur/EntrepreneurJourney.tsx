@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { sendNotificationEmail } from "@/lib/emailNotifications";
 import {
   Target,
   Lightbulb,
@@ -86,6 +87,26 @@ export function EntrepreneurJourney({
         .eq("user_id", user.id);
 
       if (error) throw error;
+
+      // Get user profile for email
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      // Send email notification for step completion
+      if (user.email) {
+        sendNotificationEmail({
+          to: user.email,
+          userName: profile?.full_name || "Entrepreneur",
+          type: "entrepreneur_step_complete",
+          data: {
+            stepNumber: step,
+            stepName: STEPS[step - 1]?.title,
+          },
+        });
+      }
 
       onStepComplete(step + 1);
       toast({
