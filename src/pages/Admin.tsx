@@ -17,6 +17,23 @@ const Admin = () => {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: adminLoading, fetchNotifications, fetchUsers, notifications, users } = useAdmin();
   const [activeTab, setActiveTab] = useState("applications");
+  const [pendingOpportunities, setPendingOpportunities] = useState(0);
+
+  useEffect(() => {
+    const fetchOpportunityCount = async () => {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { count } = await supabase
+        .from("startup_ideas")
+        .select("*", { count: "exact", head: true })
+        .in("review_status", ["pending", "under_review"]);
+      
+      setPendingOpportunities(count || 0);
+    };
+
+    if (isAdmin) {
+      fetchOpportunityCount();
+    }
+  }, [isAdmin]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -126,6 +143,11 @@ const Admin = () => {
                 <TabsTrigger value="opportunities" className="flex items-center gap-2">
                   <Rocket className="w-4 h-4" />
                   Opportunities
+                  {pendingOpportunities > 0 && (
+                    <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-xs">
+                      {pendingOpportunities}
+                    </span>
+                  )}
                 </TabsTrigger>
                 <TabsTrigger value="users" className="flex items-center gap-2">
                   <Users className="w-4 h-4" />
