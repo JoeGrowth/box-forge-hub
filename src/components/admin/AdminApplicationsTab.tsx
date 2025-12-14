@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useAdmin, AdminNotification } from "@/hooks/useAdmin";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   RefreshCw, 
   Search, 
@@ -37,13 +38,44 @@ export function AdminApplicationsTab({ applications, onRefresh }: AdminApplicati
     toast({ title: "Applications refreshed" });
   };
 
-  const handleApprove = async (id: string) => {
-    // Mark as read (in a real app, you'd also update application status)
-    await markNotificationAsRead(id);
-    toast({ 
-      title: "Application Approved",
-      description: "The applicant will be notified.",
-    });
+  const handleApprove = async (id: string, notification: AdminNotification) => {
+    try {
+      const data = parseApplicationData(notification);
+      
+      // If this is an entrepreneur application and we have a user_id (not placeholder)
+      // We need to grant them entrepreneur role (which makes them an "initiator")
+      if (data.role === "entrepreneur" && notification.user_id !== "00000000-0000-0000-0000-000000000000") {
+        // Add entrepreneur role to user_roles table
+        const { error: roleError } = await supabase
+          .from("user_roles")
+          .insert({
+            user_id: notification.user_id,
+            role: "entrepreneur" as const
+          });
+        
+        if (roleError && !roleError.message.includes("duplicate")) {
+          throw roleError;
+        }
+      }
+      
+      // Mark notification as read
+      await markNotificationAsRead(id);
+      
+      toast({ 
+        title: "Application Approved",
+        description: data.role === "entrepreneur" 
+          ? "Entrepreneur approved! They now have initiator privileges."
+          : "The applicant will be notified.",
+      });
+      
+      onRefresh();
+    } catch (error: any) {
+      toast({
+        title: "Error approving application",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleReject = async (id: string) => {
@@ -53,6 +85,7 @@ export function AdminApplicationsTab({ applications, onRefresh }: AdminApplicati
       description: "The applicant will be notified.",
       variant: "destructive",
     });
+    onRefresh();
   };
 
   const parseApplicationData = (notification: AdminNotification) => {
@@ -278,7 +311,7 @@ export function AdminApplicationsTab({ applications, onRefresh }: AdminApplicati
                       <Button
                         variant="teal"
                         size="sm"
-                        onClick={() => handleApprove(application.id)}
+                        onClick={() => handleApprove(application.id, application)}
                       >
                         <Check className="w-4 h-4 mr-1" />
                         Approve
