@@ -2,13 +2,27 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Users, Rocket, Target } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 export function HeroSection() {
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
+  const { onboardingState, loading: onboardingLoading } = useOnboarding();
 
-  // For logged-in users, always show "Continue Your Journey"
-  const buttonText = user ? "Continue Your Journey" : "Start Building";
-  const buttonLink = user ? "/onboarding" : "/join";
+  // Determine button text and link based on auth and onboarding status
+  const getButtonConfig = () => {
+    if (!user) {
+      return { text: "Start Building", link: "/join" };
+    }
+    
+    // User is logged in - check onboarding status
+    if (onboardingState?.onboarding_completed) {
+      return { text: "Go to Dashboard", link: "/profile" };
+    }
+    
+    return { text: "Continue Your Journey", link: "/onboarding" };
+  };
+
+  const { text: buttonText, link: buttonLink } = getButtonConfig();
 
   return (
     <section className="relative min-h-screen flex items-center gradient-hero overflow-hidden">
