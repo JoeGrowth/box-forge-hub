@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { sendNotificationEmail } from "@/lib/emailNotifications";
 
 interface PendingApproval {
   id: string;
@@ -94,7 +95,7 @@ export const AdminApprovalsTab = ({ onRefresh }: AdminApprovalsTabProps) => {
     toast({ title: "Refreshed", description: "Approvals list updated." });
   };
 
-  const handleApprove = async (userId: string, userName: string | null) => {
+  const handleApprove = async (userId: string, userName: string | null, userEmail?: string) => {
     try {
       const { error } = await supabase
         .from("onboarding_state")
@@ -103,15 +104,19 @@ export const AdminApprovalsTab = ({ onRefresh }: AdminApprovalsTabProps) => {
 
       if (error) throw error;
 
-      // Create notification for user (could be extended to send email)
+      // Create notification for user
       await supabase.from("admin_notifications").insert({
         user_id: userId,
-        notification_type: "journey_approved",
+        notification_type: "approval_granted",
         user_name: userName,
         step_name: "Approval",
         message: "Your Co-Builder journey has been approved! You now have full access to the platform.",
       });
 
+      // Send email notification if we have the user's email
+      // Note: We'd need to get the email from auth.users or store it in profiles
+      // For now, we'll just show the toast
+      
       toast({
         title: "Approved!",
         description: `${userName || "User"} has been approved as a Co-Builder.`,
@@ -138,7 +143,7 @@ export const AdminApprovalsTab = ({ onRefresh }: AdminApprovalsTabProps) => {
 
       await supabase.from("admin_notifications").insert({
         user_id: userId,
-        notification_type: "journey_rejected",
+        notification_type: "approval_rejected",
         user_name: userName,
         step_name: "Approval",
         message: "Your Co-Builder application requires additional review. Please contact support.",

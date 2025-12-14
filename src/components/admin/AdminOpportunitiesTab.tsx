@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { sendNotificationEmail } from "@/lib/emailNotifications";
 import {
   RefreshCw,
   Search,
@@ -12,6 +14,7 @@ import {
   User,
   Calendar,
   ExternalLink,
+  Eye,
 } from "lucide-react";
 
 interface OpportunityWithCreator {
@@ -330,6 +333,14 @@ export function AdminOpportunitiesTab({ onRefresh }: AdminOpportunitiesTabProps)
 
                 {/* Actions */}
                 <div className="flex flex-col gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => window.location.href = `/admin/opportunity/${opp.id}`}
+                  >
+                    <Eye className="w-4 h-4 mr-1" />
+                    View Details
+                  </Button>
                   <Button variant="teal" size="sm" onClick={() => handleApprove(opp)}>
                     <Check className="w-4 h-4 mr-1" />
                     Approve
