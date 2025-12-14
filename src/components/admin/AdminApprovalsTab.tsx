@@ -45,11 +45,12 @@ export const AdminApprovalsTab = ({ onRefresh }: AdminApprovalsTabProps) => {
   const fetchPendingApprovals = async () => {
     setLoading(true);
     try {
-      // Fetch onboarding states with pending_approval status
+      // Fetch onboarding states with pending_approval status AND step 8 (completed)
       const { data: onboardingData, error: onboardingError } = await supabase
         .from("onboarding_state")
         .select("*")
-        .eq("journey_status", "pending_approval");
+        .eq("journey_status", "pending_approval")
+        .eq("current_step", 8);
 
       if (onboardingError) throw onboardingError;
 
