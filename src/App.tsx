@@ -15,6 +15,8 @@ import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
+import Opportunities from "./pages/Opportunities";
+import CreateIdea from "./pages/CreateIdea";
 import Stories from "./pages/Stories";
 import Contact from "./pages/Contact";
 import Privacy from "./pages/Privacy";
@@ -43,6 +45,8 @@ const App = () => (
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/opportunities" element={<Opportunities />} />
+              <Route path="/create-idea" element={<CreateIdea />} />
               <Route path="/stories" element={<Stories />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/privacy" element={<Privacy />} />
