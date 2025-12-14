@@ -6,15 +6,13 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 
 export function HeroSection() {
   const { user } = useAuth();
-  const { onboardingState, needsOnboarding } = useOnboarding();
+  const { needsOnboarding } = useOnboarding();
 
-  // User is logged in and has started co-builder journey (not completed)
-  const isInCoBuilderJourney = user && 
-    onboardingState?.primary_role === "cobuilder" && 
-    !onboardingState?.onboarding_completed;
+  // User is logged in and has onboarding to complete
+  const shouldContinueJourney = user && needsOnboarding;
 
-  const buttonText = isInCoBuilderJourney ? "Ready to Continue" : "Start Building";
-  const buttonLink = isInCoBuilderJourney ? "/onboarding" : "/join";
+  const buttonText = shouldContinueJourney ? "Continue Your Journey" : "Start Building";
+  const buttonLink = shouldContinueJourney ? "/onboarding" : "/join";
 
   return (
     <section className="relative min-h-screen flex items-center gradient-hero overflow-hidden">
