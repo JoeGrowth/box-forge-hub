@@ -161,90 +161,119 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
         </div>
       </div>
 
-      {/* Users List */}
-      <div className="space-y-4">
-        {filteredUsers.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">
-            No users found
-          </div>
-        ) : (
-          filteredUsers.map((user) => {
-            const status = getUserStatus(user);
-            
-            return (
-              <div
-                key={user.id}
-                className="bg-card rounded-xl border border-border p-6"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                    <User className="w-6 h-6 text-muted-foreground" />
-                  </div>
+      {/* Users Table */}
+      <div className="bg-card rounded-xl border border-border overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-muted/50 border-b border-border">
+              <tr>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">User</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Role</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Journey Status</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Progress</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Joined</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {filteredUsers.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
+                    No users found
+                  </td>
+                </tr>
+              ) : (
+                filteredUsers.map((user) => {
+                  const status = getUserStatus(user);
+                  const journeyStatus = user.onboarding?.journey_status || "not_started";
                   
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="font-medium text-foreground">
-                        {user.profile?.full_name || "Unnamed User"}
-                      </h3>
-                      {user.onboarding?.primary_role && (
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${
-                          user.onboarding.primary_role === "entrepreneur" 
-                            ? "bg-b4-teal/10 text-b4-teal"
-                            : "bg-b4-coral/10 text-b4-coral"
-                        }`}>
-                          {user.onboarding.primary_role}
+                  const getJourneyBadge = () => {
+                    switch (journeyStatus) {
+                      case "approved":
+                        return { label: "Approved", className: "bg-b4-teal/10 text-b4-teal border-b4-teal/20" };
+                      case "pending_approval":
+                        return { label: "Pending Approval", className: "bg-amber-500/10 text-amber-600 border-amber-500/20" };
+                      case "rejected":
+                        return { label: "Rejected", className: "bg-red-500/10 text-red-600 border-red-500/20" };
+                      case "in_progress":
+                        return { label: "In Progress", className: "bg-blue-500/10 text-blue-600 border-blue-500/20" };
+                      default:
+                        return { label: "Not Started", className: "bg-muted text-muted-foreground border-border" };
+                    }
+                  };
+                  
+                  const journeyBadge = getJourneyBadge();
+                  
+                  return (
+                    <tr key={user.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-b4-teal/20 to-b4-coral/20 flex items-center justify-center flex-shrink-0">
+                            <User className="w-5 h-5 text-foreground" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-foreground">
+                              {user.profile?.full_name || "Unnamed User"}
+                            </p>
+                            {user.profile?.primary_skills && (
+                              <p className="text-xs text-muted-foreground truncate max-w-[200px]">
+                                {user.profile.primary_skills}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        {user.onboarding?.primary_role ? (
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold capitalize border ${
+                            user.onboarding.primary_role === "entrepreneur" 
+                              ? "bg-b4-teal/10 text-b4-teal border-b4-teal/20"
+                              : "bg-b4-coral/10 text-b4-coral border-b4-coral/20"
+                          }`}>
+                            {user.onboarding.primary_role === "entrepreneur" ? (
+                              <Lightbulb className="w-3 h-3" />
+                            ) : (
+                              <Users className="w-3 h-3" />
+                            )}
+                            {user.onboarding.primary_role}
+                          </span>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${journeyBadge.className}`}>
+                          {journeyStatus === "approved" && <CheckCircle className="w-3 h-3" />}
+                          {journeyStatus === "pending_approval" && <Clock className="w-3 h-3" />}
+                          {journeyStatus === "rejected" && <AlertCircle className="w-3 h-3" />}
+                          {journeyStatus === "in_progress" && <Clock className="w-3 h-3" />}
+                          {journeyBadge.label}
                         </span>
-                      )}
-                      <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${status.color} bg-muted`}>
-                        <status.icon className="w-3 h-3" />
-                        {status.label}
-                      </span>
-                    </div>
-
-                    <div className="grid sm:grid-cols-2 gap-4 text-sm">
-                      <div className="space-y-1">
-                        {user.profile?.primary_skills && (
-                          <p className="text-muted-foreground">
-                            Skills: {user.profile.primary_skills}
-                          </p>
-                        )}
-                        {user.profile?.startup_name && (
-                          <p className="text-muted-foreground">
-                            Startup: {user.profile.startup_name}
-                          </p>
-                        )}
-                        <p className="text-muted-foreground">
-                          Joined: {formatDate(user.created_at)}
-                        </p>
-                      </div>
-                      
-                      <div className="space-y-1">
-                        {user.onboarding && (
-                          <p className="text-muted-foreground">
-                            Onboarding Step: {user.onboarding.current_step} / 8
-                          </p>
-                        )}
-                        {user.naturalRole?.is_ready && (
-                          <p className="text-b4-teal font-medium">
-                            ✓ Co-Builder Ready
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {user.naturalRole?.description && (
-                      <div className="bg-muted/50 rounded-lg p-3 mt-4">
-                        <p className="text-sm italic text-foreground">
-                          "{user.naturalRole.description}"
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })
-        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-gradient-to-r from-b4-teal to-b4-coral rounded-full transition-all"
+                              style={{ width: `${((user.onboarding?.current_step || 1) / 8) * 100}%` }}
+                            />
+                          </div>
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            {user.onboarding?.current_step || 1}/8
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-muted-foreground">
+                          {formatDate(user.created_at)}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Summary */}
