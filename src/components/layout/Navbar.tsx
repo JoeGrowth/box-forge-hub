@@ -51,10 +51,12 @@ export function Navbar() {
             {!loading && (
               user ? (
                 <>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <User size={16} />
-                    <span className="max-w-[120px] truncate">{user.email}</span>
-                  </div>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link to="/profile" className="flex items-center gap-2">
+                      <User size={16} />
+                      <span className="max-w-[120px] truncate">{user.user_metadata?.full_name || user.email}</span>
+                    </Link>
+                  </Button>
                   <Button variant="ghost" size="sm" onClick={signOut}>
                     <LogOut size={16} className="mr-1" />
                     Sign Out
@@ -101,13 +103,21 @@ export function Navbar() {
                   {link.name}
                 </Link>
               ))}
-              <div className="flex gap-2 px-4 pt-2">
+              <div className="flex flex-col gap-2 px-4 pt-2">
                 {!loading && (
                   user ? (
-                    <Button variant="outline" size="sm" className="flex-1" onClick={() => { signOut(); setIsOpen(false); }}>
-                      <LogOut size={16} className="mr-1" />
-                      Sign Out
-                    </Button>
+                    <>
+                      <Button variant="outline" size="sm" asChild>
+                        <Link to="/profile" onClick={() => setIsOpen(false)}>
+                          <User size={16} className="mr-1" />
+                          Profile
+                        </Link>
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => { signOut(); setIsOpen(false); }}>
+                        <LogOut size={16} className="mr-1" />
+                        Sign Out
+                      </Button>
+                    </>
                   ) : (
                     <>
                       <Button variant="outline" size="sm" className="flex-1" asChild>
