@@ -30,7 +30,10 @@ const Onboarding = () => {
   useEffect(() => {
     if (onboardingState) {
       setCurrentStep(onboardingState.current_step);
-      if (onboardingState.onboarding_completed) {
+      // Only redirect if truly completed (step 8 for cobuilder, step 2 for entrepreneur)
+      const isCoBuilderComplete = onboardingState.primary_role === "cobuilder" && onboardingState.current_step >= 8 && onboardingState.onboarding_completed;
+      const isEntrepreneurComplete = onboardingState.primary_role === "entrepreneur" && onboardingState.current_step >= 2 && onboardingState.onboarding_completed;
+      if (isCoBuilderComplete || isEntrepreneurComplete) {
         navigate("/", { replace: true });
       }
     }
