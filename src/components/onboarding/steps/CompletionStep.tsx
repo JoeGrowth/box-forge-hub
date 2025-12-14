@@ -28,24 +28,21 @@ export const CompletionStep = () => {
     try {
       await updateNaturalRole({ is_ready: isReady });
       
-      if (isReady) {
-        await sendAdminNotification(
-          "user_ready",
-          "Onboarding Complete",
-          "New Co-Builder is ready and has been activated"
-        );
-      }
+      // Send notification to admin for approval
+      await sendAdminNotification(
+        "journey_completed",
+        "Journey Complete - Pending Approval",
+        `User completed onboarding journey. Ready status: ${isReady ? 'Ready' : 'Needs assistance'}`
+      );
       
       await completeOnboarding();
       
       toast({
-        title: isReady ? "Welcome, Co-Builder!" : "Onboarding Complete",
-        description: isReady 
-          ? "You now have access to missions and collaboration opportunities."
-          : "Your progress has been saved. Our team will follow up with you.",
+        title: "Journey Complete!",
+        description: "Your application has been submitted for admin review. You'll be notified once approved.",
       });
       
-      navigate("/", { replace: true });
+      navigate("/profile", { replace: true });
     } catch (error) {
       toast({
         title: "Error",
@@ -64,25 +61,22 @@ export const CompletionStep = () => {
           <CheckCircle className="w-10 h-10" />
         </div>
         <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-          You are now an active Co-Builder!
+          Journey Complete!
         </h1>
         <p className="text-muted-foreground text-lg mb-8">
-          Congratulations! You've been added to the Co-Builder Database and now have access to:
+          Congratulations! You've completed all the steps. Your application will now be reviewed by our admin team.
         </p>
 
         <div className="bg-muted/50 rounded-2xl p-6 mb-8 text-left">
+          <p className="text-sm text-muted-foreground mb-4">Once approved, you'll have access to:</p>
           <ul className="space-y-3">
             <li className="flex items-center gap-3">
               <CheckCircle className="w-5 h-5 text-b4-teal flex-shrink-0" />
-              <span className="text-foreground">Missions and projects</span>
+              <span className="text-foreground">Co-Build Startup opportunities</span>
             </li>
             <li className="flex items-center gap-3">
               <CheckCircle className="w-5 h-5 text-b4-teal flex-shrink-0" />
-              <span className="text-foreground">Internal frameworks and resources</span>
-            </li>
-            <li className="flex items-center gap-3">
-              <CheckCircle className="w-5 h-5 text-b4-teal flex-shrink-0" />
-              <span className="text-foreground">Collaboration opportunities</span>
+              <span className="text-foreground">Create your own startup ideas as Initiator</span>
             </li>
             <li className="flex items-center gap-3">
               <CheckCircle className="w-5 h-5 text-b4-teal flex-shrink-0" />
@@ -98,7 +92,7 @@ export const CompletionStep = () => {
           disabled={isLoading}
           className="w-full"
         >
-          {isLoading ? "Activating..." : "Enter the Platform"}
+          {isLoading ? "Submitting..." : "Submit for Approval"}
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </div>

@@ -20,7 +20,11 @@ import {
   Briefcase,
   ArrowRight,
   LogOut,
-  Settings
+  Settings,
+  Rocket,
+  Users,
+  Clock,
+  Lightbulb
 } from "lucide-react";
 
 interface Profile {
@@ -120,7 +124,10 @@ const Profile = () => {
 
   const getRoleLabel = () => {
     if (onboardingState?.primary_role === "entrepreneur") return "Entrepreneur";
-    if (onboardingState?.primary_role === "cobuilder") return "Co-Builder";
+    if (onboardingState?.primary_role === "cobuilder") {
+      if (onboardingState.journey_status === "approved") return "Co-Builder";
+      return "Potential Co-Builder";
+    }
     return "Member";
   };
 
@@ -128,14 +135,22 @@ const Profile = () => {
     if (!onboardingState?.onboarding_completed) {
       return { label: "Onboarding Incomplete", color: "text-b4-coral", icon: AlertCircle };
     }
-    if (naturalRole?.is_ready) {
-      return { label: "Active Co-Builder", color: "text-b4-teal", icon: CheckCircle };
+    if (onboardingState.journey_status === "approved") {
+      return { label: "Approved Co-Builder", color: "text-b4-teal", icon: CheckCircle };
+    }
+    if (onboardingState.journey_status === "pending_approval") {
+      return { label: "Pending Admin Approval", color: "text-amber-500", icon: Clock };
+    }
+    if (onboardingState.journey_status === "rejected") {
+      return { label: "Application Rejected", color: "text-b4-coral", icon: AlertCircle };
     }
     if (naturalRole?.status === "assistance_requested") {
       return { label: "Pending Assistance", color: "text-amber-500", icon: AlertCircle };
     }
     return { label: "In Progress", color: "text-muted-foreground", icon: AlertCircle };
   };
+
+  const isApprovedCoBuilder = onboardingState?.journey_status === "approved";
 
   const status = getReadinessStatus();
 
@@ -271,6 +286,64 @@ const Profile = () => {
                     <span className="text-sm text-foreground">Consulting</span>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Approved Co-Builder Dashboard */}
+            {isApprovedCoBuilder && (
+              <div className="bg-gradient-to-br from-b4-teal/10 to-b4-navy/10 rounded-3xl border border-b4-teal/20 p-8 mb-8">
+                <h2 className="font-display text-xl font-bold text-foreground mb-2">
+                  🎉 You're an Approved Co-Builder!
+                </h2>
+                <p className="text-muted-foreground mb-6">
+                  Choose how you want to build your next venture:
+                </p>
+                
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="bg-card rounded-xl border border-border p-6 hover:border-b4-teal/50 transition-colors">
+                    <div className="w-12 h-12 rounded-xl bg-b4-teal/10 flex items-center justify-center mb-4">
+                      <Users className="w-6 h-6 text-b4-teal" />
+                    </div>
+                    <h3 className="font-semibold text-foreground mb-2">Co-Build a Startup</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Browse startup ideas looking for co-builders with roles matching your skills.
+                    </p>
+                    <Button variant="outline" size="sm" onClick={() => navigate("/opportunities")}>
+                      View Opportunities
+                      <ArrowRight className="ml-2 w-4 h-4" />
+                    </Button>
+                  </div>
+                  
+                  <div className="bg-card rounded-xl border border-border p-6 hover:border-b4-coral/50 transition-colors">
+                    <div className="w-12 h-12 rounded-xl bg-b4-coral/10 flex items-center justify-center mb-4">
+                      <Lightbulb className="w-6 h-6 text-b4-coral" />
+                    </div>
+                    <h3 className="font-semibold text-foreground mb-2">Be an Initiator</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Create your own startup idea and find co-builders to join your venture.
+                    </p>
+                    <Button variant="outline" size="sm" onClick={() => navigate("/create-idea")}>
+                      Create Startup Idea
+                      <ArrowRight className="ml-2 w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Pending Approval Status */}
+            {onboardingState?.journey_status === "pending_approval" && (
+              <div className="bg-amber-500/10 rounded-3xl border border-amber-500/20 p-8 mb-8">
+                <div className="flex items-center gap-3 mb-2">
+                  <Clock className="w-6 h-6 text-amber-500" />
+                  <h2 className="font-display text-xl font-bold text-foreground">
+                    Awaiting Admin Approval
+                  </h2>
+                </div>
+                <p className="text-muted-foreground">
+                  Your Co-Builder journey is complete! Our admin team is reviewing your application. 
+                  You'll be notified once approved.
+                </p>
               </div>
             )}
 

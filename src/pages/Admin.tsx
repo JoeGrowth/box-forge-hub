@@ -8,13 +8,14 @@ import { useAdmin } from "@/hooks/useAdmin";
 import { AdminNotificationsTab } from "@/components/admin/AdminNotificationsTab";
 import { AdminUsersTab } from "@/components/admin/AdminUsersTab";
 import { AdminApplicationsTab } from "@/components/admin/AdminApplicationsTab";
-import { Shield, Bell, Users, FileText } from "lucide-react";
+import { AdminApprovalsTab } from "@/components/admin/AdminApprovalsTab";
+import { Shield, Bell, Users, FileText, UserCheck } from "lucide-react";
 
 const Admin = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: adminLoading, fetchNotifications, fetchUsers, notifications, users } = useAdmin();
-  const [activeTab, setActiveTab] = useState("notifications");
+  const [activeTab, setActiveTab] = useState("approvals");
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -112,7 +113,11 @@ const Admin = () => {
 
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-8">
+              <TabsList className="grid w-full grid-cols-4 mb-8">
+                <TabsTrigger value="approvals" className="flex items-center gap-2">
+                  <UserCheck className="w-4 h-4" />
+                  Approvals
+                </TabsTrigger>
                 <TabsTrigger value="notifications" className="flex items-center gap-2">
                   <Bell className="w-4 h-4" />
                   Notifications
@@ -131,6 +136,10 @@ const Admin = () => {
                   Users
                 </TabsTrigger>
               </TabsList>
+
+              <TabsContent value="approvals">
+                <AdminApprovalsTab onRefresh={fetchUsers} />
+              </TabsContent>
 
               <TabsContent value="notifications">
                 <AdminNotificationsTab 

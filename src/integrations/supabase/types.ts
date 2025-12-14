@@ -127,6 +127,7 @@ export type Database = {
           created_at: string | null
           current_step: number | null
           id: string
+          journey_status: string | null
           onboarding_completed: boolean | null
           primary_role: string | null
           updated_at: string | null
@@ -136,6 +137,7 @@ export type Database = {
           created_at?: string | null
           current_step?: number | null
           id?: string
+          journey_status?: string | null
           onboarding_completed?: boolean | null
           primary_role?: string | null
           updated_at?: string | null
@@ -145,6 +147,7 @@ export type Database = {
           created_at?: string | null
           current_step?: number | null
           id?: string
+          journey_status?: string | null
           onboarding_completed?: boolean | null
           primary_role?: string | null
           updated_at?: string | null
@@ -197,6 +200,45 @@ export type Database = {
           updated_at?: string
           user_id?: string
           years_of_experience?: number | null
+        }
+        Relationships: []
+      }
+      startup_ideas: {
+        Row: {
+          created_at: string
+          creator_id: string
+          description: string
+          id: string
+          is_looking_for_cobuilders: boolean | null
+          roles_needed: string[] | null
+          sector: string | null
+          status: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          description: string
+          id?: string
+          is_looking_for_cobuilders?: boolean | null
+          roles_needed?: string[] | null
+          sector?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          description?: string
+          id?: string
+          is_looking_for_cobuilders?: boolean | null
+          roles_needed?: string[] | null
+          sector?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }

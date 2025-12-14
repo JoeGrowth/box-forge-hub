@@ -11,6 +11,7 @@ export interface OnboardingState {
   primary_role: PrimaryRole | null;
   onboarding_completed: boolean;
   current_step: number;
+  journey_status: 'in_progress' | 'pending_approval' | 'approved' | 'rejected';
 }
 
 export interface NaturalRole {
@@ -76,11 +77,12 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
         setOnboardingState(stateData as OnboardingState);
       } else {
         // Create initial onboarding state
-        const newState: Omit<OnboardingState, "id"> = {
+        const newState = {
           user_id: user.id,
           primary_role: null,
           onboarding_completed: false,
           current_step: 1,
+          journey_status: 'in_progress' as const,
         };
         
         const { data: insertedState, error: insertError } = await supabase
@@ -180,7 +182,10 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const completeOnboarding = async () => {
-    await updateOnboardingState({ onboarding_completed: true });
+    await updateOnboardingState({ 
+      onboarding_completed: true,
+      journey_status: 'pending_approval'
+    });
   };
 
   const needsOnboarding = !loading && !!user && onboardingState && !onboardingState.onboarding_completed;
