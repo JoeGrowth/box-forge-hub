@@ -28,6 +28,7 @@ export interface UserWithDetails {
     primary_role: string | null;
     onboarding_completed: boolean;
     current_step: number;
+    journey_status: string | null;
   } | null;
   naturalRole: {
     description: string | null;
@@ -116,6 +117,7 @@ export function useAdmin() {
           primary_role: onboarding.primary_role,
           onboarding_completed: onboarding.onboarding_completed,
           current_step: onboarding.current_step,
+          journey_status: onboarding.journey_status,
         } : null,
         naturalRole: nr ? {
           description: nr.description,

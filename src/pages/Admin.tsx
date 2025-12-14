@@ -15,7 +15,7 @@ const Admin = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: adminLoading, fetchNotifications, fetchUsers, notifications, users } = useAdmin();
-  const [activeTab, setActiveTab] = useState("approvals");
+  const [activeTab, setActiveTab] = useState("applications");
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -114,9 +114,17 @@ const Admin = () => {
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-4 mb-8">
+                <TabsTrigger value="applications" className="flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  Applications
+                </TabsTrigger>
                 <TabsTrigger value="approvals" className="flex items-center gap-2">
                   <UserCheck className="w-4 h-4" />
-                  Approvals
+                  To Check
+                </TabsTrigger>
+                <TabsTrigger value="users" className="flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Users
                 </TabsTrigger>
                 <TabsTrigger value="notifications" className="flex items-center gap-2">
                   <Bell className="w-4 h-4" />
@@ -127,26 +135,7 @@ const Admin = () => {
                     </span>
                   )}
                 </TabsTrigger>
-                <TabsTrigger value="applications" className="flex items-center gap-2">
-                  <FileText className="w-4 h-4" />
-                  Applications
-                </TabsTrigger>
-                <TabsTrigger value="users" className="flex items-center gap-2">
-                  <Users className="w-4 h-4" />
-                  Users
-                </TabsTrigger>
               </TabsList>
-
-              <TabsContent value="approvals">
-                <AdminApprovalsTab onRefresh={fetchUsers} />
-              </TabsContent>
-
-              <TabsContent value="notifications">
-                <AdminNotificationsTab 
-                  notifications={notifications} 
-                  onRefresh={fetchNotifications}
-                />
-              </TabsContent>
 
               <TabsContent value="applications">
                 <AdminApplicationsTab 
@@ -155,10 +144,21 @@ const Admin = () => {
                 />
               </TabsContent>
 
+              <TabsContent value="approvals">
+                <AdminApprovalsTab onRefresh={fetchUsers} />
+              </TabsContent>
+
               <TabsContent value="users">
                 <AdminUsersTab 
                   users={users}
                   onRefresh={fetchUsers}
+                />
+              </TabsContent>
+
+              <TabsContent value="notifications">
+                <AdminNotificationsTab 
+                  notifications={notifications} 
+                  onRefresh={fetchNotifications}
                 />
               </TabsContent>
             </Tabs>
