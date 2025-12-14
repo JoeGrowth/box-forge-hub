@@ -5,13 +5,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 
 export function HeroSection() {
-  const { user } = useAuth();
-  const { needsOnboarding, loading, onboardingState } = useOnboarding();
+  const { user, loading: authLoading } = useAuth();
+  const { needsOnboarding, loading: onboardingLoading } = useOnboarding();
 
-  // User is logged in and either:
-  // 1. Still loading onboarding data (assume they need to continue)
-  // 2. Onboarding data loaded and not completed
-  const shouldContinueJourney = user && (loading || needsOnboarding);
+  // While loading auth or onboarding data, logged-in users see "Continue Your Journey"
+  const isLoading = authLoading || onboardingLoading;
+  const shouldContinueJourney = user && (isLoading || needsOnboarding);
 
   const buttonText = shouldContinueJourney ? "Continue Your Journey" : "Start Building";
   const buttonLink = shouldContinueJourney ? "/onboarding" : "/join";
