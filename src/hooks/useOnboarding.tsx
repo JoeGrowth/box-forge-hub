@@ -11,7 +11,8 @@ export interface OnboardingState {
   primary_role: PrimaryRole | null;
   onboarding_completed: boolean;
   current_step: number;
-  journey_status: 'in_progress' | 'pending_approval' | 'approved' | 'rejected';
+  journey_status: 'in_progress' | 'pending_approval' | 'approved' | 'rejected' | 'entrepreneur_approved' | 'entrepreneur_in_progress';
+  entrepreneur_step?: number;
 }
 
 export interface NaturalRole {

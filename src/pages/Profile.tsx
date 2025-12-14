@@ -5,12 +5,12 @@ import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
+import { EntrepreneurJourney } from "@/components/entrepreneur/EntrepreneurJourney";
 import { 
   User, 
   Mail, 
@@ -24,7 +24,8 @@ import {
   Rocket,
   Users,
   Clock,
-  Lightbulb
+  Lightbulb,
+  Send
 } from "lucide-react";
 
 interface Profile {
@@ -35,15 +36,23 @@ interface Profile {
   created_at: string;
 }
 
+interface StartupIdea {
+  id: string;
+  title: string;
+  review_status: string;
+}
+
 const Profile = () => {
   const navigate = useNavigate();
   const { user, signOut, loading: authLoading } = useAuth();
-  const { onboardingState, naturalRole, needsOnboarding } = useOnboarding();
+  const { onboardingState, naturalRole, needsOnboarding, refetch } = useOnboarding();
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [fullName, setFullName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [userIdeas, setUserIdeas] = useState<StartupIdea[]>([]);
+  const [requestingReview, setRequestingReview] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -69,6 +78,73 @@ const Profile = () => {
 
     fetchProfile();
   }, [user]);
+
+  // Fetch user's startup ideas
+  useEffect(() => {
+    const fetchUserIdeas = async () => {
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("startup_ideas")
+        .select("id, title, review_status")
+        .eq("creator_id", user.id);
+
+      if (!error && data) {
+        setUserIdeas(data);
+      }
+    };
+
+    fetchUserIdeas();
+  }, [user]);
+
+  const handleRequestEntrepreneurReview = async () => {
+    if (!user || userIdeas.length === 0) return;
+
+    setRequestingReview(true);
+    try {
+      // Update the first pending idea to "under_review"
+      const pendingIdea = userIdeas.find((i) => i.review_status === "pending");
+      if (pendingIdea) {
+        await supabase
+          .from("startup_ideas")
+          .update({ review_status: "under_review" })
+          .eq("id", pendingIdea.id);
+      }
+
+      // Create admin notification
+      await supabase.from("admin_notifications").insert({
+        user_id: user.id,
+        notification_type: "entrepreneur_review_request",
+        user_name: profile?.full_name,
+        user_email: user.email,
+        message: `${profile?.full_name || "A user"} is requesting entrepreneur review for their startup idea.`,
+      });
+
+      toast({
+        title: "Review Requested",
+        description: "Your entrepreneur review request has been submitted to admins.",
+      });
+
+      // Refresh ideas
+      const { data } = await supabase
+        .from("startup_ideas")
+        .select("id, title, review_status")
+        .eq("creator_id", user.id);
+      if (data) setUserIdeas(data);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setRequestingReview(false);
+    }
+  };
+
+  const handleEntrepreneurStepComplete = async (step: number) => {
+    await refetch();
+  };
 
   const handleSave = async () => {
     if (!user) return;
@@ -328,6 +404,72 @@ const Profile = () => {
                     </Button>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Entrepreneur Journey Section */}
+            {onboardingState?.journey_status === "entrepreneur_approved" && (
+              <div className="mb-8">
+                <EntrepreneurJourney
+                  currentStep={onboardingState?.entrepreneur_step || 1}
+                  onStepComplete={handleEntrepreneurStepComplete}
+                />
+              </div>
+            )}
+
+            {/* Request Entrepreneur Review - for approved co-builders with ideas */}
+            {isApprovedCoBuilder && userIdeas.length > 0 && (
+              <div className="bg-gradient-to-br from-amber-500/10 to-b4-coral/10 rounded-3xl border border-amber-500/20 p-8 mb-8">
+                <div className="flex items-center gap-3 mb-2">
+                  <Rocket className="w-6 h-6 text-amber-500" />
+                  <h2 className="font-display text-xl font-bold text-foreground">
+                    Ready to Become an Entrepreneur?
+                  </h2>
+                </div>
+                <p className="text-muted-foreground mb-4">
+                  You've created {userIdeas.length} startup idea{userIdeas.length > 1 ? "s" : ""}. 
+                  Request a review to unlock the full entrepreneur journey with guided steps.
+                </p>
+                
+                {/* Show idea statuses */}
+                <div className="space-y-2 mb-4">
+                  {userIdeas.map((idea) => (
+                    <div key={idea.id} className="flex items-center gap-2 text-sm">
+                      <Lightbulb className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-foreground">{idea.title}</span>
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${
+                        idea.review_status === "approved" 
+                          ? "bg-b4-teal/10 text-b4-teal"
+                          : idea.review_status === "under_review"
+                          ? "bg-amber-500/10 text-amber-600"
+                          : idea.review_status === "rejected"
+                          ? "bg-red-500/10 text-red-600"
+                          : "bg-muted text-muted-foreground"
+                      }`}>
+                        {idea.review_status === "under_review" ? "Under Review" : 
+                         idea.review_status.charAt(0).toUpperCase() + idea.review_status.slice(1)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {userIdeas.some((i) => i.review_status === "pending") && (
+                  <Button 
+                    variant="teal" 
+                    onClick={handleRequestEntrepreneurReview}
+                    disabled={requestingReview}
+                  >
+                    {requestingReview ? "Submitting..." : "Request Entrepreneur Review"}
+                    <Send className="ml-2 w-4 h-4" />
+                  </Button>
+                )}
+                
+                {userIdeas.some((i) => i.review_status === "under_review") && (
+                  <p className="text-sm text-amber-600 flex items-center gap-2">
+                    <Clock className="w-4 h-4" />
+                    Your review request is being processed by admins.
+                  </p>
+                )}
               </div>
             )}
 
