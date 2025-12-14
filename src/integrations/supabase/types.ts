@@ -14,6 +14,144 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string | null
+          notification_type: string
+          nr_description: string | null
+          step_name: string | null
+          user_email: string | null
+          user_id: string
+          user_name: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          notification_type: string
+          nr_description?: string | null
+          step_name?: string | null
+          user_email?: string | null
+          user_id: string
+          user_name?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          notification_type?: string
+          nr_description?: string | null
+          step_name?: string | null
+          user_email?: string | null
+          user_id?: string
+          user_name?: string | null
+        }
+        Relationships: []
+      }
+      natural_roles: {
+        Row: {
+          consulting_case_studies: string | null
+          consulting_check: boolean | null
+          consulting_with_whom: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          is_ready: boolean | null
+          practice_case_studies: number | null
+          practice_check: boolean | null
+          practice_entities: string | null
+          practice_needs_help: boolean | null
+          promise_check: boolean | null
+          status: string | null
+          training_check: boolean | null
+          training_contexts: string | null
+          training_count: number | null
+          training_needs_help: boolean | null
+          updated_at: string | null
+          user_id: string
+          wants_to_scale: boolean | null
+        }
+        Insert: {
+          consulting_case_studies?: string | null
+          consulting_check?: boolean | null
+          consulting_with_whom?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_ready?: boolean | null
+          practice_case_studies?: number | null
+          practice_check?: boolean | null
+          practice_entities?: string | null
+          practice_needs_help?: boolean | null
+          promise_check?: boolean | null
+          status?: string | null
+          training_check?: boolean | null
+          training_contexts?: string | null
+          training_count?: number | null
+          training_needs_help?: boolean | null
+          updated_at?: string | null
+          user_id: string
+          wants_to_scale?: boolean | null
+        }
+        Update: {
+          consulting_case_studies?: string | null
+          consulting_check?: boolean | null
+          consulting_with_whom?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_ready?: boolean | null
+          practice_case_studies?: number | null
+          practice_check?: boolean | null
+          practice_entities?: string | null
+          practice_needs_help?: boolean | null
+          promise_check?: boolean | null
+          status?: string | null
+          training_check?: boolean | null
+          training_contexts?: string | null
+          training_count?: number | null
+          training_needs_help?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+          wants_to_scale?: boolean | null
+        }
+        Relationships: []
+      }
+      onboarding_state: {
+        Row: {
+          created_at: string | null
+          current_step: number | null
+          id: string
+          onboarding_completed: boolean | null
+          primary_role: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_step?: number | null
+          id?: string
+          onboarding_completed?: boolean | null
+          primary_role?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_step?: number | null
+          id?: string
+          onboarding_completed?: boolean | null
+          primary_role?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

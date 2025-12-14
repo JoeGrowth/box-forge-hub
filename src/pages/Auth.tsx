@@ -37,7 +37,7 @@ const Auth = () => {
 
   useEffect(() => {
     if (user) {
-      navigate("/", { replace: true });
+      navigate("/onboarding", { replace: true });
     }
   }, [user, navigate]);
 
