@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { useOnboarding } from "@/hooks/useOnboarding";
 import { 
   Lightbulb, 
   Users, 
@@ -61,21 +63,38 @@ const roles: { id: Role; icon: typeof Lightbulb; title: string; description: str
 
 const Join = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { needsOnboarding } = useOnboarding();
   const initialRole = (searchParams.get("role") as Role) || "entrepreneur";
   const [selectedRole, setSelectedRole] = useState<Role>(initialRole);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
+  // Redirect logged-in users who need onboarding
+  useEffect(() => {
+    if (user && needsOnboarding) {
+      navigate("/onboarding", { replace: true });
+    }
+  }, [user, needsOnboarding, navigate]);
+
+  const handleStartJourney = () => {
+    if (user) {
+      navigate("/onboarding");
+    } else {
+      navigate(`/auth?mode=signup&role=${selectedRole === "partner" ? "cobuilder" : selectedRole}`);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate submission
     await new Promise(resolve => setTimeout(resolve, 1500));
     
     toast({
-      title: "Application Submitted!",
-      description: "We'll review your application and get back to you within 48 hours.",
+      title: "Inquiry Submitted!",
+      description: "We'll review your inquiry and get back to you within 48 hours.",
     });
     
     setIsSubmitting(false);
@@ -105,7 +124,7 @@ const Join = () => {
           </div>
         </section>
 
-        {/* Role Selection & Form */}
+        {/* Role Selection & CTA */}
         <section className="py-16">
           <div className="container mx-auto px-4">
             <div className="grid lg:grid-cols-2 gap-12">
@@ -164,102 +183,113 @@ const Join = () => {
                 </div>
               </div>
 
-              {/* Application Form */}
+              {/* CTA Section */}
               <div>
-                <div className="bg-card rounded-3xl border border-border p-8">
-                  <h2 className="font-display text-2xl font-bold text-foreground mb-6">
-                    Apply Now
-                  </h2>
-                  
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="firstName">First Name</Label>
-                        <Input id="firstName" placeholder="John" required />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="lastName">Last Name</Label>
-                        <Input id="lastName" placeholder="Doe" required />
-                      </div>
-                    </div>
+                {user ? (
+                  // Logged-in user - show quick start CTA
+                  <div className="bg-card rounded-3xl border border-border p-8">
+                    <h2 className="font-display text-2xl font-bold text-foreground mb-4">
+                      Ready to Continue?
+                    </h2>
+                    <p className="text-muted-foreground mb-6">
+                      You're already signed in. Click below to continue your onboarding journey 
+                      and get started as {selectedRole === "entrepreneur" ? "an Entrepreneur" : selectedRole === "cobuilder" ? "a Co-Builder" : "a Partner"}.
+                    </p>
                     
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email Address</Label>
-                      <Input id="email" type="email" placeholder="john@example.com" required />
-                    </div>
-                    
-                    {selectedRole === "entrepreneur" && (
-                      <>
-                        <div className="space-y-2">
-                          <Label htmlFor="startupName">Startup Name (if any)</Label>
-                          <Input id="startupName" placeholder="My Awesome Startup" />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="sector">Preferred Sector</Label>
-                          <Input id="sector" placeholder="e.g., Health, Agriculture, Education..." />
-                        </div>
-                      </>
-                    )}
-                    
-                    {selectedRole === "cobuilder" && (
-                      <>
-                        <div className="space-y-2">
-                          <Label htmlFor="skills">Primary Skills</Label>
-                          <Input id="skills" placeholder="e.g., Product Management, Engineering, Design..." />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="experience">Years of Experience</Label>
-                          <Input id="experience" type="number" placeholder="5" min="0" />
-                        </div>
-                      </>
-                    )}
-                    
-                    {selectedRole === "partner" && (
-                      <>
-                        <div className="space-y-2">
-                          <Label htmlFor="organization">Organization Name</Label>
-                          <Input id="organization" placeholder="Acme Corp" required />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="partnerType">Partnership Interest</Label>
-                          <Input id="partnerType" placeholder="e.g., Investment, Mentorship, Resources..." />
-                        </div>
-                      </>
-                    )}
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="message">Tell us about yourself</Label>
-                      <Textarea 
-                        id="message" 
-                        placeholder={
-                          selectedRole === "entrepreneur" 
-                            ? "Describe your startup idea and what problem it solves..."
-                            : selectedRole === "cobuilder"
-                            ? "Tell us about your experience and what kind of startups excite you..."
-                            : "Describe the partnership opportunity you're interested in..."
-                        }
-                        rows={4}
-                        required
-                      />
-                    </div>
-
                     <Button 
-                      type="submit" 
                       variant="teal" 
                       size="lg" 
                       className="w-full"
-                      disabled={isSubmitting}
+                      onClick={handleStartJourney}
                     >
-                      {isSubmitting ? (
-                        "Submitting..."
-                      ) : (
-                        <>
-                          Submit Application <ArrowRight className="ml-2 w-4 h-4" />
-                        </>
-                      )}
+                      Start Your Journey <ArrowRight className="ml-2 w-4 h-4" />
                     </Button>
-                  </form>
-                </div>
+                  </div>
+                ) : selectedRole === "partner" ? (
+                  // Partnership inquiry form
+                  <div className="bg-card rounded-3xl border border-border p-8">
+                    <h2 className="font-display text-2xl font-bold text-foreground mb-4">
+                      Partnership Inquiry
+                    </h2>
+                    
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="firstName">First Name</Label>
+                          <Input id="firstName" placeholder="John" required />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="lastName">Last Name</Label>
+                          <Input id="lastName" placeholder="Doe" required />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email Address</Label>
+                        <Input id="email" type="email" placeholder="john@example.com" required />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="organization">Organization Name</Label>
+                        <Input id="organization" placeholder="Acme Corp" required />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="partnerType">Partnership Interest</Label>
+                        <Input id="partnerType" placeholder="e.g., Investment, Mentorship, Resources..." />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="message">Tell us about the partnership opportunity</Label>
+                        <Textarea 
+                          id="message" 
+                          placeholder="Describe the partnership opportunity you're interested in..."
+                          rows={4}
+                          required
+                        />
+                      </div>
+
+                      <Button 
+                        type="submit" 
+                        variant="teal" 
+                        size="lg" 
+                        className="w-full"
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? "Submitting..." : (
+                          <>Submit Inquiry <ArrowRight className="ml-2 w-4 h-4" /></>
+                        )}
+                      </Button>
+                    </form>
+                  </div>
+                ) : (
+                  // Not logged in - show signup CTA
+                  <div className="bg-card rounded-3xl border border-border p-8">
+                    <h2 className="font-display text-2xl font-bold text-foreground mb-4">
+                      Get Started
+                    </h2>
+                    
+                    <p className="text-muted-foreground mb-6">
+                      Create your account to begin your journey as {selectedRole === "entrepreneur" ? "an Entrepreneur" : "a Co-Builder"}.
+                    </p>
+                    
+                    <Button 
+                      variant="teal" 
+                      size="lg" 
+                      className="w-full mb-4"
+                      onClick={handleStartJourney}
+                    >
+                      Create Account <ArrowRight className="ml-2 w-4 h-4" />
+                    </Button>
+                    
+                    <p className="text-center text-sm text-muted-foreground">
+                      Already have an account?{" "}
+                      <Link to="/login" className="text-b4-teal hover:underline">
+                        Sign in
+                      </Link>
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

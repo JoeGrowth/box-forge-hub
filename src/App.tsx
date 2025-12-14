@@ -12,6 +12,7 @@ import Programs from "./pages/Programs";
 import Join from "./pages/Join";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
+import Profile from "./pages/Profile";
 import Stories from "./pages/Stories";
 import Contact from "./pages/Contact";
 import Privacy from "./pages/Privacy";
@@ -37,6 +38,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/login" element={<Auth />} />
               <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/profile" element={<Profile />} />
               <Route path="/stories" element={<Stories />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/privacy" element={<Privacy />} />
