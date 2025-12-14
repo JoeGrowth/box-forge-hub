@@ -57,7 +57,7 @@ export function Navbar() {
                       <span className="max-w-[120px] truncate">{user.user_metadata?.full_name || user.email}</span>
                     </Link>
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={signOut}>
+                  <Button variant="ghost" size="sm" onClick={async () => { await signOut(); }}>
                     <LogOut size={16} className="mr-1" />
                     Sign Out
                   </Button>
@@ -113,7 +113,7 @@ export function Navbar() {
                           Profile
                         </Link>
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => { signOut(); setIsOpen(false); }}>
+                      <Button variant="ghost" size="sm" onClick={async () => { await signOut(); setIsOpen(false); }}>
                         <LogOut size={16} className="mr-1" />
                         Sign Out
                       </Button>
