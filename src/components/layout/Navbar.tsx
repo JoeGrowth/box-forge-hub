@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogOut, User } from "lucide-react";
+import { Menu, X, LogOut, User, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 const navLinks = [
   { name: "Home", path: "/" },
@@ -14,8 +15,26 @@ const navLinks = [
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (!user) {
+        setIsAdmin(false);
+        return;
+      }
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      setIsAdmin(!!data);
+    };
+    checkAdmin();
+  }, [user]);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
@@ -51,6 +70,14 @@ export function Navbar() {
             {!loading && (
               user ? (
                 <>
+                  {isAdmin && (
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link to="/admin" className="flex items-center gap-2">
+                        <Shield size={16} />
+                        Admin
+                      </Link>
+                    </Button>
+                  )}
                   <Button variant="ghost" size="sm" asChild>
                     <Link to="/profile" className="flex items-center gap-2">
                       <User size={16} />
