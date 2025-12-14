@@ -4,12 +4,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { OnboardingProvider } from "@/hooks/useOnboarding";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Boxes from "./pages/Boxes";
 import Programs from "./pages/Programs";
 import Join from "./pages/Join";
 import Auth from "./pages/Auth";
+import Onboarding from "./pages/Onboarding";
 import Stories from "./pages/Stories";
 import Contact from "./pages/Contact";
 import Privacy from "./pages/Privacy";
@@ -21,27 +23,30 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/boxes" element={<Boxes />} />
-            <Route path="/programs" element={<Programs />} />
-            <Route path="/join" element={<Join />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/login" element={<Auth />} />
-            <Route path="/stories" element={<Stories />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/terms" element={<Terms />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <OnboardingProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/boxes" element={<Boxes />} />
+              <Route path="/programs" element={<Programs />} />
+              <Route path="/join" element={<Join />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/login" element={<Auth />} />
+              <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/stories" element={<Stories />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </OnboardingProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
