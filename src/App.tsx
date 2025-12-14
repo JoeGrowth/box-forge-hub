@@ -13,6 +13,7 @@ import Join from "./pages/Join";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import Profile from "./pages/Profile";
+import Admin from "./pages/Admin";
 import Stories from "./pages/Stories";
 import Contact from "./pages/Contact";
 import Privacy from "./pages/Privacy";
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="/login" element={<Auth />} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/admin" element={<Admin />} />
               <Route path="/stories" element={<Stories />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/privacy" element={<Privacy />} />
