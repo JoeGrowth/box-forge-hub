@@ -8,6 +8,7 @@ import { OnboardingProvider } from "@/hooks/useOnboarding";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Boxes from "./pages/Boxes";
+import BoxDetail from "./pages/BoxDetail";
 import Programs from "./pages/Programs";
 import Join from "./pages/Join";
 import Auth from "./pages/Auth";
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/about" element={<About />} />
               <Route path="/boxes" element={<Boxes />} />
+              <Route path="/boxes/:boxId" element={<BoxDetail />} />
               <Route path="/programs" element={<Programs />} />
               <Route path="/join" element={<Join />} />
               <Route path="/auth" element={<Auth />} />
