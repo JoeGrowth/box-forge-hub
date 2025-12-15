@@ -259,6 +259,47 @@ export type Database = {
         }
         Relationships: []
       }
+      startup_applications: {
+        Row: {
+          applicant_id: string
+          cover_message: string | null
+          created_at: string
+          id: string
+          role_applied: string | null
+          startup_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          applicant_id: string
+          cover_message?: string | null
+          created_at?: string
+          id?: string
+          role_applied?: string | null
+          startup_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          applicant_id?: string
+          cover_message?: string | null
+          created_at?: string
+          id?: string
+          role_applied?: string | null
+          startup_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_applications_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startup_ideas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       startup_ideas: {
         Row: {
           admin_notes: string | null

@@ -4,6 +4,8 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +18,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { 
   ArrowLeft,
   Rocket, 
@@ -25,7 +34,8 @@ import {
   Users,
   Briefcase,
   Send,
-  CheckCircle
+  CheckCircle,
+  Clock
 } from "lucide-react";
 
 interface StartupIdea {
@@ -46,6 +56,14 @@ interface CreatorProfile {
   primary_skills: string | null;
 }
 
+interface Application {
+  id: string;
+  status: string;
+  role_applied: string | null;
+  cover_message: string | null;
+  created_at: string;
+}
+
 const OpportunityDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -56,8 +74,9 @@ const OpportunityDetail = () => {
   const [creatorProfile, setCreatorProfile] = useState<CreatorProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [applyMessage, setApplyMessage] = useState("");
+  const [selectedRole, setSelectedRole] = useState("");
   const [applying, setApplying] = useState(false);
-  const [hasApplied, setHasApplied] = useState(false);
+  const [existingApplication, setExistingApplication] = useState<Application | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -76,7 +95,7 @@ const OpportunityDetail = () => {
 
   useEffect(() => {
     const fetchIdea = async () => {
-      if (!id) return;
+      if (!id || !user) return;
 
       const { data, error } = await supabase
         .from("startup_ideas")
@@ -103,6 +122,18 @@ const OpportunityDetail = () => {
         setCreatorProfile(profile);
       }
 
+      // Check if user has already applied
+      const { data: applicationData } = await supabase
+        .from("startup_applications")
+        .select("*")
+        .eq("startup_id", id)
+        .eq("applicant_id", user.id)
+        .maybeSingle();
+
+      if (applicationData) {
+        setExistingApplication(applicationData);
+      }
+
       setLoading(false);
     };
 
@@ -116,13 +147,34 @@ const OpportunityDetail = () => {
 
     setApplying(true);
     try {
-      // Create notification for the idea creator
+      // Insert application into the new table
+      const { error: appError } = await supabase
+        .from("startup_applications")
+        .insert({
+          startup_id: idea.id,
+          applicant_id: user.id,
+          role_applied: selectedRole || null,
+          cover_message: applyMessage || null,
+        });
+
+      if (appError) throw appError;
+
+      // Create user notification for the idea creator
+      await supabase.from("user_notifications").insert({
+        user_id: idea.creator_id,
+        notification_type: "cobuilder_application",
+        title: "New Co-Builder Application",
+        message: `${user.user_metadata?.full_name || user.email || "A co-builder"} wants to join your startup "${idea.title}"${selectedRole ? ` as ${selectedRole}` : ""}.`,
+        link: "/profile",
+      });
+
+      // Also create admin notification for tracking
       await supabase.from("admin_notifications").insert({
         user_id: idea.creator_id,
         notification_type: "cobuilder_application",
         user_name: user.user_metadata?.full_name || user.email,
         user_email: user.email,
-        message: `${user.user_metadata?.full_name || "A co-builder"} wants to join your startup "${idea.title}". Message: ${applyMessage || "No message provided."}`,
+        message: `${user.user_metadata?.full_name || "A co-builder"} applied to "${idea.title}"${selectedRole ? ` for role: ${selectedRole}` : ""}. Message: ${applyMessage || "No message provided."}`,
       });
 
       toast({
@@ -130,7 +182,13 @@ const OpportunityDetail = () => {
         description: "The initiator will be notified of your interest.",
       });
 
-      setHasApplied(true);
+      setExistingApplication({
+        id: "new",
+        status: "pending",
+        role_applied: selectedRole,
+        cover_message: applyMessage,
+        created_at: new Date().toISOString(),
+      });
       setDialogOpen(false);
     } catch (error: any) {
       toast({
@@ -140,6 +198,32 @@ const OpportunityDetail = () => {
       });
     } finally {
       setApplying(false);
+    }
+  };
+
+  const handleWithdrawApplication = async () => {
+    if (!existingApplication || !idea) return;
+
+    try {
+      const { error } = await supabase
+        .from("startup_applications")
+        .delete()
+        .eq("startup_id", idea.id)
+        .eq("applicant_id", user?.id);
+
+      if (error) throw error;
+
+      setExistingApplication(null);
+      toast({
+        title: "Application Withdrawn",
+        description: "Your application has been removed.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -162,6 +246,62 @@ const OpportunityDetail = () => {
   }
 
   if (!idea) return null;
+
+  const getApplicationStatusUI = () => {
+    if (!existingApplication) return null;
+
+    switch (existingApplication.status) {
+      case "pending":
+        return (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-amber-500">
+              <Clock className="w-5 h-5" />
+              <span className="font-medium">Application Pending</span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {existingApplication.role_applied && (
+                <>Applied for: <strong>{existingApplication.role_applied}</strong><br /></>
+              )}
+              Submitted on {formatDate(existingApplication.created_at)}
+            </p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleWithdrawApplication}
+              className="w-full"
+            >
+              Withdraw Application
+            </Button>
+          </div>
+        );
+      case "accepted":
+        return (
+          <div className="flex items-center gap-2 text-b4-teal">
+            <CheckCircle className="w-5 h-5" />
+            <span className="font-medium">Application Accepted!</span>
+          </div>
+        );
+      case "rejected":
+        return (
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Your previous application was not accepted. You may apply again with updated information.
+            </p>
+            <Button 
+              variant="teal" 
+              className="w-full"
+              onClick={() => {
+                setExistingApplication(null);
+              }}
+            >
+              Apply Again
+            </Button>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -271,11 +411,8 @@ const OpportunityDetail = () => {
                     <p className="text-sm text-muted-foreground italic">
                       This is your own startup idea.
                     </p>
-                  ) : hasApplied ? (
-                    <div className="flex items-center gap-2 text-b4-teal">
-                      <CheckCircle className="w-5 h-5" />
-                      <span className="font-medium">Application Sent!</span>
-                    </div>
+                  ) : existingApplication ? (
+                    getApplicationStatusUI()
                   ) : (
                     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                       <DialogTrigger asChild>
@@ -292,17 +429,36 @@ const OpportunityDetail = () => {
                           </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 pt-4">
-                          <Textarea
-                            placeholder="Introduce yourself, share your relevant skills and experience, and explain why you're excited about this opportunity..."
-                            value={applyMessage}
-                            onChange={(e) => setApplyMessage(e.target.value)}
-                            rows={5}
-                          />
+                          {idea.roles_needed && idea.roles_needed.length > 0 && (
+                            <div className="space-y-2">
+                              <Label>Which role are you applying for?</Label>
+                              <Select value={selectedRole} onValueChange={setSelectedRole}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select a role..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {idea.roles_needed.map((role, i) => (
+                                    <SelectItem key={i} value={role}>{role}</SelectItem>
+                                  ))}
+                                  <SelectItem value="other">Other / Multiple Roles</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
+                          <div className="space-y-2">
+                            <Label>Your message to the initiator</Label>
+                            <Textarea
+                              placeholder="Introduce yourself, share your relevant skills and experience, and explain why you're excited about this opportunity..."
+                              value={applyMessage}
+                              onChange={(e) => setApplyMessage(e.target.value)}
+                              rows={5}
+                            />
+                          </div>
                           <Button 
                             variant="teal" 
                             className="w-full"
                             onClick={handleApply}
-                            disabled={applying}
+                            disabled={applying || (!selectedRole && idea.roles_needed && idea.roles_needed.length > 0)}
                           >
                             {applying ? "Sending..." : "Send Application"}
                           </Button>
