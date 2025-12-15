@@ -11,7 +11,7 @@ export function HeroSection() {
   // Determine button text and link based on auth and onboarding status
   const getButtonConfig = () => {
     if (!user) {
-      return { text: "Start Building", link: "/join" };
+      return { text: "Start Building", link: "/auth?mode=signup" };
     }
     
     // User is logged in - check onboarding status
