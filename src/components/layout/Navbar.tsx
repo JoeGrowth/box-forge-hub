@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, LogOut, User, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-
+import { NotificationBell } from "./NotificationBell";
 const baseNavLinks = [
   { name: "Home", path: "/" },
   { name: "About", path: "/about" },
@@ -101,6 +101,7 @@ export function Navbar() {
             {!loading && (
               user ? (
                 <>
+                  <NotificationBell />
                   {isAdmin && (
                     <Button variant="ghost" size="sm" asChild>
                       <Link to="/admin" className="flex items-center gap-2">

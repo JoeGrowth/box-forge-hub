@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
 import { EntrepreneurJourney } from "@/components/entrepreneur/EntrepreneurJourney";
+import { EntrepreneurProgressCard } from "@/components/profile/EntrepreneurProgressCard";
 import { 
   User, 
   Mail, 
@@ -407,13 +408,25 @@ const Profile = () => {
               </div>
             )}
 
-            {/* Entrepreneur Journey Section */}
+            {/* Entrepreneur Journey Progress Section */}
             {onboardingState?.journey_status === "entrepreneur_approved" && (
-              <div className="mb-8">
-                <EntrepreneurJourney
+              <div className="grid lg:grid-cols-2 gap-6 mb-8">
+                {/* Progress Card */}
+                <EntrepreneurProgressCard
                   currentStep={onboardingState?.entrepreneur_step || 1}
-                  onStepComplete={handleEntrepreneurStepComplete}
+                  onContinue={() => {
+                    const journeySection = document.getElementById("entrepreneur-journey");
+                    journeySection?.scrollIntoView({ behavior: "smooth" });
+                  }}
                 />
+                
+                {/* Full Journey Details */}
+                <div id="entrepreneur-journey">
+                  <EntrepreneurJourney
+                    currentStep={onboardingState?.entrepreneur_step || 1}
+                    onStepComplete={handleEntrepreneurStepComplete}
+                  />
+                </div>
               </div>
             )}
 

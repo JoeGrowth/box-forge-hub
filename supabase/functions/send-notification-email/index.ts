@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -12,7 +13,8 @@ const corsHeaders = {
 interface NotificationEmailRequest {
   to: string;
   userName: string;
-  type: "opportunity_approved" | "opportunity_rejected" | "entrepreneur_step_complete" | "cobuilder_approved";
+  userId?: string;
+  type: "opportunity_approved" | "opportunity_rejected" | "opportunity_declined" | "opportunity_needs_enhancement" | "entrepreneur_step_complete" | "cobuilder_approved";
   data?: {
     ideaTitle?: string;
     stepNumber?: number;
@@ -55,6 +57,71 @@ const getEmailContent = (type: string, userName: string, data?: NotificationEmai
             </p>
           </div>
         `,
+        inAppTitle: "Opportunity Approved!",
+        inAppMessage: `Your opportunity "${data?.ideaTitle || 'Your Idea'}" has been approved! Start your entrepreneur journey.`,
+        inAppLink: "/profile",
+      };
+
+    case "opportunity_declined":
+      return {
+        subject: "Update on Your Startup Opportunity",
+        html: `
+          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+            <div style="background: #334155; padding: 30px; border-radius: 16px 16px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 24px;">Hi ${userName},</h1>
+            </div>
+            <div style="background: #f8fafc; padding: 30px; border-radius: 0 0 16px 16px; border: 1px solid #e2e8f0; border-top: none;">
+              <p style="font-size: 16px; color: #334155; line-height: 1.6;">
+                Thank you for submitting your startup opportunity <strong>"${data?.ideaTitle || 'Your Idea'}"</strong>.
+              </p>
+              <p style="font-size: 16px; color: #334155; line-height: 1.6;">
+                After careful review, our admin team was not able to approve this submission at this time.
+              </p>
+              <p style="font-size: 16px; color: #334155; line-height: 1.6;">
+                Please contact our admin team for more details or consider submitting a new idea.
+              </p>
+            </div>
+            <p style="text-align: center; color: #94a3b8; font-size: 12px; margin-top: 20px;">
+              B4 Platform - Building the Future Together
+            </p>
+          </div>
+        `,
+        inAppTitle: "Opportunity Update",
+        inAppMessage: `Your opportunity "${data?.ideaTitle || 'Your Idea'}" was not approved. Contact admin for details.`,
+      };
+
+    case "opportunity_needs_enhancement":
+      return {
+        subject: "Your Startup Opportunity Needs Enhancement",
+        html: `
+          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+            <div style="background: #f59e0b; padding: 30px; border-radius: 16px 16px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 24px;">Almost There, ${userName}! ✏️</h1>
+            </div>
+            <div style="background: #f8fafc; padding: 30px; border-radius: 0 0 16px 16px; border: 1px solid #e2e8f0; border-top: none;">
+              <p style="font-size: 16px; color: #334155; line-height: 1.6;">
+                Your startup opportunity <strong>"${data?.ideaTitle || 'Your Idea'}"</strong> shows promise!
+              </p>
+              <p style="font-size: 16px; color: #334155; line-height: 1.6;">
+                Our admin team has reviewed your submission and believes it could benefit from some enhancements before approval.
+              </p>
+              <p style="font-size: 16px; color: #334155; line-height: 1.6;">
+                Please update your submission with more details and resubmit for review.
+              </p>
+              <div style="margin-top: 30px; text-align: center;">
+                <a href="https://b4-platform.lovable.app/profile" 
+                   style="background: #f59e0b; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">
+                  Update Your Idea
+                </a>
+              </div>
+            </div>
+            <p style="text-align: center; color: #94a3b8; font-size: 12px; margin-top: 20px;">
+              B4 Platform - Building the Future Together
+            </p>
+          </div>
+        `,
+        inAppTitle: "Opportunity Needs Enhancement",
+        inAppMessage: `Your opportunity "${data?.ideaTitle || 'Your Idea'}" needs some improvements before approval.`,
       };
 
     case "opportunity_rejected":
@@ -81,6 +148,8 @@ const getEmailContent = (type: string, userName: string, data?: NotificationEmai
             </p>
           </div>
         `,
+        inAppTitle: "Opportunity Needs Revisions",
+        inAppMessage: `Your opportunity "${data?.ideaTitle || 'Your Idea'}" needs some revisions.`,
       };
 
     case "entrepreneur_step_complete":
@@ -115,6 +184,9 @@ const getEmailContent = (type: string, userName: string, data?: NotificationEmai
             </p>
           </div>
         `,
+        inAppTitle: `Step ${data?.stepNumber} Complete!`,
+        inAppMessage: `You've completed ${data?.stepName}. Keep up the momentum!`,
+        inAppLink: "/profile",
       };
 
     case "cobuilder_approved":
@@ -149,12 +221,17 @@ const getEmailContent = (type: string, userName: string, data?: NotificationEmai
             </p>
           </div>
         `,
+        inAppTitle: "You're an Approved Co-Builder!",
+        inAppMessage: "Congratulations! You can now browse opportunities or create your own startup ideas.",
+        inAppLink: "/profile",
       };
 
     default:
       return {
         subject: "B4 Platform Update",
         html: `<p>You have an update from B4 Platform.</p>`,
+        inAppTitle: "Platform Update",
+        inAppMessage: "You have an update from B4 Platform.",
       };
   }
 };
@@ -168,12 +245,14 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { to, userName, type, data }: NotificationEmailRequest = await req.json();
+    const { to, userName, userId, type, data }: NotificationEmailRequest = await req.json();
 
     console.log(`Sending ${type} email to ${to} for user ${userName}`);
 
-    const { subject, html } = getEmailContent(type, userName, data);
+    const emailContent = getEmailContent(type, userName, data);
+    const { subject, html, inAppTitle, inAppMessage, inAppLink } = emailContent as any;
 
+    // Send email
     const emailResponse = await resend.emails.send({
       from: "B4 Platform <onboarding@resend.dev>",
       to: [to],
@@ -182,6 +261,29 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     console.log("Email sent successfully:", emailResponse);
+
+    // Also create in-app notification if userId is provided
+    if (userId && inAppTitle && inAppMessage) {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+      const { error: notifError } = await supabase
+        .from("user_notifications")
+        .insert({
+          user_id: userId,
+          title: inAppTitle,
+          message: inAppMessage,
+          notification_type: type,
+          link: inAppLink || null,
+        });
+
+      if (notifError) {
+        console.error("Error creating in-app notification:", notifError);
+      } else {
+        console.log("In-app notification created successfully");
+      }
+    }
 
     return new Response(JSON.stringify(emailResponse), {
       status: 200,
