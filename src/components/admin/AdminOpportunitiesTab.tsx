@@ -53,6 +53,7 @@ interface AdminOpportunitiesTabProps {
 export function AdminOpportunitiesTab({ onRefresh }: AdminOpportunitiesTabProps) {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"pending" | "approved" | "all">("pending");
   const [refreshing, setRefreshing] = useState(false);
   const [opportunities, setOpportunities] = useState<OpportunityWithCreator[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,17 +62,25 @@ export function AdminOpportunitiesTab({ onRefresh }: AdminOpportunitiesTabProps)
 
   useEffect(() => {
     fetchOpportunities();
-  }, []);
+  }, [statusFilter]);
 
   const fetchOpportunities = async () => {
     setLoading(true);
     
-    // Fetch all startup ideas pending review
-    const { data: ideas, error } = await supabase
+    // Build query based on filter
+    let query = supabase
       .from("startup_ideas")
       .select("*")
-      .in("review_status", ["pending", "under_review"])
       .order("created_at", { ascending: false });
+
+    if (statusFilter === "pending") {
+      query = query.in("review_status", ["pending", "under_review"]);
+    } else if (statusFilter === "approved") {
+      query = query.eq("review_status", "approved");
+    }
+    // "all" shows everything
+
+    const { data: ideas, error } = await query;
 
     if (error) {
       console.error("Error fetching opportunities:", error);
@@ -250,7 +259,7 @@ export function AdminOpportunitiesTab({ onRefresh }: AdminOpportunitiesTabProps)
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
@@ -260,17 +269,58 @@ export function AdminOpportunitiesTab({ onRefresh }: AdminOpportunitiesTabProps)
             className="pl-10"
           />
         </div>
-        <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing}>
-          <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* Status Filter Buttons */}
+          <div className="flex rounded-lg border border-border overflow-hidden">
+            <button
+              className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+                statusFilter === "pending"
+                  ? "bg-amber-500 text-white"
+                  : "bg-card text-muted-foreground hover:bg-muted"
+              }`}
+              onClick={() => setStatusFilter("pending")}
+            >
+              Pending
+            </button>
+            <button
+              className={`px-3 py-1.5 text-sm font-medium transition-colors border-x border-border ${
+                statusFilter === "approved"
+                  ? "bg-b4-teal text-white"
+                  : "bg-card text-muted-foreground hover:bg-muted"
+              }`}
+              onClick={() => setStatusFilter("approved")}
+            >
+              Approved
+            </button>
+            <button
+              className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+                statusFilter === "all"
+                  ? "bg-b4-navy text-white"
+                  : "bg-card text-muted-foreground hover:bg-muted"
+              }`}
+              onClick={() => setStatusFilter("all")}
+            >
+              All
+            </button>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing}>
+            <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Empty State */}
       {filteredOpportunities.length === 0 ? (
         <div className="text-center py-12 bg-muted/30 rounded-xl border border-border">
           <Rocket className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
-          <p className="text-muted-foreground">No opportunities pending review</p>
+          <p className="text-muted-foreground">
+            {statusFilter === "pending" 
+              ? "No opportunities pending review" 
+              : statusFilter === "approved" 
+              ? "No approved opportunities" 
+              : "No opportunities found"}
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -318,9 +368,20 @@ export function AdminOpportunitiesTab({ onRefresh }: AdminOpportunitiesTabProps)
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground">Journey:</span>
-                      <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 text-xs font-medium">
-                        Pending Approval
+                      <span className="text-muted-foreground">Status:</span>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                        opp.review_status === "approved" 
+                          ? "bg-b4-teal/10 text-b4-teal"
+                          : opp.review_status === "declined"
+                          ? "bg-red-500/10 text-red-600"
+                          : opp.review_status === "needs_enhancement"
+                          ? "bg-amber-500/10 text-amber-600"
+                          : "bg-blue-500/10 text-blue-600"
+                      }`}>
+                        {opp.review_status === "approved" ? "Approved" 
+                          : opp.review_status === "declined" ? "Declined"
+                          : opp.review_status === "needs_enhancement" ? "Needs Enhancement"
+                          : "Pending Review"}
                       </span>
                     </div>
                     <div className="flex items-center gap-1 text-muted-foreground">
@@ -366,24 +427,28 @@ export function AdminOpportunitiesTab({ onRefresh }: AdminOpportunitiesTabProps)
                     <Eye className="w-4 h-4 mr-1" />
                     View Details
                   </Button>
-                  <Button 
-                    variant="teal" 
-                    size="sm" 
-                    onClick={() => handleApprove(opp)}
-                    disabled={processing}
-                  >
-                    <Check className="w-4 h-4 mr-1" />
-                    Approve
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setStayPrivateDialog(opp)}
-                    disabled={processing}
-                  >
-                    <Lock className="w-4 h-4 mr-1" />
-                    Stay Private
-                  </Button>
+                  {opp.review_status !== "approved" && (
+                    <>
+                      <Button 
+                        variant="teal" 
+                        size="sm" 
+                        onClick={() => handleApprove(opp)}
+                        disabled={processing}
+                      >
+                        <Check className="w-4 h-4 mr-1" />
+                        Approve
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => setStayPrivateDialog(opp)}
+                        disabled={processing}
+                      >
+                        <Lock className="w-4 h-4 mr-1" />
+                        Stay Private
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -393,7 +458,8 @@ export function AdminOpportunitiesTab({ onRefresh }: AdminOpportunitiesTabProps)
 
       {/* Count */}
       <p className="text-sm text-muted-foreground text-center">
-        Showing {filteredOpportunities.length} opportunity
+        Showing {filteredOpportunities.length} {statusFilter === "all" ? "" : statusFilter} opportunity
+        {filteredOpportunities.length !== 1 ? "ies" : "y"}
         {filteredOpportunities.length !== 1 ? "ies" : "y"} pending review
       </p>
 
