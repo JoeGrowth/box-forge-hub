@@ -26,7 +26,12 @@ import {
   Users,
   Clock,
   Lightbulb,
-  Send
+  Send,
+  ShieldCheck,
+  ShieldAlert,
+  Lock,
+  Eye,
+  EyeOff
 } from "lucide-react";
 
 interface Profile {
@@ -54,6 +59,14 @@ const Profile = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [userIdeas, setUserIdeas] = useState<StartupIdea[]>([]);
   const [requestingReview, setRequestingReview] = useState(false);
+  
+  // Change password state
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -180,6 +193,42 @@ const Profile = () => {
     await signOut();
     navigate("/", { replace: true });
   };
+
+  const handleChangePassword = async () => {
+    setPasswordError(null);
+
+    if (newPassword.length < 6) {
+      setPasswordError("New password must be at least 6 characters");
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      setPasswordError("Passwords do not match");
+      return;
+    }
+
+    setIsUpdatingPassword(true);
+
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+      if (error) {
+        setPasswordError(error.message);
+      } else {
+        toast({
+          title: "Password Updated",
+          description: "Your password has been successfully changed.",
+        });
+        setIsChangingPassword(false);
+        setNewPassword("");
+        setConfirmNewPassword("");
+      }
+    } finally {
+      setIsUpdatingPassword(false);
+    }
+  };
+
+  const isEmailVerified = user?.email_confirmed_at != null;
 
   if (authLoading) {
     return (
@@ -539,9 +588,22 @@ const Profile = () => {
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <Mail className="w-5 h-5 text-muted-foreground" />
-                  <div>
+                  <div className="flex-1">
                     <p className="text-sm text-muted-foreground">Email</p>
-                    <p className="text-foreground">{user?.email}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-foreground">{user?.email}</p>
+                      {isEmailVerified ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-b4-teal/10 text-b4-teal text-xs font-medium">
+                          <ShieldCheck className="w-3 h-3" />
+                          Verified
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 text-xs font-medium">
+                          <ShieldAlert className="w-3 h-3" />
+                          Not Verified
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -560,6 +622,92 @@ const Profile = () => {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Security Settings */}
+            <div className="bg-card rounded-3xl border border-border p-8 mb-8">
+              <h2 className="font-display text-xl font-bold text-foreground mb-4">
+                Security
+              </h2>
+              
+              {isChangingPassword ? (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="newPassword">New Password</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                      <input
+                        id="newPassword"
+                        type={showNewPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="flex h-12 w-full rounded-md border border-input bg-background pl-10 pr-12 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmNewPassword">Confirm New Password</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                      <input
+                        id="confirmNewPassword"
+                        type={showNewPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={confirmNewPassword}
+                        onChange={(e) => setConfirmNewPassword(e.target.value)}
+                        className="flex h-12 w-full rounded-md border border-input bg-background pl-10 pr-12 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      />
+                    </div>
+                  </div>
+
+                  {passwordError && (
+                    <p className="text-sm text-destructive">{passwordError}</p>
+                  )}
+
+                  <div className="flex gap-2">
+                    <Button
+                      variant="teal"
+                      onClick={handleChangePassword}
+                      disabled={isUpdatingPassword}
+                    >
+                      {isUpdatingPassword ? "Updating..." : "Update Password"}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setIsChangingPassword(false);
+                        setNewPassword("");
+                        setConfirmNewPassword("");
+                        setPasswordError(null);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Lock className="w-5 h-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Password</p>
+                      <p className="text-foreground">••••••••</p>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => setIsChangingPassword(true)}>
+                    Change Password
+                  </Button>
+                </div>
+              )}
             </div>
 
             {/* Sign Out */}
