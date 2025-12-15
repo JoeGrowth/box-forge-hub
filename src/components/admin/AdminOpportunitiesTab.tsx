@@ -6,15 +6,23 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { sendNotificationEmail } from "@/lib/emailNotifications";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   RefreshCw,
   Search,
   Check,
-  X,
+  Lock,
   Rocket,
   User,
   Calendar,
-  ExternalLink,
   Eye,
+  XCircle,
+  Edit,
 } from "lucide-react";
 
 interface OpportunityWithCreator {
@@ -48,6 +56,8 @@ export function AdminOpportunitiesTab({ onRefresh }: AdminOpportunitiesTabProps)
   const [refreshing, setRefreshing] = useState(false);
   const [opportunities, setOpportunities] = useState<OpportunityWithCreator[]>([]);
   const [loading, setLoading] = useState(true);
+  const [stayPrivateDialog, setStayPrivateDialog] = useState<OpportunityWithCreator | null>(null);
+  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
     fetchOpportunities();
@@ -102,6 +112,7 @@ export function AdminOpportunitiesTab({ onRefresh }: AdminOpportunitiesTabProps)
   };
 
   const handleApprove = async (opportunity: OpportunityWithCreator) => {
+    setProcessing(true);
     try {
       // Update startup idea review status
       const { error: ideaError } = await supabase
@@ -125,30 +136,33 @@ export function AdminOpportunitiesTab({ onRefresh }: AdminOpportunitiesTabProps)
 
       if (onboardingError) throw onboardingError;
 
-      // Grant entrepreneur role if not already present
-      const { error: roleError } = await supabase
+      // Grant cobuilder role if not already present
+      await supabase
+        .from("user_roles")
+        .insert({
+          user_id: opportunity.creator_id,
+          role: "cobuilder" as const
+        });
+
+      // Grant entrepreneur role (initiator) if not already present
+      await supabase
         .from("user_roles")
         .insert({
           user_id: opportunity.creator_id,
           role: "entrepreneur" as const
         });
 
-      // Ignore duplicate role error
-      if (roleError && !roleError.message.includes("duplicate")) {
-        console.warn("Role insert warning:", roleError.message);
-      }
-
       // Create notification for user
       await supabase.from("admin_notifications").insert({
         user_id: opportunity.creator_id,
         notification_type: "opportunity_approved",
         user_name: opportunity.creator_profile?.full_name,
-        message: `Your opportunity "${opportunity.title}" has been approved! You can now start your entrepreneur journey.`,
+        message: `Your opportunity "${opportunity.title}" has been approved and is now visible to all co-builders! You are now a Co-Builder and Initiator.`,
       });
 
       toast({
         title: "Opportunity Approved",
-        description: "The initiator can now access the entrepreneur journey steps.",
+        description: "The opportunity is now public. User granted Co-Builder and Initiator roles.",
       });
 
       fetchOpportunities();
@@ -158,15 +172,23 @@ export function AdminOpportunitiesTab({ onRefresh }: AdminOpportunitiesTabProps)
         description: error.message,
         variant: "destructive",
       });
+    } finally {
+      setProcessing(false);
     }
   };
 
-  const handleReject = async (opportunity: OpportunityWithCreator) => {
+  const handleStayPrivate = async (opportunity: OpportunityWithCreator, action: "declined" | "to_be_enhanced") => {
+    setProcessing(true);
     try {
+      const newStatus = action === "declined" ? "declined" : "needs_enhancement";
+      const message = action === "declined" 
+        ? `Your opportunity "${opportunity.title}" has been declined.`
+        : `Your opportunity "${opportunity.title}" needs enhancement. Please review and resubmit.`;
+
       const { error } = await supabase
         .from("startup_ideas")
         .update({ 
-          review_status: "rejected",
+          review_status: newStatus,
           reviewed_at: new Date().toISOString()
         })
         .eq("id", opportunity.id);
@@ -176,24 +198,27 @@ export function AdminOpportunitiesTab({ onRefresh }: AdminOpportunitiesTabProps)
       // Create notification for user
       await supabase.from("admin_notifications").insert({
         user_id: opportunity.creator_id,
-        notification_type: "opportunity_rejected",
+        notification_type: action === "declined" ? "opportunity_declined" : "opportunity_needs_enhancement",
         user_name: opportunity.creator_profile?.full_name,
-        message: `Your opportunity "${opportunity.title}" needs revision. Please contact admin for more details.`,
+        message,
       });
 
       toast({
-        title: "Opportunity Rejected",
-        description: "The initiator will be notified.",
-        variant: "destructive",
+        title: action === "declined" ? "Opportunity Declined" : "Enhancement Requested",
+        description: "The initiator has been notified.",
+        variant: action === "declined" ? "destructive" : "default",
       });
 
+      setStayPrivateDialog(null);
       fetchOpportunities();
     } catch (error: any) {
       toast({
-        title: "Error rejecting opportunity",
+        title: "Error updating opportunity",
         description: error.message,
         variant: "destructive",
       });
+    } finally {
+      setProcessing(false);
     }
   };
 
@@ -341,13 +366,23 @@ export function AdminOpportunitiesTab({ onRefresh }: AdminOpportunitiesTabProps)
                     <Eye className="w-4 h-4 mr-1" />
                     View Details
                   </Button>
-                  <Button variant="teal" size="sm" onClick={() => handleApprove(opp)}>
+                  <Button 
+                    variant="teal" 
+                    size="sm" 
+                    onClick={() => handleApprove(opp)}
+                    disabled={processing}
+                  >
                     <Check className="w-4 h-4 mr-1" />
                     Approve
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleReject(opp)}>
-                    <X className="w-4 h-4 mr-1" />
-                    Reject
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setStayPrivateDialog(opp)}
+                    disabled={processing}
+                  >
+                    <Lock className="w-4 h-4 mr-1" />
+                    Stay Private
                   </Button>
                 </div>
               </div>
@@ -361,6 +396,38 @@ export function AdminOpportunitiesTab({ onRefresh }: AdminOpportunitiesTabProps)
         Showing {filteredOpportunities.length} opportunity
         {filteredOpportunities.length !== 1 ? "ies" : "y"} pending review
       </p>
+
+      {/* Stay Private Dialog */}
+      <Dialog open={!!stayPrivateDialog} onOpenChange={() => setStayPrivateDialog(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Keep Opportunity Private</DialogTitle>
+            <DialogDescription>
+              Choose an action for "{stayPrivateDialog?.title}"
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 pt-4">
+            <Button
+              variant="destructive"
+              onClick={() => stayPrivateDialog && handleStayPrivate(stayPrivateDialog, "declined")}
+              disabled={processing}
+              className="w-full justify-start"
+            >
+              <XCircle className="w-4 h-4 mr-2" />
+              Declined - Opportunity is not suitable
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => stayPrivateDialog && handleStayPrivate(stayPrivateDialog, "to_be_enhanced")}
+              disabled={processing}
+              className="w-full justify-start"
+            >
+              <Edit className="w-4 h-4 mr-2" />
+              To Be Enhanced - Needs improvements
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

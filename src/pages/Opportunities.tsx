@@ -57,6 +57,7 @@ const Opportunities = () => {
         .from("startup_ideas")
         .select("*")
         .eq("status", "active")
+        .eq("review_status", "approved")
         .eq("is_looking_for_cobuilders", true)
         .order("created_at", { ascending: false });
 
