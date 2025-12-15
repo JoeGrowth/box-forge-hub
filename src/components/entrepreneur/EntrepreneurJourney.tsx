@@ -87,17 +87,23 @@ export function EntrepreneurJourney({
     execution_plan: "",
   });
 
-  // Load saved responses on mount
+  // Load saved responses on mount - filtered by ideaId if provided
   useEffect(() => {
     const loadResponses = async () => {
       if (!user) return;
 
       try {
-        const { data, error } = await supabase
+        let query = supabase
           .from("entrepreneur_journey_responses")
           .select("*")
-          .eq("user_id", user.id)
-          .maybeSingle();
+          .eq("user_id", user.id);
+        
+        // If ideaId is provided, filter by it
+        if (ideaId) {
+          query = query.eq("idea_id", ideaId);
+        }
+        
+        const { data, error } = await query.maybeSingle();
 
         if (error && error.code !== "PGRST116") {
           console.error("Error loading responses:", error);
@@ -122,7 +128,7 @@ export function EntrepreneurJourney({
     };
 
     loadResponses();
-  }, [user]);
+  }, [user, ideaId]);
 
   // Auto-save responses with debounce
   const saveResponses = useCallback(async (updatedResponses: JourneyResponses) => {
@@ -130,20 +136,33 @@ export function EntrepreneurJourney({
 
     setAutoSaving(true);
     try {
-      const { data: existing } = await supabase
+      // Build query to check for existing response
+      let existingQuery = supabase
         .from("entrepreneur_journey_responses")
         .select("id")
-        .eq("user_id", user.id)
-        .maybeSingle();
+        .eq("user_id", user.id);
+      
+      if (ideaId) {
+        existingQuery = existingQuery.eq("idea_id", ideaId);
+      }
+      
+      const { data: existing } = await existingQuery.maybeSingle();
 
       if (existing) {
-        await supabase
+        // Update existing response
+        let updateQuery = supabase
           .from("entrepreneur_journey_responses")
           .update({
             ...updatedResponses,
             idea_id: ideaId || null,
           })
           .eq("user_id", user.id);
+        
+        if (ideaId) {
+          updateQuery = updateQuery.eq("idea_id", ideaId);
+        }
+        
+        await updateQuery;
       } else {
         await supabase
           .from("entrepreneur_journey_responses")

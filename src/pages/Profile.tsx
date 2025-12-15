@@ -601,13 +601,28 @@ const Profile = () => {
               </div>
             )}
 
-            {/* Entrepreneur Journey Progress Section */}
+            {/* Entrepreneur Journey Progress Section - Show for each approved idea */}
             {onboardingState?.journey_status === "entrepreneur_approved" && (
-              <div className="mb-8" id="entrepreneur-journey">
-                <EntrepreneurJourney
-                  currentStep={onboardingState?.entrepreneur_step || 1}
-                  onStepComplete={handleEntrepreneurStepComplete}
-                />
+              <div className="space-y-6 mb-8" id="entrepreneur-journey">
+                {userIdeas.filter(idea => idea.review_status === "approved").map((idea) => (
+                  <div key={idea.id} className="relative">
+                    <div className="absolute -top-3 left-4 px-3 py-1 bg-b4-teal text-white text-xs font-medium rounded-full z-10">
+                      {idea.title}
+                    </div>
+                    <EntrepreneurJourney
+                      currentStep={onboardingState?.entrepreneur_step || 1}
+                      onStepComplete={handleEntrepreneurStepComplete}
+                      ideaId={idea.id}
+                    />
+                  </div>
+                ))}
+                {/* Fallback if no approved ideas but status is entrepreneur_approved */}
+                {userIdeas.filter(idea => idea.review_status === "approved").length === 0 && (
+                  <EntrepreneurJourney
+                    currentStep={onboardingState?.entrepreneur_step || 1}
+                    onStepComplete={handleEntrepreneurStepComplete}
+                  />
+                )}
               </div>
             )}
 

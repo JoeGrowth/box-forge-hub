@@ -286,7 +286,15 @@ const AdminOpportunityDetail = () => {
 
       if (error) throw error;
 
-      // Create notification
+      // Create user notification (visible to the user)
+      await supabase.from("user_notifications").insert({
+        user_id: opportunity.creator_id,
+        notification_type: action === "declined" ? "opportunity_declined" : "opportunity_needs_enhancement",
+        title: action === "declined" ? "Opportunity Declined" : "Enhancement Requested",
+        message,
+      });
+
+      // Also create admin notification for tracking
       await supabase.from("admin_notifications").insert({
         user_id: opportunity.creator_id,
         notification_type: action === "declined" ? "opportunity_declined" : "opportunity_needs_enhancement",
