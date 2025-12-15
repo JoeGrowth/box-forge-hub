@@ -17,6 +17,7 @@ import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import AdminOpportunityDetail from "./pages/AdminOpportunityDetail";
 import Opportunities from "./pages/Opportunities";
+import OpportunityDetail from "./pages/OpportunityDetail";
 import CreateIdea from "./pages/CreateIdea";
 import Stories from "./pages/Stories";
 import Contact from "./pages/Contact";
@@ -48,6 +49,7 @@ const App = () => (
               <Route path="/admin" element={<Admin />} />
               <Route path="/admin/opportunity/:id" element={<AdminOpportunityDetail />} />
               <Route path="/opportunities" element={<Opportunities />} />
+              <Route path="/opportunities/:id" element={<OpportunityDetail />} />
               <Route path="/create-idea" element={<CreateIdea />} />
               <Route path="/stories" element={<Stories />} />
               <Route path="/contact" element={<Contact />} />

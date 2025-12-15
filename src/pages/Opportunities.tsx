@@ -213,7 +213,7 @@ const Opportunities = () => {
                       <span className="text-xs text-muted-foreground">
                         By {idea.creator_profile?.full_name || "Unknown"}
                       </span>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={() => navigate(`/opportunities/${idea.id}`)}>
                         View Details
                         <ArrowRight className="ml-1 w-3 h-3" />
                       </Button>

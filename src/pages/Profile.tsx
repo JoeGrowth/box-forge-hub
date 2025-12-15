@@ -200,6 +200,7 @@ const Profile = () => {
   };
 
   const getRoleLabel = () => {
+    if (onboardingState?.journey_status === "entrepreneur_approved") return "Co-Builder & Initiator";
     if (onboardingState?.primary_role === "entrepreneur") return "Entrepreneur";
     if (onboardingState?.primary_role === "cobuilder") {
       if (onboardingState.journey_status === "approved") return "Co-Builder";
@@ -211,6 +212,9 @@ const Profile = () => {
   const getReadinessStatus = () => {
     if (!onboardingState?.onboarding_completed) {
       return { label: "Onboarding Incomplete", color: "text-b4-coral", icon: AlertCircle };
+    }
+    if (onboardingState.journey_status === "entrepreneur_approved") {
+      return { label: "Entrepreneur Approved", color: "text-b4-teal", icon: CheckCircle };
     }
     if (onboardingState.journey_status === "approved") {
       return { label: "Approved Co-Builder", color: "text-b4-teal", icon: CheckCircle };
@@ -227,7 +231,8 @@ const Profile = () => {
     return { label: "In Progress", color: "text-muted-foreground", icon: AlertCircle };
   };
 
-  const isApprovedCoBuilder = onboardingState?.journey_status === "approved";
+  const isApprovedCoBuilder = onboardingState?.journey_status === "approved" || 
+                               onboardingState?.journey_status === "entrepreneur_approved";
 
   const status = getReadinessStatus();
 
