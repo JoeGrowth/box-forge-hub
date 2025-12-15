@@ -11,13 +11,14 @@ import { AdminApplicationsTab } from "@/components/admin/AdminApplicationsTab";
 import { AdminApprovalsTab } from "@/components/admin/AdminApprovalsTab";
 import { AdminOpportunitiesTab } from "@/components/admin/AdminOpportunitiesTab";
 import { AdminJourneyResponsesTab } from "@/components/admin/AdminJourneyResponsesTab";
-import { Shield, Bell, Users, FileText, UserCheck, Rocket, ClipboardList } from "lucide-react";
+import { AdminAnalyticsTab } from "@/components/admin/AdminAnalyticsTab";
+import { Shield, Bell, Users, FileText, UserCheck, Rocket, ClipboardList, BarChart3 } from "lucide-react";
 
 const Admin = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: adminLoading, fetchNotifications, fetchUsers, notifications, users } = useAdmin();
-  const [activeTab, setActiveTab] = useState("applications");
+  const [activeTab, setActiveTab] = useState("analytics");
   const [pendingOpportunities, setPendingOpportunities] = useState(0);
   const [approvedOpportunities, setApprovedOpportunities] = useState(0);
 
@@ -154,7 +155,11 @@ const Admin = () => {
 
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-6 mb-8">
+              <TabsList className="grid w-full grid-cols-7 mb-8">
+                <TabsTrigger value="analytics" className="flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4" />
+                  Analytics
+                </TabsTrigger>
                 <TabsTrigger value="applications" className="flex items-center gap-2">
                   <FileText className="w-4 h-4" />
                   Applications
@@ -190,6 +195,10 @@ const Admin = () => {
                   )}
                 </TabsTrigger>
               </TabsList>
+
+              <TabsContent value="analytics">
+                <AdminAnalyticsTab />
+              </TabsContent>
 
               <TabsContent value="applications">
                 <AdminApplicationsTab 

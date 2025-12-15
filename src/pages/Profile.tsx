@@ -12,6 +12,11 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
 import { EntrepreneurJourney } from "@/components/entrepreneur/EntrepreneurJourney";
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -44,7 +49,8 @@ import {
   EyeOff,
   Camera,
   Trash2,
-  Loader2
+  Loader2,
+  ChevronDown
 } from "lucide-react";
 
 interface Profile {
@@ -601,20 +607,37 @@ const Profile = () => {
               </div>
             )}
 
-            {/* Entrepreneur Journey Progress Section - Show for each approved idea */}
+            {/* Entrepreneur Journey Progress Section - Show for each approved idea as collapsible */}
             {onboardingState?.journey_status === "entrepreneur_approved" && (
-              <div className="space-y-6 mb-8" id="entrepreneur-journey">
-                {userIdeas.filter(idea => idea.review_status === "approved").map((idea) => (
-                  <div key={idea.id} className="relative">
-                    <div className="absolute -top-3 left-4 px-3 py-1 bg-b4-teal text-white text-xs font-medium rounded-full z-10">
-                      {idea.title}
+              <div className="space-y-4 mb-8" id="entrepreneur-journey">
+                {userIdeas.filter(idea => idea.review_status === "approved").map((idea, index) => (
+                  <Collapsible key={idea.id} defaultOpen={index === 0}>
+                    <div className="bg-card rounded-3xl border border-border overflow-hidden">
+                      <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-b4-teal/10 flex items-center justify-center">
+                            <Lightbulb className="w-4 h-4 text-b4-teal" />
+                          </div>
+                          <span className="font-display font-semibold text-foreground">
+                            {idea.title}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-full bg-b4-teal/10 text-b4-teal text-xs">
+                            Idea {index + 1}
+                          </span>
+                        </div>
+                        <ChevronDown className="w-5 h-5 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="px-4 pb-4">
+                          <EntrepreneurJourney
+                            currentStep={onboardingState?.entrepreneur_step || 1}
+                            onStepComplete={handleEntrepreneurStepComplete}
+                            ideaId={idea.id}
+                          />
+                        </div>
+                      </CollapsibleContent>
                     </div>
-                    <EntrepreneurJourney
-                      currentStep={onboardingState?.entrepreneur_step || 1}
-                      onStepComplete={handleEntrepreneurStepComplete}
-                      ideaId={idea.id}
-                    />
-                  </div>
+                  </Collapsible>
                 ))}
                 {/* Fallback if no approved ideas but status is entrepreneur_approved */}
                 {userIdeas.filter(idea => idea.review_status === "approved").length === 0 && (
