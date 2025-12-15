@@ -630,6 +630,18 @@ const Profile = () => {
                           <span className="px-2 py-0.5 rounded-full bg-b4-teal/10 text-b4-teal text-xs">
                             Idea {index + 1}
                           </span>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-6 px-2 text-xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/edit-idea/${idea.id}`);
+                            }}
+                          >
+                            <Settings className="w-3 h-3 mr-1" />
+                            Edit
+                          </Button>
                         </div>
                         <ChevronDown className="w-5 h-5 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
                       </CollapsibleTrigger>
@@ -682,11 +694,23 @@ const Profile = () => {
                           ? "bg-amber-500/10 text-amber-600"
                           : idea.review_status === "rejected"
                           ? "bg-red-500/10 text-red-600"
+                          : idea.review_status === "needs_enhancement"
+                          ? "bg-amber-500/10 text-amber-600"
                           : "bg-muted text-muted-foreground"
                       }`}>
                         {idea.review_status === "under_review" ? "Under Review" : 
+                         idea.review_status === "needs_enhancement" ? "Needs Enhancement" :
                          idea.review_status.charAt(0).toUpperCase() + idea.review_status.slice(1)}
                       </span>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-6 px-2 text-xs"
+                        onClick={() => navigate(`/edit-idea/${idea.id}`)}
+                      >
+                        <Settings className="w-3 h-3 mr-1" />
+                        Edit
+                      </Button>
                     </div>
                   ))}
                 </div>
