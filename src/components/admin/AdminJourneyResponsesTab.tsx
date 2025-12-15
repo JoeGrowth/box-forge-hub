@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { exportJourneyToPdf } from "@/lib/journeyPdfExport";
 import {
@@ -18,6 +19,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import {
   Eye,
@@ -30,6 +38,8 @@ import {
   Rocket,
   RefreshCw,
   Search,
+  ArrowUpDown,
+  CheckSquare,
 } from "lucide-react";
 
 interface JourneyResponse {
@@ -60,7 +70,11 @@ interface StartupIdea {
 interface JourneyWithDetails extends JourneyResponse {
   profile?: Profile;
   idea?: StartupIdea;
+  progressPercent?: number;
 }
+
+type SortField = "date" | "progress" | "user";
+type SortDirection = "asc" | "desc";
 
 export function AdminJourneyResponsesTab() {
   const { toast } = useToast();
@@ -69,18 +83,63 @@ export function AdminJourneyResponsesTab() {
   const [selectedResponse, setSelectedResponse] = useState<JourneyWithDetails | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortField, setSortField] = useState<SortField>("date");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkExporting, setBulkExporting] = useState(false);
 
-  // Filter responses based on search query
-  const filteredResponses = useMemo(() => {
-    if (!searchQuery.trim()) return responses;
-    
-    const query = searchQuery.toLowerCase();
-    return responses.filter((response) => {
-      const userName = response.profile?.full_name?.toLowerCase() || "";
-      const ideaTitle = response.idea?.title?.toLowerCase() || "";
-      return userName.includes(query) || ideaTitle.includes(query);
+  // Calculate progress for a response
+  const getProgress = (response: JourneyResponse) => {
+    const filledFields = [
+      response.vision,
+      response.problem,
+      response.market,
+      response.business_model,
+      response.roles_needed,
+      response.cobuilder_plan,
+      response.execution_plan,
+    ].filter(Boolean).length;
+    return Math.round((filledFields / 7) * 100);
+  };
+
+  // Filter and sort responses
+  const filteredAndSortedResponses = useMemo(() => {
+    let result = responses.map(r => ({
+      ...r,
+      progressPercent: getProgress(r),
+    }));
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter((response) => {
+        const userName = response.profile?.full_name?.toLowerCase() || "";
+        const ideaTitle = response.idea?.title?.toLowerCase() || "";
+        return userName.includes(query) || ideaTitle.includes(query);
+      });
+    }
+
+    // Sort
+    result.sort((a, b) => {
+      let comparison = 0;
+      switch (sortField) {
+        case "date":
+          comparison = new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime();
+          break;
+        case "progress":
+          comparison = (a.progressPercent || 0) - (b.progressPercent || 0);
+          break;
+        case "user":
+          const nameA = a.profile?.full_name || "";
+          const nameB = b.profile?.full_name || "";
+          comparison = nameA.localeCompare(nameB);
+          break;
+      }
+      return sortDirection === "asc" ? comparison : -comparison;
     });
-  }, [responses, searchQuery]);
+
+    return result;
+  }, [responses, searchQuery, sortField, sortDirection]);
 
   const fetchResponses = async () => {
     setLoading(true);
@@ -161,6 +220,76 @@ export function AdminJourneyResponsesTab() {
     });
   };
 
+  const handleBulkExport = async () => {
+    if (selectedIds.size === 0) {
+      toast({
+        title: "No items selected",
+        description: "Please select journey responses to export.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setBulkExporting(true);
+    try {
+      const selectedResponses = responses.filter(r => selectedIds.has(r.id));
+      
+      // Export each PDF with a small delay to avoid browser issues
+      for (let i = 0; i < selectedResponses.length; i++) {
+        const response = selectedResponses[i];
+        if (hasContent(response)) {
+          exportJourneyToPdf({
+            vision: response.vision || "",
+            problem: response.problem || "",
+            market: response.market || "",
+            business_model: response.business_model || "",
+            roles_needed: response.roles_needed || "",
+            cobuilder_plan: response.cobuilder_plan || "",
+            execution_plan: response.execution_plan || "",
+            userName: response.profile?.full_name || "Unknown User",
+            ideaTitle: response.idea?.title,
+          });
+          // Small delay between downloads
+          if (i < selectedResponses.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        }
+      }
+
+      toast({
+        title: "Bulk Export Complete",
+        description: `${selectedIds.size} journey response(s) exported.`,
+      });
+      setSelectedIds(new Set());
+    } catch (error: any) {
+      toast({
+        title: "Export Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setBulkExporting(false);
+    }
+  };
+
+  const toggleSelection = (id: string) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredAndSortedResponses.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredAndSortedResponses.map(r => r.id)));
+    }
+  };
+
   const hasContent = (response: JourneyResponse) => {
     return (
       response.vision ||
@@ -183,31 +312,76 @@ export function AdminJourneyResponsesTab() {
 
   return (
     <div className="bg-card rounded-xl border border-border">
-      <div className="p-4 border-b border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <FileText className="w-5 h-5 text-b4-teal" />
-          <h3 className="font-semibold text-foreground">
-            Entrepreneur Journey Responses ({filteredResponses.length})
-          </h3>
-        </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <div className="relative flex-1 sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by user or idea..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
+      <div className="p-4 border-b border-border space-y-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <FileText className="w-5 h-5 text-b4-teal" />
+            <h3 className="font-semibold text-foreground">
+              Entrepreneur Journey Responses ({filteredAndSortedResponses.length})
+            </h3>
           </div>
-          <Button variant="outline" size="sm" onClick={fetchResponses}>
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
-          </Button>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="relative flex-1 sm:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by user or idea..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Button variant="outline" size="sm" onClick={fetchResponses}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh
+            </Button>
+          </div>
+        </div>
+
+        {/* Sort and Bulk Actions */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Sort by:</span>
+            <Select value={sortField} onValueChange={(v) => setSortField(v as SortField)}>
+              <SelectTrigger className="w-32 h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="date">Date</SelectItem>
+                <SelectItem value="progress">Progress</SelectItem>
+                <SelectItem value="user">User Name</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={sortDirection} onValueChange={(v) => setSortDirection(v as SortDirection)}>
+              <SelectTrigger className="w-28 h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="desc">Descending</SelectItem>
+                <SelectItem value="asc">Ascending</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {selectedIds.size > 0 && (
+            <Button 
+              variant="teal" 
+              size="sm" 
+              onClick={handleBulkExport}
+              disabled={bulkExporting}
+            >
+              {bulkExporting ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4 mr-2" />
+              )}
+              Export Selected ({selectedIds.size})
+            </Button>
+          )}
         </div>
       </div>
 
-      {filteredResponses.length === 0 ? (
+      {filteredAndSortedResponses.length === 0 ? (
         <div className="p-8 text-center text-muted-foreground">
           {searchQuery ? "No matching journey responses found." : "No journey responses found."}
         </div>
@@ -215,6 +389,12 @@ export function AdminJourneyResponsesTab() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-12">
+                <Checkbox
+                  checked={selectedIds.size === filteredAndSortedResponses.length && filteredAndSortedResponses.length > 0}
+                  onCheckedChange={toggleSelectAll}
+                />
+              </TableHead>
               <TableHead>User</TableHead>
               <TableHead>Startup Idea</TableHead>
               <TableHead>Last Updated</TableHead>
@@ -223,20 +403,18 @@ export function AdminJourneyResponsesTab() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredResponses.map((response) => {
-              const filledFields = [
-                response.vision,
-                response.problem,
-                response.market,
-                response.business_model,
-                response.roles_needed,
-                response.cobuilder_plan,
-                response.execution_plan,
-              ].filter(Boolean).length;
-              const progressPercent = Math.round((filledFields / 7) * 100);
+            {filteredAndSortedResponses.map((response) => {
+              const progressPercent = response.progressPercent || 0;
 
               return (
                 <TableRow key={response.id}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedIds.has(response.id)}
+                      onCheckedChange={() => toggleSelection(response.id)}
+                      disabled={!hasContent(response)}
+                    />
+                  </TableCell>
                   <TableCell className="font-medium">
                     {response.profile?.full_name || "Unknown User"}
                   </TableCell>
@@ -295,6 +473,11 @@ export function AdminJourneyResponsesTab() {
             <DialogTitle className="flex items-center gap-2">
               <FileText className="w-5 h-5 text-b4-teal" />
               Journey Responses - {selectedResponse?.profile?.full_name || "Unknown User"}
+              {selectedResponse?.idea?.title && (
+                <span className="text-sm font-normal text-muted-foreground ml-2">
+                  ({selectedResponse.idea.title})
+                </span>
+              )}
             </DialogTitle>
           </DialogHeader>
 
