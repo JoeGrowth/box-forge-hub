@@ -51,8 +51,10 @@ export function Navbar() {
         .eq("user_id", user.id)
         .maybeSingle();
       
+      // Check for approved or entrepreneur_approved status
       const isApproved = onboardingData?.current_step === 8 && 
-                         onboardingData?.journey_status === "approved";
+                         (onboardingData?.journey_status === "approved" || 
+                          onboardingData?.journey_status === "entrepreneur_approved");
       setIsApprovedCobuilder(isApproved);
     };
     checkUserStatus();
