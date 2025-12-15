@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
 import { EntrepreneurJourney } from "@/components/entrepreneur/EntrepreneurJourney";
+import { OnboardingAnswersCard } from "@/components/profile/OnboardingAnswersCard";
 import {
   Collapsible,
   CollapsibleContent,
@@ -561,6 +562,11 @@ const Profile = () => {
                     )}
                     <span className="text-sm text-foreground">Consulting</span>
                   </div>
+                </div>
+
+                {/* View/Edit Journey Answers */}
+                <div className="mt-6">
+                  <OnboardingAnswersCard naturalRole={naturalRole} onUpdate={refetch} />
                 </div>
               </div>
             )}
