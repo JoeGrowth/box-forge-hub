@@ -120,7 +120,31 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
   }, [user, authLoading]);
 
   const updateOnboardingState = async (updates: Partial<OnboardingState>) => {
-    if (!user || !onboardingState) return;
+    if (!user) {
+      throw new Error("User not authenticated");
+    }
+    
+    if (!onboardingState) {
+      // Create initial state if it doesn't exist
+      const newState = {
+        user_id: user.id,
+        primary_role: null,
+        onboarding_completed: false,
+        current_step: 1,
+        journey_status: 'in_progress' as const,
+        ...updates,
+      };
+      
+      const { data, error } = await supabase
+        .from("onboarding_state")
+        .insert(newState)
+        .select()
+        .single();
+
+      if (error) throw error;
+      setOnboardingState(data as OnboardingState);
+      return;
+    }
 
     const { error } = await supabase
       .from("onboarding_state")
