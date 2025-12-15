@@ -4,27 +4,33 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import { supabase } from "@/integrations/supabase/client";
 import { sendNotificationEmail } from "@/lib/emailNotifications";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   ArrowLeft,
   Rocket,
   User,
   Calendar,
   MapPin,
-  Users,
   Check,
   X,
   FileText,
-  Mail,
   Briefcase,
   Target,
-  Clock,
   AlertCircle,
+  Lock,
+  XCircle,
+  Edit,
 } from "lucide-react";
 
 interface OpportunityDetails {
@@ -75,7 +81,8 @@ const AdminOpportunityDetail = () => {
   const [adminNotes, setAdminNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [approving, setApproving] = useState(false);
-  const [rejecting, setRejecting] = useState(false);
+  const [showStayPrivateDialog, setShowStayPrivateDialog] = useState(false);
+  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -207,21 +214,28 @@ const AdminOpportunityDetail = () => {
 
       if (onboardingError) throw onboardingError;
 
-      // Grant entrepreneur role
+      // Grant cobuilder role
+      await supabase
+        .from("user_roles")
+        .insert({
+          user_id: opportunity.creator_id,
+          role: "cobuilder" as const,
+        });
+
+      // Grant entrepreneur role (initiator)
       await supabase
         .from("user_roles")
         .insert({
           user_id: opportunity.creator_id,
           role: "entrepreneur" as const,
-        })
-        .select();
+        });
 
       // Create notification
       await supabase.from("admin_notifications").insert({
         user_id: opportunity.creator_id,
         notification_type: "opportunity_approved",
         user_name: creatorProfile.full_name,
-        message: `Your opportunity "${opportunity.title}" has been approved!`,
+        message: `Your opportunity "${opportunity.title}" has been approved and is now visible to all co-builders! You are now a Co-Builder and Initiator.`,
       });
 
       // Send email notification (async, don't block)
@@ -236,7 +250,7 @@ const AdminOpportunityDetail = () => {
 
       toast({
         title: "Opportunity Approved",
-        description: "The initiator can now access the entrepreneur journey.",
+        description: "The opportunity is now public. User granted Co-Builder and Initiator roles.",
       });
 
       navigate("/admin");
@@ -251,15 +265,20 @@ const AdminOpportunityDetail = () => {
     }
   };
 
-  const handleReject = async () => {
+  const handleStayPrivate = async (action: "declined" | "to_be_enhanced") => {
     if (!opportunity || !creatorProfile) return;
 
-    setRejecting(true);
+    setProcessing(true);
     try {
+      const newStatus = action === "declined" ? "declined" : "needs_enhancement";
+      const message = action === "declined" 
+        ? `Your opportunity "${opportunity.title}" has been declined.`
+        : `Your opportunity "${opportunity.title}" needs enhancement. Please review and resubmit.`;
+
       const { error } = await supabase
         .from("startup_ideas")
         .update({
-          review_status: "rejected",
+          review_status: newStatus,
           reviewed_at: new Date().toISOString(),
           admin_notes: adminNotes,
         })
@@ -270,9 +289,9 @@ const AdminOpportunityDetail = () => {
       // Create notification
       await supabase.from("admin_notifications").insert({
         user_id: opportunity.creator_id,
-        notification_type: "opportunity_rejected",
+        notification_type: action === "declined" ? "opportunity_declined" : "opportunity_needs_enhancement",
         user_name: creatorProfile.full_name,
-        message: `Your opportunity "${opportunity.title}" needs revision.`,
+        message,
       });
 
       // Send email notification
@@ -280,17 +299,18 @@ const AdminOpportunityDetail = () => {
         sendNotificationEmail({
           to: creatorEmail,
           userName: creatorProfile.full_name || "User",
-          type: "opportunity_rejected",
+          type: action === "declined" ? "opportunity_declined" : "opportunity_needs_enhancement",
           data: { ideaTitle: opportunity.title },
         });
       }
 
       toast({
-        title: "Opportunity Rejected",
+        title: action === "declined" ? "Opportunity Declined" : "Enhancement Requested",
         description: "The initiator has been notified.",
-        variant: "destructive",
+        variant: action === "declined" ? "destructive" : "default",
       });
 
+      setShowStayPrivateDialog(false);
       navigate("/admin");
     } catch (error: any) {
       toast({
@@ -299,7 +319,7 @@ const AdminOpportunityDetail = () => {
         variant: "destructive",
       });
     } finally {
-      setRejecting(false);
+      setProcessing(false);
     }
   };
 
@@ -478,7 +498,7 @@ const AdminOpportunityDetail = () => {
                       <Button
                         variant="teal"
                         onClick={handleApprove}
-                        disabled={approving || rejecting}
+                        disabled={approving || processing}
                         className="flex-1"
                       >
                         {approving ? (
@@ -486,24 +506,18 @@ const AdminOpportunityDetail = () => {
                         ) : (
                           <>
                             <Check className="w-4 h-4 mr-2" />
-                            Approve Opportunity
+                            Approve
                           </>
                         )}
                       </Button>
                       <Button
                         variant="outline"
-                        onClick={handleReject}
-                        disabled={approving || rejecting}
+                        onClick={() => setShowStayPrivateDialog(true)}
+                        disabled={approving || processing}
                         className="flex-1"
                       >
-                        {rejecting ? (
-                          "Rejecting..."
-                        ) : (
-                          <>
-                            <X className="w-4 h-4 mr-2" />
-                            Reject
-                          </>
-                        )}
+                        <Lock className="w-4 h-4 mr-2" />
+                        Stay Private
                       </Button>
                     </div>
                   </div>
@@ -610,6 +624,38 @@ const AdminOpportunityDetail = () => {
       </main>
 
       <Footer />
+
+      {/* Stay Private Dialog */}
+      <Dialog open={showStayPrivateDialog} onOpenChange={setShowStayPrivateDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Keep Opportunity Private</DialogTitle>
+            <DialogDescription>
+              Choose an action for "{opportunity?.title}"
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 pt-4">
+            <Button
+              variant="destructive"
+              onClick={() => handleStayPrivate("declined")}
+              disabled={processing}
+              className="w-full justify-start"
+            >
+              <XCircle className="w-4 h-4 mr-2" />
+              Declined - Opportunity is not suitable
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => handleStayPrivate("to_be_enhanced")}
+              disabled={processing}
+              className="w-full justify-start"
+            >
+              <Edit className="w-4 h-4 mr-2" />
+              To Be Enhanced - Needs improvements
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
