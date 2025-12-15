@@ -18,20 +18,31 @@ const Admin = () => {
   const { isAdmin, loading: adminLoading, fetchNotifications, fetchUsers, notifications, users } = useAdmin();
   const [activeTab, setActiveTab] = useState("applications");
   const [pendingOpportunities, setPendingOpportunities] = useState(0);
+  const [approvedOpportunities, setApprovedOpportunities] = useState(0);
 
   useEffect(() => {
-    const fetchOpportunityCount = async () => {
+    const fetchOpportunityCounts = async () => {
       const { supabase } = await import("@/integrations/supabase/client");
-      const { count } = await supabase
+      
+      // Pending opportunities count
+      const { count: pendingCount } = await supabase
         .from("startup_ideas")
         .select("*", { count: "exact", head: true })
         .in("review_status", ["pending", "under_review"]);
       
-      setPendingOpportunities(count || 0);
+      setPendingOpportunities(pendingCount || 0);
+
+      // Approved opportunities count
+      const { count: approvedCount } = await supabase
+        .from("startup_ideas")
+        .select("*", { count: "exact", head: true })
+        .eq("review_status", "approved");
+      
+      setApprovedOpportunities(approvedCount || 0);
     };
 
     if (isAdmin) {
-      fetchOpportunityCount();
+      fetchOpportunityCounts();
     }
   }, [isAdmin]);
 
@@ -93,7 +104,7 @@ const Admin = () => {
         <section className="py-8">
           <div className="container mx-auto px-4">
             {/* Stats Cards */}
-            <div className="grid sm:grid-cols-3 gap-4 mb-8">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               <div className="bg-card rounded-xl border border-border p-6">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-10 h-10 rounded-lg bg-b4-teal/10 flex items-center justify-center">
@@ -124,6 +135,17 @@ const Admin = () => {
                   <div>
                     <p className="text-2xl font-bold text-foreground">{applicationNotifications.length}</p>
                     <p className="text-sm text-muted-foreground">Applications</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-card rounded-xl border border-border p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+                    <Rocket className="w-5 h-5 text-green-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">{approvedOpportunities}</p>
+                    <p className="text-sm text-muted-foreground">Approved Ideas</p>
                   </div>
                 </div>
               </div>

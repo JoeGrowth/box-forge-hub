@@ -46,7 +46,10 @@ const Opportunities = () => {
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
-    if (onboardingState?.journey_status !== "approved") {
+    // Allow both "approved" and "entrepreneur_approved" users
+    const isApproved = onboardingState?.journey_status === "approved" || 
+                       onboardingState?.journey_status === "entrepreneur_approved";
+    if (onboardingState && !isApproved) {
       navigate("/profile", { replace: true });
     }
   }, [onboardingState, navigate]);
