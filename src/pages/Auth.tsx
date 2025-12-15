@@ -18,7 +18,9 @@ const nameSchema = z.string().min(2, "Name must be at least 2 characters");
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
-  const initialMode = searchParams.get("mode") === "signup" ? "signup" : "login";
+  const location = window.location.pathname;
+  // Support both /signup route and ?mode=signup query param
+  const initialMode = location === "/signup" || searchParams.get("mode") === "signup" ? "signup" : "login";
   const initialRole = (searchParams.get("role") as UserRole) || "cobuilder";
   
   const [mode, setMode] = useState<"login" | "signup">(initialMode);
