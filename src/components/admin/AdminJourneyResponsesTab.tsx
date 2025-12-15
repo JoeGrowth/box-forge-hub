@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { exportJourneyToPdf } from "@/lib/journeyPdfExport";
 import {
@@ -28,6 +29,7 @@ import {
   Users,
   Rocket,
   RefreshCw,
+  Search,
 } from "lucide-react";
 
 interface JourneyResponse {
@@ -66,6 +68,19 @@ export function AdminJourneyResponsesTab() {
   const [responses, setResponses] = useState<JourneyWithDetails[]>([]);
   const [selectedResponse, setSelectedResponse] = useState<JourneyWithDetails | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Filter responses based on search query
+  const filteredResponses = useMemo(() => {
+    if (!searchQuery.trim()) return responses;
+    
+    const query = searchQuery.toLowerCase();
+    return responses.filter((response) => {
+      const userName = response.profile?.full_name?.toLowerCase() || "";
+      const ideaTitle = response.idea?.title?.toLowerCase() || "";
+      return userName.includes(query) || ideaTitle.includes(query);
+    });
+  }, [responses, searchQuery]);
 
   const fetchResponses = async () => {
     setLoading(true);
@@ -168,22 +183,33 @@ export function AdminJourneyResponsesTab() {
 
   return (
     <div className="bg-card rounded-xl border border-border">
-      <div className="p-4 border-b border-border flex items-center justify-between">
+      <div className="p-4 border-b border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <FileText className="w-5 h-5 text-b4-teal" />
           <h3 className="font-semibold text-foreground">
-            Entrepreneur Journey Responses ({responses.length})
+            Entrepreneur Journey Responses ({filteredResponses.length})
           </h3>
         </div>
-        <Button variant="outline" size="sm" onClick={fetchResponses}>
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by user or idea..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <Button variant="outline" size="sm" onClick={fetchResponses}>
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
       </div>
 
-      {responses.length === 0 ? (
+      {filteredResponses.length === 0 ? (
         <div className="p-8 text-center text-muted-foreground">
-          No journey responses found.
+          {searchQuery ? "No matching journey responses found." : "No journey responses found."}
         </div>
       ) : (
         <Table>
@@ -197,7 +223,7 @@ export function AdminJourneyResponsesTab() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {responses.map((response) => {
+            {filteredResponses.map((response) => {
               const filledFields = [
                 response.vision,
                 response.problem,

@@ -4,7 +4,7 @@ interface SendNotificationEmailParams {
   to: string;
   userName: string;
   userId?: string;
-  type: "opportunity_approved" | "opportunity_rejected" | "opportunity_declined" | "opportunity_needs_enhancement" | "entrepreneur_step_complete" | "cobuilder_approved";
+  type: "opportunity_approved" | "opportunity_rejected" | "opportunity_declined" | "opportunity_needs_enhancement" | "entrepreneur_step_complete" | "entrepreneur_journey_complete" | "cobuilder_approved";
   data?: {
     ideaTitle?: string;
     stepNumber?: number;

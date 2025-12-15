@@ -14,7 +14,7 @@ interface NotificationEmailRequest {
   to: string;
   userName: string;
   userId?: string;
-  type: "opportunity_approved" | "opportunity_rejected" | "opportunity_declined" | "opportunity_needs_enhancement" | "entrepreneur_step_complete" | "cobuilder_approved";
+  type: "opportunity_approved" | "opportunity_rejected" | "opportunity_declined" | "opportunity_needs_enhancement" | "entrepreneur_step_complete" | "entrepreneur_journey_complete" | "cobuilder_approved";
   data?: {
     ideaTitle?: string;
     stepNumber?: number;
@@ -186,6 +186,52 @@ const getEmailContent = (type: string, userName: string, data?: NotificationEmai
         `,
         inAppTitle: `Step ${data?.stepNumber} Complete!`,
         inAppMessage: `You've completed ${data?.stepName}. Keep up the momentum!`,
+        inAppLink: "/profile",
+      };
+
+    case "entrepreneur_journey_complete":
+      return {
+        subject: "🎉 Entrepreneur Journey Complete!",
+        html: `
+          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+            <div style="background: linear-gradient(135deg, #0d9488 0%, #0f172a 100%); padding: 30px; border-radius: 16px 16px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 24px;">Congratulations, ${userName}! 🎉</h1>
+            </div>
+            <div style="background: #f8fafc; padding: 30px; border-radius: 0 0 16px 16px; border: 1px solid #e2e8f0; border-top: none;">
+              <p style="font-size: 16px; color: #334155; line-height: 1.6;">
+                You've completed your entire <strong>Entrepreneur Journey</strong>! This is a major milestone.
+              </p>
+              <div style="background: #dcfce7; border-radius: 8px; padding: 16px; margin: 20px 0;">
+                <p style="margin: 0; color: #166534; font-weight: 600;">
+                  ✓ All 4 Steps Complete
+                </p>
+              </div>
+              <p style="font-size: 16px; color: #334155; line-height: 1.6;">
+                You've successfully documented your:
+              </p>
+              <ul style="color: #334155; line-height: 1.8;">
+                <li>Vision, problem, and target market</li>
+                <li>Business model and key roles</li>
+                <li>Co-builder recruitment plan</li>
+                <li>Execution strategy</li>
+              </ul>
+              <p style="font-size: 16px; color: #334155; line-height: 1.6;">
+                You can always revisit and update your journey responses from your profile.
+              </p>
+              <div style="margin-top: 30px; text-align: center;">
+                <a href="https://b4-platform.lovable.app/profile" 
+                   style="background: #0d9488; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">
+                  View Your Journey
+                </a>
+              </div>
+            </div>
+            <p style="text-align: center; color: #94a3b8; font-size: 12px; margin-top: 20px;">
+              B4 Platform - Building the Future Together
+            </p>
+          </div>
+        `,
+        inAppTitle: "Entrepreneur Journey Complete!",
+        inAppMessage: "You've completed all 4 steps of your entrepreneur journey. Great work!",
         inAppLink: "/profile",
       };
 
