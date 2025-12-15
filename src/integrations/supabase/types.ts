@@ -53,6 +53,59 @@ export type Database = {
         }
         Relationships: []
       }
+      entrepreneur_journey_responses: {
+        Row: {
+          business_model: string | null
+          cobuilder_plan: string | null
+          created_at: string
+          execution_plan: string | null
+          id: string
+          idea_id: string | null
+          market: string | null
+          problem: string | null
+          roles_needed: string | null
+          updated_at: string
+          user_id: string
+          vision: string | null
+        }
+        Insert: {
+          business_model?: string | null
+          cobuilder_plan?: string | null
+          created_at?: string
+          execution_plan?: string | null
+          id?: string
+          idea_id?: string | null
+          market?: string | null
+          problem?: string | null
+          roles_needed?: string | null
+          updated_at?: string
+          user_id: string
+          vision?: string | null
+        }
+        Update: {
+          business_model?: string | null
+          cobuilder_plan?: string | null
+          created_at?: string
+          execution_plan?: string | null
+          id?: string
+          idea_id?: string | null
+          market?: string | null
+          problem?: string | null
+          roles_needed?: string | null
+          updated_at?: string
+          user_id?: string
+          vision?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entrepreneur_journey_responses_idea_id_fkey"
+            columns: ["idea_id"]
+            isOneToOne: false
+            referencedRelation: "startup_ideas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       natural_roles: {
         Row: {
           consulting_case_studies: string | null
