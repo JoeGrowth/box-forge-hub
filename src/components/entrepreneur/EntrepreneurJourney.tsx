@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { sendNotificationEmail } from "@/lib/emailNotifications";
+import { exportJourneyToPdf } from "@/lib/journeyPdfExport";
 import {
   Target,
   Lightbulb,
@@ -17,6 +18,7 @@ import {
   Edit3,
   Save,
   Loader2,
+  Download,
 } from "lucide-react";
 
 interface EntrepreneurJourneyProps {
@@ -416,10 +418,28 @@ export function EntrepreneurJourney({
           </div>
 
           {isViewMode && (
-            <Button variant="teal" onClick={() => window.location.href = "/opportunities"} className="w-full">
-              View Your Startup
-              <ArrowRight className="ml-2 w-4 h-4" />
-            </Button>
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => exportJourneyToPdf({
+                  vision: responses.vision,
+                  problem: responses.problem,
+                  market: responses.market,
+                  business_model: responses.business_model,
+                  roles_needed: responses.roles_needed,
+                  cobuilder_plan: responses.cobuilder_plan,
+                  execution_plan: responses.execution_plan,
+                })}
+                className="flex-1"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export PDF
+              </Button>
+              <Button variant="teal" onClick={() => window.location.href = "/opportunities"} className="flex-1">
+                View Your Startup
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+            </div>
           )}
         </div>
       );

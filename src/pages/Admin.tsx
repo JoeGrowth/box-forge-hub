@@ -10,7 +10,8 @@ import { AdminUsersTab } from "@/components/admin/AdminUsersTab";
 import { AdminApplicationsTab } from "@/components/admin/AdminApplicationsTab";
 import { AdminApprovalsTab } from "@/components/admin/AdminApprovalsTab";
 import { AdminOpportunitiesTab } from "@/components/admin/AdminOpportunitiesTab";
-import { Shield, Bell, Users, FileText, UserCheck, Rocket } from "lucide-react";
+import { AdminJourneyResponsesTab } from "@/components/admin/AdminJourneyResponsesTab";
+import { Shield, Bell, Users, FileText, UserCheck, Rocket, ClipboardList } from "lucide-react";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -153,7 +154,7 @@ const Admin = () => {
 
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-5 mb-8">
+              <TabsList className="grid w-full grid-cols-6 mb-8">
                 <TabsTrigger value="applications" className="flex items-center gap-2">
                   <FileText className="w-4 h-4" />
                   Applications
@@ -170,6 +171,10 @@ const Admin = () => {
                       {pendingOpportunities}
                     </span>
                   )}
+                </TabsTrigger>
+                <TabsTrigger value="journeys" className="flex items-center gap-2">
+                  <ClipboardList className="w-4 h-4" />
+                  Journeys
                 </TabsTrigger>
                 <TabsTrigger value="users" className="flex items-center gap-2">
                   <Users className="w-4 h-4" />
@@ -199,6 +204,10 @@ const Admin = () => {
 
               <TabsContent value="opportunities">
                 <AdminOpportunitiesTab onRefresh={fetchUsers} />
+              </TabsContent>
+
+              <TabsContent value="journeys">
+                <AdminJourneyResponsesTab />
               </TabsContent>
 
               <TabsContent value="users">
