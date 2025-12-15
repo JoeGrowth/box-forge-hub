@@ -200,10 +200,11 @@ const Profile = () => {
   };
 
   const getRoleLabel = () => {
+    // entrepreneur_approved = Co-Builder with approved idea (Initiator), not yet full entrepreneur
     if (onboardingState?.journey_status === "entrepreneur_approved") return "Co-Builder & Initiator";
     if (onboardingState?.primary_role === "entrepreneur") return "Entrepreneur";
     if (onboardingState?.primary_role === "cobuilder") {
-      if (onboardingState.journey_status === "approved") return "Co-Builder";
+      if (onboardingState.journey_status === "approved") return "Approved Co-Builder";
       return "Potential Co-Builder";
     }
     return "Member";
@@ -213,8 +214,14 @@ const Profile = () => {
     if (!onboardingState?.onboarding_completed) {
       return { label: "Onboarding Incomplete", color: "text-b4-coral", icon: AlertCircle };
     }
+    // entrepreneur_approved = Co-Builder with approved startup idea, on entrepreneur journey
     if (onboardingState.journey_status === "entrepreneur_approved") {
-      return { label: "Entrepreneur Approved", color: "text-b4-teal", icon: CheckCircle };
+      const step = onboardingState.entrepreneur_step || 1;
+      return { 
+        label: `Entrepreneur Journey: Step ${step}/4`, 
+        color: "text-amber-500", 
+        icon: Rocket 
+      };
     }
     if (onboardingState.journey_status === "approved") {
       return { label: "Approved Co-Builder", color: "text-b4-teal", icon: CheckCircle };
