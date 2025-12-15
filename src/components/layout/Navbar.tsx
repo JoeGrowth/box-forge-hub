@@ -5,9 +5,16 @@ import { Menu, X, LogOut, User, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
-const navLinks = [
+const baseNavLinks = [
   { name: "Home", path: "/" },
   { name: "About", path: "/about" },
+];
+
+const authenticatedNavLinks = [
+  { name: "Opportunities", path: "/opportunities" },
+];
+
+const commonNavLinks = [
   { name: "Boxes", path: "/boxes" },
   { name: "Programs", path: "/programs" },
   { name: "Join Us", path: "/join" },
@@ -16,25 +23,47 @@ const navLinks = [
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isApprovedCobuilder, setIsApprovedCobuilder] = useState(false);
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
 
   useEffect(() => {
-    const checkAdmin = async () => {
+    const checkUserStatus = async () => {
       if (!user) {
         setIsAdmin(false);
+        setIsApprovedCobuilder(false);
         return;
       }
-      const { data } = await supabase
+
+      // Check admin role
+      const { data: adminData } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id)
         .eq("role", "admin")
         .maybeSingle();
-      setIsAdmin(!!data);
+      setIsAdmin(!!adminData);
+
+      // Check if user completed onboarding (step 8) and is approved
+      const { data: onboardingData } = await supabase
+        .from("onboarding_state")
+        .select("current_step, journey_status")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      
+      const isApproved = onboardingData?.current_step === 8 && 
+                         onboardingData?.journey_status === "approved";
+      setIsApprovedCobuilder(isApproved);
     };
-    checkAdmin();
+    checkUserStatus();
   }, [user]);
+
+  // Build nav links based on user status
+  const navLinks = [
+    ...baseNavLinks,
+    ...(isApprovedCobuilder ? authenticatedNavLinks : []),
+    ...commonNavLinks,
+  ];
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
