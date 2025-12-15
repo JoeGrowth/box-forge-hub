@@ -292,6 +292,7 @@ const AdminOpportunityDetail = () => {
         notification_type: action === "declined" ? "opportunity_declined" : "opportunity_needs_enhancement",
         title: action === "declined" ? "Opportunity Declined" : "Enhancement Requested",
         message,
+        link: action === "to_be_enhanced" ? `/edit-idea/${opportunity.id}` : null,
       });
 
       // Also create admin notification for tracking
