@@ -200,15 +200,25 @@ export function EntrepreneurJourney({
 
       // Send email notification for step completion
       if (user.email) {
-        sendNotificationEmail({
-          to: user.email,
-          userName: profile?.full_name || "Entrepreneur",
-          type: "entrepreneur_step_complete",
-          data: {
-            stepNumber: step,
-            stepName: STEPS[step - 1]?.title,
-          },
-        });
+        // If completing final step (step 4), send journey complete email
+        if (step === 4) {
+          sendNotificationEmail({
+            to: user.email,
+            userName: profile?.full_name || "Entrepreneur",
+            userId: user.id,
+            type: "entrepreneur_journey_complete",
+          });
+        } else {
+          sendNotificationEmail({
+            to: user.email,
+            userName: profile?.full_name || "Entrepreneur",
+            type: "entrepreneur_step_complete",
+            data: {
+              stepNumber: step,
+              stepName: STEPS[step - 1]?.title,
+            },
+          });
+        }
       }
 
       onStepComplete(step + 1);
