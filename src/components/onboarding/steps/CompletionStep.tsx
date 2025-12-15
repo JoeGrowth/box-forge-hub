@@ -30,7 +30,7 @@ export const CompletionStep = () => {
       
       // Send notification to admin for approval
       await sendAdminNotification(
-        "journey_completed",
+        "user_ready",
         "Journey Complete - Pending Approval",
         `User completed onboarding journey. Ready status: ${isReady ? 'Ready' : 'Needs assistance'}`
       );
