@@ -95,6 +95,8 @@ const Profile = () => {
   
   // Account deletion state
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [deleteType, setDeleteType] = useState<"soft" | "hard" | null>(null);
+  const [showDeleteOptions, setShowDeleteOptions] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -324,28 +326,37 @@ const Profile = () => {
     }
   };
 
-  const handleDeleteAccount = async () => {
+  const handleDeleteAccount = async (type: "soft" | "hard") => {
     if (!user) return;
 
     setIsDeletingAccount(true);
 
     try {
-      // Note: Full account deletion requires admin privileges or edge function
-      // For now, we sign out and inform user to contact support
+      const { data, error } = await supabase.functions.invoke('delete-account', {
+        body: { deleteType: type }
+      });
+
+      if (error) throw error;
+
       await signOut();
+      
       toast({
-        title: "Sign Out Complete",
-        description: "To fully delete your account, please contact support.",
+        title: type === "soft" ? "Account Deactivated" : "Account Deleted",
+        description: type === "soft" 
+          ? "Your account has been deactivated. Contact support to reactivate."
+          : "Your account has been permanently deleted.",
       });
       navigate("/", { replace: true });
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to delete account",
         variant: "destructive",
       });
     } finally {
       setIsDeletingAccount(false);
+      setDeleteType(null);
+      setShowDeleteOptions(false);
     }
   };
 
@@ -936,32 +947,104 @@ const Profile = () => {
                 Danger Zone
               </h2>
               <p className="text-muted-foreground mb-4">
-                Once you delete your account, there is no going back. Please be certain.
+                Choose how you want to handle your account deletion.
               </p>
-              <AlertDialog>
+              
+              <AlertDialog open={showDeleteOptions} onOpenChange={setShowDeleteOptions}>
                 <AlertDialogTrigger asChild>
                   <Button variant="destructive">
                     <Trash2 className="w-4 h-4 mr-2" />
                     Delete Account
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
+                <AlertDialogContent className="max-w-lg">
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete your account
-                      and remove your data from our servers.
+                    <AlertDialogTitle>Choose deletion type</AlertDialogTitle>
+                    <AlertDialogDescription asChild>
+                      <div className="space-y-4 pt-2">
+                        {/* Soft Delete Option */}
+                        <div 
+                          className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                            deleteType === "soft" 
+                              ? "border-amber-500 bg-amber-500/10" 
+                              : "border-border hover:border-amber-500/50"
+                          }`}
+                          onClick={() => setDeleteType("soft")}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
+                              deleteType === "soft" ? "border-amber-500" : "border-muted-foreground"
+                            }`}>
+                              {deleteType === "soft" && (
+                                <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-semibold text-foreground">Deactivate Account (Recommended)</p>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                Your account will be deactivated and hidden. You can contact support later to reactivate it and recover your data.
+                              </p>
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                <span className="text-xs px-2 py-1 rounded-full bg-green-500/10 text-green-600">Recoverable</span>
+                                <span className="text-xs px-2 py-1 rounded-full bg-blue-500/10 text-blue-600">Data preserved</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Hard Delete Option */}
+                        <div 
+                          className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                            deleteType === "hard" 
+                              ? "border-destructive bg-destructive/10" 
+                              : "border-border hover:border-destructive/50"
+                          }`}
+                          onClick={() => setDeleteType("hard")}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
+                              deleteType === "hard" ? "border-destructive" : "border-muted-foreground"
+                            }`}>
+                              {deleteType === "hard" && (
+                                <div className="w-2.5 h-2.5 rounded-full bg-destructive" />
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-semibold text-foreground">Permanently Delete</p>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                Your account and all data will be permanently removed. This action cannot be undone. You can sign up again with the same email.
+                              </p>
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                <span className="text-xs px-2 py-1 rounded-full bg-destructive/10 text-destructive">Irreversible</span>
+                                <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">Email reusable</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </AlertDialogDescription>
                   </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleDeleteAccount}
-                      disabled={isDeletingAccount}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  <AlertDialogFooter className="mt-4">
+                    <AlertDialogCancel onClick={() => setDeleteType(null)}>Cancel</AlertDialogCancel>
+                    <Button
+                      variant={deleteType === "hard" ? "destructive" : "default"}
+                      onClick={() => deleteType && handleDeleteAccount(deleteType)}
+                      disabled={!deleteType || isDeletingAccount}
+                      className={deleteType === "soft" ? "bg-amber-500 hover:bg-amber-600 text-white" : ""}
                     >
-                      {isDeletingAccount ? "Deleting..." : "Delete Account"}
-                    </AlertDialogAction>
+                      {isDeletingAccount ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Processing...
+                        </>
+                      ) : deleteType === "soft" ? (
+                        "Deactivate Account"
+                      ) : deleteType === "hard" ? (
+                        "Delete Permanently"
+                      ) : (
+                        "Select an option"
+                      )}
+                    </Button>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
