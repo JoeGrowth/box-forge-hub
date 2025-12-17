@@ -97,6 +97,9 @@ const Profile = () => {
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [deleteType, setDeleteType] = useState<"soft" | "hard" | null>(null);
   const [showDeleteOptions, setShowDeleteOptions] = useState(false);
+  const [confirmationStep, setConfirmationStep] = useState<"choose" | "code">("choose");
+  const [confirmationCode, setConfirmationCode] = useState("");
+  const [isSendingCode, setIsSendingCode] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -326,14 +329,59 @@ const Profile = () => {
     }
   };
 
+  const handleSendConfirmationCode = async () => {
+    if (!user) return;
+    
+    setIsSendingCode(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('delete-account', {
+        body: { action: 'send_confirmation' }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Code Sent",
+        description: "Check your email for the confirmation code.",
+      });
+      setConfirmationStep("code");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send confirmation code",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingCode(false);
+    }
+  };
+
   const handleDeleteAccount = async (type: "soft" | "hard") => {
     if (!user) return;
+
+    // For hard delete, require confirmation code
+    if (type === "hard" && confirmationStep === "choose") {
+      await handleSendConfirmationCode();
+      return;
+    }
+
+    if (type === "hard" && !confirmationCode) {
+      toast({
+        title: "Error",
+        description: "Please enter the confirmation code",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsDeletingAccount(true);
 
     try {
       const { data, error } = await supabase.functions.invoke('delete-account', {
-        body: { deleteType: type }
+        body: { 
+          deleteType: type,
+          confirmationCode: type === "hard" ? confirmationCode : undefined
+        }
       });
 
       if (error) throw error;
@@ -357,6 +405,8 @@ const Profile = () => {
       setIsDeletingAccount(false);
       setDeleteType(null);
       setShowDeleteOptions(false);
+      setConfirmationStep("choose");
+      setConfirmationCode("");
     }
   };
 
@@ -950,7 +1000,14 @@ const Profile = () => {
                 Choose how you want to handle your account deletion.
               </p>
               
-              <AlertDialog open={showDeleteOptions} onOpenChange={setShowDeleteOptions}>
+              <AlertDialog open={showDeleteOptions} onOpenChange={(open) => {
+                setShowDeleteOptions(open);
+                if (!open) {
+                  setDeleteType(null);
+                  setConfirmationStep("choose");
+                  setConfirmationCode("");
+                }
+              }}>
                 <AlertDialogTrigger asChild>
                   <Button variant="destructive">
                     <Trash2 className="w-4 h-4 mr-2" />
@@ -958,94 +1015,147 @@ const Profile = () => {
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="max-w-lg">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Choose deletion type</AlertDialogTitle>
-                    <AlertDialogDescription asChild>
-                      <div className="space-y-4 pt-2">
-                        {/* Soft Delete Option */}
-                        <div 
-                          className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                            deleteType === "soft" 
-                              ? "border-amber-500 bg-amber-500/10" 
-                              : "border-border hover:border-amber-500/50"
-                          }`}
-                          onClick={() => setDeleteType("soft")}
-                        >
-                          <div className="flex items-start gap-3">
-                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
-                              deleteType === "soft" ? "border-amber-500" : "border-muted-foreground"
-                            }`}>
-                              {deleteType === "soft" && (
-                                <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <p className="font-semibold text-foreground">Deactivate Account (Recommended)</p>
-                              <p className="text-sm text-muted-foreground mt-1">
-                                Your account will be deactivated and hidden. You can contact support later to reactivate it and recover your data.
-                              </p>
-                              <div className="flex flex-wrap gap-2 mt-2">
-                                <span className="text-xs px-2 py-1 rounded-full bg-green-500/10 text-green-600">Recoverable</span>
-                                <span className="text-xs px-2 py-1 rounded-full bg-blue-500/10 text-blue-600">Data preserved</span>
+                  {confirmationStep === "choose" ? (
+                    <>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Choose deletion type</AlertDialogTitle>
+                        <AlertDialogDescription asChild>
+                          <div className="space-y-4 pt-2">
+                            {/* Soft Delete Option */}
+                            <div 
+                              className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                                deleteType === "soft" 
+                                  ? "border-amber-500 bg-amber-500/10" 
+                                  : "border-border hover:border-amber-500/50"
+                              }`}
+                              onClick={() => setDeleteType("soft")}
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
+                                  deleteType === "soft" ? "border-amber-500" : "border-muted-foreground"
+                                }`}>
+                                  {deleteType === "soft" && (
+                                    <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                                  )}
+                                </div>
+                                <div className="flex-1">
+                                  <p className="font-semibold text-foreground">Deactivate Account (Recommended)</p>
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                    Your account will be deactivated and hidden. You can contact support later to reactivate it and recover your data.
+                                  </p>
+                                  <div className="flex flex-wrap gap-2 mt-2">
+                                    <span className="text-xs px-2 py-1 rounded-full bg-green-500/10 text-green-600">Recoverable</span>
+                                    <span className="text-xs px-2 py-1 rounded-full bg-blue-500/10 text-blue-600">Data preserved</span>
+                                  </div>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </div>
 
-                        {/* Hard Delete Option */}
-                        <div 
-                          className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                            deleteType === "hard" 
-                              ? "border-destructive bg-destructive/10" 
-                              : "border-border hover:border-destructive/50"
-                          }`}
-                          onClick={() => setDeleteType("hard")}
-                        >
-                          <div className="flex items-start gap-3">
-                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
-                              deleteType === "hard" ? "border-destructive" : "border-muted-foreground"
-                            }`}>
-                              {deleteType === "hard" && (
-                                <div className="w-2.5 h-2.5 rounded-full bg-destructive" />
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <p className="font-semibold text-foreground">Permanently Delete</p>
-                              <p className="text-sm text-muted-foreground mt-1">
-                                Your account and all data will be permanently removed. This action cannot be undone. You can sign up again with the same email.
-                              </p>
-                              <div className="flex flex-wrap gap-2 mt-2">
-                                <span className="text-xs px-2 py-1 rounded-full bg-destructive/10 text-destructive">Irreversible</span>
-                                <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">Email reusable</span>
+                            {/* Hard Delete Option */}
+                            <div 
+                              className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                                deleteType === "hard" 
+                                  ? "border-destructive bg-destructive/10" 
+                                  : "border-border hover:border-destructive/50"
+                              }`}
+                              onClick={() => setDeleteType("hard")}
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
+                                  deleteType === "hard" ? "border-destructive" : "border-muted-foreground"
+                                }`}>
+                                  {deleteType === "hard" && (
+                                    <div className="w-2.5 h-2.5 rounded-full bg-destructive" />
+                                  )}
+                                </div>
+                                <div className="flex-1">
+                                  <p className="font-semibold text-foreground">Permanently Delete</p>
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                    Your account and all data will be permanently removed. This action cannot be undone. You can sign up again with the same email.
+                                  </p>
+                                  <div className="flex flex-wrap gap-2 mt-2">
+                                    <span className="text-xs px-2 py-1 rounded-full bg-destructive/10 text-destructive">Irreversible</span>
+                                    <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">Email reusable</span>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter className="mt-4">
+                        <AlertDialogCancel onClick={() => setDeleteType(null)}>Cancel</AlertDialogCancel>
+                        <Button
+                          variant={deleteType === "hard" ? "destructive" : "default"}
+                          onClick={() => deleteType && handleDeleteAccount(deleteType)}
+                          disabled={!deleteType || isDeletingAccount || isSendingCode}
+                          className={deleteType === "soft" ? "bg-amber-500 hover:bg-amber-600 text-white" : ""}
+                        >
+                          {isDeletingAccount || isSendingCode ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              {isSendingCode ? "Sending code..." : "Processing..."}
+                            </>
+                          ) : deleteType === "soft" ? (
+                            "Deactivate Account"
+                          ) : deleteType === "hard" ? (
+                            "Send Confirmation Code"
+                          ) : (
+                            "Select an option"
+                          )}
+                        </Button>
+                      </AlertDialogFooter>
+                    </>
+                  ) : (
+                    <>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Enter Confirmation Code</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          We sent a 6-digit confirmation code to your email. Enter it below to permanently delete your account.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <div className="py-4">
+                        <Label htmlFor="confirmationCode">Confirmation Code</Label>
+                        <Input
+                          id="confirmationCode"
+                          type="text"
+                          placeholder="123456"
+                          value={confirmationCode}
+                          onChange={(e) => setConfirmationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                          className="mt-2 text-center text-2xl tracking-widest"
+                          maxLength={6}
+                        />
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Code expires in 15 minutes
+                        </p>
                       </div>
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter className="mt-4">
-                    <AlertDialogCancel onClick={() => setDeleteType(null)}>Cancel</AlertDialogCancel>
-                    <Button
-                      variant={deleteType === "hard" ? "destructive" : "default"}
-                      onClick={() => deleteType && handleDeleteAccount(deleteType)}
-                      disabled={!deleteType || isDeletingAccount}
-                      className={deleteType === "soft" ? "bg-amber-500 hover:bg-amber-600 text-white" : ""}
-                    >
-                      {isDeletingAccount ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Processing...
-                        </>
-                      ) : deleteType === "soft" ? (
-                        "Deactivate Account"
-                      ) : deleteType === "hard" ? (
-                        "Delete Permanently"
-                      ) : (
-                        "Select an option"
-                      )}
-                    </Button>
-                  </AlertDialogFooter>
+                      <AlertDialogFooter>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setConfirmationStep("choose");
+                            setConfirmationCode("");
+                          }}
+                        >
+                          Back
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          onClick={() => handleDeleteAccount("hard")}
+                          disabled={confirmationCode.length !== 6 || isDeletingAccount}
+                        >
+                          {isDeletingAccount ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Deleting...
+                            </>
+                          ) : (
+                            "Delete Permanently"
+                          )}
+                        </Button>
+                      </AlertDialogFooter>
+                    </>
+                  )}
                 </AlertDialogContent>
               </AlertDialog>
             </div>
