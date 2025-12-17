@@ -19,15 +19,36 @@ const ResetPassword = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
+  const [hasValidSession, setHasValidSession] = useState(false);
   const [errors, setErrors] = useState<{ password?: string; confirmPassword?: string }>({});
   const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if we have a valid session from the reset link
+    // Set up auth state listener first
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state change:", event, !!session);
+      
+      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
+        setHasValidSession(true);
+        setIsCheckingSession(false);
+      } else if (event === "SIGNED_OUT") {
+        setHasValidSession(false);
+      }
+    });
+
+    // Then check for existing session
     const checkSession = async () => {
+      // Give the auth state listener time to process URL tokens
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      
+      if (session) {
+        setHasValidSession(true);
+      } else {
+        // Only redirect if we still don't have a session after waiting
         toast({
           title: "Invalid or Expired Link",
           description: "Please request a new password reset link.",
@@ -35,8 +56,12 @@ const ResetPassword = () => {
         });
         navigate("/forgot-password");
       }
+      setIsCheckingSession(false);
     };
+    
     checkSession();
+
+    return () => subscription.unsubscribe();
   }, [navigate, toast]);
 
   const validateForm = () => {
@@ -106,7 +131,12 @@ const ResetPassword = () => {
             </div>
 
             <div className="bg-card rounded-2xl border border-border p-8 shadow-lg">
-              {isSuccess ? (
+              {isCheckingSession ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin w-8 h-8 border-2 border-b4-teal border-t-transparent rounded-full mx-auto mb-4"></div>
+                  <p className="text-muted-foreground">Verifying your reset link...</p>
+                </div>
+              ) : isSuccess ? (
                 <div className="text-center">
                   <div className="w-16 h-16 rounded-full bg-b4-teal/10 flex items-center justify-center mx-auto mb-4">
                     <CheckCircle className="w-8 h-8 text-b4-teal" />
