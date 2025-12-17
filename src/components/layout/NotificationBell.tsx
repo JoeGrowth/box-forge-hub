@@ -109,11 +109,24 @@ export function NotificationBell() {
       case "opportunity_approved":
         return "🎉";
       case "opportunity_declined":
+      case "application_rejected":
         return "❌";
       case "opportunity_needs_enhancement":
         return "✏️";
       case "cobuilder_approved":
         return "✅";
+      case "application_received":
+        return "📩";
+      case "application_accepted":
+        return "🤝";
+      case "application_submitted":
+        return "📤";
+      case "entrepreneur_step_complete":
+        return "🎯";
+      case "entrepreneur_journey_complete":
+        return "🏆";
+      case "onboarding_complete":
+        return "🎓";
       default:
         return "📬";
     }

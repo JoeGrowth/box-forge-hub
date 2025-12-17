@@ -162,8 +162,8 @@ const OpportunityDetail = () => {
       // Create user notification for the idea creator
       await supabase.from("user_notifications").insert({
         user_id: idea.creator_id,
-        notification_type: "cobuilder_application",
-        title: "New Co-Builder Application",
+        notification_type: "application_received",
+        title: "New Co-Builder Application 📩",
         message: `${user.user_metadata?.full_name || user.email || "A co-builder"} wants to join your startup "${idea.title}"${selectedRole ? ` as ${selectedRole}` : ""}.`,
         link: "/profile",
       });
@@ -171,7 +171,7 @@ const OpportunityDetail = () => {
       // Also create admin notification for tracking
       await supabase.from("admin_notifications").insert({
         user_id: idea.creator_id,
-        notification_type: "cobuilder_application",
+        notification_type: "application_received",
         user_name: user.user_metadata?.full_name || user.email,
         user_email: user.email,
         message: `${user.user_metadata?.full_name || "A co-builder"} applied to "${idea.title}"${selectedRole ? ` for role: ${selectedRole}` : ""}. Message: ${applyMessage || "No message provided."}`,

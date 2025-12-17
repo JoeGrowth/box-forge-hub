@@ -12,6 +12,7 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
 import { EntrepreneurJourney } from "@/components/entrepreneur/EntrepreneurJourney";
 import { OnboardingAnswersCard } from "@/components/profile/OnboardingAnswersCard";
+import { IdeaApplicationsViewer } from "@/components/profile/IdeaApplicationsViewer";
 import {
   Collapsible,
   CollapsibleContent,
@@ -51,7 +52,8 @@ import {
   Camera,
   Trash2,
   Loader2,
-  ChevronDown
+  ChevronDown,
+  MessageSquare
 } from "lucide-react";
 
 interface Profile {
@@ -723,6 +725,13 @@ const Profile = () => {
                             {idea.review_status === "needs_enhancement" && (
                               <div className="text-sm text-amber-600 bg-amber-500/10 rounded-lg p-4">
                                 Your idea needs enhancement. Click "Edit Idea" above to make improvements.
+                              </div>
+                            )}
+                            
+                            {/* Applications Received Section - only for approved ideas */}
+                            {idea.review_status === "approved" && (
+                              <div className="border-t border-border pt-4 mt-4">
+                                <IdeaApplicationsViewer ideaId={idea.id} ideaTitle={idea.title} />
                               </div>
                             )}
                           </div>

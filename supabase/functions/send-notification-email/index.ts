@@ -10,15 +10,42 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+type NotificationType = 
+  // Onboarding achievements
+  | "onboarding_path_selected"
+  | "natural_role_defined"
+  | "onboarding_step_complete"
+  | "onboarding_complete"
+  // Co-builder achievements
+  | "cobuilder_submitted"
+  | "cobuilder_approved"
+  // Opportunity achievements
+  | "opportunity_created"
+  | "opportunity_submitted"
+  | "opportunity_approved"
+  | "opportunity_rejected"
+  | "opportunity_declined"
+  | "opportunity_needs_enhancement"
+  // Entrepreneur journey achievements
+  | "entrepreneur_step_complete"
+  | "entrepreneur_journey_complete"
+  // Application achievements
+  | "application_submitted"
+  | "application_received"
+  | "application_accepted"
+  | "application_rejected";
+
 interface NotificationEmailRequest {
   to: string;
   userName: string;
   userId?: string;
-  type: "opportunity_approved" | "opportunity_rejected" | "opportunity_declined" | "opportunity_needs_enhancement" | "entrepreneur_step_complete" | "entrepreneur_journey_complete" | "cobuilder_approved";
+  type: NotificationType;
   data?: {
     ideaTitle?: string;
     stepNumber?: number;
     stepName?: string;
+    applicantName?: string;
+    roleName?: string;
   };
 }
 
@@ -270,6 +297,105 @@ const getEmailContent = (type: string, userName: string, data?: NotificationEmai
         inAppTitle: "You're an Approved Co-Builder!",
         inAppMessage: "Congratulations! You can now browse opportunities or create your own startup ideas.",
         inAppLink: "/profile",
+      };
+
+    case "application_received":
+      return {
+        subject: `📩 New Application for "${data?.ideaTitle || 'Your Startup'}"`,
+        html: `
+          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+            <div style="background: linear-gradient(135deg, #0d9488 0%, #0f172a 100%); padding: 30px; border-radius: 16px 16px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 24px;">New Application Received! 📩</h1>
+            </div>
+            <div style="background: #f8fafc; padding: 30px; border-radius: 0 0 16px 16px; border: 1px solid #e2e8f0; border-top: none;">
+              <p style="font-size: 16px; color: #334155; line-height: 1.6;">
+                Hi ${userName}! Someone is interested in joining <strong>"${data?.ideaTitle || 'your startup'}"</strong>.
+              </p>
+              <p style="font-size: 16px; color: #334155; line-height: 1.6;">
+                <strong>${data?.applicantName || 'A co-builder'}</strong> has applied for the <strong>${data?.roleName || 'team member'}</strong> role.
+              </p>
+              <div style="margin-top: 30px; text-align: center;">
+                <a href="https://b4-platform.lovable.app/profile" 
+                   style="background: #0d9488; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">
+                  Review Application
+                </a>
+              </div>
+            </div>
+            <p style="text-align: center; color: #94a3b8; font-size: 12px; margin-top: 20px;">
+              B4 Platform - Building the Future Together
+            </p>
+          </div>
+        `,
+        inAppTitle: "New Application Received!",
+        inAppMessage: `${data?.applicantName || 'Someone'} applied to join "${data?.ideaTitle || 'your startup'}"`,
+        inAppLink: "/profile",
+      };
+
+    case "application_accepted":
+      return {
+        subject: "🤝 Your Application Was Accepted!",
+        html: `
+          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+            <div style="background: linear-gradient(135deg, #0d9488 0%, #0f172a 100%); padding: 30px; border-radius: 16px 16px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 24px;">Congratulations, ${userName}! 🤝</h1>
+            </div>
+            <div style="background: #f8fafc; padding: 30px; border-radius: 0 0 16px 16px; border: 1px solid #e2e8f0; border-top: none;">
+              <p style="font-size: 16px; color: #334155; line-height: 1.6;">
+                Great news! Your application to join <strong>"${data?.ideaTitle || 'the startup'}"</strong> has been accepted!
+              </p>
+              <p style="font-size: 16px; color: #334155; line-height: 1.6;">
+                The initiator will reach out to you with next steps. Get ready to start building together!
+              </p>
+              <div style="margin-top: 30px; text-align: center;">
+                <a href="https://b4-platform.lovable.app/opportunities" 
+                   style="background: #0d9488; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">
+                  View Opportunities
+                </a>
+              </div>
+            </div>
+            <p style="text-align: center; color: #94a3b8; font-size: 12px; margin-top: 20px;">
+              B4 Platform - Building the Future Together
+            </p>
+          </div>
+        `,
+        inAppTitle: "Application Accepted! 🎉",
+        inAppMessage: `Your application to join "${data?.ideaTitle || 'the startup'}" was accepted!`,
+        inAppLink: "/opportunities",
+      };
+
+    case "application_rejected":
+      return {
+        subject: "Update on Your Application",
+        html: `
+          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+            <div style="background: #334155; padding: 30px; border-radius: 16px 16px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 24px;">Hi ${userName},</h1>
+            </div>
+            <div style="background: #f8fafc; padding: 30px; border-radius: 0 0 16px 16px; border: 1px solid #e2e8f0; border-top: none;">
+              <p style="font-size: 16px; color: #334155; line-height: 1.6;">
+                Thank you for your interest in joining <strong>"${data?.ideaTitle || 'the startup'}"</strong>.
+              </p>
+              <p style="font-size: 16px; color: #334155; line-height: 1.6;">
+                Unfortunately, the initiator has decided to move forward with other candidates at this time.
+              </p>
+              <p style="font-size: 16px; color: #334155; line-height: 1.6;">
+                Don't be discouraged! There are many other exciting opportunities waiting for you.
+              </p>
+              <div style="margin-top: 30px; text-align: center;">
+                <a href="https://b4-platform.lovable.app/opportunities" 
+                   style="background: #0d9488; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">
+                  Browse Other Opportunities
+                </a>
+              </div>
+            </div>
+            <p style="text-align: center; color: #94a3b8; font-size: 12px; margin-top: 20px;">
+              B4 Platform - Building the Future Together
+            </p>
+          </div>
+        `,
+        inAppTitle: "Application Update",
+        inAppMessage: `Your application to "${data?.ideaTitle || 'the startup'}" was not accepted.`,
+        inAppLink: "/opportunities",
       };
 
     default:
