@@ -4,9 +4,11 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, User, Briefcase, Loader2 } from "lucide-react";
+import { Search, User, Briefcase, Loader2, Pencil, Check, X } from "lucide-react";
+import { toast } from "sonner";
 
 interface CoBuilder {
   id: string;
@@ -24,6 +26,9 @@ const CoBuilders = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [isApproved, setIsApproved] = useState(false);
+  const [editingSkills, setEditingSkills] = useState(false);
+  const [skillsInput, setSkillsInput] = useState("");
+  const [savingSkills, setSavingSkills] = useState(false);
 
   // Check if user is an approved co-builder or entrepreneur
   useEffect(() => {
@@ -77,8 +82,7 @@ const CoBuilders = () => {
         const { data: profiles, error: profilesError } = await supabase
           .from("profiles")
           .select("id, user_id, full_name, avatar_url, primary_skills")
-          .in("user_id", approvedUserIds)
-          .eq("is_deleted", false);
+          .in("user_id", approvedUserIds);
 
         if (profilesError) throw profilesError;
 
@@ -99,7 +103,20 @@ const CoBuilders = () => {
           };
         });
 
+        // Sort to put current user first
+        combinedData.sort((a, b) => {
+          if (a.user_id === user?.id) return -1;
+          if (b.user_id === user?.id) return 1;
+          return 0;
+        });
+
         setCobuilders(combinedData);
+
+        // Set initial skills input for current user
+        const currentUserProfile = combinedData.find(cb => cb.user_id === user?.id);
+        if (currentUserProfile) {
+          setSkillsInput(currentUserProfile.primary_skills || "");
+        }
       } catch (error) {
         console.error("Error fetching co-builders:", error);
       } finally {
@@ -108,7 +125,42 @@ const CoBuilders = () => {
     };
 
     fetchCoBuilders();
-  }, [isApproved]);
+  }, [isApproved, user?.id]);
+
+  const handleSaveSkills = async () => {
+    if (!user) return;
+    
+    setSavingSkills(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ primary_skills: skillsInput })
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setCobuilders(prev => prev.map(cb => 
+        cb.user_id === user.id 
+          ? { ...cb, primary_skills: skillsInput }
+          : cb
+      ));
+      
+      setEditingSkills(false);
+      toast.success("Skills updated successfully!");
+    } catch (error) {
+      console.error("Error saving skills:", error);
+      toast.error("Failed to save skills");
+    } finally {
+      setSavingSkills(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    const currentUserProfile = cobuilders.find(cb => cb.user_id === user?.id);
+    setSkillsInput(currentUserProfile?.primary_skills || "");
+    setEditingSkills(false);
+  };
 
   // Filter co-builders based on search
   const filteredCobuilders = cobuilders.filter(cb => {
@@ -230,78 +282,148 @@ const CoBuilders = () => {
               </div>
             ) : (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredCobuilders.map((cobuilder) => (
-                  <div
-                    key={cobuilder.id}
-                    className="bg-card rounded-2xl border border-border p-6 hover:border-b4-teal/50 transition-colors"
-                  >
-                    {/* Avatar and Name */}
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="w-14 h-14 rounded-full bg-b4-teal/10 flex items-center justify-center text-b4-teal font-semibold text-lg">
-                        {cobuilder.avatar_url ? (
-                          <img
-                            src={cobuilder.avatar_url}
-                            alt={cobuilder.full_name || "Co-builder"}
-                            className="w-full h-full rounded-full object-cover"
-                          />
-                        ) : (
-                          getInitials(cobuilder.full_name)
-                        )}
-                      </div>
-                      <div>
-                        <h3 className="font-display font-semibold text-foreground">
-                          {cobuilder.full_name || "Anonymous Co-Builder"}
-                        </h3>
-                        <span className="text-sm text-muted-foreground">Approved Co-Builder</span>
-                      </div>
-                    </div>
-
-                    {/* Natural Role */}
-                    {cobuilder.natural_role_description && (
-                      <div className="mb-4">
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                          <Briefcase className="w-4 h-4" />
-                          <span>Natural Role</span>
+                {filteredCobuilders.map((cobuilder) => {
+                  const isCurrentUser = cobuilder.user_id === user?.id;
+                  
+                  return (
+                    <div
+                      key={cobuilder.id}
+                      className={`rounded-2xl border p-6 transition-colors ${
+                        isCurrentUser 
+                          ? "bg-b4-teal/5 border-b4-teal ring-2 ring-b4-teal/20" 
+                          : "bg-card border-border hover:border-b4-teal/50"
+                      }`}
+                    >
+                      {/* Current User Badge */}
+                      {isCurrentUser && (
+                        <div className="mb-3">
+                          <Badge className="bg-b4-teal text-white">You</Badge>
                         </div>
-                        <p className="text-sm text-foreground italic line-clamp-2">
-                          "{cobuilder.natural_role_description}"
-                        </p>
-                      </div>
-                    )}
+                      )}
 
-                    {/* Skills */}
-                    {cobuilder.primary_skills && (
-                      <div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                          <User className="w-4 h-4" />
-                          <span>Skills</span>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {parseSkills(cobuilder.primary_skills).slice(0, 5).map((skill, idx) => (
-                            <Badge 
-                              key={idx} 
-                              variant="secondary"
-                              className="bg-b4-teal/10 text-b4-teal border-none"
-                            >
-                              {skill}
-                            </Badge>
-                          ))}
-                          {parseSkills(cobuilder.primary_skills).length > 5 && (
-                            <Badge variant="outline" className="text-muted-foreground">
-                              +{parseSkills(cobuilder.primary_skills).length - 5} more
-                            </Badge>
+                      {/* Avatar and Name */}
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className={`w-14 h-14 rounded-full flex items-center justify-center font-semibold text-lg ${
+                          isCurrentUser 
+                            ? "bg-b4-teal text-white" 
+                            : "bg-b4-teal/10 text-b4-teal"
+                        }`}>
+                          {cobuilder.avatar_url ? (
+                            <img
+                              src={cobuilder.avatar_url}
+                              alt={cobuilder.full_name || "Co-builder"}
+                              className="w-full h-full rounded-full object-cover"
+                            />
+                          ) : (
+                            getInitials(cobuilder.full_name)
                           )}
                         </div>
+                        <div>
+                          <h3 className="font-display font-semibold text-foreground">
+                            {cobuilder.full_name || "Anonymous Co-Builder"}
+                          </h3>
+                          <span className="text-sm text-muted-foreground">Approved Co-Builder</span>
+                        </div>
                       </div>
-                    )}
 
-                    {!cobuilder.primary_skills && !cobuilder.natural_role_description && (
-                      <p className="text-sm text-muted-foreground italic">
-                        No skills or natural role added yet.
-                      </p>
-                    )}
-                  </div>
-                ))}
+                      {/* Natural Role */}
+                      {cobuilder.natural_role_description && (
+                        <div className="mb-4">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                            <Briefcase className="w-4 h-4" />
+                            <span>Natural Role</span>
+                          </div>
+                          <p className="text-sm text-foreground italic line-clamp-2">
+                            "{cobuilder.natural_role_description}"
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Skills */}
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <User className="w-4 h-4" />
+                            <span>Skills</span>
+                          </div>
+                          {isCurrentUser && !editingSkills && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setEditingSkills(true)}
+                              className="h-7 px-2 text-b4-teal hover:text-b4-teal/80"
+                            >
+                              <Pencil className="w-3.5 h-3.5 mr-1" />
+                              Edit
+                            </Button>
+                          )}
+                        </div>
+
+                        {isCurrentUser && editingSkills ? (
+                          <div className="space-y-2">
+                            <Input
+                              placeholder="Enter skills separated by commas..."
+                              value={skillsInput}
+                              onChange={(e) => setSkillsInput(e.target.value)}
+                              className="text-sm"
+                            />
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={handleSaveSkills}
+                                disabled={savingSkills}
+                                className="bg-b4-teal hover:bg-b4-teal/90"
+                              >
+                                {savingSkills ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                  <Check className="w-3.5 h-3.5" />
+                                )}
+                                <span className="ml-1">Save</span>
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={handleCancelEdit}
+                                disabled={savingSkills}
+                              >
+                                <X className="w-3.5 h-3.5" />
+                                <span className="ml-1">Cancel</span>
+                              </Button>
+                            </div>
+                          </div>
+                        ) : cobuilder.primary_skills ? (
+                          <div className="flex flex-wrap gap-2">
+                            {parseSkills(cobuilder.primary_skills).slice(0, 5).map((skill, idx) => (
+                              <Badge 
+                                key={idx} 
+                                variant="secondary"
+                                className="bg-b4-teal/10 text-b4-teal border-none"
+                              >
+                                {skill}
+                              </Badge>
+                            ))}
+                            {parseSkills(cobuilder.primary_skills).length > 5 && (
+                              <Badge variant="outline" className="text-muted-foreground">
+                                +{parseSkills(cobuilder.primary_skills).length - 5} more
+                              </Badge>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground italic">
+                            {isCurrentUser ? "Click Edit to add your skills" : "No skills added yet"}
+                          </p>
+                        )}
+                      </div>
+
+                      {!cobuilder.primary_skills && !cobuilder.natural_role_description && !isCurrentUser && (
+                        <p className="text-sm text-muted-foreground italic mt-2">
+                          No skills or natural role added yet.
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
