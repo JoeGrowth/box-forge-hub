@@ -385,6 +385,13 @@ const Profile = () => {
     // entrepreneur_approved = Co-Builder with approved startup idea, on entrepreneur journey
     if (onboardingState.journey_status === "entrepreneur_approved") {
       const step = onboardingState.entrepreneur_step || 1;
+      if (step >= 4) {
+        return { 
+          label: "Entrepreneur Journey: Completed", 
+          color: "text-b4-teal", 
+          icon: CheckCircle 
+        };
+      }
       return { 
         label: `Entrepreneur Journey: Step ${step}/4`, 
         color: "text-amber-500", 
