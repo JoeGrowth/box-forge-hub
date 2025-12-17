@@ -12,6 +12,7 @@ const baseNavLinks = [
 
 const authenticatedNavLinks = [
   { name: "Opportunities", path: "/opportunities" },
+  { name: "Co Builders", path: "/cobuilders" },
 ];
 
 const commonNavLinks = [
