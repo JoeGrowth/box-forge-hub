@@ -93,20 +93,51 @@ export function EntrepreneurJourney({
       if (!user) return;
 
       try {
-        let query = supabase
-          .from("entrepreneur_journey_responses")
-          .select("*")
-          .eq("user_id", user.id);
+        let data = null;
         
-        // If ideaId is provided, filter by it
+        // If ideaId is provided, try to find responses for that specific idea first
         if (ideaId) {
-          query = query.eq("idea_id", ideaId);
-        }
-        
-        const { data, error } = await query.maybeSingle();
-
-        if (error && error.code !== "PGRST116") {
-          console.error("Error loading responses:", error);
+          const { data: ideaData, error: ideaError } = await supabase
+            .from("entrepreneur_journey_responses")
+            .select("*")
+            .eq("user_id", user.id)
+            .eq("idea_id", ideaId)
+            .maybeSingle();
+          
+          if (!ideaError) {
+            data = ideaData;
+          }
+          
+          // If no response found for this idea, check for unlinked responses and link them
+          if (!data) {
+            const { data: unlinkedData, error: unlinkedError } = await supabase
+              .from("entrepreneur_journey_responses")
+              .select("*")
+              .eq("user_id", user.id)
+              .is("idea_id", null)
+              .maybeSingle();
+            
+            if (!unlinkedError && unlinkedData) {
+              // Link this unlinked response to the current idea
+              await supabase
+                .from("entrepreneur_journey_responses")
+                .update({ idea_id: ideaId })
+                .eq("id", unlinkedData.id);
+              
+              data = { ...unlinkedData, idea_id: ideaId };
+            }
+          }
+        } else {
+          // No ideaId provided, just get user's responses
+          const { data: userData, error: userError } = await supabase
+            .from("entrepreneur_journey_responses")
+            .select("*")
+            .eq("user_id", user.id)
+            .maybeSingle();
+          
+          if (!userError) {
+            data = userData;
+          }
         }
 
         if (data) {
