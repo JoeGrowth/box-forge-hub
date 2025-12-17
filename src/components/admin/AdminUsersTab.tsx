@@ -241,13 +241,20 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
                         )}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${journeyBadge.className}`}>
-                          {journeyStatus === "approved" && <CheckCircle className="w-3 h-3" />}
-                          {journeyStatus === "pending_approval" && <Clock className="w-3 h-3" />}
-                          {journeyStatus === "rejected" && <AlertCircle className="w-3 h-3" />}
-                          {journeyStatus === "in_progress" && <Clock className="w-3 h-3" />}
-                          {journeyBadge.label}
-                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${journeyBadge.className}`}>
+                            {journeyStatus === "approved" && <CheckCircle className="w-3 h-3" />}
+                            {journeyStatus === "pending_approval" && <Clock className="w-3 h-3" />}
+                            {journeyStatus === "rejected" && <AlertCircle className="w-3 h-3" />}
+                            {journeyStatus === "in_progress" && <Clock className="w-3 h-3" />}
+                            {journeyBadge.label}
+                          </span>
+                          {user.naturalRole?.wants_to_scale && (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border bg-purple-500/10 text-purple-600 border-purple-500/20">
+                              Scaling Journey
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">

@@ -34,6 +34,7 @@ export interface UserWithDetails {
     description: string | null;
     status: string | null;
     is_ready: boolean;
+    wants_to_scale: boolean | null;
   } | null;
 }
 
@@ -123,6 +124,7 @@ export function useAdmin() {
           description: nr.description,
           status: nr.status,
           is_ready: nr.is_ready,
+          wants_to_scale: nr.wants_to_scale,
         } : null,
       };
     });

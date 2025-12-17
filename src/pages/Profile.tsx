@@ -406,6 +406,21 @@ const Profile = () => {
     return { label: "In Progress", color: "text-muted-foreground", icon: AlertCircle };
   };
 
+  const getScalingStatus = () => {
+    if (naturalRole?.wants_to_scale) {
+      // Placeholder for future scaling journey steps
+      return { 
+        label: "Scaling Journey: Pending Steps", 
+        color: "text-purple-500", 
+        icon: Rocket,
+        show: true
+      };
+    }
+    return { show: false };
+  };
+
+  const scalingStatus = getScalingStatus();
+
   const isApprovedCoBuilder = onboardingState?.journey_status === "approved" || 
                                onboardingState?.journey_status === "entrepreneur_approved";
 
@@ -496,6 +511,12 @@ const Profile = () => {
                           <status.icon className="w-3.5 h-3.5" />
                           {status.label}
                         </span>
+                        {scalingStatus.show && (
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 text-sm font-medium ${scalingStatus.color}`}>
+                            <scalingStatus.icon className="w-3.5 h-3.5" />
+                            {scalingStatus.label}
+                          </span>
+                        )}
                       </div>
                     </>
                   )}
