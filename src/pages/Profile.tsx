@@ -4,7 +4,9 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -61,6 +63,7 @@ interface Profile {
   user_id: string;
   full_name: string | null;
   avatar_url: string | null;
+  primary_skills: string | null;
   created_at: string;
 }
 
@@ -81,6 +84,11 @@ const Profile = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [userIdeas, setUserIdeas] = useState<StartupIdea[]>([]);
   const [requestingReview, setRequestingReview] = useState(false);
+  
+  // Skills state
+  const [skills, setSkills] = useState("");
+  const [isEditingSkills, setIsEditingSkills] = useState(false);
+  const [isSavingSkills, setIsSavingSkills] = useState(false);
   
   // Change password state
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -120,6 +128,7 @@ const Profile = () => {
       if (!error && data) {
         setProfile(data);
         setFullName(data.full_name || "");
+        setSkills(data.primary_skills || "");
       }
     };
 
@@ -219,6 +228,35 @@ const Profile = () => {
       });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleSaveSkills = async () => {
+    if (!user) return;
+    
+    setIsSavingSkills(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ primary_skills: skills })
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      setProfile((prev) => prev ? { ...prev, primary_skills: skills } : null);
+      setIsEditingSkills(false);
+      toast({
+        title: "Skills Updated",
+        description: "Your skills have been saved and will appear in the Co-Builders Directory.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update skills. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingSkills(false);
     }
   };
 
@@ -695,6 +733,88 @@ const Profile = () => {
                       <ArrowRight className="ml-2 w-4 h-4" />
                     </Button>
                   </div>
+                </div>
+
+                {/* Skills Section */}
+                <div className="bg-card rounded-xl border border-border p-6 mb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
+                        <Briefcase className="w-5 h-5 text-purple-500" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-foreground">Your Skills</h3>
+                        <p className="text-sm text-muted-foreground">
+                          These skills will be shown in the Co-Builders Directory
+                        </p>
+                      </div>
+                    </div>
+                    {!isEditingSkills && (
+                      <Button variant="outline" size="sm" onClick={() => setIsEditingSkills(true)}>
+                        <Settings className="w-4 h-4 mr-2" />
+                        Edit
+                      </Button>
+                    )}
+                  </div>
+
+                  {isEditingSkills ? (
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="skills">Skills (comma-separated)</Label>
+                        <Textarea
+                          id="skills"
+                          value={skills}
+                          onChange={(e) => setSkills(e.target.value)}
+                          placeholder="e.g., React, Node.js, Product Management, UI/UX Design, Marketing"
+                          className="mt-1"
+                          rows={3}
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Enter your skills separated by commas
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="teal" 
+                          size="sm" 
+                          onClick={handleSaveSkills}
+                          disabled={isSavingSkills}
+                        >
+                          {isSavingSkills ? "Saving..." : "Save Skills"}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => {
+                            setIsEditingSkills(false);
+                            setSkills(profile?.primary_skills || "");
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      {skills ? (
+                        <div className="flex flex-wrap gap-2">
+                          {skills.split(",").map((skill, idx) => (
+                            <Badge 
+                              key={idx} 
+                              variant="secondary"
+                              className="bg-purple-500/10 text-purple-600 border-none"
+                            >
+                              {skill.trim()}
+                            </Badge>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground italic">
+                          No skills added yet. Click "Edit" to add your skills.
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Toggle Lists Section */}
