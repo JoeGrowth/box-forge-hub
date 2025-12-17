@@ -289,8 +289,9 @@ const Auth = () => {
                 <p className="text-sm text-muted-foreground">
                   {mode === "login" ? "Don't have an account?" : "Already have an account?"}{" "}
                   <button 
+                    type="button"
                     onClick={() => setMode(mode === "login" ? "signup" : "login")}
-                    className="text-b4-teal font-medium hover:underline"
+                    className="text-b4-teal font-medium hover:underline cursor-pointer"
                   >
                     {mode === "login" ? "Sign Up" : "Sign In"}
                   </button>
