@@ -100,7 +100,9 @@ serve(async (req) => {
       // Send email with code
       const resend = new Resend(resendApiKey)
       const { error: emailError } = await resend.emails.send({
-        from: 'B4 Platform <noreply@box4solutions.com>',
+        // Use Resend's default sender domain to avoid "from" domain verification issues.
+        // You can switch this back to a custom domain once it's verified in Resend.
+        from: 'B4 Platform <onboarding@resend.dev>',
         to: [user.email!],
         subject: 'Account Deletion Confirmation Code',
         html: `
@@ -121,7 +123,10 @@ serve(async (req) => {
       if (emailError) {
         console.error('Error sending email:', emailError)
         return new Response(
-          JSON.stringify({ error: 'Failed to send confirmation email' }),
+          JSON.stringify({
+            error: 'Failed to send confirmation email',
+            details: emailError.message ?? String(emailError),
+          }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
