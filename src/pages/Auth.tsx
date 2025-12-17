@@ -35,12 +35,12 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState<UserRole>(routeRole);
-  
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [errors, setErrors] = useState<{ email?: string; password?: string; fullName?: string }>({});
-  
+
   const { toast } = useToast();
   const { signIn, signUp, user } = useAuth();
   const { onboardingState, loading: onboardingLoading } = useOnboarding();
@@ -57,10 +57,14 @@ const Auth = () => {
   useEffect(() => {
     if (user && !onboardingLoading) {
       // Check if onboarding is completed to redirect appropriately
-      const isCoBuilderComplete = onboardingState?.primary_role === "cobuilder" &&
-        onboardingState?.current_step >= 8 && onboardingState?.onboarding_completed;
-      const isEntrepreneurComplete = onboardingState?.primary_role === "entrepreneur" &&
-        onboardingState?.current_step >= 2 && onboardingState?.onboarding_completed;
+      const isCoBuilderComplete =
+        onboardingState?.primary_role === "cobuilder" &&
+        onboardingState?.current_step >= 8 &&
+        onboardingState?.onboarding_completed;
+      const isEntrepreneurComplete =
+        onboardingState?.primary_role === "entrepreneur" &&
+        onboardingState?.current_step >= 2 &&
+        onboardingState?.onboarding_completed;
 
       if (isCoBuilderComplete || isEntrepreneurComplete) {
         navigate("/", { replace: true });
@@ -72,35 +76,35 @@ const Auth = () => {
 
   const validateForm = () => {
     const newErrors: typeof errors = {};
-    
+
     const emailResult = emailSchema.safeParse(email);
     if (!emailResult.success) {
       newErrors.email = emailResult.error.errors[0].message;
     }
-    
+
     const passwordResult = passwordSchema.safeParse(password);
     if (!passwordResult.success) {
       newErrors.password = passwordResult.error.errors[0].message;
     }
-    
+
     if (mode === "signup") {
       const nameResult = nameSchema.safeParse(fullName);
       if (!nameResult.success) {
         newErrors.fullName = nameResult.error.errors[0].message;
       }
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     setIsLoading(true);
-    
+
     try {
       if (mode === "login") {
         const { error } = await signIn(email, password);
@@ -157,7 +161,7 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
+
       <main className="pt-20">
         <section className="min-h-[calc(100vh-5rem)] flex items-center justify-center py-16 px-4">
           <div className="w-full max-w-md">
@@ -172,9 +176,7 @@ const Auth = () => {
                 {mode === "login" ? "Welcome Back" : "Join B4 Platform"}
               </h1>
               <p className="text-muted-foreground">
-                {mode === "login" 
-                  ? "Sign in to access your dashboard" 
-                  : "Create your account to get started"}
+                {mode === "login" ? "Sign in to access your dashboard" : "Create your account to get started"}
               </p>
             </div>
 
@@ -187,21 +189,6 @@ const Auth = () => {
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
-                      onClick={() => setSelectedRole("entrepreneur")}
-                      className={`p-4 rounded-xl border-2 transition-all text-left ${
-                        selectedRole === "entrepreneur"
-                          ? "border-b4-teal bg-b4-teal/5"
-                          : "border-border hover:border-muted-foreground/30"
-                      }`}
-                    >
-                      <Lightbulb className={`w-5 h-5 mb-2 ${
-                        selectedRole === "entrepreneur" ? "text-b4-teal" : "text-muted-foreground"
-                      }`} />
-                      <div className="font-medium text-sm text-foreground">Entrepreneur</div>
-                      <div className="text-xs text-muted-foreground">Build your startup</div>
-                    </button>
-                    <button
-                      type="button"
                       onClick={() => setSelectedRole("cobuilder")}
                       className={`p-4 rounded-xl border-2 transition-all text-left ${
                         selectedRole === "cobuilder"
@@ -209,9 +196,11 @@ const Auth = () => {
                           : "border-border hover:border-muted-foreground/30"
                       }`}
                     >
-                      <Users className={`w-5 h-5 mb-2 ${
-                        selectedRole === "cobuilder" ? "text-b4-teal" : "text-muted-foreground"
-                      }`} />
+                      <Users
+                        className={`w-5 h-5 mb-2 ${
+                          selectedRole === "cobuilder" ? "text-b4-teal" : "text-muted-foreground"
+                        }`}
+                      />
                       <div className="font-medium text-sm text-foreground">Co-Builder</div>
                       <div className="text-xs text-muted-foreground">Earn equity</div>
                     </button>
@@ -231,9 +220,7 @@ const Auth = () => {
                       onChange={(e) => setFullName(e.target.value)}
                       className={`h-12 ${errors.fullName ? "border-destructive" : ""}`}
                     />
-                    {errors.fullName && (
-                      <p className="text-sm text-destructive">{errors.fullName}</p>
-                    )}
+                    {errors.fullName && <p className="text-sm text-destructive">{errors.fullName}</p>}
                   </div>
                 )}
 
@@ -247,19 +234,14 @@ const Auth = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     className={`h-12 ${errors.email ? "border-destructive" : ""}`}
                   />
-                  {errors.email && (
-                    <p className="text-sm text-destructive">{errors.email}</p>
-                  )}
+                  {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">Password</Label>
                     {mode === "login" && (
-                      <Link 
-                        to="/forgot-password" 
-                        className="text-sm text-b4-teal hover:underline"
-                      >
+                      <Link to="/forgot-password" className="text-sm text-b4-teal hover:underline">
                         Forgot password?
                       </Link>
                     )}
@@ -281,21 +263,17 @@ const Auth = () => {
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
-                  {errors.password && (
-                    <p className="text-sm text-destructive">{errors.password}</p>
-                  )}
+                  {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
                 </div>
 
-                <Button 
-                  type="submit" 
-                  variant="teal" 
-                  size="lg" 
-                  className="w-full"
-                  disabled={isLoading}
-                >
-                  {isLoading 
-                    ? (mode === "login" ? "Signing in..." : "Creating account...") 
-                    : (mode === "login" ? "Sign In" : "Create Account")}
+                <Button type="submit" variant="teal" size="lg" className="w-full" disabled={isLoading}>
+                  {isLoading
+                    ? mode === "login"
+                      ? "Signing in..."
+                      : "Creating account..."
+                    : mode === "login"
+                      ? "Sign In"
+                      : "Create Account"}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </form>
@@ -303,7 +281,7 @@ const Auth = () => {
               <div className="mt-6 text-center">
                 <p className="text-sm text-muted-foreground">
                   {mode === "login" ? "Don't have an account?" : "Already have an account?"}{" "}
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setMode(mode === "login" ? "signup" : "login")}
                     className="text-b4-teal font-medium hover:underline cursor-pointer"
