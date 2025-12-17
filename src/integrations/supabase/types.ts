@@ -447,6 +447,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_approved_cobuilder: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "entrepreneur" | "cobuilder" | "box_manager" | "admin"
