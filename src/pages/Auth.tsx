@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -18,16 +18,23 @@ const passwordSchema = z.string().min(6, "Password must be at least 6 characters
 const nameSchema = z.string().min(2, "Name must be at least 2 characters");
 
 const Auth = () => {
+  const location = useLocation();
   const [searchParams] = useSearchParams();
-  const location = window.location.pathname;
-  // Support both /signup route and ?mode=signup query param
-  const initialMode = location === "/signup" || searchParams.get("mode") === "signup" ? "signup" : "login";
-  const initialRole = (searchParams.get("role") as UserRole) || "cobuilder";
-  
-  const [mode, setMode] = useState<"login" | "signup">(initialMode);
+
+  // Support /login, /signup and /auth?mode=...
+  const routeMode: "login" | "signup" =
+    location.pathname === "/signup" || searchParams.get("mode") === "signup"
+      ? "signup"
+      : location.pathname === "/login" || searchParams.get("mode") === "login"
+        ? "login"
+        : "login";
+
+  const routeRole = (searchParams.get("role") as UserRole) || "cobuilder";
+
+  const [mode, setMode] = useState<"login" | "signup">(routeMode);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<UserRole>(initialRole);
+  const [selectedRole, setSelectedRole] = useState<UserRole>(routeRole);
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,13 +47,21 @@ const Auth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    setMode(routeMode);
+  }, [routeMode]);
+
+  useEffect(() => {
+    setSelectedRole(routeRole);
+  }, [routeRole]);
+
+  useEffect(() => {
     if (user && !onboardingLoading) {
       // Check if onboarding is completed to redirect appropriately
-      const isCoBuilderComplete = onboardingState?.primary_role === "cobuilder" && 
+      const isCoBuilderComplete = onboardingState?.primary_role === "cobuilder" &&
         onboardingState?.current_step >= 8 && onboardingState?.onboarding_completed;
-      const isEntrepreneurComplete = onboardingState?.primary_role === "entrepreneur" && 
+      const isEntrepreneurComplete = onboardingState?.primary_role === "entrepreneur" &&
         onboardingState?.current_step >= 2 && onboardingState?.onboarding_completed;
-      
+
       if (isCoBuilderComplete || isEntrepreneurComplete) {
         navigate("/", { replace: true });
       } else {
