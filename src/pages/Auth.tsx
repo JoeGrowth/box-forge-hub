@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useOnboarding } from "@/hooks/useOnboarding";
 import { Eye, EyeOff, ArrowRight, Lightbulb, Users } from "lucide-react";
 import { z } from "zod";
 
@@ -35,13 +36,24 @@ const Auth = () => {
   
   const { toast } = useToast();
   const { signIn, signUp, user } = useAuth();
+  const { onboardingState, loading: onboardingLoading } = useOnboarding();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) {
-      navigate("/onboarding", { replace: true });
+    if (user && !onboardingLoading) {
+      // Check if onboarding is completed to redirect appropriately
+      const isCoBuilderComplete = onboardingState?.primary_role === "cobuilder" && 
+        onboardingState?.current_step >= 8 && onboardingState?.onboarding_completed;
+      const isEntrepreneurComplete = onboardingState?.primary_role === "entrepreneur" && 
+        onboardingState?.current_step >= 2 && onboardingState?.onboarding_completed;
+      
+      if (isCoBuilderComplete || isEntrepreneurComplete) {
+        navigate("/", { replace: true });
+      } else {
+        navigate("/onboarding", { replace: true });
+      }
     }
-  }, [user, navigate]);
+  }, [user, onboardingState, onboardingLoading, navigate]);
 
   const validateForm = () => {
     const newErrors: typeof errors = {};
