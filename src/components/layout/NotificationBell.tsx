@@ -127,6 +127,12 @@ export function NotificationBell() {
         return "🏆";
       case "onboarding_complete":
         return "🎓";
+      case "onboarding_path_selected":
+        return "🧭";
+      case "natural_role_defined":
+        return "✨";
+      case "onboarding_step_complete":
+        return "✓";
       default:
         return "📬";
     }
