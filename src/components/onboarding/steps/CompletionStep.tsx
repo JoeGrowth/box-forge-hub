@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
 export const CompletionStep = () => {
-  const { naturalRole, updateNaturalRole, completeOnboarding, sendAdminNotification } = useOnboarding();
+  const { naturalRole, updateNaturalRole, completeOnboarding, sendAdminNotification, sendMilestoneNotification } = useOnboarding();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -36,6 +36,14 @@ export const CompletionStep = () => {
       );
       
       await completeOnboarding();
+      
+      // Send milestone notification for journey completion
+      await sendMilestoneNotification(
+        "onboarding_complete",
+        "Journey Complete! 🎓",
+        "You've completed your onboarding journey. Your application is now under review.",
+        "/profile"
+      );
       
       toast({
         title: "Journey Complete!",

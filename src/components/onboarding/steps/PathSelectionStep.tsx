@@ -8,7 +8,7 @@ interface PathSelectionStepProps {
 }
 
 export const PathSelectionStep = ({ onNext }: PathSelectionStepProps) => {
-  const { updateOnboardingState } = useOnboarding();
+  const { updateOnboardingState, sendMilestoneNotification } = useOnboarding();
   const [selectedRole, setSelectedRole] = useState<PrimaryRole | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -21,6 +21,16 @@ export const PathSelectionStep = ({ onNext }: PathSelectionStepProps) => {
         primary_role: selectedRole,
         current_step: 2 
       });
+      
+      // Send milestone notification
+      const roleName = selectedRole === "entrepreneur" ? "Entrepreneur" : "Co-Builder";
+      await sendMilestoneNotification(
+        "onboarding_path_selected",
+        "Path Selected! 🎯",
+        `You've chosen the ${roleName} path. Let's continue your journey!`,
+        "/onboarding"
+      );
+      
       onNext();
     } finally {
       setIsLoading(false);

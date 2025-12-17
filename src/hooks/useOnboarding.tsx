@@ -1,6 +1,7 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
+import { createInAppNotification, NotificationType } from "@/lib/emailNotifications";
 
 export type PrimaryRole = "entrepreneur" | "cobuilder";
 export type NaturalRoleStatus = "pending" | "defined" | "assistance_requested" | "not_ready";
@@ -44,6 +45,7 @@ interface OnboardingContextType {
   updateOnboardingState: (updates: Partial<OnboardingState>) => Promise<void>;
   updateNaturalRole: (updates: Partial<NaturalRole>) => Promise<void>;
   sendAdminNotification: (type: string, stepName: string, message: string) => Promise<void>;
+  sendMilestoneNotification: (type: NotificationType, title: string, message: string, link?: string) => Promise<void>;
   completeOnboarding: () => Promise<void>;
   refetch: () => Promise<void>;
 }
@@ -206,6 +208,16 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
     if (error) throw error;
   };
 
+  const sendMilestoneNotification = async (
+    type: NotificationType,
+    title: string,
+    message: string,
+    link?: string
+  ) => {
+    if (!user) return;
+    await createInAppNotification(user.id, title, message, type, link);
+  };
+
   const completeOnboarding = async () => {
     await updateOnboardingState({ 
       onboarding_completed: true,
@@ -225,6 +237,7 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
         updateOnboardingState,
         updateNaturalRole,
         sendAdminNotification,
+        sendMilestoneNotification,
         completeOnboarding,
         refetch: fetchOnboardingData,
       }}

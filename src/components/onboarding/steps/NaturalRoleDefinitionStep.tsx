@@ -11,7 +11,7 @@ interface NaturalRoleDefinitionStepProps {
 }
 
 export const NaturalRoleDefinitionStep = ({ onNext, onNeedHelp }: NaturalRoleDefinitionStepProps) => {
-  const { updateOnboardingState, updateNaturalRole, sendAdminNotification } = useOnboarding();
+  const { updateOnboardingState, updateNaturalRole, sendAdminNotification, sendMilestoneNotification } = useOnboarding();
   const { toast } = useToast();
   const [knowsNR, setKnowsNR] = useState<boolean | null>(null);
   const [description, setDescription] = useState("");
@@ -55,6 +55,15 @@ export const NaturalRoleDefinitionStep = ({ onNext, onNeedHelp }: NaturalRoleDef
         status: "defined" 
       });
       await updateOnboardingState({ current_step: 3 });
+      
+      // Send milestone notification
+      await sendMilestoneNotification(
+        "natural_role_defined",
+        "Natural Role Defined! ✨",
+        "You've defined your Natural Role. Now let's assess your experience.",
+        "/onboarding"
+      );
+      
       onNext();
     } catch (error) {
       toast({
