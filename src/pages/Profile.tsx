@@ -514,7 +514,7 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Natural Role Section */}
+            {/* Part 1: Natural Role Section */}
             {onboardingState?.primary_role === "cobuilder" && naturalRole && (
               <div className="bg-card rounded-3xl border border-border p-8 mb-8">
                 <h2 className="font-display text-xl font-bold text-foreground mb-4">
@@ -563,15 +563,10 @@ const Profile = () => {
                     <span className="text-sm text-foreground">Consulting</span>
                   </div>
                 </div>
-
-                {/* View/Edit Journey Answers */}
-                <div className="mt-6">
-                  <OnboardingAnswersCard naturalRole={naturalRole} onUpdate={refetch} />
-                </div>
               </div>
             )}
 
-            {/* Approved Co-Builder Dashboard */}
+            {/* Part 2: Approved Co-Builder Dashboard with Toggle Lists */}
             {isApprovedCoBuilder && (
               <div className="bg-gradient-to-br from-b4-teal/10 to-b4-navy/10 rounded-3xl border border-b4-teal/20 p-8 mb-8">
                 <h2 className="font-display text-xl font-bold text-foreground mb-2">
@@ -581,7 +576,7 @@ const Profile = () => {
                   Choose how you want to build your next venture:
                 </p>
                 
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-2 gap-4 mb-6">
                   <div className="bg-card rounded-xl border border-border p-6 hover:border-b4-teal/50 transition-colors">
                     <div className="w-12 h-12 rounded-xl bg-b4-teal/10 flex items-center justify-center mb-4">
                       <Users className="w-6 h-6 text-b4-teal" />
@@ -610,128 +605,128 @@ const Profile = () => {
                     </Button>
                   </div>
                 </div>
-              </div>
-            )}
 
-            {/* Entrepreneur Journey Progress Section - Show for each approved idea as collapsible */}
-            {onboardingState?.journey_status === "entrepreneur_approved" && (
-              <div className="space-y-4 mb-8" id="entrepreneur-journey">
-                {userIdeas.filter(idea => idea.review_status === "approved").map((idea, index) => (
-                  <Collapsible key={idea.id} defaultOpen={index === 0}>
-                    <div className="bg-card rounded-3xl border border-border overflow-hidden">
-                      <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-b4-teal/10 flex items-center justify-center">
-                            <Lightbulb className="w-4 h-4 text-b4-teal" />
+                {/* Toggle Lists Section */}
+                <div className="space-y-3">
+                  {/* Toggle 1: Your Journey Answers */}
+                  {naturalRole && (
+                    <Collapsible>
+                      <div className="bg-card rounded-xl border border-border overflow-hidden">
+                        <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors group">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-b4-navy/10 flex items-center justify-center">
+                              <User className="w-4 h-4 text-b4-navy" />
+                            </div>
+                            <span className="font-display font-semibold text-foreground">
+                              Your Journey Answers
+                            </span>
                           </div>
-                          <span className="font-display font-semibold text-foreground">
-                            {idea.title}
-                          </span>
-                          <span className="px-2 py-0.5 rounded-full bg-b4-teal/10 text-b4-teal text-xs">
-                            Idea {index + 1}
-                          </span>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-6 px-2 text-xs"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/edit-idea/${idea.id}`);
-                            }}
-                          >
-                            <Settings className="w-3 h-3 mr-1" />
-                            Edit
-                          </Button>
-                        </div>
-                        <ChevronDown className="w-5 h-5 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <div className="px-4 pb-4">
-                          <EntrepreneurJourney
-                            currentStep={onboardingState?.entrepreneur_step || 1}
-                            onStepComplete={handleEntrepreneurStepComplete}
-                            ideaId={idea.id}
-                          />
-                        </div>
-                      </CollapsibleContent>
-                    </div>
-                  </Collapsible>
-                ))}
-                {/* Fallback if no approved ideas but status is entrepreneur_approved */}
-                {userIdeas.filter(idea => idea.review_status === "approved").length === 0 && (
-                  <EntrepreneurJourney
-                    currentStep={onboardingState?.entrepreneur_step || 1}
-                    onStepComplete={handleEntrepreneurStepComplete}
-                  />
-                )}
+                          <ChevronDown className="w-5 h-5 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <div className="px-4 pb-4">
+                            <OnboardingAnswersCard naturalRole={naturalRole} onUpdate={refetch} />
+                          </div>
+                        </CollapsibleContent>
+                      </div>
+                    </Collapsible>
+                  )}
+
+                  {/* Toggle 2+: Startup Ideas */}
+                  {userIdeas.map((idea, index) => (
+                    <Collapsible key={idea.id}>
+                      <div className="bg-card rounded-xl border border-border overflow-hidden">
+                        <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors group">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-b4-coral/10 flex items-center justify-center">
+                              <Lightbulb className="w-4 h-4 text-b4-coral" />
+                            </div>
+                            <span className="font-display font-semibold text-foreground">
+                              Idea {index + 1}: {idea.title}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded-full text-xs ${
+                              idea.review_status === "approved" 
+                                ? "bg-b4-teal/10 text-b4-teal"
+                                : idea.review_status === "under_review"
+                                ? "bg-amber-500/10 text-amber-600"
+                                : idea.review_status === "rejected"
+                                ? "bg-red-500/10 text-red-600"
+                                : idea.review_status === "needs_enhancement"
+                                ? "bg-amber-500/10 text-amber-600"
+                                : "bg-muted text-muted-foreground"
+                            }`}>
+                              {idea.review_status === "under_review" ? "Under Review" : 
+                               idea.review_status === "needs_enhancement" ? "Needs Enhancement" :
+                               idea.review_status.charAt(0).toUpperCase() + idea.review_status.slice(1)}
+                            </span>
+                          </div>
+                          <ChevronDown className="w-5 h-5 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <div className="px-4 pb-4 space-y-4">
+                            <div className="flex justify-end">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => navigate(`/edit-idea/${idea.id}`)}
+                              >
+                                <Settings className="w-3 h-3 mr-1" />
+                                Edit Idea
+                              </Button>
+                            </div>
+                            {idea.review_status === "approved" && onboardingState?.journey_status === "entrepreneur_approved" && (
+                              <EntrepreneurJourney
+                                currentStep={onboardingState?.entrepreneur_step || 1}
+                                onStepComplete={handleEntrepreneurStepComplete}
+                                ideaId={idea.id}
+                              />
+                            )}
+                            {idea.review_status === "pending" && (
+                              <div className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-4">
+                                This idea is pending review. Submit for review to unlock the entrepreneur journey.
+                              </div>
+                            )}
+                            {idea.review_status === "under_review" && (
+                              <div className="text-sm text-amber-600 bg-amber-500/10 rounded-lg p-4 flex items-center gap-2">
+                                <Clock className="w-4 h-4" />
+                                Your idea is being reviewed by admins.
+                              </div>
+                            )}
+                            {idea.review_status === "needs_enhancement" && (
+                              <div className="text-sm text-amber-600 bg-amber-500/10 rounded-lg p-4">
+                                Your idea needs enhancement. Click "Edit Idea" above to make improvements.
+                              </div>
+                            )}
+                          </div>
+                        </CollapsibleContent>
+                      </div>
+                    </Collapsible>
+                  ))}
+                </div>
               </div>
             )}
 
-            {/* Request Entrepreneur Review - for approved co-builders with ideas */}
-            {isApprovedCoBuilder && userIdeas.length > 0 && (
+            {/* Request Entrepreneur Review - for approved co-builders with pending ideas */}
+            {isApprovedCoBuilder && userIdeas.some((i) => i.review_status === "pending") && (
               <div className="bg-gradient-to-br from-amber-500/10 to-b4-coral/10 rounded-3xl border border-amber-500/20 p-8 mb-8">
                 <div className="flex items-center gap-3 mb-2">
                   <Rocket className="w-6 h-6 text-amber-500" />
                   <h2 className="font-display text-xl font-bold text-foreground">
-                    Ready to Become an Entrepreneur?
+                    Ready to Submit for Review?
                   </h2>
                 </div>
                 <p className="text-muted-foreground mb-4">
-                  You've created {userIdeas.length} startup idea{userIdeas.length > 1 ? "s" : ""}. 
-                  Request a review to unlock the full entrepreneur journey with guided steps.
+                  Submit your startup idea for admin review to unlock the entrepreneur journey.
                 </p>
                 
-                {/* Show idea statuses */}
-                <div className="space-y-2 mb-4">
-                  {userIdeas.map((idea) => (
-                    <div key={idea.id} className="flex items-center gap-2 text-sm">
-                      <Lightbulb className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-foreground">{idea.title}</span>
-                      <span className={`px-2 py-0.5 rounded-full text-xs ${
-                        idea.review_status === "approved" 
-                          ? "bg-b4-teal/10 text-b4-teal"
-                          : idea.review_status === "under_review"
-                          ? "bg-amber-500/10 text-amber-600"
-                          : idea.review_status === "rejected"
-                          ? "bg-red-500/10 text-red-600"
-                          : idea.review_status === "needs_enhancement"
-                          ? "bg-amber-500/10 text-amber-600"
-                          : "bg-muted text-muted-foreground"
-                      }`}>
-                        {idea.review_status === "under_review" ? "Under Review" : 
-                         idea.review_status === "needs_enhancement" ? "Needs Enhancement" :
-                         idea.review_status.charAt(0).toUpperCase() + idea.review_status.slice(1)}
-                      </span>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-6 px-2 text-xs"
-                        onClick={() => navigate(`/edit-idea/${idea.id}`)}
-                      >
-                        <Settings className="w-3 h-3 mr-1" />
-                        Edit
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-
-                {userIdeas.some((i) => i.review_status === "pending") && (
-                  <Button 
-                    variant="teal" 
-                    onClick={handleRequestEntrepreneurReview}
-                    disabled={requestingReview}
-                  >
-                    {requestingReview ? "Submitting..." : "Request Entrepreneur Review"}
-                    <Send className="ml-2 w-4 h-4" />
-                  </Button>
-                )}
-                
-                {userIdeas.some((i) => i.review_status === "under_review") && (
-                  <p className="text-sm text-amber-600 flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    Your review request is being processed by admins.
-                  </p>
-                )}
+                <Button 
+                  variant="teal" 
+                  onClick={handleRequestEntrepreneurReview}
+                  disabled={requestingReview}
+                >
+                  {requestingReview ? "Submitting..." : "Request Entrepreneur Review"}
+                  <Send className="ml-2 w-4 h-4" />
+                </Button>
               </div>
             )}
 
