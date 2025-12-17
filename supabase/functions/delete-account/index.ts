@@ -25,12 +25,15 @@ serve(async (req) => {
       )
     }
 
-    // Create client with user's token to get their ID
-    const supabaseUser = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
-      global: { headers: { Authorization: authHeader } }
+    // Extract the JWT token
+    const token = authHeader.replace('Bearer ', '')
+    
+    // Use admin client to get user from token
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { autoRefreshToken: false, persistSession: false }
     })
 
-    const { data: { user }, error: userError } = await supabaseUser.auth.getUser()
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token)
     if (userError || !user) {
       console.error('Error getting user:', userError)
       return new Response(
@@ -41,11 +44,6 @@ serve(async (req) => {
 
     const { deleteType } = await req.json()
     console.log(`Processing ${deleteType} delete for user:`, user.id)
-
-    // Create admin client for privileged operations
-    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: { autoRefreshToken: false, persistSession: false }
-    })
 
     if (deleteType === 'soft') {
       // Soft delete: mark account as deleted
