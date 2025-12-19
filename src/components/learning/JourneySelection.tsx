@@ -112,6 +112,20 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
   // Only show scaling path if user wants to scale
   const showScalingPath = naturalRole?.wants_to_scale === true;
 
+  // Check if user has all main certifications
+  const hasAllMainCertifications = 
+    certifications.some((c) => c.certification_type === "cobuilder_b4") &&
+    certifications.some((c) => c.certification_type === "initiator_b4");
+
+  // Hide entire section if user has all certifications (and no scaling path or scaling is completed)
+  const scalingCertified = certifications.some((c) => c.certification_type === "scaling_complete");
+  const scalingStatus = getJourneyStatus("scaling_path");
+  const scalingCompleted = scalingStatus === "approved" || scalingCertified;
+  
+  if (hasAllMainCertifications && (!showScalingPath || scalingCompleted)) {
+    return null;
+  }
+
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
