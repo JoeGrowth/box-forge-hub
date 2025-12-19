@@ -7,8 +7,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, User, Briefcase, Loader2, Pencil, Check, X } from "lucide-react";
+import { Search, User, Briefcase, Loader2, Pencil, Check, X, ShieldCheck, Award } from "lucide-react";
 import { toast } from "sonner";
+
+interface Certification {
+  id: string;
+  user_id: string;
+  certification_type: string;
+  display_label: string;
+  verified: boolean;
+}
 
 interface CoBuilder {
   id: string;
@@ -17,6 +25,7 @@ interface CoBuilder {
   avatar_url: string | null;
   primary_skills: string | null;
   natural_role_description: string | null;
+  certifications: Certification[];
 }
 
 const CoBuilders = () => {
@@ -94,12 +103,22 @@ const CoBuilders = () => {
 
         if (rolesError) throw rolesError;
 
+        // Get certifications for these users
+        const { data: certifications, error: certsError } = await supabase
+          .from("user_certifications")
+          .select("id, user_id, certification_type, display_label, verified")
+          .in("user_id", approvedUserIds);
+
+        if (certsError) throw certsError;
+
         // Combine data
         const combinedData: CoBuilder[] = (profiles || []).map(profile => {
           const naturalRole = naturalRoles?.find(nr => nr.user_id === profile.user_id);
+          const userCerts = certifications?.filter(c => c.user_id === profile.user_id) || [];
           return {
             ...profile,
             natural_role_description: naturalRole?.description || null,
+            certifications: userCerts,
           };
         });
 
@@ -318,11 +337,29 @@ const CoBuilders = () => {
                             getInitials(cobuilder.full_name)
                           )}
                         </div>
-                        <div>
-                          <h3 className="font-display font-semibold text-foreground">
-                            {cobuilder.full_name || "Anonymous Co-Builder"}
-                          </h3>
-                          <span className="text-sm text-muted-foreground">Approved Co-Builder</span>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-display font-semibold text-foreground">
+                              {cobuilder.full_name || "Anonymous Co-Builder"}
+                            </h3>
+                            {cobuilder.certifications.some(c => c.verified) && (
+                              <span title="Verified Co-Builder">
+                                <ShieldCheck className="w-4 h-4 text-b4-teal" />
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                            <span className="text-sm text-muted-foreground">Approved Co-Builder</span>
+                            {cobuilder.certifications.map((cert) => (
+                              <Badge 
+                                key={cert.id}
+                                className="bg-gradient-to-r from-b4-teal to-b4-purple text-white text-xs py-0 px-2"
+                              >
+                                <Award className="w-3 h-3 mr-1" />
+                                {cert.display_label}
+                              </Badge>
+                            ))}
+                          </div>
                         </div>
                       </div>
 
