@@ -30,10 +30,8 @@ const Onboarding = () => {
   useEffect(() => {
     if (onboardingState) {
       setCurrentStep(onboardingState.current_step);
-      // Only redirect if truly completed (step 8 for cobuilder, step 2 for entrepreneur)
-      const isCoBuilderComplete = onboardingState.primary_role === "cobuilder" && onboardingState.current_step >= 8 && onboardingState.onboarding_completed;
-      const isEntrepreneurComplete = onboardingState.primary_role === "entrepreneur" && onboardingState.current_step >= 2 && onboardingState.onboarding_completed;
-      if (isCoBuilderComplete || isEntrepreneurComplete) {
+      // Redirect if truly completed (step 8 for both paths)
+      if (onboardingState.current_step >= 8 && onboardingState.onboarding_completed) {
         navigate("/", { replace: true });
       }
     }
@@ -58,7 +56,7 @@ const Onboarding = () => {
 
   const isEntrepreneur = onboardingState?.primary_role === "entrepreneur";
   const isCoBuilder = onboardingState?.primary_role === "cobuilder";
-  const totalSteps = isEntrepreneur ? 2 : 8;
+  const totalSteps = 8; // Same steps for both entrepreneurs and co-builders
 
   // Show overview for returning users who have already started
   if (showOverview && onboardingState && (onboardingState.current_step > 1 || onboardingState.primary_role)) {
@@ -74,7 +72,7 @@ const Onboarding = () => {
   const getStepLabel = () => {
     const labels: Record<number, string> = {
       1: "Choose your path",
-      2: isEntrepreneur ? "Getting started" : "Define your Natural Role",
+      2: "Define your Natural Role",
       3: "Assessment: Promise",
       4: "Assessment: Practice",
       5: "Assessment: Training",
@@ -93,10 +91,7 @@ const Onboarding = () => {
       return <PathSelectionStep onNext={() => setCurrentStep(2)} />;
     }
 
-    if (isEntrepreneur) {
-      return <EntrepreneurPlaceholder />;
-    }
-
+    // Both entrepreneurs and co-builders go through the same Natural Role journey
     switch (currentStep) {
       case 2:
         return (

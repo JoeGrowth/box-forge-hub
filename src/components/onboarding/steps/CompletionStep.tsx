@@ -6,11 +6,13 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
 export const CompletionStep = () => {
-  const { naturalRole, updateNaturalRole, completeOnboarding, sendAdminNotification, sendMilestoneNotification } = useOnboarding();
+  const { naturalRole, onboardingState, updateNaturalRole, completeOnboarding, sendAdminNotification, sendMilestoneNotification } = useOnboarding();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [isReady, setIsReady] = useState(false);
+
+  const isEntrepreneur = onboardingState?.primary_role === "entrepreneur";
 
   useEffect(() => {
     // Evaluate readiness
@@ -32,7 +34,7 @@ export const CompletionStep = () => {
       await sendAdminNotification(
         "user_ready",
         "Journey Complete - Pending Approval",
-        `User completed onboarding journey. Ready status: ${isReady ? 'Ready' : 'Needs assistance'}`
+        `User completed onboarding journey as ${isEntrepreneur ? 'Entrepreneur' : 'Co-Builder'}. Ready status: ${isReady ? 'Ready' : 'Needs assistance'}`
       );
       
       await completeOnboarding();
@@ -41,13 +43,17 @@ export const CompletionStep = () => {
       await sendMilestoneNotification(
         "onboarding_complete",
         "Journey Complete! 🎓",
-        "You've completed your onboarding journey. Your application is now under review.",
+        isEntrepreneur 
+          ? "You've completed your onboarding journey. Once approved, you can add your startup idea!"
+          : "You've completed your onboarding journey. Your application is now under review.",
         "/profile"
       );
       
       toast({
         title: "Journey Complete!",
-        description: "Your application has been submitted for admin review. You'll be notified once approved.",
+        description: isEntrepreneur 
+          ? "Your application has been submitted. Once approved, you can add your startup idea!"
+          : "Your application has been submitted for admin review. You'll be notified once approved.",
       });
       
       navigate("/profile", { replace: true });
@@ -69,27 +75,48 @@ export const CompletionStep = () => {
           <CheckCircle className="w-10 h-10" />
         </div>
         <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-          Journey Complete!
+          {isEntrepreneur ? "Onboarding Incomplete" : "Journey Complete!"}
         </h1>
         <p className="text-muted-foreground text-lg mb-8">
-          Congratulations! You've completed all the steps. Your application will now be reviewed by our admin team.
+          {isEntrepreneur 
+            ? "You've completed all the assessment steps. Once approved by our admin team, you'll be able to add your startup idea!"
+            : "Congratulations! You've completed all the steps. Your application will now be reviewed by our admin team."}
         </p>
 
         <div className="bg-muted/50 rounded-2xl p-6 mb-8 text-left">
           <p className="text-sm text-muted-foreground mb-4">Once approved, you'll have access to:</p>
           <ul className="space-y-3">
-            <li className="flex items-center gap-3">
-              <CheckCircle className="w-5 h-5 text-b4-teal flex-shrink-0" />
-              <span className="text-foreground">Co-Build Startup opportunities</span>
-            </li>
-            <li className="flex items-center gap-3">
-              <CheckCircle className="w-5 h-5 text-b4-teal flex-shrink-0" />
-              <span className="text-foreground">Create your own startup ideas as Initiator</span>
-            </li>
-            <li className="flex items-center gap-3">
-              <CheckCircle className="w-5 h-5 text-b4-teal flex-shrink-0" />
-              <span className="text-foreground">Equity-based role matching</span>
-            </li>
+            {isEntrepreneur ? (
+              <>
+                <li className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-b4-teal flex-shrink-0" />
+                  <span className="text-foreground">Add your startup idea to the platform</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-b4-teal flex-shrink-0" />
+                  <span className="text-foreground">Find Co-Builders for your venture</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-b4-teal flex-shrink-0" />
+                  <span className="text-foreground">Equity-based team building</span>
+                </li>
+              </>
+            ) : (
+              <>
+                <li className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-b4-teal flex-shrink-0" />
+                  <span className="text-foreground">Co-Build Startup opportunities</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-b4-teal flex-shrink-0" />
+                  <span className="text-foreground">Create your own startup ideas as Initiator</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-b4-teal flex-shrink-0" />
+                  <span className="text-foreground">Equity-based role matching</span>
+                </li>
+              </>
+            )}
           </ul>
         </div>
 
