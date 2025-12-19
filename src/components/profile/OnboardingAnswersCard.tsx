@@ -29,10 +29,7 @@ export const OnboardingAnswersCard = ({ naturalRole, onUpdate }: OnboardingAnswe
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const { error } = await supabase
-        .from("natural_roles")
-        .update(editData)
-        .eq("user_id", naturalRole.user_id);
+      const { error } = await supabase.from("natural_roles").update(editData).eq("user_id", naturalRole.user_id);
 
       if (error) throw error;
 
@@ -53,7 +50,7 @@ export const OnboardingAnswersCard = ({ naturalRole, onUpdate }: OnboardingAnswe
     }
   };
 
-  const StatusBadge = ({ checked }: { checked: boolean | null }) => (
+  const StatusBadge = ({ checked }: { checked: boolean | null }) =>
     checked ? (
       <Badge variant="default" className="bg-b4-teal text-white">
         <CheckCircle className="w-3 h-3 mr-1" /> Complete
@@ -62,13 +59,12 @@ export const OnboardingAnswersCard = ({ naturalRole, onUpdate }: OnboardingAnswe
       <Badge variant="secondary">
         <AlertCircle className="w-3 h-3 mr-1" /> Incomplete
       </Badge>
-    )
-  );
+    );
 
   return (
     <Card className="border-border/50">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-lg font-semibold">Your Journey Answers</CardTitle>
+        <CardTitle className="text-lg font-semibold">Your Answers</CardTitle>
         {!isEditing ? (
           <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
             <Edit2 className="w-4 h-4 mr-2" />
@@ -144,9 +140,7 @@ export const OnboardingAnswersCard = ({ naturalRole, onUpdate }: OnboardingAnswe
               </p>
             )}
             {naturalRole.practice_case_studies && (
-              <p className="text-xs text-muted-foreground">
-                Case studies: {naturalRole.practice_case_studies}
-              </p>
+              <p className="text-xs text-muted-foreground">Case studies: {naturalRole.practice_case_studies}</p>
             )}
           </div>
         )}
@@ -168,9 +162,7 @@ export const OnboardingAnswersCard = ({ naturalRole, onUpdate }: OnboardingAnswe
               </p>
             )}
             {naturalRole.training_count && (
-              <p className="text-xs text-muted-foreground">
-                Training count: {naturalRole.training_count}
-              </p>
+              <p className="text-xs text-muted-foreground">Training count: {naturalRole.training_count}</p>
             )}
           </div>
         )}
