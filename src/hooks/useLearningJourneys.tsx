@@ -21,6 +21,14 @@ export interface LearningJourney {
   updated_at: string;
 }
 
+export interface UploadedFile {
+  name: string;
+  path: string;
+  size: number;
+  type: string;
+  uploadedAt: string;
+}
+
 export interface JourneyPhaseResponse {
   id: string;
   journey_id: string;
@@ -29,7 +37,7 @@ export interface JourneyPhaseResponse {
   phase_name: string;
   responses: Record<string, any>;
   completed_tasks: string[];
-  uploaded_files: string[];
+  uploaded_files: UploadedFile[];
   notes: string | null;
   is_completed: boolean;
   completed_at: string | null;
@@ -494,7 +502,14 @@ export const LearningJourneysProvider = ({ children }: { children: React.ReactNo
         setJourneys(journeysResult.data as LearningJourney[]);
       }
       if (responsesResult.data) {
-        setPhaseResponses(responsesResult.data as JourneyPhaseResponse[]);
+        // Map the database response to properly type uploaded_files
+        const mappedResponses = responsesResult.data.map((r) => ({
+          ...r,
+          responses: (r.responses as Record<string, unknown>) || {},
+          completed_tasks: (r.completed_tasks as unknown as string[]) || [],
+          uploaded_files: (r.uploaded_files as unknown as UploadedFile[]) || [],
+        }));
+        setPhaseResponses(mappedResponses);
       }
       if (certsResult.data) {
         setCertifications(certsResult.data as UserCertification[]);
@@ -559,13 +574,22 @@ export const LearningJourneysProvider = ({ children }: { children: React.ReactNo
         (r) => r.journey_id === journeyId && r.phase_number === phaseNumber
       );
 
+      // Prepare data for database - cast to any for Supabase compatibility
+      const dbData: Record<string, unknown> = {
+        updated_at: new Date().toISOString(),
+      };
+      
+      if (data.responses !== undefined) dbData.responses = data.responses;
+      if (data.completed_tasks !== undefined) dbData.completed_tasks = data.completed_tasks;
+      if (data.uploaded_files !== undefined) dbData.uploaded_files = data.uploaded_files;
+      if (data.notes !== undefined) dbData.notes = data.notes;
+      if (data.is_completed !== undefined) dbData.is_completed = data.is_completed;
+      if (data.completed_at !== undefined) dbData.completed_at = data.completed_at;
+
       if (existing) {
         const { error } = await supabase
           .from("journey_phase_responses")
-          .update({
-            ...data,
-            updated_at: new Date().toISOString(),
-          })
+          .update(dbData as never)
           .eq("id", existing.id);
 
         if (error) throw error;
@@ -574,21 +598,29 @@ export const LearningJourneysProvider = ({ children }: { children: React.ReactNo
           prev.map((r) => (r.id === existing.id ? { ...r, ...data } : r))
         );
       } else {
+        const insertData = {
+          journey_id: journeyId,
+          user_id: user.id,
+          phase_number: phaseNumber,
+          phase_name: phaseName,
+          ...dbData,
+        };
+        
         const { data: newResponse, error } = await supabase
           .from("journey_phase_responses")
-          .insert({
-            journey_id: journeyId,
-            user_id: user.id,
-            phase_number: phaseNumber,
-            phase_name: phaseName,
-            ...data,
-          })
+          .insert(insertData as never)
           .select()
           .single();
 
         if (error) throw error;
 
-        setPhaseResponses((prev) => [...prev, newResponse as JourneyPhaseResponse]);
+        const mappedResponse: JourneyPhaseResponse = {
+          ...newResponse,
+          responses: (newResponse.responses as unknown as Record<string, any>) || {},
+          completed_tasks: (newResponse.completed_tasks as unknown as string[]) || [],
+          uploaded_files: (newResponse.uploaded_files as unknown as UploadedFile[]) || [],
+        };
+        setPhaseResponses((prev) => [...prev, mappedResponse]);
       }
     } catch (error: any) {
       toast({

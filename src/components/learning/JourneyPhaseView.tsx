@@ -8,19 +8,21 @@ import { Progress } from "@/components/ui/progress";
 import {
   useLearningJourneys,
   JourneyType,
-  LearningJourney,
+  UploadedFile,
   SKILL_PTC_PHASES,
   IDEA_PTC_PHASES,
   SCALING_PATH_PHASES,
 } from "@/hooks/useLearningJourneys";
+import { useAuth } from "@/hooks/useAuth";
 import { ArrowLeft, ArrowRight, CheckCircle, Clock, Send, Loader2 } from "lucide-react";
-
+import { JourneyFileUpload } from "./JourneyFileUpload";
 interface JourneyPhaseViewProps {
   journeyType: JourneyType;
   onBack: () => void;
 }
 
 export const JourneyPhaseView = ({ journeyType, onBack }: JourneyPhaseViewProps) => {
+  const { user } = useAuth();
   const {
     getJourney,
     getPhaseResponse,
@@ -33,6 +35,7 @@ export const JourneyPhaseView = ({ journeyType, onBack }: JourneyPhaseViewProps)
   const [currentPhase, setCurrentPhase] = useState(journey?.current_phase || 0);
   const [responses, setResponses] = useState<Record<string, string>>({});
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -54,9 +57,11 @@ export const JourneyPhaseView = ({ journeyType, onBack }: JourneyPhaseViewProps)
       if (phaseResponse) {
         setResponses(phaseResponse.responses || {});
         setCompletedTasks(phaseResponse.completed_tasks || []);
+        setUploadedFiles(phaseResponse.uploaded_files || []);
       } else {
         setResponses({});
         setCompletedTasks([]);
+        setUploadedFiles([]);
       }
     }
   }, [journey, currentPhase, getPhaseResponse]);
@@ -88,10 +93,14 @@ export const JourneyPhaseView = ({ journeyType, onBack }: JourneyPhaseViewProps)
     await updatePhaseResponse(journey.id, currentPhase, phase.name, {
       responses,
       completed_tasks: completedTasks,
+      uploaded_files: uploadedFiles,
     });
     setIsSaving(false);
   };
 
+  const handleFilesChange = (files: UploadedFile[]) => {
+    setUploadedFiles(files);
+  };
   const isPhaseComplete = () => {
     return phase.tasks.every((task) => {
       if (task.type === "checklist") {
@@ -108,6 +117,7 @@ export const JourneyPhaseView = ({ journeyType, onBack }: JourneyPhaseViewProps)
     await updatePhaseResponse(journey.id, currentPhase, phase.name, {
       responses,
       completed_tasks: completedTasks,
+      uploaded_files: uploadedFiles,
       is_completed: true,
       completed_at: new Date().toISOString(),
     });
@@ -255,6 +265,23 @@ export const JourneyPhaseView = ({ journeyType, onBack }: JourneyPhaseViewProps)
               )}
             </div>
           ))}
+
+          {/* File Upload Section */}
+          {user && (
+            <div className="pt-4 border-t">
+              <h4 className="text-sm font-medium mb-3">Evidence Documents</h4>
+              <p className="text-sm text-muted-foreground mb-3">
+                Upload supporting documents such as completed assignments, certificates, or project files.
+              </p>
+              <JourneyFileUpload
+                journeyId={journey.id}
+                phaseNumber={currentPhase}
+                userId={user.id}
+                uploadedFiles={uploadedFiles}
+                onFilesChange={handleFilesChange}
+              />
+            </div>
+          )}
 
           <div className="flex gap-4 pt-4 border-t">
             <Button
