@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { EntrepreneurJourney } from "@/components/entrepreneur/EntrepreneurJourney";
 import { OnboardingAnswersCard } from "@/components/profile/OnboardingAnswersCard";
 import { IdeaApplicationsViewer } from "@/components/profile/IdeaApplicationsViewer";
+import { ScalingJourneyProgress } from "@/components/profile/ScalingJourneyProgress";
 import { LearningJourneyDashboard } from "@/components/learning/LearningJourneyDashboard";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
@@ -808,7 +809,7 @@ const Profile = () => {
                         </CollapsibleTrigger>
                         <CollapsibleContent>
                           <div className="px-4 pb-4">
-                            <OnboardingAnswersCard naturalRole={naturalRole} onUpdate={refetch} />
+                            <OnboardingAnswersCard naturalRole={naturalRole} onUpdate={refetch} onScalingChange={() => refetch()} />
                           </div>
                         </CollapsibleContent>
                       </div>
@@ -910,7 +911,13 @@ const Profile = () => {
               </div>
             )}
 
-            {/* Request Entrepreneur Review - for approved co-builders with pending ideas */}
+            {/* Part 5: Scaling Journey (for users who want to scale their natural role) */}
+            {isApprovedCoBuilder && naturalRole?.wants_to_scale && (
+              <div className="bg-card rounded-3xl border border-border p-8 mb-8">
+                <ScalingJourneyProgress onUpdate={refetch} />
+              </div>
+            )}
+
             {isApprovedCoBuilder && userIdeas.some((i) => i.review_status === "pending") && (
               <div className="bg-gradient-to-br from-amber-500/10 to-b4-coral/10 rounded-3xl border border-amber-500/20 p-8 mb-8">
                 <div className="flex items-center gap-3 mb-2">
