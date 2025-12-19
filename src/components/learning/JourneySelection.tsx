@@ -141,7 +141,7 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
             <p className="text-muted-foreground">Select a path to continue your development</p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-2">
+          <div className="grid gap-8 md:grid-cols-2 items-stretch">
             {journeyOptions.map((option) => {
               const status = getJourneyStatus(option.type);
               const isActive = status === "in_progress" || status === "pending_approval";
@@ -173,9 +173,9 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
                       </CardDescription>
                     )}
                   </CardHeader>
-                  <CardContent className="space-y-6 flex-1 flex flex-col">
+                  <CardContent className="flex-1 flex flex-col">
                     {!isCertified && (
-                      <>
+                      <div className="space-y-6 flex-1">
                         <p className="text-sm text-muted-foreground leading-relaxed">{option.description}</p>
 
                         <div className="space-y-3">
@@ -195,7 +195,7 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
                             {option.result}
                           </Badge>
                         </div>
-                      </>
+                      </div>
                     )}
 
                     <div className="mt-auto pt-4">
