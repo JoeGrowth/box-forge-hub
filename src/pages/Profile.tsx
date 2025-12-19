@@ -16,11 +16,7 @@ import { EntrepreneurJourney } from "@/components/entrepreneur/EntrepreneurJourn
 import { OnboardingAnswersCard } from "@/components/profile/OnboardingAnswersCard";
 import { IdeaApplicationsViewer } from "@/components/profile/IdeaApplicationsViewer";
 import { LearningJourneyDashboard } from "@/components/learning/LearningJourneyDashboard";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,11 +28,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { 
-  User, 
-  Mail, 
-  Calendar, 
-  CheckCircle, 
+import {
+  User,
+  Mail,
+  Calendar,
+  CheckCircle,
   AlertCircle,
   Briefcase,
   ArrowRight,
@@ -56,7 +52,7 @@ import {
   Trash2,
   Loader2,
   ChevronDown,
-  MessageSquare
+  MessageSquare,
 } from "lucide-react";
 
 interface Profile {
@@ -85,12 +81,12 @@ const Profile = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [userIdeas, setUserIdeas] = useState<StartupIdea[]>([]);
   const [requestingReview, setRequestingReview] = useState(false);
-  
+
   // Skills state
   const [skills, setSkills] = useState("");
   const [isEditingSkills, setIsEditingSkills] = useState(false);
   const [isSavingSkills, setIsSavingSkills] = useState(false);
-  
+
   // Change password state
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
@@ -98,10 +94,10 @@ const Profile = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
-  
+
   // Avatar upload state
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-  
+
   // Account deletion state
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [deleteType, setDeleteType] = useState<"soft" | "hard" | null>(null);
@@ -120,11 +116,7 @@ const Profile = () => {
     const fetchProfile = async () => {
       if (!user) return;
 
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", user.id)
-        .maybeSingle();
+      const { data, error } = await supabase.from("profiles").select("*").eq("user_id", user.id).maybeSingle();
 
       if (!error && data) {
         setProfile(data);
@@ -162,10 +154,7 @@ const Profile = () => {
       // Update the first pending idea to "under_review"
       const pendingIdea = userIdeas.find((i) => i.review_status === "pending");
       if (pendingIdea) {
-        await supabase
-          .from("startup_ideas")
-          .update({ review_status: "under_review" })
-          .eq("id", pendingIdea.id);
+        await supabase.from("startup_ideas").update({ review_status: "under_review" }).eq("id", pendingIdea.id);
       }
 
       // Create admin notification
@@ -205,17 +194,14 @@ const Profile = () => {
 
   const handleSave = async () => {
     if (!user) return;
-    
+
     setIsSaving(true);
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ full_name: fullName })
-        .eq("user_id", user.id);
+      const { error } = await supabase.from("profiles").update({ full_name: fullName }).eq("user_id", user.id);
 
       if (error) throw error;
 
-      setProfile((prev) => prev ? { ...prev, full_name: fullName } : null);
+      setProfile((prev) => (prev ? { ...prev, full_name: fullName } : null));
       setIsEditing(false);
       toast({
         title: "Profile Updated",
@@ -234,17 +220,14 @@ const Profile = () => {
 
   const handleSaveSkills = async () => {
     if (!user) return;
-    
+
     setIsSavingSkills(true);
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ primary_skills: skills })
-        .eq("user_id", user.id);
+      const { error } = await supabase.from("profiles").update({ primary_skills: skills }).eq("user_id", user.id);
 
       if (error) throw error;
 
-      setProfile((prev) => prev ? { ...prev, primary_skills: skills } : null);
+      setProfile((prev) => (prev ? { ...prev, primary_skills: skills } : null));
       setIsEditingSkills(false);
       toast({
         title: "Skills Updated",
@@ -331,16 +314,12 @@ const Profile = () => {
       const fileName = `${user.id}/avatar.${fileExt}`;
 
       // Upload to storage
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(fileName, file, { upsert: true });
+      const { error: uploadError } = await supabase.storage.from("avatars").upload(fileName, file, { upsert: true });
 
       if (uploadError) throw uploadError;
 
       // Get public URL
-      const { data: urlData } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(fileName);
+      const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(fileName);
 
       const avatarUrl = `${urlData.publicUrl}?t=${Date.now()}`;
 
@@ -352,7 +331,7 @@ const Profile = () => {
 
       if (updateError) throw updateError;
 
-      setProfile((prev) => prev ? { ...prev, avatar_url: avatarUrl } : null);
+      setProfile((prev) => (prev ? { ...prev, avatar_url: avatarUrl } : null));
       toast({
         title: "Avatar Updated",
         description: "Your profile picture has been updated.",
@@ -370,11 +349,11 @@ const Profile = () => {
 
   const handleSendConfirmationCode = async () => {
     if (!user) return;
-    
+
     setIsSendingCode(true);
     try {
-      const { data, error } = await supabase.functions.invoke('delete-account', {
-        body: { action: 'send_confirmation' }
+      const { data, error } = await supabase.functions.invoke("delete-account", {
+        body: { action: "send_confirmation" },
       });
 
       if (error) throw error;
@@ -416,22 +395,23 @@ const Profile = () => {
     setIsDeletingAccount(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('delete-account', {
-        body: { 
+      const { data, error } = await supabase.functions.invoke("delete-account", {
+        body: {
           deleteType: type,
-          confirmationCode: type === "hard" ? confirmationCode : undefined
-        }
+          confirmationCode: type === "hard" ? confirmationCode : undefined,
+        },
       });
 
       if (error) throw error;
 
       await signOut();
-      
+
       toast({
         title: type === "soft" ? "Account Deactivated" : "Account Deleted",
-        description: type === "soft" 
-          ? "Your account has been deactivated. Contact support to reactivate."
-          : "Your account has been permanently deleted.",
+        description:
+          type === "soft"
+            ? "Your account has been deactivated. Contact support to reactivate."
+            : "Your account has been permanently deleted.",
       });
       navigate("/", { replace: true });
     } catch (error: any) {
@@ -488,16 +468,16 @@ const Profile = () => {
     if (onboardingState.journey_status === "entrepreneur_approved") {
       const step = onboardingState.entrepreneur_step || 1;
       if (step >= 4) {
-        return { 
-          label: "Entrepreneur Journey: Completed", 
-          color: "text-b4-teal", 
-          icon: CheckCircle 
+        return {
+          label: "Entrepreneur Journey: Completed",
+          color: "text-b4-teal",
+          icon: CheckCircle,
         };
       }
-      return { 
-        label: `Entrepreneur Journey: Step ${step}/4`, 
-        color: "text-amber-500", 
-        icon: Rocket 
+      return {
+        label: `Entrepreneur Journey: Step ${step}/4`,
+        color: "text-amber-500",
+        icon: Rocket,
       };
     }
     if (onboardingState.journey_status === "approved") {
@@ -518,11 +498,11 @@ const Profile = () => {
   const getScalingStatus = () => {
     if (naturalRole?.wants_to_scale) {
       // Placeholder for future scaling journey steps
-      return { 
-        label: "Scaling Journey: Pending Steps", 
-        color: "text-purple-500", 
+      return {
+        label: "Scaling Journey: Pending Steps",
+        color: "text-purple-500",
         icon: Rocket,
-        show: true
+        show: true,
       };
     }
     return { show: false };
@@ -530,48 +510,48 @@ const Profile = () => {
 
   const scalingStatus = getScalingStatus();
 
-  const isApprovedCoBuilder = onboardingState?.journey_status === "approved" || 
-                               onboardingState?.journey_status === "entrepreneur_approved";
+  const isApprovedCoBuilder =
+    onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved";
 
   const status = getReadinessStatus();
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
+
       <main className="pt-20">
         <section className="py-16">
           <div className="container mx-auto px-4 max-w-3xl">
             {/* Profile Header */}
             <div className="bg-card rounded-3xl border border-border p-8 mb-8">
               <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-              <div className="relative group">
-                <Avatar className="w-24 h-24 text-2xl">
-                  <AvatarImage src={profile?.avatar_url || undefined} />
-                  <AvatarFallback className="bg-b4-teal text-primary-foreground">
-                    {getInitials(profile?.full_name)}
-                  </AvatarFallback>
-                </Avatar>
-                <label 
-                  htmlFor="avatar-upload" 
-                  className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                >
-                  {isUploadingAvatar ? (
-                    <Loader2 className="w-6 h-6 text-white animate-spin" />
-                  ) : (
-                    <Camera className="w-6 h-6 text-white" />
-                  )}
-                </label>
-                <input
-                  id="avatar-upload"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleAvatarUpload}
-                  disabled={isUploadingAvatar}
-                />
-              </div>
-                
+                <div className="relative group">
+                  <Avatar className="w-24 h-24 text-2xl">
+                    <AvatarImage src={profile?.avatar_url || undefined} />
+                    <AvatarFallback className="bg-b4-teal text-primary-foreground">
+                      {getInitials(profile?.full_name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <label
+                    htmlFor="avatar-upload"
+                    className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  >
+                    {isUploadingAvatar ? (
+                      <Loader2 className="w-6 h-6 text-white animate-spin" />
+                    ) : (
+                      <Camera className="w-6 h-6 text-white" />
+                    )}
+                  </label>
+                  <input
+                    id="avatar-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarUpload}
+                    disabled={isUploadingAvatar}
+                  />
+                </div>
+
                 <div className="flex-1 text-center md:text-left">
                   {isEditing ? (
                     <div className="space-y-4">
@@ -585,17 +565,12 @@ const Profile = () => {
                         />
                       </div>
                       <div className="flex gap-2">
-                        <Button 
-                          variant="teal" 
-                          size="sm" 
-                          onClick={handleSave}
-                          disabled={isSaving}
-                        >
+                        <Button variant="teal" size="sm" onClick={handleSave} disabled={isSaving}>
                           {isSaving ? "Saving..." : "Save"}
                         </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => {
                             setIsEditing(false);
                             setFullName(profile?.full_name || "");
@@ -616,12 +591,16 @@ const Profile = () => {
                           <Briefcase className="w-3.5 h-3.5" />
                           {getRoleLabel()}
                         </span>
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted text-sm font-medium ${status.color}`}>
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted text-sm font-medium ${status.color}`}
+                        >
                           <status.icon className="w-3.5 h-3.5" />
                           {status.label}
                         </span>
                         {scalingStatus.show && (
-                          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 text-sm font-medium ${scalingStatus.color}`}>
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 text-sm font-medium ${scalingStatus.color}`}
+                          >
                             <scalingStatus.icon className="w-3.5 h-3.5" />
                             {scalingStatus.label}
                           </span>
@@ -632,11 +611,7 @@ const Profile = () => {
                 </div>
 
                 {!isEditing && (
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setIsEditing(true)}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
                     <Settings className="w-4 h-4 mr-2" />
                     Edit
                   </Button>
@@ -647,10 +622,8 @@ const Profile = () => {
             {/* Part 1: Natural Role Section */}
             {onboardingState?.primary_role === "cobuilder" && naturalRole && (
               <div className="bg-card rounded-3xl border border-border p-8 mb-8">
-                <h2 className="font-display text-xl font-bold text-foreground mb-4">
-                  Natural Role
-                </h2>
-                
+                <h2 className="font-display text-xl font-bold text-foreground mb-4">Natural Role</h2>
+
                 {naturalRole.description ? (
                   <div className="bg-muted/50 rounded-xl p-4 mb-6">
                     <p className="text-foreground italic">"{naturalRole.description}"</p>
@@ -702,10 +675,8 @@ const Profile = () => {
                 <h2 className="font-display text-xl font-bold text-foreground mb-2">
                   🎉 You're an Approved Co-Builder!
                 </h2>
-                <p className="text-muted-foreground mb-6">
-                  Choose how you want to build your next venture:
-                </p>
-                
+                <p className="text-muted-foreground mb-6">Choose how you want to build your next venture:</p>
+
                 <div className="grid sm:grid-cols-2 gap-4 mb-6">
                   <div className="bg-card rounded-xl border border-border p-6 hover:border-b4-teal/50 transition-colors">
                     <div className="w-12 h-12 rounded-xl bg-b4-teal/10 flex items-center justify-center mb-4">
@@ -720,7 +691,7 @@ const Profile = () => {
                       <ArrowRight className="ml-2 w-4 h-4" />
                     </Button>
                   </div>
-                  
+
                   <div className="bg-card rounded-xl border border-border p-6 hover:border-b4-coral/50 transition-colors">
                     <div className="w-12 h-12 rounded-xl bg-b4-coral/10 flex items-center justify-center mb-4">
                       <Lightbulb className="w-6 h-6 text-b4-coral" />
@@ -770,22 +741,15 @@ const Profile = () => {
                           className="mt-1"
                           rows={3}
                         />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Enter your skills separated by commas
-                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">Enter your skills separated by commas</p>
                       </div>
                       <div className="flex gap-2">
-                        <Button 
-                          variant="teal" 
-                          size="sm" 
-                          onClick={handleSaveSkills}
-                          disabled={isSavingSkills}
-                        >
+                        <Button variant="teal" size="sm" onClick={handleSaveSkills} disabled={isSavingSkills}>
                           {isSavingSkills ? "Saving..." : "Save Skills"}
                         </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => {
                             setIsEditingSkills(false);
                             setSkills(profile?.primary_skills || "");
@@ -800,8 +764,8 @@ const Profile = () => {
                       {skills ? (
                         <div className="flex flex-wrap gap-2">
                           {skills.split(",").map((skill, idx) => (
-                            <Badge 
-                              key={idx} 
+                            <Badge
+                              key={idx}
                               variant="secondary"
                               className="bg-purple-500/10 text-purple-600 border-none"
                             >
@@ -830,7 +794,7 @@ const Profile = () => {
                               <User className="w-4 h-4 text-b4-navy" />
                             </div>
                             <span className="font-display font-semibold text-foreground">
-                              Your Journey Answers
+                              Your Journey Answers aaaaaaa
                             </span>
                           </div>
                           <ChevronDown className="w-5 h-5 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
@@ -856,20 +820,24 @@ const Profile = () => {
                             <span className="font-display font-semibold text-foreground">
                               Idea {index + 1}: {idea.title}
                             </span>
-                            <span className={`px-2 py-0.5 rounded-full text-xs ${
-                              idea.review_status === "approved" 
-                                ? "bg-b4-teal/10 text-b4-teal"
-                                : idea.review_status === "under_review"
-                                ? "bg-amber-500/10 text-amber-600"
-                                : idea.review_status === "rejected"
-                                ? "bg-red-500/10 text-red-600"
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-xs ${
+                                idea.review_status === "approved"
+                                  ? "bg-b4-teal/10 text-b4-teal"
+                                  : idea.review_status === "under_review"
+                                    ? "bg-amber-500/10 text-amber-600"
+                                    : idea.review_status === "rejected"
+                                      ? "bg-red-500/10 text-red-600"
+                                      : idea.review_status === "needs_enhancement"
+                                        ? "bg-amber-500/10 text-amber-600"
+                                        : "bg-muted text-muted-foreground"
+                              }`}
+                            >
+                              {idea.review_status === "under_review"
+                                ? "Under Review"
                                 : idea.review_status === "needs_enhancement"
-                                ? "bg-amber-500/10 text-amber-600"
-                                : "bg-muted text-muted-foreground"
-                            }`}>
-                              {idea.review_status === "under_review" ? "Under Review" : 
-                               idea.review_status === "needs_enhancement" ? "Needs Enhancement" :
-                               idea.review_status.charAt(0).toUpperCase() + idea.review_status.slice(1)}
+                                  ? "Needs Enhancement"
+                                  : idea.review_status.charAt(0).toUpperCase() + idea.review_status.slice(1)}
                             </span>
                           </div>
                           <ChevronDown className="w-5 h-5 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
@@ -877,22 +845,19 @@ const Profile = () => {
                         <CollapsibleContent>
                           <div className="px-4 pb-4 space-y-4">
                             <div className="flex justify-end">
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                onClick={() => navigate(`/edit-idea/${idea.id}`)}
-                              >
+                              <Button variant="outline" size="sm" onClick={() => navigate(`/edit-idea/${idea.id}`)}>
                                 <Settings className="w-3 h-3 mr-1" />
                                 Edit Idea
                               </Button>
                             </div>
-                            {idea.review_status === "approved" && onboardingState?.journey_status === "entrepreneur_approved" && (
-                              <EntrepreneurJourney
-                                currentStep={onboardingState?.entrepreneur_step || 1}
-                                onStepComplete={handleEntrepreneurStepComplete}
-                                ideaId={idea.id}
-                              />
-                            )}
+                            {idea.review_status === "approved" &&
+                              onboardingState?.journey_status === "entrepreneur_approved" && (
+                                <EntrepreneurJourney
+                                  currentStep={onboardingState?.entrepreneur_step || 1}
+                                  onStepComplete={handleEntrepreneurStepComplete}
+                                  ideaId={idea.id}
+                                />
+                              )}
                             {idea.review_status === "pending" && (
                               <div className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-4">
                                 This idea is pending review. Submit for review to unlock the entrepreneur journey.
@@ -909,7 +874,7 @@ const Profile = () => {
                                 Your idea needs enhancement. Click "Edit Idea" above to make improvements.
                               </div>
                             )}
-                            
+
                             {/* Applications Received Section - only for approved ideas */}
                             {idea.review_status === "approved" && (
                               <div className="border-t border-border pt-4 mt-4">
@@ -937,19 +902,13 @@ const Profile = () => {
               <div className="bg-gradient-to-br from-amber-500/10 to-b4-coral/10 rounded-3xl border border-amber-500/20 p-8 mb-8">
                 <div className="flex items-center gap-3 mb-2">
                   <Rocket className="w-6 h-6 text-amber-500" />
-                  <h2 className="font-display text-xl font-bold text-foreground">
-                    Ready to Submit for Review?
-                  </h2>
+                  <h2 className="font-display text-xl font-bold text-foreground">Ready to Submit for Review?</h2>
                 </div>
                 <p className="text-muted-foreground mb-4">
                   Submit your startup idea for admin review to unlock the entrepreneur journey.
                 </p>
-                
-                <Button 
-                  variant="teal" 
-                  onClick={handleRequestEntrepreneurReview}
-                  disabled={requestingReview}
-                >
+
+                <Button variant="teal" onClick={handleRequestEntrepreneurReview} disabled={requestingReview}>
                   {requestingReview ? "Submitting..." : "Request Entrepreneur Review"}
                   <Send className="ml-2 w-4 h-4" />
                 </Button>
@@ -961,13 +920,11 @@ const Profile = () => {
               <div className="bg-amber-500/10 rounded-3xl border border-amber-500/20 p-8 mb-8">
                 <div className="flex items-center gap-3 mb-2">
                   <Clock className="w-6 h-6 text-amber-500" />
-                  <h2 className="font-display text-xl font-bold text-foreground">
-                    Awaiting Admin Approval
-                  </h2>
+                  <h2 className="font-display text-xl font-bold text-foreground">Awaiting Admin Approval</h2>
                 </div>
                 <p className="text-muted-foreground">
-                  Your Co-Builder journey is complete! Our admin team is reviewing your application. 
-                  You'll be notified once approved.
+                  Your Co-Builder journey is complete! Our admin team is reviewing your application. You'll be notified
+                  once approved.
                 </p>
               </div>
             )}
@@ -975,9 +932,7 @@ const Profile = () => {
             {/* Continue Onboarding CTA */}
             {needsOnboarding && (
               <div className="bg-b4-teal/10 rounded-3xl border border-b4-teal/20 p-8 mb-8">
-                <h2 className="font-display text-xl font-bold text-foreground mb-2">
-                  Complete Your Onboarding
-                </h2>
+                <h2 className="font-display text-xl font-bold text-foreground mb-2">Complete Your Onboarding</h2>
                 <p className="text-muted-foreground mb-4">
                   Finish setting up your profile to unlock all platform features.
                 </p>
@@ -990,10 +945,8 @@ const Profile = () => {
 
             {/* Account Info */}
             <div className="bg-card rounded-3xl border border-border p-8 mb-8">
-              <h2 className="font-display text-xl font-bold text-foreground mb-4">
-                Account Information
-              </h2>
-              
+              <h2 className="font-display text-xl font-bold text-foreground mb-4">Account Information</h2>
+
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <Mail className="w-5 h-5 text-muted-foreground" />
@@ -1020,7 +973,7 @@ const Profile = () => {
                   <div>
                     <p className="text-sm text-muted-foreground">Member since</p>
                     <p className="text-foreground">
-                      {profile?.created_at 
+                      {profile?.created_at
                         ? new Date(profile.created_at).toLocaleDateString("en-US", {
                             year: "numeric",
                             month: "long",
@@ -1035,10 +988,8 @@ const Profile = () => {
 
             {/* Security Settings */}
             <div className="bg-card rounded-3xl border border-border p-8 mb-8">
-              <h2 className="font-display text-xl font-bold text-foreground mb-4">
-                Security
-              </h2>
-              
+              <h2 className="font-display text-xl font-bold text-foreground mb-4">Security</h2>
+
               {isChangingPassword ? (
                 <div className="space-y-4">
                   <div className="space-y-2">
@@ -1078,16 +1029,10 @@ const Profile = () => {
                     </div>
                   </div>
 
-                  {passwordError && (
-                    <p className="text-sm text-destructive">{passwordError}</p>
-                  )}
+                  {passwordError && <p className="text-sm text-destructive">{passwordError}</p>}
 
                   <div className="flex gap-2">
-                    <Button
-                      variant="teal"
-                      onClick={handleChangePassword}
-                      disabled={isUpdatingPassword}
-                    >
+                    <Button variant="teal" onClick={handleChangePassword} disabled={isUpdatingPassword}>
                       {isUpdatingPassword ? "Updating..." : "Update Password"}
                     </Button>
                     <Button
@@ -1121,21 +1066,20 @@ const Profile = () => {
 
             {/* Danger Zone */}
             <div className="bg-card rounded-3xl border border-destructive/30 p-8 mb-8">
-              <h2 className="font-display text-xl font-bold text-destructive mb-4">
-                Danger Zone
-              </h2>
-              <p className="text-muted-foreground mb-4">
-                Choose how you want to handle your account deletion.
-              </p>
-              
-              <AlertDialog open={showDeleteOptions} onOpenChange={(open) => {
-                setShowDeleteOptions(open);
-                if (!open) {
-                  setDeleteType(null);
-                  setConfirmationStep("choose");
-                  setConfirmationCode("");
-                }
-              }}>
+              <h2 className="font-display text-xl font-bold text-destructive mb-4">Danger Zone</h2>
+              <p className="text-muted-foreground mb-4">Choose how you want to handle your account deletion.</p>
+
+              <AlertDialog
+                open={showDeleteOptions}
+                onOpenChange={(open) => {
+                  setShowDeleteOptions(open);
+                  if (!open) {
+                    setDeleteType(null);
+                    setConfirmationStep("choose");
+                    setConfirmationCode("");
+                  }
+                }}
+              >
                 <AlertDialogTrigger asChild>
                   <Button variant="destructive">
                     <Trash2 className="w-4 h-4 mr-2" />
@@ -1150,60 +1094,70 @@ const Profile = () => {
                         <AlertDialogDescription asChild>
                           <div className="space-y-4 pt-2">
                             {/* Soft Delete Option */}
-                            <div 
+                            <div
                               className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                                deleteType === "soft" 
-                                  ? "border-amber-500 bg-amber-500/10" 
+                                deleteType === "soft"
+                                  ? "border-amber-500 bg-amber-500/10"
                                   : "border-border hover:border-amber-500/50"
                               }`}
                               onClick={() => setDeleteType("soft")}
                             >
                               <div className="flex items-start gap-3">
-                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
-                                  deleteType === "soft" ? "border-amber-500" : "border-muted-foreground"
-                                }`}>
-                                  {deleteType === "soft" && (
-                                    <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                                  )}
+                                <div
+                                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
+                                    deleteType === "soft" ? "border-amber-500" : "border-muted-foreground"
+                                  }`}
+                                >
+                                  {deleteType === "soft" && <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />}
                                 </div>
                                 <div className="flex-1">
                                   <p className="font-semibold text-foreground">Deactivate Account (Recommended)</p>
                                   <p className="text-sm text-muted-foreground mt-1">
-                                    Your account will be deactivated and hidden. You can contact support later to reactivate it and recover your data.
+                                    Your account will be deactivated and hidden. You can contact support later to
+                                    reactivate it and recover your data.
                                   </p>
                                   <div className="flex flex-wrap gap-2 mt-2">
-                                    <span className="text-xs px-2 py-1 rounded-full bg-green-500/10 text-green-600">Recoverable</span>
-                                    <span className="text-xs px-2 py-1 rounded-full bg-blue-500/10 text-blue-600">Data preserved</span>
+                                    <span className="text-xs px-2 py-1 rounded-full bg-green-500/10 text-green-600">
+                                      Recoverable
+                                    </span>
+                                    <span className="text-xs px-2 py-1 rounded-full bg-blue-500/10 text-blue-600">
+                                      Data preserved
+                                    </span>
                                   </div>
                                 </div>
                               </div>
                             </div>
 
                             {/* Hard Delete Option */}
-                            <div 
+                            <div
                               className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                                deleteType === "hard" 
-                                  ? "border-destructive bg-destructive/10" 
+                                deleteType === "hard"
+                                  ? "border-destructive bg-destructive/10"
                                   : "border-border hover:border-destructive/50"
                               }`}
                               onClick={() => setDeleteType("hard")}
                             >
                               <div className="flex items-start gap-3">
-                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
-                                  deleteType === "hard" ? "border-destructive" : "border-muted-foreground"
-                                }`}>
-                                  {deleteType === "hard" && (
-                                    <div className="w-2.5 h-2.5 rounded-full bg-destructive" />
-                                  )}
+                                <div
+                                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
+                                    deleteType === "hard" ? "border-destructive" : "border-muted-foreground"
+                                  }`}
+                                >
+                                  {deleteType === "hard" && <div className="w-2.5 h-2.5 rounded-full bg-destructive" />}
                                 </div>
                                 <div className="flex-1">
                                   <p className="font-semibold text-foreground">Permanently Delete</p>
                                   <p className="text-sm text-muted-foreground mt-1">
-                                    Your account and all data will be permanently removed. This action cannot be undone. You can sign up again with the same email.
+                                    Your account and all data will be permanently removed. This action cannot be undone.
+                                    You can sign up again with the same email.
                                   </p>
                                   <div className="flex flex-wrap gap-2 mt-2">
-                                    <span className="text-xs px-2 py-1 rounded-full bg-destructive/10 text-destructive">Irreversible</span>
-                                    <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">Email reusable</span>
+                                    <span className="text-xs px-2 py-1 rounded-full bg-destructive/10 text-destructive">
+                                      Irreversible
+                                    </span>
+                                    <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">
+                                      Email reusable
+                                    </span>
                                   </div>
                                 </div>
                               </div>
@@ -1239,7 +1193,8 @@ const Profile = () => {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Enter Confirmation Code</AlertDialogTitle>
                         <AlertDialogDescription>
-                          We sent a 6-digit confirmation code to your email. Enter it below to permanently delete your account.
+                          We sent a 6-digit confirmation code to your email. Enter it below to permanently delete your
+                          account.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <div className="py-4">
@@ -1249,13 +1204,11 @@ const Profile = () => {
                           type="text"
                           placeholder="123456"
                           value={confirmationCode}
-                          onChange={(e) => setConfirmationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                          onChange={(e) => setConfirmationCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                           className="mt-2 text-center text-2xl tracking-widest"
                           maxLength={6}
                         />
-                        <p className="text-sm text-muted-foreground mt-2">
-                          Code expires in 15 minutes
-                        </p>
+                        <p className="text-sm text-muted-foreground mt-2">Code expires in 15 minutes</p>
                       </div>
                       <AlertDialogFooter>
                         <Button
@@ -1289,11 +1242,7 @@ const Profile = () => {
             </div>
 
             {/* Sign Out */}
-            <Button 
-              variant="outline" 
-              className="w-full" 
-              onClick={handleSignOut}
-            >
+            <Button variant="outline" className="w-full" onClick={handleSignOut}>
               <LogOut className="w-4 h-4 mr-2" />
               Sign Out
             </Button>
