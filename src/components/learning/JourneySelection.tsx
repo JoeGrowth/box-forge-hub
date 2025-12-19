@@ -153,7 +153,7 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
               return (
                 <Card
                   key={option.type}
-                  className={`relative overflow-hidden transition-all hover:shadow-lg ${
+                  className={`relative overflow-hidden transition-all hover:shadow-lg flex flex-col ${
                     isActive ? `ring-2 ring-${option.color}` : ""
                   }`}
                 >
@@ -173,7 +173,7 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
                       </CardDescription>
                     )}
                   </CardHeader>
-                  <CardContent className="space-y-6">
+                  <CardContent className="space-y-6 flex-1 flex flex-col">
                     {!isCertified && (
                       <>
                         <p className="text-sm text-muted-foreground leading-relaxed">{option.description}</p>
@@ -198,8 +198,9 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
                       </>
                     )}
 
-                    <Button
-                      className="w-full mt-2"
+                    <div className="mt-auto pt-4">
+                      <Button
+                        className="w-full"
                       onClick={() => handleStartOrContinue(option.type)}
                       disabled={isStarting === option.type || isCompleted}
                       variant={isCompleted ? "secondary" : "default"}
@@ -222,7 +223,8 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
                           <ArrowRight className="w-4 h-4 ml-2" />
                         </>
                       )}
-                    </Button>
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               );
