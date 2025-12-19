@@ -88,24 +88,59 @@ export const SKILL_PTC_PHASES = [
   {
     number: 2,
     name: "Train",
-    description: "Apply learning through real case studies",
+    description: "Apply your learning through real-world case studies and build your professional portfolio",
     duration: "6-8 weeks",
     tasks: [
-      { id: "case_study_1", label: "Complete case study project 1", type: "checklist" },
-      { id: "case_study_2", label: "Complete case study project 2", type: "checklist" },
-      { id: "portfolio", label: "Build your portfolio", type: "question" },
-      { id: "peer_review", label: "Participate in peer review", type: "checklist" },
+      { 
+        id: "case_study_1", 
+        label: "Complete case study project 1", 
+        type: "checklist",
+        description: "Work through your first real-world case study. Apply the B4 methodology to analyze a startup challenge, identify key issues, and propose actionable solutions."
+      },
+      { 
+        id: "case_study_2", 
+        label: "Complete case study project 2", 
+        type: "checklist",
+        description: "Take on a more complex case study. Demonstrate deeper understanding by tackling a multi-faceted startup scenario that requires cross-functional thinking."
+      },
+      { 
+        id: "portfolio", 
+        label: "Build your professional portfolio", 
+        type: "question",
+        description: "Showcase your expertise: Describe your completed case studies, key learnings, and how you've applied the B4 methodology. Include links to any relevant work samples or documentation you've created."
+      },
+      { 
+        id: "peer_review", 
+        label: "Participate in peer review", 
+        type: "checklist",
+        description: "Engage with fellow co-builders by reviewing their case study work. Provide constructive feedback and learn from different perspectives and approaches."
+      },
     ],
   },
   {
     number: 3,
     name: "Consult",
-    description: "Mentor others and take on advisory roles",
+    description: "Share your expertise by mentoring others and taking on advisory responsibilities",
     duration: "Ongoing",
     tasks: [
-      { id: "mentoring_session", label: "Complete first mentoring session", type: "checklist" },
-      { id: "advisory_role", label: "Take on an advisory role", type: "checklist" },
-      { id: "certification_ready", label: "Ready for certification review", type: "checklist" },
+      { 
+        id: "mentoring_session", 
+        label: "Complete first mentoring session", 
+        type: "checklist",
+        description: "Guide a newer co-builder through their journey. Share your experience, answer their questions, and help them navigate the Practice or Train phase."
+      },
+      { 
+        id: "advisory_role", 
+        label: "Take on an advisory role", 
+        type: "checklist",
+        description: "Step into a formal advisory position for a startup or project. Provide strategic guidance based on your natural role expertise and B4 methodology knowledge."
+      },
+      { 
+        id: "certification_ready", 
+        label: "Ready for certification review", 
+        type: "checklist",
+        description: "Confirm you have completed all requirements and are ready for admin review. Your mentoring and advisory contributions will be evaluated for certification approval."
+      },
     ],
   },
 ];
