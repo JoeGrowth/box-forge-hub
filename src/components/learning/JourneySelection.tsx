@@ -23,10 +23,11 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
 
   const getStatusBadge = (journeyType: JourneyType) => {
     const status = getJourneyStatus(journeyType);
-    const cert = certifications.find((c) => 
-      (journeyType === "skill_ptc" && c.certification_type === "cobuilder_b4") ||
-      (journeyType === "idea_ptc" && c.certification_type === "initiator_b4") ||
-      (journeyType === "scaling_path" && c.certification_type === "scaling_complete")
+    const cert = certifications.find(
+      (c) =>
+        (journeyType === "skill_ptc" && c.certification_type === "cobuilder_b4") ||
+        (journeyType === "idea_ptc" && c.certification_type === "initiator_b4") ||
+        (journeyType === "scaling_path" && c.certification_type === "scaling_complete"),
     );
 
     if (cert) {
@@ -61,11 +62,7 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
           </Badge>
         );
       case "rejected":
-        return (
-          <Badge variant="destructive">
-            Needs Revision
-          </Badge>
-        );
+        return <Badge variant="destructive">Needs Revision</Badge>;
       default:
         return null;
     }
@@ -73,7 +70,7 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
 
   const handleStartOrContinue = async (journeyType: JourneyType) => {
     const existingJourney = journeys.find((j) => j.journey_type === journeyType);
-    
+
     if (existingJourney) {
       onSelectJourney(journeyType);
     } else {
@@ -91,7 +88,8 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
       type: "skill_ptc" as JourneyType,
       title: "Co-Build a Startup",
       subtitle: "Skill PTC Journey",
-      description: "Practice, Training, Consulting based on the B4 model. Learn the fundamentals, apply through case studies, and become a certified Co-Builder.",
+      description:
+        "Practice, Training, Consulting based on the B4 model. Learn the fundamentals, apply through case studies, and become a certified Co-Builder.",
       icon: Users,
       color: "b4-teal",
       phases: ["Skills Assessment", "Practice (4-6 weeks)", "Train (6-8 weeks)", "Consult (Ongoing)"],
@@ -101,7 +99,8 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
       type: "idea_ptc" as JourneyType,
       title: "Be an Initiator",
       subtitle: "Idea PTC Journey",
-      description: "Ideation, Structuring, Team Building, and Launch. Transform your idea into a structured startup with the right team.",
+      description:
+        "Ideation, Structuring, Team Building, and Launch. Transform your idea into a structured startup with the right team.",
       icon: Lightbulb,
       color: "b4-coral",
       phases: ["Ideation", "Structuring", "Team Building", "Launch"],
@@ -113,7 +112,7 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
   const showScalingPath = naturalRole?.wants_to_scale === true;
 
   // Check if user has all main certifications
-  const hasAllMainCertifications = 
+  const hasAllMainCertifications =
     certifications.some((c) => c.certification_type === "cobuilder_b4") &&
     certifications.some((c) => c.certification_type === "initiator_b4");
 
@@ -127,7 +126,7 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
   if (hasAllMainCertifications && !showScalingPath) {
     return null;
   }
-  
+
   if (hasAllMainCertifications && scalingCompleted) {
     return null;
   }
@@ -138,12 +137,8 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
       {!hasAllMainCertifications && (
         <>
           <div className="text-center mb-8">
-            <h2 className="font-display text-2xl font-bold text-foreground mb-2">
-              Choose Your Journey
-            </h2>
-            <p className="text-muted-foreground">
-              Select a path to continue your development as a Co-Builder
-            </p>
+            <h2 className="font-display text-2xl font-bold text-foreground mb-2">Choose Your Journey</h2>
+            <p className="text-muted-foreground">Select a path to continue your development</p>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
@@ -151,7 +146,7 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
               const status = getJourneyStatus(option.type);
               const isActive = status === "in_progress" || status === "pending_approval";
               const isCertified = certifications.some(
-                (c) => c.certification_type === (option.type === "skill_ptc" ? "cobuilder_b4" : "initiator_b4")
+                (c) => c.certification_type === (option.type === "skill_ptc" ? "cobuilder_b4" : "initiator_b4"),
               );
               const isCompleted = status === "approved" || isCertified;
 
@@ -164,7 +159,9 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
                 >
                   <CardHeader>
                     <div className="flex items-start justify-between">
-                      <div className={`w-12 h-12 rounded-xl bg-${option.color}/10 text-${option.color} flex items-center justify-center`}>
+                      <div
+                        className={`w-12 h-12 rounded-xl bg-${option.color}/10 text-${option.color} flex items-center justify-center`}
+                      >
                         <option.icon className="w-6 h-6" />
                       </div>
                       {getStatusBadge(option.type)}
@@ -254,13 +251,20 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
             {!scalingCertified && (
               <>
                 <p className="text-sm text-muted-foreground">
-                  Personal journey towards structure and growth. Build your entity, form a company, implement processes, and achieve scalability.
+                  Personal journey towards structure and growth. Build your entity, form a company, implement processes,
+                  and achieve scalability.
                 </p>
 
                 <div className="space-y-2">
                   <p className="text-xs font-semibold text-muted-foreground uppercase">5 Progressive Steps</p>
                   <div className="flex flex-wrap gap-1">
-                    {["Personal Entity", "Company Formation", "Process Implementation", "Optimization", "Scalability"].map((phase, i) => (
+                    {[
+                      "Personal Entity",
+                      "Company Formation",
+                      "Process Implementation",
+                      "Optimization",
+                      "Scalability",
+                    ].map((phase, i) => (
                       <Badge key={i} variant="outline" className="text-xs">
                         {phase}
                       </Badge>
