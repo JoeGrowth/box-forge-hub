@@ -112,112 +112,122 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
   // Only show scaling path if user wants to scale
   const showScalingPath = naturalRole?.wants_to_scale === true;
 
-  // Check if user has all main certifications - hide section entirely
+  // Check if user has all main certifications
   const hasAllMainCertifications = 
     certifications.some((c) => c.certification_type === "cobuilder_b4") &&
     certifications.some((c) => c.certification_type === "initiator_b4");
 
-  // Hide entire section if user has all main certifications
-  if (hasAllMainCertifications) {
+  // Check scaling status
+  const scalingCertified = certifications.some((c) => c.certification_type === "scaling_complete");
+  const scalingStatus = getJourneyStatus("scaling_path");
+  const scalingCompleted = scalingStatus === "approved" || scalingCertified;
+
+  // Hide entire section if user has all main certifications AND (no scaling path OR scaling is completed)
+  if (hasAllMainCertifications && (!showScalingPath || scalingCompleted)) {
     return null;
   }
 
   return (
     <div className="space-y-6">
-      <div className="text-center mb-8">
-        <h2 className="font-display text-2xl font-bold text-foreground mb-2">
-          Choose Your Journey
-        </h2>
-        <p className="text-muted-foreground">
-          Select a path to continue your development as a Co-Builder
-        </p>
-      </div>
+      {/* Only show header and main journey cards if user doesn't have all main certifications */}
+      {!hasAllMainCertifications && (
+        <>
+          <div className="text-center mb-8">
+            <h2 className="font-display text-2xl font-bold text-foreground mb-2">
+              Choose Your Journey
+            </h2>
+            <p className="text-muted-foreground">
+              Select a path to continue your development as a Co-Builder
+            </p>
+          </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {journeyOptions.map((option) => {
-          const status = getJourneyStatus(option.type);
-          const isActive = status === "in_progress" || status === "pending_approval";
-          const isCertified = certifications.some(
-            (c) => c.certification_type === (option.type === "skill_ptc" ? "cobuilder_b4" : "initiator_b4")
-          );
-          const isCompleted = status === "approved" || isCertified;
+          <div className="grid gap-6 md:grid-cols-2">
+            {journeyOptions.map((option) => {
+              const status = getJourneyStatus(option.type);
+              const isActive = status === "in_progress" || status === "pending_approval";
+              const isCertified = certifications.some(
+                (c) => c.certification_type === (option.type === "skill_ptc" ? "cobuilder_b4" : "initiator_b4")
+              );
+              const isCompleted = status === "approved" || isCertified;
 
-          return (
-            <Card
-              key={option.type}
-              className={`relative overflow-hidden transition-all hover:shadow-lg ${
-                isActive ? `ring-2 ring-${option.color}` : ""
-              }`}
-            >
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className={`w-12 h-12 rounded-xl bg-${option.color}/10 text-${option.color} flex items-center justify-center`}>
-                    <option.icon className="w-6 h-6" />
-                  </div>
-                  {getStatusBadge(option.type)}
-                </div>
-                <CardTitle className="font-display text-xl">{option.title}</CardTitle>
-                {!isCertified && (
-                  <CardDescription className="text-sm font-medium text-muted-foreground">
-                    {option.subtitle}
-                  </CardDescription>
-                )}
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {!isCertified && (
-                  <>
-                    <p className="text-sm text-muted-foreground">{option.description}</p>
-
-                    <div className="space-y-2">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase">Phases</p>
-                      <div className="flex flex-wrap gap-1">
-                        {option.phases.map((phase, i) => (
-                          <Badge key={i} variant="outline" className="text-xs">
-                            {phase}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="pt-2 border-t">
-                      <p className="text-xs text-muted-foreground mb-1">Upon completion:</p>
-                      <Badge className={`bg-${option.color}/10 text-${option.color} border-${option.color}/20`}>
-                        {option.result}
-                      </Badge>
-                    </div>
-                  </>
-                )}
-
-                <Button
-                  className="w-full"
-                  onClick={() => handleStartOrContinue(option.type)}
-                  disabled={isStarting === option.type || isCompleted}
-                  variant={isCompleted ? "secondary" : "default"}
+              return (
+                <Card
+                  key={option.type}
+                  className={`relative overflow-hidden transition-all hover:shadow-lg ${
+                    isActive ? `ring-2 ring-${option.color}` : ""
+                  }`}
                 >
-                  {isStarting === option.type ? (
-                    "Starting..."
-                  ) : isCompleted ? (
-                    <>
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      Completed
-                    </>
-                  ) : status ? (
-                    <>
-                      Continue Journey
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </>
-                  ) : (
-                    <>
-                      Start Journey
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </>
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className={`w-12 h-12 rounded-xl bg-${option.color}/10 text-${option.color} flex items-center justify-center`}>
+                        <option.icon className="w-6 h-6" />
+                      </div>
+                      {getStatusBadge(option.type)}
+                    </div>
+                    <CardTitle className="font-display text-xl">{option.title}</CardTitle>
+                    {!isCertified && (
+                      <CardDescription className="text-sm font-medium text-muted-foreground">
+                        {option.subtitle}
+                      </CardDescription>
+                    )}
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {!isCertified && (
+                      <>
+                        <p className="text-sm text-muted-foreground">{option.description}</p>
+
+                        <div className="space-y-2">
+                          <p className="text-xs font-semibold text-muted-foreground uppercase">Phases</p>
+                          <div className="flex flex-wrap gap-1">
+                            {option.phases.map((phase, i) => (
+                              <Badge key={i} variant="outline" className="text-xs">
+                                {phase}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="pt-2 border-t">
+                          <p className="text-xs text-muted-foreground mb-1">Upon completion:</p>
+                          <Badge className={`bg-${option.color}/10 text-${option.color} border-${option.color}/20`}>
+                            {option.result}
+                          </Badge>
+                        </div>
+                      </>
+                    )}
+
+                    <Button
+                      className="w-full"
+                      onClick={() => handleStartOrContinue(option.type)}
+                      disabled={isStarting === option.type || isCompleted}
+                      variant={isCompleted ? "secondary" : "default"}
+                    >
+                      {isStarting === option.type ? (
+                        "Starting..."
+                      ) : isCompleted ? (
+                        <>
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Completed
+                        </>
+                      ) : status ? (
+                        <>
+                          Continue Journey
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </>
+                      ) : (
+                        <>
+                          Start Journey
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </>
+                      )}
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </>
+      )}
 
       {showScalingPath && (() => {
         const scalingCertified = certifications.some((c) => c.certification_type === "scaling_complete");
