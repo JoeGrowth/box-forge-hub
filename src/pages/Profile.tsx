@@ -802,9 +802,7 @@ const Profile = () => {
                             <div className="w-8 h-8 rounded-lg bg-b4-navy/10 flex items-center justify-center">
                               <User className="w-4 h-4 text-b4-navy" />
                             </div>
-                            <span className="font-display font-semibold text-foreground">
-                              Your Onboarding Journey Answers
-                            </span>
+                            <span className="font-display font-semibold text-foreground">Your Onboarding Journey</span>
                           </div>
                           <ChevronDown className="w-5 h-5 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
                         </CollapsibleTrigger>
