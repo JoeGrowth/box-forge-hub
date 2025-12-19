@@ -54,9 +54,24 @@ export const SKILL_PTC_PHASES = [
     description: "Define your top skills and natural abilities",
     duration: "1-2 days",
     tasks: [
-      { id: "identify_skills", label: "Identify your top 3-5 skills", type: "question" },
-      { id: "skill_examples", label: "Provide examples of how you've used each skill", type: "question" },
-      { id: "skill_passion", label: "Which skills do you enjoy using most?", type: "question" },
+      { 
+        id: "identify_skills", 
+        label: "Identify your top 3-5 skills", 
+        type: "question",
+        description: "List the skills you excel at and that come naturally to you. Consider technical skills, soft skills, and domain expertise. What do people often come to you for help with?"
+      },
+      { 
+        id: "skill_examples", 
+        label: "Provide examples of how you've used each skill", 
+        type: "question",
+        description: "For each skill you listed, describe a specific situation where you applied it successfully. Include the context, what you did, and the outcome achieved."
+      },
+      { 
+        id: "skill_passion", 
+        label: "Which skills do you enjoy using most?", 
+        type: "question",
+        description: "Identify which of your skills energize you the most. When do you feel most engaged and in flow? These often point to your natural role within a startup team."
+      },
     ],
   },
   {
@@ -152,9 +167,24 @@ export const IDEA_PTC_PHASES = [
     description: "Define your vision, problem, and market opportunity",
     duration: "1-2 weeks",
     tasks: [
-      { id: "vision", label: "Define your vision", type: "question" },
-      { id: "problem", label: "Describe the problem you're solving", type: "question" },
-      { id: "market", label: "Identify your target market", type: "question" },
+      { 
+        id: "vision", 
+        label: "Define your vision", 
+        type: "question",
+        description: "Paint a picture of the future you want to create. What does success look like in 5 years? How will the world be different because of your startup?"
+      },
+      { 
+        id: "problem", 
+        label: "Describe the problem you're solving", 
+        type: "question",
+        description: "Clearly articulate the pain point or gap in the market. Who experiences this problem? How severe is it? What are the consequences of not solving it?"
+      },
+      { 
+        id: "market", 
+        label: "Identify your target market", 
+        type: "question",
+        description: "Define your ideal customer profile. What are their demographics, behaviors, and needs? How large is this market segment and what's its growth potential?"
+      },
     ],
   },
   {
@@ -163,9 +193,24 @@ export const IDEA_PTC_PHASES = [
     description: "Build your business model and identify key roles",
     duration: "2-3 weeks",
     tasks: [
-      { id: "business_model", label: "Define your business model", type: "question" },
-      { id: "key_roles", label: "Identify key roles needed", type: "question" },
-      { id: "value_proposition", label: "Articulate your value proposition", type: "question" },
+      { 
+        id: "business_model", 
+        label: "Define your business model", 
+        type: "question",
+        description: "How will your startup make money? Describe your revenue streams, pricing strategy, and cost structure. What makes your model sustainable and scalable?"
+      },
+      { 
+        id: "key_roles", 
+        label: "Identify key roles needed", 
+        type: "question",
+        description: "What natural roles are essential to execute your vision? Consider technical, creative, operational, and strategic needs. Which roles are most critical in the early stages?"
+      },
+      { 
+        id: "value_proposition", 
+        label: "Articulate your value proposition", 
+        type: "question",
+        description: "What unique value do you offer that competitors don't? Why should customers choose you? Craft a clear, compelling statement that resonates with your target market."
+      },
     ],
   },
   {
@@ -174,9 +219,24 @@ export const IDEA_PTC_PHASES = [
     description: "Find and onboard the right co-builders",
     duration: "3-4 weeks",
     tasks: [
-      { id: "role_requirements", label: "Define role requirements", type: "question" },
-      { id: "cobuilder_search", label: "Search for co-builders in directory", type: "checklist" },
-      { id: "team_formation", label: "Form initial team", type: "checklist" },
+      { 
+        id: "role_requirements", 
+        label: "Define role requirements", 
+        type: "question",
+        description: "For each key role, specify the skills, experience, and qualities you're looking for. What does an ideal candidate look like? What are must-haves vs. nice-to-haves?"
+      },
+      { 
+        id: "cobuilder_search", 
+        label: "Search for co-builders in directory", 
+        type: "checklist",
+        description: "Use the B4 co-builder directory to find potential team members. Review profiles, natural roles, and certifications. Reach out to candidates who match your requirements."
+      },
+      { 
+        id: "team_formation", 
+        label: "Form initial team", 
+        type: "checklist",
+        description: "Assemble your founding team. Ensure complementary skills and shared values. Establish clear roles, responsibilities, and decision-making processes from the start."
+      },
     ],
   },
   {
@@ -185,9 +245,24 @@ export const IDEA_PTC_PHASES = [
     description: "Execute your plan with structured guidance",
     duration: "Ongoing",
     tasks: [
-      { id: "execution_plan", label: "Create execution plan", type: "question" },
-      { id: "milestone_1", label: "Complete first milestone", type: "checklist" },
-      { id: "launch_ready", label: "Ready for launch review", type: "checklist" },
+      { 
+        id: "execution_plan", 
+        label: "Create execution plan", 
+        type: "question",
+        description: "Develop a detailed roadmap for your first 90 days. Break down major milestones into actionable tasks. Assign owners and deadlines to maintain accountability."
+      },
+      { 
+        id: "milestone_1", 
+        label: "Complete first milestone", 
+        type: "checklist",
+        description: "Achieve your first significant milestone—whether it's launching an MVP, acquiring initial customers, or securing funding. Document learnings and adjust your plan accordingly."
+      },
+      { 
+        id: "launch_ready", 
+        label: "Ready for launch review", 
+        type: "checklist",
+        description: "Prepare for admin review by documenting your progress, team formation, and key achievements. Demonstrate readiness to move from planning to full execution."
+      },
     ],
   },
 ];
@@ -199,10 +274,30 @@ export const SCALING_PATH_PHASES = [
     description: "Create your personal brand entity",
     duration: "2-4 weeks",
     tasks: [
-      { id: "logo_name", label: "Create Logo & Name for your entity", type: "question" },
-      { id: "services_3", label: "Define 3 core services", type: "question" },
-      { id: "website_link", label: "Provide website link", type: "question" },
-      { id: "missions_10", label: "List 10 missions delivered alone", type: "question" },
+      { 
+        id: "logo_name", 
+        label: "Create Logo & Name for your entity", 
+        type: "question",
+        description: "Design a professional identity that represents your natural role and expertise. Your logo and name should be memorable, relevant to your services, and resonate with your target clients."
+      },
+      { 
+        id: "services_3", 
+        label: "Define 3 core services", 
+        type: "question",
+        description: "Identify three distinct services you can offer based on your natural role. Each service should solve a specific problem and have a clear deliverable and value proposition."
+      },
+      { 
+        id: "website_link", 
+        label: "Provide website link", 
+        type: "question",
+        description: "Create a professional online presence showcasing your services, experience, and portfolio. Include contact information and clear calls-to-action for potential clients."
+      },
+      { 
+        id: "missions_10", 
+        label: "List 10 missions delivered alone", 
+        type: "question",
+        description: "Document 10 projects or engagements you've completed independently. Include client type, scope, outcomes, and key learnings. This demonstrates your ability to deliver value solo."
+      },
     ],
   },
   {
@@ -211,11 +306,36 @@ export const SCALING_PATH_PHASES = [
     description: "Establish your company with 70% ownership",
     duration: "4-6 weeks",
     tasks: [
-      { id: "company_brand", label: "Create company Logo, Name & Brand", type: "question" },
-      { id: "company_services", label: "Define services linked to natural role", type: "question" },
-      { id: "company_website", label: "Set up company website", type: "question" },
-      { id: "proposal_template", label: "Create Technical & Financial Proposal template", type: "question" },
-      { id: "first_invoice", label: "Create first invoice with external contributors", type: "checklist" },
+      { 
+        id: "company_brand", 
+        label: "Create company Logo, Name & Brand", 
+        type: "question",
+        description: "Develop a distinct company identity separate from your personal brand. The company brand should reflect your expanded capabilities and appeal to larger clients and projects."
+      },
+      { 
+        id: "company_services", 
+        label: "Define services linked to natural role", 
+        type: "question",
+        description: "Expand your service offerings while staying true to your natural role expertise. Consider how you can package your knowledge to serve multiple clients or larger engagements."
+      },
+      { 
+        id: "company_website", 
+        label: "Set up company website", 
+        type: "question",
+        description: "Launch a professional company website with detailed service pages, case studies, team information, and a clear value proposition for enterprise clients."
+      },
+      { 
+        id: "proposal_template", 
+        label: "Create Technical & Financial Proposal template", 
+        type: "question",
+        description: "Develop standardized templates for client proposals. Include sections for scope, methodology, timeline, deliverables, pricing, and terms. Ensure professional formatting and branding."
+      },
+      { 
+        id: "first_invoice", 
+        label: "Create first invoice with external contributors", 
+        type: "checklist",
+        description: "Complete your first project that involves coordinating with external contributors. Handle invoicing, payments, and contractor relationships professionally."
+      },
     ],
   },
   {
@@ -224,10 +344,30 @@ export const SCALING_PATH_PHASES = [
     description: "Define and implement your process",
     duration: "6-8 weeks",
     tasks: [
-      { id: "define_process", label: "Document 'The Process'", type: "question" },
-      { id: "implement_process", label: "Implement the process", type: "checklist" },
-      { id: "review_process", label: "Review the process", type: "question" },
-      { id: "mission_external_internal", label: "Complete first mission with external and internal people", type: "checklist" },
+      { 
+        id: "define_process", 
+        label: "Document 'The Process'", 
+        type: "question",
+        description: "Create comprehensive documentation of your methodology. Define each step, expected inputs/outputs, quality standards, and success criteria. Make it teachable to others."
+      },
+      { 
+        id: "implement_process", 
+        label: "Implement the process", 
+        type: "checklist",
+        description: "Put your documented process into action on real projects. Use tools, templates, and workflows that support consistent execution across all engagements."
+      },
+      { 
+        id: "review_process", 
+        label: "Review the process", 
+        type: "question",
+        description: "Evaluate process effectiveness after initial implementation. What worked well? What needs improvement? Gather feedback from team members and clients."
+      },
+      { 
+        id: "mission_external_internal", 
+        label: "Complete first mission with external and internal people", 
+        type: "checklist",
+        description: "Successfully deliver a project with a mixed team of internal staff and external contributors. Demonstrate your ability to coordinate complex team structures."
+      },
     ],
   },
   {
@@ -236,10 +376,30 @@ export const SCALING_PATH_PHASES = [
     description: "Optimize and deliver multiple missions",
     duration: "Ongoing",
     tasks: [
-      { id: "optimize_process", label: "Optimize & enhance the process", type: "question" },
-      { id: "optimize_implementation", label: "Optimize implementation", type: "question" },
-      { id: "missions_3", label: "Complete 3 missions successfully", type: "checklist" },
-      { id: "process_manager", label: "Hire/assign process manager", type: "checklist" },
+      { 
+        id: "optimize_process", 
+        label: "Optimize & enhance the process", 
+        type: "question",
+        description: "Based on learnings, refine your process for efficiency and quality. Identify bottlenecks, automate repetitive tasks, and strengthen areas that produced the best results."
+      },
+      { 
+        id: "optimize_implementation", 
+        label: "Optimize implementation", 
+        type: "question",
+        description: "Improve how your team executes the process. Enhance training materials, communication protocols, and project management practices for smoother delivery."
+      },
+      { 
+        id: "missions_3", 
+        label: "Complete 3 missions successfully", 
+        type: "checklist",
+        description: "Deliver three successful projects using your optimized process. Track metrics like client satisfaction, timeline adherence, and team efficiency."
+      },
+      { 
+        id: "process_manager", 
+        label: "Hire/assign process manager", 
+        type: "checklist",
+        description: "Bring on a dedicated process manager to oversee daily operations. This person ensures consistent execution while you focus on strategy and business development."
+      },
     ],
   },
   {
@@ -248,10 +408,30 @@ export const SCALING_PATH_PHASES = [
     description: "Achieve autonomous structure and operations",
     duration: "Ongoing",
     tasks: [
-      { id: "final_optimize", label: "Final process optimization", type: "question" },
-      { id: "final_implementation", label: "Final implementation optimization", type: "question" },
-      { id: "missions_5", label: "Complete 5 missions successfully", type: "checklist" },
-      { id: "structure_handler", label: "Hire/assign structure handler", type: "checklist" },
+      { 
+        id: "final_optimize", 
+        label: "Final process optimization", 
+        type: "question",
+        description: "Make final refinements to achieve a fully scalable process. Ensure it can handle increased volume without proportional increases in your personal involvement."
+      },
+      { 
+        id: "final_implementation", 
+        label: "Final implementation optimization", 
+        type: "question",
+        description: "Optimize your organizational structure for autonomous operations. Document decision-making frameworks, escalation paths, and quality assurance checkpoints."
+      },
+      { 
+        id: "missions_5", 
+        label: "Complete 5 missions successfully", 
+        type: "checklist",
+        description: "Achieve five successful project completions with your scaled structure. Demonstrate that quality and client satisfaction remain high as you grow."
+      },
+      { 
+        id: "structure_handler", 
+        label: "Hire/assign structure handler", 
+        type: "checklist",
+        description: "Recruit a senior leader to manage overall company operations. This role handles strategic coordination, allowing you to focus on vision and growth opportunities."
+      },
     ],
   },
 ];
