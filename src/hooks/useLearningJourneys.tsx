@@ -62,12 +62,27 @@ export const SKILL_PTC_PHASES = [
   {
     number: 1,
     name: "Practice",
-    description: "Learn the fundamentals of startup building",
+    description: "Learn the fundamentals of startup building and the B4 methodology",
     duration: "4-6 weeks",
     tasks: [
-      { id: "core_methodology", label: "Complete core methodology training", type: "checklist" },
-      { id: "framework_basics", label: "Learn B4 framework basics", type: "checklist" },
-      { id: "self_assessment", label: "Complete self-assessment", type: "question" },
+      { 
+        id: "core_methodology", 
+        label: "Complete core methodology training", 
+        type: "checklist",
+        description: "Study and understand the core principles of startup building, lean methodology, and agile practices that form the foundation of B4's approach."
+      },
+      { 
+        id: "framework_basics", 
+        label: "Learn B4 framework basics", 
+        type: "checklist",
+        description: "Master the B4 framework fundamentals: understanding natural roles, co-builder collaboration model, and the Practice-Train-Consult progression."
+      },
+      { 
+        id: "self_assessment", 
+        label: "Complete self-assessment", 
+        type: "question",
+        description: "Reflect on your learning journey: What key insights have you gained from the methodology training? How do you see your natural role fitting into the B4 framework? What areas do you feel confident in, and where do you need more practice?"
+      },
     ],
   },
   {

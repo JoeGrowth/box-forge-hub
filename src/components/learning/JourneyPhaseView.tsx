@@ -210,26 +210,41 @@ export const JourneyPhaseView = ({ journeyType, onBack }: JourneyPhaseViewProps)
           {phase.tasks.map((task) => (
             <div key={task.id} className="space-y-2">
               {task.type === "checklist" ? (
-                <div className="flex items-center gap-3 p-4 rounded-lg border hover:bg-muted/50 transition-colors">
-                  <Checkbox
-                    id={task.id}
-                    checked={completedTasks.includes(task.id)}
-                    onCheckedChange={() => handleTaskToggle(task.id)}
-                  />
-                  <label
-                    htmlFor={task.id}
-                    className={`flex-1 cursor-pointer ${
-                      completedTasks.includes(task.id)
-                        ? "line-through text-muted-foreground"
-                        : ""
-                    }`}
-                  >
-                    {task.label}
-                  </label>
+                <div className="p-4 rounded-lg border hover:bg-muted/50 transition-colors">
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      id={task.id}
+                      checked={completedTasks.includes(task.id)}
+                      onCheckedChange={() => handleTaskToggle(task.id)}
+                      className="mt-0.5"
+                    />
+                    <div className="flex-1">
+                      <label
+                        htmlFor={task.id}
+                        className={`cursor-pointer font-medium ${
+                          completedTasks.includes(task.id)
+                            ? "line-through text-muted-foreground"
+                            : ""
+                        }`}
+                      >
+                        {task.label}
+                      </label>
+                      {(task as any).description && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {(task as any).description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-2">
                   <label className="text-sm font-medium">{task.label}</label>
+                  {(task as any).description && (
+                    <p className="text-sm text-muted-foreground">
+                      {(task as any).description}
+                    </p>
+                  )}
                   <Textarea
                     value={responses[task.id] || ""}
                     onChange={(e) => handleResponseChange(task.id, e.target.value)}
