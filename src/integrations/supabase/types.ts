@@ -80,6 +80,86 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_conversations: {
+        Row: {
+          applicant_id: string
+          application_id: string
+          created_at: string
+          id: string
+          initiator_id: string
+          startup_id: string
+          updated_at: string
+        }
+        Insert: {
+          applicant_id: string
+          application_id: string
+          created_at?: string
+          id?: string
+          initiator_id: string
+          startup_id: string
+          updated_at?: string
+        }
+        Update: {
+          applicant_id?: string
+          application_id?: string
+          created_at?: string
+          id?: string
+          initiator_id?: string
+          startup_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_conversations_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: true
+            referencedRelation: "startup_applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_conversations_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startup_ideas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          is_read: boolean
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       entrepreneur_journey_responses: {
         Row: {
           business_model: string | null
