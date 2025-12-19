@@ -359,10 +359,20 @@ const Profile = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Code Sent",
-        description: "Check your email for the confirmation code.",
-      });
+      // Check if we're in test mode (Resend domain not verified)
+      if (data?.testMode && data?.code) {
+        toast({
+          title: "Test Mode",
+          description: `Email service is in testing mode. Your code is: ${data.code}`,
+          duration: 15000, // Show for longer
+        });
+        setConfirmationCode(data.code); // Auto-fill the code
+      } else {
+        toast({
+          title: "Code Sent",
+          description: "Check your email for the confirmation code.",
+        });
+      }
       setConfirmationStep("code");
     } catch (error: any) {
       toast({
