@@ -12,7 +12,8 @@ import { AdminApprovalsTab } from "@/components/admin/AdminApprovalsTab";
 import { AdminOpportunitiesTab } from "@/components/admin/AdminOpportunitiesTab";
 import { AdminJourneyResponsesTab } from "@/components/admin/AdminJourneyResponsesTab";
 import { AdminAnalyticsTab } from "@/components/admin/AdminAnalyticsTab";
-import { Shield, Bell, Users, FileText, UserCheck, Rocket, ClipboardList, BarChart3 } from "lucide-react";
+import { AdminLearningJourneysTab } from "@/components/admin/AdminLearningJourneysTab";
+import { Shield, Bell, Users, FileText, UserCheck, Rocket, ClipboardList, BarChart3, GraduationCap } from "lucide-react";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -155,7 +156,7 @@ const Admin = () => {
 
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-7 mb-8">
+              <TabsList className="grid w-full grid-cols-8 mb-8">
                 <TabsTrigger value="analytics" className="flex items-center gap-2">
                   <BarChart3 className="w-4 h-4" />
                   Analytics
@@ -171,11 +172,10 @@ const Admin = () => {
                 <TabsTrigger value="opportunities" className="flex items-center gap-2">
                   <Rocket className="w-4 h-4" />
                   Opportunities
-                  {pendingOpportunities > 0 && (
-                    <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-xs">
-                      {pendingOpportunities}
-                    </span>
-                  )}
+                </TabsTrigger>
+                <TabsTrigger value="learning" className="flex items-center gap-2">
+                  <GraduationCap className="w-4 h-4" />
+                  Learning
                 </TabsTrigger>
                 <TabsTrigger value="journeys" className="flex items-center gap-2">
                   <ClipboardList className="w-4 h-4" />
@@ -188,11 +188,6 @@ const Admin = () => {
                 <TabsTrigger value="notifications" className="flex items-center gap-2">
                   <Bell className="w-4 h-4" />
                   Notifications
-                  {unreadCount > 0 && (
-                    <span className="px-2 py-0.5 rounded-full bg-b4-coral text-white text-xs">
-                      {unreadCount}
-                    </span>
-                  )}
                 </TabsTrigger>
               </TabsList>
 
@@ -213,6 +208,10 @@ const Admin = () => {
 
               <TabsContent value="opportunities">
                 <AdminOpportunitiesTab onRefresh={fetchUsers} />
+              </TabsContent>
+
+              <TabsContent value="learning">
+                <AdminLearningJourneysTab />
               </TabsContent>
 
               <TabsContent value="journeys">

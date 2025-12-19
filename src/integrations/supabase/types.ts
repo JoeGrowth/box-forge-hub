@@ -133,6 +133,107 @@ export type Database = {
           },
         ]
       }
+      journey_phase_responses: {
+        Row: {
+          completed_at: string | null
+          completed_tasks: Json | null
+          created_at: string
+          id: string
+          is_completed: boolean | null
+          journey_id: string
+          notes: string | null
+          phase_name: string
+          phase_number: number
+          responses: Json | null
+          updated_at: string
+          uploaded_files: Json | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_tasks?: Json | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean | null
+          journey_id: string
+          notes?: string | null
+          phase_name: string
+          phase_number: number
+          responses?: Json | null
+          updated_at?: string
+          uploaded_files?: Json | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          completed_tasks?: Json | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean | null
+          journey_id?: string
+          notes?: string | null
+          phase_name?: string
+          phase_number?: number
+          responses?: Json | null
+          updated_at?: string
+          uploaded_files?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journey_phase_responses_journey_id_fkey"
+            columns: ["journey_id"]
+            isOneToOne: false
+            referencedRelation: "learning_journeys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_journeys: {
+        Row: {
+          admin_notes: string | null
+          approved_at: string | null
+          approved_by: string | null
+          completed_at: string | null
+          created_at: string
+          current_phase: number
+          id: string
+          journey_type: Database["public"]["Enums"]["journey_type"]
+          started_at: string | null
+          status: Database["public"]["Enums"]["journey_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          completed_at?: string | null
+          created_at?: string
+          current_phase?: number
+          id?: string
+          journey_type: Database["public"]["Enums"]["journey_type"]
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["journey_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          completed_at?: string | null
+          created_at?: string
+          current_phase?: number
+          id?: string
+          journey_type?: Database["public"]["Enums"]["journey_type"]
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["journey_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       natural_roles: {
         Row: {
           consulting_case_studies: string | null
@@ -381,6 +482,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_certifications: {
+        Row: {
+          certification_type: string
+          created_at: string
+          display_label: string
+          earned_at: string
+          id: string
+          user_id: string
+          verified: boolean | null
+        }
+        Insert: {
+          certification_type: string
+          created_at?: string
+          display_label: string
+          earned_at?: string
+          id?: string
+          user_id: string
+          verified?: boolean | null
+        }
+        Update: {
+          certification_type?: string
+          created_at?: string
+          display_label?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+          verified?: boolean | null
+        }
+        Relationships: []
+      }
       user_notifications: {
         Row: {
           created_at: string
@@ -451,6 +582,13 @@ export type Database = {
     }
     Enums: {
       app_role: "entrepreneur" | "cobuilder" | "box_manager" | "admin"
+      journey_status:
+        | "not_started"
+        | "in_progress"
+        | "pending_approval"
+        | "approved"
+        | "rejected"
+      journey_type: "skill_ptc" | "idea_ptc" | "scaling_path"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -579,6 +717,14 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["entrepreneur", "cobuilder", "box_manager", "admin"],
+      journey_status: [
+        "not_started",
+        "in_progress",
+        "pending_approval",
+        "approved",
+        "rejected",
+      ],
+      journey_type: ["skill_ptc", "idea_ptc", "scaling_path"],
     },
   },
 } as const
