@@ -529,6 +529,40 @@ export const LearningJourneysProvider = ({ children }: { children: React.ReactNo
     if (!user) return null;
 
     try {
+      // First check if a journey of this type already exists
+      const existingJourney = journeys.find(j => j.journey_type === journeyType);
+      if (existingJourney) {
+        toast({
+          title: "Journey In Progress",
+          description: `You already have a ${journeyType.replace("_", " ").toUpperCase()} journey. Continuing where you left off.`,
+        });
+        return existingJourney;
+      }
+
+      // Also check the database in case local state is stale
+      const { data: dbExisting } = await supabase
+        .from("learning_journeys")
+        .select()
+        .eq("user_id", user.id)
+        .eq("journey_type", journeyType)
+        .maybeSingle();
+
+      if (dbExisting) {
+        const journey = dbExisting as LearningJourney;
+        // Update local state if not present
+        setJourneys((prev) => {
+          if (!prev.find(j => j.id === journey.id)) {
+            return [...prev, journey];
+          }
+          return prev;
+        });
+        toast({
+          title: "Journey In Progress",
+          description: `You already have a ${journeyType.replace("_", " ").toUpperCase()} journey. Continuing where you left off.`,
+        });
+        return journey;
+      }
+
       const { data, error } = await supabase
         .from("learning_journeys")
         .insert({
