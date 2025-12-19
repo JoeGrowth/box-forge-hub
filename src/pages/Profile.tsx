@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { EntrepreneurJourney } from "@/components/entrepreneur/EntrepreneurJourney";
 import { OnboardingAnswersCard } from "@/components/profile/OnboardingAnswersCard";
 import { IdeaApplicationsViewer } from "@/components/profile/IdeaApplicationsViewer";
+import { LearningJourneyDashboard } from "@/components/learning/LearningJourneyDashboard";
 import {
   Collapsible,
   CollapsibleContent,
@@ -921,6 +922,13 @@ const Profile = () => {
                     </Collapsible>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Learning Journeys Dashboard */}
+            {isApprovedCoBuilder && (
+              <div className="mb-8">
+                <LearningJourneyDashboard />
               </div>
             )}
 
