@@ -127,9 +127,10 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
         {journeyOptions.map((option) => {
           const status = getJourneyStatus(option.type);
           const isActive = status === "in_progress" || status === "pending_approval";
-          const isCompleted = status === "approved" || certifications.some(
+          const isCertified = certifications.some(
             (c) => c.certification_type === (option.type === "skill_ptc" ? "cobuilder_b4" : "initiator_b4")
           );
+          const isCompleted = status === "approved" || isCertified;
 
           return (
             <Card
@@ -146,30 +147,36 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
                   {getStatusBadge(option.type)}
                 </div>
                 <CardTitle className="font-display text-xl">{option.title}</CardTitle>
-                <CardDescription className="text-sm font-medium text-muted-foreground">
-                  {option.subtitle}
-                </CardDescription>
+                {!isCertified && (
+                  <CardDescription className="text-sm font-medium text-muted-foreground">
+                    {option.subtitle}
+                  </CardDescription>
+                )}
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">{option.description}</p>
+                {!isCertified && (
+                  <>
+                    <p className="text-sm text-muted-foreground">{option.description}</p>
 
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase">Phases</p>
-                  <div className="flex flex-wrap gap-1">
-                    {option.phases.map((phase, i) => (
-                      <Badge key={i} variant="outline" className="text-xs">
-                        {phase}
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase">Phases</p>
+                      <div className="flex flex-wrap gap-1">
+                        {option.phases.map((phase, i) => (
+                          <Badge key={i} variant="outline" className="text-xs">
+                            {phase}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t">
+                      <p className="text-xs text-muted-foreground mb-1">Upon completion:</p>
+                      <Badge className={`bg-${option.color}/10 text-${option.color} border-${option.color}/20`}>
+                        {option.result}
                       </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t">
-                  <p className="text-xs text-muted-foreground mb-1">Upon completion:</p>
-                  <Badge className={`bg-${option.color}/10 text-${option.color} border-${option.color}/20`}>
-                    {option.result}
-                  </Badge>
-                </div>
+                    </div>
+                  </>
+                )}
 
                 <Button
                   className="w-full"
@@ -202,48 +209,76 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
         })}
       </div>
 
-      {showScalingPath && (
-        <Card className="relative overflow-hidden transition-all hover:shadow-lg border-b4-purple/30">
-          <CardHeader>
-            <div className="flex items-start justify-between">
-              <div className="w-12 h-12 rounded-xl bg-b4-purple/10 text-b4-purple flex items-center justify-center">
-                <Rocket className="w-6 h-6" />
-              </div>
-              {getStatusBadge("scaling_path")}
-            </div>
-            <CardTitle className="font-display text-xl">Scale Your Natural Role</CardTitle>
-            <CardDescription className="text-sm font-medium text-muted-foreground">
-              Process Formalization Journey
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Personal journey towards structure and growth. Build your entity, form a company, implement processes, and achieve scalability.
-            </p>
+      {showScalingPath && (() => {
+        const scalingCertified = certifications.some((c) => c.certification_type === "scaling_complete");
+        const scalingStatus = getJourneyStatus("scaling_path");
+        const scalingCompleted = scalingStatus === "approved" || scalingCertified;
 
-            <div className="space-y-2">
-              <p className="text-xs font-semibold text-muted-foreground uppercase">5 Progressive Steps</p>
-              <div className="flex flex-wrap gap-1">
-                {["Personal Entity", "Company Formation", "Process Implementation", "Optimization", "Scalability"].map((phase, i) => (
-                  <Badge key={i} variant="outline" className="text-xs">
-                    {phase}
-                  </Badge>
-                ))}
+        return (
+          <Card className="relative overflow-hidden transition-all hover:shadow-lg border-b4-purple/30">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div className="w-12 h-12 rounded-xl bg-b4-purple/10 text-b4-purple flex items-center justify-center">
+                  <Rocket className="w-6 h-6" />
+                </div>
+                {getStatusBadge("scaling_path")}
               </div>
-            </div>
+              <CardTitle className="font-display text-xl">Scale Your Natural Role</CardTitle>
+              {!scalingCertified && (
+                <CardDescription className="text-sm font-medium text-muted-foreground">
+                  Process Formalization Journey
+                </CardDescription>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {!scalingCertified && (
+                <>
+                  <p className="text-sm text-muted-foreground">
+                    Personal journey towards structure and growth. Build your entity, form a company, implement processes, and achieve scalability.
+                  </p>
 
-            <Button
-              className="w-full"
-              variant="outline"
-              onClick={() => handleStartOrContinue("scaling_path")}
-              disabled={isStarting === "scaling_path"}
-            >
-              {isStarting === "scaling_path" ? "Starting..." : getJourneyStatus("scaling_path") ? "Continue Journey" : "Start Journey"}
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase">5 Progressive Steps</p>
+                    <div className="flex flex-wrap gap-1">
+                      {["Personal Entity", "Company Formation", "Process Implementation", "Optimization", "Scalability"].map((phase, i) => (
+                        <Badge key={i} variant="outline" className="text-xs">
+                          {phase}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              <Button
+                className="w-full"
+                variant={scalingCompleted ? "secondary" : "outline"}
+                onClick={() => handleStartOrContinue("scaling_path")}
+                disabled={isStarting === "scaling_path" || scalingCompleted}
+              >
+                {isStarting === "scaling_path" ? (
+                  "Starting..."
+                ) : scalingCompleted ? (
+                  <>
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Completed
+                  </>
+                ) : scalingStatus ? (
+                  <>
+                    Continue Journey
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </>
+                ) : (
+                  <>
+                    Start Journey
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+        );
+      })()}
     </div>
   );
 };
