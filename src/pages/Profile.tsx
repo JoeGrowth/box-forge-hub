@@ -784,7 +784,7 @@ const Profile = () => {
 
                 {/* Toggle Lists Section */}
                 <div className="space-y-3">
-                  {/* Toggle 1: Your Journey Answers */}
+                  {/* Toggle 1: Your Answers */}
                   {naturalRole && (
                     <Collapsible>
                       <div className="bg-card rounded-xl border border-border overflow-hidden">
@@ -794,7 +794,7 @@ const Profile = () => {
                               <User className="w-4 h-4 text-b4-navy" />
                             </div>
                             <span className="font-display font-semibold text-foreground">
-                              Your Journey Answers aaaaaaa
+                              Your Onboarding Journey Answers
                             </span>
                           </div>
                           <ChevronDown className="w-5 h-5 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
