@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Edit2, Save, X, AlertCircle } from "lucide-react";
+import { CheckCircle, Edit2, Save, X, AlertCircle, Rocket, Loader2 } from "lucide-react";
 import { NaturalRole } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -12,12 +12,14 @@ import { useToast } from "@/hooks/use-toast";
 interface OnboardingAnswersCardProps {
   naturalRole: NaturalRole;
   onUpdate: () => void;
+  onScalingChange?: (wantsToScale: boolean) => void;
 }
 
-export const OnboardingAnswersCard = ({ naturalRole, onUpdate }: OnboardingAnswersCardProps) => {
+export const OnboardingAnswersCard = ({ naturalRole, onUpdate, onScalingChange }: OnboardingAnswersCardProps) => {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isTogglingScaling, setIsTogglingScaling] = useState(false);
   const [editData, setEditData] = useState({
     description: naturalRole.description || "",
     practice_entities: naturalRole.practice_entities || "",
@@ -47,6 +49,36 @@ export const OnboardingAnswersCard = ({ naturalRole, onUpdate }: OnboardingAnswe
       });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleToggleScaling = async () => {
+    setIsTogglingScaling(true);
+    try {
+      const newValue = !naturalRole.wants_to_scale;
+      const { error } = await supabase
+        .from("natural_roles")
+        .update({ wants_to_scale: newValue })
+        .eq("user_id", naturalRole.user_id);
+
+      if (error) throw error;
+
+      toast({
+        title: newValue ? "Scaling Journey Enabled" : "Scaling Interest Updated",
+        description: newValue 
+          ? "You can now start your scaling journey below." 
+          : "Your scaling preference has been updated.",
+      });
+      onUpdate();
+      onScalingChange?.(newValue);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update scaling preference.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsTogglingScaling(false);
     }
   };
 
@@ -203,11 +235,35 @@ export const OnboardingAnswersCard = ({ naturalRole, onUpdate }: OnboardingAnswe
         {/* Scaling Interest */}
         <div className="pt-4 border-t border-border/50">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Interested in Scaling</span>
-            <Badge variant={naturalRole.wants_to_scale ? "default" : "secondary"}>
-              {naturalRole.wants_to_scale ? "Yes" : "No"}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Rocket className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Interested in Scaling</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant={naturalRole.wants_to_scale ? "default" : "secondary"}>
+                {naturalRole.wants_to_scale ? "Yes" : "No"}
+              </Badge>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleToggleScaling}
+                disabled={isTogglingScaling}
+              >
+                {isTogglingScaling ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : naturalRole.wants_to_scale ? (
+                  "Change to No"
+                ) : (
+                  "Change to Yes"
+                )}
+              </Button>
+            </div>
           </div>
+          {!naturalRole.wants_to_scale && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Enable scaling to start your personal journey towards structure and growth.
+            </p>
+          )}
         </div>
       </CardContent>
     </Card>
