@@ -227,23 +227,43 @@ export const ScalingJourneyProgress = ({ onUpdate }: ScalingJourneyProgressProps
         return value && String(value).trim().length > 0;
       });
 
-      // Upsert phase response
-      const { error } = await supabase
+      // Check if phase response exists
+      const { data: existingResponse } = await supabase
         .from("journey_phase_responses")
-        .upsert({
-          user_id: user.id,
-          journey_id: journeyId,
-          phase_number: phaseId,
-          phase_name: phase.title,
-          responses: currentData,
-          is_completed: allTasksComplete,
-          completed_at: allTasksComplete ? new Date().toISOString() : null,
-          updated_at: new Date().toISOString(),
-        }, {
-          onConflict: "journey_id,phase_number",
-        });
+        .select("id")
+        .eq("journey_id", journeyId)
+        .eq("phase_number", phaseId)
+        .maybeSingle();
 
-      if (error) throw error;
+      if (existingResponse) {
+        // Update existing response
+        const { error } = await supabase
+          .from("journey_phase_responses")
+          .update({
+            responses: currentData,
+            is_completed: allTasksComplete,
+            completed_at: allTasksComplete ? new Date().toISOString() : null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", existingResponse.id);
+
+        if (error) throw error;
+      } else {
+        // Insert new response
+        const { error } = await supabase
+          .from("journey_phase_responses")
+          .insert({
+            user_id: user.id,
+            journey_id: journeyId,
+            phase_number: phaseId,
+            phase_name: phase.title,
+            responses: currentData,
+            is_completed: allTasksComplete,
+            completed_at: allTasksComplete ? new Date().toISOString() : null,
+          });
+
+        if (error) throw error;
+      }
 
       if (allTasksComplete && !completedPhases.includes(phaseId)) {
         setCompletedPhases(prev => [...prev, phaseId]);
