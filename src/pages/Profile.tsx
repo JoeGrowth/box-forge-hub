@@ -669,7 +669,7 @@ const Profile = () => {
               </div>
             )}
 
-            {/* Part 2: Approved Co-Builder Dashboard with Toggle Lists */}
+            {/* Part 2: Approved Co-Builder Dashboard - Section 1: Action Cards */}
             {isApprovedCoBuilder && (
               <div className="bg-gradient-to-br from-b4-teal/10 to-b4-navy/10 rounded-3xl border border-b4-teal/20 p-8 mb-8">
                 <h2 className="font-display text-xl font-bold text-foreground mb-2">
@@ -677,7 +677,7 @@ const Profile = () => {
                 </h2>
                 <p className="text-muted-foreground mb-6">Choose how you want to build your next venture:</p>
 
-                <div className="grid sm:grid-cols-2 gap-4 mb-6">
+                <div className="grid sm:grid-cols-2 gap-4">
                   <div className="bg-card rounded-xl border border-border p-6 hover:border-b4-teal/50 transition-colors">
                     <div className="w-12 h-12 rounded-xl bg-b4-teal/10 flex items-center justify-center mb-4">
                       <Users className="w-6 h-6 text-b4-teal" />
@@ -706,9 +706,14 @@ const Profile = () => {
                     </Button>
                   </div>
                 </div>
+              </div>
+            )}
 
+            {/* Part 3: Skills + Certifications + Onboarding Answers (Combined Section) */}
+            {isApprovedCoBuilder && (
+              <div className="bg-card rounded-3xl border border-border p-8 mb-8">
                 {/* Skills Section */}
-                <div className="bg-card rounded-xl border border-border p-6 mb-6">
+                <div className="mb-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
@@ -782,13 +787,17 @@ const Profile = () => {
                   )}
                 </div>
 
-                {/* Toggle Lists Section */}
-                <div className="space-y-3">
-                  {/* Toggle 1: Your Answers */}
-                  {naturalRole && (
+                {/* Learning Journeys + Certifications */}
+                <div className="border-t border-border pt-6 mb-6">
+                  <LearningJourneyDashboard />
+                </div>
+
+                {/* Onboarding Answers Toggle */}
+                {naturalRole && (
+                  <div className="border-t border-border pt-6">
                     <Collapsible>
-                      <div className="bg-card rounded-xl border border-border overflow-hidden">
-                        <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors group">
+                      <div className="bg-muted/50 rounded-xl overflow-hidden">
+                        <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-muted transition-colors group">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-lg bg-b4-navy/10 flex items-center justify-center">
                               <User className="w-4 h-4 text-b4-navy" />
@@ -806,17 +815,30 @@ const Profile = () => {
                         </CollapsibleContent>
                       </div>
                     </Collapsible>
-                  )}
+                  </div>
+                )}
+              </div>
+            )}
 
-                  {/* Toggle 2+: Startup Ideas */}
+            {/* Part 4: Startup Ideas (Separate Section) */}
+            {isApprovedCoBuilder && userIdeas.length > 0 && (
+              <div className="bg-card rounded-3xl border border-border p-8 mb-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-xl bg-b4-coral/10 flex items-center justify-center">
+                    <Lightbulb className="w-5 h-5 text-b4-coral" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground">Your Startup Ideas</h3>
+                    <p className="text-sm text-muted-foreground">{userIdeas.length} idea(s)</p>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
                   {userIdeas.map((idea, index) => (
                     <Collapsible key={idea.id}>
-                      <div className="bg-card rounded-xl border border-border overflow-hidden">
-                        <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors group">
+                      <div className="bg-muted/50 rounded-xl overflow-hidden">
+                        <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-muted transition-colors group">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-b4-coral/10 flex items-center justify-center">
-                              <Lightbulb className="w-4 h-4 text-b4-coral" />
-                            </div>
                             <span className="font-display font-semibold text-foreground">
                               Idea {index + 1}: {idea.title}
                             </span>
@@ -859,7 +881,7 @@ const Profile = () => {
                                 />
                               )}
                             {idea.review_status === "pending" && (
-                              <div className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-4">
+                              <div className="text-sm text-muted-foreground bg-muted rounded-lg p-4">
                                 This idea is pending review. Submit for review to unlock the entrepreneur journey.
                               </div>
                             )}
@@ -887,13 +909,6 @@ const Profile = () => {
                     </Collapsible>
                   ))}
                 </div>
-              </div>
-            )}
-
-            {/* Learning Journeys Dashboard */}
-            {isApprovedCoBuilder && (
-              <div className="mb-8">
-                <LearningJourneyDashboard />
               </div>
             )}
 
