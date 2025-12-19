@@ -67,7 +67,7 @@ const CreateIdea = () => {
           .from("user_certifications")
           .select("id")
           .eq("user_id", user.id)
-          .eq("certification_type", "idea_ptc")
+          .eq("certification_type", "initiator_b4")
           .maybeSingle();
         
         if (error) throw error;
