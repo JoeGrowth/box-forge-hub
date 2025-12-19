@@ -148,24 +148,26 @@ const OpportunityDetail = () => {
     setApplying(true);
     try {
       // Insert application into the new table
-      const { error: appError } = await supabase
+      const { data: appData, error: appError } = await supabase
         .from("startup_applications")
         .insert({
           startup_id: idea.id,
           applicant_id: user.id,
           role_applied: selectedRole || null,
           cover_message: applyMessage || null,
-        });
+        })
+        .select()
+        .single();
 
       if (appError) throw appError;
 
-      // Create user notification for the idea creator
+      // Create user notification for the idea creator with link to chat
       await supabase.from("user_notifications").insert({
         user_id: idea.creator_id,
         notification_type: "application_received",
         title: "New Co-Builder Application 📩",
-        message: `${user.user_metadata?.full_name || user.email || "A co-builder"} wants to join your startup "${idea.title}"${selectedRole ? ` as ${selectedRole}` : ""}.`,
-        link: "/profile",
+        message: `${user.user_metadata?.full_name || user.email || "A co-builder"} wants to join your startup "${idea.title}"${selectedRole ? ` as ${selectedRole}` : ""}. Click to start a conversation!`,
+        link: `/chat/${appData.id}`,
       });
 
       // Also create admin notification for tracking
@@ -183,7 +185,7 @@ const OpportunityDetail = () => {
       });
 
       setExistingApplication({
-        id: "new",
+        id: appData.id,
         status: "pending",
         role_applied: selectedRole,
         cover_message: applyMessage,

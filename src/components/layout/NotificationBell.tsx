@@ -121,6 +121,8 @@ export function NotificationBell() {
         return "🤝";
       case "application_submitted":
         return "📤";
+      case "chat_message":
+        return "💬";
       case "entrepreneur_step_complete":
         return "🎯";
       case "entrepreneur_journey_complete":
