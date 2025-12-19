@@ -92,7 +92,7 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
         "Practice, Training, Consulting based on the B4 model. Learn the fundamentals, apply through case studies, and become a certified Co-Builder.",
       icon: Users,
       color: "b4-teal",
-      phases: ["Skills Assessment", "Practice (4-6 weeks)", "Train (6-8 weeks)", "Consult (Ongoing)"],
+      phases: ["Skills Assessment", "Practice", "Train", "Consult"],
       result: "Co Builder B4 Model Based + Verified Badge",
     },
     {
