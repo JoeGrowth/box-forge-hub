@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,9 @@ import {
   ArrowRight,
   ArrowLeft,
   Plus,
-  X
+  X,
+  AlertCircle,
+  GraduationCap
 } from "lucide-react";
 
 const SECTORS = [
@@ -41,6 +43,8 @@ const CreateIdea = () => {
   const [rolesNeeded, setRolesNeeded] = useState<string[]>([]);
   const [newRole, setNewRole] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasInitiatorCert, setHasInitiatorCert] = useState<boolean | null>(null);
+  const [checkingCert, setCheckingCert] = useState(true);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -49,10 +53,37 @@ const CreateIdea = () => {
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
-    if (onboardingState?.journey_status !== "approved") {
+    if (onboardingState?.journey_status !== "approved" && onboardingState?.journey_status !== "entrepreneur_approved") {
       navigate("/profile", { replace: true });
     }
   }, [onboardingState, navigate]);
+
+  useEffect(() => {
+    const checkInitiatorCertification = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from("user_certifications")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("certification_type", "idea_ptc")
+          .maybeSingle();
+        
+        if (error) throw error;
+        setHasInitiatorCert(!!data);
+      } catch (error) {
+        console.error("Error checking certification:", error);
+        setHasInitiatorCert(false);
+      } finally {
+        setCheckingCert(false);
+      }
+    };
+
+    if (user) {
+      checkInitiatorCertification();
+    }
+  }, [user]);
 
   const addRole = () => {
     if (newRole.trim() && !rolesNeeded.includes(newRole.trim())) {
@@ -109,10 +140,81 @@ const CreateIdea = () => {
     }
   };
 
-  if (authLoading) {
+  if (authLoading || checkingCert) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!hasInitiatorCert) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        
+        <main className="pt-20">
+          <section className="py-12 gradient-hero text-primary-foreground">
+            <div className="container mx-auto px-4">
+              <div className="flex items-center gap-3 mb-2">
+                <Lightbulb className="w-8 h-8" />
+                <h1 className="font-display text-3xl font-bold">Create Startup Idea</h1>
+              </div>
+            </div>
+          </section>
+
+          <section className="py-12">
+            <div className="container mx-auto px-4 max-w-2xl">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/profile")}
+                className="mb-6"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Profile
+              </Button>
+
+              <div className="bg-card rounded-2xl border border-border p-8 text-center">
+                <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mx-auto mb-6">
+                  <AlertCircle className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+                </div>
+                
+                <h2 className="font-display text-2xl font-bold text-foreground mb-4">
+                  Certification Required
+                </h2>
+                
+                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                  To create your own startup idea, you need to complete the <strong>"Be an Initiator"</strong> learning journey and earn your Initiator certification.
+                </p>
+
+                <div className="bg-muted/50 rounded-xl p-6 mb-6 text-left">
+                  <div className="flex items-center gap-3 mb-3">
+                    <GraduationCap className="w-5 h-5 text-b4-gold" />
+                    <h3 className="font-semibold text-foreground">Idea PTC Journey</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    This journey will guide you through Ideation, Structuring, Team Building, and Launch phases to transform your idea into a structured startup.
+                  </p>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• Learn how to validate and structure your idea</li>
+                    <li>• Understand team building strategies</li>
+                    <li>• Prepare for a successful launch</li>
+                  </ul>
+                </div>
+
+                <Link to="/profile">
+                  <Button variant="teal" size="lg">
+                    <GraduationCap className="w-4 h-4 mr-2" />
+                    Start Initiator Journey
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <Footer />
       </div>
     );
   }
