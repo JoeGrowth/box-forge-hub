@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useAdmin, AdminNotification } from "@/hooks/useAdmin";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   RefreshCw, 
   Search, 
@@ -11,7 +12,8 @@ import {
   HelpCircle,
   User,
   Mail,
-  Clock
+  Clock,
+  Play
 } from "lucide-react";
 
 interface AdminNotificationsTabProps {
@@ -25,6 +27,7 @@ export function AdminNotificationsTab({ notifications, onRefresh }: AdminNotific
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "unread" | "read">("all");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [processingUserId, setProcessingUserId] = useState<string | null>(null);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -37,6 +40,61 @@ export function AdminNotificationsTab({ notifications, onRefresh }: AdminNotific
     const success = await markNotificationAsRead(id);
     if (success) {
       toast({ title: "Marked as read" });
+    }
+  };
+
+  const handleAllowNaturalRoleRetry = async (notification: AdminNotification) => {
+    setProcessingUserId(notification.user_id);
+    try {
+      // Reset the natural role status so user can try again
+      const { error: nrError } = await supabase
+        .from("natural_roles")
+        .update({ 
+          status: "pending",
+          description: null 
+        })
+        .eq("user_id", notification.user_id);
+
+      if (nrError) throw nrError;
+
+      // Reset onboarding step to Natural Role definition step (step 2)
+      const { error: osError } = await supabase
+        .from("onboarding_state")
+        .update({ 
+          current_step: 2,
+          journey_status: "in_progress"
+        })
+        .eq("user_id", notification.user_id);
+
+      if (osError) throw osError;
+
+      // Send user notification that they can retry
+      await supabase.from("user_notifications").insert({
+        user_id: notification.user_id,
+        notification_type: "natural_role_retry",
+        title: "You can now define your Natural Role",
+        message: "An admin has enabled you to retry defining your Natural Role. Please log in to continue your onboarding journey.",
+        link: "/onboarding"
+      });
+
+      // Mark admin notification as read
+      await markNotificationAsRead(notification.id);
+
+      toast({ 
+        title: "User enabled for retry",
+        description: `${notification.user_name || "User"} can now retry defining their Natural Role.`
+      });
+
+      await onRefresh();
+    } catch (error) {
+      console.error("Error enabling retry:", error);
+      toast({ 
+        title: "Error",
+        description: "Failed to enable retry. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setProcessingUserId(null);
     }
   };
 
@@ -62,6 +120,7 @@ export function AdminNotificationsTab({ notifications, onRefresh }: AdminNotific
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case "assistance_requested":
+      case "nr_help_requested":
         return <HelpCircle className="w-5 h-5 text-amber-500" />;
       case "onboarding_stuck":
         return <AlertCircle className="w-5 h-5 text-b4-coral" />;
@@ -195,16 +254,29 @@ export function AdminNotificationsTab({ notifications, onRefresh }: AdminNotific
                   </div>
                 </div>
 
-                {!notification.is_read && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleMarkAsRead(notification.id)}
-                  >
-                    <Check className="w-4 h-4 mr-1" />
-                    Mark Read
-                  </Button>
-                )}
+                <div className="flex flex-col gap-2">
+                  {notification.notification_type === "nr_help_requested" && (
+                    <Button
+                      variant="teal"
+                      size="sm"
+                      onClick={() => handleAllowNaturalRoleRetry(notification)}
+                      disabled={processingUserId === notification.user_id}
+                    >
+                      <Play className="w-4 h-4 mr-1" />
+                      {processingUserId === notification.user_id ? "Processing..." : "Enable Retry"}
+                    </Button>
+                  )}
+                  {!notification.is_read && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleMarkAsRead(notification.id)}
+                    >
+                      <Check className="w-4 h-4 mr-1" />
+                      Mark Read
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           ))
