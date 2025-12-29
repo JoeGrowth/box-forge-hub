@@ -58,11 +58,13 @@ export function AdminNotificationsTab({ notifications, onRefresh }: AdminNotific
       if (nrError) throw nrError;
 
       // Reset onboarding step to Natural Role definition step (step 2)
+      // Also reset onboarding_completed to false so user can access onboarding
       const { error: osError } = await supabase
         .from("onboarding_state")
         .update({ 
           current_step: 2,
-          journey_status: "in_progress"
+          journey_status: "in_progress",
+          onboarding_completed: false
         })
         .eq("user_id", notification.user_id);
 
