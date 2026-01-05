@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
 import { Search, User, Briefcase, Loader2, Pencil, Check, X, ShieldCheck, Award } from "lucide-react";
 import { toast } from "sonner";
@@ -32,34 +33,16 @@ interface CoBuilder {
 const CoBuilders = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { onboardingState, loading: onboardingLoading } = useOnboarding();
   const [cobuilders, setCobuilders] = useState<CoBuilder[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isApproved, setIsApproved] = useState(false);
   const [editingSkills, setEditingSkills] = useState(false);
   const [skillsInput, setSkillsInput] = useState("");
   const [savingSkills, setSavingSkills] = useState(false);
 
-  // Check if user is an approved co-builder or entrepreneur
-  useEffect(() => {
-    const checkApprovalStatus = async () => {
-      if (!user) {
-        setIsApproved(false);
-        return;
-      }
-
-      const { data } = await supabase
-        .from("onboarding_state")
-        .select("journey_status")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      const approved = data?.journey_status === "approved" || data?.journey_status === "entrepreneur_approved";
-      setIsApproved(approved);
-    };
-
-    checkApprovalStatus();
-  }, [user]);
+  // Derive approval status from cached onboarding state
+  const isApproved = onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved";
 
   // Fetch approved co-builders
   useEffect(() => {
@@ -201,8 +184,8 @@ const CoBuilders = () => {
       .filter((s) => s.length > 0);
   };
 
-  // Show loading until auth check AND approval check are both complete
-  if (authLoading || (user && loading)) {
+  // Show loading until auth AND onboarding state are both loaded
+  if (authLoading || onboardingLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
