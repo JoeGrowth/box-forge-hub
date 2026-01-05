@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { OnboardingProvider } from "@/hooks/useOnboarding";
 import { LearningJourneysProvider } from "@/hooks/useLearningJourneys";
+import { ScrollToTop } from "@/components/layout/ScrollToTop";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Boxes from "./pages/Boxes";
@@ -43,6 +44,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <ScrollToTop />
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/about" element={<About />} />

@@ -2,13 +2,17 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { LearningJourneyDashboard } from "@/components/learning/LearningJourneyDashboard";
+import { ScalingJourneyProgress } from "@/components/profile/ScalingJourneyProgress";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { BookOpen, Loader2 } from "lucide-react";
 
 const Journey = () => {
   const { user, loading: authLoading } = useAuth();
-  const { loading: onboardingLoading } = useOnboarding();
+  const { onboardingState, naturalRole, loading: onboardingLoading } = useOnboarding();
+
+  // Check if user opted into scaling
+  const wantsToScale = naturalRole?.wants_to_scale === true;
 
   // Show loading until auth AND onboarding state are both loaded
   if (authLoading || onboardingLoading) {
@@ -62,8 +66,16 @@ const Journey = () => {
 
           {/* Learning Journeys Content */}
           <section className="py-12">
-            <div className="container mx-auto px-4">
+            <div className="container mx-auto px-4 space-y-8">
               <LearningJourneyDashboard />
+              
+              {/* Scaling Path - only shown if user opted in */}
+              {wantsToScale && (
+                <div className="mt-8">
+                  <h2 className="font-display text-xl font-bold text-foreground mb-4">Scale Your Natural Role</h2>
+                  <ScalingJourneyProgress />
+                </div>
+              )}
             </div>
           </section>
         </main>
