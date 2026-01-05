@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { PageTransition } from "@/components/layout/PageTransition";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { 
@@ -124,8 +125,8 @@ const Boxes = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
-      <main className="pt-20">
+      <PageTransition>
+        <main className="pt-20">
         {/* Hero */}
         <section className="py-24 gradient-hero text-primary-foreground">
           <div className="container mx-auto px-4">
@@ -248,8 +249,8 @@ const Boxes = () => {
             </div>
           </div>
         </section>
-      </main>
-
+        </main>
+      </PageTransition>
       <Footer />
     </div>
   );

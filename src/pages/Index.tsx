@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { PageTransition } from "@/components/layout/PageTransition";
 import { HeroSection } from "@/components/home/HeroSection";
 import { BoxesSection } from "@/components/home/BoxesSection";
 import { HowItWorksSection } from "@/components/home/HowItWorksSection";
@@ -10,13 +11,15 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main>
-        <HeroSection />
-        <BoxesSection />
-        <HowItWorksSection />
-        <ProgramsSection />
-        <CTASection />
-      </main>
+      <PageTransition>
+        <main>
+          <HeroSection />
+          <BoxesSection />
+          <HowItWorksSection />
+          <ProgramsSection />
+          <CTASection />
+        </main>
+      </PageTransition>
       <Footer />
     </div>
   );

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { PageTransition } from "@/components/layout/PageTransition";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -202,8 +203,12 @@ const CoBuilders = () => {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-b4-teal" />
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="pt-20 flex items-center justify-center min-h-[60vh]">
+          <Loader2 className="w-8 h-8 animate-spin text-b4-teal" />
+        </div>
+        <Footer />
       </div>
     );
   }
@@ -212,18 +217,20 @@ const CoBuilders = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <main className="pt-20">
-          <section className="py-16">
-            <div className="container mx-auto px-4 text-center">
-              <h1 className="font-display text-3xl font-bold text-foreground mb-4">
-                Co-Builders Directory
-              </h1>
-              <p className="text-muted-foreground mb-8">
-                Please log in to access the co-builders directory.
-              </p>
-            </div>
-          </section>
-        </main>
+        <PageTransition>
+          <main className="pt-20">
+            <section className="py-16">
+              <div className="container mx-auto px-4 text-center">
+                <h1 className="font-display text-3xl font-bold text-foreground mb-4">
+                  Co-Builders Directory
+                </h1>
+                <p className="text-muted-foreground mb-8">
+                  Please log in to access the co-builders directory.
+                </p>
+              </div>
+            </section>
+          </main>
+        </PageTransition>
         <Footer />
       </div>
     );
@@ -233,21 +240,23 @@ const CoBuilders = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <main className="pt-20">
-          <section className="py-16">
-            <div className="container mx-auto px-4 text-center">
-              <h1 className="font-display text-3xl font-bold text-foreground mb-4">
-                Co-Builders Directory
-              </h1>
-              <p className="text-muted-foreground mb-8">
-                This directory is only available to approved co-builders and entrepreneurs.
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Complete your co-builder journey and get approved to access this feature.
-              </p>
-            </div>
-          </section>
-        </main>
+        <PageTransition>
+          <main className="pt-20">
+            <section className="py-16">
+              <div className="container mx-auto px-4 text-center">
+                <h1 className="font-display text-3xl font-bold text-foreground mb-4">
+                  Co-Builders Directory
+                </h1>
+                <p className="text-muted-foreground mb-8">
+                  This directory is only available to approved co-builders and entrepreneurs.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Complete your co-builder journey and get approved to access this feature.
+                </p>
+              </div>
+            </section>
+          </main>
+        </PageTransition>
         <Footer />
       </div>
     );
@@ -256,8 +265,8 @@ const CoBuilders = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
-      <main className="pt-20">
+      <PageTransition>
+        <main className="pt-20">
         {/* Hero Section */}
         <section className="py-12 bg-gradient-to-br from-b4-teal/10 to-b4-navy/10">
           <div className="container mx-auto px-4">
@@ -465,8 +474,8 @@ const CoBuilders = () => {
             )}
           </div>
         </section>
-      </main>
-
+        </main>
+      </PageTransition>
       <Footer />
     </div>
   );
