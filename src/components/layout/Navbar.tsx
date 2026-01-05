@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Menu, X, LogOut, User, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useLearningJourneys } from "@/hooks/useLearningJourneys";
 import { supabase } from "@/integrations/supabase/client";
 import { NotificationBell } from "./NotificationBell";
+
 // Links for logged-out users
 const guestNavLinks = [
   { name: "About", path: "/about" },
@@ -13,12 +16,11 @@ const guestNavLinks = [
   { name: "Join Us", path: "/join" },
 ];
 
-// Links for logged-in users
-const userNavLinks = [
+// Base links for logged-in users (Journey added dynamically with badge)
+const baseUserNavLinks = [
   { name: "Home", path: "/" },
   { name: "Opportunities", path: "/opportunities" },
   { name: "Co Builders", path: "/cobuilders" },
-  { name: "Journey", path: "/journey" },
   { name: "Boxes", path: "/boxes" },
 ];
 
@@ -27,6 +29,10 @@ export function Navbar() {
   const [isAdmin, setIsAdmin] = useState(false);
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
+  const { journeys } = useLearningJourneys();
+
+  // Count journeys in progress
+  const journeysInProgress = journeys.filter(j => j.status === "in_progress").length;
 
   useEffect(() => {
     const checkUserStatus = async () => {
@@ -48,7 +54,7 @@ export function Navbar() {
   }, [user]);
 
   // Build nav links based on authentication status
-  const navLinks = user ? userNavLinks : guestNavLinks;
+  const navLinks = user ? baseUserNavLinks : guestNavLinks;
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
@@ -77,6 +83,24 @@ export function Navbar() {
                 {link.name}
               </Link>
             ))}
+            {/* Journey link with badge for logged-in users */}
+            {user && (
+              <Link
+                to="/journey"
+                className={`text-sm font-medium transition-colors hover:text-b4-teal flex items-center gap-1.5 ${
+                  location.pathname === "/journey"
+                    ? "text-b4-teal"
+                    : "text-muted-foreground"
+                }`}
+              >
+                Journey
+                {journeysInProgress > 0 && (
+                  <Badge className="bg-b4-teal text-white text-xs px-1.5 py-0 min-w-[18px] h-[18px] flex items-center justify-center">
+                    {journeysInProgress}
+                  </Badge>
+                )}
+              </Link>
+            )}
           </div>
 
           {/* Desktop CTA */}
@@ -145,6 +169,25 @@ export function Navbar() {
                   {link.name}
                 </Link>
               ))}
+              {/* Journey link with badge for mobile */}
+              {user && (
+                <Link
+                  to="/journey"
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                    location.pathname === "/journey"
+                      ? "bg-muted text-b4-teal"
+                      : "text-muted-foreground hover:bg-muted"
+                  }`}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Journey
+                  {journeysInProgress > 0 && (
+                    <Badge className="bg-b4-teal text-white text-xs px-1.5 py-0 min-w-[18px] h-[18px] flex items-center justify-center">
+                      {journeysInProgress}
+                    </Badge>
+                  )}
+                </Link>
+              )}
               <div className="flex flex-col gap-2 px-4 pt-2">
                 {!loading && (
                   user ? (
