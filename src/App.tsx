@@ -22,6 +22,7 @@ import AdminOpportunityDetail from "./pages/AdminOpportunityDetail";
 import Opportunities from "./pages/Opportunities";
 import OpportunityDetail from "./pages/OpportunityDetail";
 import CoBuilders from "./pages/CoBuilders";
+import Journey from "./pages/Journey";
 import CreateIdea from "./pages/CreateIdea";
 import EditIdea from "./pages/EditIdea";
 import Stories from "./pages/Stories";
@@ -61,6 +62,7 @@ const App = () => (
                 <Route path="/opportunities" element={<Opportunities />} />
                 <Route path="/opportunities/:id" element={<OpportunityDetail />} />
                 <Route path="/cobuilders" element={<CoBuilders />} />
+                <Route path="/journey" element={<Journey />} />
                 <Route path="/create-idea" element={<CreateIdea />} />
                 <Route path="/edit-idea/:id" element={<EditIdea />} />
                 <Route path="/chat/:applicationId" element={<Chat />} />
