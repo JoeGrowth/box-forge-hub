@@ -110,7 +110,7 @@ const Opportunities = () => {
             <div className="container mx-auto px-4">
               <div className="flex items-center gap-3 mb-2">
                 <Users className="w-8 h-8" />
-                <h1 className="font-display text-3xl font-bold">Opportunities to co build</h1>
+                <h1 className="font-display text-3xl font-bold">Opportunities</h1>
               </div>
               <p className="text-primary-foreground/80 max-w-2xl">
                 Browse startup ideas looking for co-builders. Find opportunities that match your skills and natural
