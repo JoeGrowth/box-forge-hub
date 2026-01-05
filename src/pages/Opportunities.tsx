@@ -8,16 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
-import { 
-  Search, 
-  Users, 
-  Briefcase, 
-  MapPin,
-  ArrowRight,
-  Filter,
-  Rocket,
-  Loader2
-} from "lucide-react";
+import { Search, Users, Briefcase, MapPin, ArrowRight, Filter, Rocket, Loader2 } from "lucide-react";
 
 interface StartupIdea {
   id: string;
@@ -49,8 +40,8 @@ const Opportunities = () => {
 
   useEffect(() => {
     // Allow both "approved" and "entrepreneur_approved" users
-    const isApproved = onboardingState?.journey_status === "approved" || 
-                       onboardingState?.journey_status === "entrepreneur_approved";
+    const isApproved =
+      onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved";
     if (onboardingState && !isApproved) {
       navigate("/profile", { replace: true });
     }
@@ -68,15 +59,15 @@ const Opportunities = () => {
 
       if (!error && data) {
         // Fetch creator profiles
-        const creatorIds = data.map(idea => idea.creator_id);
+        const creatorIds = data.map((idea) => idea.creator_id);
         const { data: profiles } = await supabase
           .from("profiles")
           .select("user_id, full_name")
           .in("user_id", creatorIds);
 
-        const ideasWithProfiles = data.map(idea => ({
+        const ideasWithProfiles = data.map((idea) => ({
           ...idea,
-          creator_profile: profiles?.find(p => p.user_id === idea.creator_id),
+          creator_profile: profiles?.find((p) => p.user_id === idea.creator_id),
         }));
 
         setIdeas(ideasWithProfiles);
@@ -90,7 +81,8 @@ const Opportunities = () => {
   }, [user]);
 
   const filteredIdeas = ideas.filter((idea) => {
-    const matchesSearch = idea.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesSearch =
+      idea.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       idea.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesSector = !sectorFilter || idea.sector?.toLowerCase().includes(sectorFilter.toLowerCase());
     return matchesSearch && matchesSector;
@@ -113,123 +105,115 @@ const Opportunities = () => {
       <Navbar />
       <PageTransition>
         <main className="pt-20">
-        {/* Header */}
-        <section className="py-12 gradient-hero text-primary-foreground">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center gap-3 mb-2">
-              <Users className="w-8 h-8" />
-              <h1 className="font-display text-3xl font-bold">Co-Build Opportunities</h1>
+          {/* Header */}
+          <section className="py-12 gradient-hero text-primary-foreground">
+            <div className="container mx-auto px-4">
+              <div className="flex items-center gap-3 mb-2">
+                <Users className="w-8 h-8" />
+                <h1 className="font-display text-3xl font-bold">Opportunities to co build</h1>
+              </div>
+              <p className="text-primary-foreground/80 max-w-2xl">
+                Browse startup ideas looking for co-builders. Find opportunities that match your skills and natural
+                role.
+              </p>
             </div>
-            <p className="text-primary-foreground/80 max-w-2xl">
-              Browse startup ideas looking for co-builders. Find opportunities that match your skills and natural role.
-            </p>
-          </div>
-        </section>
+          </section>
 
-        {/* Filters */}
-        <section className="py-6 border-b border-border">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search opportunities..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <div className="relative">
-                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Filter by sector..."
-                  value={sectorFilter}
-                  onChange={(e) => setSectorFilter(e.target.value)}
-                  className="pl-10 w-48"
-                />
+          {/* Filters */}
+          <section className="py-6 border-b border-border">
+            <div className="container mx-auto px-4">
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search opportunities..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <div className="relative">
+                  <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Filter by sector..."
+                    value={sectorFilter}
+                    onChange={(e) => setSectorFilter(e.target.value)}
+                    className="pl-10 w-48"
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* Opportunities List */}
-        <section className="py-12">
-          <div className="container mx-auto px-4">
-            {filteredIdeas.length === 0 ? (
-              <div className="text-center py-16">
-                <Rocket className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
-                <h2 className="font-display text-2xl font-bold text-foreground mb-2">
-                  No opportunities yet
-                </h2>
-                <p className="text-muted-foreground mb-6">
-                  Be the first to create a startup idea and find co-builders!
-                </p>
-                <Button variant="teal" onClick={() => navigate("/create-idea")}>
-                  Create Your Startup Idea
-                  <ArrowRight className="ml-2 w-4 h-4" />
-                </Button>
-              </div>
-            ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredIdeas.map((idea) => (
-                  <div 
-                    key={idea.id}
-                    className="bg-card rounded-2xl border border-border p-6 hover:border-b4-teal/50 transition-colors"
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="w-12 h-12 rounded-xl bg-b4-teal/10 flex items-center justify-center">
-                        <Rocket className="w-6 h-6 text-b4-teal" />
-                      </div>
-                      {idea.sector && (
-                        <span className="px-3 py-1 rounded-full bg-muted text-xs font-medium text-muted-foreground">
-                          {idea.sector}
-                        </span>
-                      )}
-                    </div>
-
-                    <h3 className="font-display text-lg font-bold text-foreground mb-2">
-                      {idea.title}
-                    </h3>
-                    <p className="text-muted-foreground text-sm mb-4 line-clamp-3">
-                      {idea.description}
-                    </p>
-
-                    {idea.roles_needed && idea.roles_needed.length > 0 && (
-                      <div className="mb-4">
-                        <p className="text-xs text-muted-foreground mb-2">Looking for:</p>
-                        <div className="flex flex-wrap gap-1">
-                          {idea.roles_needed.slice(0, 3).map((role, i) => (
-                            <span 
-                              key={i}
-                              className="px-2 py-1 rounded-full bg-b4-teal/10 text-b4-teal text-xs"
-                            >
-                              {role}
-                            </span>
-                          ))}
-                          {idea.roles_needed.length > 3 && (
-                            <span className="px-2 py-1 text-xs text-muted-foreground">
-                              +{idea.roles_needed.length - 3} more
-                            </span>
-                          )}
+          {/* Opportunities List */}
+          <section className="py-12">
+            <div className="container mx-auto px-4">
+              {filteredIdeas.length === 0 ? (
+                <div className="text-center py-16">
+                  <Rocket className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
+                  <h2 className="font-display text-2xl font-bold text-foreground mb-2">No opportunities yet</h2>
+                  <p className="text-muted-foreground mb-6">
+                    Be the first to create a startup idea and find co-builders!
+                  </p>
+                  <Button variant="teal" onClick={() => navigate("/create-idea")}>
+                    Create Your Startup Idea
+                    <ArrowRight className="ml-2 w-4 h-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredIdeas.map((idea) => (
+                    <div
+                      key={idea.id}
+                      className="bg-card rounded-2xl border border-border p-6 hover:border-b4-teal/50 transition-colors"
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="w-12 h-12 rounded-xl bg-b4-teal/10 flex items-center justify-center">
+                          <Rocket className="w-6 h-6 text-b4-teal" />
                         </div>
+                        {idea.sector && (
+                          <span className="px-3 py-1 rounded-full bg-muted text-xs font-medium text-muted-foreground">
+                            {idea.sector}
+                          </span>
+                        )}
                       </div>
-                    )}
 
-                    <div className="flex items-center justify-between pt-4 border-t border-border">
-                      <span className="text-xs text-muted-foreground">
-                        By {idea.creator_profile?.full_name || "Unknown"}
-                      </span>
-                      <Button variant="ghost" size="sm" onClick={() => navigate(`/opportunities/${idea.id}`)}>
-                        View Details
-                        <ArrowRight className="ml-1 w-3 h-3" />
-                      </Button>
+                      <h3 className="font-display text-lg font-bold text-foreground mb-2">{idea.title}</h3>
+                      <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{idea.description}</p>
+
+                      {idea.roles_needed && idea.roles_needed.length > 0 && (
+                        <div className="mb-4">
+                          <p className="text-xs text-muted-foreground mb-2">Looking for:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {idea.roles_needed.slice(0, 3).map((role, i) => (
+                              <span key={i} className="px-2 py-1 rounded-full bg-b4-teal/10 text-b4-teal text-xs">
+                                {role}
+                              </span>
+                            ))}
+                            {idea.roles_needed.length > 3 && (
+                              <span className="px-2 py-1 text-xs text-muted-foreground">
+                                +{idea.roles_needed.length - 3} more
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between pt-4 border-t border-border">
+                        <span className="text-xs text-muted-foreground">
+                          By {idea.creator_profile?.full_name || "Unknown"}
+                        </span>
+                        <Button variant="ghost" size="sm" onClick={() => navigate(`/opportunities/${idea.id}`)}>
+                          View Details
+                          <ArrowRight className="ml-1 w-3 h-3" />
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
         </main>
       </PageTransition>
       <Footer />
