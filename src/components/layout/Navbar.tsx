@@ -5,26 +5,25 @@ import { Menu, X, LogOut, User, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { NotificationBell } from "./NotificationBell";
-const baseNavLinks = [
-  { name: "Home", path: "/" },
+// Links for logged-out users
+const guestNavLinks = [
   { name: "About", path: "/about" },
-];
-
-const authenticatedNavLinks = [
-  { name: "Opportunities", path: "/opportunities" },
-  { name: "Co Builders", path: "/cobuilders" },
-];
-
-const commonNavLinks = [
   { name: "Boxes", path: "/boxes" },
   { name: "Programs", path: "/programs" },
   { name: "Join Us", path: "/join" },
 ];
 
+// Links for logged-in users
+const userNavLinks = [
+  { name: "Home", path: "/" },
+  { name: "Opportunities", path: "/opportunities" },
+  { name: "Co Builders", path: "/cobuilders" },
+  { name: "Boxes", path: "/boxes" },
+];
+
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isApprovedCobuilder, setIsApprovedCobuilder] = useState(false);
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
 
@@ -32,7 +31,6 @@ export function Navbar() {
     const checkUserStatus = async () => {
       if (!user) {
         setIsAdmin(false);
-        setIsApprovedCobuilder(false);
         return;
       }
 
@@ -44,29 +42,12 @@ export function Navbar() {
         .eq("role", "admin")
         .maybeSingle();
       setIsAdmin(!!adminData);
-
-      // Check if user completed onboarding (step 8) and is approved
-      const { data: onboardingData } = await supabase
-        .from("onboarding_state")
-        .select("current_step, journey_status")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      
-      // Check for approved or entrepreneur_approved status
-      const isApproved = onboardingData?.current_step === 8 && 
-                         (onboardingData?.journey_status === "approved" || 
-                          onboardingData?.journey_status === "entrepreneur_approved");
-      setIsApprovedCobuilder(isApproved);
     };
     checkUserStatus();
   }, [user]);
 
-  // Build nav links based on user status
-  const navLinks = [
-    ...baseNavLinks,
-    ...(isApprovedCobuilder ? authenticatedNavLinks : []),
-    ...commonNavLinks,
-  ];
+  // Build nav links based on authentication status
+  const navLinks = user ? userNavLinks : guestNavLinks;
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
