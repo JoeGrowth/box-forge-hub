@@ -16,11 +16,12 @@ const guestNavLinks = [
   { name: "Join Us", path: "/join" },
 ];
 
-// Base links for logged-in users (Journey added dynamically with badge)
-const baseUserNavLinks = [
+// Links for logged-in users
+const userNavLinks = [
   { name: "Home", path: "/" },
   { name: "Opportunities", path: "/opportunities" },
   { name: "Co Builders", path: "/cobuilders" },
+  { name: "Journey", path: "/journey" },
   { name: "Boxes", path: "/boxes" },
 ];
 
@@ -54,7 +55,7 @@ export function Navbar() {
   }, [user]);
 
   // Build nav links based on authentication status
-  const navLinks = user ? baseUserNavLinks : guestNavLinks;
+  const navLinks = user ? userNavLinks : guestNavLinks;
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
@@ -74,33 +75,20 @@ export function Navbar() {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`text-sm font-medium transition-colors hover:text-b4-teal ${
+                className={`text-sm font-medium transition-colors hover:text-b4-teal flex items-center gap-1.5 ${
                   location.pathname === link.path
                     ? "text-b4-teal"
                     : "text-muted-foreground"
                 }`}
               >
                 {link.name}
-              </Link>
-            ))}
-            {/* Journey link with badge for logged-in users */}
-            {user && (
-              <Link
-                to="/journey"
-                className={`text-sm font-medium transition-colors hover:text-b4-teal flex items-center gap-1.5 ${
-                  location.pathname === "/journey"
-                    ? "text-b4-teal"
-                    : "text-muted-foreground"
-                }`}
-              >
-                Journey
-                {journeysInProgress > 0 && (
+                {link.name === "Journey" && user && journeysInProgress > 0 && (
                   <Badge className="bg-b4-teal text-white text-xs px-1.5 py-0 min-w-[18px] h-[18px] flex items-center justify-center">
                     {journeysInProgress}
                   </Badge>
                 )}
               </Link>
-            )}
+            ))}
           </div>
 
           {/* Desktop CTA */}
@@ -159,7 +147,7 @@ export function Navbar() {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
                     location.pathname === link.path
                       ? "bg-muted text-b4-teal"
                       : "text-muted-foreground hover:bg-muted"
@@ -167,27 +155,13 @@ export function Navbar() {
                   onClick={() => setIsOpen(false)}
                 >
                   {link.name}
-                </Link>
-              ))}
-              {/* Journey link with badge for mobile */}
-              {user && (
-                <Link
-                  to="/journey"
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                    location.pathname === "/journey"
-                      ? "bg-muted text-b4-teal"
-                      : "text-muted-foreground hover:bg-muted"
-                  }`}
-                  onClick={() => setIsOpen(false)}
-                >
-                  Journey
-                  {journeysInProgress > 0 && (
+                  {link.name === "Journey" && user && journeysInProgress > 0 && (
                     <Badge className="bg-b4-teal text-white text-xs px-1.5 py-0 min-w-[18px] h-[18px] flex items-center justify-center">
                       {journeysInProgress}
                     </Badge>
                   )}
                 </Link>
-              )}
+              ))}
               <div className="flex flex-col gap-2 px-4 pt-2">
                 {!loading && (
                   user ? (

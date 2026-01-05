@@ -5,7 +5,8 @@ import { LearningJourneyDashboard } from "@/components/learning/LearningJourneyD
 import { ScalingJourneyProgress } from "@/components/profile/ScalingJourneyProgress";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
-import { BookOpen, Loader2 } from "lucide-react";
+import { BookOpen, Loader2, Users, Lightbulb, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const Journey = () => {
   const { user, loading: authLoading } = useAuth();
@@ -58,20 +59,61 @@ const Journey = () => {
                 <BookOpen className="w-8 h-8" />
                 <h1 className="font-display text-3xl font-bold">Learning Journeys</h1>
               </div>
-              <p className="text-primary-foreground/80 max-w-2xl">
+              <p className="text-primary-foreground/80 max-w-2xl mb-6">
                 Continue your development with structured learning paths designed to help you grow as a co-builder.
               </p>
+              
+              {/* Quick Action Buttons */}
+              <div className="flex flex-wrap gap-3">
+                <Button 
+                  variant="secondary" 
+                  className="bg-white/20 hover:bg-white/30 text-white border-0"
+                  onClick={() => {
+                    const element = document.getElementById('skill-ptc-section');
+                    element?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
+                  <Users className="w-4 h-4 mr-2" />
+                  Co-Build a Startup
+                </Button>
+                <Button 
+                  variant="secondary" 
+                  className="bg-white/20 hover:bg-white/30 text-white border-0"
+                  onClick={() => {
+                    const element = document.getElementById('idea-ptc-section');
+                    element?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
+                  <Lightbulb className="w-4 h-4 mr-2" />
+                  Be an Initiator
+                </Button>
+                {wantsToScale && (
+                  <Button 
+                    variant="secondary" 
+                    className="bg-white/20 hover:bg-white/30 text-white border-0"
+                    onClick={() => {
+                      const element = document.getElementById('scaling-section');
+                      element?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                  >
+                    <TrendingUp className="w-4 h-4 mr-2" />
+                    Scale Your Role
+                  </Button>
+                )}
+              </div>
             </div>
           </section>
 
           {/* Learning Journeys Content */}
           <section className="py-12">
             <div className="container mx-auto px-4 space-y-8">
-              <LearningJourneyDashboard />
+              <div id="skill-ptc-section">
+                <LearningJourneyDashboard />
+              </div>
               
               {/* Scaling Path - only shown if user opted in */}
               {wantsToScale && (
-                <div className="mt-8">
+                <div id="scaling-section" className="mt-8">
                   <h2 className="font-display text-xl font-bold text-foreground mb-4">Scale Your Natural Role</h2>
                   <ScalingJourneyProgress />
                 </div>
