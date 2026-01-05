@@ -1,8 +1,9 @@
+import { useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { OnboardingProvider } from "@/hooks/useOnboarding";
 import { LearningJourneysProvider } from "@/hooks/useLearningJourneys";
@@ -33,6 +34,63 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+const AnimatedRoutes = () => {
+  const location = useLocation();
+  const [displayLocation, setDisplayLocation] = useState(location);
+  const [transitionStage, setTransitionStage] = useState<"fadeIn" | "fadeOut">("fadeIn");
+
+  useEffect(() => {
+    if (location.pathname !== displayLocation.pathname) {
+      setTransitionStage("fadeOut");
+    }
+  }, [location, displayLocation]);
+
+  useEffect(() => {
+    if (transitionStage !== "fadeOut") return;
+
+    const timeout = window.setTimeout(() => {
+      setDisplayLocation(location);
+      setTransitionStage("fadeIn");
+    }, 200);
+
+    return () => window.clearTimeout(timeout);
+  }, [transitionStage, location]);
+
+  return (
+    <div className={transitionStage === "fadeIn" ? "animate-fade-in" : "animate-fade-out"}>
+      <Routes location={displayLocation}>
+        <Route path="/" element={<Index />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/boxes" element={<Boxes />} />
+        <Route path="/boxes/:boxId" element={<BoxDetail />} />
+        <Route path="/programs" element={<Programs />} />
+        <Route path="/join" element={<Join />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/login" element={<Auth />} />
+        <Route path="/signup" element={<Auth />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/admin/opportunity/:id" element={<AdminOpportunityDetail />} />
+        <Route path="/opportunities" element={<Opportunities />} />
+        <Route path="/opportunities/:id" element={<OpportunityDetail />} />
+        <Route path="/cobuilders" element={<CoBuilders />} />
+        <Route path="/create-idea" element={<CreateIdea />} />
+        <Route path="/edit-idea/:id" element={<EditIdea />} />
+        <Route path="/chat/:applicationId" element={<Chat />} />
+        <Route path="/stories" element={<Stories />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </div>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
@@ -42,35 +100,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/boxes" element={<Boxes />} />
-                <Route path="/boxes/:boxId" element={<BoxDetail />} />
-                <Route path="/programs" element={<Programs />} />
-                <Route path="/join" element={<Join />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/login" element={<Auth />} />
-                <Route path="/signup" element={<Auth />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/onboarding" element={<Onboarding />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/admin" element={<Admin />} />
-                <Route path="/admin/opportunity/:id" element={<AdminOpportunityDetail />} />
-                <Route path="/opportunities" element={<Opportunities />} />
-                <Route path="/opportunities/:id" element={<OpportunityDetail />} />
-                <Route path="/cobuilders" element={<CoBuilders />} />
-                <Route path="/create-idea" element={<CreateIdea />} />
-                <Route path="/edit-idea/:id" element={<EditIdea />} />
-                <Route path="/chat/:applicationId" element={<Chat />} />
-                <Route path="/stories" element={<Stories />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/privacy" element={<Privacy />} />
-                <Route path="/terms" element={<Terms />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <AnimatedRoutes />
             </BrowserRouter>
           </TooltipProvider>
         </LearningJourneysProvider>
