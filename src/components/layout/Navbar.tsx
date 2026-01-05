@@ -18,6 +18,7 @@ const userNavLinks = [
   { name: "Home", path: "/" },
   { name: "Opportunities", path: "/opportunities" },
   { name: "Co Builders", path: "/cobuilders" },
+  { name: "Journey", path: "/journey" },
   { name: "Boxes", path: "/boxes" },
 ];
 
