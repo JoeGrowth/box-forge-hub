@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { PageTransition } from "@/components/layout/PageTransition";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,7 +15,8 @@ import {
   MapPin,
   ArrowRight,
   Filter,
-  Rocket
+  Rocket,
+  Loader2
 } from "lucide-react";
 
 interface StartupIdea {
@@ -94,10 +96,14 @@ const Opportunities = () => {
     return matchesSearch && matchesSector;
   });
 
-  if (authLoading || loading) {
+  if (authLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="pt-20 flex items-center justify-center min-h-[60vh]">
+          <Loader2 className="w-8 h-8 animate-spin text-b4-teal" />
+        </div>
+        <Footer />
       </div>
     );
   }
@@ -105,8 +111,8 @@ const Opportunities = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
-      <main className="pt-20">
+      <PageTransition>
+        <main className="pt-20">
         {/* Header */}
         <section className="py-12 gradient-hero text-primary-foreground">
           <div className="container mx-auto px-4">
@@ -224,8 +230,8 @@ const Opportunities = () => {
             )}
           </div>
         </section>
-      </main>
-
+        </main>
+      </PageTransition>
       <Footer />
     </div>
   );
