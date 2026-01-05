@@ -261,27 +261,32 @@ const CoBuilders = () => {
       <Navbar />
       <PageTransition>
         <main className="pt-20">
-          {/* Hero Section */}
-          <section className="py-12 bg-gradient-to-br from-b4-teal/10 to-b4-navy/10">
+          {/* Header */}
+          <section className="py-12 gradient-hero text-primary-foreground">
             <div className="container mx-auto px-4">
-              <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4">Co-Builders to Match</h1>
-              <p className="text-lg text-muted-foreground max-w-2xl">
+              <div className="flex items-center gap-3 mb-2">
+                <User className="w-8 h-8" />
+                <h1 className="font-display text-3xl font-bold">Co-Builders Directory</h1>
+              </div>
+              <p className="text-primary-foreground/80 max-w-2xl">
                 Discover talented co-builders with the skills and natural roles that match your startup needs.
               </p>
             </div>
           </section>
 
-          {/* Search and Filter */}
-          <section className="py-8 border-b border-border">
+          {/* Filters */}
+          <section className="py-6 border-b border-border">
             <div className="container mx-auto px-4">
-              <div className="relative max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                  placeholder="Search by name, skills, or natural role..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by name, skills, or natural role..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
               </div>
             </div>
           </section>
