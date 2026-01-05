@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
 import { Search, Users, Briefcase, MapPin, ArrowRight, Filter, Rocket, Loader2 } from "lucide-react";
+import { DirectorySkeletonGrid } from "@/components/ui/skeleton-card";
 
 interface StartupIdea {
   id: string;
@@ -187,7 +188,9 @@ const Opportunities = () => {
           {/* Opportunities List */}
           <section className="py-12">
             <div className="container mx-auto px-4">
-              {filteredIdeas.length === 0 ? (
+              {loading ? (
+                <DirectorySkeletonGrid count={6} type="opportunity" />
+              ) : filteredIdeas.length === 0 ? (
                 <div className="text-center py-16">
                   <Rocket className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
                   <h2 className="font-display text-2xl font-bold text-foreground mb-2">No opportunities yet</h2>

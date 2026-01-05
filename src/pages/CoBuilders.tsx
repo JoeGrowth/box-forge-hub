@@ -11,6 +11,7 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
 import { Search, User, Briefcase, Loader2, Pencil, Check, X, ShieldCheck, Award } from "lucide-react";
 import { toast } from "sonner";
+import { DirectorySkeletonGrid } from "@/components/ui/skeleton-card";
 
 interface Certification {
   id: string;
@@ -277,9 +278,7 @@ const CoBuilders = () => {
           <section className="py-12">
             <div className="container mx-auto px-4">
               {loading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-8 h-8 animate-spin text-b4-teal" />
-                </div>
+                <DirectorySkeletonGrid count={6} type="cobuilder" />
               ) : filteredCobuilders.length === 0 ? (
                 <div className="text-center py-12">
                   <User className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
