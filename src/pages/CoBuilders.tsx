@@ -201,7 +201,8 @@ const CoBuilders = () => {
       .filter((s) => s.length > 0);
   };
 
-  if (authLoading) {
+  // Show loading until auth check AND approval check are both complete
+  if (authLoading || (user && loading)) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
