@@ -738,11 +738,7 @@ const Profile = () => {
                     {skills ? (
                       <div className="flex flex-wrap gap-2">
                         {skills.split(",").map((skill, idx) => (
-                          <Badge
-                            key={idx}
-                            variant="secondary"
-                            className="bg-purple-500/10 text-purple-600 border-none"
-                          >
+                          <Badge key={idx} variant="secondary" className="bg-purple-500/10 text-purple-600 border-none">
                             {skill.trim()}
                           </Badge>
                         ))}
@@ -760,9 +756,7 @@ const Profile = () => {
             {/* Part 2: Approved Co-Builder Dashboard - Section 1: Action Cards */}
             {isApprovedCoBuilder && (
               <div className="bg-gradient-to-br from-b4-teal/10 to-b4-navy/10 rounded-3xl border border-b4-teal/20 p-8 mb-8">
-                <h2 className="font-display text-xl font-bold text-foreground mb-2">
-                  🎉 You're an Approved Co-Builder!
-                </h2>
+                <h2 className="font-display text-xl font-bold text-foreground mb-2">🎉 Welcome to the platform!</h2>
                 <p className="text-muted-foreground mb-6">Choose how you want to build your next venture:</p>
 
                 <div className="grid sm:grid-cols-2 gap-4">
@@ -821,7 +815,11 @@ const Profile = () => {
                         </CollapsibleTrigger>
                         <CollapsibleContent>
                           <div className="px-4 pb-4">
-                            <OnboardingAnswersCard naturalRole={naturalRole} onUpdate={refetch} onScalingChange={() => refetch()} />
+                            <OnboardingAnswersCard
+                              naturalRole={naturalRole}
+                              onUpdate={refetch}
+                              onScalingChange={() => refetch()}
+                            />
                           </div>
                         </CollapsibleContent>
                       </div>
