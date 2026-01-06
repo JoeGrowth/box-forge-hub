@@ -13,28 +13,20 @@ import { AdminOpportunitiesTab } from "@/components/admin/AdminOpportunitiesTab"
 import { AdminJourneyResponsesTab } from "@/components/admin/AdminJourneyResponsesTab";
 import { AdminAnalyticsTab } from "@/components/admin/AdminAnalyticsTab";
 import { AdminLearningJourneysTab } from "@/components/admin/AdminLearningJourneysTab";
-import { Shield, Bell, Users, FileText, UserCheck, Rocket, ClipboardList, BarChart3, GraduationCap } from "lucide-react";
+import { Shield, Users, UserCheck, Rocket, ClipboardList, BarChart3, GraduationCap, Bell, FileText, Award, ShieldCheck } from "lucide-react";
 
 const Admin = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: adminLoading, fetchNotifications, fetchUsers, notifications, users } = useAdmin();
   const [activeTab, setActiveTab] = useState("analytics");
-  const [pendingOpportunities, setPendingOpportunities] = useState(0);
   const [approvedOpportunities, setApprovedOpportunities] = useState(0);
-
+  const [certifiedCoBuilders, setCertifiedCoBuilders] = useState(0);
+  const [certifiedInitiators, setCertifiedInitiators] = useState(0);
   useEffect(() => {
-    const fetchOpportunityCounts = async () => {
+    const fetchCounts = async () => {
       const { supabase } = await import("@/integrations/supabase/client");
       
-      // Pending opportunities count
-      const { count: pendingCount } = await supabase
-        .from("startup_ideas")
-        .select("*", { count: "exact", head: true })
-        .in("review_status", ["pending", "under_review"]);
-      
-      setPendingOpportunities(pendingCount || 0);
-
       // Approved opportunities count
       const { count: approvedCount } = await supabase
         .from("startup_ideas")
@@ -42,10 +34,26 @@ const Admin = () => {
         .eq("review_status", "approved");
       
       setApprovedOpportunities(approvedCount || 0);
+
+      // Certified Co-Builders count
+      const { count: cobuilderCount } = await supabase
+        .from("user_certifications")
+        .select("*", { count: "exact", head: true })
+        .eq("certification_type", "cobuilder_b4");
+      
+      setCertifiedCoBuilders(cobuilderCount || 0);
+
+      // Certified Initiators count
+      const { count: initiatorCount } = await supabase
+        .from("user_certifications")
+        .select("*", { count: "exact", head: true })
+        .eq("certification_type", "initiator_b4");
+      
+      setCertifiedInitiators(initiatorCount || 0);
     };
 
     if (isAdmin) {
-      fetchOpportunityCounts();
+      fetchCounts();
     }
   }, [isAdmin]);
 
@@ -80,11 +88,9 @@ const Admin = () => {
     return null;
   }
 
-  const unreadCount = notifications.filter((n) => !n.is_read).length;
   const applicationNotifications = notifications.filter(
     (n) => n.notification_type === "application_submission"
   );
-
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -121,34 +127,34 @@ const Admin = () => {
               </div>
               <div className="bg-card rounded-xl border border-border p-6">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                    <Bell className="w-5 h-5 text-amber-500" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-foreground">{unreadCount}</p>
-                    <p className="text-sm text-muted-foreground">Unread Notifications</p>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-card rounded-xl border border-border p-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-lg bg-b4-coral/10 flex items-center justify-center">
-                    <FileText className="w-5 h-5 text-b4-coral" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-foreground">{applicationNotifications.length}</p>
-                    <p className="text-sm text-muted-foreground">Applications</p>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-card rounded-xl border border-border p-6">
-                <div className="flex items-center gap-3 mb-2">
                   <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
                     <Rocket className="w-5 h-5 text-green-500" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-foreground">{approvedOpportunities}</p>
                     <p className="text-sm text-muted-foreground">Approved Ideas</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-card rounded-xl border border-border p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-lg bg-b4-coral/10 flex items-center justify-center">
+                    <ShieldCheck className="w-5 h-5 text-b4-coral" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">{certifiedCoBuilders}</p>
+                    <p className="text-sm text-muted-foreground">Certified Co Builders</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-card rounded-xl border border-border p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                    <Award className="w-5 h-5 text-amber-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">{certifiedInitiators}</p>
+                    <p className="text-sm text-muted-foreground">Certified Initiators</p>
                   </div>
                 </div>
               </div>
