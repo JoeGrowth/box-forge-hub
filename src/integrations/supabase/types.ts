@@ -383,6 +383,66 @@ export type Database = {
         }
         Relationships: []
       }
+      onboarding_answer_versions: {
+        Row: {
+          change_notes: string | null
+          consulting_case_studies: string | null
+          consulting_check: boolean | null
+          consulting_with_whom: string | null
+          created_at: string
+          description: string | null
+          id: string
+          practice_case_studies: number | null
+          practice_check: boolean | null
+          practice_entities: string | null
+          promise_check: boolean | null
+          training_check: boolean | null
+          training_contexts: string | null
+          training_count: number | null
+          user_id: string
+          version_number: number
+          wants_to_scale: boolean | null
+        }
+        Insert: {
+          change_notes?: string | null
+          consulting_case_studies?: string | null
+          consulting_check?: boolean | null
+          consulting_with_whom?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          practice_case_studies?: number | null
+          practice_check?: boolean | null
+          practice_entities?: string | null
+          promise_check?: boolean | null
+          training_check?: boolean | null
+          training_contexts?: string | null
+          training_count?: number | null
+          user_id: string
+          version_number?: number
+          wants_to_scale?: boolean | null
+        }
+        Update: {
+          change_notes?: string | null
+          consulting_case_studies?: string | null
+          consulting_check?: boolean | null
+          consulting_with_whom?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          practice_case_studies?: number | null
+          practice_check?: boolean | null
+          practice_entities?: string | null
+          promise_check?: boolean | null
+          training_check?: boolean | null
+          training_contexts?: string | null
+          training_count?: number | null
+          user_id?: string
+          version_number?: number
+          wants_to_scale?: boolean | null
+        }
+        Relationships: []
+      }
       onboarding_state: {
         Row: {
           created_at: string | null
