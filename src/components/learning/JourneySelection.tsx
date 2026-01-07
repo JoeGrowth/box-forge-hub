@@ -137,8 +137,8 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
       {!hasAllMainCertifications && (
         <>
           <div className="text-center mb-8">
-            <h2 className="font-display text-2xl font-bold text-foreground mb-2">Choose Your Journey</h2>
-            <p className="text-muted-foreground">Select a path to continue your development</p>
+            <h2 className="font-display text-2xl font-bold text-foreground mb-2">Choose An Option</h2>
+            <p className="text-muted-foreground">Select an option to continue your development</p>
           </div>
 
           <div className="grid gap-8 md:grid-cols-2 items-stretch">
@@ -201,28 +201,28 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
                     <div className="mt-auto pt-4">
                       <Button
                         className="w-full"
-                      onClick={() => handleStartOrContinue(option.type)}
-                      disabled={isStarting === option.type || isCompleted}
-                      variant={isCompleted ? "secondary" : "default"}
-                    >
-                      {isStarting === option.type ? (
-                        "Starting..."
-                      ) : isCompleted ? (
-                        <>
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          Completed
-                        </>
-                      ) : status ? (
-                        <>
-                          Continue Journey
-                          <ArrowRight className="w-4 h-4 ml-2" />
-                        </>
-                      ) : (
-                        <>
-                          Start Journey
-                          <ArrowRight className="w-4 h-4 ml-2" />
-                        </>
-                      )}
+                        onClick={() => handleStartOrContinue(option.type)}
+                        disabled={isStarting === option.type || isCompleted}
+                        variant={isCompleted ? "secondary" : "default"}
+                      >
+                        {isStarting === option.type ? (
+                          "Starting..."
+                        ) : isCompleted ? (
+                          <>
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            Completed
+                          </>
+                        ) : status ? (
+                          <>
+                            Continue Journey
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                          </>
+                        ) : (
+                          <>
+                            Start Journey
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                          </>
+                        )}
                       </Button>
                     </div>
                   </CardContent>
@@ -258,7 +258,9 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
                 </p>
 
                 <div className="space-y-3">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">5 Progressive Steps</p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    5 Progressive Steps
+                  </p>
                   <div className="flex flex-wrap gap-2">
                     {[
                       "Personal Entity",

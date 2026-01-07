@@ -23,17 +23,15 @@ export const LearningJourneyDashboard = () => {
   }
 
   // Check if user is approved co-builder
-  const isApprovedCoBuilder = onboardingState?.journey_status === "approved" || 
-    onboardingState?.journey_status === "entrepreneur_approved";
+  const isApprovedCoBuilder =
+    onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved";
 
   if (!isApprovedCoBuilder) {
     return (
       <Card>
         <CardHeader>
           <CardTitle className="font-display text-xl">Learning Journeys</CardTitle>
-          <CardDescription>
-            Complete your onboarding and get approved to access learning journeys.
-          </CardDescription>
+          <CardDescription>Complete your onboarding and get approved to access learning journeys.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
@@ -53,9 +51,7 @@ export const LearningJourneyDashboard = () => {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="font-display text-xl">Learning Journeys</CardTitle>
-            <CardDescription>
-              Continue your development with structured learning paths
-            </CardDescription>
+            <CardDescription>Continue your development with structured options</CardDescription>
           </div>
           {certifications.length > 0 && (
             <div className="flex items-center gap-2">
@@ -75,15 +71,10 @@ export const LearningJourneyDashboard = () => {
             </h3>
             <div className="flex flex-wrap gap-2">
               {certifications.map((cert) => (
-                <Badge
-                  key={cert.id}
-                  className="bg-gradient-to-r from-b4-teal to-b4-purple text-white py-1 px-3"
-                >
+                <Badge key={cert.id} className="bg-gradient-to-r from-b4-teal to-b4-purple text-white py-1 px-3">
                   <CheckCircle className="w-3 h-3 mr-1" />
                   {cert.display_label}
-                  {cert.verified && (
-                    <Shield className="w-3 h-3 ml-1" />
-                  )}
+                  {cert.verified && <Shield className="w-3 h-3 ml-1" />}
                 </Badge>
               ))}
             </div>
@@ -91,10 +82,7 @@ export const LearningJourneyDashboard = () => {
         )}
 
         {selectedJourney ? (
-          <JourneyPhaseView
-            journeyType={selectedJourney}
-            onBack={() => setSelectedJourney(null)}
-          />
+          <JourneyPhaseView journeyType={selectedJourney} onBack={() => setSelectedJourney(null)} />
         ) : (
           <JourneySelection onSelectJourney={setSelectedJourney} />
         )}

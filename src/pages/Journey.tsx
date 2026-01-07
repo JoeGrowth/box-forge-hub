@@ -62,38 +62,38 @@ const Journey = () => {
               <p className="text-primary-foreground/80 max-w-2xl mb-6">
                 Continue your development with structured learning paths designed to help you grow as a co-builder.
               </p>
-              
+
               {/* Quick Action Buttons */}
               <div className="flex flex-wrap gap-3">
-                <Button 
-                  variant="secondary" 
+                <Button
+                  variant="secondary"
                   className="bg-white/20 hover:bg-white/30 text-white border-0"
                   onClick={() => {
-                    const element = document.getElementById('skill-ptc-section');
-                    element?.scrollIntoView({ behavior: 'smooth' });
+                    const element = document.getElementById("skill-ptc-section");
+                    element?.scrollIntoView({ behavior: "smooth" });
                   }}
                 >
                   <Users className="w-4 h-4 mr-2" />
                   Co-Build a Startup
                 </Button>
-                <Button 
-                  variant="secondary" 
+                <Button
+                  variant="secondary"
                   className="bg-white/20 hover:bg-white/30 text-white border-0"
                   onClick={() => {
-                    const element = document.getElementById('idea-ptc-section');
-                    element?.scrollIntoView({ behavior: 'smooth' });
+                    const element = document.getElementById("idea-ptc-section");
+                    element?.scrollIntoView({ behavior: "smooth" });
                   }}
                 >
                   <Lightbulb className="w-4 h-4 mr-2" />
                   Be an Initiator
                 </Button>
                 {wantsToScale && (
-                  <Button 
-                    variant="secondary" 
+                  <Button
+                    variant="secondary"
                     className="bg-white/20 hover:bg-white/30 text-white border-0"
                     onClick={() => {
-                      const element = document.getElementById('scaling-section');
-                      element?.scrollIntoView({ behavior: 'smooth' });
+                      const element = document.getElementById("scaling-section");
+                      element?.scrollIntoView({ behavior: "smooth" });
                     }}
                   >
                     <TrendingUp className="w-4 h-4 mr-2" />
@@ -110,7 +110,7 @@ const Journey = () => {
               <div id="skill-ptc-section">
                 <LearningJourneyDashboard />
               </div>
-              
+
               {/* Scaling Path - only shown if user opted in */}
               {wantsToScale && (
                 <div id="scaling-section" className="mt-8">
