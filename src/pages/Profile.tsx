@@ -757,7 +757,7 @@ const Profile = () => {
             {isApprovedCoBuilder && (
               <div className="bg-gradient-to-br from-b4-teal/10 to-b4-navy/10 rounded-3xl border border-b4-teal/20 p-8 mb-8">
                 <h2 className="font-display text-xl font-bold text-foreground mb-2">🎉 Welcome to the platform!</h2>
-                <p className="text-muted-foreground mb-6">Choose how you want to build your next venture:</p>
+                <p className="text-muted-foreground mb-6">Choose how you want to be part of next venture:</p>
 
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="bg-card rounded-xl border border-border p-6 hover:border-b4-teal/50 transition-colors">
@@ -778,7 +778,7 @@ const Profile = () => {
                     <div className="w-12 h-12 rounded-xl bg-b4-coral/10 flex items-center justify-center mb-4">
                       <Lightbulb className="w-6 h-6 text-b4-coral" />
                     </div>
-                    <h3 className="font-semibold text-foreground mb-2">Initiate a startup</h3>
+                    <h3 className="font-semibold text-foreground mb-2">Be an Initiator</h3>
                     <p className="text-sm text-muted-foreground mb-4">
                       Create your own startup idea and find co-builders to join your venture.
                     </p>
