@@ -492,7 +492,7 @@ const Profile = () => {
       };
     }
     if (onboardingState.journey_status === "approved") {
-      return { label: "Approved Co-Builder", color: "text-b4-teal", icon: CheckCircle };
+      return { label: "Approved", color: "text-b4-teal", icon: CheckCircle };
     }
     if (onboardingState.journey_status === "pending_approval") {
       return { label: "Pending Admin Approval", color: "text-amber-500", icon: Clock };
