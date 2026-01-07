@@ -245,7 +245,7 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
               {getStatusBadge("scaling_path")}
             </div>
             <CardTitle className="font-display text-xl mt-4">
-              Learn to Scale Your Natural Role [Personal Promise]
+              Path 1 : Scale Your Natural Role [Personal Promise]
             </CardTitle>
             {!scalingCertified && (
               <CardDescription className="text-sm font-medium text-muted-foreground">
