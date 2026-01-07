@@ -52,6 +52,22 @@ const Onboarding = () => {
 
   const totalSteps = 8; // Same steps for both entrepreneurs and co-builders
 
+  const handleBack = () => {
+    if (showPendingHelp) {
+      setShowPendingHelp(false);
+      return;
+    }
+    if (showNotReady) {
+      setShowNotReady(false);
+      return;
+    }
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const canGoBack = currentStep > 1 || showPendingHelp || showNotReady;
+
   const getStepLabel = () => {
     const labels: Record<number, string> = {
       1: "Choose your path",
@@ -116,6 +132,8 @@ const Onboarding = () => {
       currentStep={currentStep} 
       totalSteps={totalSteps}
       stepLabel={getStepLabel()}
+      onBack={handleBack}
+      canGoBack={canGoBack}
     >
       {renderStep()}
     </OnboardingLayout>

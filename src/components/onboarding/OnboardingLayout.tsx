@@ -1,18 +1,24 @@
 import { ReactNode } from "react";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 interface OnboardingLayoutProps {
   children: ReactNode;
   currentStep: number;
   totalSteps: number;
   stepLabel?: string;
+  onBack?: () => void;
+  canGoBack?: boolean;
 }
 
 export const OnboardingLayout = ({ 
   children, 
   currentStep, 
   totalSteps,
-  stepLabel 
+  stepLabel,
+  onBack,
+  canGoBack = false
 }: OnboardingLayoutProps) => {
   const progress = (currentStep / totalSteps) * 100;
 
@@ -23,6 +29,16 @@ export const OnboardingLayout = ({
         <div className="container max-w-2xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
+              {canGoBack && onBack && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onBack}
+                  className="h-10 w-10 rounded-xl"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+              )}
               <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-lg">B4</span>
               </div>
