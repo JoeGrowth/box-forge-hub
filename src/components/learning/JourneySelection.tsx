@@ -137,7 +137,9 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
       {!hasAllMainCertifications && (
         <>
           <div className="text-center mb-8">
-            <h2 className="font-display text-2xl font-bold text-foreground mb-2">Choose An Option</h2>
+            <h2 className="font-display text-2xl font-bold text-foreground mb-2">
+              Scale Through an idea [Venture Promise]
+            </h2>
             <p className="text-muted-foreground">Select an option to continue your development</p>
           </div>
 
