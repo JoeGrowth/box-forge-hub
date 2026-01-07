@@ -757,7 +757,9 @@ const Profile = () => {
             {isApprovedCoBuilder && (
               <div className="bg-gradient-to-br from-b4-teal/10 to-b4-navy/10 rounded-3xl border border-b4-teal/20 p-8 mb-8">
                 <h2 className="font-display text-xl font-bold text-foreground mb-2">🎉 Welcome to the platform!</h2>
-                <p className="text-muted-foreground mb-6">Choose how you want to be part of next venture:</p>
+                <p className="text-muted-foreground mb-6">
+                  Choose how you want to scale through an idea (venture promise)
+                </p>
 
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="bg-card rounded-xl border border-border p-6 hover:border-b4-teal/50 transition-colors">
