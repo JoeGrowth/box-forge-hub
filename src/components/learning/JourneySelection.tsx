@@ -86,7 +86,7 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
   const journeyOptions = [
     {
       type: "skill_ptc" as JourneyType,
-      title: "Option 1 : Co-Build a Startup",
+      title: "Option 1 : Co-Build",
       subtitle: "Skill PTC Journey",
       description:
         "Practice, Training, Consulting based on the B4 model. Learn the fundamentals, apply through case studies, and become a certified Co-Builder.",
