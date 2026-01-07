@@ -138,7 +138,7 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
         <>
           <div className="text-center mb-8">
             <h2 className="font-display text-2xl font-bold text-foreground mb-2">
-              Scale Through an idea [Venture Promise]
+              Path 2 : Scale Through an idea [Venture Promise]
             </h2>
             <p className="text-muted-foreground">Select an option to continue your development</p>
           </div>
@@ -244,7 +244,9 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
               </div>
               {getStatusBadge("scaling_path")}
             </div>
-            <CardTitle className="font-display text-xl mt-4">Scale Your Natural Role [Personal Promise]</CardTitle>
+            <CardTitle className="font-display text-xl mt-4">
+              Path 1 : Scale Your Natural Role [Personal Promise]
+            </CardTitle>
             {!scalingCertified && (
               <CardDescription className="text-sm font-medium text-muted-foreground">
                 Process Formalization Journey
