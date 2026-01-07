@@ -23,7 +23,7 @@ const userNavLinks = [
   { name: "Co Builders", path: "/cobuilders" },
   { name: "Journey", path: "/journey" },
   { name: "Boxes", path: "/boxes" },
-  { name: "Resume", path: "/resume" },
+  { name: "Mask", path: "/mask" },
 ];
 
 export function Navbar() {
