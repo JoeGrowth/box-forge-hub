@@ -778,7 +778,7 @@ const Profile = () => {
                     <div className="w-12 h-12 rounded-xl bg-b4-coral/10 flex items-center justify-center mb-4">
                       <Lightbulb className="w-6 h-6 text-b4-coral" />
                     </div>
-                    <h3 className="font-semibold text-foreground mb-2">Be an Initiator</h3>
+                    <h3 className="font-semibold text-foreground mb-2">Initiate a Startup</h3>
                     <p className="text-sm text-muted-foreground mb-4">
                       Create your own startup idea and find co-builders to join your venture.
                     </p>
