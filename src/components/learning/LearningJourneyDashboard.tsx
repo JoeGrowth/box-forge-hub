@@ -50,7 +50,7 @@ export const LearningJourneyDashboard = () => {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="font-display text-xl">Scaling Journeys</CardTitle>
+            <CardTitle className="font-display text-xl">Boosting Journeys</CardTitle>
             <CardDescription>Continue your development with structured options</CardDescription>
           </div>
           {certifications.length > 0 && (
