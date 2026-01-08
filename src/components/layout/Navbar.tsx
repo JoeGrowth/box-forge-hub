@@ -21,7 +21,7 @@ const userNavLinks = [
   { name: "Home", path: "/" },
   { name: "Opportunities", path: "/opportunities" },
   { name: "Co Builders", path: "/cobuilders" },
-  { name: "Journey", path: "/journey" },
+  { name: "Boosting", path: "/journey" },
   { name: "Boxes", path: "/boxes" },
   { name: "Mask", path: "/mask" },
 ];
@@ -83,7 +83,7 @@ export function Navbar() {
                 }`}
               >
                 {link.name}
-                {link.name === "Journey" && user && journeysInProgress > 0 && (
+                {link.name === "Boosting" && user && journeysInProgress > 0 && (
                   <Badge className="bg-b4-teal text-white text-xs px-1.5 py-0 min-w-[18px] h-[18px] flex items-center justify-center">
                     {journeysInProgress}
                   </Badge>
@@ -156,7 +156,7 @@ export function Navbar() {
                   onClick={() => setIsOpen(false)}
                 >
                   {link.name}
-                  {link.name === "Journey" && user && journeysInProgress > 0 && (
+                  {link.name === "Boosting" && user && journeysInProgress > 0 && (
                     <Badge className="bg-b4-teal text-white text-xs px-1.5 py-0 min-w-[18px] h-[18px] flex items-center justify-center">
                       {journeysInProgress}
                     </Badge>
