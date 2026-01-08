@@ -303,22 +303,22 @@ const Mask = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="pt-24 pb-16">
-        <div className="container max-w-5xl mx-auto px-4">
-          {/* Hero Header */}
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-violet-500/10 to-purple-500/10 border border-violet-500/20 mb-4">
-              <Theater className="w-5 h-5 text-violet-500" />
-              <span className="text-sm font-medium text-violet-600 dark:text-violet-400">Your Mask Journey</span>
+      <main className="pt-20">
+        {/* Header */}
+        <section className="py-12 gradient-hero text-primary-foreground">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center gap-3 mb-2">
+              <Theater className="w-8 h-8" />
+              <h1 className="font-display text-3xl font-bold">Mask</h1>
             </div>
-            <h1 className="text-4xl md:text-5xl font-display font-bold text-foreground mb-3">
-              Your <span className="bg-gradient-to-r from-violet-500 to-purple-600 bg-clip-text text-transparent">Mask</span>
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              The gamified entry point to scaling your Natural Role. Create an entity you fully own — 
-              and operate beyond yourself.
+            <p className="text-primary-foreground/80 max-w-2xl">
+              The gamified entry point to scaling your Natural Role. Create an entity you fully own and operate beyond yourself.
             </p>
           </div>
+        </section>
+
+        <section className="py-12">
+          <div className="container max-w-5xl mx-auto px-4">
 
           {/* Section Toggle */}
           <div className="flex justify-center mb-8">
@@ -773,7 +773,8 @@ const Mask = () => {
               </Card>
             </div>
           )}
-        </div>
+          </div>
+        </section>
       </main>
       <Footer />
     </div>
