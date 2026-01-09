@@ -32,6 +32,7 @@ import {
   ArrowRight,
   Zap,
   Target,
+  Lightbulb,
   Lock,
   TrendingUp
 } from "lucide-react";
@@ -54,6 +55,16 @@ interface AnswerVersion {
   wants_to_scale: boolean | null;
   created_at: string;
   change_notes: string | null;
+}
+
+interface StartupIdea {
+  id: string;
+  title: string;
+  description: string;
+  sector: string | null;
+  review_status: string | null;
+  status: string | null;
+  created_at: string;
 }
 
 const SCALE_NR_STEPS = [
@@ -98,10 +109,11 @@ const SCALE_NR_STEPS = [
   }
 ];
 
-const Mask = () => {
+const Scale = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { naturalRole, onboardingState, refetch } = useOnboarding();
+  const { canAccessScaling, userStatus, getStatusLabel, loading: statusLoading } = useUserStatus();
   const { toast } = useToast();
   
   const [isEditing, setIsEditing] = useState(false);
@@ -109,7 +121,9 @@ const Mask = () => {
   const [versions, setVersions] = useState<AnswerVersion[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [changeNotes, setChangeNotes] = useState("");
-  const [activeSection, setActiveSection] = useState<"resume" | "scale">("resume");
+  const [activeSection, setActiveSection] = useState<"resume" | "scale" | "ideas">("resume");
+  const [userIdeas, setUserIdeas] = useState<StartupIdea[]>([]);
+  const [loadingIdeas, setLoadingIdeas] = useState(true);
   const [editData, setEditData] = useState({
     description: "",
     practice_entities: "",
@@ -123,6 +137,18 @@ const Mask = () => {
       navigate("/auth", { replace: true });
     }
   }, [user, authLoading, navigate]);
+
+  // Redirect if user doesn't have access to scaling
+  useEffect(() => {
+    if (!authLoading && !statusLoading && user && !canAccessScaling) {
+      toast({
+        title: "Access Restricted",
+        description: "Complete a boosting journey to unlock the Scale page.",
+        variant: "destructive",
+      });
+      navigate("/journey", { replace: true });
+    }
+  }, [authLoading, statusLoading, user, canAccessScaling, navigate, toast]);
 
   useEffect(() => {
     if (naturalRole) {
@@ -152,6 +178,27 @@ const Mask = () => {
     };
     
     fetchVersions();
+  }, [user]);
+
+  // Fetch user's startup ideas
+  useEffect(() => {
+    const fetchUserIdeas = async () => {
+      if (!user) return;
+      
+      setLoadingIdeas(true);
+      const { data, error } = await supabase
+        .from("startup_ideas")
+        .select("id, title, description, sector, review_status, status, created_at")
+        .eq("creator_id", user.id)
+        .order("created_at", { ascending: false });
+      
+      if (!error && data) {
+        setUserIdeas(data);
+      }
+      setLoadingIdeas(false);
+    };
+    
+    fetchUserIdeas();
   }, [user]);
 
   const handleSave = async () => {
@@ -284,12 +331,31 @@ const Mask = () => {
     }
   };
 
-  if (authLoading) {
+  const getReviewStatusBadge = (status: string | null) => {
+    switch (status) {
+      case "approved":
+        return <Badge className="bg-b4-teal text-white"><CheckCircle className="w-3 h-3 mr-1" />Approved</Badge>;
+      case "pending":
+        return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
+      case "under_review":
+        return <Badge variant="outline" className="border-amber-500 text-amber-600"><AlertCircle className="w-3 h-3 mr-1" />Under Review</Badge>;
+      case "rejected":
+        return <Badge variant="destructive"><AlertCircle className="w-3 h-3 mr-1" />Rejected</Badge>;
+      default:
+        return <Badge variant="secondary">Unknown</Badge>;
+    }
+  };
+
+  if (authLoading || statusLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
+  }
+
+  if (!canAccessScaling) {
+    return null; // Will redirect via useEffect
   }
 
   const StatusBadge = ({ checked }: { checked: boolean | null }) =>
@@ -311,12 +377,17 @@ const Mask = () => {
         <section className="py-12 gradient-hero text-primary-foreground">
           <div className="container mx-auto px-4">
             <div className="flex items-center gap-3 mb-2">
-              <Theater className="w-8 h-8" />
-              <h1 className="font-display text-3xl font-bold">Mask</h1>
+              <TrendingUp className="w-8 h-8" />
+              <h1 className="font-display text-3xl font-bold">Scale</h1>
             </div>
             <p className="text-primary-foreground/80 max-w-2xl">
-              The gamified entry point to scaling your Natural Role. Create an entity you fully own and operate beyond yourself.
+              Your scaling headquarters. Manage your Mask, track your ideas, and build beyond yourself.
             </p>
+            <div className="mt-4">
+              <Badge className="bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30">
+                {getStatusLabel()}
+              </Badge>
+            </div>
           </div>
         </section>
 
@@ -347,6 +418,20 @@ const Mask = () => {
               >
                 <Sparkles className="w-4 h-4 inline mr-2" />
                 Scale Your NR
+              </button>
+              <button
+                onClick={() => setActiveSection("ideas")}
+                className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  activeSection === "ideas"
+                    ? "bg-background shadow-sm text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Lightbulb className="w-4 h-4 inline mr-2" />
+                Your Ideas
+                {userIdeas.length > 0 && (
+                  <Badge className="ml-2 bg-b4-teal text-white text-xs">{userIdeas.length}</Badge>
+                )}
               </button>
             </div>
           </div>
@@ -453,30 +538,6 @@ const Mask = () => {
                                       {version.description || "Not provided"}
                                     </p>
                                   </div>
-                                  {version.practice_check && version.practice_entities && (
-                                    <div>
-                                      <span className="text-muted-foreground">Practice:</span>
-                                      <p className="bg-background rounded p-2 mt-1">
-                                        {version.practice_entities}
-                                      </p>
-                                    </div>
-                                  )}
-                                  {version.training_check && version.training_contexts && (
-                                    <div>
-                                      <span className="text-muted-foreground">Training:</span>
-                                      <p className="bg-background rounded p-2 mt-1">
-                                        {version.training_contexts}
-                                      </p>
-                                    </div>
-                                  )}
-                                  {version.consulting_check && (
-                                    <div>
-                                      <span className="text-muted-foreground">Consulting:</span>
-                                      <p className="bg-background rounded p-2 mt-1">
-                                        {version.consulting_with_whom || "Not provided"}
-                                      </p>
-                                    </div>
-                                  )}
                                 </div>
                               </CollapsibleContent>
                             </Collapsible>
@@ -498,11 +559,6 @@ const Mask = () => {
                   {onboardingState?.journey_status === "approved" && (
                     <Badge className="w-fit bg-b4-teal text-white">
                       <CheckCircle className="w-3 h-3 mr-1" /> Approved
-                    </Badge>
-                  )}
-                  {onboardingState?.journey_status === "pending_approval" && (
-                    <Badge className="w-fit" variant="secondary">
-                      <Clock className="w-3 h-3 mr-1" /> Pending Approval
                     </Badge>
                   )}
                 </CardHeader>
@@ -569,11 +625,6 @@ const Mask = () => {
                           {naturalRole.practice_entities || "Not provided"}
                         </p>
                       )}
-                      {naturalRole.practice_case_studies && (
-                        <p className="text-xs text-muted-foreground">
-                          Case studies: {naturalRole.practice_case_studies}
-                        </p>
-                      )}
                     </div>
                   )}
 
@@ -590,11 +641,6 @@ const Mask = () => {
                       ) : (
                         <p className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-4">
                           {naturalRole.training_contexts || "Not provided"}
-                        </p>
-                      )}
-                      {naturalRole.training_count && (
-                        <p className="text-xs text-muted-foreground">
-                          Training count: {naturalRole.training_count}
                         </p>
                       )}
                     </div>
@@ -631,15 +677,6 @@ const Mask = () => {
                       )}
                     </div>
                   )}
-
-                  <div className="pt-4 border-t border-border/50">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">Interested in Scaling:</span>
-                      <Badge variant={naturalRole?.wants_to_scale ? "default" : "secondary"}>
-                        {naturalRole?.wants_to_scale ? "Yes" : "No"}
-                      </Badge>
-                    </div>
-                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -694,7 +731,7 @@ const Mask = () => {
                       key={step.step}
                       className={`relative ${index % 2 === 0 ? 'md:pr-[52%]' : 'md:pl-[52%]'}`}
                     >
-                      {/* Step Number Badge (centered on line for desktop) */}
+                      {/* Step Number Badge */}
                       <div className={`hidden md:flex absolute left-1/2 top-6 w-10 h-10 rounded-full bg-gradient-to-r ${step.color} items-center justify-center text-white font-bold text-lg shadow-lg z-10`}
                         style={{ transform: 'translateX(-50%)' }}
                       >
@@ -755,25 +792,88 @@ const Mask = () => {
                         Your Mask operates independently — value becomes repeatable, transferable, and truly scalable.
                       </p>
                     </div>
-                    {!naturalRole?.wants_to_scale && (
-                      <div className="pt-4">
-                        <Button 
-                          variant="teal" 
-                          size="lg"
-                          onClick={() => navigate("/profile")}
-                          className="gap-2"
-                        >
-                          <Target className="w-4 h-4" />
-                          Enable Scaling Journey
-                        </Button>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          Enable "Interested in Scaling" on your profile to begin
-                        </p>
-                      </div>
-                    )}
                   </div>
                 </CardContent>
               </Card>
+            </div>
+          )}
+
+          {/* Your Ideas Section */}
+          {activeSection === "ideas" && (
+            <div className="space-y-6 animate-fade-in">
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                  <h2 className="text-2xl font-display font-bold text-foreground">Your Ideas</h2>
+                  <p className="text-muted-foreground mt-1">
+                    Startup ideas you've created and their status
+                  </p>
+                </div>
+                <Button variant="teal" asChild>
+                  <Link to="/create-idea">
+                    <Lightbulb className="w-4 h-4 mr-2" />
+                    Create New Idea
+                  </Link>
+                </Button>
+              </div>
+
+              {loadingIdeas ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : userIdeas.length === 0 ? (
+                <Card className="border-border/50">
+                  <CardContent className="py-12 text-center">
+                    <Lightbulb className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
+                    <h3 className="text-lg font-medium text-foreground mb-2">No Ideas Yet</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Start by creating your first startup idea and get it reviewed.
+                    </p>
+                    <Button variant="teal" asChild>
+                      <Link to="/create-idea">
+                        <Lightbulb className="w-4 h-4 mr-2" />
+                        Create Your First Idea
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-4">
+                  {userIdeas.map((idea) => (
+                    <Card key={idea.id} className="border-border/50 hover:shadow-md transition-shadow">
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-3 mb-2">
+                              <h3 className="text-lg font-display font-bold text-foreground truncate">
+                                {idea.title}
+                              </h3>
+                              {getReviewStatusBadge(idea.review_status)}
+                            </div>
+                            <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                              {idea.description}
+                            </p>
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                              {idea.sector && (
+                                <span className="flex items-center gap-1">
+                                  <Target className="w-3 h-3" />
+                                  {idea.sector}
+                                </span>
+                              )}
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {format(new Date(idea.created_at), "MMM d, yyyy")}
+                              </span>
+                            </div>
+                          </div>
+                          <Button variant="outline" size="sm" asChild>
+                            <Link to={`/opportunities/${idea.id}`}>View</Link>
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
           )}
           </div>
@@ -784,4 +884,4 @@ const Mask = () => {
   );
 };
 
-export default Mask;
+export default Scale;
