@@ -445,37 +445,49 @@ export type Database = {
       }
       onboarding_state: {
         Row: {
+          boost_type: string | null
           created_at: string | null
           current_step: number | null
           entrepreneur_step: number | null
           id: string
           journey_status: string | null
           onboarding_completed: boolean | null
+          potential_role: string | null
           primary_role: string | null
+          scale_type: string | null
           updated_at: string | null
           user_id: string
+          user_status: string | null
         }
         Insert: {
+          boost_type?: string | null
           created_at?: string | null
           current_step?: number | null
           entrepreneur_step?: number | null
           id?: string
           journey_status?: string | null
           onboarding_completed?: boolean | null
+          potential_role?: string | null
           primary_role?: string | null
+          scale_type?: string | null
           updated_at?: string | null
           user_id: string
+          user_status?: string | null
         }
         Update: {
+          boost_type?: string | null
           created_at?: string | null
           current_step?: number | null
           entrepreneur_step?: number | null
           id?: string
           journey_status?: string | null
           onboarding_completed?: boolean | null
+          potential_role?: string | null
           primary_role?: string | null
+          scale_type?: string | null
           updated_at?: string | null
           user_id?: string
+          user_status?: string | null
         }
         Relationships: []
       }

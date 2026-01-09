@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Menu, X, LogOut, User, Shield } from "lucide-react";
+import { Menu, X, LogOut, User, Shield, Lock } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLearningJourneys } from "@/hooks/useLearningJourneys";
+import { useUserStatus } from "@/hooks/useUserStatus";
 import { supabase } from "@/integrations/supabase/client";
 import { NotificationBell } from "./NotificationBell";
 
@@ -16,8 +17,16 @@ const guestNavLinks = [
   { name: "Join Us", path: "/join" },
 ];
 
-// Links for logged-in users
-const userNavLinks = [
+// Base links for all logged-in users (applied status)
+const appliedUserLinks = [
+  { name: "Home", path: "/" },
+  { name: "Opportunities", path: "/opportunities" },
+  { name: "Co Builders", path: "/cobuilders" },
+  { name: "Boxes", path: "/boxes" },
+];
+
+// Links for approved users (includes Boosting)
+const approvedUserLinks = [
   { name: "Home", path: "/" },
   { name: "Opportunities", path: "/opportunities" },
   { name: "Co Builders", path: "/cobuilders" },
@@ -26,12 +35,23 @@ const userNavLinks = [
   { name: "Mask", path: "/mask" },
 ];
 
+// Links for boosted/scaled users (includes Scale)
+const boostedUserLinks = [
+  { name: "Home", path: "/" },
+  { name: "Opportunities", path: "/opportunities" },
+  { name: "Co Builders", path: "/cobuilders" },
+  { name: "Boosting", path: "/journey" },
+  { name: "Boxes", path: "/boxes" },
+  { name: "Scale", path: "/scale" },
+];
+
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
   const { journeys } = useLearningJourneys();
+  const { userStatus, canAccessBoosting, canAccessScaling, loading: statusLoading } = useUserStatus();
 
   // Count journeys in progress
   const journeysInProgress = journeys.filter(j => j.status === "in_progress").length;
@@ -55,8 +75,21 @@ export function Navbar() {
     checkUserStatus();
   }, [user]);
 
-  // Build nav links based on authentication status
-  const navLinks = user ? userNavLinks : guestNavLinks;
+  // Build nav links based on authentication and user status
+  const getNavLinks = () => {
+    if (!user) return guestNavLinks;
+    
+    // Boosted or scaled users get Scale page
+    if (canAccessScaling) return boostedUserLinks;
+    
+    // Approved users get Boosting page (but not Scale)
+    if (canAccessBoosting) return approvedUserLinks;
+    
+    // Applied users (default for logged-in)
+    return appliedUserLinks;
+  };
+
+  const navLinks = getNavLinks();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">

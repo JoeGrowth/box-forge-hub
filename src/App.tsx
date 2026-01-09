@@ -25,6 +25,7 @@ import OpportunityDetail from "./pages/OpportunityDetail";
 import CoBuilders from "./pages/CoBuilders";
 import Journey from "./pages/Journey";
 import Mask from "./pages/Mask";
+import Scale from "./pages/Scale";
 import CreateIdea from "./pages/CreateIdea";
 import EditIdea from "./pages/EditIdea";
 import Stories from "./pages/Stories";
@@ -67,6 +68,7 @@ const App = () => (
                 <Route path="/cobuilders" element={<CoBuilders />} />
                 <Route path="/journey" element={<Journey />} />
                 <Route path="/mask" element={<Mask />} />
+                <Route path="/scale" element={<Scale />} />
                 <Route path="/create-idea" element={<CreateIdea />} />
                 <Route path="/edit-idea/:id" element={<EditIdea />} />
                 <Route path="/chat/:applicationId" element={<Chat />} />
