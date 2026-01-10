@@ -152,6 +152,11 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
               );
               const isCompleted = status === "approved" || isCertified;
 
+              // Hide completed/certified journey cards entirely
+              if (isCompleted) {
+                return null;
+              }
+
               return (
                 <Card
                   key={option.type}
@@ -169,51 +174,41 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
                       {getStatusBadge(option.type)}
                     </div>
                     <CardTitle className="font-display text-xl mt-4">{option.title}</CardTitle>
-                    {!isCertified && (
-                      <CardDescription className="text-sm font-medium text-muted-foreground">
-                        {option.subtitle}
-                      </CardDescription>
-                    )}
+                    <CardDescription className="text-sm font-medium text-muted-foreground">
+                      {option.subtitle}
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="flex-1 flex flex-col">
-                    {!isCertified && (
-                      <div className="space-y-6 flex-1">
-                        <p className="text-sm text-muted-foreground leading-relaxed">{option.description}</p>
+                    <div className="space-y-6 flex-1">
+                      <p className="text-sm text-muted-foreground leading-relaxed">{option.description}</p>
 
-                        <div className="space-y-3">
-                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Phases</p>
-                          <div className="flex flex-wrap gap-2">
-                            {option.phases.map((phase, i) => (
-                              <Badge key={i} variant="outline" className="text-xs py-1 px-2.5">
-                                {phase}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="pt-4 border-t border-border">
-                          <p className="text-xs text-muted-foreground mb-2">Upon completion:</p>
-                          <Badge className={`bg-${option.color}/10 text-${option.color} border-${option.color}/20`}>
-                            {option.result}
-                          </Badge>
+                      <div className="space-y-3">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Phases</p>
+                        <div className="flex flex-wrap gap-2">
+                          {option.phases.map((phase, i) => (
+                            <Badge key={i} variant="outline" className="text-xs py-1 px-2.5">
+                              {phase}
+                            </Badge>
+                          ))}
                         </div>
                       </div>
-                    )}
+
+                      <div className="pt-4 border-t border-border">
+                        <p className="text-xs text-muted-foreground mb-2">Upon completion:</p>
+                        <Badge className={`bg-${option.color}/10 text-${option.color} border-${option.color}/20`}>
+                          {option.result}
+                        </Badge>
+                      </div>
+                    </div>
 
                     <div className="mt-auto pt-4">
                       <Button
                         className="w-full"
                         onClick={() => handleStartOrContinue(option.type)}
-                        disabled={isStarting === option.type || isCompleted}
-                        variant={isCompleted ? "secondary" : "default"}
+                        disabled={isStarting === option.type}
                       >
                         {isStarting === option.type ? (
                           "Starting..."
-                        ) : isCompleted ? (
-                          <>
-                            <CheckCircle className="w-4 h-4 mr-2" />
-                            Completed
-                          </>
                         ) : status ? (
                           <>
                             Continue Journey
