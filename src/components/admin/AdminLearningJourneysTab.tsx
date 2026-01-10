@@ -147,18 +147,44 @@ export const AdminLearningJourneysTab = () => {
         verified: true,
       });
 
+      // Determine boost_type based on journey
+      const boostType = 
+        journey.journey_type === "skill_ptc" ? "boosted_co_builder" :
+        journey.journey_type === "idea_ptc" ? "boosted_initiator" : 
+        journey.journey_type === "scaling_path" ? "boosted_talent" : null;
+
+      // Update user_status to boosted (only for skill_ptc and idea_ptc)
+      // For scaling_path, update to scaled
+      if (journey.journey_type === "scaling_path") {
+        await supabase
+          .from("onboarding_state")
+          .update({
+            user_status: "scaled",
+            scale_type: "personal_promise",
+          })
+          .eq("user_id", journey.user_id);
+      } else {
+        await supabase
+          .from("onboarding_state")
+          .update({
+            user_status: "boosted",
+            boost_type: boostType,
+          })
+          .eq("user_id", journey.user_id);
+      }
+
       // Notify user
       await supabase.from("user_notifications").insert({
         user_id: journey.user_id,
         notification_type: "journey_approved",
         title: "Journey Approved!",
         message: `Congratulations! Your ${journey.journey_type.replace("_", " ").toUpperCase()} journey has been approved. You've earned the "${certLabel}" certification!`,
-        link: "/profile",
+        link: journey.journey_type === "scaling_path" ? "/scale" : "/journey",
       });
 
       toast({
         title: "Journey Approved",
-        description: "User has been certified and notified.",
+        description: "User has been certified, status updated, and notified.",
       });
 
       fetchJourneys();
