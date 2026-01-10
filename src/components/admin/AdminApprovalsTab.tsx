@@ -122,31 +122,36 @@ export const AdminApprovalsTab = ({ onRefresh }: AdminApprovalsTabProps) => {
     toast({ title: "Refreshed", description: "Approvals list updated." });
   };
 
-  const handleApprove = async (userId: string, userName: string | null, userEmail?: string) => {
+  const handleApprove = async (userId: string, userName: string | null, primaryRole: string | null, userEmail?: string) => {
     try {
+      // Determine potential_role based on primary_role from onboarding
+      const potentialRole = primaryRole === "entrepreneur" 
+        ? "potential_entrepreneur" 
+        : "potential_co_builder";
+
       const { error } = await supabase
         .from("onboarding_state")
-        .update({ journey_status: "approved" })
+        .update({ 
+          journey_status: primaryRole === "entrepreneur" ? "entrepreneur_approved" : "approved",
+          user_status: "approved",
+          potential_role: potentialRole
+        })
         .eq("user_id", userId);
 
       if (error) throw error;
 
       // Create notification for user
-      await supabase.from("admin_notifications").insert({
+      await supabase.from("user_notifications").insert({
         user_id: userId,
         notification_type: "approval_granted",
-        user_name: userName,
-        step_name: "Approval",
-        message: "Your Co-Builder journey has been approved! You now have full access to the platform.",
+        title: "Application Approved!",
+        message: "Your journey has been approved! You now have access to the Boosting page.",
+        link: "/journey"
       });
 
-      // Send email notification if we have the user's email
-      // Note: We'd need to get the email from auth.users or store it in profiles
-      // For now, we'll just show the toast
-      
       toast({
         title: "Approved!",
-        description: `${userName || "User"} has been approved as a Co-Builder.`,
+        description: `${userName || "User"} has been approved as ${potentialRole === "potential_entrepreneur" ? "Potential Entrepreneur" : "Potential Co-Builder"}.`,
       });
 
       fetchPendingApprovals();
@@ -343,7 +348,7 @@ export const AdminApprovalsTab = ({ onRefresh }: AdminApprovalsTabProps) => {
                   <Button
                     variant="teal"
                     size="sm"
-                    onClick={() => handleApprove(approval.user_id, approval.profile?.full_name)}
+                    onClick={() => handleApprove(approval.user_id, approval.profile?.full_name, approval.primary_role)}
                   >
                     <CheckCircle className="w-4 h-4 mr-1" />
                     Approve
@@ -530,7 +535,7 @@ export const AdminApprovalsTab = ({ onRefresh }: AdminApprovalsTabProps) => {
                   variant="teal"
                   className="flex-1"
                   onClick={() => {
-                    handleApprove(selectedApproval.user_id, selectedApproval.profile?.full_name);
+                    handleApprove(selectedApproval.user_id, selectedApproval.profile?.full_name, selectedApproval.primary_role);
                     setPreviewOpen(false);
                   }}
                 >
