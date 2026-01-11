@@ -43,7 +43,8 @@ const CoBuilders = () => {
   const [savingSkills, setSavingSkills] = useState(false);
 
   // Derive approval status from cached onboarding state
-  const isApproved = onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved";
+  const isApproved =
+    onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved";
 
   // Fetch approved co-builders
   useEffect(() => {
@@ -251,7 +252,7 @@ const CoBuilders = () => {
             <div className="container mx-auto px-4">
               <div className="flex items-center gap-3 mb-2">
                 <User className="w-8 h-8" />
-                <h1 className="font-display text-3xl font-bold">Co-Builders</h1>
+                <h1 className="font-display text-3xl font-bold">Skilled People</h1>
               </div>
               <p className="text-primary-foreground/80 max-w-2xl">
                 Discover talented co-builders with the skills and natural roles that match your startup needs.
