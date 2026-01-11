@@ -12,9 +12,9 @@ import { NotificationBell } from "./NotificationBell";
 // Links for logged-out users
 const guestNavLinks = [
   { name: "About", path: "/about" },
-  { name: "Boxes", path: "/boxes" },
   { name: "Programs", path: "/programs" },
   { name: "Join Us", path: "/join" },
+  { name: "Boxes", path: "/boxes" },
 ];
 
 // Base links for all logged-in users (applied status)
@@ -31,8 +31,8 @@ const approvedUserLinks = [
   { name: "Opportunities", path: "/opportunities" },
   { name: "Co Builders", path: "/cobuilders" },
   { name: "Boosting", path: "/journey" },
-  { name: "Boxes", path: "/boxes" },
   { name: "Mask", path: "/mask" },
+  { name: "Boxes", path: "/boxes" },
 ];
 
 // Links for boosted/scaled users (includes Scale)
@@ -41,8 +41,8 @@ const boostedUserLinks = [
   { name: "Opportunities", path: "/opportunities" },
   { name: "Co Builders", path: "/cobuilders" },
   { name: "Boosting", path: "/journey" },
-  { name: "Boxes", path: "/boxes" },
   { name: "Scale", path: "/scale" },
+  { name: "Boxes", path: "/boxes" },
 ];
 
 export function Navbar() {
