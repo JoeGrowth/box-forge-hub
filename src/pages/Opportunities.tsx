@@ -154,7 +154,7 @@ const Opportunities = () => {
                 <h1 className="font-display text-3xl font-bold"> Ideas</h1>
               </div>
               <p className="text-primary-foreground/80 max-w-2xl">
-                Browse startup ideas looking for co-builders. Find opportunities that match your skills and natural
+                Browse startup ideas looking for Talented People. Find opportunities that match your skills and natural
                 role.
               </p>
             </div>
