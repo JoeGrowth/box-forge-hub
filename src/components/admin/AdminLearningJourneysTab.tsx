@@ -5,22 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  User, 
-  Eye,
-  Award,
-  Loader2,
-  ChevronDown,
-  ChevronUp
-} from "lucide-react";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { CheckCircle, XCircle, Clock, User, Eye, Award, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface LearningJourney {
   id: string;
@@ -132,13 +118,19 @@ export const AdminLearningJourneysTab = () => {
       if (updateError) throw updateError;
 
       // Create certification
-      const certType = 
-        journey.journey_type === "skill_ptc" ? "cobuilder_b4" :
-        journey.journey_type === "idea_ptc" ? "initiator_b4" : "scaling_complete";
-      
-      const certLabel = 
-        journey.journey_type === "skill_ptc" ? "Co Builder B4 Model Based" :
-        journey.journey_type === "idea_ptc" ? "Initiator B4 Model Based" : "Scaling Path Complete";
+      const certType =
+        journey.journey_type === "skill_ptc"
+          ? "cobuilder_b4"
+          : journey.journey_type === "idea_ptc"
+            ? "initiator_b4"
+            : "scaling_complete";
+
+      const certLabel =
+        journey.journey_type === "skill_ptc"
+          ? "Vaccinated Co Builder"
+          : journey.journey_type === "idea_ptc"
+            ? "Vaccinated Initiator"
+            : "Scaled";
 
       await supabase.from("user_certifications").upsert({
         user_id: journey.user_id,
@@ -148,10 +140,14 @@ export const AdminLearningJourneysTab = () => {
       });
 
       // Determine boost_type based on journey
-      const boostType = 
-        journey.journey_type === "skill_ptc" ? "boosted_co_builder" :
-        journey.journey_type === "idea_ptc" ? "boosted_initiator" : 
-        journey.journey_type === "scaling_path" ? "boosted_talent" : null;
+      const boostType =
+        journey.journey_type === "skill_ptc"
+          ? "boosted_co_builder"
+          : journey.journey_type === "idea_ptc"
+            ? "boosted_initiator"
+            : journey.journey_type === "scaling_path"
+              ? "boosted_talent"
+              : null;
 
       // Update user_status to boosted (only for skill_ptc and idea_ptc)
       // For scaling_path, update to scaled
@@ -247,13 +243,33 @@ export const AdminLearningJourneysTab = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending_approval":
-        return <Badge className="bg-amber-500 text-white"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
+        return (
+          <Badge className="bg-amber-500 text-white">
+            <Clock className="w-3 h-3 mr-1" />
+            Pending
+          </Badge>
+        );
       case "approved":
-        return <Badge className="bg-b4-teal text-white"><CheckCircle className="w-3 h-3 mr-1" />Approved</Badge>;
+        return (
+          <Badge className="bg-b4-teal text-white">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            Approved
+          </Badge>
+        );
       case "rejected":
-        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Rejected</Badge>;
+        return (
+          <Badge variant="destructive">
+            <XCircle className="w-3 h-3 mr-1" />
+            Rejected
+          </Badge>
+        );
       case "in_progress":
-        return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />In Progress</Badge>;
+        return (
+          <Badge variant="secondary">
+            <Clock className="w-3 h-3 mr-1" />
+            In Progress
+          </Badge>
+        );
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -294,9 +310,7 @@ export const AdminLearningJourneysTab = () => {
 
         {pendingJourneys.length === 0 ? (
           <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
-              No journeys pending approval
-            </CardContent>
+            <CardContent className="py-8 text-center text-muted-foreground">No journeys pending approval</CardContent>
           </Card>
         ) : (
           <div className="space-y-4">
@@ -310,9 +324,7 @@ export const AdminLearningJourneysTab = () => {
                         <CardTitle className="text-base">
                           {profiles[journey.user_id]?.full_name || "Unknown User"}
                         </CardTitle>
-                        <CardDescription>
-                          {getJourneyTypeLabel(journey.journey_type)}
-                        </CardDescription>
+                        <CardDescription>{getJourneyTypeLabel(journey.journey_type)}</CardDescription>
                       </div>
                     </div>
                     {getStatusBadge(journey.status)}
@@ -321,9 +333,7 @@ export const AdminLearningJourneysTab = () => {
                 <CardContent className="space-y-4">
                   <Collapsible
                     open={expandedJourney === journey.id}
-                    onOpenChange={() =>
-                      setExpandedJourney(expandedJourney === journey.id ? null : journey.id)
-                    }
+                    onOpenChange={() => setExpandedJourney(expandedJourney === journey.id ? null : journey.id)}
                   >
                     <CollapsibleTrigger asChild>
                       <Button variant="outline" className="w-full">
@@ -340,24 +350,19 @@ export const AdminLearningJourneysTab = () => {
                       {(phaseResponses[journey.id] || [])
                         .sort((a, b) => a.phase_number - b.phase_number)
                         .map((response) => (
-                          <div
-                            key={response.id}
-                            className="p-4 rounded-lg border bg-muted/50"
-                          >
+                          <div key={response.id} className="p-4 rounded-lg border bg-muted/50">
                             <h4 className="font-medium mb-2">
                               Phase {response.phase_number + 1}: {response.phase_name}
                             </h4>
-                            
+
                             {/* Questions/Responses */}
                             {Object.entries(response.responses || {}).map(([key, value]) => (
                               <div key={key} className="mb-2">
-                                <p className="text-sm text-muted-foreground capitalize">
-                                  {key.replace(/_/g, " ")}:
-                                </p>
+                                <p className="text-sm text-muted-foreground capitalize">{key.replace(/_/g, " ")}:</p>
                                 <p className="text-sm">{String(value)}</p>
                               </div>
                             ))}
-                            
+
                             {/* Completed Tasks */}
                             {(response.completed_tasks || []).length > 0 && (
                               <div className="mt-2">
@@ -424,12 +429,10 @@ export const AdminLearningJourneysTab = () => {
       {/* Other Journeys */}
       <div>
         <h3 className="font-semibold text-lg mb-4">All Journeys ({otherJourneys.length})</h3>
-        
+
         {otherJourneys.length === 0 ? (
           <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
-              No other journeys
-            </CardContent>
+            <CardContent className="py-8 text-center text-muted-foreground">No other journeys</CardContent>
           </Card>
         ) : (
           <div className="space-y-2">
@@ -440,9 +443,7 @@ export const AdminLearningJourneysTab = () => {
                     <div className="flex items-center gap-3">
                       <User className="w-5 h-5 text-muted-foreground" />
                       <div>
-                        <p className="font-medium">
-                          {profiles[journey.user_id]?.full_name || "Unknown User"}
-                        </p>
+                        <p className="font-medium">{profiles[journey.user_id]?.full_name || "Unknown User"}</p>
                         <p className="text-sm text-muted-foreground">
                           {getJourneyTypeLabel(journey.journey_type)} • Phase {journey.current_phase + 1}
                         </p>
