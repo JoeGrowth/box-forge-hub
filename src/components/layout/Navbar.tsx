@@ -30,7 +30,7 @@ const approvedUserLinks = [
   { name: "Home", path: "/" },
   { name: "Ideas", path: "/opportunities" },
   { name: "People", path: "/cobuilders" },
-  { name: "Boosting", path: "/journey" },
+  { name: "Boost", path: "/journey" },
   { name: "Mask", path: "/mask" },
   { name: "Boxes", path: "/boxes" },
 ];
@@ -40,7 +40,7 @@ const boostedUserLinks = [
   { name: "Home", path: "/" },
   { name: "Ideas", path: "/opportunities" },
   { name: "People", path: "/cobuilders" },
-  { name: "Boosting", path: "/journey" },
+  { name: "Boost", path: "/journey" },
   { name: "Scale", path: "/scale" },
   { name: "Boxes", path: "/boxes" },
 ];
@@ -116,7 +116,7 @@ export function Navbar() {
                 }`}
               >
                 {link.name}
-                {link.name === "Boosting" && user && journeysInProgress > 0 && (
+                {link.name === "Boost" && user && journeysInProgress > 0 && (
                   <Badge className="bg-b4-teal text-white text-xs px-1.5 py-0 min-w-[18px] h-[18px] flex items-center justify-center">
                     {journeysInProgress}
                   </Badge>
@@ -189,7 +189,7 @@ export function Navbar() {
                   onClick={() => setIsOpen(false)}
                 >
                   {link.name}
-                  {link.name === "Boosting" && user && journeysInProgress > 0 && (
+                  {link.name === "Boost" && user && journeysInProgress > 0 && (
                     <Badge className="bg-b4-teal text-white text-xs px-1.5 py-0 min-w-[18px] h-[18px] flex items-center justify-center">
                       {journeysInProgress}
                     </Badge>
