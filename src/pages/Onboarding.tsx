@@ -17,6 +17,7 @@ const Onboarding = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [showNotReady, setShowNotReady] = useState(false);
   const [showPendingHelp, setShowPendingHelp] = useState(false);
+  const [showFormDirectly, setShowFormDirectly] = useState(false);
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/auth", { replace: true });
@@ -92,13 +93,14 @@ const Onboarding = () => {
     return labels[currentStep] || "";
   };
 
-  const handleBackFromPendingHelp = () => {
+  const handleDefineNowFromPendingHelp = () => {
     setShowPendingHelp(false);
+    setShowFormDirectly(true);
     // User chose to define their NR now instead of getting help
   };
 
   const renderStep = () => {
-    if (showPendingHelp) return <PendingHelpStep onDefineNow={handleBackFromPendingHelp} />;
+    if (showPendingHelp) return <PendingHelpStep onDefineNow={handleDefineNowFromPendingHelp} />;
     if (showNotReady) return <NotReadyStep onNeedHelp={() => navigate("/")} />;
 
     if (currentStep === 1) {
@@ -110,8 +112,12 @@ const Onboarding = () => {
       case 2:
         return (
           <NaturalRoleDefinitionStep 
-            onNext={() => setCurrentStep(3)} 
-            onNeedHelp={() => setShowPendingHelp(true)} 
+            onNext={() => {
+              setShowFormDirectly(false);
+              setCurrentStep(3);
+            }} 
+            onNeedHelp={() => setShowPendingHelp(true)}
+            showFormDirectly={showFormDirectly}
           />
         );
       case 3:

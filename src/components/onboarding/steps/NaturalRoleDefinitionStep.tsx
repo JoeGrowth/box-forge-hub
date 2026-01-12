@@ -1,27 +1,32 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRight, HelpCircle, Check, MessageSquare } from "lucide-react";
+import { ArrowRight, ArrowLeft, HelpCircle, Check, MessageSquare } from "lucide-react";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useToast } from "@/hooks/use-toast";
 
 interface NaturalRoleDefinitionStepProps {
   onNext: () => void;
   onNeedHelp: () => void;
+  showFormDirectly?: boolean;
 }
 
-export const NaturalRoleDefinitionStep = ({ onNext, onNeedHelp }: NaturalRoleDefinitionStepProps) => {
+export const NaturalRoleDefinitionStep = ({ onNext, onNeedHelp, showFormDirectly = false }: NaturalRoleDefinitionStepProps) => {
   const { naturalRole, updateOnboardingState, updateNaturalRole, sendAdminNotification, sendMilestoneNotification } = useOnboarding();
   const { toast } = useToast();
-  // If user previously had assistance_requested, show them the description form right away
+  // If user previously had assistance_requested or showFormDirectly is true, show them the description form right away
   const [knowsNR, setKnowsNR] = useState<boolean | null>(
-    naturalRole?.status === "assistance_requested" ? true : null
+    showFormDirectly || naturalRole?.status === "assistance_requested" ? true : null
   );
   const [description, setDescription] = useState(naturalRole?.description || "");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleKnowsNR = async () => {
     setKnowsNR(true);
+  };
+
+  const handleBackToChoice = () => {
+    setKnowsNR(null);
   };
 
   const handleNeedsHelp = async () => {
@@ -162,16 +167,29 @@ export const NaturalRoleDefinitionStep = ({ onNext, onNeedHelp }: NaturalRoleDef
         {description.length}/500 characters
       </p>
 
-      <Button
-        variant="teal"
-        size="lg"
-        onClick={handleSubmitDescription}
-        disabled={!description.trim() || isLoading}
-        className="w-full"
-      >
-        {isLoading ? "Saving..." : "Continue to Assessment"}
-        <ArrowRight className="ml-2 h-4 w-4" />
-      </Button>
+      <div className="flex gap-3">
+        {!showFormDirectly && (
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={handleBackToChoice}
+            className="flex-shrink-0"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+          </Button>
+        )}
+        <Button
+          variant="teal"
+          size="lg"
+          onClick={handleSubmitDescription}
+          disabled={!description.trim() || isLoading}
+          className="flex-1"
+        >
+          {isLoading ? "Saving..." : "Continue to Assessment"}
+          <ArrowRight className="ml-2 h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 };
