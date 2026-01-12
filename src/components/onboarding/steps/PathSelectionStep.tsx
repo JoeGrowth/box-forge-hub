@@ -14,23 +14,23 @@ export const PathSelectionStep = ({ onNext }: PathSelectionStepProps) => {
 
   const handleContinue = async () => {
     if (!selectedRole) return;
-    
+
     setIsLoading(true);
     try {
-      await updateOnboardingState({ 
+      await updateOnboardingState({
         primary_role: selectedRole,
-        current_step: 2 
+        current_step: 2,
       });
-      
+
       // Send milestone notification
       const roleName = selectedRole === "entrepreneur" ? "Entrepreneur" : "Co-Builder";
       await sendMilestoneNotification(
         "onboarding_path_selected",
         "Path Selected! 🎯",
         `You've chosen the ${roleName} path. Let's continue your journey!`,
-        "/onboarding"
+        "/onboarding",
       );
-      
+
       onNext();
     } finally {
       setIsLoading(false);
@@ -42,9 +42,7 @@ export const PathSelectionStep = ({ onNext }: PathSelectionStepProps) => {
       <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
         How do you want to participate?
       </h1>
-      <p className="text-muted-foreground text-lg mb-8">
-        Choose your path at Box4Solutions
-      </p>
+      <p className="text-muted-foreground text-lg mb-8">Choose your path at Box4Solutions</p>
 
       <div className="grid gap-4 mb-8">
         <button
@@ -56,15 +54,15 @@ export const PathSelectionStep = ({ onNext }: PathSelectionStepProps) => {
               : "border-border hover:border-muted-foreground/30 hover:bg-muted/30"
           }`}
         >
-          <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-            selectedRole === "entrepreneur" 
-              ? "bg-b4-teal text-primary-foreground" 
-              : "bg-muted text-muted-foreground"
-          }`}>
+          <div
+            className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+              selectedRole === "entrepreneur" ? "bg-b4-teal text-primary-foreground" : "bg-muted text-muted-foreground"
+            }`}
+          >
             <Lightbulb className="w-6 h-6" />
           </div>
           <div>
-            <div className="font-display font-semibold text-lg text-foreground">Entrepreneur</div>
+            <div className="font-display font-semibold text-lg text-foreground">Initiator</div>
             <p className="text-muted-foreground text-sm mt-1">
               I have a startup idea and want to build my venture with equity-based co-builders
             </p>
@@ -80,11 +78,11 @@ export const PathSelectionStep = ({ onNext }: PathSelectionStepProps) => {
               : "border-border hover:border-muted-foreground/30 hover:bg-muted/30"
           }`}
         >
-          <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-            selectedRole === "cobuilder" 
-              ? "bg-b4-teal text-primary-foreground" 
-              : "bg-muted text-muted-foreground"
-          }`}>
+          <div
+            className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+              selectedRole === "cobuilder" ? "bg-b4-teal text-primary-foreground" : "bg-muted text-muted-foreground"
+            }`}
+          >
             <Users className="w-6 h-6" />
           </div>
           <div>
