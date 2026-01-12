@@ -11,10 +11,13 @@ interface NaturalRoleDefinitionStepProps {
 }
 
 export const NaturalRoleDefinitionStep = ({ onNext, onNeedHelp }: NaturalRoleDefinitionStepProps) => {
-  const { updateOnboardingState, updateNaturalRole, sendAdminNotification, sendMilestoneNotification } = useOnboarding();
+  const { naturalRole, updateOnboardingState, updateNaturalRole, sendAdminNotification, sendMilestoneNotification } = useOnboarding();
   const { toast } = useToast();
-  const [knowsNR, setKnowsNR] = useState<boolean | null>(null);
-  const [description, setDescription] = useState("");
+  // If user previously had assistance_requested, show them the description form right away
+  const [knowsNR, setKnowsNR] = useState<boolean | null>(
+    naturalRole?.status === "assistance_requested" ? true : null
+  );
+  const [description, setDescription] = useState(naturalRole?.description || "");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleKnowsNR = async () => {

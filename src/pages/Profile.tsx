@@ -501,7 +501,7 @@ const Profile = () => {
       return { label: "Application Rejected", color: "text-b4-coral", icon: AlertCircle };
     }
     if (naturalRole?.status === "assistance_requested") {
-      return { label: "Pending Assistance", color: "text-amber-500", icon: AlertCircle };
+      return { label: "Support Needed", color: "text-b4-coral", icon: MessageSquare };
     }
     return { label: "In Progress", color: "text-muted-foreground", icon: AlertCircle };
   };
@@ -947,8 +947,8 @@ const Profile = () => {
               </div>
             )}
 
-            {/* Pending Approval Status */}
-            {onboardingState?.journey_status === "pending_approval" && (
+            {/* Pending Approval Status - but NOT for support_needed users */}
+            {onboardingState?.journey_status === "pending_approval" && naturalRole?.status !== "assistance_requested" && (
               <div className="bg-amber-500/10 rounded-3xl border border-amber-500/20 p-8 mb-8">
                 <div className="flex items-center gap-3 mb-2">
                   <Clock className="w-6 h-6 text-amber-500" />
@@ -961,8 +961,26 @@ const Profile = () => {
               </div>
             )}
 
-            {/* Continue Onboarding CTA */}
-            {needsOnboarding && (
+            {/* Support Needed - For users who requested help with Natural Role */}
+            {naturalRole?.status === "assistance_requested" && (
+              <div className="bg-b4-coral/10 rounded-3xl border border-b4-coral/20 p-8 mb-8">
+                <div className="flex items-center gap-3 mb-2">
+                  <MessageSquare className="w-6 h-6 text-b4-coral" />
+                  <h2 className="font-display text-xl font-bold text-foreground">Support Needed</h2>
+                </div>
+                <p className="text-muted-foreground mb-4">
+                  You requested help defining your Natural Role. Our team will reach out to assist you. 
+                  Once you define your Natural Role, you can continue your onboarding journey and submit for approval.
+                </p>
+                <Button variant="teal" onClick={() => navigate("/onboarding")}>
+                  Define My Natural Role
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </Button>
+              </div>
+            )}
+
+            {/* Continue Onboarding CTA - but not for support_needed users (they have their own section) */}
+            {needsOnboarding && naturalRole?.status !== "assistance_requested" && (
               <div className="bg-b4-teal/10 rounded-3xl border border-b4-teal/20 p-8 mb-8">
                 <h2 className="font-display text-xl font-bold text-foreground mb-2">Complete Your Onboarding</h2>
                 <p className="text-muted-foreground mb-4">
