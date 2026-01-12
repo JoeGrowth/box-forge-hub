@@ -25,22 +25,32 @@ const Onboarding = () => {
 
   useEffect(() => {
     if (onboardingState) {
+      // If user has assistance_requested status but came back to define their NR,
+      // start them at step 2 (NR definition)
+      if (naturalRole?.status === "assistance_requested" && onboardingState.onboarding_completed) {
+        setCurrentStep(2);
+        return;
+      }
+      
       setCurrentStep(onboardingState.current_step);
-      // Redirect if truly completed (step 8 for both paths)
-      if (onboardingState.current_step >= 8 && onboardingState.onboarding_completed) {
+      // Redirect if truly completed (step 8 for both paths) and not needing support
+      if (onboardingState.current_step >= 8 && 
+          onboardingState.onboarding_completed && 
+          naturalRole?.status !== "assistance_requested") {
         navigate("/", { replace: true });
       }
     }
-  }, [onboardingState, navigate]);
+  }, [onboardingState, naturalRole, navigate]);
 
   useEffect(() => {
-    if (naturalRole?.status === "assistance_requested") {
+    // Only show pending help if they just requested it (not if they're coming back)
+    if (naturalRole?.status === "assistance_requested" && !onboardingState?.onboarding_completed) {
       setShowPendingHelp(true);
     }
     if (naturalRole?.promise_check === false && currentStep >= 4) {
       setShowNotReady(true);
     }
-  }, [naturalRole, currentStep]);
+  }, [naturalRole, currentStep, onboardingState]);
 
   if (authLoading || onboardingLoading) {
     return (
@@ -82,8 +92,13 @@ const Onboarding = () => {
     return labels[currentStep] || "";
   };
 
+  const handleBackFromPendingHelp = () => {
+    setShowPendingHelp(false);
+    // User chose to define their NR now instead of getting help
+  };
+
   const renderStep = () => {
-    if (showPendingHelp) return <PendingHelpStep />;
+    if (showPendingHelp) return <PendingHelpStep onDefineNow={handleBackFromPendingHelp} />;
     if (showNotReady) return <NotReadyStep onNeedHelp={() => navigate("/")} />;
 
     if (currentStep === 1) {

@@ -33,7 +33,8 @@ import {
   Zap,
   Target,
   Lock,
-  TrendingUp
+  TrendingUp,
+  MessageSquare
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -323,6 +324,30 @@ const Mask = () => {
         <section className="py-12">
           <div className="container max-w-5xl mx-auto px-4">
 
+          {/* Support Needed Banner */}
+          {naturalRole?.status === "assistance_requested" && (
+            <Card className="mb-8 border-b4-coral/20 bg-b4-coral/5">
+              <CardContent className="py-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-b4-coral/10 flex items-center justify-center flex-shrink-0">
+                    <AlertCircle className="w-6 h-6 text-b4-coral" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-display font-semibold text-foreground mb-1">Support Needed</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      You requested help defining your Natural Role. Once you define it, you can continue your 
+                      onboarding journey and submit for approval.
+                    </p>
+                    <Button variant="teal" onClick={() => navigate("/onboarding")}>
+                      Define My Natural Role
+                      <ArrowRight className="ml-2 w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Section Toggle */}
           <div className="flex justify-center mb-8">
             <div className="inline-flex rounded-xl bg-muted/50 p-1 border border-border/50">
@@ -500,9 +525,14 @@ const Mask = () => {
                       <CheckCircle className="w-3 h-3 mr-1" /> Approved
                     </Badge>
                   )}
-                  {onboardingState?.journey_status === "pending_approval" && (
+                  {onboardingState?.journey_status === "pending_approval" && naturalRole?.status !== "assistance_requested" && (
                     <Badge className="w-fit" variant="secondary">
                       <Clock className="w-3 h-3 mr-1" /> Pending Approval
+                    </Badge>
+                  )}
+                  {naturalRole?.status === "assistance_requested" && (
+                    <Badge className="w-fit bg-b4-coral/10 text-b4-coral border-b4-coral/20">
+                      <AlertCircle className="w-3 h-3 mr-1" /> Support Needed
                     </Badge>
                   )}
                 </CardHeader>
