@@ -96,7 +96,11 @@ const Onboarding = () => {
   const handleDefineNowFromPendingHelp = () => {
     setShowPendingHelp(false);
     setShowFormDirectly(true);
-    // User chose to define their NR now instead of getting help
+  };
+
+  const handleBackToHelpScreen = () => {
+    setShowFormDirectly(false);
+    setShowPendingHelp(true);
   };
 
   const renderStep = () => {
@@ -118,6 +122,7 @@ const Onboarding = () => {
             }} 
             onNeedHelp={() => setShowPendingHelp(true)}
             showFormDirectly={showFormDirectly}
+            onBackToHelp={handleBackToHelpScreen}
           />
         );
       case 3:
