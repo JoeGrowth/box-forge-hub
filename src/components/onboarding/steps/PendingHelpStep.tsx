@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { MessageCircle, ArrowRight, HelpCircle, Edit2 } from "lucide-react";
+import { MessageCircle, ArrowRight, ArrowLeft, HelpCircle, Edit2 } from "lucide-react";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -7,9 +7,10 @@ import { useToast } from "@/hooks/use-toast";
 
 interface PendingHelpStepProps {
   onDefineNow?: () => void;
+  onBack?: () => void;
 }
 
-export const PendingHelpStep = ({ onDefineNow }: PendingHelpStepProps) => {
+export const PendingHelpStep = ({ onDefineNow, onBack }: PendingHelpStepProps) => {
   const { updateOnboardingState, updateNaturalRole } = useOnboarding();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -49,6 +50,25 @@ export const PendingHelpStep = ({ onDefineNow }: PendingHelpStepProps) => {
       await updateNaturalRole({ status: "pending" });
       if (onDefineNow) {
         onDefineNow();
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBack = async () => {
+    setIsLoading(true);
+    try {
+      // Reset the status so they see the choice screen again
+      await updateNaturalRole({ status: "pending" });
+      if (onBack) {
+        onBack();
       }
     } catch (error) {
       toast({
@@ -110,6 +130,19 @@ export const PendingHelpStep = ({ onDefineNow }: PendingHelpStepProps) => {
           >
             <Edit2 className="mr-2 h-4 w-4" />
             I'm ready to define it now
+          </Button>
+        )}
+
+        {onBack && (
+          <Button
+            variant="ghost"
+            size="lg"
+            onClick={handleBack}
+            disabled={isLoading}
+            className="w-full"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
           </Button>
         )}
       </div>

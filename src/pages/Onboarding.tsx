@@ -103,8 +103,12 @@ const Onboarding = () => {
     setShowPendingHelp(true);
   };
 
+  const handleBackToChoiceScreen = () => {
+    setShowPendingHelp(false);
+  };
+
   const renderStep = () => {
-    if (showPendingHelp) return <PendingHelpStep onDefineNow={handleDefineNowFromPendingHelp} />;
+    if (showPendingHelp) return <PendingHelpStep onDefineNow={handleDefineNowFromPendingHelp} onBack={handleBackToChoiceScreen} />;
     if (showNotReady) return <NotReadyStep onNeedHelp={() => navigate("/")} />;
 
     if (currentStep === 1) {
