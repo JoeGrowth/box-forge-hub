@@ -17,8 +17,12 @@ export const PathSelectionStep = ({ onNext }: PathSelectionStepProps) => {
 
     setIsLoading(true);
     try {
+      // Set potential_role based on selection
+      const potentialRole = selectedRole === "entrepreneur" ? "potential_entrepreneur" : "potential_cobuilder";
+      
       await updateOnboardingState({
         primary_role: selectedRole,
+        potential_role: potentialRole,
         current_step: 2,
       });
 
