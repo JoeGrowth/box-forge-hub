@@ -19,7 +19,6 @@ const guestNavLinks = [
 
 // Base links for all logged-in users (applied status)
 const appliedUserLinks = [
-  { name: "Home", path: "/" },
   { name: "Ideas", path: "/opportunities" },
   { name: "People", path: "/cobuilders" },
   { name: "Boxes", path: "/boxes" },
@@ -27,9 +26,9 @@ const appliedUserLinks = [
 
 // Links for approved users (includes Boosting)
 const approvedUserLinks = [
-  { name: "Home", path: "/" },
   { name: "Ideas", path: "/opportunities" },
   { name: "People", path: "/cobuilders" },
+  { name: "Resume", path: "/resume" },
   { name: "Boost", path: "/journey" },
   { name: "Mask", path: "/mask" },
   { name: "Boxes", path: "/boxes" },
@@ -37,9 +36,9 @@ const approvedUserLinks = [
 
 // Links for boosted/scaled users (includes Scale)
 const boostedUserLinks = [
-  { name: "Home", path: "/" },
   { name: "Ideas", path: "/opportunities" },
   { name: "People", path: "/cobuilders" },
+  { name: "Resume", path: "/resume" },
   { name: "Boost", path: "/journey" },
   { name: "Scale", path: "/scale" },
   { name: "Boxes", path: "/boxes" },
