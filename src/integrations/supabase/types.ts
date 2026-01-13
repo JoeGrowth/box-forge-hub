@@ -454,6 +454,7 @@ export type Database = {
           onboarding_completed: boolean | null
           potential_role: string | null
           primary_role: string | null
+          retry_count: number | null
           scale_type: string | null
           updated_at: string | null
           user_id: string
@@ -469,6 +470,7 @@ export type Database = {
           onboarding_completed?: boolean | null
           potential_role?: string | null
           primary_role?: string | null
+          retry_count?: number | null
           scale_type?: string | null
           updated_at?: string | null
           user_id: string
@@ -484,6 +486,7 @@ export type Database = {
           onboarding_completed?: boolean | null
           potential_role?: string | null
           primary_role?: string | null
+          retry_count?: number | null
           scale_type?: string | null
           updated_at?: string | null
           user_id?: string

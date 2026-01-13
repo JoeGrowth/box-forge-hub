@@ -10,10 +10,12 @@ export interface OnboardingState {
   id?: string;
   user_id: string;
   primary_role: PrimaryRole | null;
+  potential_role: string | null;
   onboarding_completed: boolean;
   current_step: number;
   journey_status: 'in_progress' | 'pending_approval' | 'approved' | 'rejected' | 'entrepreneur_approved' | 'entrepreneur_in_progress';
   entrepreneur_step?: number;
+  retry_count?: number;
 }
 
 export interface NaturalRole {

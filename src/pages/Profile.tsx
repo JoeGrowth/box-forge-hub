@@ -82,6 +82,7 @@ const Profile = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [userIdeas, setUserIdeas] = useState<StartupIdea[]>([]);
   const [requestingReview, setRequestingReview] = useState(false);
+  const [isRetryingOnboarding, setIsRetryingOnboarding] = useState(false);
 
   // Skills state
   const [skills, setSkills] = useState("");
@@ -191,6 +192,76 @@ const Profile = () => {
 
   const handleEntrepreneurStepComplete = async (step: number) => {
     await refetch();
+  };
+
+  const handleRetryOnboarding = async () => {
+    if (!user || !onboardingState) return;
+    
+    const currentRetryCount = onboardingState.retry_count || 0;
+    if (currentRetryCount >= 3) {
+      toast({
+        title: "Retry Limit Reached",
+        description: "You have used all available retry attempts.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsRetryingOnboarding(true);
+    try {
+      // Reset onboarding state but increment retry count
+      const { error: stateError } = await supabase
+        .from("onboarding_state")
+        .update({
+          onboarding_completed: false,
+          current_step: 1,
+          journey_status: 'in_progress',
+          retry_count: currentRetryCount + 1,
+        })
+        .eq("user_id", user.id);
+
+      if (stateError) throw stateError;
+
+      // Reset natural role
+      const { error: nrError } = await supabase
+        .from("natural_roles")
+        .update({
+          description: null,
+          status: 'pending',
+          promise_check: null,
+          practice_check: null,
+          practice_entities: null,
+          practice_case_studies: null,
+          practice_needs_help: false,
+          training_check: null,
+          training_count: null,
+          training_contexts: null,
+          training_needs_help: false,
+          consulting_check: null,
+          consulting_with_whom: null,
+          consulting_case_studies: null,
+          is_ready: false,
+          wants_to_scale: null,
+        })
+        .eq("user_id", user.id);
+
+      if (nrError) throw nrError;
+
+      toast({
+        title: "Onboarding Reset",
+        description: "You can now redo your onboarding journey.",
+      });
+
+      navigate("/onboarding");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to reset onboarding",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRetryingOnboarding(false);
+    }
   };
 
   const handleSave = async () => {
@@ -463,11 +534,15 @@ const Profile = () => {
   const getRoleLabel = () => {
     // entrepreneur_approved = Co-Builder with approved idea (Initiator), not yet full entrepreneur
     if (onboardingState?.journey_status === "entrepreneur_approved") return "Co-Builder & Initiator";
-    if (onboardingState?.primary_role === "entrepreneur") return "Entrepreneur";
-    if (onboardingState?.primary_role === "cobuilder") {
-      if (onboardingState.journey_status === "approved") return "Approved Co-Builder";
-      return "Potential Co-Builder";
+    if (onboardingState?.journey_status === "approved") {
+      if (onboardingState?.primary_role === "entrepreneur") return "Approved Initiator";
+      return "Approved Co-Builder";
     }
+    // Show potential role label based on path selection
+    if (onboardingState?.potential_role === "potential_entrepreneur") return "Potential Initiator";
+    if (onboardingState?.potential_role === "potential_cobuilder") return "Potential Co-Builder";
+    if (onboardingState?.primary_role === "entrepreneur") return "Potential Initiator";
+    if (onboardingState?.primary_role === "cobuilder") return "Potential Co-Builder";
     return "Member";
   };
 
@@ -498,7 +573,13 @@ const Profile = () => {
       return { label: "Pending Admin Approval", color: "text-amber-500", icon: Clock };
     }
     if (onboardingState.journey_status === "rejected") {
-      return { label: "Application Rejected", color: "text-b4-coral", icon: AlertCircle };
+      const retryCount = (onboardingState as any).retry_count || 0;
+      const retriesLeft = 3 - retryCount;
+      return { 
+        label: retriesLeft > 0 ? `Application Rejected (${retriesLeft} retries left)` : "Application Rejected (No retries left)", 
+        color: "text-b4-coral", 
+        icon: AlertCircle 
+      };
     }
     if (naturalRole?.status === "assistance_requested") {
       return { label: "Support Needed", color: "text-b4-coral", icon: MessageSquare };
@@ -629,6 +710,61 @@ const Profile = () => {
                 )}
               </div>
             </div>
+
+            {/* Rejected Application - Retry Card */}
+            {onboardingState?.journey_status === "rejected" && (
+              <div className="bg-gradient-to-br from-b4-coral/10 to-red-500/5 rounded-3xl border border-b4-coral/20 p-8 mb-8">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-b4-coral/10 flex items-center justify-center flex-shrink-0">
+                    <AlertCircle className="w-6 h-6 text-b4-coral" />
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="font-display text-xl font-bold text-foreground mb-2">Application Rejected</h2>
+                    <p className="text-muted-foreground mb-4">
+                      Your previous application was not approved. You can redo your onboarding journey to submit a new application.
+                    </p>
+                    
+                    {(() => {
+                      const retryCount = onboardingState?.retry_count || 0;
+                      const retriesLeft = 3 - retryCount;
+                      
+                      if (retriesLeft > 0) {
+                        return (
+                          <div className="space-y-3">
+                            <p className="text-sm text-muted-foreground">
+                              <strong>{retriesLeft}</strong> retry attempt{retriesLeft !== 1 ? 's' : ''} remaining
+                            </p>
+                            <Button 
+                              variant="teal" 
+                              onClick={handleRetryOnboarding}
+                              disabled={isRetryingOnboarding}
+                            >
+                              {isRetryingOnboarding ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                  Resetting...
+                                </>
+                              ) : (
+                                <>
+                                  <ArrowRight className="w-4 h-4 mr-2" />
+                                  Redo Onboarding Journey
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        );
+                      } else {
+                        return (
+                          <p className="text-sm text-b4-coral font-medium">
+                            You have used all 3 retry attempts. Please contact support for further assistance.
+                          </p>
+                        );
+                      }
+                    })()}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Part 1: Natural Role Section */}
             {onboardingState?.primary_role === "cobuilder" && naturalRole && (
