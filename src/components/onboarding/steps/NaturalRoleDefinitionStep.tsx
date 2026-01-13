@@ -9,9 +9,10 @@ interface NaturalRoleDefinitionStepProps {
   onNext: () => void;
   onNeedHelp: () => void;
   showFormDirectly?: boolean;
+  onBackToHelp?: () => void;
 }
 
-export const NaturalRoleDefinitionStep = ({ onNext, onNeedHelp, showFormDirectly = false }: NaturalRoleDefinitionStepProps) => {
+export const NaturalRoleDefinitionStep = ({ onNext, onNeedHelp, showFormDirectly = false, onBackToHelp }: NaturalRoleDefinitionStepProps) => {
   const { naturalRole, updateOnboardingState, updateNaturalRole, sendAdminNotification, sendMilestoneNotification } = useOnboarding();
   const { toast } = useToast();
   // If user previously had assistance_requested or showFormDirectly is true, show them the description form right away
@@ -26,7 +27,12 @@ export const NaturalRoleDefinitionStep = ({ onNext, onNeedHelp, showFormDirectly
   };
 
   const handleBackToChoice = () => {
-    setKnowsNR(null);
+    // If we came from the help screen, go back to help screen
+    if (showFormDirectly && onBackToHelp) {
+      onBackToHelp();
+    } else {
+      setKnowsNR(null);
+    }
   };
 
   const handleNeedsHelp = async () => {
@@ -168,17 +174,15 @@ export const NaturalRoleDefinitionStep = ({ onNext, onNeedHelp, showFormDirectly
       </p>
 
       <div className="flex gap-3">
-        {!showFormDirectly && (
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={handleBackToChoice}
-            className="flex-shrink-0"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-        )}
+        <Button
+          variant="outline"
+          size="lg"
+          onClick={handleBackToChoice}
+          className="flex-shrink-0"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back
+        </Button>
         <Button
           variant="teal"
           size="lg"
