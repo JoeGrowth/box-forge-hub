@@ -432,7 +432,7 @@ const Scale = () => {
                   }`}
                 >
                   <Sparkles className="w-4 h-4 inline mr-2" />
-                  Scale Your NR 2
+                  Scale Your Personal Promise
                 </button>
                 <button
                   onClick={() => setActiveSection("ideas")}
