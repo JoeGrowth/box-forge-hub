@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +44,7 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
   const [isSearching, setIsSearching] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [loadingTeam, setLoadingTeam] = useState(true);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch existing team members
   useEffect(() => {
@@ -92,9 +93,10 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
   }, [startupId]);
 
   // Search for co-builders
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) {
+  const performSearch = useCallback(async (query: string) => {
+    if (!query.trim()) {
       setSearchResults([]);
+      setIsSearching(false);
       return;
     }
 
@@ -105,7 +107,7 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select("id, user_id, full_name, avatar_url, primary_skills")
-        .ilike("full_name", `%${searchQuery}%`)
+        .ilike("full_name", `%${query}%`)
         .limit(20);
 
       if (profilesError) {
@@ -147,7 +149,30 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
     } finally {
       setIsSearching(false);
     }
-  };
+  }, [teamMembers, currentUserId]);
+
+  // Debounced search on input change
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    searchTimeoutRef.current = setTimeout(() => {
+      performSearch(searchQuery);
+    }, 300);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchQuery, performSearch]);
 
   // Add member to team
   const handleAddMember = async (cobuilder: CoBuilder) => {
@@ -294,20 +319,17 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
         </div>
 
         {/* Search Input */}
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search co-builders by name..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              className="pl-10"
-            />
-          </div>
-          <Button onClick={handleSearch} disabled={isSearching}>
-            {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : "Search"}
-          </Button>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search co-builders by name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 pr-10"
+          />
+          {isSearching && (
+            <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
+          )}
         </div>
 
         {/* Search Results */}
