@@ -38,6 +38,7 @@ import {
   Pencil,
 } from "lucide-react";
 import { ScaleStepDialog } from "@/components/scale/ScaleStepDialog";
+import { IdeaDevelopDialog } from "@/components/idea/IdeaDevelopDialog";
 import { format } from "date-fns";
 
 interface AnswerVersion {
@@ -132,6 +133,8 @@ const Scale = () => {
   const [stepDialogOpen, setStepDialogOpen] = useState(false);
   const [activeStep, setActiveStep] = useState<1 | 2 | 3>(1);
   const [stepCompletionStatus, setStepCompletionStatus] = useState<Record<number, boolean>>({});
+  const [developDialogOpen, setDevelopDialogOpen] = useState(false);
+  const [selectedIdea, setSelectedIdea] = useState<{ id: string; title: string } | null>(null);
   const [editData, setEditData] = useState({
     description: "",
     practice_entities: "",
@@ -686,9 +689,23 @@ const Scale = () => {
                                 </span>
                               </div>
                             </div>
-                            <Button variant="outline" size="sm" asChild>
-                              <Link to={`/opportunities/${idea.id}`}>View</Link>
-                            </Button>
+                            <div className="flex gap-2 shrink-0">
+                              <Button variant="outline" size="sm" asChild>
+                                <Link to={`/opportunities/${idea.id}`}>View</Link>
+                              </Button>
+                              {idea.review_status === "approved" && (
+                                <Button
+                                  variant="teal"
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedIdea({ id: idea.id, title: idea.title });
+                                    setDevelopDialogOpen(true);
+                                  }}
+                                >
+                                  Develop
+                                </Button>
+                              )}
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
@@ -707,6 +724,14 @@ const Scale = () => {
         stepNumber={activeStep}
         onComplete={() => fetchStepCompletionStatus()}
       />
+      {selectedIdea && (
+        <IdeaDevelopDialog
+          open={developDialogOpen}
+          onOpenChange={setDevelopDialogOpen}
+          ideaId={selectedIdea.id}
+          ideaTitle={selectedIdea.title}
+        />
+      )}
     </div>
   );
 };
