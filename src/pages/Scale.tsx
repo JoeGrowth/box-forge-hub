@@ -443,7 +443,7 @@ const Scale = () => {
                   }`}
                 >
                   <Lightbulb className="w-4 h-4 inline mr-2" />
-                  Your Ideas
+                  Your Ideas/////
                   {userIdeas.length > 0 && (
                     <Badge className="ml-2 bg-b4-teal text-white text-xs">{userIdeas.length}</Badge>
                   )}
