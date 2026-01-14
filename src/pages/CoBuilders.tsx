@@ -337,7 +337,7 @@ const CoBuilders = () => {
                               )}
                             </div>
                             <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                              <span className="text-sm text-muted-foreground">Approved Co-Builder</span>
+                              <span className="text-sm text-muted-foreground">Approved - Ready to boost</span>
                               {cobuilder.certifications.map((cert) => (
                                 <Badge
                                   key={cert.id}
