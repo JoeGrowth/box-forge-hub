@@ -102,11 +102,7 @@ const Opportunities = () => {
   );
 
   const handleAddIdea = () => {
-    if (hasInitiatorCertification) {
-      navigate("/create-idea");
-    } else {
-      window.open("https://box4solutions.com/create-idea", "_blank");
-    }
+    window.open("https://box4solutions.com/create-idea", "_blank");
   };
 
   const filteredIdeas = ideas.filter((idea) => {
@@ -181,19 +177,9 @@ const Opportunities = () => {
           {/* Header */}
           <section className="py-12 gradient-hero text-primary-foreground">
             <div className="container mx-auto px-4">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-3">
-                  <Users className="w-8 h-8" />
-                  <h1 className="font-display text-3xl font-bold">Ideas</h1>
-                </div>
-                <Button 
-                  variant="secondary" 
-                  className="bg-white/20 hover:bg-white/30 text-white border-0"
-                  onClick={handleAddIdea}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Idea
-                </Button>
+              <div className="flex items-center gap-3 mb-2">
+                <Users className="w-8 h-8" />
+                <h1 className="font-display text-3xl font-bold">Ideas</h1>
               </div>
               <p className="text-primary-foreground/80 max-w-2xl">
                 Browse startup ideas looking for Talented People. Find opportunities that match your skills and natural
@@ -224,6 +210,10 @@ const Opportunities = () => {
                     className="pl-10 w-48"
                   />
                 </div>
+                <Button variant="teal" onClick={handleAddIdea}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Idea
+                </Button>
               </div>
             </div>
           </section>
