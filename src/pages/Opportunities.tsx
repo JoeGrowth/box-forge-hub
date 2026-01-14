@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Users, Briefcase, MapPin, ArrowRight, Filter, Rocket, Loader2 } from "lucide-react";
+import { Search, Users, Briefcase, MapPin, ArrowRight, Filter, Rocket, Loader2, Plus } from "lucide-react";
 import { DirectorySkeletonGrid } from "@/components/ui/skeleton-card";
 
 interface StartupIdea {
@@ -24,6 +24,11 @@ interface StartupIdea {
   };
 }
 
+interface Certification {
+  id: string;
+  certification_type: string;
+}
+
 const Opportunities = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
@@ -32,6 +37,7 @@ const Opportunities = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [sectorFilter, setSectorFilter] = useState("");
+  const [certifications, setCertifications] = useState<Certification[]>([]);
 
   // Derive approval status from cached onboarding state
   const isApproved =
@@ -70,12 +76,38 @@ const Opportunities = () => {
       setLoading(false);
     };
 
+    const fetchCertifications = async () => {
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from("user_certifications")
+        .select("id, certification_type")
+        .eq("user_id", user.id);
+      
+      if (data) {
+        setCertifications(data);
+      }
+    };
+
     if (user && isApproved) {
       fetchIdeas();
+      fetchCertifications();
     } else if (!onboardingLoading) {
       setLoading(false);
     }
   }, [user, isApproved, onboardingLoading]);
+
+  const hasInitiatorCertification = certifications.some(
+    (cert) => cert.certification_type === "initiator_b4"
+  );
+
+  const handleAddIdea = () => {
+    if (hasInitiatorCertification) {
+      navigate("/create-idea");
+    } else {
+      window.open("https://box4solutions.com/create-idea", "_blank");
+    }
+  };
 
   const filteredIdeas = ideas.filter((idea) => {
     const matchesSearch =
@@ -149,9 +181,19 @@ const Opportunities = () => {
           {/* Header */}
           <section className="py-12 gradient-hero text-primary-foreground">
             <div className="container mx-auto px-4">
-              <div className="flex items-center gap-3 mb-2">
-                <Users className="w-8 h-8" />
-                <h1 className="font-display text-3xl font-bold"> Ideas</h1>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <Users className="w-8 h-8" />
+                  <h1 className="font-display text-3xl font-bold">Ideas</h1>
+                </div>
+                <Button 
+                  variant="secondary" 
+                  className="bg-white/20 hover:bg-white/30 text-white border-0"
+                  onClick={handleAddIdea}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Idea
+                </Button>
               </div>
               <p className="text-primary-foreground/80 max-w-2xl">
                 Browse startup ideas looking for Talented People. Find opportunities that match your skills and natural
