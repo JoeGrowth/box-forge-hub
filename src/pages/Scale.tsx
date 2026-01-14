@@ -35,7 +35,9 @@ import {
   Lightbulb,
   Lock,
   TrendingUp,
+  Pencil,
 } from "lucide-react";
+import { ScaleStepDialog } from "@/components/scale/ScaleStepDialog";
 import { format } from "date-fns";
 
 interface AnswerVersion {
@@ -127,6 +129,9 @@ const Scale = () => {
   const [activeSection, setActiveSection] = useState<"scale" | "ideas">("scale");
   const [userIdeas, setUserIdeas] = useState<StartupIdea[]>([]);
   const [loadingIdeas, setLoadingIdeas] = useState(true);
+  const [stepDialogOpen, setStepDialogOpen] = useState(false);
+  const [activeStep, setActiveStep] = useState<1 | 2 | 3>(1);
+  const [stepCompletionStatus, setStepCompletionStatus] = useState<Record<number, boolean>>({});
   const [editData, setEditData] = useState({
     description: "",
     practice_entities: "",
@@ -203,6 +208,44 @@ const Scale = () => {
 
     fetchUserIdeas();
   }, [user]);
+
+  // Fetch step completion status
+  const fetchStepCompletionStatus = async () => {
+    if (!user) return;
+
+    const { data: journey } = await supabase
+      .from("learning_journeys")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("journey_type", "scaling_path")
+      .maybeSingle();
+
+    if (!journey) return;
+
+    const { data: responses } = await supabase
+      .from("journey_phase_responses")
+      .select("phase_number, is_completed")
+      .eq("journey_id", journey.id);
+
+    if (!responses) return;
+
+    const completedPhases = responses.filter(r => r.is_completed).map(r => r.phase_number);
+    
+    setStepCompletionStatus({
+      1: completedPhases.includes(1),
+      2: completedPhases.includes(2) && completedPhases.includes(3) && completedPhases.includes(4),
+      3: completedPhases.includes(5),
+    });
+  };
+
+  useEffect(() => {
+    fetchStepCompletionStatus();
+  }, [user]);
+
+  const handleOpenStepDialog = (stepNum: 1 | 2 | 3) => {
+    setActiveStep(stepNum);
+    setStepDialogOpen(true);
+  };
 
   const handleSave = async () => {
     if (!user || !naturalRole) return;
@@ -513,16 +556,33 @@ const Scale = () => {
                                 <step.icon className="w-6 h-6 text-foreground" />
                               </div>
                               <div className="flex-1 space-y-3">
-                                <div>
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                      Step {step.step}
-                                    </span>
-                                    <Badge variant="outline" className="text-xs">
-                                      {step.subtitle}
-                                    </Badge>
+                                <div className="flex items-start justify-between">
+                                  <div>
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                        Step {step.step}
+                                      </span>
+                                      <Badge variant="outline" className="text-xs">
+                                        {step.subtitle}
+                                      </Badge>
+                                    </div>
+                                    <h3 className="text-lg font-display font-bold text-foreground">{step.title}</h3>
                                   </div>
-                                  <h3 className="text-lg font-display font-bold text-foreground">{step.title}</h3>
+                                  <Button
+                                    variant={stepCompletionStatus[step.step] ? "outline" : "teal"}
+                                    size="sm"
+                                    onClick={() => handleOpenStepDialog(step.step as 1 | 2 | 3)}
+                                    className="shrink-0"
+                                  >
+                                    {stepCompletionStatus[step.step] ? (
+                                      <>
+                                        <Pencil className="w-4 h-4 mr-1" />
+                                        Done
+                                      </>
+                                    ) : (
+                                      "Fill it"
+                                    )}
+                                  </Button>
                                 </div>
                                 <p className="text-sm text-muted-foreground">{step.description}</p>
                                 <ul className="space-y-2">
@@ -641,6 +701,12 @@ const Scale = () => {
         </section>
       </main>
       <Footer />
+      <ScaleStepDialog
+        open={stepDialogOpen}
+        onOpenChange={setStepDialogOpen}
+        stepNumber={activeStep}
+        onComplete={() => fetchStepCompletionStatus()}
+      />
     </div>
   );
 };
