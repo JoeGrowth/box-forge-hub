@@ -533,16 +533,15 @@ const Profile = () => {
 
   const getRoleLabel = () => {
     // entrepreneur_approved = Co-Builder with approved idea (Initiator), not yet full entrepreneur
-    if (onboardingState?.journey_status === "entrepreneur_approved") return "Co-Builder & Initiator";
+    if (onboardingState?.journey_status === "entrepreneur_approved") return "Approved - Ready to boost";
     if (onboardingState?.journey_status === "approved") {
-      if (onboardingState?.primary_role === "entrepreneur") return "Approved Initiator";
-      return "Approved Co-Builder";
+      return "Approved - Ready to boost";
     }
     // Show potential role label based on path selection
-    if (onboardingState?.potential_role === "potential_entrepreneur") return "Potential Initiator";
-    if (onboardingState?.potential_role === "potential_cobuilder") return "Potential Co-Builder";
-    if (onboardingState?.primary_role === "entrepreneur") return "Potential Initiator";
-    if (onboardingState?.primary_role === "cobuilder") return "Potential Co-Builder";
+    if (onboardingState?.potential_role === "potential_entrepreneur") return "Vision: Initiator";
+    if (onboardingState?.potential_role === "potential_cobuilder") return "Vision: Co-Builder";
+    if (onboardingState?.primary_role === "entrepreneur") return "Vision: Initiator";
+    if (onboardingState?.primary_role === "cobuilder") return "Vision: Co-Builder";
     return "Member";
   };
 
@@ -552,19 +551,7 @@ const Profile = () => {
     }
     // entrepreneur_approved = Co-Builder with approved startup idea, on entrepreneur journey
     if (onboardingState.journey_status === "entrepreneur_approved") {
-      const step = onboardingState.entrepreneur_step || 1;
-      if (step >= 4) {
-        return {
-          label: "Entrepreneur Journey: Completed",
-          color: "text-b4-teal",
-          icon: CheckCircle,
-        };
-      }
-      return {
-        label: `Entrepreneur Journey: Step ${step}/4`,
-        color: "text-amber-500",
-        icon: Rocket,
-      };
+      return { label: "Approved", color: "text-b4-teal", icon: CheckCircle };
     }
     if (onboardingState.journey_status === "approved") {
       return { label: "Approved", color: "text-b4-teal", icon: CheckCircle };
