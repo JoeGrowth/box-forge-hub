@@ -70,7 +70,7 @@ const App = () => (
                 <Route path="/cobuilders" element={<CoBuilders />} />
                 <Route path="/journey" element={<Journey />} />
                 <Route path="/mask" element={<Mask />} />
-                <Route path="/scale" element={<Scale />} />
+                <Route path="/start" element={<Scale />} />
                 <Route path="/checklist" element={<Checklist />} />
                 <Route path="/resume" element={<Resume />} />
                 <Route path="/create-idea" element={<CreateIdea />} />
