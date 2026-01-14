@@ -34,13 +34,13 @@ const approvedUserLinks = [
   { name: "Boxes", path: "/boxes" },
 ];
 
-// Links for boosted/scaled users (includes Scale)
+// Links for boosted/scaled users (includes Start)
 const boostedUserLinks = [
   { name: "Ideas", path: "/opportunities" },
   { name: "People", path: "/cobuilders" },
   { name: "Resume", path: "/resume" },
   { name: "Boost", path: "/journey" },
-  { name: "Scale", path: "/scale" },
+  { name: "Start", path: "/start" },
   { name: "Boxes", path: "/boxes" },
 ];
 
