@@ -19,7 +19,7 @@ export const PathSelectionStep = ({ onNext }: PathSelectionStepProps) => {
     try {
       // Set potential_role based on selection
       const potentialRole = selectedRole === "entrepreneur" ? "potential_entrepreneur" : "potential_cobuilder";
-      
+
       await updateOnboardingState({
         primary_role: selectedRole,
         potential_role: potentialRole,
@@ -43,9 +43,7 @@ export const PathSelectionStep = ({ onNext }: PathSelectionStepProps) => {
 
   return (
     <div className="text-center">
-      <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-        How do you want to participate?
-      </h1>
+      <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">What's your vision ?</h1>
       <p className="text-muted-foreground text-lg mb-8">Choose your path at Box4Solutions</p>
 
       <div className="grid gap-4 mb-8">
