@@ -213,6 +213,56 @@ export type Database = {
           },
         ]
       }
+      idea_journey_progress: {
+        Row: {
+          completed_at: string | null
+          completed_tasks: Json | null
+          created_at: string
+          id: string
+          is_completed: boolean | null
+          phase_name: string
+          phase_number: number
+          responses: Json | null
+          startup_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_tasks?: Json | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean | null
+          phase_name: string
+          phase_number?: number
+          responses?: Json | null
+          startup_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          completed_tasks?: Json | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean | null
+          phase_name?: string
+          phase_number?: number
+          responses?: Json | null
+          startup_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "idea_journey_progress_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startup_ideas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       journey_phase_responses: {
         Row: {
           completed_at: string | null
@@ -636,6 +686,47 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      startup_team_members: {
+        Row: {
+          added_at: string
+          added_by: string
+          created_at: string
+          id: string
+          member_user_id: string
+          role_type: string
+          startup_id: string
+          updated_at: string
+        }
+        Insert: {
+          added_at?: string
+          added_by: string
+          created_at?: string
+          id?: string
+          member_user_id: string
+          role_type: string
+          startup_id: string
+          updated_at?: string
+        }
+        Update: {
+          added_at?: string
+          added_by?: string
+          created_at?: string
+          id?: string
+          member_user_id?: string
+          role_type?: string
+          startup_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_team_members_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startup_ideas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_certifications: {
         Row: {
