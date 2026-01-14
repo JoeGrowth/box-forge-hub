@@ -102,7 +102,7 @@ const Opportunities = () => {
   );
 
   const handleAddIdea = () => {
-    window.open("https://box4solutions.com/create-idea", "_blank");
+    navigate("/create-idea");
   };
 
   const filteredIdeas = ideas.filter((idea) => {
