@@ -34,8 +34,10 @@ import {
   Target,
   Lightbulb,
   Lock,
-  TrendingUp
+  TrendingUp,
+  Pencil
 } from "lucide-react";
+import { ScaleStepDialog } from "@/components/scale/ScaleStepDialog";
 import { format } from "date-fns";
 
 interface AnswerVersion {
@@ -131,6 +133,15 @@ const Scale = () => {
     consulting_with_whom: "",
     consulting_case_studies: "",
   });
+  
+  // Dialog state for step fill-in
+  const [stepDialogOpen, setStepDialogOpen] = useState(false);
+  const [activeStep, setActiveStep] = useState<1 | 2 | 3>(1);
+  const [stepCompletionStatus, setStepCompletionStatus] = useState<Record<1 | 2 | 3, boolean>>({
+    1: false,
+    2: false,
+    3: false,
+  });
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -200,6 +211,61 @@ const Scale = () => {
     
     fetchUserIdeas();
   }, [user]);
+
+  // Fetch step completion status
+  const fetchStepCompletionStatus = async () => {
+    if (!user) return;
+
+    try {
+      // Get scaling journey
+      const { data: journey } = await supabase
+        .from("learning_journeys")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("journey_type", "scaling_path")
+        .maybeSingle();
+
+      if (!journey) {
+        setStepCompletionStatus({ 1: false, 2: false, 3: false });
+        return;
+      }
+
+      // Get completed phases
+      const { data: responses } = await supabase
+        .from("journey_phase_responses")
+        .select("phase_number, is_completed")
+        .eq("journey_id", journey.id);
+
+      const completedPhases = new Set(
+        responses?.filter(r => r.is_completed).map(r => r.phase_number) || []
+      );
+
+      // Step 1 complete if phase 1 is complete
+      // Step 2 complete if phases 2, 3, 4 are all complete
+      // Step 3 complete if phase 5 is complete
+      setStepCompletionStatus({
+        1: completedPhases.has(1),
+        2: completedPhases.has(2) && completedPhases.has(3) && completedPhases.has(4),
+        3: completedPhases.has(5),
+      });
+    } catch (error) {
+      console.error("Error fetching step completion status:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchStepCompletionStatus();
+  }, [user]);
+
+  const handleOpenStepDialog = (step: 1 | 2 | 3) => {
+    setActiveStep(step);
+    setStepDialogOpen(true);
+  };
+
+  const handleStepDialogComplete = () => {
+    setStepDialogOpen(false);
+    fetchStepCompletionStatus(); // Refresh completion status
+  };
 
   const handleSave = async () => {
     if (!user || !naturalRole) return;
@@ -512,6 +578,29 @@ const Scale = () => {
                                   </li>
                                 ))}
                               </ul>
+                              
+                              {/* Fill it / Done Button */}
+                              <div className="pt-4">
+                                <Button
+                                  variant={stepCompletionStatus[step.step as 1 | 2 | 3] ? "outline" : "teal"}
+                                  size="sm"
+                                  onClick={() => handleOpenStepDialog(step.step as 1 | 2 | 3)}
+                                  className="gap-2"
+                                >
+                                  {stepCompletionStatus[step.step as 1 | 2 | 3] ? (
+                                    <>
+                                      <CheckCircle className="w-4 h-4" />
+                                      Done
+                                      <Pencil className="w-3 h-3 ml-1" />
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Pencil className="w-4 h-4" />
+                                      Fill it
+                                    </>
+                                  )}
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         </CardContent>
@@ -623,6 +712,14 @@ const Scale = () => {
         </section>
       </main>
       <Footer />
+      
+      {/* Step Dialog */}
+      <ScaleStepDialog
+        open={stepDialogOpen}
+        onOpenChange={setStepDialogOpen}
+        stepNumber={activeStep}
+        onComplete={handleStepDialogComplete}
+      />
     </div>
   );
 };
