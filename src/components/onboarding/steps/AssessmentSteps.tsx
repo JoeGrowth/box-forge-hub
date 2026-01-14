@@ -481,7 +481,7 @@ export const TrainingCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) =
             />
           </div>
           <div>
-            <Label htmlFor="contexts">In which contexts?</Label>
+            <Label htmlFor="contexts">In which contexts? [Workshops, 1 on 1 mentoring, online courses]</Label>
             <Textarea
               id="contexts"
               value={contexts}
