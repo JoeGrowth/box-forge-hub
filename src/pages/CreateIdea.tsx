@@ -168,11 +168,11 @@ const CreateIdea = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate("/profile")}
+                onClick={() => navigate(-1)}
                 className="mb-6"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Profile
+                Back
               </Button>
 
               <div className="bg-card rounded-2xl border border-border p-8 text-center">
@@ -243,11 +243,11 @@ const CreateIdea = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate("/profile")}
+              onClick={() => navigate(-1)}
               className="mb-6"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Profile
+              Back
             </Button>
 
             <form onSubmit={handleSubmit} className="space-y-6">
