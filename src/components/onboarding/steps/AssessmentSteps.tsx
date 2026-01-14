@@ -14,7 +14,8 @@ interface AssessmentStepProps {
 
 // Step 3.1 - Promise Check
 export const PromiseCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) => {
-  const { updateNaturalRole, updateOnboardingState, sendAdminNotification, sendMilestoneNotification } = useOnboarding();
+  const { updateNaturalRole, updateOnboardingState, sendAdminNotification, sendMilestoneNotification } =
+    useOnboarding();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -22,23 +23,23 @@ export const PromiseCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) =>
     setIsLoading(true);
     try {
       await updateNaturalRole({ promise_check: hasPromise });
-      
+
       if (!hasPromise) {
         await updateNaturalRole({ status: "not_ready" });
       }
-      
+
       await updateOnboardingState({ current_step: 4 });
-      
+
       // Send milestone notification
       await sendMilestoneNotification(
         "onboarding_step_complete",
         "Promise Check Complete! ✓",
-        hasPromise 
+        hasPromise
           ? "Great! You've committed to delivering value. Let's check your practice experience."
           : "We understand. Let's continue to see how we can help you develop.",
-        "/onboarding"
+        "/onboarding",
       );
-      
+
       onNext();
     } catch (error) {
       toast({
@@ -56,9 +57,7 @@ export const PromiseCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) =>
       <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
         Do you promise people or entities to do this Natural Role for them?
       </h1>
-      <p className="text-muted-foreground text-lg mb-8">
-        Have you committed to delivering this value to others?
-      </p>
+      <p className="text-muted-foreground text-lg mb-8">Have you committed to delivering this value to others?</p>
 
       <div className="grid grid-cols-2 gap-4">
         <Button
@@ -98,7 +97,7 @@ export const NotReadyStep = ({ onNeedHelp }: { onNeedHelp: () => void }) => {
       await sendAdminNotification(
         "user_stuck",
         "Promise Check",
-        "User is not ready - wants guidance to develop their Natural Role"
+        "User is not ready - wants guidance to develop their Natural Role",
       );
       toast({
         title: "Request sent!",
@@ -135,22 +134,11 @@ export const NotReadyStep = ({ onNeedHelp }: { onNeedHelp: () => void }) => {
       </p>
 
       <div className="space-y-3">
-        <Button
-          variant="teal"
-          size="lg"
-          onClick={handleWantGuidance}
-          disabled={isLoading}
-          className="w-full"
-        >
+        <Button variant="teal" size="lg" onClick={handleWantGuidance} disabled={isLoading} className="w-full">
           {isLoading ? "Sending..." : "I want guidance"}
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
-        <Button
-          variant="outline"
-          size="lg"
-          onClick={handleComeLater}
-          className="w-full"
-        >
+        <Button variant="outline" size="lg" onClick={handleComeLater} className="w-full">
           I'll come back later
         </Button>
       </div>
@@ -160,7 +148,8 @@ export const NotReadyStep = ({ onNeedHelp }: { onNeedHelp: () => void }) => {
 
 // Step 3.2 - Practice Check
 export const PracticeCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) => {
-  const { updateNaturalRole, updateOnboardingState, sendAdminNotification, sendMilestoneNotification, naturalRole } = useOnboarding();
+  const { updateNaturalRole, updateOnboardingState, sendAdminNotification, sendMilestoneNotification, naturalRole } =
+    useOnboarding();
   const { toast } = useToast();
   const [hasPracticed, setHasPracticed] = useState<boolean | null>(null);
   const [entities, setEntities] = useState("");
@@ -180,15 +169,15 @@ export const PracticeCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) =
         practice_case_studies: parseInt(caseStudies) || 0,
       });
       await updateOnboardingState({ current_step: 5 });
-      
+
       // Send milestone notification
       await sendMilestoneNotification(
         "onboarding_step_complete",
         "Practice Check Complete! ✓",
         `You have ${caseStudies || 0} case studies of practice experience. Moving on to training!`,
-        "/onboarding"
+        "/onboarding",
       );
-      
+
       onNext();
     } catch (error) {
       toast({
@@ -208,31 +197,27 @@ export const PracticeCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) =
         practice_check: false,
         practice_needs_help: wantsHelp,
       });
-      
+
       if (wantsHelp) {
-        await sendAdminNotification(
-          "practice_help",
-          "Practice Check",
-          "User needs help practicing their Natural Role"
-        );
+        await sendAdminNotification("practice_help", "Practice Check", "User needs help practicing their Natural Role");
         toast({
           title: "Request sent!",
           description: "Our team will help you start practicing your Natural Role.",
         });
       }
-      
+
       await updateOnboardingState({ current_step: 5 });
-      
+
       // Send milestone notification
       await sendMilestoneNotification(
         "onboarding_step_complete",
         "Practice Check Complete! ✓",
-        wantsHelp 
+        wantsHelp
           ? "We've noted you'd like help with practice. Our team will reach out!"
           : "Moving on to check your training experience.",
-        "/onboarding"
+        "/onboarding",
       );
-      
+
       onNext();
     } catch (error) {
       toast({
@@ -251,9 +236,7 @@ export const PracticeCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) =
         <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
           Have you practiced this Natural Role inside a structure before?
         </h1>
-        <p className="text-muted-foreground text-lg mb-8">
-          For example, at a company, organization, or project
-        </p>
+        <p className="text-muted-foreground text-lg mb-8">For example, at a company, organization, or project</p>
 
         <div className="grid grid-cols-2 gap-4">
           <Button
@@ -288,7 +271,9 @@ export const PracticeCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) =
 
         <div className="space-y-4 text-left mb-6">
           <div>
-            <Label htmlFor="entities">Which entities did you practice with?</Label>
+            <Label htmlFor="entities">
+              Which entities did you practice with? [Comapany names,organizations, projects..]
+            </Label>
             <Textarea
               id="entities"
               value={entities}
@@ -361,7 +346,8 @@ export const PracticeCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) =
 
 // Step 3.3 - Training Check
 export const TrainingCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) => {
-  const { updateNaturalRole, updateOnboardingState, sendAdminNotification, sendMilestoneNotification } = useOnboarding();
+  const { updateNaturalRole, updateOnboardingState, sendAdminNotification, sendMilestoneNotification } =
+    useOnboarding();
   const { toast } = useToast();
   const [hasTrained, setHasTrained] = useState<boolean | null>(null);
   const [trainingCount, setTrainingCount] = useState("");
@@ -377,15 +363,15 @@ export const TrainingCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) =
         training_contexts: contexts,
       });
       await updateOnboardingState({ current_step: 6 });
-      
+
       // Send milestone notification
       await sendMilestoneNotification(
         "onboarding_step_complete",
         "Training Check Complete! ✓",
         `You've trained others ${trainingCount || 0} times. Almost done - one more step!`,
-        "/onboarding"
+        "/onboarding",
       );
-      
+
       onNext();
     } catch (error) {
       toast({
@@ -405,21 +391,21 @@ export const TrainingCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) =
         training_check: false,
         training_needs_help: wantsHelp,
       });
-      
+
       if (wantsHelp) {
         await sendAdminNotification(
           "training_help",
           "Training Check",
-          "User wants help starting to train others in their Natural Role"
+          "User wants help starting to train others in their Natural Role",
         );
         toast({
           title: "Request sent!",
           description: "Our team will help you start training others.",
         });
       }
-      
+
       await updateOnboardingState({ current_step: 6 });
-      
+
       // Send milestone notification
       await sendMilestoneNotification(
         "onboarding_step_complete",
@@ -427,9 +413,9 @@ export const TrainingCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) =
         wantsHelp
           ? "We've noted you'd like help with training. Almost done!"
           : "Moving on to the final assessment step.",
-        "/onboarding"
+        "/onboarding",
       );
-      
+
       onNext();
     } catch (error) {
       toast({
@@ -448,9 +434,7 @@ export const TrainingCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) =
         <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
           Have you trained individuals from different structures on this Natural Role?
         </h1>
-        <p className="text-muted-foreground text-lg mb-8">
-          Teaching others how to do what you do
-        </p>
+        <p className="text-muted-foreground text-lg mb-8">Teaching others how to do what you do</p>
 
         <div className="grid grid-cols-2 gap-4">
           <Button
@@ -528,9 +512,7 @@ export const TrainingCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) =
       <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
         Do you want help to start training others?
       </h1>
-      <p className="text-muted-foreground text-lg mb-8">
-        We can help you develop your training capabilities
-      </p>
+      <p className="text-muted-foreground text-lg mb-8">We can help you develop your training capabilities</p>
 
       <div className="grid grid-cols-2 gap-4">
         <Button
@@ -574,15 +556,15 @@ export const ConsultingCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps)
         consulting_case_studies: caseStudies,
       });
       await updateOnboardingState({ current_step: 7 });
-      
+
       // Send milestone notification
       await sendMilestoneNotification(
         "onboarding_step_complete",
         "Consulting Check Complete! ✓",
         "All assessment steps complete! Time for the final review.",
-        "/onboarding"
+        "/onboarding",
       );
-      
+
       onNext();
     } catch (error) {
       toast({
@@ -600,15 +582,15 @@ export const ConsultingCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps)
     try {
       await updateNaturalRole({ consulting_check: false });
       await updateOnboardingState({ current_step: 7 });
-      
+
       // Send milestone notification
       await sendMilestoneNotification(
         "onboarding_step_complete",
         "Consulting Check Complete! ✓",
         "Assessment complete! Time for the final review.",
-        "/onboarding"
+        "/onboarding",
       );
-      
+
       onNext();
     } catch (error) {
       toast({
@@ -627,9 +609,7 @@ export const ConsultingCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps)
         <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
           Have you consulted people or entities using this Natural Role?
         </h1>
-        <p className="text-muted-foreground text-lg mb-8">
-          Providing expert advice and solving problems for others
-        </p>
+        <p className="text-muted-foreground text-lg mb-8">Providing expert advice and solving problems for others</p>
 
         <div className="grid grid-cols-2 gap-4">
           <Button
