@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, X, User, Plus, Loader2 } from "lucide-react";
+import { Search, X, Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface CoBuilder {
@@ -100,28 +100,22 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
 
     setIsSearching(true);
     try {
-      // Get approved co-builders
-      const { data: onboardingData } = await supabase
-        .from("onboarding_state")
-        .select("user_id")
-        .in("journey_status", ["approved", "entrepreneur_approved"]);
+      // Get profiles matching the search query
+      // The RLS policy on profiles already ensures we can only see approved co-builders
+      const { data: profiles, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, user_id, full_name, avatar_url, primary_skills")
+        .ilike("full_name", `%${searchQuery}%`)
+        .limit(20);
 
-      const approvedUserIds = onboardingData?.map((o) => o.user_id) || [];
-
-      if (approvedUserIds.length === 0) {
+      if (profilesError) {
+        console.error("Profile search error:", profilesError);
         setSearchResults([]);
         setIsSearching(false);
         return;
       }
 
-      // Get profiles matching the search query
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, user_id, full_name, avatar_url, primary_skills")
-        .in("user_id", approvedUserIds)
-        .ilike("full_name", `%${searchQuery}%`);
-
-      if (!profiles) {
+      if (!profiles || profiles.length === 0) {
         setSearchResults([]);
         setIsSearching(false);
         return;
