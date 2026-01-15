@@ -278,14 +278,50 @@ export const AdminLearningJourneysTab = () => {
   const getJourneyTypeLabel = (type: string) => {
     switch (type) {
       case "skill_ptc":
-        return "Skill PTC (Co-Build)";
+        return "Learn to be a Co-Builder";
       case "idea_ptc":
-        return "Idea PTC (Initiator)";
+        return "Learn to be an Initiator";
       case "scaling_path":
-        return "Scaling Path";
+        return "Learn to be a Consultant";
       default:
         return type;
     }
+  };
+
+  const renderQuizResponse = (key: string, value: any) => {
+    // Handle quiz response format
+    if (key.startsWith("quiz_") && typeof value === "object" && value !== null) {
+      const quizData = value as { question?: string; type?: string; answer?: any; isCorrect?: boolean | null };
+      return (
+        <div key={key} className="mb-4 p-3 rounded-lg bg-background border">
+          <div className="flex items-start justify-between mb-2">
+            <p className="text-sm font-medium text-foreground">{quizData.question || key}</p>
+            {quizData.isCorrect !== null && quizData.isCorrect !== undefined && (
+              <Badge variant={quizData.isCorrect ? "default" : "secondary"} className={quizData.isCorrect ? "bg-green-500" : ""}>
+                {quizData.isCorrect ? "Correct" : "Incorrect"}
+              </Badge>
+            )}
+          </div>
+          <div className="text-sm text-muted-foreground mb-1">Type: {quizData.type || "unknown"}</div>
+          <div className="text-sm">
+            <span className="text-muted-foreground">Answer: </span>
+            <span className="text-foreground">
+              {typeof quizData.answer === "object" 
+                ? JSON.stringify(quizData.answer, null, 2)
+                : String(quizData.answer || "No answer")}
+            </span>
+          </div>
+        </div>
+      );
+    }
+    
+    // Default display for non-quiz responses
+    return (
+      <div key={key} className="mb-2">
+        <p className="text-sm text-muted-foreground capitalize">{key.replace(/_/g, " ")}:</p>
+        <p className="text-sm">{String(value)}</p>
+      </div>
+    );
   };
 
   const pendingJourneys = journeys.filter((j) => j.status === "pending_approval");
@@ -351,29 +387,37 @@ export const AdminLearningJourneysTab = () => {
                         .sort((a, b) => a.phase_number - b.phase_number)
                         .map((response) => (
                           <div key={response.id} className="p-4 rounded-lg border bg-muted/50">
-                            <h4 className="font-medium mb-2">
-                              Phase {response.phase_number + 1}: {response.phase_name}
-                            </h4>
+                            <div className="flex items-center justify-between mb-3">
+                              <h4 className="font-medium">
+                                Phase {response.phase_number + 1}: {response.phase_name}
+                              </h4>
+                              {response.is_completed && (
+                                <Badge className="bg-green-500">
+                                  <CheckCircle className="w-3 h-3 mr-1" />
+                                  Completed
+                                </Badge>
+                              )}
+                            </div>
 
                             {/* Questions/Responses */}
-                            {Object.entries(response.responses || {}).map(([key, value]) => (
-                              <div key={key} className="mb-2">
-                                <p className="text-sm text-muted-foreground capitalize">{key.replace(/_/g, " ")}:</p>
-                                <p className="text-sm">{String(value)}</p>
-                              </div>
-                            ))}
+                            <div className="space-y-2">
+                              {Object.entries(response.responses || {}).map(([key, value]) => 
+                                renderQuizResponse(key, value)
+                              )}
+                            </div>
 
                             {/* Completed Tasks */}
                             {(response.completed_tasks || []).length > 0 && (
-                              <div className="mt-2">
-                                <p className="text-sm text-muted-foreground">Completed Tasks:</p>
-                                <ul className="text-sm list-disc list-inside">
+                              <div className="mt-3 pt-3 border-t">
+                                <p className="text-sm font-medium text-muted-foreground mb-2">Completed Tasks:</p>
+                                <div className="flex flex-wrap gap-2">
                                   {response.completed_tasks.map((task) => (
-                                    <li key={task} className="capitalize">
+                                    <Badge key={task} variant="outline" className="capitalize">
+                                      <CheckCircle className="w-3 h-3 mr-1" />
                                       {task.replace(/_/g, " ")}
-                                    </li>
+                                    </Badge>
                                   ))}
-                                </ul>
+                                </div>
                               </div>
                             )}
                           </div>

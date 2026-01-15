@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +26,8 @@ import {
   Award,
 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Quiz {
   id: string;
@@ -275,13 +277,53 @@ export function ConsultantQuizDialog({
   stepNumber,
   onComplete,
 }: ConsultantQuizDialogProps) {
+  const { user } = useAuth();
   const [phase, setPhase] = useState<"learning" | "quiz">("learning");
   const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [showResult, setShowResult] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [journeyId, setJourneyId] = useState<string | null>(null);
 
   const stepContent = CONSULTANT_STEP_CONTENT.find((s) => s.step === stepNumber);
+  
+  // Get or create journey when dialog opens (using scaling_path for consultant)
+  useEffect(() => {
+    const getOrCreateJourney = async () => {
+      if (!user || !open) return;
+      
+      // Check for existing journey
+      const { data: existing } = await supabase
+        .from("learning_journeys")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("journey_type", "scaling_path")
+        .maybeSingle();
+      
+      if (existing) {
+        setJourneyId(existing.id);
+      } else {
+        // Create new journey
+        const { data: newJourney, error } = await supabase
+          .from("learning_journeys")
+          .insert({
+            user_id: user.id,
+            journey_type: "scaling_path",
+            status: "in_progress",
+            current_phase: 0,
+            started_at: new Date().toISOString(),
+          })
+          .select("id")
+          .single();
+        
+        if (!error && newJourney) {
+          setJourneyId(newJourney.id);
+        }
+      }
+    };
+    
+    getOrCreateJourney();
+  }, [user, open]);
   
   if (!stepContent) return null;
 
@@ -325,18 +367,63 @@ export function ConsultantQuizDialog({
   };
 
   const handleCompleteStep = async () => {
+    if (!user || !journeyId) {
+      toast.error("User not authenticated");
+      return;
+    }
+    
     setIsSubmitting(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Format responses for storage
+      const formattedResponses: Record<string, any> = {};
+      stepContent.quizzes.forEach((quiz) => {
+        const answer = answers[quiz.id];
+        formattedResponses[`quiz_${quiz.id}`] = {
+          question: quiz.question,
+          type: quiz.type,
+          answer: answer,
+          isCorrect: quiz.correctAnswer ? checkAnswer() : null,
+        };
+      });
+      
+      // Upsert phase response
+      await supabase
+        .from("journey_phase_responses")
+        .upsert({
+          journey_id: journeyId,
+          user_id: user.id,
+          phase_number: stepNumber - 1, // 0-indexed
+          phase_name: stepContent.title,
+          responses: formattedResponses,
+          completed_tasks: [`step_${stepNumber}_quizzes_completed`],
+          is_completed: true,
+          completed_at: new Date().toISOString(),
+        }, {
+          onConflict: "journey_id,phase_number",
+          ignoreDuplicates: false,
+        });
+      
+      // Update journey current phase
+      const isLastStep = stepNumber === 5;
+      await supabase
+        .from("learning_journeys")
+        .update({
+          current_phase: stepNumber,
+          status: isLastStep ? "pending_approval" : "in_progress",
+          completed_at: isLastStep ? new Date().toISOString() : null,
+        })
+        .eq("id", journeyId);
+      
       onComplete(stepNumber);
       toast.success(`Step ${stepNumber} completed!`, {
-        description: stepNumber === 5 
-          ? "Congratulations! You've achieved Consultant Mastery. 🎓" 
+        description: isLastStep 
+          ? "Your Consultant journey has been submitted for approval! 🎓" 
           : "Moving to the next step.",
       });
       onOpenChange(false);
       resetState();
     } catch (error) {
+      console.error("Failed to save progress:", error);
       toast.error("Failed to save progress");
     } finally {
       setIsSubmitting(false);
