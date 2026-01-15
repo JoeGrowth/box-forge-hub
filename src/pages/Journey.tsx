@@ -18,11 +18,13 @@ import {
   GraduationCap,
   Handshake,
   TrendingUp,
-  Pencil
+  Pencil,
+  Play
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { InitiatorQuizDialog } from "@/components/learning/InitiatorQuizDialog";
 
 interface JourneyStep {
   step: number;
@@ -210,10 +212,27 @@ const Journey = () => {
     cobuilder: {},
     consultant: {},
   });
+  const [quizDialogOpen, setQuizDialogOpen] = useState(false);
+  const [selectedStep, setSelectedStep] = useState<number>(1);
 
   const handleOpenStep = (section: string, stepNum: number) => {
-    // TODO: Open step dialog similar to Scale page
-    console.log(`Opening ${section} step ${stepNum}`);
+    if (section === "initiator") {
+      setSelectedStep(stepNum);
+      setQuizDialogOpen(true);
+    } else {
+      // TODO: Implement quizzes for other sections
+      console.log(`Opening ${section} step ${stepNum}`);
+    }
+  };
+
+  const handleStepComplete = (stepNumber: number) => {
+    setStepCompletionStatus((prev) => ({
+      ...prev,
+      [activeSection]: {
+        ...prev[activeSection],
+        [stepNumber]: true,
+      },
+    }));
   };
 
   // Show loading until auth AND onboarding state are both loaded
@@ -441,11 +460,14 @@ const Journey = () => {
                                   >
                                     {stepCompletionStatus[activeSection]?.[step.step] ? (
                                       <>
-                                        <Pencil className="w-4 h-4 mr-1" />
+                                        <CheckCircle className="w-4 h-4 mr-1" />
                                         Done
                                       </>
                                     ) : (
-                                      "Fill it"
+                                      <>
+                                        <Play className="w-4 h-4 mr-1" />
+                                        Begin
+                                      </>
                                     )}
                                   </Button>
                                 </div>
@@ -493,6 +515,14 @@ const Journey = () => {
         </main>
       </PageTransition>
       <Footer />
+
+      {/* Quiz Dialog for Initiator */}
+      <InitiatorQuizDialog
+        open={quizDialogOpen}
+        onOpenChange={setQuizDialogOpen}
+        stepNumber={selectedStep}
+        onComplete={handleStepComplete}
+      />
     </div>
   );
 };
