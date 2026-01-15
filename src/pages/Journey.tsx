@@ -25,6 +25,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { InitiatorQuizDialog } from "@/components/learning/InitiatorQuizDialog";
+import { CoBuilderQuizDialog } from "@/components/learning/CoBuilderQuizDialog";
 
 interface JourneyStep {
   step: number;
@@ -215,12 +216,16 @@ const Journey = () => {
   const [quizDialogOpen, setQuizDialogOpen] = useState(false);
   const [selectedStep, setSelectedStep] = useState<number>(1);
 
+  const [cobuilderQuizOpen, setCobuilderQuizOpen] = useState(false);
+
   const handleOpenStep = (section: string, stepNum: number) => {
+    setSelectedStep(stepNum);
     if (section === "initiator") {
-      setSelectedStep(stepNum);
       setQuizDialogOpen(true);
+    } else if (section === "cobuilder") {
+      setCobuilderQuizOpen(true);
     } else {
-      // TODO: Implement quizzes for other sections
+      // TODO: Implement quizzes for consultant section
       console.log(`Opening ${section} step ${stepNum}`);
     }
   };
@@ -520,6 +525,14 @@ const Journey = () => {
       <InitiatorQuizDialog
         open={quizDialogOpen}
         onOpenChange={setQuizDialogOpen}
+        stepNumber={selectedStep}
+        onComplete={handleStepComplete}
+      />
+
+      {/* Quiz Dialog for Co-Builder */}
+      <CoBuilderQuizDialog
+        open={cobuilderQuizOpen}
+        onOpenChange={setCobuilderQuizOpen}
         stepNumber={selectedStep}
         onComplete={handleStepComplete}
       />
