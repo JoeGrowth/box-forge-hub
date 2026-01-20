@@ -21,7 +21,6 @@ const guestNavLinks = [
 const appliedUserLinks = [
   { name: "Ideas", path: "/opportunities" },
   { name: "People", path: "/cobuilders" },
-  { name: "Boxes", path: "/boxes" },
 ];
 
 // Links for approved users (includes Boosting)
@@ -31,7 +30,6 @@ const approvedUserLinks = [
   { name: "Resume", path: "/resume" },
   { name: "Boost", path: "/journey" },
   { name: "Mask", path: "/mask" },
-  { name: "Boxes", path: "/boxes" },
 ];
 
 // Links for boosted/scaled users (includes Start)
@@ -41,7 +39,6 @@ const boostedUserLinks = [
   { name: "Resume", path: "/resume" },
   { name: "Boost", path: "/journey" },
   { name: "Start", path: "/start" },
-  { name: "Boxes", path: "/boxes" },
 ];
 
 export function Navbar() {
