@@ -29,7 +29,6 @@ const approvedUserLinks = [
   { name: "People", path: "/cobuilders" },
   { name: "Resume", path: "/resume" },
   { name: "Boost", path: "/journey" },
-  { name: "Mask", path: "/mask" },
 ];
 
 // Links for boosted/scaled users (includes Start)
