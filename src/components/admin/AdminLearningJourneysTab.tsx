@@ -123,14 +123,18 @@ export const AdminLearningJourneysTab = () => {
           ? "cobuilder_b4"
           : journey.journey_type === "idea_ptc"
             ? "initiator_b4"
-            : "scaling_complete";
+            : journey.journey_type === "scaling_path"
+              ? "consultant_b4"
+              : "scaling_complete";
 
       const certLabel =
         journey.journey_type === "skill_ptc"
           ? "Vaccinated Co Builder"
           : journey.journey_type === "idea_ptc"
             ? "Vaccinated Initiator"
-            : "Scaled";
+            : journey.journey_type === "scaling_path"
+              ? "Certified Consultant"
+              : "Scaled";
 
       await supabase.from("user_certifications").upsert({
         user_id: journey.user_id,
