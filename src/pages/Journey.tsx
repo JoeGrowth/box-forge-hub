@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
@@ -216,6 +216,7 @@ const Journey = () => {
   const { loading: onboardingLoading } = useOnboarding();
   const { journeys, phaseResponses, certifications } = useLearningJourneys();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<ActiveSection>(() => {
     const section = searchParams.get("section");
     if (section === "initiator" || section === "cobuilder" || section === "consultant") {
@@ -506,13 +507,43 @@ const Journey = () => {
                 {/* Certified Banner */}
                 {isSectionCertified(activeSection) && (
                   <Alert className="border-b4-teal/50 bg-teal-50 dark:bg-teal-950/30">
-                    <Award className="h-5 w-5 text-b4-teal" />
-                    <AlertTitle className="text-teal-800 dark:text-teal-200 font-semibold">
-                      Certified - Journey Complete
-                    </AlertTitle>
-                    <AlertDescription className="text-teal-700 dark:text-teal-300">
-                      Congratulations! You have been certified for this journey. Below you can review your submitted answers.
-                    </AlertDescription>
+                    <div className="flex items-start justify-between w-full">
+                      <div className="flex items-start gap-3">
+                        <Award className="h-5 w-5 text-b4-teal mt-0.5" />
+                        <div>
+                          <AlertTitle className="text-teal-800 dark:text-teal-200 font-semibold">
+                            Certified - Journey Complete
+                          </AlertTitle>
+                          <AlertDescription className="text-teal-700 dark:text-teal-300">
+                            Congratulations! You have been certified for this journey. Below you can review your submitted answers.
+                          </AlertDescription>
+                        </div>
+                      </div>
+                      {activeSection === 'initiator' && (
+                        <Button 
+                          onClick={() => navigate('/create-idea')}
+                          className="bg-b4-teal hover:bg-b4-teal/90 text-white shrink-0 ml-4"
+                        >
+                          Add Idea
+                        </Button>
+                      )}
+                      {activeSection === 'cobuilder' && (
+                        <Button 
+                          onClick={() => navigate('/opportunities')}
+                          className="bg-b4-teal hover:bg-b4-teal/90 text-white shrink-0 ml-4"
+                        >
+                          Co Build a Venture
+                        </Button>
+                      )}
+                      {activeSection === 'consultant' && (
+                        <Button 
+                          onClick={() => navigate('/start')}
+                          className="bg-b4-teal hover:bg-b4-teal/90 text-white shrink-0 ml-4"
+                        >
+                          Start Scaling
+                        </Button>
+                      )}
+                    </div>
                   </Alert>
                 )}
 
