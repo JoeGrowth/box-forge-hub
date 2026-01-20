@@ -487,7 +487,7 @@ const Scale = () => {
                   }`}
                 >
                   <Lightbulb className="w-4 h-4 inline mr-2" />
-                  Scale your venture ideas
+                  Scale as Initiator
                   {userIdeas.length > 0 && (
                     <Badge className="ml-2 bg-b4-teal text-white text-xs">{userIdeas.length}</Badge>
                   )}
