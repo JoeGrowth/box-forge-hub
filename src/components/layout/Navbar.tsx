@@ -19,25 +19,25 @@ const guestNavLinks = [
 
 // Base links for all logged-in users (applied status)
 const appliedUserLinks = [
-  { name: "Ideas", path: "/opportunities" },
+  { name: "Opportunities", path: "/opportunities" },
   { name: "People", path: "/cobuilders" },
 ];
 
 // Links for approved users (includes Boosting)
 const approvedUserLinks = [
-  { name: "Ideas", path: "/opportunities" },
+  { name: "Opportunities", path: "/opportunities" },
   { name: "People", path: "/cobuilders" },
   { name: "Resume", path: "/resume" },
   { name: "Boost", path: "/journey" },
 ];
 
-// Links for boosted/scaled users (includes Start)
+// Links for boosted/scaled users (includes Scale)
 const boostedUserLinks = [
-  { name: "Ideas", path: "/opportunities" },
+  { name: "Opportunities", path: "/opportunities" },
   { name: "People", path: "/cobuilders" },
   { name: "Resume", path: "/resume" },
   { name: "Boost", path: "/journey" },
-  { name: "Start", path: "/start" },
+  { name: "Scale", path: "/start" },
 ];
 
 export function Navbar() {
