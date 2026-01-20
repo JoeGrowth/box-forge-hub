@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,6 +13,7 @@ import {
   AlertCircle,
   Users,
   ExternalLink,
+  RefreshCw,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -30,6 +31,7 @@ interface Application {
     sector: string | null;
   };
   has_conversation: boolean;
+  unread_count: number;
 }
 
 interface CoBuilderApplicationsSectionProps {
@@ -40,56 +42,105 @@ export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSe
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchApplications = async () => {
-      if (!userId) return;
+  const fetchApplications = useCallback(async () => {
+    if (!userId) return;
 
-      setLoading(true);
-      try {
-        // Fetch applications where user is the applicant (not initiator)
-        const { data: apps, error } = await supabase
-          .from("startup_applications")
-          .select(`
-            id,
-            startup_id,
-            role_applied,
-            cover_message,
-            status,
-            created_at,
-            startup:startup_ideas(id, title, description, sector)
-          `)
-          .eq("applicant_id", userId)
-          .order("created_at", { ascending: false });
+    try {
+      // Fetch applications where user is the applicant (not initiator)
+      const { data: apps, error } = await supabase
+        .from("startup_applications")
+        .select(`
+          id,
+          startup_id,
+          role_applied,
+          cover_message,
+          status,
+          created_at,
+          startup:startup_ideas(id, title, description, sector)
+        `)
+        .eq("applicant_id", userId)
+        .order("created_at", { ascending: false });
 
-        if (error) throw error;
+      if (error) throw error;
 
-        // Check for conversations for each application
-        const applicationsWithChat = await Promise.all(
-          (apps || []).map(async (app) => {
-            const { data: conversation } = await supabase
-              .from("chat_conversations")
-              .select("id")
-              .eq("application_id", app.id)
-              .maybeSingle();
+      // Check for conversations and unread messages for each application
+      const applicationsWithChat = await Promise.all(
+        (apps || []).map(async (app) => {
+          const { data: conversation } = await supabase
+            .from("chat_conversations")
+            .select("id")
+            .eq("application_id", app.id)
+            .maybeSingle();
 
-            return {
-              ...app,
-              startup: app.startup as Application["startup"],
-              has_conversation: !!conversation,
-            };
-          })
-        );
+          let unreadCount = 0;
+          if (conversation) {
+            const { count } = await supabase
+              .from("chat_messages")
+              .select("*", { count: "exact", head: true })
+              .eq("conversation_id", conversation.id)
+              .eq("is_read", false)
+              .neq("sender_id", userId);
+            unreadCount = count || 0;
+          }
 
-        setApplications(applicationsWithChat);
-      } catch (error) {
-        console.error("Error fetching co-builder applications:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+          return {
+            ...app,
+            startup: app.startup as Application["startup"],
+            has_conversation: !!conversation,
+            unread_count: unreadCount,
+          };
+        })
+      );
 
-    fetchApplications();
+      setApplications(applicationsWithChat);
+    } catch (error) {
+      console.error("Error fetching co-builder applications:", error);
+    } finally {
+      setLoading(false);
+    }
   }, [userId]);
+
+  useEffect(() => {
+    setLoading(true);
+    fetchApplications();
+  }, [fetchApplications]);
+
+  // Real-time subscription for application status changes
+  useEffect(() => {
+    if (!userId) return;
+
+    const channel = supabase
+      .channel("cobuilder-applications")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "startup_applications",
+          filter: `applicant_id=eq.${userId}`,
+        },
+        () => {
+          fetchApplications();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "chat_messages",
+        },
+        () => {
+          // Refresh to update unread counts
+          fetchApplications();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, fetchApplications]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -220,10 +271,15 @@ export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSe
 
                 <div className="flex flex-col gap-2 shrink-0">
                   {application.status === "accepted" && application.has_conversation && (
-                    <Button variant="teal" size="sm" asChild>
+                    <Button variant="teal" size="sm" asChild className="relative">
                       <Link to={`/chat/${application.id}`}>
                         <MessageSquare className="w-4 h-4 mr-1.5" />
                         Open Chat
+                        {application.unread_count > 0 && (
+                          <span className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-b4-coral text-white text-xs font-medium px-1">
+                            {application.unread_count}
+                          </span>
+                        )}
                       </Link>
                     </Button>
                   )}

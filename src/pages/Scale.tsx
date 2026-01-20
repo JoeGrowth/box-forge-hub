@@ -128,7 +128,7 @@ const Scale = () => {
   const [versions, setVersions] = useState<AnswerVersion[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [changeNotes, setChangeNotes] = useState("");
-  const [activeSection, setActiveSection] = useState<"scale" | "ideas" | "cobuilder">("scale");
+  const [activeSection, setActiveSection] = useState<"scale" | "ideas" | "cobuilder">("ideas");
   const [userIdeas, setUserIdeas] = useState<StartupIdea[]>([]);
   const [loadingIdeas, setLoadingIdeas] = useState(true);
   const [stepDialogOpen, setStepDialogOpen] = useState(false);
@@ -469,17 +469,6 @@ const Scale = () => {
             <div className="flex justify-center mb-8">
               <div className="inline-flex rounded-xl bg-muted/50 p-1 border border-border/50 flex-wrap justify-center">
                 <button
-                  onClick={() => setActiveSection("scale")}
-                  className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                    activeSection === "scale"
-                      ? "bg-background shadow-sm text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Sparkles className="w-4 h-4 inline mr-2" />
-                  Scale As Consultant
-                </button>
-                <button
                   onClick={() => setActiveSection("ideas")}
                   className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
                     activeSection === "ideas"
@@ -503,6 +492,17 @@ const Scale = () => {
                 >
                   <Users className="w-4 h-4 inline mr-2" />
                   Scale as Co-Builder
+                </button>
+                <button
+                  onClick={() => setActiveSection("scale")}
+                  className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                    activeSection === "scale"
+                      ? "bg-background shadow-sm text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Sparkles className="w-4 h-4 inline mr-2" />
+                  Scale As Consultant
                 </button>
               </div>
             </div>
