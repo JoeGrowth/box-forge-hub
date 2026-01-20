@@ -233,10 +233,16 @@ const Scale = () => {
     if (!responses) return;
 
     // Filter for Scale business task phases by phase_name (not Consultant quiz phases)
-    const scalePhaseNames = ["Personal Entity", "Company Formation", "Process Implementation", "Autonomous Structure", "Decentralized Structure"];
-    const scaleResponses = responses.filter(r => scalePhaseNames.includes(r.phase_name));
-    const completedPhases = scaleResponses.filter(r => r.is_completed).map(r => r.phase_number);
-    
+    const scalePhaseNames = [
+      "Personal Entity",
+      "Company Formation",
+      "Process Implementation",
+      "Autonomous Structure",
+      "Decentralized Structure",
+    ];
+    const scaleResponses = responses.filter((r) => scalePhaseNames.includes(r.phase_name));
+    const completedPhases = scaleResponses.filter((r) => r.is_completed).map((r) => r.phase_number);
+
     setStepCompletionStatus({
       1: completedPhases.includes(1),
       2: completedPhases.includes(2) && completedPhases.includes(3) && completedPhases.includes(4),
@@ -470,7 +476,7 @@ const Scale = () => {
                   }`}
                 >
                   <Sparkles className="w-4 h-4 inline mr-2" />
-                  Scale Your Personal Promise
+                  Scale As Consultant
                 </button>
                 <button
                   onClick={() => setActiveSection("ideas")}
