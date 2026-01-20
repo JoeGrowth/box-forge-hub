@@ -289,6 +289,27 @@ const Journey = () => {
     return isAllStepsCompleted(section) || isJourneyPendingApproval(section);
   };
 
+  // Check if a specific step is completed from the database
+  const isStepCompletedFromDB = (section: ActiveSection, stepNumber: number): boolean => {
+    const journeyType = getJourneyTypeForSection(section);
+    const journey = journeys.find(j => j.journey_type === journeyType);
+    
+    if (!journey) return false;
+    
+    // Phase numbers in DB are 0-indexed, step numbers are 1-indexed
+    const phaseNumber = stepNumber - 1;
+    const phaseResponse = phaseResponses.find(
+      pr => pr.journey_id === journey.id && pr.phase_number === phaseNumber && pr.is_completed
+    );
+    
+    return !!phaseResponse;
+  };
+
+  // Combined check: local state OR database state
+  const isStepCompleted = (section: ActiveSection, stepNumber: number): boolean => {
+    return stepCompletionStatus[section]?.[stepNumber] || isStepCompletedFromDB(section, stepNumber);
+  };
+
   const handleOpenStep = (section: string, stepNum: number) => {
     setSelectedStep(stepNum);
     if (section === "initiator") {
@@ -542,12 +563,12 @@ const Journey = () => {
                                     <h3 className="text-lg font-display font-bold text-foreground">{step.title}</h3>
                                   </div>
                                   <Button
-                                    variant={stepCompletionStatus[activeSection]?.[step.step] ? "outline" : "teal"}
+                                    variant={isStepCompleted(activeSection, step.step) ? "outline" : "teal"}
                                     size="sm"
                                     onClick={() => handleOpenStep(activeSection, step.step)}
                                     className="shrink-0"
                                   >
-                                    {stepCompletionStatus[activeSection]?.[step.step] ? (
+                                    {isStepCompleted(activeSection, step.step) ? (
                                       <>
                                         <CheckCircle className="w-4 h-4 mr-1" />
                                         Done
