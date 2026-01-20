@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import { ScaleStepDialog } from "@/components/scale/ScaleStepDialog";
 import { IdeaDevelopDialog } from "@/components/idea/IdeaDevelopDialog";
+import { CoBuilderApplicationsSection } from "@/components/scale/CoBuilderApplicationsSection";
 import { format } from "date-fns";
 
 interface AnswerVersion {
@@ -127,7 +128,7 @@ const Scale = () => {
   const [versions, setVersions] = useState<AnswerVersion[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [changeNotes, setChangeNotes] = useState("");
-  const [activeSection, setActiveSection] = useState<"scale" | "ideas">("scale");
+  const [activeSection, setActiveSection] = useState<"scale" | "ideas" | "cobuilder">("scale");
   const [userIdeas, setUserIdeas] = useState<StartupIdea[]>([]);
   const [loadingIdeas, setLoadingIdeas] = useState(true);
   const [stepDialogOpen, setStepDialogOpen] = useState(false);
@@ -466,10 +467,10 @@ const Scale = () => {
           <div className="container max-w-5xl mx-auto px-4">
             {/* Section Toggle */}
             <div className="flex justify-center mb-8">
-              <div className="inline-flex rounded-xl bg-muted/50 p-1 border border-border/50">
+              <div className="inline-flex rounded-xl bg-muted/50 p-1 border border-border/50 flex-wrap justify-center">
                 <button
                   onClick={() => setActiveSection("scale")}
-                  className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
                     activeSection === "scale"
                       ? "bg-background shadow-sm text-foreground"
                       : "text-muted-foreground hover:text-foreground"
@@ -480,7 +481,7 @@ const Scale = () => {
                 </button>
                 <button
                   onClick={() => setActiveSection("ideas")}
-                  className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
                     activeSection === "ideas"
                       ? "bg-background shadow-sm text-foreground"
                       : "text-muted-foreground hover:text-foreground"
@@ -491,6 +492,17 @@ const Scale = () => {
                   {userIdeas.length > 0 && (
                     <Badge className="ml-2 bg-b4-teal text-white text-xs">{userIdeas.length}</Badge>
                   )}
+                </button>
+                <button
+                  onClick={() => setActiveSection("cobuilder")}
+                  className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                    activeSection === "cobuilder"
+                      ? "bg-background shadow-sm text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Users className="w-4 h-4 inline mr-2" />
+                  Scale as Co-Builder
                 </button>
               </div>
             </div>
@@ -721,6 +733,13 @@ const Scale = () => {
                     ))}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Scale as Co-Builder Section */}
+            {activeSection === "cobuilder" && user && (
+              <div className="animate-fade-in">
+                <CoBuilderApplicationsSection userId={user.id} />
               </div>
             )}
           </div>
