@@ -320,7 +320,7 @@ const Journey = () => {
       case "cobuilder":
         return certifications.some(c => c.certification_type === "cobuilder_b4");
       case "consultant":
-        return certifications.some(c => c.certification_type === "consultant_b4" || c.certification_type === "scaling_complete");
+        return certifications.some(c => c.certification_type === "consultant_b4");
       default:
         return false;
     }
