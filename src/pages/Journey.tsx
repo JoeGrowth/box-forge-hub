@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
+import { useLearningJourneys } from "@/hooks/useLearningJourneys";
 import { 
   BookOpen, 
   Loader2, 
@@ -20,11 +21,14 @@ import {
   Handshake,
   TrendingUp,
   Pencil,
-  Play
+  Play,
+  Clock,
+  AlertCircle
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { InitiatorQuizDialog } from "@/components/learning/InitiatorQuizDialog";
 import { CoBuilderQuizDialog } from "@/components/learning/CoBuilderQuizDialog";
 import { ConsultantQuizDialog } from "@/components/learning/ConsultantQuizDialog";
@@ -209,6 +213,7 @@ type ActiveSection = "initiator" | "cobuilder" | "consultant";
 const Journey = () => {
   const { user, loading: authLoading } = useAuth();
   const { loading: onboardingLoading } = useOnboarding();
+  const { journeys, phaseResponses } = useLearningJourneys();
   const [searchParams] = useSearchParams();
   const [activeSection, setActiveSection] = useState<ActiveSection>(() => {
     const section = searchParams.get("section");
@@ -227,6 +232,62 @@ const Journey = () => {
 
   const [cobuilderQuizOpen, setCobuilderQuizOpen] = useState(false);
   const [consultantQuizOpen, setConsultantQuizOpen] = useState(false);
+
+  // Map journey types to section names
+  const getJourneyTypeForSection = (section: ActiveSection): string => {
+    switch (section) {
+      case "initiator":
+        return "idea_ptc";
+      case "cobuilder":
+        return "skill_ptc";
+      case "consultant":
+        return "scaling_path"; // Using scaling_path for consultant
+      default:
+        return "";
+    }
+  };
+
+  // Get the total steps for each section
+  const getTotalStepsForSection = (section: ActiveSection): number => {
+    switch (section) {
+      case "initiator":
+        return INITIATOR_STEPS.length;
+      case "cobuilder":
+        return COBUILDER_STEPS.length;
+      case "consultant":
+        return CONSULTANT_STEPS.length;
+      default:
+        return 0;
+    }
+  };
+
+  // Check if all steps for a section are completed
+  const isAllStepsCompleted = (section: ActiveSection): boolean => {
+    const journeyType = getJourneyTypeForSection(section);
+    const journey = journeys.find(j => j.journey_type === journeyType);
+    
+    if (!journey) return false;
+    
+    const totalSteps = getTotalStepsForSection(section);
+    const completedPhases = phaseResponses.filter(
+      pr => pr.journey_id === journey.id && pr.is_completed
+    );
+    
+    return completedPhases.length >= totalSteps;
+  };
+
+  // Check if journey is pending approval
+  const isJourneyPendingApproval = (section: ActiveSection): boolean => {
+    const journeyType = getJourneyTypeForSection(section);
+    const journey = journeys.find(j => j.journey_type === journeyType);
+    
+    return journey?.status === "pending_approval";
+  };
+
+  // Check if all steps are done OR pending approval
+  const shouldShowPendingBanner = (section: ActiveSection): boolean => {
+    return isAllStepsCompleted(section) || isJourneyPendingApproval(section);
+  };
 
   const handleOpenStep = (section: string, stepNum: number) => {
     setSelectedStep(stepNum);
@@ -385,6 +446,20 @@ const Journey = () => {
 
               {/* Active Section Content */}
               <div className="space-y-8 animate-fade-in" key={activeSection}>
+                {/* Pending Review Banner */}
+                {shouldShowPendingBanner(activeSection) && (
+                  <Alert className="border-amber-500/50 bg-amber-50 dark:bg-amber-950/30">
+                    <Clock className="h-5 w-5 text-amber-600" />
+                    <AlertTitle className="text-amber-800 dark:text-amber-200 font-semibold">
+                      Journey Completed - Pending Review
+                    </AlertTitle>
+                    <AlertDescription className="text-amber-700 dark:text-amber-300">
+                      Congratulations! You have completed all the steps for this journey. 
+                      An admin will review your answers and approve your certification, or get back to you with feedback.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
                 {/* Concept Explanation */}
                 <Card className={`border-${activeSection === 'initiator' ? 'amber' : activeSection === 'cobuilder' ? 'teal' : 'purple'}-500/20 bg-gradient-to-br ${
                   activeSection === 'initiator' ? 'from-amber-500/5 to-orange-500/5' :
