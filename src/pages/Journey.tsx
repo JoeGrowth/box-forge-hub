@@ -23,7 +23,8 @@ import {
   Pencil,
   Play,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Award
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -213,7 +214,7 @@ type ActiveSection = "initiator" | "cobuilder" | "consultant";
 const Journey = () => {
   const { user, loading: authLoading } = useAuth();
   const { loading: onboardingLoading } = useOnboarding();
-  const { journeys, phaseResponses } = useLearningJourneys();
+  const { journeys, phaseResponses, certifications } = useLearningJourneys();
   const [searchParams] = useSearchParams();
   const [activeSection, setActiveSection] = useState<ActiveSection>(() => {
     const section = searchParams.get("section");
@@ -310,7 +311,42 @@ const Journey = () => {
     return stepCompletionStatus[section]?.[stepNumber] || isStepCompletedFromDB(section, stepNumber);
   };
 
+  // Check if a section is certified
+  const isSectionCertified = (section: ActiveSection): boolean => {
+    switch (section) {
+      case "initiator":
+        return certifications.some(c => c.certification_type === "initiator_b4");
+      case "cobuilder":
+        return certifications.some(c => c.certification_type === "cobuilder_b4");
+      case "consultant":
+        return certifications.some(c => c.certification_type === "consultant_b4" || c.certification_type === "scaling_complete");
+      default:
+        return false;
+    }
+  };
+
+  // Get the responses for a specific step
+  const getStepResponses = (section: ActiveSection, stepNumber: number): Record<string, any> | null => {
+    const journeyType = getJourneyTypeForSection(section);
+    const journey = journeys.find(j => j.journey_type === journeyType);
+    
+    if (!journey) return null;
+    
+    // Phase numbers in DB are 0-indexed, step numbers are 1-indexed
+    const phaseNumber = stepNumber - 1;
+    const phaseResponse = phaseResponses.find(
+      pr => pr.journey_id === journey.id && pr.phase_number === phaseNumber
+    );
+    
+    return phaseResponse?.responses || null;
+  };
+
   const handleOpenStep = (section: string, stepNum: number) => {
+    // Don't open dialog if certified - show read-only
+    if (isSectionCertified(section as ActiveSection)) {
+      return;
+    }
+    
     setSelectedStep(stepNum);
     if (section === "initiator") {
       setQuizDialogOpen(true);
@@ -467,8 +503,21 @@ const Journey = () => {
 
               {/* Active Section Content */}
               <div className="space-y-8 animate-fade-in" key={activeSection}>
+                {/* Certified Banner */}
+                {isSectionCertified(activeSection) && (
+                  <Alert className="border-b4-teal/50 bg-teal-50 dark:bg-teal-950/30">
+                    <Award className="h-5 w-5 text-b4-teal" />
+                    <AlertTitle className="text-teal-800 dark:text-teal-200 font-semibold">
+                      Certified - Journey Complete
+                    </AlertTitle>
+                    <AlertDescription className="text-teal-700 dark:text-teal-300">
+                      Congratulations! You have been certified for this journey. Below you can review your submitted answers.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
                 {/* Pending Review Banner */}
-                {shouldShowPendingBanner(activeSection) && (
+                {!isSectionCertified(activeSection) && shouldShowPendingBanner(activeSection) && (
                   <Alert className="border-amber-500/50 bg-amber-50 dark:bg-amber-950/30">
                     <Clock className="h-5 w-5 text-amber-600" />
                     <AlertTitle className="text-amber-800 dark:text-amber-200 font-semibold">
@@ -559,37 +608,68 @@ const Journey = () => {
                                       <Badge variant="outline" className="text-xs">
                                         {step.subtitle}
                                       </Badge>
+                                      {isSectionCertified(activeSection) && (
+                                        <Badge className="bg-b4-teal text-white text-xs">
+                                          <CheckCircle className="w-3 h-3 mr-1" />
+                                          Certified
+                                        </Badge>
+                                      )}
                                     </div>
                                     <h3 className="text-lg font-display font-bold text-foreground">{step.title}</h3>
                                   </div>
-                                  <Button
-                                    variant={isStepCompleted(activeSection, step.step) ? "outline" : "teal"}
-                                    size="sm"
-                                    onClick={() => handleOpenStep(activeSection, step.step)}
-                                    className="shrink-0"
-                                  >
-                                    {isStepCompleted(activeSection, step.step) ? (
-                                      <>
-                                        <CheckCircle className="w-4 h-4 mr-1" />
-                                        Done
-                                      </>
-                                    ) : (
-                                      <>
-                                        <Play className="w-4 h-4 mr-1" />
-                                        Begin
-                                      </>
-                                    )}
-                                  </Button>
+                                  {!isSectionCertified(activeSection) && (
+                                    <Button
+                                      variant={isStepCompleted(activeSection, step.step) ? "outline" : "teal"}
+                                      size="sm"
+                                      onClick={() => handleOpenStep(activeSection, step.step)}
+                                      className="shrink-0"
+                                      disabled={isStepCompleted(activeSection, step.step)}
+                                    >
+                                      {isStepCompleted(activeSection, step.step) ? (
+                                        <>
+                                          <CheckCircle className="w-4 h-4 mr-1" />
+                                          Done
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Play className="w-4 h-4 mr-1" />
+                                          Begin
+                                        </>
+                                      )}
+                                    </Button>
+                                  )}
                                 </div>
                                 <p className="text-sm text-muted-foreground">{step.description}</p>
-                                <ul className="space-y-2">
-                                  {step.details.map((detail, i) => (
-                                    <li key={i} className="flex items-start gap-2 text-sm">
-                                      <CheckCircle className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
-                                      <span className="text-muted-foreground">{detail}</span>
-                                    </li>
-                                  ))}
-                                </ul>
+                                
+                                {/* Show read-only answers when certified */}
+                                {isSectionCertified(activeSection) && getStepResponses(activeSection, step.step) && (
+                                  <div className="mt-4 p-4 bg-muted/50 rounded-lg border border-border/50">
+                                    <h4 className="text-sm font-semibold text-foreground mb-3">Your Submitted Answers</h4>
+                                    <div className="space-y-3">
+                                      {Object.entries(getStepResponses(activeSection, step.step) || {}).map(([key, value]) => (
+                                        <div key={key} className="text-sm">
+                                          <p className="text-muted-foreground font-medium capitalize mb-1">
+                                            {key.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim()}:
+                                          </p>
+                                          <p className="text-foreground bg-background p-2 rounded border border-border/30">
+                                            {typeof value === 'string' ? value : JSON.stringify(value)}
+                                          </p>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                {!isSectionCertified(activeSection) && (
+                                  <ul className="space-y-2">
+                                    {step.details.map((detail, i) => (
+                                      <li key={i} className="flex items-start gap-2 text-sm">
+                                        <CheckCircle className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+                                        <span className="text-muted-foreground">{detail}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
                               </div>
                             </div>
                           </CardContent>
