@@ -645,17 +645,45 @@ const Journey = () => {
                                 {isSectionCertified(activeSection) && getStepResponses(activeSection, step.step) && (
                                   <div className="mt-4 p-4 bg-muted/50 rounded-lg border border-border/50">
                                     <h4 className="text-sm font-semibold text-foreground mb-3">Your Submitted Answers</h4>
-                                    <div className="space-y-3">
-                                      {Object.entries(getStepResponses(activeSection, step.step) || {}).map(([key, value]) => (
-                                        <div key={key} className="text-sm">
-                                          <p className="text-muted-foreground font-medium capitalize mb-1">
-                                            {key.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim()}:
-                                          </p>
-                                          <p className="text-foreground bg-background p-2 rounded border border-border/30">
-                                            {typeof value === 'string' ? value : JSON.stringify(value)}
-                                          </p>
-                                        </div>
-                                      ))}
+                                    <div className="space-y-4">
+                                      {Object.entries(getStepResponses(activeSection, step.step) || {}).map(([key, value]) => {
+                                        // Parse quiz response objects
+                                        const quizData = typeof value === 'object' && value !== null ? value as Record<string, any> : null;
+                                        const question = quizData?.question || key.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
+                                        const answer = quizData?.answer;
+                                        const isCorrect = quizData?.isCorrect;
+                                        
+                                        // Format the answer based on type
+                                        const formatAnswer = (ans: any): string => {
+                                          if (Array.isArray(ans)) {
+                                            return ans.join(' → ');
+                                          }
+                                          if (typeof ans === 'string') {
+                                            return ans;
+                                          }
+                                          return String(ans);
+                                        };
+                                        
+                                        const displayAnswer = quizData ? formatAnswer(answer) : (typeof value === 'string' ? value : JSON.stringify(value));
+                                        
+                                        return (
+                                          <div key={key} className="text-sm border-b border-border/30 pb-3 last:border-0 last:pb-0">
+                                            <p className="text-foreground font-medium mb-2">
+                                              {question}
+                                            </p>
+                                            <div className="flex items-start gap-2">
+                                              <p className="text-muted-foreground bg-background p-2 rounded border border-border/30 flex-1">
+                                                {displayAnswer}
+                                              </p>
+                                              {isCorrect !== null && isCorrect !== undefined && (
+                                                <Badge variant={isCorrect ? "default" : "secondary"} className={isCorrect ? "bg-green-500 text-white" : ""}>
+                                                  {isCorrect ? "✓" : "—"}
+                                                </Badge>
+                                              )}
+                                            </div>
+                                          </div>
+                                        );
+                                      })}
                                     </div>
                                   </div>
                                 )}
