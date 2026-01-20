@@ -227,12 +227,15 @@ const Scale = () => {
 
     const { data: responses } = await supabase
       .from("journey_phase_responses")
-      .select("phase_number, is_completed")
+      .select("phase_number, phase_name, is_completed")
       .eq("journey_id", journey.id);
 
     if (!responses) return;
 
-    const completedPhases = responses.filter(r => r.is_completed).map(r => r.phase_number);
+    // Filter for Scale business task phases by phase_name (not Consultant quiz phases)
+    const scalePhaseNames = ["Personal Entity", "Company Formation", "Process Implementation", "Autonomous Structure", "Decentralized Structure"];
+    const scaleResponses = responses.filter(r => scalePhaseNames.includes(r.phase_name));
+    const completedPhases = scaleResponses.filter(r => r.is_completed).map(r => r.phase_number);
     
     setStepCompletionStatus({
       1: completedPhases.includes(1),
