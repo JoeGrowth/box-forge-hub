@@ -196,7 +196,7 @@ const Profile = () => {
 
   const handleRetryOnboarding = async () => {
     if (!user || !onboardingState) return;
-    
+
     const currentRetryCount = onboardingState.retry_count || 0;
     if (currentRetryCount >= 3) {
       toast({
@@ -215,7 +215,7 @@ const Profile = () => {
         .update({
           onboarding_completed: false,
           current_step: 1,
-          journey_status: 'in_progress',
+          journey_status: "in_progress",
           retry_count: currentRetryCount + 1,
         })
         .eq("user_id", user.id);
@@ -227,7 +227,7 @@ const Profile = () => {
         .from("natural_roles")
         .update({
           description: null,
-          status: 'pending',
+          status: "pending",
           promise_check: null,
           practice_check: null,
           practice_entities: null,
@@ -562,10 +562,13 @@ const Profile = () => {
     if (onboardingState.journey_status === "rejected") {
       const retryCount = (onboardingState as any).retry_count || 0;
       const retriesLeft = 3 - retryCount;
-      return { 
-        label: retriesLeft > 0 ? `Application Rejected (${retriesLeft} retries left)` : "Application Rejected (No retries left)", 
-        color: "text-b4-coral", 
-        icon: AlertCircle 
+      return {
+        label:
+          retriesLeft > 0
+            ? `Application Rejected (${retriesLeft} retries left)`
+            : "Application Rejected (No retries left)",
+        color: "text-b4-coral",
+        icon: AlertCircle,
       };
     }
     if (naturalRole?.status === "assistance_requested") {
@@ -708,24 +711,21 @@ const Profile = () => {
                   <div className="flex-1">
                     <h2 className="font-display text-xl font-bold text-foreground mb-2">Application Rejected</h2>
                     <p className="text-muted-foreground mb-4">
-                      Your previous application was not approved. You can redo your onboarding journey to submit a new application.
+                      Your previous application was not approved. You can redo your onboarding journey to submit a new
+                      application.
                     </p>
-                    
+
                     {(() => {
                       const retryCount = onboardingState?.retry_count || 0;
                       const retriesLeft = 3 - retryCount;
-                      
+
                       if (retriesLeft > 0) {
                         return (
                           <div className="space-y-3">
                             <p className="text-sm text-muted-foreground">
-                              <strong>{retriesLeft}</strong> retry attempt{retriesLeft !== 1 ? 's' : ''} remaining
+                              <strong>{retriesLeft}</strong> retry attempt{retriesLeft !== 1 ? "s" : ""} remaining
                             </p>
-                            <Button 
-                              variant="teal" 
-                              onClick={handleRetryOnboarding}
-                              disabled={isRetryingOnboarding}
-                            >
+                            <Button variant="teal" onClick={handleRetryOnboarding} disabled={isRetryingOnboarding}>
                               {isRetryingOnboarding ? (
                                 <>
                                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -1071,18 +1071,19 @@ const Profile = () => {
             )}
 
             {/* Pending Approval Status - but NOT for support_needed users */}
-            {onboardingState?.journey_status === "pending_approval" && naturalRole?.status !== "assistance_requested" && (
-              <div className="bg-amber-500/10 rounded-3xl border border-amber-500/20 p-8 mb-8">
-                <div className="flex items-center gap-3 mb-2">
-                  <Clock className="w-6 h-6 text-amber-500" />
-                  <h2 className="font-display text-xl font-bold text-foreground">Awaiting Admin Approval</h2>
+            {onboardingState?.journey_status === "pending_approval" &&
+              naturalRole?.status !== "assistance_requested" && (
+                <div className="bg-amber-500/10 rounded-3xl border border-amber-500/20 p-8 mb-8">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Clock className="w-6 h-6 text-amber-500" />
+                    <h2 className="font-display text-xl font-bold text-foreground">Awaiting Admin Approval</h2>
+                  </div>
+                  <p className="text-muted-foreground">
+                    Your onboarding journey is complete! Our admin team is reviewing your application. You'll be
+                    notified once approved.
+                  </p>
                 </div>
-                <p className="text-muted-foreground">
-                  Your Co-Builder journey is complete! Our admin team is reviewing your application. You'll be notified
-                  once approved.
-                </p>
-              </div>
-            )}
+              )}
 
             {/* Support Needed - For users who requested help with Natural Role */}
             {naturalRole?.status === "assistance_requested" && (
@@ -1092,8 +1093,8 @@ const Profile = () => {
                   <h2 className="font-display text-xl font-bold text-foreground">Support Needed</h2>
                 </div>
                 <p className="text-muted-foreground mb-4">
-                  You requested help defining your Natural Role. Our team will reach out to assist you. 
-                  Once you define your Natural Role, you can continue your onboarding journey and submit for approval.
+                  You requested help defining your Natural Role. Our team will reach out to assist you. Once you define
+                  your Natural Role, you can continue your onboarding journey and submit for approval.
                 </p>
                 <Button variant="teal" onClick={() => navigate("/onboarding")}>
                   Define My Natural Role
