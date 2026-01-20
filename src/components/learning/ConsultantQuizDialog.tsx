@@ -405,14 +405,18 @@ export function ConsultantQuizDialog({
       
       // Update journey current phase
       const isLastStep = stepNumber === 5;
-      await supabase
+      const { error: updateError } = await supabase
         .from("learning_journeys")
         .update({
-          current_phase: stepNumber,
+          current_phase: stepNumber - 1, // 0-indexed to match phase_number
           status: isLastStep ? "pending_approval" : "in_progress",
           completed_at: isLastStep ? new Date().toISOString() : null,
         })
         .eq("id", journeyId);
+      
+      if (updateError) {
+        console.error("Failed to update journey status:", updateError);
+      }
       
       onComplete(stepNumber);
       toast.success(`Step ${stepNumber} completed!`, {
