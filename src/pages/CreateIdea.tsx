@@ -203,7 +203,7 @@ const CreateIdea = () => {
                   </ul>
                 </div>
 
-                <Link to="/profile">
+                <Link to="/journey?section=initiator">
                   <Button variant="teal" size="lg">
                     <GraduationCap className="w-4 h-4 mr-2" />
                     Start Initiator Journey

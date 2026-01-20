@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
@@ -208,7 +209,14 @@ type ActiveSection = "initiator" | "cobuilder" | "consultant";
 const Journey = () => {
   const { user, loading: authLoading } = useAuth();
   const { loading: onboardingLoading } = useOnboarding();
-  const [activeSection, setActiveSection] = useState<ActiveSection>("initiator");
+  const [searchParams] = useSearchParams();
+  const [activeSection, setActiveSection] = useState<ActiveSection>(() => {
+    const section = searchParams.get("section");
+    if (section === "initiator" || section === "cobuilder" || section === "consultant") {
+      return section;
+    }
+    return "initiator";
+  });
   const [stepCompletionStatus, setStepCompletionStatus] = useState<Record<string, Record<number, boolean>>>({
     initiator: {},
     cobuilder: {},
