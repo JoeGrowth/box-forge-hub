@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Menu, X, LogOut, User, Shield } from "lucide-react";
+import { Menu, X, LogOut, User, Shield, Lock } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLearningJourneys } from "@/hooks/useLearningJourneys";
 import { useUserStatus } from "@/hooks/useUserStatus";
@@ -43,20 +43,13 @@ const boostedUserLinks = [
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
   const { journeys } = useLearningJourneys();
-  const { canAccessBoosting, canAccessScaling } = useUserStatus();
+  const { userStatus, canAccessBoosting, canAccessScaling, loading: statusLoading } = useUserStatus();
 
   // Count journeys in progress
   const journeysInProgress = journeys.filter(j => j.status === "in_progress").length;
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   useEffect(() => {
     const checkUserStatus = async () => {
@@ -94,38 +87,32 @@ export function Navbar() {
   const navLinks = getNavLinks();
 
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? "bg-background/95 backdrop-blur-md shadow-soft border-b border-border"
-          : "bg-transparent"
-      }`}
-    >
+    <nav className="fixed top-0 left-0 right-0 z-50 glass">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-18">
+        <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-teal flex items-center justify-center shadow-glow-teal transition-transform group-hover:scale-105">
-              <span className="text-white font-bold text-lg">B4</span>
+          <Link to="/" className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-lg">B4</span>
             </div>
-            <span className="font-semibold text-lg text-foreground">Platform</span>
+            <span className="font-display font-bold text-xl text-foreground">Platform</span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                className={`text-sm font-medium transition-colors hover:text-b4-teal flex items-center gap-1.5 ${
                   location.pathname === link.path
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    ? "text-b4-teal"
+                    : "text-muted-foreground"
                 }`}
               >
                 {link.name}
                 {link.name === "Boost" && user && journeysInProgress > 0 && (
-                  <Badge className="ml-2 bg-accent text-accent-foreground text-xs px-1.5 py-0 min-w-[18px] h-[18px]">
+                  <Badge className="bg-b4-teal text-white text-xs px-1.5 py-0 min-w-[18px] h-[18px] flex items-center justify-center">
                     {journeysInProgress}
                   </Badge>
                 )}
@@ -150,11 +137,12 @@ export function Navbar() {
                   <Button variant="ghost" size="sm" asChild>
                     <Link to="/profile" className="flex items-center gap-2">
                       <User size={16} />
-                      <span className="max-w-[100px] truncate">{user.user_metadata?.full_name || user.email}</span>
+                      <span className="max-w-[120px] truncate">{user.user_metadata?.full_name || user.email}</span>
                     </Link>
                   </Button>
                   <Button variant="ghost" size="sm" onClick={async () => { await signOut(); }}>
-                    <LogOut size={16} />
+                    <LogOut size={16} className="mr-1" />
+                    Sign Out
                   </Button>
                 </>
               ) : (
@@ -172,7 +160,7 @@ export function Navbar() {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 text-foreground rounded-lg hover:bg-muted transition-colors"
+            className="md:hidden p-2 text-foreground"
             onClick={() => setIsOpen(!isOpen)}
             aria-label="Toggle menu"
           >
@@ -183,47 +171,47 @@ export function Navbar() {
         {/* Mobile Navigation */}
         {isOpen && (
           <div className="md:hidden py-4 border-t border-border animate-fade-in">
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-3">
               {navLinks.map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
                     location.pathname === link.path
-                      ? "bg-primary/10 text-primary"
+                      ? "bg-muted text-b4-teal"
                       : "text-muted-foreground hover:bg-muted"
                   }`}
                   onClick={() => setIsOpen(false)}
                 >
                   {link.name}
                   {link.name === "Boost" && user && journeysInProgress > 0 && (
-                    <Badge className="ml-2 bg-accent text-accent-foreground text-xs px-1.5 py-0">
+                    <Badge className="bg-b4-teal text-white text-xs px-1.5 py-0 min-w-[18px] h-[18px] flex items-center justify-center">
                       {journeysInProgress}
                     </Badge>
                   )}
                 </Link>
               ))}
-              <div className="flex flex-col gap-2 px-4 pt-4 border-t border-border mt-2">
+              <div className="flex flex-col gap-2 px-4 pt-2">
                 {!loading && (
                   user ? (
                     <>
                       <Button variant="outline" size="sm" asChild>
                         <Link to="/profile" onClick={() => setIsOpen(false)}>
-                          <User size={16} className="mr-2" />
+                          <User size={16} className="mr-1" />
                           Profile
                         </Link>
                       </Button>
                       <Button variant="ghost" size="sm" onClick={async () => { await signOut(); setIsOpen(false); }}>
-                        <LogOut size={16} className="mr-2" />
+                        <LogOut size={16} className="mr-1" />
                         Sign Out
                       </Button>
                     </>
                   ) : (
                     <>
-                      <Button variant="outline" size="sm" asChild>
+                      <Button variant="outline" size="sm" className="flex-1" asChild>
                         <Link to="/login" onClick={() => setIsOpen(false)}>Log In</Link>
                       </Button>
-                      <Button variant="teal" size="sm" asChild>
+                      <Button variant="teal" size="sm" className="flex-1" asChild>
                         <Link to="/auth?mode=signup" onClick={() => setIsOpen(false)}>Get Started</Link>
                       </Button>
                     </>

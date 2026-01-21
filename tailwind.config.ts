@@ -7,18 +7,15 @@ export default {
   theme: {
     container: {
       center: true,
-      padding: "1.5rem",
+      padding: "2rem",
       screens: {
-        sm: "640px",
-        md: "768px",
-        lg: "1024px",
-        xl: "1280px",
         "2xl": "1400px",
       },
     },
     extend: {
       fontFamily: {
-        sans: ["Outfit", "system-ui", "-apple-system", "sans-serif"],
+        sans: ["Outfit", "system-ui", "sans-serif"],
+        display: ["Outfit", "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -54,23 +51,6 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        success: {
-          DEFAULT: "hsl(var(--success))",
-          foreground: "hsl(var(--success-foreground))",
-        },
-        warning: {
-          DEFAULT: "hsl(var(--warning))",
-          foreground: "hsl(var(--warning-foreground))",
-        },
-        // B4 Platform specific colors
-        b4: {
-          navy: "hsl(var(--b4-navy))",
-          "navy-light": "hsl(var(--b4-navy-light))",
-          teal: "hsl(var(--b4-teal))",
-          "teal-light": "hsl(var(--b4-teal-light))",
-          coral: "hsl(var(--b4-coral))",
-          "coral-light": "hsl(var(--b4-coral-light))",
-        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -80,6 +60,14 @@ export default {
           "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
+        },
+        b4: {
+          navy: "hsl(var(--b4-navy))",
+          "navy-light": "hsl(var(--b4-navy-light))",
+          teal: "hsl(var(--b4-teal))",
+          "teal-light": "hsl(var(--b4-teal-light))",
+          coral: "hsl(var(--b4-coral))",
+          "coral-light": "hsl(var(--b4-coral-light))",
         },
       },
       borderRadius: {
@@ -97,8 +85,8 @@ export default {
           to: { height: "0" },
         },
         "fade-in": {
-          from: { opacity: "0" },
-          to: { opacity: "1" },
+          from: { opacity: "0", transform: "translateY(20px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
         },
         "slide-in-right": {
           from: { opacity: "0", transform: "translateX(20px)" },
@@ -112,7 +100,7 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "fade-in": "fade-in 0.5s ease-out forwards",
+        "fade-in": "fade-in 0.6s ease-out forwards",
         "slide-in-right": "slide-in-right 0.5s ease-out forwards",
         "scale-in": "scale-in 0.4s ease-out forwards",
       },
