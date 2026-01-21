@@ -2,111 +2,108 @@
 @tailwind components;
 @tailwind utilities;
 
-@import '@fontsource/inter/400.css';
-@import '@fontsource/inter/500.css';
-@import '@fontsource/inter/600.css';
-@import '@fontsource/inter/700.css';
+@import '@fontsource/outfit/400.css';
+@import '@fontsource/outfit/500.css';
+@import '@fontsource/outfit/600.css';
+@import '@fontsource/outfit/700.css';
 
 @layer base {
   :root {
-    /* Neutral dark base with soft teal accent - 2025 SaaS Design System */
-    --background: 210 15% 97%;
-    --foreground: 220 25% 12%;
+    /* B4 Platform Design System - Navy/Teal/Coral */
+    --b4-navy: 220 40% 13%;
+    --b4-navy-light: 220 30% 20%;
+    --b4-teal: 175 60% 45%;
+    --b4-teal-light: 175 55% 55%;
+    --b4-coral: 15 85% 60%;
+    --b4-coral-light: 15 80% 70%;
+    
+    --background: 210 20% 98%;
+    --foreground: 220 40% 13%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 25% 12%;
+    --card-foreground: 220 40% 13%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 25% 12%;
+    --popover-foreground: 220 40% 13%;
 
-    /* Primary - Muted teal/emerald */
-    --primary: 168 50% 38%;
+    --primary: 175 60% 45%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary - Slate */
-    --secondary: 215 20% 93%;
-    --secondary-foreground: 220 20% 25%;
+    --secondary: 220 15% 94%;
+    --secondary-foreground: 220 40% 13%;
 
-    --muted: 210 15% 94%;
-    --muted-foreground: 215 15% 46%;
+    --muted: 220 15% 94%;
+    --muted-foreground: 220 15% 45%;
 
-    /* Accent - Subtle warm tone */
-    --accent: 210 15% 94%;
-    --accent-foreground: 220 25% 12%;
+    --accent: 15 85% 60%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 20% 90%;
-    --input: 214 20% 90%;
-    --ring: 168 50% 38%;
+    --border: 220 15% 90%;
+    --input: 220 15% 90%;
+    --ring: 175 60% 45%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    /* Semantic tokens */
     --success: 152 60% 40%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    /* Sidebar */
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 220 20% 25%;
-    --sidebar-primary: 168 50% 38%;
+    --sidebar-background: 220 40% 13%;
+    --sidebar-foreground: 210 20% 95%;
+    --sidebar-primary: 175 60% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 15% 96%;
-    --sidebar-accent-foreground: 220 20% 25%;
-    --sidebar-border: 214 20% 92%;
-    --sidebar-ring: 168 50% 38%;
+    --sidebar-accent: 220 30% 20%;
+    --sidebar-accent-foreground: 210 20% 95%;
+    --sidebar-border: 220 30% 25%;
+    --sidebar-ring: 175 60% 45%;
   }
 
   .dark {
-    /* Dark mode - Navy/charcoal base */
-    --background: 222 25% 8%;
+    --background: 220 40% 8%;
     --foreground: 210 20% 95%;
 
-    --card: 222 25% 11%;
+    --card: 220 40% 11%;
     --card-foreground: 210 20% 95%;
 
-    --popover: 222 25% 11%;
+    --popover: 220 40% 11%;
     --popover-foreground: 210 20% 95%;
 
-    /* Primary - Muted teal */
-    --primary: 168 45% 50%;
-    --primary-foreground: 222 25% 8%;
+    --primary: 175 55% 50%;
+    --primary-foreground: 220 40% 8%;
 
-    /* Secondary - Dark slate */
-    --secondary: 222 20% 18%;
+    --secondary: 220 30% 18%;
     --secondary-foreground: 210 20% 85%;
 
-    --muted: 222 20% 15%;
-    --muted-foreground: 215 15% 55%;
+    --muted: 220 30% 15%;
+    --muted-foreground: 220 15% 55%;
 
-    --accent: 222 20% 18%;
-    --accent-foreground: 210 20% 95%;
+    --accent: 15 80% 55%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62% 45%;
+    --destructive: 0 62% 50%;
     --destructive-foreground: 210 20% 95%;
 
-    --border: 222 20% 18%;
-    --input: 222 20% 18%;
-    --ring: 168 45% 50%;
+    --border: 220 30% 18%;
+    --input: 220 30% 18%;
+    --ring: 175 55% 50%;
 
-    /* Semantic tokens */
     --success: 152 55% 45%;
     --success-foreground: 0 0% 100%;
     --warning: 38 88% 55%;
     --warning-foreground: 0 0% 0%;
 
-    /* Sidebar */
-    --sidebar-background: 222 25% 10%;
+    --sidebar-background: 220 40% 6%;
     --sidebar-foreground: 210 20% 90%;
-    --sidebar-primary: 168 45% 50%;
+    --sidebar-primary: 175 55% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 20% 15%;
+    --sidebar-accent: 220 30% 12%;
     --sidebar-accent-foreground: 210 20% 90%;
-    --sidebar-border: 222 20% 15%;
-    --sidebar-ring: 168 45% 50%;
+    --sidebar-border: 220 30% 15%;
+    --sidebar-ring: 175 55% 50%;
   }
 }
 
@@ -126,42 +123,102 @@
 }
 
 @layer utilities {
-  /* Clean, subtle background for sections */
-  .bg-subtle {
-    background-color: hsl(var(--muted) / 0.4);
+  /* Gradient backgrounds */
+  .bg-gradient-hero {
+    background: linear-gradient(135deg, hsl(var(--b4-navy)) 0%, hsl(var(--b4-navy-light)) 100%);
   }
 
-  /* Subtle card shadow */
+  .bg-gradient-teal {
+    background: linear-gradient(135deg, hsl(var(--b4-teal)) 0%, hsl(var(--b4-teal-light)) 100%);
+  }
+
+  .bg-gradient-coral {
+    background: linear-gradient(135deg, hsl(var(--b4-coral)) 0%, hsl(var(--b4-coral-light)) 100%);
+  }
+
+  /* Glass effect */
+  .glass {
+    background: hsl(var(--card) / 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+
+  /* Shadows */
   .shadow-soft {
-    box-shadow: 0 1px 3px 0 hsl(var(--foreground) / 0.04),
-                0 1px 2px -1px hsl(var(--foreground) / 0.04);
+    box-shadow: 0 4px 20px -4px hsl(var(--foreground) / 0.08);
   }
 
-  /* Elevated card shadow */
   .shadow-elevated {
-    box-shadow: 0 4px 6px -1px hsl(var(--foreground) / 0.06),
-                0 2px 4px -2px hsl(var(--foreground) / 0.04);
+    box-shadow: 0 8px 30px -8px hsl(var(--foreground) / 0.12);
   }
 
-  /* Focus ring utility */
+  .shadow-glow-teal {
+    box-shadow: 0 0 30px -5px hsl(var(--b4-teal) / 0.4);
+  }
+
+  .shadow-glow-coral {
+    box-shadow: 0 0 30px -5px hsl(var(--b4-coral) / 0.4);
+  }
+
+  /* Focus ring */
   .focus-ring {
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
   }
 
-  /* Text balance for headings */
+  /* Text balance */
   .text-balance {
     text-wrap: balance;
   }
 
-  /* Container width utilities */
   .max-w-readable {
     max-width: 65ch;
   }
 }
 
-/* Subtle transition for interactive elements */
+/* Animations */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
 @layer utilities {
-  .transition-subtle {
-    transition: all 150ms ease;
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
+  }
+
+  .animate-slide-in-right {
+    animation: slide-in-right 0.5s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.4s ease-out forwards;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-pulse-soft {
+    animation: pulse-soft 2s ease-in-out infinite;
   }
 }
