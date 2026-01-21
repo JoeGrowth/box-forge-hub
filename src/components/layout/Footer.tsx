@@ -31,30 +31,30 @@ const socialLinks = [
 
 export function Footer() {
   return (
-    <footer className="bg-foreground text-background">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
+    <footer className="bg-b4-navy text-white">
+      <div className="container mx-auto px-4 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-12">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <Link to="/" className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-md bg-background/10 flex items-center justify-center">
-                <span className="text-background font-semibold text-sm">B4</span>
+            <Link to="/" className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-gradient-teal flex items-center justify-center shadow-glow-teal">
+                <span className="text-white font-bold text-lg">B4</span>
               </div>
-              <span className="font-semibold">Platform</span>
+              <span className="font-semibold text-xl">Platform</span>
             </Link>
-            <p className="text-background/60 text-sm leading-relaxed mb-6 max-w-sm">
+            <p className="text-white/70 text-sm leading-relaxed mb-8 max-w-sm">
               Building the future through equity-based collaboration. Where entrepreneurs meet 
               co-builders and turn ideas into impactful startups.
             </p>
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               {socialLinks.map((social) => (
                 <a
                   key={social.label}
                   href={social.href}
-                  className="w-9 h-9 rounded-md bg-background/10 flex items-center justify-center hover:bg-background/20 transition-colors"
+                  className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center hover:bg-b4-teal hover:shadow-glow-teal transition-all duration-300"
                   aria-label={social.label}
                 >
-                  <social.icon size={16} />
+                  <social.icon size={18} />
                 </a>
               ))}
             </div>
@@ -62,13 +62,13 @@ export function Footer() {
 
           {/* Links */}
           <div>
-            <h4 className="font-medium mb-4 text-sm">Platform</h4>
-            <ul className="space-y-2">
+            <h4 className="font-semibold mb-5 text-white">Platform</h4>
+            <ul className="space-y-3">
               {footerLinks.platform.map((link) => (
                 <li key={link.path}>
                   <Link
                     to={link.path}
-                    className="text-sm text-background/60 hover:text-background transition-colors"
+                    className="text-sm text-white/60 hover:text-b4-teal transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -78,13 +78,13 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-medium mb-4 text-sm">Programs</h4>
-            <ul className="space-y-2">
+            <h4 className="font-semibold mb-5 text-white">Programs</h4>
+            <ul className="space-y-3">
               {footerLinks.programs.map((link) => (
                 <li key={link.path}>
                   <Link
                     to={link.path}
-                    className="text-sm text-background/60 hover:text-background transition-colors"
+                    className="text-sm text-white/60 hover:text-b4-teal transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -94,13 +94,13 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-medium mb-4 text-sm">Join Us</h4>
-            <ul className="space-y-2">
+            <h4 className="font-semibold mb-5 text-white">Join Us</h4>
+            <ul className="space-y-3">
               {footerLinks.join.map((link) => (
                 <li key={link.path}>
                   <Link
                     to={link.path}
-                    className="text-sm text-background/60 hover:text-background transition-colors"
+                    className="text-sm text-white/60 hover:text-b4-teal transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -110,15 +110,15 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-background/10 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-background/50">
+        <div className="border-t border-white/10 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-sm text-white/50">
             © {new Date().getFullYear()} B4 Platform. All rights reserved.
           </p>
-          <div className="flex gap-6 text-sm text-background/50">
-            <Link to="/privacy" className="hover:text-background transition-colors">
+          <div className="flex gap-6 text-sm text-white/50">
+            <Link to="/privacy" className="hover:text-b4-teal transition-colors">
               Privacy Policy
             </Link>
-            <Link to="/terms" className="hover:text-background transition-colors">
+            <Link to="/terms" className="hover:text-b4-teal transition-colors">
               Terms of Service
             </Link>
           </div>
