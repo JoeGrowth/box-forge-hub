@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { supabase } from "@/integrations/supabase/client";
+import ResumeEditBar from "@/components/resume/ResumeEditBar";
 import { 
   Save, 
   History, 
@@ -83,22 +84,28 @@ const Resume = () => {
   const startEditing = (sectionId?: string) => {
     setIsEditing(true);
     setActiveSection(sectionId || null);
-    
-    // Scroll to change notes first, then to section
+
+    // Single smooth scroll: go straight where the user clicked.
     setTimeout(() => {
-      document.getElementById('change-notes-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      
       if (sectionId) {
-        // After change notes is visible, scroll to the target section
-        setTimeout(() => {
-          document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          // Focus the textarea in that section
-          const section = document.getElementById(sectionId);
-          const textarea = section?.querySelector('textarea');
-          textarea?.focus();
-        }, 400);
+        document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "center" });
+        const section = document.getElementById(sectionId);
+        const textarea = section?.querySelector("textarea") as HTMLTextAreaElement | null;
+        textarea?.focus();
+      } else {
+        document.getElementById("change-notes-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        const notes = document.getElementById("changeNotes") as HTMLTextAreaElement | null;
+        notes?.focus();
       }
-    }, 100);
+    }, 50);
+  };
+
+  const scrollToChangeNotes = () => {
+    document.getElementById("change-notes-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setTimeout(() => {
+      const notes = document.getElementById("changeNotes") as HTMLTextAreaElement | null;
+      notes?.focus();
+    }, 150);
   };
 
   const togglePromiseCheck = async () => {
@@ -375,7 +382,7 @@ const Resume = () => {
         </section>
 
         <section className="py-12">
-          <div className="container max-w-5xl mx-auto px-4">
+          <div className={`container max-w-5xl mx-auto px-4 ${isEditing ? "pb-24" : ""}`}>
 
             {/* Support Needed Banner */}
             {naturalRole?.status === "assistance_requested" && (
@@ -906,6 +913,15 @@ const Resume = () => {
 
           </div>
         </section>
+
+        <ResumeEditBar
+          open={isEditing}
+          isSaving={isSaving}
+          canSave={!!changeNotes.trim()}
+          onCancel={() => setIsEditing(false)}
+          onSave={handleSave}
+          onScrollToChangeNotes={scrollToChangeNotes}
+        />
       </main>
       <Footer />
     </div>
