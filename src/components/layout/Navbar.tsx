@@ -21,6 +21,7 @@ const guestNavLinks = [
 const appliedUserLinks = [
   { name: "Opportunities", path: "/opportunities" },
   { name: "People", path: "/cobuilders" },
+  { name: "Resume", path: "/resume" },
 ];
 
 // Links for approved users (includes Boosting)

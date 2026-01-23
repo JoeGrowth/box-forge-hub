@@ -54,6 +54,7 @@ import {
   Loader2,
   ChevronDown,
   MessageSquare,
+  FileText,
 } from "lucide-react";
 
 interface Profile {
@@ -798,6 +799,51 @@ const Profile = () => {
                       <AlertCircle className="w-5 h-5 text-muted-foreground" />
                     )}
                     <span className="text-sm text-foreground">Consulting</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Resume Section - Available to all users with onboarding data */}
+            {naturalRole && (
+              <div className="bg-card rounded-3xl border border-border p-8 mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-b4-teal/10 flex items-center justify-center">
+                      <FileText className="w-5 h-5 text-b4-teal" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground">Your Resume</h3>
+                      <p className="text-sm text-muted-foreground">
+                        View and manage your professional profile
+                      </p>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => navigate("/resume")}>
+                    <FileText className="w-4 h-4 mr-2" />
+                    View Resume
+                  </Button>
+                </div>
+
+                <div className="bg-muted/50 rounded-xl p-4">
+                  <div className="grid sm:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Natural Role:</span>
+                      <p className="text-foreground font-medium mt-1">
+                        {naturalRole.description ? naturalRole.description.substring(0, 80) + (naturalRole.description.length > 80 ? '...' : '') : 'Not defined'}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Experience:</span>
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {naturalRole.practice_check && <Badge variant="secondary" className="text-xs">Practice</Badge>}
+                        {naturalRole.training_check && <Badge variant="secondary" className="text-xs">Training</Badge>}
+                        {naturalRole.consulting_check && <Badge variant="secondary" className="text-xs">Consulting</Badge>}
+                        {!naturalRole.practice_check && !naturalRole.training_check && !naturalRole.consulting_check && (
+                          <span className="text-muted-foreground italic">Not yet defined</span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
