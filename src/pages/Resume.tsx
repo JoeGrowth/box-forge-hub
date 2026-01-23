@@ -374,13 +374,19 @@ const Resume = () => {
               
               {/* Quick Stats Overview */}
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
-                <div className={`rounded-xl p-4 text-center ${naturalRole.description ? 'bg-b4-teal/10 border border-b4-teal/20' : 'bg-muted/50 border border-dashed border-muted-foreground/20'}`}>
+                <button
+                  onClick={() => {
+                    setIsEditing(true);
+                    document.getElementById('section-natural-role')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className={`rounded-xl p-4 text-center transition-all hover:scale-[1.02] ${naturalRole.description ? 'bg-b4-teal/10 border border-b4-teal/20' : 'bg-muted/50 border border-dashed border-muted-foreground/20 hover:border-b4-teal/40 hover:bg-b4-teal/5'}`}
+                >
                   <Target className={`w-5 h-5 mx-auto mb-1 ${naturalRole.description ? 'text-b4-teal' : 'text-muted-foreground'}`} />
                   <p className="text-xs text-muted-foreground">Natural Role</p>
                   <p className={`text-sm font-medium ${naturalRole.description ? 'text-b4-teal' : 'text-muted-foreground'}`}>
-                    {naturalRole.description ? '✓' : '—'}
+                    {naturalRole.description ? '✓' : 'Add +'}
                   </p>
-                </div>
+                </button>
                 <div className={`rounded-xl p-4 text-center ${naturalRole.promise_check ? 'bg-b4-teal/10 border border-b4-teal/20' : 'bg-muted/50 border border-dashed border-muted-foreground/20'}`}>
                   <Sparkles className={`w-5 h-5 mx-auto mb-1 ${naturalRole.promise_check ? 'text-b4-teal' : 'text-muted-foreground'}`} />
                   <p className="text-xs text-muted-foreground">Promise</p>
@@ -388,27 +394,45 @@ const Resume = () => {
                     {naturalRole.promise_check ? '✓' : '—'}
                   </p>
                 </div>
-                <div className={`rounded-xl p-4 text-center ${naturalRole.practice_check ? 'bg-b4-teal/10 border border-b4-teal/20' : 'bg-amber-500/10 border border-dashed border-amber-500/30'}`}>
+                <button
+                  onClick={() => {
+                    setIsEditing(true);
+                    document.getElementById('section-practice')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className={`rounded-xl p-4 text-center transition-all hover:scale-[1.02] ${naturalRole.practice_check ? 'bg-b4-teal/10 border border-b4-teal/20' : 'bg-amber-500/10 border border-dashed border-amber-500/30 hover:border-amber-500/50 hover:bg-amber-500/15'}`}
+                >
                   <Briefcase className={`w-5 h-5 mx-auto mb-1 ${naturalRole.practice_check ? 'text-b4-teal' : 'text-amber-600'}`} />
                   <p className="text-xs text-muted-foreground">Practice</p>
                   <p className={`text-sm font-medium ${naturalRole.practice_check ? 'text-b4-teal' : 'text-amber-600'}`}>
                     {naturalRole.practice_check ? `${naturalRole.practice_case_studies || 0} cases` : 'Add +'}
                   </p>
-                </div>
-                <div className={`rounded-xl p-4 text-center ${naturalRole.training_check ? 'bg-b4-teal/10 border border-b4-teal/20' : 'bg-amber-500/10 border border-dashed border-amber-500/30'}`}>
+                </button>
+                <button
+                  onClick={() => {
+                    setIsEditing(true);
+                    document.getElementById('section-training')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className={`rounded-xl p-4 text-center transition-all hover:scale-[1.02] ${naturalRole.training_check ? 'bg-b4-teal/10 border border-b4-teal/20' : 'bg-amber-500/10 border border-dashed border-amber-500/30 hover:border-amber-500/50 hover:bg-amber-500/15'}`}
+                >
                   <GraduationCap className={`w-5 h-5 mx-auto mb-1 ${naturalRole.training_check ? 'text-b4-teal' : 'text-amber-600'}`} />
                   <p className="text-xs text-muted-foreground">Training</p>
                   <p className={`text-sm font-medium ${naturalRole.training_check ? 'text-b4-teal' : 'text-amber-600'}`}>
                     {naturalRole.training_check ? `${naturalRole.training_count || 0} trained` : 'Add +'}
                   </p>
-                </div>
-                <div className={`rounded-xl p-4 text-center ${naturalRole.consulting_check ? 'bg-b4-teal/10 border border-b4-teal/20' : 'bg-amber-500/10 border border-dashed border-amber-500/30'}`}>
+                </button>
+                <button
+                  onClick={() => {
+                    setIsEditing(true);
+                    document.getElementById('section-consulting')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className={`rounded-xl p-4 text-center transition-all hover:scale-[1.02] ${naturalRole.consulting_check ? 'bg-b4-teal/10 border border-b4-teal/20' : 'bg-amber-500/10 border border-dashed border-amber-500/30 hover:border-amber-500/50 hover:bg-amber-500/15'}`}
+                >
                   <Users className={`w-5 h-5 mx-auto mb-1 ${naturalRole.consulting_check ? 'text-b4-teal' : 'text-amber-600'}`} />
                   <p className="text-xs text-muted-foreground">Consulting</p>
                   <p className={`text-sm font-medium ${naturalRole.consulting_check ? 'text-b4-teal' : 'text-amber-600'}`}>
                     {naturalRole.consulting_check ? '✓' : 'Add +'}
                   </p>
-                </div>
+                </button>
               </div>
 
               {/* Header Controls */}
@@ -564,7 +588,7 @@ const Resume = () => {
               {/* Resume Cards */}
               <div className="grid gap-6">
                 {/* Natural Role Definition */}
-                <Card className={`transition-all ${!naturalRole?.description && !isEditing ? 'border-dashed border-muted-foreground/30' : ''}`}>
+                <Card id="section-natural-role" className={`transition-all scroll-mt-24 ${!naturalRole?.description && !isEditing ? 'border-dashed border-muted-foreground/30' : ''}`}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2">
@@ -601,7 +625,7 @@ const Resume = () => {
                 </Card>
 
                 {/* Practice Experience */}
-                <Card className={`transition-all ${!naturalRole?.practice_check && !isEditing ? 'border-dashed border-amber-500/30 bg-amber-500/5' : ''}`}>
+                <Card id="section-practice" className={`transition-all scroll-mt-24 ${!naturalRole?.practice_check && !isEditing ? 'border-dashed border-amber-500/30 bg-amber-500/5' : ''}`}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2">
@@ -643,7 +667,7 @@ const Resume = () => {
                 </Card>
 
                 {/* Training Experience */}
-                <Card className={`transition-all ${!naturalRole?.training_check && !isEditing ? 'border-dashed border-amber-500/30 bg-amber-500/5' : ''}`}>
+                <Card id="section-training" className={`transition-all scroll-mt-24 ${!naturalRole?.training_check && !isEditing ? 'border-dashed border-amber-500/30 bg-amber-500/5' : ''}`}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2">
@@ -685,7 +709,7 @@ const Resume = () => {
                 </Card>
 
                 {/* Consulting Experience */}
-                <Card className={`transition-all ${!naturalRole?.consulting_check && !isEditing ? 'border-dashed border-amber-500/30 bg-amber-500/5' : ''}`}>
+                <Card id="section-consulting" className={`transition-all scroll-mt-24 ${!naturalRole?.consulting_check && !isEditing ? 'border-dashed border-amber-500/30 bg-amber-500/5' : ''}`}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2">
