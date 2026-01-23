@@ -70,6 +70,7 @@ const Resume = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [changeNotes, setChangeNotes] = useState("");
   const [isTogglingPromise, setIsTogglingPromise] = useState(false);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
   const [editData, setEditData] = useState({
     description: "",
     practice_entities: "",
@@ -77,6 +78,28 @@ const Resume = () => {
     consulting_with_whom: "",
     consulting_case_studies: "",
   });
+
+  // Helper to start editing a specific section with smooth scroll
+  const startEditing = (sectionId?: string) => {
+    setIsEditing(true);
+    setActiveSection(sectionId || null);
+    
+    // Scroll to change notes first, then to section
+    setTimeout(() => {
+      document.getElementById('change-notes-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      
+      if (sectionId) {
+        // After change notes is visible, scroll to the target section
+        setTimeout(() => {
+          document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // Focus the textarea in that section
+          const section = document.getElementById(sectionId);
+          const textarea = section?.querySelector('textarea');
+          textarea?.focus();
+        }, 400);
+      }
+    }, 100);
+  };
 
   const togglePromiseCheck = async () => {
     if (!user || !naturalRole || isTogglingPromise) return;
@@ -409,10 +432,7 @@ const Resume = () => {
               {/* Quick Stats Overview */}
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
                 <button
-                  onClick={() => {
-                    setIsEditing(true);
-                    document.getElementById('section-natural-role')?.scrollIntoView({ behavior: 'smooth' });
-                  }}
+                  onClick={() => startEditing('section-natural-role')}
                   className={`rounded-xl p-4 text-center transition-all hover:scale-[1.02] ${naturalRole.description ? 'bg-b4-teal/10 border border-b4-teal/20' : 'bg-muted/50 border border-dashed border-muted-foreground/20 hover:border-b4-teal/40 hover:bg-b4-teal/5'}`}
                 >
                   <Target className={`w-5 h-5 mx-auto mb-1 ${naturalRole.description ? 'text-b4-teal' : 'text-muted-foreground'}`} />
@@ -435,10 +455,7 @@ const Resume = () => {
                 {naturalRole.promise_check ? (
                   <>
                     <button
-                      onClick={() => {
-                        setIsEditing(true);
-                        document.getElementById('section-practice')?.scrollIntoView({ behavior: 'smooth' });
-                      }}
+                      onClick={() => startEditing('section-practice')}
                       className={`rounded-xl p-4 text-center transition-all hover:scale-[1.02] ${naturalRole.practice_check ? 'bg-b4-teal/10 border border-b4-teal/20' : 'bg-amber-500/10 border border-dashed border-amber-500/30 hover:border-amber-500/50 hover:bg-amber-500/15'}`}
                     >
                       <Briefcase className={`w-5 h-5 mx-auto mb-1 ${naturalRole.practice_check ? 'text-b4-teal' : 'text-amber-600'}`} />
@@ -448,10 +465,7 @@ const Resume = () => {
                       </p>
                     </button>
                     <button
-                      onClick={() => {
-                        setIsEditing(true);
-                        document.getElementById('section-training')?.scrollIntoView({ behavior: 'smooth' });
-                      }}
+                      onClick={() => startEditing('section-training')}
                       className={`rounded-xl p-4 text-center transition-all hover:scale-[1.02] ${naturalRole.training_check ? 'bg-b4-teal/10 border border-b4-teal/20' : 'bg-amber-500/10 border border-dashed border-amber-500/30 hover:border-amber-500/50 hover:bg-amber-500/15'}`}
                     >
                       <GraduationCap className={`w-5 h-5 mx-auto mb-1 ${naturalRole.training_check ? 'text-b4-teal' : 'text-amber-600'}`} />
@@ -461,10 +475,7 @@ const Resume = () => {
                       </p>
                     </button>
                     <button
-                      onClick={() => {
-                        setIsEditing(true);
-                        document.getElementById('section-consulting')?.scrollIntoView({ behavior: 'smooth' });
-                      }}
+                      onClick={() => startEditing('section-consulting')}
                       className={`rounded-xl p-4 text-center transition-all hover:scale-[1.02] ${naturalRole.consulting_check ? 'bg-b4-teal/10 border border-b4-teal/20' : 'bg-amber-500/10 border border-dashed border-amber-500/30 hover:border-amber-500/50 hover:bg-amber-500/15'}`}
                     >
                       <Users className={`w-5 h-5 mx-auto mb-1 ${naturalRole.consulting_check ? 'text-b4-teal' : 'text-amber-600'}`} />
@@ -514,7 +525,7 @@ const Resume = () => {
                     History ({versions.length})
                   </Button>
                   {!isEditing ? (
-                    <Button variant="teal" onClick={() => setIsEditing(true)} className="gap-2">
+                    <Button variant="teal" onClick={() => startEditing()} className="gap-2">
                       <Edit2 className="w-4 h-4" />
                       Edit Resume
                     </Button>
@@ -629,7 +640,7 @@ const Resume = () => {
 
               {/* Change Notes Input (when editing) */}
               {isEditing && (
-                <Card className="border-b4-teal/30 bg-b4-teal/5">
+                <Card id="change-notes-card" className="border-b4-teal/30 bg-b4-teal/5 scroll-mt-24 animate-fade-in">
                   <CardContent className="pt-4">
                     <Label htmlFor="changeNotes" className="text-foreground font-medium">
                       Change Notes <span className="text-destructive">*</span>
@@ -678,7 +689,7 @@ const Resume = () => {
                       </p>
                     ) : (
                       <button 
-                        onClick={() => setIsEditing(true)}
+                        onClick={() => startEditing('section-natural-role')}
                         className="w-full text-center py-4 text-muted-foreground hover:bg-muted/30 rounded-lg transition-colors cursor-pointer"
                       >
                         <Target className="w-8 h-8 mx-auto mb-2 opacity-40" />
@@ -723,7 +734,7 @@ const Resume = () => {
                       </p>
                     ) : (
                       <button 
-                        onClick={() => setIsEditing(true)}
+                        onClick={() => startEditing('section-practice')}
                         className="w-full text-center py-6 border-2 border-dashed border-amber-500/20 rounded-lg bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/40 transition-all cursor-pointer"
                       >
                         <Plus className="w-8 h-8 mx-auto mb-2 text-amber-600" />
@@ -768,7 +779,7 @@ const Resume = () => {
                       </p>
                     ) : (
                       <button 
-                        onClick={() => setIsEditing(true)}
+                        onClick={() => startEditing('section-training')}
                         className="w-full text-center py-6 border-2 border-dashed border-amber-500/20 rounded-lg bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/40 transition-all cursor-pointer"
                       >
                         <Plus className="w-8 h-8 mx-auto mb-2 text-amber-600" />
@@ -842,7 +853,7 @@ const Resume = () => {
                       </div>
                     ) : (
                       <button 
-                        onClick={() => setIsEditing(true)}
+                        onClick={() => startEditing('section-consulting')}
                         className="w-full text-center py-6 border-2 border-dashed border-amber-500/20 rounded-lg bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/40 transition-all cursor-pointer"
                       >
                         <Plus className="w-8 h-8 mx-auto mb-2 text-amber-600" />
