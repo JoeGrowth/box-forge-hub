@@ -406,7 +406,7 @@ const Resume = () => {
               <div className="space-y-6 animate-fade-in">
               
               {/* Quick Stats Overview */}
-              <div className={`grid gap-3 mb-6 ${naturalRole.promise_check ? 'grid-cols-2 md:grid-cols-5' : 'grid-cols-2'}`}>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
                 <button
                   onClick={() => {
                     setIsEditing(true);
