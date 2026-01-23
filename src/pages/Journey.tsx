@@ -537,7 +537,7 @@ const Journey = () => {
                       )}
                       {activeSection === 'consultant' && (
                         <Button 
-                          onClick={() => navigate('/start')}
+                          onClick={() => window.open('https://box4solutions.com/start?section=consultant', '_blank')}
                           className="bg-b4-teal hover:bg-b4-teal/90 text-white shrink-0 ml-4"
                         >
                           Start Scaling
