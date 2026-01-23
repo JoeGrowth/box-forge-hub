@@ -74,12 +74,7 @@ const Resume = () => {
     }
   }, [user, authLoading, navigate]);
 
-  // Redirect non-approved users
-  useEffect(() => {
-    if (!authLoading && !statusLoading && user && !canAccessBoosting) {
-      navigate("/profile", { replace: true });
-    }
-  }, [user, authLoading, statusLoading, canAccessBoosting, navigate]);
+  // Resume is now accessible to all authenticated users
 
   useEffect(() => {
     if (naturalRole) {
