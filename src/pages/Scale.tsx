@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -118,17 +118,27 @@ const SCALE_NR_STEPS = [
 
 const Scale = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, loading: authLoading } = useAuth();
   const { naturalRole, onboardingState, refetch } = useOnboarding();
   const { canAccessScaling, userStatus, getStatusLabel, loading: statusLoading } = useUserStatus();
   const { toast } = useToast();
+
+  // Read section from URL query param
+  const sectionFromUrl = searchParams.get("section");
+  const getInitialSection = (): "scale" | "ideas" | "cobuilder" => {
+    if (sectionFromUrl === "consultant" || sectionFromUrl === "scale") return "scale";
+    if (sectionFromUrl === "cobuilder") return "cobuilder";
+    if (sectionFromUrl === "initiator" || sectionFromUrl === "ideas") return "ideas";
+    return "ideas";
+  };
 
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [versions, setVersions] = useState<AnswerVersion[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [changeNotes, setChangeNotes] = useState("");
-  const [activeSection, setActiveSection] = useState<"scale" | "ideas" | "cobuilder">("ideas");
+  const [activeSection, setActiveSection] = useState<"scale" | "ideas" | "cobuilder">(getInitialSection());
   const [userIdeas, setUserIdeas] = useState<StartupIdea[]>([]);
   const [loadingIdeas, setLoadingIdeas] = useState(true);
   const [stepDialogOpen, setStepDialogOpen] = useState(false);
