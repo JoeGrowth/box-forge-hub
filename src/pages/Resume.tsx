@@ -25,8 +25,16 @@ import {
   AlertCircle,
   FileText,
   Loader2,
-  ArrowRight
+  ArrowRight,
+  Plus,
+  TrendingUp,
+  Briefcase,
+  GraduationCap,
+  Users,
+  Target,
+  Sparkles
 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { format } from "date-fns";
 
 interface AnswerVersion {
@@ -244,14 +252,32 @@ const Resume = () => {
     );
   }
 
-  const StatusBadge = ({ checked }: { checked: boolean | null }) =>
+  // Calculate progress
+  const calculateProgress = () => {
+    if (!naturalRole) return { completed: 0, total: 5, percentage: 0 };
+    
+    const sections = [
+      !!naturalRole.description,
+      naturalRole.promise_check,
+      naturalRole.practice_check,
+      naturalRole.training_check,
+      naturalRole.consulting_check,
+    ];
+    
+    const completed = sections.filter(Boolean).length;
+    return { completed, total: 5, percentage: Math.round((completed / 5) * 100) };
+  };
+  
+  const progress = calculateProgress();
+
+  const StatusBadge = ({ checked, canAdd }: { checked: boolean | null; canAdd?: boolean }) =>
     checked ? (
       <Badge variant="default" className="bg-b4-teal text-white">
         <CheckCircle className="w-3 h-3 mr-1" /> Complete
       </Badge>
     ) : (
-      <Badge variant="secondary">
-        <AlertCircle className="w-3 h-3 mr-1" /> Incomplete
+      <Badge variant="outline" className="border-amber-500/50 text-amber-600 bg-amber-500/10">
+        <Plus className="w-3 h-3 mr-1" /> {canAdd ? "Add Experience" : "Incomplete"}
       </Badge>
     );
 
@@ -259,24 +285,35 @@ const Resume = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <main className="pt-20">
-        {/* Header */}
+        {/* Header with Progress */}
         <section className="py-12 gradient-hero text-primary-foreground">
           <div className="container mx-auto px-4">
-            <div className="flex items-center gap-3 mb-2">
-              <FileText className="w-8 h-8" />
-              <h1 className="font-display text-3xl font-bold">Resume</h1>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <FileText className="w-8 h-8" />
+                  <h1 className="font-display text-3xl font-bold">Your Resume</h1>
+                </div>
+                <p className="text-primary-foreground/80 max-w-xl">
+                  Track your journey progress and add new experiences as you grow. 
+                  Each update is saved in your version history.
+                </p>
+              </div>
+              
+              {naturalRole && (
+                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 min-w-[200px]">
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingUp className="w-4 h-4" />
+                    <span className="text-sm font-medium">Progress</span>
+                  </div>
+                  <div className="text-3xl font-bold mb-2">{progress.percentage}%</div>
+                  <Progress value={progress.percentage} className="h-2 bg-white/20" />
+                  <p className="text-xs text-primary-foreground/70 mt-2">
+                    {progress.completed} of {progress.total} sections complete
+                  </p>
+                </div>
+              )}
             </div>
-            <p className="text-primary-foreground/80 max-w-2xl">
-              Your Natural Role definition and onboarding journey answers with version history.
-            </p>
-            {onboardingState?.journey_status && (
-              <Badge 
-                variant={onboardingState.journey_status === 'approved' ? 'default' : 'secondary'}
-                className="mt-4"
-              >
-                {onboardingState.journey_status === 'approved' ? 'Approved' : 'Pending Approval'}
-              </Badge>
-            )}
           </div>
         </section>
 
@@ -334,12 +371,52 @@ const Resume = () => {
             {/* Resume Content - Only show if user has natural role data */}
             {naturalRole && (
               <div className="space-y-6 animate-fade-in">
+              
+              {/* Quick Stats Overview */}
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+                <div className={`rounded-xl p-4 text-center ${naturalRole.description ? 'bg-b4-teal/10 border border-b4-teal/20' : 'bg-muted/50 border border-dashed border-muted-foreground/20'}`}>
+                  <Target className={`w-5 h-5 mx-auto mb-1 ${naturalRole.description ? 'text-b4-teal' : 'text-muted-foreground'}`} />
+                  <p className="text-xs text-muted-foreground">Natural Role</p>
+                  <p className={`text-sm font-medium ${naturalRole.description ? 'text-b4-teal' : 'text-muted-foreground'}`}>
+                    {naturalRole.description ? '✓' : '—'}
+                  </p>
+                </div>
+                <div className={`rounded-xl p-4 text-center ${naturalRole.promise_check ? 'bg-b4-teal/10 border border-b4-teal/20' : 'bg-muted/50 border border-dashed border-muted-foreground/20'}`}>
+                  <Sparkles className={`w-5 h-5 mx-auto mb-1 ${naturalRole.promise_check ? 'text-b4-teal' : 'text-muted-foreground'}`} />
+                  <p className="text-xs text-muted-foreground">Promise</p>
+                  <p className={`text-sm font-medium ${naturalRole.promise_check ? 'text-b4-teal' : 'text-muted-foreground'}`}>
+                    {naturalRole.promise_check ? '✓' : '—'}
+                  </p>
+                </div>
+                <div className={`rounded-xl p-4 text-center ${naturalRole.practice_check ? 'bg-b4-teal/10 border border-b4-teal/20' : 'bg-amber-500/10 border border-dashed border-amber-500/30'}`}>
+                  <Briefcase className={`w-5 h-5 mx-auto mb-1 ${naturalRole.practice_check ? 'text-b4-teal' : 'text-amber-600'}`} />
+                  <p className="text-xs text-muted-foreground">Practice</p>
+                  <p className={`text-sm font-medium ${naturalRole.practice_check ? 'text-b4-teal' : 'text-amber-600'}`}>
+                    {naturalRole.practice_check ? `${naturalRole.practice_case_studies || 0} cases` : 'Add +'}
+                  </p>
+                </div>
+                <div className={`rounded-xl p-4 text-center ${naturalRole.training_check ? 'bg-b4-teal/10 border border-b4-teal/20' : 'bg-amber-500/10 border border-dashed border-amber-500/30'}`}>
+                  <GraduationCap className={`w-5 h-5 mx-auto mb-1 ${naturalRole.training_check ? 'text-b4-teal' : 'text-amber-600'}`} />
+                  <p className="text-xs text-muted-foreground">Training</p>
+                  <p className={`text-sm font-medium ${naturalRole.training_check ? 'text-b4-teal' : 'text-amber-600'}`}>
+                    {naturalRole.training_check ? `${naturalRole.training_count || 0} trained` : 'Add +'}
+                  </p>
+                </div>
+                <div className={`rounded-xl p-4 text-center ${naturalRole.consulting_check ? 'bg-b4-teal/10 border border-b4-teal/20' : 'bg-amber-500/10 border border-dashed border-amber-500/30'}`}>
+                  <Users className={`w-5 h-5 mx-auto mb-1 ${naturalRole.consulting_check ? 'text-b4-teal' : 'text-amber-600'}`} />
+                  <p className="text-xs text-muted-foreground">Consulting</p>
+                  <p className={`text-sm font-medium ${naturalRole.consulting_check ? 'text-b4-teal' : 'text-amber-600'}`}>
+                    {naturalRole.consulting_check ? '✓' : 'Add +'}
+                  </p>
+                </div>
+              </div>
+
               {/* Header Controls */}
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>
-                  <h2 className="text-2xl font-display font-bold text-foreground">Your Resume</h2>
+                  <h2 className="text-2xl font-display font-bold text-foreground">Experience Details</h2>
                   <p className="text-muted-foreground mt-1">
-                    Your onboarding journey answers with version history
+                    Click "Edit Resume" to add new experiences and case studies
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -487,162 +564,227 @@ const Resume = () => {
               {/* Resume Cards */}
               <div className="grid gap-6">
                 {/* Natural Role Definition */}
-                <Card>
+                <Card className={`transition-all ${!naturalRole?.description && !isEditing ? 'border-dashed border-muted-foreground/30' : ''}`}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2">
-                        <FileText className="w-5 h-5 text-b4-teal" />
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${naturalRole?.description ? 'bg-b4-teal/10' : 'bg-muted'}`}>
+                          <Target className={`w-4 h-4 ${naturalRole?.description ? 'text-b4-teal' : 'text-muted-foreground'}`} />
+                        </div>
                         Natural Role Definition
                       </CardTitle>
                       <StatusBadge checked={!!naturalRole?.description} />
                     </div>
+                    <CardDescription>
+                      Your unique value proposition and expertise
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     {isEditing ? (
                       <Textarea
                         value={editData.description}
                         onChange={(e) => setEditData(prev => ({ ...prev, description: e.target.value }))}
-                        placeholder="Describe your natural role..."
+                        placeholder="Describe your natural role - what unique value do you bring?"
                         rows={4}
                       />
-                    ) : (
-                      <p className="text-muted-foreground whitespace-pre-wrap">
-                        {naturalRole?.description || "Not defined yet"}
+                    ) : naturalRole?.description ? (
+                      <p className="text-foreground whitespace-pre-wrap bg-muted/30 rounded-lg p-4">
+                        "{naturalRole.description}"
                       </p>
+                    ) : (
+                      <div className="text-center py-4 text-muted-foreground">
+                        <Target className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                        <p>Not defined yet. Click "Edit Resume" to add your natural role.</p>
+                      </div>
                     )}
                   </CardContent>
                 </Card>
 
                 {/* Practice Experience */}
-                <Card>
+                <Card className={`transition-all ${!naturalRole?.practice_check && !isEditing ? 'border-dashed border-amber-500/30 bg-amber-500/5' : ''}`}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2">
-                        <CheckCircle className="w-5 h-5 text-b4-teal" />
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${naturalRole?.practice_check ? 'bg-b4-teal/10' : 'bg-amber-500/10'}`}>
+                          <Briefcase className={`w-4 h-4 ${naturalRole?.practice_check ? 'text-b4-teal' : 'text-amber-600'}`} />
+                        </div>
                         Practice Experience
                       </CardTitle>
-                      <StatusBadge checked={naturalRole?.practice_check} />
+                      <StatusBadge checked={naturalRole?.practice_check} canAdd={!naturalRole?.practice_check} />
                     </div>
-                    {naturalRole?.practice_case_studies && (
-                      <CardDescription>
-                        Case studies: {naturalRole.practice_case_studies}
-                      </CardDescription>
-                    )}
+                    <CardDescription>
+                      {naturalRole?.practice_case_studies 
+                        ? `${naturalRole.practice_case_studies} case studies completed`
+                        : 'Add your practical experience and case studies'}
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     {isEditing ? (
                       <Textarea
                         value={editData.practice_entities}
                         onChange={(e) => setEditData(prev => ({ ...prev, practice_entities: e.target.value }))}
-                        placeholder="Describe entities you've practiced with..."
+                        placeholder="List the entities/companies you've worked with and describe your practical experience..."
                         rows={3}
                       />
-                    ) : (
-                      <p className="text-muted-foreground whitespace-pre-wrap">
-                        {naturalRole?.practice_entities || "Not specified"}
+                    ) : naturalRole?.practice_entities ? (
+                      <p className="text-foreground whitespace-pre-wrap">
+                        {naturalRole.practice_entities}
                       </p>
+                    ) : (
+                      <div className="text-center py-6 border-2 border-dashed border-amber-500/20 rounded-lg bg-amber-500/5">
+                        <Plus className="w-8 h-8 mx-auto mb-2 text-amber-600" />
+                        <p className="text-amber-700 font-medium mb-1">Add Your Practice Experience</p>
+                        <p className="text-sm text-muted-foreground">
+                          Click "Edit Resume" to add case studies and practical work
+                        </p>
+                      </div>
                     )}
                   </CardContent>
                 </Card>
 
                 {/* Training Experience */}
-                <Card>
+                <Card className={`transition-all ${!naturalRole?.training_check && !isEditing ? 'border-dashed border-amber-500/30 bg-amber-500/5' : ''}`}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2">
-                        <CheckCircle className="w-5 h-5 text-b4-teal" />
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${naturalRole?.training_check ? 'bg-b4-teal/10' : 'bg-amber-500/10'}`}>
+                          <GraduationCap className={`w-4 h-4 ${naturalRole?.training_check ? 'text-b4-teal' : 'text-amber-600'}`} />
+                        </div>
                         Training Experience
                       </CardTitle>
-                      <StatusBadge checked={naturalRole?.training_check} />
+                      <StatusBadge checked={naturalRole?.training_check} canAdd={!naturalRole?.training_check} />
                     </div>
-                    {naturalRole?.training_count && (
-                      <CardDescription>
-                        People trained: {naturalRole.training_count}
-                      </CardDescription>
-                    )}
+                    <CardDescription>
+                      {naturalRole?.training_count 
+                        ? `${naturalRole.training_count} people trained`
+                        : 'Add your training and mentorship experience'}
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     {isEditing ? (
                       <Textarea
                         value={editData.training_contexts}
                         onChange={(e) => setEditData(prev => ({ ...prev, training_contexts: e.target.value }))}
-                        placeholder="Describe training contexts..."
+                        placeholder="Describe the contexts where you've trained others..."
                         rows={3}
                       />
-                    ) : (
-                      <p className="text-muted-foreground whitespace-pre-wrap">
-                        {naturalRole?.training_contexts || "Not specified"}
+                    ) : naturalRole?.training_contexts ? (
+                      <p className="text-foreground whitespace-pre-wrap">
+                        {naturalRole.training_contexts}
                       </p>
+                    ) : (
+                      <div className="text-center py-6 border-2 border-dashed border-amber-500/20 rounded-lg bg-amber-500/5">
+                        <Plus className="w-8 h-8 mx-auto mb-2 text-amber-600" />
+                        <p className="text-amber-700 font-medium mb-1">Add Your Training Experience</p>
+                        <p className="text-sm text-muted-foreground">
+                          Click "Edit Resume" to add training contexts and people you've mentored
+                        </p>
+                      </div>
                     )}
                   </CardContent>
                 </Card>
 
                 {/* Consulting Experience */}
-                <Card>
+                <Card className={`transition-all ${!naturalRole?.consulting_check && !isEditing ? 'border-dashed border-amber-500/30 bg-amber-500/5' : ''}`}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2">
-                        <CheckCircle className="w-5 h-5 text-b4-teal" />
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${naturalRole?.consulting_check ? 'bg-b4-teal/10' : 'bg-amber-500/10'}`}>
+                          <Users className={`w-4 h-4 ${naturalRole?.consulting_check ? 'text-b4-teal' : 'text-amber-600'}`} />
+                        </div>
                         Consulting Experience
                       </CardTitle>
-                      <StatusBadge checked={naturalRole?.consulting_check} />
+                      <StatusBadge checked={naturalRole?.consulting_check} canAdd={!naturalRole?.consulting_check} />
                     </div>
+                    <CardDescription>
+                      Your advisory and consulting work
+                    </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <Label className="text-sm font-medium text-foreground">With Whom</Label>
-                      {isEditing ? (
-                        <Textarea
-                          value={editData.consulting_with_whom}
-                          onChange={(e) => setEditData(prev => ({ ...prev, consulting_with_whom: e.target.value }))}
-                          placeholder="Who have you consulted with..."
-                          rows={2}
-                          className="mt-1"
-                        />
-                      ) : (
-                        <p className="text-muted-foreground whitespace-pre-wrap mt-1">
-                          {naturalRole?.consulting_with_whom || "Not specified"}
+                  <CardContent>
+                    {isEditing ? (
+                      <div className="space-y-4">
+                        <div>
+                          <Label className="text-sm font-medium text-foreground">With Whom</Label>
+                          <Textarea
+                            value={editData.consulting_with_whom}
+                            onChange={(e) => setEditData(prev => ({ ...prev, consulting_with_whom: e.target.value }))}
+                            placeholder="List the organizations or individuals you've consulted..."
+                            rows={2}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium text-foreground">Case Studies</Label>
+                          <Textarea
+                            value={editData.consulting_case_studies}
+                            onChange={(e) => setEditData(prev => ({ ...prev, consulting_case_studies: e.target.value }))}
+                            placeholder="Describe specific consulting projects and outcomes..."
+                            rows={2}
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
+                    ) : (naturalRole?.consulting_with_whom || naturalRole?.consulting_case_studies) ? (
+                      <div className="space-y-4">
+                        {naturalRole?.consulting_with_whom && (
+                          <div>
+                            <Label className="text-sm font-medium text-muted-foreground">With Whom</Label>
+                            <p className="text-foreground whitespace-pre-wrap mt-1">
+                              {naturalRole.consulting_with_whom}
+                            </p>
+                          </div>
+                        )}
+                        {naturalRole?.consulting_case_studies && (
+                          <div>
+                            <Label className="text-sm font-medium text-muted-foreground">Case Studies</Label>
+                            <p className="text-foreground whitespace-pre-wrap mt-1">
+                              {naturalRole.consulting_case_studies}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-6 border-2 border-dashed border-amber-500/20 rounded-lg bg-amber-500/5">
+                        <Plus className="w-8 h-8 mx-auto mb-2 text-amber-600" />
+                        <p className="text-amber-700 font-medium mb-1">Add Your Consulting Experience</p>
+                        <p className="text-sm text-muted-foreground">
+                          Click "Edit Resume" to add consulting work and case studies
                         </p>
-                      )}
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium text-foreground">Case Studies</Label>
-                      {isEditing ? (
-                        <Textarea
-                          value={editData.consulting_case_studies}
-                          onChange={(e) => setEditData(prev => ({ ...prev, consulting_case_studies: e.target.value }))}
-                          placeholder="Describe consulting case studies..."
-                          rows={2}
-                          className="mt-1"
-                        />
-                      ) : (
-                        <p className="text-muted-foreground whitespace-pre-wrap mt-1">
-                          {naturalRole?.consulting_case_studies || "Not specified"}
-                        </p>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 
                 {/* Scaling Interest */}
-                <Card>
+                <Card className="bg-gradient-to-br from-purple-500/5 to-b4-teal/5 border-purple-500/20">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2">
-                        <CheckCircle className="w-5 h-5 text-b4-teal" />
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-purple-500/10">
+                          <TrendingUp className="w-4 h-4 text-purple-600" />
+                        </div>
                         Scaling Interest
                       </CardTitle>
-                      <Badge variant={naturalRole?.wants_to_scale ? "default" : "secondary"} className={naturalRole?.wants_to_scale ? "bg-b4-teal" : ""}>
-                        {naturalRole?.wants_to_scale ? "Interested" : "Not Interested"}
+                      <Badge variant={naturalRole?.wants_to_scale ? "default" : "secondary"} className={naturalRole?.wants_to_scale ? "bg-purple-600" : ""}>
+                        {naturalRole?.wants_to_scale ? "🚀 Ready to Scale" : "Not Yet"}
                       </Badge>
                     </div>
+                    <CardDescription>
+                      Your interest in building a decentralized company
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">
                       {naturalRole?.wants_to_scale 
-                        ? "You're interested in scaling your natural role into a decentralized company."
-                        : "You haven't expressed interest in scaling your natural role yet."}
+                        ? "You're ready to scale your natural role into a decentralized company. Check out the Scale page to begin your journey!"
+                        : "You haven't expressed interest in scaling your natural role yet. You can update this as your journey progresses."}
                     </p>
+                    {naturalRole?.wants_to_scale && (
+                      <Button variant="outline" className="mt-4" onClick={() => navigate("/start")}>
+                        Go to Scale Page
+                        <ArrowRight className="ml-2 w-4 h-4" />
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               </div>
