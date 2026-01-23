@@ -539,7 +539,7 @@ const Profile = () => {
     }
     // Show potential role label based on path selection
     if (onboardingState?.potential_role === "potential_entrepreneur") return "Vision: Initiator";
-    if (onboardingState?.potential_role === "potential_cobuilder") return "Vision: Co-Builder";
+    if (onboardingState?.potential_role === "potential_co_builder") return "Vision: Co-Builder";
     if (onboardingState?.primary_role === "entrepreneur") return "Vision: Initiator";
     if (onboardingState?.primary_role === "cobuilder") return "Vision: Co-Builder";
     return "Member";
