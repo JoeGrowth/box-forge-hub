@@ -154,6 +154,18 @@ const Scale = () => {
     consulting_case_studies: "",
   });
 
+  // Sync activeSection with URL query param
+  useEffect(() => {
+    const section = searchParams.get("section");
+    if (section === "consultant" || section === "scale") {
+      setActiveSection("scale");
+    } else if (section === "cobuilder") {
+      setActiveSection("cobuilder");
+    } else if (section === "initiator" || section === "ideas") {
+      setActiveSection("ideas");
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/auth", { replace: true });
