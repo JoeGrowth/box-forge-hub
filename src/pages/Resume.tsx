@@ -307,8 +307,33 @@ const Resume = () => {
               </Card>
             )}
 
-            {/* Resume Content */}
-            <div className="space-y-6 animate-fade-in">
+            {/* Empty State for users who haven't completed onboarding */}
+            {!naturalRole && (
+              <Card className="mb-8 border-b4-teal/20 bg-b4-teal/5">
+                <CardContent className="py-8">
+                  <div className="flex flex-col items-center text-center gap-4">
+                    <div className="w-16 h-16 rounded-full bg-b4-teal/10 flex items-center justify-center">
+                      <FileText className="w-8 h-8 text-b4-teal" />
+                    </div>
+                    <div>
+                      <h3 className="font-display text-xl font-semibold text-foreground mb-2">Build Your Resume</h3>
+                      <p className="text-muted-foreground max-w-md mb-4">
+                        Complete your onboarding journey to define your Natural Role and track your experience. 
+                        Your resume will show your progress as you add new case studies and experiences.
+                      </p>
+                      <Button variant="teal" onClick={() => navigate("/onboarding")}>
+                        Start Onboarding
+                        <ArrowRight className="ml-2 w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Resume Content - Only show if user has natural role data */}
+            {naturalRole && (
+              <div className="space-y-6 animate-fade-in">
               {/* Header Controls */}
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>
@@ -622,6 +647,7 @@ const Resume = () => {
                 </Card>
               </div>
             </div>
+            )}
 
           </div>
         </section>
