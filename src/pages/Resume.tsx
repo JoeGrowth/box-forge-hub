@@ -616,10 +616,13 @@ const Resume = () => {
                         "{naturalRole.description}"
                       </p>
                     ) : (
-                      <div className="text-center py-4 text-muted-foreground">
+                      <button 
+                        onClick={() => setIsEditing(true)}
+                        className="w-full text-center py-4 text-muted-foreground hover:bg-muted/30 rounded-lg transition-colors cursor-pointer"
+                      >
                         <Target className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                        <p>Not defined yet. Click "Edit Resume" to add your natural role.</p>
-                      </div>
+                        <p>Click to add your natural role</p>
+                      </button>
                     )}
                   </CardContent>
                 </Card>
@@ -655,13 +658,16 @@ const Resume = () => {
                         {naturalRole.practice_entities}
                       </p>
                     ) : (
-                      <div className="text-center py-6 border-2 border-dashed border-amber-500/20 rounded-lg bg-amber-500/5">
+                      <button 
+                        onClick={() => setIsEditing(true)}
+                        className="w-full text-center py-6 border-2 border-dashed border-amber-500/20 rounded-lg bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/40 transition-all cursor-pointer"
+                      >
                         <Plus className="w-8 h-8 mx-auto mb-2 text-amber-600" />
                         <p className="text-amber-700 font-medium mb-1">Add Your Practice Experience</p>
                         <p className="text-sm text-muted-foreground">
-                          Click "Edit Resume" to add case studies and practical work
+                          Click to add case studies and practical work
                         </p>
-                      </div>
+                      </button>
                     )}
                   </CardContent>
                 </Card>
@@ -697,13 +703,16 @@ const Resume = () => {
                         {naturalRole.training_contexts}
                       </p>
                     ) : (
-                      <div className="text-center py-6 border-2 border-dashed border-amber-500/20 rounded-lg bg-amber-500/5">
+                      <button 
+                        onClick={() => setIsEditing(true)}
+                        className="w-full text-center py-6 border-2 border-dashed border-amber-500/20 rounded-lg bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/40 transition-all cursor-pointer"
+                      >
                         <Plus className="w-8 h-8 mx-auto mb-2 text-amber-600" />
                         <p className="text-amber-700 font-medium mb-1">Add Your Training Experience</p>
                         <p className="text-sm text-muted-foreground">
-                          Click "Edit Resume" to add training contexts and people you've mentored
+                          Click to add training contexts and people you've mentored
                         </p>
-                      </div>
+                      </button>
                     )}
                   </CardContent>
                 </Card>
@@ -768,13 +777,16 @@ const Resume = () => {
                         )}
                       </div>
                     ) : (
-                      <div className="text-center py-6 border-2 border-dashed border-amber-500/20 rounded-lg bg-amber-500/5">
+                      <button 
+                        onClick={() => setIsEditing(true)}
+                        className="w-full text-center py-6 border-2 border-dashed border-amber-500/20 rounded-lg bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/40 transition-all cursor-pointer"
+                      >
                         <Plus className="w-8 h-8 mx-auto mb-2 text-amber-600" />
                         <p className="text-amber-700 font-medium mb-1">Add Your Consulting Experience</p>
                         <p className="text-sm text-muted-foreground">
-                          Click "Edit Resume" to add consulting work and case studies
+                          Click to add consulting work and case studies
                         </p>
-                      </div>
+                      </button>
                     )}
                   </CardContent>
                 </Card>
