@@ -68,6 +68,7 @@ const Resume = () => {
   const [versions, setVersions] = useState<AnswerVersion[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [changeNotes, setChangeNotes] = useState("");
+  const [isTogglingPromise, setIsTogglingPromise] = useState(false);
   const [editData, setEditData] = useState({
     description: "",
     practice_entities: "",
@@ -75,6 +76,38 @@ const Resume = () => {
     consulting_with_whom: "",
     consulting_case_studies: "",
   });
+
+  const togglePromiseCheck = async () => {
+    if (!user || !naturalRole || isTogglingPromise) return;
+    
+    setIsTogglingPromise(true);
+    try {
+      const newValue = !naturalRole.promise_check;
+      const { error } = await supabase
+        .from("natural_roles")
+        .update({ promise_check: newValue })
+        .eq("user_id", user.id);
+      
+      if (error) throw error;
+      
+      toast({
+        title: newValue ? "Promise Activated" : "Promise Deactivated",
+        description: newValue 
+          ? "You can now add Practice, Training, and Consulting experience." 
+          : "Practice, Training, and Consulting sections are now hidden.",
+      });
+      
+      refetch();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update promise status.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsTogglingPromise(false);
+    }
+  };
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -373,7 +406,7 @@ const Resume = () => {
               <div className="space-y-6 animate-fade-in">
               
               {/* Quick Stats Overview */}
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+              <div className={`grid gap-3 mb-6 ${naturalRole.promise_check ? 'grid-cols-2 md:grid-cols-5' : 'grid-cols-2'}`}>
                 <button
                   onClick={() => {
                     setIsEditing(true);
@@ -387,52 +420,60 @@ const Resume = () => {
                     {naturalRole.description ? '✓' : 'Add +'}
                   </p>
                 </button>
-                <div className={`rounded-xl p-4 text-center ${naturalRole.promise_check ? 'bg-b4-teal/10 border border-b4-teal/20' : 'bg-muted/50 border border-dashed border-muted-foreground/20'}`}>
+                <button
+                  onClick={togglePromiseCheck}
+                  disabled={isTogglingPromise}
+                  className={`rounded-xl p-4 text-center transition-all hover:scale-[1.02] ${naturalRole.promise_check ? 'bg-b4-teal/10 border border-b4-teal/20' : 'bg-muted/50 border border-dashed border-muted-foreground/20 hover:border-b4-teal/40 hover:bg-b4-teal/5'}`}
+                >
                   <Sparkles className={`w-5 h-5 mx-auto mb-1 ${naturalRole.promise_check ? 'text-b4-teal' : 'text-muted-foreground'}`} />
                   <p className="text-xs text-muted-foreground">Promise</p>
                   <p className={`text-sm font-medium ${naturalRole.promise_check ? 'text-b4-teal' : 'text-muted-foreground'}`}>
-                    {naturalRole.promise_check ? '✓' : '—'}
-                  </p>
-                </div>
-                <button
-                  onClick={() => {
-                    setIsEditing(true);
-                    document.getElementById('section-practice')?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className={`rounded-xl p-4 text-center transition-all hover:scale-[1.02] ${naturalRole.practice_check ? 'bg-b4-teal/10 border border-b4-teal/20' : 'bg-amber-500/10 border border-dashed border-amber-500/30 hover:border-amber-500/50 hover:bg-amber-500/15'}`}
-                >
-                  <Briefcase className={`w-5 h-5 mx-auto mb-1 ${naturalRole.practice_check ? 'text-b4-teal' : 'text-amber-600'}`} />
-                  <p className="text-xs text-muted-foreground">Practice</p>
-                  <p className={`text-sm font-medium ${naturalRole.practice_check ? 'text-b4-teal' : 'text-amber-600'}`}>
-                    {naturalRole.practice_check ? `${naturalRole.practice_case_studies || 0} cases` : 'Add +'}
+                    {isTogglingPromise ? '...' : naturalRole.promise_check ? 'Yes' : 'No'}
                   </p>
                 </button>
-                <button
-                  onClick={() => {
-                    setIsEditing(true);
-                    document.getElementById('section-training')?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className={`rounded-xl p-4 text-center transition-all hover:scale-[1.02] ${naturalRole.training_check ? 'bg-b4-teal/10 border border-b4-teal/20' : 'bg-amber-500/10 border border-dashed border-amber-500/30 hover:border-amber-500/50 hover:bg-amber-500/15'}`}
-                >
-                  <GraduationCap className={`w-5 h-5 mx-auto mb-1 ${naturalRole.training_check ? 'text-b4-teal' : 'text-amber-600'}`} />
-                  <p className="text-xs text-muted-foreground">Training</p>
-                  <p className={`text-sm font-medium ${naturalRole.training_check ? 'text-b4-teal' : 'text-amber-600'}`}>
-                    {naturalRole.training_check ? `${naturalRole.training_count || 0} trained` : 'Add +'}
-                  </p>
-                </button>
-                <button
-                  onClick={() => {
-                    setIsEditing(true);
-                    document.getElementById('section-consulting')?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className={`rounded-xl p-4 text-center transition-all hover:scale-[1.02] ${naturalRole.consulting_check ? 'bg-b4-teal/10 border border-b4-teal/20' : 'bg-amber-500/10 border border-dashed border-amber-500/30 hover:border-amber-500/50 hover:bg-amber-500/15'}`}
-                >
-                  <Users className={`w-5 h-5 mx-auto mb-1 ${naturalRole.consulting_check ? 'text-b4-teal' : 'text-amber-600'}`} />
-                  <p className="text-xs text-muted-foreground">Consulting</p>
-                  <p className={`text-sm font-medium ${naturalRole.consulting_check ? 'text-b4-teal' : 'text-amber-600'}`}>
-                    {naturalRole.consulting_check ? '✓' : 'Add +'}
-                  </p>
-                </button>
+                {naturalRole.promise_check && (
+                  <>
+                    <button
+                      onClick={() => {
+                        setIsEditing(true);
+                        document.getElementById('section-practice')?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      className={`rounded-xl p-4 text-center transition-all hover:scale-[1.02] ${naturalRole.practice_check ? 'bg-b4-teal/10 border border-b4-teal/20' : 'bg-amber-500/10 border border-dashed border-amber-500/30 hover:border-amber-500/50 hover:bg-amber-500/15'}`}
+                    >
+                      <Briefcase className={`w-5 h-5 mx-auto mb-1 ${naturalRole.practice_check ? 'text-b4-teal' : 'text-amber-600'}`} />
+                      <p className="text-xs text-muted-foreground">Practice</p>
+                      <p className={`text-sm font-medium ${naturalRole.practice_check ? 'text-b4-teal' : 'text-amber-600'}`}>
+                        {naturalRole.practice_check ? `${naturalRole.practice_case_studies || 0} cases` : 'Add +'}
+                      </p>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEditing(true);
+                        document.getElementById('section-training')?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      className={`rounded-xl p-4 text-center transition-all hover:scale-[1.02] ${naturalRole.training_check ? 'bg-b4-teal/10 border border-b4-teal/20' : 'bg-amber-500/10 border border-dashed border-amber-500/30 hover:border-amber-500/50 hover:bg-amber-500/15'}`}
+                    >
+                      <GraduationCap className={`w-5 h-5 mx-auto mb-1 ${naturalRole.training_check ? 'text-b4-teal' : 'text-amber-600'}`} />
+                      <p className="text-xs text-muted-foreground">Training</p>
+                      <p className={`text-sm font-medium ${naturalRole.training_check ? 'text-b4-teal' : 'text-amber-600'}`}>
+                        {naturalRole.training_check ? `${naturalRole.training_count || 0} trained` : 'Add +'}
+                      </p>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEditing(true);
+                        document.getElementById('section-consulting')?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      className={`rounded-xl p-4 text-center transition-all hover:scale-[1.02] ${naturalRole.consulting_check ? 'bg-b4-teal/10 border border-b4-teal/20' : 'bg-amber-500/10 border border-dashed border-amber-500/30 hover:border-amber-500/50 hover:bg-amber-500/15'}`}
+                    >
+                      <Users className={`w-5 h-5 mx-auto mb-1 ${naturalRole.consulting_check ? 'text-b4-teal' : 'text-amber-600'}`} />
+                      <p className="text-xs text-muted-foreground">Consulting</p>
+                      <p className={`text-sm font-medium ${naturalRole.consulting_check ? 'text-b4-teal' : 'text-amber-600'}`}>
+                        {naturalRole.consulting_check ? '✓' : 'Add +'}
+                      </p>
+                    </button>
+                  </>
+                )}
               </div>
 
               {/* Header Controls */}
@@ -627,6 +668,9 @@ const Resume = () => {
                   </CardContent>
                 </Card>
 
+                {/* Practice, Training, Consulting - Only show when Promise is Yes */}
+                {naturalRole?.promise_check && (
+                  <>
                 {/* Practice Experience */}
                 <Card id="section-practice" className={`transition-all scroll-mt-24 ${!naturalRole?.practice_check && !isEditing ? 'border-dashed border-amber-500/30 bg-amber-500/5' : ''}`}>
                   <CardHeader>
@@ -790,6 +834,8 @@ const Resume = () => {
                     )}
                   </CardContent>
                 </Card>
+                  </>
+                )}
 
                 {/* Scaling Interest */}
                 <Card className="bg-gradient-to-br from-purple-500/5 to-b4-teal/5 border-purple-500/20">
