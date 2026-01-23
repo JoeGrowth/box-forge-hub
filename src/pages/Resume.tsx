@@ -32,7 +32,8 @@ import {
   GraduationCap,
   Users,
   Target,
-  Sparkles
+  Sparkles,
+  Lock
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { format } from "date-fns";
@@ -431,7 +432,7 @@ const Resume = () => {
                     {isTogglingPromise ? '...' : naturalRole.promise_check ? 'Yes' : 'No'}
                   </p>
                 </button>
-                {naturalRole.promise_check && (
+                {naturalRole.promise_check ? (
                   <>
                     <button
                       onClick={() => {
@@ -472,6 +473,25 @@ const Resume = () => {
                         {naturalRole.consulting_check ? '✓' : 'Add +'}
                       </p>
                     </button>
+                  </>
+                ) : (
+                  <>
+                    {/* Locked placeholder slots */}
+                    <div className="rounded-xl p-4 text-center bg-muted/30 border border-dashed border-muted-foreground/20 opacity-50">
+                      <Lock className="w-5 h-5 mx-auto mb-1 text-muted-foreground" />
+                      <p className="text-xs text-muted-foreground">Practice</p>
+                      <p className="text-sm font-medium text-muted-foreground">Locked</p>
+                    </div>
+                    <div className="rounded-xl p-4 text-center bg-muted/30 border border-dashed border-muted-foreground/20 opacity-50">
+                      <Lock className="w-5 h-5 mx-auto mb-1 text-muted-foreground" />
+                      <p className="text-xs text-muted-foreground">Training</p>
+                      <p className="text-sm font-medium text-muted-foreground">Locked</p>
+                    </div>
+                    <div className="rounded-xl p-4 text-center bg-muted/30 border border-dashed border-muted-foreground/20 opacity-50">
+                      <Lock className="w-5 h-5 mx-auto mb-1 text-muted-foreground" />
+                      <p className="text-xs text-muted-foreground">Consulting</p>
+                      <p className="text-sm font-medium text-muted-foreground">Locked</p>
+                    </div>
                   </>
                 )}
               </div>
