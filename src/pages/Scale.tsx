@@ -146,7 +146,13 @@ const Scale = () => {
   const [stepCompletionStatus, setStepCompletionStatus] = useState<Record<number, boolean>>({});
   const [developDialogOpen, setDevelopDialogOpen] = useState(false);
   const [selectedIdea, setSelectedIdea] = useState<{ id: string; title: string } | null>(null);
-  const [showScaleExperience, setShowScaleExperience] = useState(false);
+  const [showScaleExperience, setShowScaleExperience] = useState(() => {
+    // Initialize from localStorage
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('showScaleExperience') === 'true';
+    }
+    return false;
+  });
   const [editData, setEditData] = useState({
     description: "",
     practice_entities: "",
@@ -277,6 +283,22 @@ const Scale = () => {
   useEffect(() => {
     fetchStepCompletionStatus();
   }, [user]);
+
+  // Auto-show experience if user has any completed steps, and persist to localStorage
+  useEffect(() => {
+    const hasCompletedAnyStep = Object.values(stepCompletionStatus).some(Boolean);
+    if (hasCompletedAnyStep) {
+      setShowScaleExperience(true);
+      localStorage.setItem('showScaleExperience', 'true');
+    }
+  }, [stepCompletionStatus]);
+
+  // Persist showScaleExperience to localStorage when it changes
+  useEffect(() => {
+    if (showScaleExperience) {
+      localStorage.setItem('showScaleExperience', 'true');
+    }
+  }, [showScaleExperience]);
 
   const handleOpenStepDialog = (stepNum: 1 | 2 | 3) => {
     setActiveStep(stepNum);
