@@ -15,14 +15,11 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { supabase } from "@/integrations/supabase/client";
 import ResumeEditBar from "@/components/resume/ResumeEditBar";
+import SectionActions from "@/components/resume/SectionActions";
 import { 
-  Save, 
   History, 
-  Edit2, 
-  X, 
   ChevronDown, 
   Clock,
-  CheckCircle,
   AlertCircle,
   FileText,
   Loader2,
@@ -68,8 +65,8 @@ const Resume = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [versions, setVersions] = useState<AnswerVersion[]>([]);
-  const [showHistory, setShowHistory] = useState(false);
-  const [changeNotes, setChangeNotes] = useState("");
+  const [showGlobalHistory, setShowGlobalHistory] = useState(false);
+  const [sectionHistory, setSectionHistory] = useState<string | null>(null);
   const [isTogglingPromise, setIsTogglingPromise] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [editData, setEditData] = useState({
@@ -84,6 +81,7 @@ const Resume = () => {
   const startEditing = (sectionId?: string) => {
     setIsEditing(true);
     setActiveSection(sectionId || null);
+    setSectionHistory(null); // Close any open section history
 
     // Single smooth scroll: go straight where the user clicked.
     setTimeout(() => {
@@ -92,20 +90,18 @@ const Resume = () => {
         const section = document.getElementById(sectionId);
         const textarea = section?.querySelector("textarea") as HTMLTextAreaElement | null;
         textarea?.focus();
-      } else {
-        document.getElementById("change-notes-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
-        const notes = document.getElementById("changeNotes") as HTMLTextAreaElement | null;
-        notes?.focus();
       }
     }, 50);
   };
 
-  const scrollToChangeNotes = () => {
-    document.getElementById("change-notes-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    setTimeout(() => {
-      const notes = document.getElementById("changeNotes") as HTMLTextAreaElement | null;
-      notes?.focus();
-    }, 150);
+  // Toggle section-specific history panel
+  const toggleSectionHistory = (sectionId: string) => {
+    setSectionHistory(prev => prev === sectionId ? null : sectionId);
+  };
+
+  // Get version history for a specific field
+  const getFieldHistory = (fieldName: keyof AnswerVersion) => {
+    return versions.filter(v => v[fieldName] !== null && v[fieldName] !== "");
   };
 
   const togglePromiseCheck = async () => {
@@ -202,7 +198,7 @@ const Resume = () => {
           training_check: naturalRole.training_check,
           consulting_check: naturalRole.consulting_check,
           wants_to_scale: naturalRole.wants_to_scale,
-          change_notes: changeNotes || null,
+          change_notes: `Updated via Resume page`,
         });
       
       if (versionError) throw versionError;
@@ -220,7 +216,6 @@ const Resume = () => {
       });
       
       setIsEditing(false);
-      setChangeNotes("");
       refetch();
       
       const { data } = await supabase
@@ -334,16 +329,57 @@ const Resume = () => {
   
   const progress = calculateProgress();
 
-  const StatusBadge = ({ checked, canAdd }: { checked: boolean | null; canAdd?: boolean }) =>
-    checked ? (
-      <Badge variant="default" className="bg-b4-teal text-white">
-        <CheckCircle className="w-3 h-3 mr-1" /> Complete
-      </Badge>
-    ) : (
-      <Badge variant="outline" className="border-amber-500/50 text-amber-600 bg-amber-500/10">
-        <Plus className="w-3 h-3 mr-1" /> {canAdd ? "Add Experience" : "Incomplete"}
-      </Badge>
+  // Section history panel component
+  const SectionHistoryPanel = ({ sectionId, fieldName, label }: { sectionId: string; fieldName: keyof AnswerVersion; label: string }) => {
+    if (sectionHistory !== sectionId) return null;
+    const fieldVersions = versions.filter(v => v[fieldName] !== null && v[fieldName] !== "");
+    
+    if (fieldVersions.length === 0) {
+      return (
+        <div className="mt-4 p-4 bg-muted/30 rounded-lg border border-dashed">
+          <p className="text-sm text-muted-foreground text-center">No history available for this section yet.</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="mt-4 p-4 bg-muted/30 rounded-lg border animate-fade-in">
+        <div className="flex items-center gap-2 mb-3">
+          <History className="w-4 h-4 text-muted-foreground" />
+          <span className="text-sm font-medium">{label} History</span>
+        </div>
+        <ScrollArea className="max-h-48">
+          <div className="space-y-2">
+            {fieldVersions.slice(0, 5).map((v, idx) => (
+              <div key={v.id} className={`p-3 rounded border text-sm ${idx === 0 ? 'border-b4-teal/30 bg-b4-teal/5' : 'border-border'}`}>
+                <div className="flex items-center gap-2 mb-1">
+                  <Badge variant={idx === 0 ? "default" : "outline"} className={idx === 0 ? "bg-b4-teal text-xs" : "text-xs"}>
+                    v{v.version_number}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">
+                    {format(new Date(v.created_at), "MMM d, yyyy")}
+                  </span>
+                  {idx === 0 && <Badge variant="secondary" className="text-xs">Current</Badge>}
+                </div>
+                <p className="text-muted-foreground line-clamp-2">{String(v[fieldName])}</p>
+                {idx !== 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => restoreVersion(v)}
+                    disabled={isSaving}
+                    className="mt-2 h-7 text-xs"
+                  >
+                    Restore
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
+      </div>
     );
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -519,45 +555,21 @@ const Resume = () => {
                 <div>
                   <h2 className="text-2xl font-display font-bold text-foreground">Experience Details</h2>
                   <p className="text-muted-foreground mt-1">
-                    Click "Edit Resume" to add new experiences and case studies
+                    Use the action buttons on each section to edit, add, or view history
                   </p>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowHistory(!showHistory)}
-                    className="gap-2"
-                  >
-                    <History className="w-4 h-4" />
-                    History ({versions.length})
-                  </Button>
-                  {!isEditing ? (
-                    <Button variant="teal" onClick={() => startEditing()} className="gap-2">
-                      <Edit2 className="w-4 h-4" />
-                      Edit Resume
-                    </Button>
-                  ) : (
-                    <>
-                      <Button variant="outline" onClick={() => setIsEditing(false)} className="gap-2">
-                        <X className="w-4 h-4" />
-                        Cancel
-                      </Button>
-                      <Button 
-                        variant="teal" 
-                        onClick={handleSave} 
-                        disabled={isSaving || !changeNotes.trim()}
-                        className="gap-2"
-                      >
-                        {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                        Save Changes
-                      </Button>
-                    </>
-                  )}
-                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowGlobalHistory(!showGlobalHistory)}
+                  className="gap-2"
+                >
+                  <History className="w-4 h-4" />
+                  All History ({versions.length})
+                </Button>
               </div>
 
               {/* Version History Panel */}
-              {showHistory && versions.length > 0 && (
+              {showGlobalHistory && versions.length > 0 && (
                 <Card className="border-dashed">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -644,26 +656,6 @@ const Resume = () => {
                   </CardContent>
                 </Card>
               )}
-
-              {/* Change Notes Input (when editing) */}
-              {isEditing && (
-                <Card id="change-notes-card" className="border-b4-teal/30 bg-b4-teal/5 scroll-mt-24 animate-fade-in">
-                  <CardContent className="pt-4">
-                    <Label htmlFor="changeNotes" className="text-foreground font-medium">
-                      Change Notes <span className="text-destructive">*</span>
-                    </Label>
-                    <Textarea
-                      id="changeNotes"
-                      value={changeNotes}
-                      onChange={(e) => setChangeNotes(e.target.value)}
-                      placeholder="Describe what you changed and why (required to save)..."
-                      className="mt-2"
-                      rows={2}
-                    />
-                  </CardContent>
-                </Card>
-              )}
-
               {/* Resume Cards */}
               <div className="grid gap-6">
                 {/* Natural Role Definition */}
@@ -676,7 +668,14 @@ const Resume = () => {
                         </div>
                         Natural Role Definition
                       </CardTitle>
-                      <StatusBadge checked={!!naturalRole?.description} />
+                      <SectionActions
+                        hasContent={!!naturalRole?.description}
+                        isEditing={isEditing}
+                        showHistory={sectionHistory === 'section-natural-role'}
+                        onEdit={() => startEditing('section-natural-role')}
+                        onToggleHistory={() => toggleSectionHistory('section-natural-role')}
+                        onAdd={() => startEditing('section-natural-role')}
+                      />
                     </div>
                     <CardDescription>
                       Your unique value proposition and expertise
@@ -703,6 +702,7 @@ const Resume = () => {
                         <p>Click to add your natural role</p>
                       </button>
                     )}
+                    <SectionHistoryPanel sectionId="section-natural-role" fieldName="description" label="Natural Role" />
                   </CardContent>
                 </Card>
 
@@ -719,7 +719,14 @@ const Resume = () => {
                         </div>
                         Practice Experience
                       </CardTitle>
-                      <StatusBadge checked={naturalRole?.practice_check} canAdd={!naturalRole?.practice_check} />
+                      <SectionActions
+                        hasContent={!!naturalRole?.practice_entities}
+                        isEditing={isEditing}
+                        showHistory={sectionHistory === 'section-practice'}
+                        onEdit={() => startEditing('section-practice')}
+                        onToggleHistory={() => toggleSectionHistory('section-practice')}
+                        onAdd={() => startEditing('section-practice')}
+                      />
                     </div>
                     <CardDescription>
                       {naturalRole?.practice_case_studies 
@@ -751,6 +758,7 @@ const Resume = () => {
                         </p>
                       </button>
                     )}
+                    <SectionHistoryPanel sectionId="section-practice" fieldName="practice_entities" label="Practice" />
                   </CardContent>
                 </Card>
 
@@ -764,7 +772,14 @@ const Resume = () => {
                         </div>
                         Training Experience
                       </CardTitle>
-                      <StatusBadge checked={naturalRole?.training_check} canAdd={!naturalRole?.training_check} />
+                      <SectionActions
+                        hasContent={!!naturalRole?.training_contexts}
+                        isEditing={isEditing}
+                        showHistory={sectionHistory === 'section-training'}
+                        onEdit={() => startEditing('section-training')}
+                        onToggleHistory={() => toggleSectionHistory('section-training')}
+                        onAdd={() => startEditing('section-training')}
+                      />
                     </div>
                     <CardDescription>
                       {naturalRole?.training_count 
@@ -796,6 +811,7 @@ const Resume = () => {
                         </p>
                       </button>
                     )}
+                    <SectionHistoryPanel sectionId="section-training" fieldName="training_contexts" label="Training" />
                   </CardContent>
                 </Card>
 
@@ -809,7 +825,14 @@ const Resume = () => {
                         </div>
                         Consulting Experience
                       </CardTitle>
-                      <StatusBadge checked={naturalRole?.consulting_check} canAdd={!naturalRole?.consulting_check} />
+                      <SectionActions
+                        hasContent={!!(naturalRole?.consulting_with_whom || naturalRole?.consulting_case_studies)}
+                        isEditing={isEditing}
+                        showHistory={sectionHistory === 'section-consulting'}
+                        onEdit={() => startEditing('section-consulting')}
+                        onToggleHistory={() => toggleSectionHistory('section-consulting')}
+                        onAdd={() => startEditing('section-consulting')}
+                      />
                     </div>
                     <CardDescription>
                       Your advisory and consulting work
@@ -870,6 +893,7 @@ const Resume = () => {
                         </p>
                       </button>
                     )}
+                    <SectionHistoryPanel sectionId="section-consulting" fieldName="consulting_with_whom" label="Consulting" />
                   </CardContent>
                 </Card>
                   </>
@@ -917,10 +941,8 @@ const Resume = () => {
         <ResumeEditBar
           open={isEditing}
           isSaving={isSaving}
-          canSave={!!changeNotes.trim()}
           onCancel={() => setIsEditing(false)}
           onSave={handleSave}
-          onScrollToChangeNotes={scrollToChangeNotes}
         />
       </main>
       <Footer />
