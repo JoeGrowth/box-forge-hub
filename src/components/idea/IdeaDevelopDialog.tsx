@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -167,6 +167,9 @@ export const IdeaDevelopDialog = ({
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasTeamMembers, setHasTeamMembers] = useState(false);
+  const [hasLoadedInitial, setHasLoadedInitial] = useState(false);
+  const [isAutoSaving, setIsAutoSaving] = useState(false);
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const phase = IDEA_DEVELOP_PHASES[currentPhase];
   const totalPhases = IDEA_DEVELOP_PHASES.length;
@@ -178,10 +181,50 @@ export const IdeaDevelopDialog = ({
   // Check if Launch phase is locked
   const isLaunchLocked = currentPhase === 3 && !phaseProgress[2]?.is_completed;
 
-  // Load existing progress
+  // Auto-save function with debounce
+  const autoSaveProgress = useCallback(async (phaseNum: number, responsesToSave: Record<string, string>) => {
+    if (!user) return;
+
+    setIsAutoSaving(true);
+    try {
+      const currentPhaseName = IDEA_DEVELOP_PHASES[phaseNum].name;
+      const { data: existing } = await supabase
+        .from("idea_journey_progress")
+        .select("id")
+        .eq("startup_id", ideaId)
+        .eq("phase_number", phaseNum)
+        .maybeSingle();
+
+      if (existing) {
+        await supabase
+          .from("idea_journey_progress")
+          .update({
+            responses: responsesToSave,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", existing.id);
+      } else {
+        await supabase.from("idea_journey_progress").insert({
+          startup_id: ideaId,
+          user_id: user.id,
+          phase_number: phaseNum,
+          phase_name: currentPhaseName,
+          responses: responsesToSave,
+        });
+      }
+
+      console.log("Auto-saved progress for phase", phaseNum);
+    } catch (error) {
+      console.error("Auto-save error:", error);
+    } finally {
+      setIsAutoSaving(false);
+    }
+  }, [user, ideaId]);
+
+  // Load progress only once when dialog opens
   useEffect(() => {
     const loadProgress = async () => {
-      if (!user || !open) return;
+      if (!user || !open || hasLoadedInitial) return;
 
       setIsLoading(true);
       try {
@@ -219,6 +262,7 @@ export const IdeaDevelopDialog = ({
           .eq("startup_id", ideaId);
 
         setHasTeamMembers((count || 0) > 0);
+        setHasLoadedInitial(true);
       } catch (error) {
         console.error("Error loading progress:", error);
       } finally {
@@ -227,20 +271,59 @@ export const IdeaDevelopDialog = ({
     };
 
     loadProgress();
-  }, [user, ideaId, open, currentPhase]);
+  }, [user, ideaId, open, hasLoadedInitial, currentPhase]);
 
-  // Update responses when phase changes
+  // Reset loaded flag when dialog closes
   useEffect(() => {
+    if (!open) {
+      setHasLoadedInitial(false);
+    }
+  }, [open]);
+
+  // Update responses when phase changes - use cached data from phaseProgress
+  useEffect(() => {
+    if (!hasLoadedInitial) return;
+    
     if (phaseProgress[currentPhase]) {
       setResponses(phaseProgress[currentPhase].responses);
     } else {
       setResponses({});
     }
-  }, [currentPhase, phaseProgress]);
+  }, [currentPhase, hasLoadedInitial]);
 
   const handleResponseChange = (taskId: string, value: string) => {
-    setResponses((prev) => ({ ...prev, [taskId]: value }));
+    const newResponses = { ...responses, [taskId]: value };
+    setResponses(newResponses);
+    
+    // Update phaseProgress immediately so it persists when switching tabs
+    setPhaseProgress((prev) => ({
+      ...prev,
+      [currentPhase]: {
+        phase_number: currentPhase,
+        phase_name: phase.name,
+        responses: newResponses,
+        completed_tasks: prev[currentPhase]?.completed_tasks || [],
+        is_completed: prev[currentPhase]?.is_completed || false,
+      },
+    }));
+
+    // Auto-save with debounce (1 second delay)
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      autoSaveProgress(currentPhase, newResponses);
+    }, 1000);
   };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleSaveProgress = async () => {
     if (!user) return;
@@ -410,7 +493,15 @@ export const IdeaDevelopDialog = ({
             {/* Progress Bar */}
             <div className="space-y-2">
               <div className="flex justify-between text-sm text-muted-foreground">
-                <span>Overall Progress</span>
+                <span className="flex items-center gap-2">
+                  Overall Progress
+                  {isAutoSaving && (
+                    <span className="flex items-center gap-1 text-xs text-b4-teal">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      Saving...
+                    </span>
+                  )}
+                </span>
                 <span>{Math.round(progress)}%</span>
               </div>
               <Progress value={progress} className="h-2" />
