@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { UserWithDetails } from "@/hooks/useAdmin";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Table,
   TableBody,
@@ -11,13 +12,29 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { 
   RefreshCw, 
   Search, 
   User,
   Lightbulb,
   Users,
+  Trash2,
+  Archive,
+  AlertTriangle,
+  Mail,
+  Loader2,
 } from "lucide-react";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 interface AdminUsersTabProps {
   users: UserWithDetails[];
@@ -25,12 +42,23 @@ interface AdminUsersTabProps {
 }
 
 type StatusFilter = "all" | "joined" | "resume" | "boost" | "scale";
+type DeleteType = "soft" | "hard";
+type DeleteStep = "choose" | "confirm_code" | "processing";
 
 export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<UserWithDetails | null>(null);
+  const [deleteType, setDeleteType] = useState<DeleteType>("soft");
+  const [deleteStep, setDeleteStep] = useState<DeleteStep>("choose");
+  const [confirmationCode, setConfirmationCode] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [testModeCode, setTestModeCode] = useState<string | null>(null);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -39,10 +67,8 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
     toast({ title: "Users refreshed" });
   };
 
-  // Determine user status based on user_status field
   const getUserStatusLevel = (user: UserWithDetails): "joined" | "resume" | "boost" | "scale" => {
     const userStatus = user.onboarding?.user_status;
-    
     if (userStatus === "scaled") return "scale";
     if (userStatus === "boosted") return "boost";
     if (userStatus === "approved") return "resume";
@@ -110,6 +136,124 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
     return `S${total}`;
   };
 
+  const openDeleteDialog = (user: UserWithDetails) => {
+    setUserToDelete(user);
+    setDeleteType("soft");
+    setDeleteStep("choose");
+    setConfirmationCode("");
+    setTestModeCode(null);
+    setDeleteDialogOpen(true);
+  };
+
+  const closeDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setUserToDelete(null);
+    setDeleteType("soft");
+    setDeleteStep("choose");
+    setConfirmationCode("");
+    setTestModeCode(null);
+    setIsProcessing(false);
+  };
+
+  const handleSendConfirmationCode = async () => {
+    if (!userToDelete) return;
+    
+    setIsProcessing(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const response = await supabase.functions.invoke("delete-account", {
+        body: {
+          action: "send_confirmation",
+          isAdminAction: true,
+          targetUserId: userToDelete.id,
+        },
+        headers: {
+          Authorization: `Bearer ${sessionData.session?.access_token}`,
+        },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || "Failed to send confirmation code");
+      }
+
+      if (response.data?.testMode && response.data?.code) {
+        setTestModeCode(response.data.code);
+      }
+
+      toast({
+        title: "Confirmation code sent",
+        description: response.data?.testMode 
+          ? `Test mode: ${response.data.code}` 
+          : "Check your email for the confirmation code",
+      });
+      setDeleteStep("confirm_code");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send confirmation code",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+    
+    setIsProcessing(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      
+      const body: any = {
+        deleteType,
+        isAdminAction: true,
+        targetUserId: userToDelete.id,
+      };
+
+      if (deleteType === "hard") {
+        body.confirmationCode = confirmationCode;
+      }
+
+      const response = await supabase.functions.invoke("delete-account", {
+        body,
+        headers: {
+          Authorization: `Bearer ${sessionData.session?.access_token}`,
+        },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || "Failed to delete user");
+      }
+
+      toast({
+        title: deleteType === "soft" ? "Account deactivated" : "Account deleted",
+        description: deleteType === "soft" 
+          ? `${userToDelete.profile?.full_name || "User"}'s account has been deactivated`
+          : `${userToDelete.profile?.full_name || "User"}'s account has been permanently deleted`,
+      });
+
+      closeDeleteDialog();
+      await onRefresh();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete user",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleProceedWithDelete = () => {
+    if (deleteType === "hard") {
+      handleSendConfirmationCode();
+    } else {
+      handleDeleteUser();
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Filters */}
@@ -136,41 +280,16 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
         
         <div className="flex flex-wrap gap-2">
           <span className="text-sm text-muted-foreground py-1">Status:</span>
-          <Button
-            variant={statusFilter === "all" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setStatusFilter("all")}
-          >
-            All
-          </Button>
-          <Button
-            variant={statusFilter === "joined" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setStatusFilter("joined")}
-          >
-            Joined
-          </Button>
-          <Button
-            variant={statusFilter === "resume" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setStatusFilter("resume")}
-          >
-            Resume
-          </Button>
-          <Button
-            variant={statusFilter === "boost" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setStatusFilter("boost")}
-          >
-            Boost
-          </Button>
-          <Button
-            variant={statusFilter === "scale" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setStatusFilter("scale")}
-          >
-            Scale
-          </Button>
+          {(["all", "joined", "resume", "boost", "scale"] as StatusFilter[]).map((status) => (
+            <Button
+              key={status}
+              variant={statusFilter === status ? "default" : "outline"}
+              size="sm"
+              onClick={() => setStatusFilter(status)}
+            >
+              {status.charAt(0).toUpperCase() + status.slice(1)}
+            </Button>
+          ))}
         </div>
       </div>
 
@@ -186,12 +305,13 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
                 <TableHead>Boost</TableHead>
                 <TableHead>Scaling</TableHead>
                 <TableHead>Joined</TableHead>
+                <TableHead className="w-[80px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredUsers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-12">
+                  <TableCell colSpan={7} className="text-center text-muted-foreground py-12">
                     No users found
                   </TableCell>
                 </TableRow>
@@ -206,7 +326,6 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
 
                   return (
                     <TableRow key={user.id}>
-                      {/* User Name */}
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-b4-teal/20 to-b4-coral/20 flex items-center justify-center flex-shrink-0">
@@ -218,7 +337,6 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
                         </div>
                       </TableCell>
 
-                      {/* Vision */}
                       <TableCell>
                         {visionLabel !== "—" ? (
                           <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${
@@ -238,14 +356,12 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
                         )}
                       </TableCell>
 
-                      {/* Status */}
                       <TableCell>
                         <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border ${getStatusBadgeClass(user)}`}>
                           {getStatusLabel(user)}
                         </span>
                       </TableCell>
 
-                      {/* Boost (Certifications) */}
                       <TableCell>
                         {showBoost && certLabel ? (
                           <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border bg-amber-500/10 text-amber-600 border-amber-500/20">
@@ -256,7 +372,6 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
                         )}
                       </TableCell>
 
-                      {/* Scaling */}
                       <TableCell>
                         {showScaling && scalingLabel ? (
                           <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border bg-purple-500/10 text-purple-600 border-purple-500/20">
@@ -267,11 +382,21 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
                         )}
                       </TableCell>
 
-                      {/* Joined */}
                       <TableCell>
                         <span className="text-sm text-muted-foreground">
                           {formatDate(user.created_at)}
                         </span>
+                      </TableCell>
+
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => openDeleteDialog(user)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   );
@@ -286,6 +411,149 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
       <div className="text-sm text-muted-foreground text-center">
         Showing {filteredUsers.length} of {users.length} users
       </div>
+
+      {/* Delete Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
+              Delete User Account
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteStep === "choose" && (
+                <>
+                  Choose how to handle <strong>{userToDelete?.profile?.full_name || "this user"}</strong>'s account:
+                </>
+              )}
+              {deleteStep === "confirm_code" && (
+                <>
+                  Enter the 6-digit confirmation code sent to your admin email to permanently delete this account.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          {deleteStep === "choose" && (
+            <div className="space-y-3 py-4">
+              {/* Soft Delete Option */}
+              <div
+                className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                  deleteType === "soft"
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-muted-foreground"
+                }`}
+                onClick={() => setDeleteType("soft")}
+              >
+                <div className="flex items-start gap-3">
+                  <Archive className="w-5 h-5 text-amber-500 mt-0.5" />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">Deactivate Account</span>
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                        Recommended
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Marks the account as deleted but preserves data. Can be recovered if needed.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Hard Delete Option */}
+              <div
+                className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                  deleteType === "hard"
+                    ? "border-destructive bg-destructive/5"
+                    : "border-border hover:border-muted-foreground"
+                }`}
+                onClick={() => setDeleteType("hard")}
+              >
+                <div className="flex items-start gap-3">
+                  <Trash2 className="w-5 h-5 text-destructive mt-0.5" />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">Permanent Delete</span>
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-destructive/10 text-destructive border border-destructive/20">
+                        Cannot be undone
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Completely removes all user data. Requires email confirmation to your admin account.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {deleteStep === "confirm_code" && (
+            <div className="space-y-4 py-4">
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                <Mail className="w-4 h-4" />
+                <span>Check your email for the code</span>
+              </div>
+              
+              {testModeCode && (
+                <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-center">
+                  <p className="text-xs text-amber-600 mb-1">Test Mode - Code:</p>
+                  <p className="text-lg font-mono font-bold text-amber-700">{testModeCode}</p>
+                </div>
+              )}
+
+              <div className="flex justify-center">
+                <InputOTP
+                  maxLength={6}
+                  value={confirmationCode}
+                  onChange={setConfirmationCode}
+                >
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                    <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
+            </div>
+          )}
+
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={closeDeleteDialog} disabled={isProcessing}>
+              Cancel
+            </AlertDialogCancel>
+            
+            {deleteStep === "choose" && (
+              <AlertDialogAction
+                onClick={handleProceedWithDelete}
+                disabled={isProcessing}
+                className={deleteType === "hard" ? "bg-destructive hover:bg-destructive/90" : ""}
+              >
+                {isProcessing ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : null}
+                {deleteType === "hard" ? "Send Confirmation Code" : "Deactivate Account"}
+              </AlertDialogAction>
+            )}
+
+            {deleteStep === "confirm_code" && (
+              <AlertDialogAction
+                onClick={handleDeleteUser}
+                disabled={isProcessing || confirmationCode.length !== 6}
+                className="bg-destructive hover:bg-destructive/90"
+              >
+                {isProcessing ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : null}
+                Permanently Delete
+              </AlertDialogAction>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
