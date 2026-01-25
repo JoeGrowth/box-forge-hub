@@ -119,8 +119,8 @@ Deno.serve(async (req) => {
     console.log('User authenticated:', user.id, user.email)
 
     const body = await req.json()
-    const { deleteType, action, confirmationCode, targetUserId, isAdminAction } = body
-    console.log(`Action: ${action || 'delete'}, Delete type: ${deleteType}, Admin action: ${isAdminAction}`)
+    const { deleteType, action, confirmationCode, targetUserId, targetUserIds, isAdminAction, isBulkAction } = body
+    console.log(`Action: ${action || 'delete'}, Delete type: ${deleteType}, Admin action: ${isAdminAction}, Bulk: ${isBulkAction}`)
 
     // Verify admin privileges for admin actions
     if (isAdminAction) {
@@ -245,25 +245,51 @@ Deno.serve(async (req) => {
 
     // Handle soft delete
     if (deleteType === 'soft') {
-      const { error: updateError } = await supabaseAdmin
-        .from('profiles')
-        .update({ 
-          is_deleted: true, 
-          deleted_at: new Date().toISOString() 
-        })
-        .eq('user_id', effectiveTargetUserId)
+      // Handle bulk or single soft deletion
+      const userIdsToDelete = isBulkAction && targetUserIds ? targetUserIds : [effectiveTargetUserId]
+      console.log(`Soft deleting ${userIdsToDelete.length} user(s)`)
 
-      if (updateError) {
-        console.error('Error soft deleting profile:', updateError)
+      let successCount = 0
+      let failCount = 0
+      const errors: string[] = []
+
+      for (const userId of userIdsToDelete) {
+        const { error: updateError } = await supabaseAdmin
+          .from('profiles')
+          .update({ 
+            is_deleted: true, 
+            deleted_at: new Date().toISOString() 
+          })
+          .eq('user_id', userId)
+
+        if (updateError) {
+          console.error('Error soft deleting profile:', userId, updateError)
+          failCount++
+          errors.push(`Failed to deactivate user ${userId}`)
+        } else {
+          successCount++
+        }
+      }
+
+      console.log(`Soft delete completed: ${successCount} succeeded, ${failCount} failed`)
+
+      if (failCount > 0 && successCount === 0) {
         return new Response(
-          JSON.stringify({ error: 'Failed to deactivate account' }),
+          JSON.stringify({ error: 'All deactivations failed', details: errors }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
 
-      console.log('Soft delete successful for user:', effectiveTargetUserId)
       return new Response(
-        JSON.stringify({ success: true, message: 'Account deactivated successfully' }),
+        JSON.stringify({ 
+          success: true, 
+          message: isBulkAction 
+            ? `Bulk deactivation completed: ${successCount} succeeded${failCount > 0 ? `, ${failCount} failed` : ''}`
+            : 'Account deactivated successfully',
+          successCount,
+          failCount,
+          errors: failCount > 0 ? errors : undefined
+        }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -303,24 +329,55 @@ Deno.serve(async (req) => {
         .update({ used_at: new Date().toISOString() })
         .eq('id', tokenData.id)
 
-      // Delete user data
-      console.log('Starting hard delete for user:', effectiveTargetUserId)
-      await deleteUserData(supabaseAdmin, effectiveTargetUserId)
+      // Handle bulk or single deletion
+      const userIdsToDelete = isBulkAction && targetUserIds ? targetUserIds : [effectiveTargetUserId]
+      console.log(`Deleting ${userIdsToDelete.length} user(s)`)
 
-      // Delete the auth user
-      const { error: deleteUserError } = await supabaseAdmin.auth.admin.deleteUser(effectiveTargetUserId)
-      
-      if (deleteUserError) {
-        console.error('Error deleting auth user:', deleteUserError)
+      let successCount = 0
+      let failCount = 0
+      const errors: string[] = []
+
+      for (const userId of userIdsToDelete) {
+        try {
+          console.log('Starting hard delete for user:', userId)
+          await deleteUserData(supabaseAdmin, userId)
+
+          // Delete the auth user
+          const { error: deleteUserError } = await supabaseAdmin.auth.admin.deleteUser(userId)
+          
+          if (deleteUserError) {
+            console.error('Error deleting auth user:', userId, deleteUserError)
+            failCount++
+            errors.push(`Failed to delete user ${userId}`)
+          } else {
+            successCount++
+          }
+        } catch (error) {
+          console.error('Error in deletion process for user:', userId, error)
+          failCount++
+          errors.push(`Error processing user ${userId}`)
+        }
+      }
+
+      console.log(`Hard delete completed: ${successCount} succeeded, ${failCount} failed`)
+
+      if (failCount > 0 && successCount === 0) {
         return new Response(
-          JSON.stringify({ error: 'Failed to delete auth user' }),
+          JSON.stringify({ error: 'All deletions failed', details: errors }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
 
-      console.log('Hard delete successful for user:', effectiveTargetUserId)
       return new Response(
-        JSON.stringify({ success: true, message: 'Account permanently deleted' }),
+        JSON.stringify({ 
+          success: true, 
+          message: isBulkAction 
+            ? `Bulk deletion completed: ${successCount} succeeded${failCount > 0 ? `, ${failCount} failed` : ''}`
+            : 'Account permanently deleted',
+          successCount,
+          failCount,
+          errors: failCount > 0 ? errors : undefined
+        }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
