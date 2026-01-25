@@ -13,9 +13,10 @@ import {
   AlertCircle,
   Users,
   ExternalLink,
-  RefreshCw,
+  Eye,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { IdeaProgressViewDialog } from "@/components/idea/IdeaProgressViewDialog";
 
 interface Application {
   id: string;
@@ -41,6 +42,8 @@ interface CoBuilderApplicationsSectionProps {
 export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSectionProps) {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
+  const [progressDialogOpen, setProgressDialogOpen] = useState(false);
+  const [selectedStartup, setSelectedStartup] = useState<{ id: string; title: string } | null>(null);
 
   const fetchApplications = useCallback(async () => {
     if (!userId) return;
@@ -291,6 +294,20 @@ export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSe
                       </Link>
                     </Button>
                   )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedStartup({
+                        id: application.startup_id,
+                        title: application.startup?.title || "Startup",
+                      });
+                      setProgressDialogOpen(true);
+                    }}
+                  >
+                    <Eye className="w-4 h-4 mr-1.5" />
+                    View Progress
+                  </Button>
                   <Button variant="ghost" size="sm" asChild>
                     <Link to={`/opportunities/${application.startup_id}`}>
                       <ExternalLink className="w-4 h-4 mr-1.5" />
@@ -303,6 +320,16 @@ export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSe
           </Card>
         ))}
       </div>
+
+      {/* Progress View Dialog */}
+      {selectedStartup && (
+        <IdeaProgressViewDialog
+          open={progressDialogOpen}
+          onOpenChange={setProgressDialogOpen}
+          startupId={selectedStartup.id}
+          startupTitle={selectedStartup.title}
+        />
+      )}
     </div>
   );
 }
