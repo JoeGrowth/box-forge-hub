@@ -148,6 +148,42 @@ export const IdeaProgressViewDialog = ({
     };
 
     loadProgress();
+
+    // Subscribe to real-time updates for this startup's progress
+    if (open && startupId) {
+      const channel = supabase
+        .channel(`idea-progress-${startupId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'idea_journey_progress',
+            filter: `startup_id=eq.${startupId}`,
+          },
+          (payload) => {
+            console.log('Real-time progress update:', payload);
+            if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+              const p = payload.new as any;
+              setPhaseProgress(prev => ({
+                ...prev,
+                [p.phase_number]: {
+                  phase_number: p.phase_number,
+                  phase_name: p.phase_name,
+                  responses: (p.responses as Record<string, string>) || {},
+                  is_completed: p.is_completed || false,
+                  completed_at: p.completed_at || undefined,
+                },
+              }));
+            }
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
   }, [open, startupId]);
 
   const getPhaseStatus = (phaseNum: number) => {
