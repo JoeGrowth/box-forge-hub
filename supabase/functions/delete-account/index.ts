@@ -54,7 +54,7 @@ async function sendConfirmationEmail(
     `
 
   return await resend.emails.send({
-    from: 'B4 Platform <onboarding@resend.dev>',
+    from: 'B4 Platform <noreply@box4solutions.com>',
     to: [email],
     subject,
     html,
