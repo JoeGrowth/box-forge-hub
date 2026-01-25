@@ -528,7 +528,12 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
             
             {deleteStep === "choose" && (
               <AlertDialogAction
-                onClick={handleProceedWithDelete}
+                onClick={(e) => {
+                  if (deleteType === "hard") {
+                    e.preventDefault();
+                  }
+                  handleProceedWithDelete();
+                }}
                 disabled={isProcessing}
                 className={deleteType === "hard" ? "bg-destructive hover:bg-destructive/90" : ""}
               >
