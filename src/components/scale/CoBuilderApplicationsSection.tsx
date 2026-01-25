@@ -35,12 +35,26 @@ interface Application {
   unread_count: number;
 }
 
+interface TeamMembership {
+  id: string;
+  startup_id: string;
+  role_type: string;
+  added_at: string;
+  startup?: {
+    id: string;
+    title: string;
+    description: string;
+    sector: string | null;
+  };
+}
+
 interface CoBuilderApplicationsSectionProps {
   userId: string;
 }
 
 export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSectionProps) {
   const [applications, setApplications] = useState<Application[]>([]);
+  const [teamMemberships, setTeamMemberships] = useState<TeamMembership[]>([]);
   const [loading, setLoading] = useState(true);
   const [progressDialogOpen, setProgressDialogOpen] = useState(false);
   const [selectedStartup, setSelectedStartup] = useState<{ id: string; title: string } | null>(null);
@@ -96,6 +110,32 @@ export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSe
       );
 
       setApplications(applicationsWithChat);
+
+      // Fetch team memberships where user was directly added
+      const { data: memberships, error: membershipError } = await supabase
+        .from("startup_team_members")
+        .select(`
+          id,
+          startup_id,
+          role_type,
+          added_at,
+          startup:startup_ideas(id, title, description, sector)
+        `)
+        .eq("member_user_id", userId)
+        .order("added_at", { ascending: false });
+
+      if (membershipError) throw membershipError;
+
+      // Filter out memberships for startups where user already has an application
+      const applicationStartupIds = new Set(applicationsWithChat.map(a => a.startup_id));
+      const filteredMemberships = (memberships || [])
+        .filter(m => !applicationStartupIds.has(m.startup_id))
+        .map(m => ({
+          ...m,
+          startup: m.startup as TeamMembership["startup"],
+        }));
+
+      setTeamMemberships(filteredMemberships);
     } catch (error) {
       console.error("Error fetching co-builder applications:", error);
     } finally {
