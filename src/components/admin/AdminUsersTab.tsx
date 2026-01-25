@@ -66,7 +66,6 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
   const [confirmationCode, setConfirmationCode] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [testModeCode, setTestModeCode] = useState<string | null>(null);
-  const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0 });
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -178,7 +177,6 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
     setDeleteStep("choose");
     setConfirmationCode("");
     setTestModeCode(null);
-    setBulkProgress({ current: 0, total: 0 });
     setDeleteDialogOpen(true);
   };
 
@@ -194,7 +192,6 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
     setDeleteStep("choose");
     setConfirmationCode("");
     setTestModeCode(null);
-    setBulkProgress({ current: 0, total: selectedUsers.length });
     setDeleteDialogOpen(true);
   };
 
@@ -208,7 +205,6 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
     setConfirmationCode("");
     setTestModeCode(null);
     setIsProcessing(false);
-    setBulkProgress({ current: 0, total: 0 });
   };
 
   const handleSendConfirmationCode = async () => {
@@ -318,62 +314,53 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
     if (usersToDelete.length === 0) return;
     
     setIsProcessing(true);
-    setBulkProgress({ current: 0, total: usersToDelete.length });
     
-    const { data: sessionData } = await supabase.auth.getSession();
-    let successCount = 0;
-    let failCount = 0;
-
-    for (let i = 0; i < usersToDelete.length; i++) {
-      const user = usersToDelete[i];
-      setBulkProgress({ current: i + 1, total: usersToDelete.length });
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
       
-      try {
-        const body: any = {
-          deleteType,
-          isAdminAction: true,
-          targetUserId: user.id,
-        };
+      const body: any = {
+        deleteType,
+        isAdminAction: true,
+        isBulkAction: true,
+        targetUserIds: usersToDelete.map(u => u.id),
+      };
 
-        if (deleteType === "hard") {
-          body.confirmationCode = confirmationCode;
-        }
-
-        const response = await supabase.functions.invoke("delete-account", {
-          body,
-          headers: {
-            Authorization: `Bearer ${sessionData.session?.access_token}`,
-          },
-        });
-
-        if (response.error) {
-          failCount++;
-        } else {
-          successCount++;
-        }
-      } catch {
-        failCount++;
+      if (deleteType === "hard") {
+        body.confirmationCode = confirmationCode;
       }
-    }
 
-    const actionText = deleteType === "soft" ? "deactivated" : "deleted";
-    
-    if (failCount === 0) {
-      toast({
-        title: `All accounts ${actionText}`,
-        description: `Successfully ${actionText} ${successCount} user(s)`,
+      const response = await supabase.functions.invoke("delete-account", {
+        body,
+        headers: {
+          Authorization: `Bearer ${sessionData.session?.access_token}`,
+        },
       });
-    } else {
+
+      if (response.error) {
+        throw new Error(response.error.message || "Failed to delete users");
+      }
+
+      const { successCount = 0, failCount = 0 } = response.data || {};
+      const actionText = deleteType === "soft" ? "deactivated" : "deleted";
+      
       toast({
-        title: `Bulk ${deleteType === "soft" ? "deactivation" : "deletion"} completed`,
-        description: `${successCount} succeeded, ${failCount} failed`,
+        title: failCount === 0 ? `All accounts ${actionText}` : `Bulk ${deleteType === "soft" ? "deactivation" : "deletion"} completed`,
+        description: `${successCount} succeeded${failCount > 0 ? `, ${failCount} failed` : ''}`,
         variant: failCount > 0 ? "destructive" : "default",
       });
-    }
 
-    setSelectedUserIds(new Set());
-    closeDeleteDialog();
-    await onRefresh();
+      setSelectedUserIds(new Set());
+      closeDeleteDialog();
+      await onRefresh();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete users",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleProceedWithDelete = () => {
@@ -735,6 +722,7 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
                   maxLength={6}
                   value={confirmationCode}
                   onChange={setConfirmationCode}
+                  disabled={isProcessing}
                 >
                   <InputOTPGroup>
                     <InputOTPSlot index={0} />
@@ -746,21 +734,6 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
                   </InputOTPGroup>
                 </InputOTP>
               </div>
-
-              {isProcessing && isBulkDelete && (
-                <div className="mt-4">
-                  <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                    <span>Deleting users...</span>
-                    <span>{bulkProgress.current}/{bulkProgress.total}</span>
-                  </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-destructive transition-all duration-300"
-                      style={{ width: `${(bulkProgress.current / bulkProgress.total) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
