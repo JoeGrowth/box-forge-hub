@@ -211,7 +211,13 @@ Deno.serve(async (req) => {
         console.error('Error sending email:', emailError)
         const errorMessage = emailError.message ?? String(emailError)
         
-        if (errorMessage.includes('verify a domain') || errorMessage.includes('testing emails')) {
+        // Check for various domain/testing issues
+        const isDomainIssue = errorMessage.includes('verify a domain') || 
+          errorMessage.includes('testing emails') ||
+          errorMessage.includes('domain is not verified') ||
+          errorMessage.includes('not verified')
+        
+        if (isDomainIssue) {
           console.log('Resend domain not verified, returning code directly for testing')
           return new Response(
             JSON.stringify({ 
