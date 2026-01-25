@@ -37,6 +37,8 @@ import {
   TrendingUp,
   Pencil,
   Trash2,
+  RotateCcw,
+  Archive,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -151,7 +153,10 @@ const Scale = () => {
   const [changeNotes, setChangeNotes] = useState("");
   const [activeSection, setActiveSection] = useState<"scale" | "ideas" | "cobuilder">(getInitialSection());
   const [userIdeas, setUserIdeas] = useState<StartupIdea[]>([]);
+  const [archivedIdeas, setArchivedIdeas] = useState<StartupIdea[]>([]);
   const [loadingIdeas, setLoadingIdeas] = useState(true);
+  const [showArchivedSection, setShowArchivedSection] = useState(false);
+  const [restoringIdeaId, setRestoringIdeaId] = useState<string | null>(null);
   const [stepDialogOpen, setStepDialogOpen] = useState(false);
   const [activeStep, setActiveStep] = useState<1 | 2 | 3>(1);
   const [stepCompletionStatus, setStepCompletionStatus] = useState<Record<number, boolean>>({});
@@ -251,7 +256,11 @@ const Scale = () => {
         .order("created_at", { ascending: false });
 
       if (!error && data) {
-        setUserIdeas(data);
+        // Separate active and archived ideas
+        const active = data.filter((idea) => idea.status !== "archived");
+        const archived = data.filter((idea) => idea.status === "archived");
+        setUserIdeas(active);
+        setArchivedIdeas(archived);
       }
       setLoadingIdeas(false);
     };
@@ -284,8 +293,12 @@ const Scale = () => {
             title: "Idea Archived",
             description: `"${ideaToDelete.title}" has been archived. You can restore it later.`,
           });
-          // Remove from local state (or update status)
-          setUserIdeas((prev) => prev.filter((idea) => idea.id !== ideaToDelete.id));
+          // Move to archived list
+          const archivedIdea = userIdeas.find((idea) => idea.id === ideaToDelete.id);
+          if (archivedIdea) {
+            setUserIdeas((prev) => prev.filter((idea) => idea.id !== ideaToDelete.id));
+            setArchivedIdeas((prev) => [{ ...archivedIdea, status: "archived" }, ...prev]);
+          }
         }
       } else {
         // Hard delete: permanently remove
@@ -321,6 +334,47 @@ const Scale = () => {
       setDeleteDialogOpen(false);
       setIdeaToDelete(null);
       setDeleteType(null);
+    }
+  };
+
+  // Handle restoring an archived idea
+  const handleRestoreIdea = async (idea: { id: string; title: string }) => {
+    if (!user) return;
+
+    setRestoringIdeaId(idea.id);
+    try {
+      const { error } = await supabase
+        .from("startup_ideas")
+        .update({ status: "active" })
+        .eq("id", idea.id)
+        .eq("creator_id", user.id);
+
+      if (error) {
+        toast({
+          title: "Restore Failed",
+          description: "Could not restore the idea. Please try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Idea Restored",
+          description: `"${idea.title}" has been restored successfully.`,
+        });
+        // Move from archived to active
+        const restoredIdea = archivedIdeas.find((i) => i.id === idea.id);
+        if (restoredIdea) {
+          setArchivedIdeas((prev) => prev.filter((i) => i.id !== idea.id));
+          setUserIdeas((prev) => [{ ...restoredIdea, status: "active" }, ...prev]);
+        }
+      }
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred.",
+        variant: "destructive",
+      });
+    } finally {
+      setRestoringIdeaId(null);
     }
   };
 
@@ -889,6 +943,101 @@ const Scale = () => {
                       </Card>
                     ))}
                   </div>
+                )}
+
+                {/* Archived Ideas Section */}
+                {archivedIdeas.length > 0 && (
+                  <Collapsible open={showArchivedSection} onOpenChange={setShowArchivedSection} className="mt-8">
+                    <CollapsibleTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-between text-muted-foreground hover:text-foreground"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Archive className="w-4 h-4" />
+                          <span>Archived Ideas</span>
+                          <Badge variant="secondary" className="text-xs">
+                            {archivedIdeas.length}
+                          </Badge>
+                        </div>
+                        <ChevronDown
+                          className={`h-4 w-4 transition-transform duration-200 ${
+                            showArchivedSection ? "rotate-180" : ""
+                          }`}
+                        />
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="mt-4 space-y-4">
+                      {archivedIdeas.map((idea) => (
+                        <Card
+                          key={idea.id}
+                          className="border-border/50 bg-muted/30 hover:shadow-md transition-shadow"
+                        >
+                          <CardContent className="p-6">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <h3 className="text-lg font-display font-bold text-muted-foreground truncate">
+                                    {idea.title}
+                                  </h3>
+                                  <Badge variant="secondary" className="opacity-70">
+                                    <Archive className="w-3 h-3 mr-1" />
+                                    Archived
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground/80 line-clamp-2 mb-3">
+                                  {idea.description}
+                                </p>
+                                <div className="flex items-center gap-4 text-xs text-muted-foreground/60">
+                                  {idea.sector && (
+                                    <span className="flex items-center gap-1">
+                                      <Target className="w-3 h-3" />
+                                      {idea.sector}
+                                    </span>
+                                  )}
+                                  <span className="flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    {format(new Date(idea.created_at), "MMM d, yyyy")}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="flex gap-2 shrink-0">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleRestoreIdea({ id: idea.id, title: idea.title })}
+                                  disabled={restoringIdeaId === idea.id}
+                                  className="text-b4-teal hover:text-b4-teal hover:bg-b4-teal/10 border-b4-teal/30"
+                                >
+                                  {restoringIdeaId === idea.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <>
+                                      <RotateCcw className="w-4 h-4 mr-1" />
+                                      Restore
+                                    </>
+                                  )}
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                  onClick={() => {
+                                    setIdeaToDelete({ id: idea.id, title: idea.title });
+                                    setDeleteType("permanent");
+                                    setDeleteDialogOpen(true);
+                                  }}
+                                  title="Delete permanently"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </CollapsibleContent>
+                  </Collapsible>
                 )}
               </div>
             )}
