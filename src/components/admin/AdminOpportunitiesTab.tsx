@@ -23,6 +23,7 @@ import {
   Eye,
   XCircle,
   Edit,
+  Trash2,
 } from "lucide-react";
 
 interface OpportunityWithCreator {
@@ -58,6 +59,7 @@ export function AdminOpportunitiesTab({ onRefresh }: AdminOpportunitiesTabProps)
   const [opportunities, setOpportunities] = useState<OpportunityWithCreator[]>([]);
   const [loading, setLoading] = useState(true);
   const [stayPrivateDialog, setStayPrivateDialog] = useState<OpportunityWithCreator | null>(null);
+  const [deleteDialog, setDeleteDialog] = useState<OpportunityWithCreator | null>(null);
   const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
@@ -223,6 +225,35 @@ export function AdminOpportunitiesTab({ onRefresh }: AdminOpportunitiesTabProps)
     } catch (error: any) {
       toast({
         title: "Error updating opportunity",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handleDelete = async (opportunity: OpportunityWithCreator) => {
+    setProcessing(true);
+    try {
+      // Delete the startup idea
+      const { error } = await supabase
+        .from("startup_ideas")
+        .delete()
+        .eq("id", opportunity.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Opportunity Deleted",
+        description: `"${opportunity.title}" has been permanently deleted.`,
+      });
+
+      setDeleteDialog(null);
+      fetchOpportunities();
+    } catch (error: any) {
+      toast({
+        title: "Error deleting opportunity",
         description: error.message,
         variant: "destructive",
       });
@@ -449,6 +480,17 @@ export function AdminOpportunitiesTab({ onRefresh }: AdminOpportunitiesTabProps)
                       </Button>
                     </>
                   )}
+                  {opp.review_status === "approved" && (
+                    <Button 
+                      variant="destructive" 
+                      size="sm" 
+                      onClick={() => setDeleteDialog(opp)}
+                      disabled={processing}
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      Delete
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
@@ -490,6 +532,35 @@ export function AdminOpportunitiesTab({ onRefresh }: AdminOpportunitiesTabProps)
             >
               <Edit className="w-4 h-4 mr-2" />
               To Be Enhanced - Needs improvements
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deleteDialog} onOpenChange={() => setDeleteDialog(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Opportunity</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to permanently delete "{deleteDialog?.title}"? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3 pt-4 justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialog(null)}
+              disabled={processing}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => deleteDialog && handleDelete(deleteDialog)}
+              disabled={processing}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete Permanently
             </Button>
           </div>
         </DialogContent>
