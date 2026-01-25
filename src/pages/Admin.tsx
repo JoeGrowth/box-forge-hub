@@ -23,6 +23,8 @@ const Admin = () => {
   const [approvedOpportunities, setApprovedOpportunities] = useState(0);
   const [certifiedCoBuilders, setCertifiedCoBuilders] = useState(0);
   const [certifiedInitiators, setCertifiedInitiators] = useState(0);
+  const [certifiedConsultants, setCertifiedConsultants] = useState(0);
+
   useEffect(() => {
     const fetchCounts = async () => {
       const { supabase } = await import("@/integrations/supabase/client");
@@ -50,6 +52,14 @@ const Admin = () => {
         .eq("certification_type", "initiator_b4");
       
       setCertifiedInitiators(initiatorCount || 0);
+
+      // Certified Consultants count
+      const { count: consultantCount } = await supabase
+        .from("user_certifications")
+        .select("*", { count: "exact", head: true })
+        .eq("certification_type", "consultant_b4");
+      
+      setCertifiedConsultants(consultantCount || 0);
     };
 
     if (isAdmin) {
@@ -113,7 +123,7 @@ const Admin = () => {
         <section className="py-8">
           <div className="container mx-auto px-4">
             {/* Stats Cards */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
               <div className="bg-card rounded-xl border border-border p-6">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-10 h-10 rounded-lg bg-b4-teal/10 flex items-center justify-center">
@@ -155,6 +165,17 @@ const Admin = () => {
                   <div>
                     <p className="text-2xl font-bold text-foreground">{certifiedInitiators}</p>
                     <p className="text-sm text-muted-foreground">Certified Initiators</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-card rounded-xl border border-border p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                    <GraduationCap className="w-5 h-5 text-purple-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">{certifiedConsultants}</p>
+                    <p className="text-sm text-muted-foreground">Certified Consultants</p>
                   </div>
                 </div>
               </div>
