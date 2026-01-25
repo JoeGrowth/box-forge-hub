@@ -526,35 +526,36 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
               Cancel
             </AlertDialogCancel>
             
-            {deleteStep === "choose" && (
+            {deleteStep === "choose" && deleteType === "soft" && (
               <AlertDialogAction
-                onClick={(e) => {
-                  if (deleteType === "hard") {
-                    e.preventDefault();
-                  }
-                  handleProceedWithDelete();
-                }}
+                onClick={handleProceedWithDelete}
                 disabled={isProcessing}
-                className={deleteType === "hard" ? "bg-destructive hover:bg-destructive/90" : ""}
               >
-                {isProcessing ? (
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                ) : null}
-                {deleteType === "hard" ? "Send Confirmation Code" : "Deactivate Account"}
+                {isProcessing && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                Deactivate Account
               </AlertDialogAction>
             )}
 
+            {deleteStep === "choose" && deleteType === "hard" && (
+              <Button
+                onClick={handleProceedWithDelete}
+                disabled={isProcessing}
+                variant="destructive"
+              >
+                {isProcessing && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                Send Confirmation Code
+              </Button>
+            )}
+
             {deleteStep === "confirm_code" && (
-              <AlertDialogAction
+              <Button
                 onClick={handleDeleteUser}
                 disabled={isProcessing || confirmationCode.length !== 6}
-                className="bg-destructive hover:bg-destructive/90"
+                variant="destructive"
               >
-                {isProcessing ? (
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                ) : null}
+                {isProcessing && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
                 Permanently Delete
-              </AlertDialogAction>
+              </Button>
             )}
           </AlertDialogFooter>
         </AlertDialogContent>
