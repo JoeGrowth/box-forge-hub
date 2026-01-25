@@ -36,7 +36,18 @@ import {
   Lock,
   TrendingUp,
   Pencil,
+  Trash2,
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { ScaleStepDialog } from "@/components/scale/ScaleStepDialog";
 import { IdeaDevelopDialog } from "@/components/idea/IdeaDevelopDialog";
 import { CoBuilderApplicationsSection } from "@/components/scale/CoBuilderApplicationsSection";
@@ -146,6 +157,9 @@ const Scale = () => {
   const [stepCompletionStatus, setStepCompletionStatus] = useState<Record<number, boolean>>({});
   const [developDialogOpen, setDevelopDialogOpen] = useState(false);
   const [selectedIdea, setSelectedIdea] = useState<{ id: string; title: string } | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [ideaToDelete, setIdeaToDelete] = useState<{ id: string; title: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [showScaleExperience, setShowScaleExperience] = useState(() => {
     // Initialize from localStorage
     if (typeof window !== 'undefined') {
@@ -243,6 +257,45 @@ const Scale = () => {
 
     fetchUserIdeas();
   }, [user]);
+
+  // Handle idea deletion
+  const handleDeleteIdea = async () => {
+    if (!ideaToDelete || !user) return;
+
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase
+        .from("startup_ideas")
+        .delete()
+        .eq("id", ideaToDelete.id)
+        .eq("creator_id", user.id);
+
+      if (error) {
+        toast({
+          title: "Delete Failed",
+          description: "Could not delete the idea. Please try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Idea Deleted",
+          description: `"${ideaToDelete.title}" has been permanently deleted.`,
+        });
+        // Remove from local state
+        setUserIdeas((prev) => prev.filter((idea) => idea.id !== ideaToDelete.id));
+      }
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+      setIdeaToDelete(null);
+    }
+  };
 
   // Fetch step completion status
   const fetchStepCompletionStatus = async () => {
@@ -776,6 +829,18 @@ const Scale = () => {
                               </div>
                             </div>
                             <div className="flex gap-2 shrink-0">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                onClick={() => {
+                                  setIdeaToDelete({ id: idea.id, title: idea.title });
+                                  setDeleteDialogOpen(true);
+                                }}
+                                title="Delete idea"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
                               <Button variant="outline" size="sm" asChild>
                                 <Link to={`/opportunities/${idea.id}`}>View</Link>
                               </Button>
@@ -825,6 +890,37 @@ const Scale = () => {
           ideaTitle={selectedIdea.title}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this idea?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to permanently delete{" "}
+              <span className="font-semibold text-foreground">"{ideaToDelete?.title}"</span>?
+              This action cannot be undone and will remove all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteIdea}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
