@@ -3,16 +3,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { UserWithDetails } from "@/hooks/useAdmin";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { 
   RefreshCw, 
   Search, 
   User,
-  CheckCircle,
-  AlertCircle,
-  Clock,
   Lightbulb,
   Users,
-  HelpCircle
 } from "lucide-react";
 
 interface AdminUsersTabProps {
@@ -20,11 +24,12 @@ interface AdminUsersTabProps {
   onRefresh: () => Promise<any>;
 }
 
+type StatusFilter = "all" | "joined" | "resume" | "boost" | "scale";
+
 export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState<"all" | "entrepreneur" | "cobuilder">("all");
-  const [statusFilter, setStatusFilter] = useState<"all" | "completed" | "in_progress" | "needs_help">("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = async () => {
@@ -34,17 +39,20 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
     toast({ title: "Users refreshed" });
   };
 
+  // Determine user status based on user_status field
+  const getUserStatusLevel = (user: UserWithDetails): "joined" | "resume" | "boost" | "scale" => {
+    const userStatus = user.onboarding?.user_status;
+    
+    if (userStatus === "scaled") return "scale";
+    if (userStatus === "boosted") return "boost";
+    if (userStatus === "approved") return "resume";
+    return "joined";
+  };
+
   const filteredUsers = users
     .filter((u) => {
-      if (roleFilter === "all") return true;
-      return u.onboarding?.primary_role === roleFilter;
-    })
-    .filter((u) => {
       if (statusFilter === "all") return true;
-      if (statusFilter === "completed") return u.onboarding?.onboarding_completed;
-      if (statusFilter === "in_progress") return !u.onboarding?.onboarding_completed && !u.naturalRole?.status?.includes("assistance");
-      if (statusFilter === "needs_help") return u.naturalRole?.status === "assistance_requested";
-      return true;
+      return getUserStatusLevel(u) === statusFilter;
     })
     .filter((u) => {
       if (!searchQuery) return true;
@@ -55,25 +63,51 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
       );
     });
 
-  const getUserStatus = (user: UserWithDetails) => {
-    if (user.naturalRole?.status === "assistance_requested") {
-      return { label: "Needs Help", color: "text-amber-500", icon: HelpCircle };
-    }
-    if (user.onboarding?.onboarding_completed) {
-      return { label: "Completed", color: "text-b4-teal", icon: CheckCircle };
-    }
-    if (user.onboarding?.current_step && user.onboarding.current_step > 1) {
-      return { label: "In Progress", color: "text-blue-500", icon: Clock };
-    }
-    return { label: "Not Started", color: "text-muted-foreground", icon: AlertCircle };
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
     });
+  };
+
+  const getVisionLabel = (user: UserWithDetails) => {
+    const potentialRole = user.onboarding?.potential_role;
+    if (potentialRole === "potential_entrepreneur") return "Initiator";
+    if (potentialRole === "potential_co_builder") return "Co Builder";
+    return "—";
+  };
+
+  const getStatusLabel = (user: UserWithDetails) => {
+    const level = getUserStatusLevel(user);
+    switch (level) {
+      case "scale": return "Scale";
+      case "boost": return "Boost";
+      case "resume": return "Resume";
+      default: return "Joined";
+    }
+  };
+
+  const getStatusBadgeClass = (user: UserWithDetails) => {
+    const level = getUserStatusLevel(user);
+    switch (level) {
+      case "scale": return "bg-purple-500/10 text-purple-600 border-purple-500/20";
+      case "boost": return "bg-b4-teal/10 text-b4-teal border-b4-teal/20";
+      case "resume": return "bg-blue-500/10 text-blue-600 border-blue-500/20";
+      default: return "bg-muted text-muted-foreground border-border";
+    }
+  };
+
+  const getCertificationLabel = (user: UserWithDetails) => {
+    const count = user.certificationCount;
+    if (count === 0) return null;
+    return `C${count}`;
+  };
+
+  const getScalingLabel = (user: UserWithDetails) => {
+    const total = user.ideasAsInitiator + user.ideasAsCoBuilder + (user.hasConsultantScaling ? 1 : 0);
+    if (total === 0) return null;
+    return `S${total}`;
   };
 
   return (
@@ -101,32 +135,7 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
         </div>
         
         <div className="flex flex-wrap gap-2">
-          <span className="text-sm text-muted-foreground py-1">Role:</span>
-          <Button
-            variant={roleFilter === "all" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setRoleFilter("all")}
-          >
-            All
-          </Button>
-          <Button
-            variant={roleFilter === "entrepreneur" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setRoleFilter("entrepreneur")}
-          >
-            <Lightbulb className="w-4 h-4 mr-1" />
-            Entrepreneurs
-          </Button>
-          <Button
-            variant={roleFilter === "cobuilder" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setRoleFilter("cobuilder")}
-          >
-            <Users className="w-4 h-4 mr-1" />
-            Co-Builders
-          </Button>
-          
-          <span className="text-sm text-muted-foreground py-1 ml-4">Status:</span>
+          <span className="text-sm text-muted-foreground py-1">Status:</span>
           <Button
             variant={statusFilter === "all" ? "default" : "outline"}
             size="sm"
@@ -135,28 +144,32 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
             All
           </Button>
           <Button
-            variant={statusFilter === "completed" ? "default" : "outline"}
+            variant={statusFilter === "joined" ? "default" : "outline"}
             size="sm"
-            onClick={() => setStatusFilter("completed")}
+            onClick={() => setStatusFilter("joined")}
           >
-            <CheckCircle className="w-4 h-4 mr-1" />
-            Completed
+            Joined
           </Button>
           <Button
-            variant={statusFilter === "in_progress" ? "default" : "outline"}
+            variant={statusFilter === "resume" ? "default" : "outline"}
             size="sm"
-            onClick={() => setStatusFilter("in_progress")}
+            onClick={() => setStatusFilter("resume")}
           >
-            <Clock className="w-4 h-4 mr-1" />
-            In Progress
+            Resume
           </Button>
           <Button
-            variant={statusFilter === "needs_help" ? "default" : "outline"}
+            variant={statusFilter === "boost" ? "default" : "outline"}
             size="sm"
-            onClick={() => setStatusFilter("needs_help")}
+            onClick={() => setStatusFilter("boost")}
           >
-            <HelpCircle className="w-4 h-4 mr-1" />
-            Needs Help
+            Boost
+          </Button>
+          <Button
+            variant={statusFilter === "scale" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setStatusFilter("scale")}
+          >
+            Scale
           </Button>
         </div>
       </div>
@@ -164,122 +177,108 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
       {/* Users Table */}
       <div className="bg-card rounded-xl border border-border overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-muted/50 border-b border-border">
-              <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">User</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Role</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Journey Status</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Progress</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Joined</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/50">
+                <TableHead>User Name</TableHead>
+                <TableHead>Vision</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Boost</TableHead>
+                <TableHead>Scaling</TableHead>
+                <TableHead>Joined</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {filteredUsers.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center text-muted-foreground py-12">
                     No users found
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 filteredUsers.map((user) => {
-                  const status = getUserStatus(user);
-                  const journeyStatus = user.onboarding?.journey_status || "not_started";
-                  
-                  const getJourneyBadge = () => {
-                    switch (journeyStatus) {
-                      case "approved":
-                        return { label: "Approved", className: "bg-b4-teal/10 text-b4-teal border-b4-teal/20" };
-                      case "pending_approval":
-                        return { label: "Pending Approval", className: "bg-amber-500/10 text-amber-600 border-amber-500/20" };
-                      case "rejected":
-                        return { label: "Rejected", className: "bg-red-500/10 text-red-600 border-red-500/20" };
-                      case "in_progress":
-                        return { label: "In Progress", className: "bg-blue-500/10 text-blue-600 border-blue-500/20" };
-                      default:
-                        return { label: "Not Started", className: "bg-muted text-muted-foreground border-border" };
-                    }
-                  };
-                  
-                  const journeyBadge = getJourneyBadge();
-                  
+                  const statusLevel = getUserStatusLevel(user);
+                  const showBoost = statusLevel === "boost" || statusLevel === "scale";
+                  const showScaling = statusLevel === "scale";
+                  const certLabel = getCertificationLabel(user);
+                  const scalingLabel = getScalingLabel(user);
+                  const visionLabel = getVisionLabel(user);
+
                   return (
-                    <tr key={user.id} className="hover:bg-muted/30 transition-colors">
-                      <td className="px-6 py-4">
+                    <TableRow key={user.id}>
+                      {/* User Name */}
+                      <TableCell>
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-b4-teal/20 to-b4-coral/20 flex items-center justify-center flex-shrink-0">
                             <User className="w-5 h-5 text-foreground" />
                           </div>
-                          <div>
-                            <p className="font-medium text-foreground">
-                              {user.profile?.full_name || "Unnamed User"}
-                            </p>
-                            {user.profile?.primary_skills && (
-                              <p className="text-xs text-muted-foreground truncate max-w-[200px]">
-                                {user.profile.primary_skills}
-                              </p>
-                            )}
-                          </div>
+                          <span className="font-medium text-foreground">
+                            {user.profile?.full_name || "Unnamed User"}
+                          </span>
                         </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        {user.onboarding?.primary_role ? (
-                          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold capitalize border ${
-                            user.onboarding.primary_role === "entrepreneur" 
+                      </TableCell>
+
+                      {/* Vision */}
+                      <TableCell>
+                        {visionLabel !== "—" ? (
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${
+                            visionLabel === "Initiator" 
                               ? "bg-b4-teal/10 text-b4-teal border-b4-teal/20"
                               : "bg-b4-coral/10 text-b4-coral border-b4-coral/20"
                           }`}>
-                            {user.onboarding.primary_role === "entrepreneur" ? (
+                            {visionLabel === "Initiator" ? (
                               <Lightbulb className="w-3 h-3" />
                             ) : (
                               <Users className="w-3 h-3" />
                             )}
-                            {user.onboarding.primary_role}
+                            {visionLabel}
                           </span>
                         ) : (
                           <span className="text-sm text-muted-foreground">—</span>
                         )}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-wrap gap-1.5">
-                          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${journeyBadge.className}`}>
-                            {journeyStatus === "approved" && <CheckCircle className="w-3 h-3" />}
-                            {journeyStatus === "pending_approval" && <Clock className="w-3 h-3" />}
-                            {journeyStatus === "rejected" && <AlertCircle className="w-3 h-3" />}
-                            {journeyStatus === "in_progress" && <Clock className="w-3 h-3" />}
-                            {journeyBadge.label}
+                      </TableCell>
+
+                      {/* Status */}
+                      <TableCell>
+                        <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border ${getStatusBadgeClass(user)}`}>
+                          {getStatusLabel(user)}
+                        </span>
+                      </TableCell>
+
+                      {/* Boost (Certifications) */}
+                      <TableCell>
+                        {showBoost && certLabel ? (
+                          <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border bg-amber-500/10 text-amber-600 border-amber-500/20">
+                            Boost {certLabel}
                           </span>
-                          {user.naturalRole?.wants_to_scale && (
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border bg-purple-500/10 text-purple-600 border-purple-500/20">
-                              Scaling Journey
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-gradient-to-r from-b4-teal to-b4-coral rounded-full transition-all"
-                              style={{ width: `${((user.onboarding?.current_step || 1) / 8) * 100}%` }}
-                            />
-                          </div>
-                          <span className="text-xs text-muted-foreground whitespace-nowrap">
-                            {user.onboarding?.current_step || 1}/8
+                        ) : (
+                          <span className="text-sm text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+
+                      {/* Scaling */}
+                      <TableCell>
+                        {showScaling && scalingLabel ? (
+                          <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border bg-purple-500/10 text-purple-600 border-purple-500/20">
+                            {scalingLabel}
                           </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
+                        ) : (
+                          <span className="text-sm text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+
+                      {/* Joined */}
+                      <TableCell>
                         <span className="text-sm text-muted-foreground">
                           {formatDate(user.created_at)}
                         </span>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   );
                 })
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </div>
 

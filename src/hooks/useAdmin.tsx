@@ -29,6 +29,8 @@ export interface UserWithDetails {
     onboarding_completed: boolean;
     current_step: number;
     journey_status: string | null;
+    user_status: string | null;
+    potential_role: string | null;
   } | null;
   naturalRole: {
     description: string | null;
@@ -36,6 +38,10 @@ export interface UserWithDetails {
     is_ready: boolean;
     wants_to_scale: boolean | null;
   } | null;
+  certificationCount: number;
+  ideasAsInitiator: number;
+  ideasAsCoBuilder: number;
+  hasConsultantScaling: boolean;
 }
 
 export function useAdmin() {
@@ -80,34 +86,74 @@ export function useAdmin() {
   };
 
   const fetchUsers = async () => {
-    // Fetch all profiles first
-    const { data: profiles, error: profilesError } = await supabase
-      .from("profiles")
-      .select("*");
+    // Fetch all data in parallel
+    const [
+      profilesResult,
+      onboardingResult,
+      naturalRolesResult,
+      certificationsResult,
+      startupIdeasResult,
+      teamMembersResult,
+      learningJourneysResult
+    ] = await Promise.all([
+      supabase.from("profiles").select("*"),
+      supabase.from("onboarding_state").select("*"),
+      supabase.from("natural_roles").select("*"),
+      supabase.from("user_certifications").select("user_id, certification_type"),
+      supabase.from("startup_ideas").select("id, creator_id, status"),
+      supabase.from("startup_team_members").select("member_user_id, startup_id"),
+      supabase.from("learning_journeys").select("user_id, journey_type, status")
+    ]);
 
-    if (profilesError) {
-      console.error("Error fetching profiles:", profilesError);
+    if (profilesResult.error) {
+      console.error("Error fetching profiles:", profilesResult.error);
       return [];
     }
 
-    // Fetch all onboarding states
-    const { data: onboardingStates, error: onboardingError } = await supabase
-      .from("onboarding_state")
-      .select("*");
+    const profiles = profilesResult.data;
+    const onboardingStates = onboardingResult.data || [];
+    const naturalRoles = naturalRolesResult.data || [];
+    const certifications = certificationsResult.data || [];
+    const startupIdeas = startupIdeasResult.data || [];
+    const teamMembers = teamMembersResult.data || [];
+    const learningJourneys = learningJourneysResult.data || [];
 
-    // Fetch all natural roles
-    const { data: naturalRoles, error: nrError } = await supabase
-      .from("natural_roles")
-      .select("*");
+    // Count certifications per user
+    const certCountByUser: Record<string, number> = {};
+    certifications.forEach((cert: any) => {
+      certCountByUser[cert.user_id] = (certCountByUser[cert.user_id] || 0) + 1;
+    });
+
+    // Count ideas as initiator per user (only active ideas)
+    const ideasAsInitiatorByUser: Record<string, number> = {};
+    startupIdeas.forEach((idea: any) => {
+      if (idea.status === "active") {
+        ideasAsInitiatorByUser[idea.creator_id] = (ideasAsInitiatorByUser[idea.creator_id] || 0) + 1;
+      }
+    });
+
+    // Count ideas as co-builder per user
+    const ideasAsCoBuilderByUser: Record<string, number> = {};
+    teamMembers.forEach((member: any) => {
+      ideasAsCoBuilderByUser[member.member_user_id] = (ideasAsCoBuilderByUser[member.member_user_id] || 0) + 1;
+    });
+
+    // Check if user has consultant scaling journey (scaling_path type with in_progress or approved status)
+    const hasConsultantScalingByUser: Record<string, boolean> = {};
+    learningJourneys.forEach((journey: any) => {
+      if (journey.journey_type === "scaling_path" && (journey.status === "in_progress" || journey.status === "approved")) {
+        hasConsultantScalingByUser[journey.user_id] = true;
+      }
+    });
 
     // Combine the data
     const usersWithDetails: UserWithDetails[] = profiles.map((profile: any) => {
-      const onboarding = onboardingStates?.find((o: any) => o.user_id === profile.user_id);
-      const nr = naturalRoles?.find((n: any) => n.user_id === profile.user_id);
+      const onboarding = onboardingStates.find((o: any) => o.user_id === profile.user_id);
+      const nr = naturalRoles.find((n: any) => n.user_id === profile.user_id);
 
       return {
         id: profile.user_id,
-        email: "", // We don't have access to auth.users email from client
+        email: "",
         created_at: profile.created_at,
         profile: {
           full_name: profile.full_name,
@@ -119,6 +165,8 @@ export function useAdmin() {
           onboarding_completed: onboarding.onboarding_completed,
           current_step: onboarding.current_step,
           journey_status: onboarding.journey_status,
+          user_status: onboarding.user_status,
+          potential_role: onboarding.potential_role,
         } : null,
         naturalRole: nr ? {
           description: nr.description,
@@ -126,6 +174,10 @@ export function useAdmin() {
           is_ready: nr.is_ready,
           wants_to_scale: nr.wants_to_scale,
         } : null,
+        certificationCount: certCountByUser[profile.user_id] || 0,
+        ideasAsInitiator: ideasAsInitiatorByUser[profile.user_id] || 0,
+        ideasAsCoBuilder: ideasAsCoBuilderByUser[profile.user_id] || 0,
+        hasConsultantScaling: hasConsultantScalingByUser[profile.user_id] || false,
       };
     });
 
