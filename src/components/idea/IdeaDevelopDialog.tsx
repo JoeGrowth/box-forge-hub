@@ -26,6 +26,7 @@ import {
   Rocket,
   Lock,
   Save,
+  Target,
 } from "lucide-react";
 import { TeamMemberSearch } from "./TeamMemberSearch";
 
@@ -44,7 +45,7 @@ interface PhaseProgress {
   is_completed: boolean;
 }
 
-// Modified phases for idea development (Team Building removes first 2 checks)
+// Modified phases for idea development - 5 phases including Role Definition
 const IDEA_DEVELOP_PHASES = [
   {
     number: 0,
@@ -108,6 +109,36 @@ const IDEA_DEVELOP_PHASES = [
   },
   {
     number: 2,
+    name: "Role Definition",
+    description: "Define the first critical role you need for your venture",
+    icon: Target,
+    color: "from-rose-500 to-pink-500",
+    tasks: [
+      {
+        id: "role_name",
+        label: "Role Name",
+        type: "question",
+        description:
+          "What is the title of the first role you need to fill? Be specific about the function (e.g., 'Technical Co-Builder', 'Marketing Lead', 'Operations Manager').",
+      },
+      {
+        id: "core_responsibilities",
+        label: "Core Responsibilities",
+        type: "question",
+        description:
+          "What are the main responsibilities this role will own? List the key tasks, decisions, and deliverables this person will be accountable for.",
+      },
+      {
+        id: "success_metric_90_days",
+        label: "Success Metric for the First 90 Days",
+        type: "question",
+        description:
+          "How will you measure success for this role in the first 90 days? Define specific, measurable outcomes that indicate the person is performing well.",
+      },
+    ],
+  },
+  {
+    number: 3,
     name: "Team Building",
     description: "Find and onboard the right co-builders from the directory",
     icon: Users,
@@ -123,7 +154,7 @@ const IDEA_DEVELOP_PHASES = [
     ],
   },
   {
-    number: 3,
+    number: 4,
     name: "Launch",
     description: "Execute your plan with structured guidance",
     icon: Rocket,
@@ -175,11 +206,11 @@ export const IdeaDevelopDialog = ({
   const totalPhases = IDEA_DEVELOP_PHASES.length;
   const isLastPhase = currentPhase === totalPhases - 1;
 
-  // Check if Team Building (phase 2) is complete
+  // Check if Team Building (phase 3) is complete
   const isTeamBuildingComplete = hasTeamMembers;
   
-  // Check if Launch phase is locked
-  const isLaunchLocked = currentPhase === 3 && !phaseProgress[2]?.is_completed;
+  // Check if Launch phase (phase 4) is locked
+  const isLaunchLocked = currentPhase === 4 && !phaseProgress[3]?.is_completed;
 
   // Auto-save function with debounce
   const autoSaveProgress = useCallback(async (phaseNum: number, responsesToSave: Record<string, string>) => {
@@ -377,8 +408,8 @@ export const IdeaDevelopDialog = ({
   };
 
   const isPhaseComplete = () => {
-    // For Team Building phase, check if there are team members
-    if (currentPhase === 2) {
+    // For Team Building phase (now phase 3), check if there are team members
+    if (currentPhase === 3) {
       return hasTeamMembers;
     }
 
@@ -466,8 +497,8 @@ export const IdeaDevelopDialog = ({
   const canAccessPhase = (phaseNum: number) => {
     // Phase 0 is always accessible
     if (phaseNum === 0) return true;
-    // Phase 3 (Launch) requires Phase 2 (Team Building) to be complete
-    if (phaseNum === 3) return phaseProgress[2]?.is_completed || false;
+    // Phase 4 (Launch) requires Phase 3 (Team Building) to be complete
+    if (phaseNum === 4) return phaseProgress[3]?.is_completed || false;
     // Other phases require previous phase to be complete
     return phaseProgress[phaseNum - 1]?.is_completed || false;
   };
@@ -557,7 +588,7 @@ export const IdeaDevelopDialog = ({
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Locked state for Launch phase */}
-                {currentPhase === 3 && !canAccessPhase(3) && (
+                {currentPhase === 4 && !canAccessPhase(4) && (
                   <div className="flex items-center gap-3 p-4 rounded-lg bg-amber-50 border border-amber-200 dark:bg-amber-950/20 dark:border-amber-800">
                     <Lock className="w-5 h-5 text-amber-500" />
                     <div>
@@ -595,7 +626,7 @@ export const IdeaDevelopDialog = ({
                           onChange={(e) => handleResponseChange(task.id, e.target.value)}
                           placeholder="Enter your response..."
                           rows={4}
-                          disabled={currentPhase === 3 && !canAccessPhase(3)}
+                          disabled={currentPhase === 4 && !canAccessPhase(4)}
                         />
                       </div>
                     ) : null}
@@ -607,7 +638,7 @@ export const IdeaDevelopDialog = ({
                   <Button
                     variant="outline"
                     onClick={handleSaveProgress}
-                    disabled={isSaving || (currentPhase === 3 && !canAccessPhase(3))}
+                    disabled={isSaving || (currentPhase === 4 && !canAccessPhase(4))}
                     className="flex-1"
                   >
                     {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
@@ -616,7 +647,7 @@ export const IdeaDevelopDialog = ({
 
                   <Button
                     onClick={handleCompletePhase}
-                    disabled={!isPhaseComplete() || isSaving || (currentPhase === 3 && !canAccessPhase(3))}
+                    disabled={!isPhaseComplete() || isSaving || (currentPhase === 4 && !canAccessPhase(4))}
                     className="flex-1"
                   >
                     {isLastPhase ? "Complete Journey" : "Complete Phase"}
