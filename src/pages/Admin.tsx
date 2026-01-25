@@ -13,7 +13,19 @@ import { AdminOpportunitiesTab } from "@/components/admin/AdminOpportunitiesTab"
 import { AdminJourneyResponsesTab } from "@/components/admin/AdminJourneyResponsesTab";
 import { AdminAnalyticsTab } from "@/components/admin/AdminAnalyticsTab";
 import { AdminLearningJourneysTab } from "@/components/admin/AdminLearningJourneysTab";
-import { Shield, Users, UserCheck, Rocket, ClipboardList, BarChart3, GraduationCap, Bell, FileText, Award, ShieldCheck } from "lucide-react";
+import {
+  Shield,
+  Users,
+  UserCheck,
+  Rocket,
+  ClipboardList,
+  BarChart3,
+  GraduationCap,
+  Bell,
+  FileText,
+  Award,
+  ShieldCheck,
+} from "lucide-react";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -28,13 +40,13 @@ const Admin = () => {
   useEffect(() => {
     const fetchCounts = async () => {
       const { supabase } = await import("@/integrations/supabase/client");
-      
+
       // Approved opportunities count
       const { count: approvedCount } = await supabase
         .from("startup_ideas")
         .select("*", { count: "exact", head: true })
         .eq("review_status", "approved");
-      
+
       setApprovedOpportunities(approvedCount || 0);
 
       // Certified Co-Builders count
@@ -42,7 +54,7 @@ const Admin = () => {
         .from("user_certifications")
         .select("*", { count: "exact", head: true })
         .eq("certification_type", "cobuilder_b4");
-      
+
       setCertifiedCoBuilders(cobuilderCount || 0);
 
       // Certified Initiators count
@@ -50,7 +62,7 @@ const Admin = () => {
         .from("user_certifications")
         .select("*", { count: "exact", head: true })
         .eq("certification_type", "initiator_b4");
-      
+
       setCertifiedInitiators(initiatorCount || 0);
 
       // Certified Consultants count
@@ -58,7 +70,7 @@ const Admin = () => {
         .from("user_certifications")
         .select("*", { count: "exact", head: true })
         .eq("certification_type", "consultant_b4");
-      
+
       setCertifiedConsultants(consultantCount || 0);
     };
 
@@ -98,13 +110,11 @@ const Admin = () => {
     return null;
   }
 
-  const applicationNotifications = notifications.filter(
-    (n) => n.notification_type === "application_submission"
-  );
+  const applicationNotifications = notifications.filter((n) => n.notification_type === "application_submission");
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
+
       <main className="pt-20">
         {/* Header */}
         <section className="py-8 gradient-hero text-primary-foreground">
@@ -113,9 +123,7 @@ const Admin = () => {
               <Shield className="w-8 h-8" />
               <h1 className="font-display text-3xl font-bold">Admin Dashboard</h1>
             </div>
-            <p className="text-primary-foreground/80">
-              Manage users, applications, and notifications
-            </p>
+            <p className="text-primary-foreground/80">Manage users, applications, and notifications</p>
           </div>
         </section>
 
@@ -194,7 +202,7 @@ const Admin = () => {
                 </TabsTrigger>
                 <TabsTrigger value="approvals" className="flex items-center gap-2">
                   <UserCheck className="w-4 h-4" />
-                  To Check
+                  To check
                 </TabsTrigger>
                 <TabsTrigger value="opportunities" className="flex items-center gap-2">
                   <Rocket className="w-4 h-4" />
@@ -223,10 +231,7 @@ const Admin = () => {
               </TabsContent>
 
               <TabsContent value="applications">
-                <AdminApplicationsTab 
-                  applications={applicationNotifications}
-                  onRefresh={fetchNotifications}
-                />
+                <AdminApplicationsTab applications={applicationNotifications} onRefresh={fetchNotifications} />
               </TabsContent>
 
               <TabsContent value="approvals">
@@ -246,17 +251,11 @@ const Admin = () => {
               </TabsContent>
 
               <TabsContent value="users">
-                <AdminUsersTab 
-                  users={users}
-                  onRefresh={fetchUsers}
-                />
+                <AdminUsersTab users={users} onRefresh={fetchUsers} />
               </TabsContent>
 
               <TabsContent value="notifications">
-                <AdminNotificationsTab 
-                  notifications={notifications} 
-                  onRefresh={fetchNotifications}
-                />
+                <AdminNotificationsTab notifications={notifications} onRefresh={fetchNotifications} />
               </TabsContent>
             </Tabs>
           </div>
