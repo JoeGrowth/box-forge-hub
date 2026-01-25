@@ -159,6 +159,7 @@ const Scale = () => {
   const [selectedIdea, setSelectedIdea] = useState<{ id: string; title: string } | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [ideaToDelete, setIdeaToDelete] = useState<{ id: string; title: string } | null>(null);
+  const [deleteType, setDeleteType] = useState<"archive" | "permanent" | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showScaleExperience, setShowScaleExperience] = useState(() => {
     // Initialize from localStorage
@@ -260,29 +261,54 @@ const Scale = () => {
 
   // Handle idea deletion
   const handleDeleteIdea = async () => {
-    if (!ideaToDelete || !user) return;
+    if (!ideaToDelete || !user || !deleteType) return;
 
     setIsDeleting(true);
     try {
-      const { error } = await supabase
-        .from("startup_ideas")
-        .delete()
-        .eq("id", ideaToDelete.id)
-        .eq("creator_id", user.id);
+      if (deleteType === "archive") {
+        // Soft delete: mark as inactive
+        const { error } = await supabase
+          .from("startup_ideas")
+          .update({ status: "archived" })
+          .eq("id", ideaToDelete.id)
+          .eq("creator_id", user.id);
 
-      if (error) {
-        toast({
-          title: "Delete Failed",
-          description: "Could not delete the idea. Please try again.",
-          variant: "destructive",
-        });
+        if (error) {
+          toast({
+            title: "Archive Failed",
+            description: "Could not archive the idea. Please try again.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Idea Archived",
+            description: `"${ideaToDelete.title}" has been archived. You can restore it later.`,
+          });
+          // Remove from local state (or update status)
+          setUserIdeas((prev) => prev.filter((idea) => idea.id !== ideaToDelete.id));
+        }
       } else {
-        toast({
-          title: "Idea Deleted",
-          description: `"${ideaToDelete.title}" has been permanently deleted.`,
-        });
-        // Remove from local state
-        setUserIdeas((prev) => prev.filter((idea) => idea.id !== ideaToDelete.id));
+        // Hard delete: permanently remove
+        const { error } = await supabase
+          .from("startup_ideas")
+          .delete()
+          .eq("id", ideaToDelete.id)
+          .eq("creator_id", user.id);
+
+        if (error) {
+          toast({
+            title: "Delete Failed",
+            description: "Could not delete the idea. Please try again.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Idea Deleted",
+            description: `"${ideaToDelete.title}" has been permanently deleted.`,
+          });
+          // Remove from local state
+          setUserIdeas((prev) => prev.filter((idea) => idea.id !== ideaToDelete.id));
+        }
       }
     } catch (err) {
       toast({
@@ -294,6 +320,7 @@ const Scale = () => {
       setIsDeleting(false);
       setDeleteDialogOpen(false);
       setIdeaToDelete(null);
+      setDeleteType(null);
     }
   };
 
@@ -892,30 +919,108 @@ const Scale = () => {
       )}
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
+      <AlertDialog open={deleteDialogOpen} onOpenChange={(open) => {
+        setDeleteDialogOpen(open);
+        if (!open) {
+          setDeleteType(null);
+        }
+      }}>
+        <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this idea?</AlertDialogTitle>
+            <AlertDialogTitle>Choose deletion type</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to permanently delete{" "}
+              What would you like to do with{" "}
               <span className="font-semibold text-foreground">"{ideaToDelete?.title}"</span>?
-              This action cannot be undone and will remove all associated data.
             </AlertDialogDescription>
           </AlertDialogHeader>
+
+          <div className="space-y-3 py-4">
+            {/* Archive Option */}
+            <div
+              className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                deleteType === "archive"
+                  ? "border-amber-500 bg-amber-500/10"
+                  : "border-border hover:border-amber-500/50"
+              }`}
+              onClick={() => setDeleteType("archive")}
+            >
+              <div className="flex items-start gap-3">
+                <div
+                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
+                    deleteType === "archive" ? "border-amber-500" : "border-muted-foreground"
+                  }`}
+                >
+                  {deleteType === "archive" && <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />}
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-foreground">Archive Idea (Recommended)</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    The idea will be hidden from public view but can be restored later.
+                  </p>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <span className="text-xs px-2 py-1 rounded-full bg-green-500/10 text-green-600">
+                      Recoverable
+                    </span>
+                    <span className="text-xs px-2 py-1 rounded-full bg-blue-500/10 text-blue-600">
+                      Data preserved
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Permanent Delete Option */}
+            <div
+              className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                deleteType === "permanent"
+                  ? "border-destructive bg-destructive/10"
+                  : "border-border hover:border-destructive/50"
+              }`}
+              onClick={() => setDeleteType("permanent")}
+            >
+              <div className="flex items-start gap-3">
+                <div
+                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
+                    deleteType === "permanent" ? "border-destructive" : "border-muted-foreground"
+                  }`}
+                >
+                  {deleteType === "permanent" && <div className="w-2.5 h-2.5 rounded-full bg-destructive" />}
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-foreground">Delete Permanently</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    The idea and all associated data will be permanently removed. This cannot be undone.
+                  </p>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <span className="text-xs px-2 py-1 rounded-full bg-destructive/10 text-destructive">
+                      Cannot be undone
+                    </span>
+                    <span className="text-xs px-2 py-1 rounded-full bg-destructive/10 text-destructive">
+                      All data removed
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteIdea}
-              disabled={isDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isDeleting || !deleteType}
+              className={deleteType === "permanent" 
+                ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" 
+                : "bg-amber-500 text-white hover:bg-amber-600"
+              }
             >
               {isDeleting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Deleting...
+                  {deleteType === "permanent" ? "Deleting..." : "Archiving..."}
                 </>
               ) : (
-                "Delete"
+                deleteType === "permanent" ? "Delete Permanently" : "Archive Idea"
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
