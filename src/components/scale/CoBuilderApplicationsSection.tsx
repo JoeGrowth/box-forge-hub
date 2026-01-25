@@ -221,7 +221,7 @@ export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSe
     );
   }
 
-  if (applications.length === 0) {
+  if (applications.length === 0 && teamMemberships.length === 0) {
     return (
       <Card className="border-border/50">
         <CardContent className="py-12 text-center">
@@ -242,14 +242,15 @@ export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSe
   }
 
   const acceptedCount = applications.filter((a) => a.status === "accepted").length;
+  const totalTeamCount = teamMemberships.length + acceptedCount;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h2 className="text-2xl font-display font-bold text-foreground">Your Applications</h2>
+          <h2 className="text-2xl font-display font-bold text-foreground">Your Co-Builder Journey</h2>
           <p className="text-muted-foreground mt-1">
-            Opportunities you've applied to join as a co-builder
+            Teams you're part of and opportunities you've applied to
           </p>
         </div>
         <Button variant="outline" asChild>
@@ -260,106 +261,192 @@ export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSe
         </Button>
       </div>
 
-      {acceptedCount > 0 && (
+      {totalTeamCount > 0 && (
         <div className="p-4 rounded-lg bg-b4-teal/10 border border-b4-teal/20">
           <div className="flex items-center gap-2 text-b4-teal">
             <CheckCircle className="w-5 h-5" />
             <span className="font-medium">
-              {acceptedCount} accepted application{acceptedCount > 1 ? "s" : ""} — you're part of the team!
+              You're part of {totalTeamCount} team{totalTeamCount > 1 ? "s" : ""}!
             </span>
           </div>
         </div>
       )}
 
-      <div className="grid gap-4">
-        {applications.map((application) => (
-          <Card
-            key={application.id}
-            className={`border-border/50 transition-all hover:shadow-md ${
-              application.status === "accepted" ? "border-b4-teal/30 bg-b4-teal/5" : ""
-            }`}
-          >
-            <CardContent className="p-6">
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-2">
-                    <h3 className="text-lg font-semibold text-foreground">
-                      {application.startup?.title || "Unknown Opportunity"}
-                    </h3>
-                    {getStatusBadge(application.status)}
-                  </div>
-
-                  {application.startup?.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                      {application.startup.description}
-                    </p>
-                  )}
-
-                  <div className="flex flex-wrap items-center gap-4 text-sm">
-                    {application.role_applied && (
-                      <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <Briefcase className="w-4 h-4" />
-                        <span>Applied as: <span className="text-foreground font-medium">{application.role_applied}</span></span>
+      {/* Team Memberships - Direct additions */}
+      {teamMemberships.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <Users className="w-5 h-5 text-b4-teal" />
+            Teams You're Part Of
+          </h3>
+          <div className="grid gap-4">
+            {teamMemberships.map((membership) => (
+              <Card
+                key={membership.id}
+                className="border-b4-teal/30 bg-b4-teal/5 transition-all hover:shadow-md"
+              >
+                <CardContent className="p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-2">
+                        <h3 className="text-lg font-semibold text-foreground">
+                          {membership.startup?.title || "Unknown Startup"}
+                        </h3>
+                        <Badge className="bg-b4-teal text-white">
+                          <Users className="w-3 h-3 mr-1" />
+                          Team Member
+                        </Badge>
                       </div>
-                    )}
-                    {application.startup?.sector && (
-                      <Badge variant="outline">{application.startup.sector}</Badge>
-                    )}
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
-                      <Clock className="w-4 h-4" />
-                      {formatDistanceToNow(new Date(application.created_at), { addSuffix: true })}
+
+                      {membership.startup?.description && (
+                        <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                          {membership.startup.description}
+                        </p>
+                      )}
+
+                      <div className="flex flex-wrap items-center gap-4 text-sm">
+                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                          <Briefcase className="w-4 h-4" />
+                          <span>Role: <span className="text-foreground font-medium">{membership.role_type}</span></span>
+                        </div>
+                        {membership.startup?.sector && (
+                          <Badge variant="outline">{membership.startup.sector}</Badge>
+                        )}
+                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                          <Clock className="w-4 h-4" />
+                          Added {formatDistanceToNow(new Date(membership.added_at), { addSuffix: true })}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2 shrink-0">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedStartup({
+                            id: membership.startup_id,
+                            title: membership.startup?.title || "Startup",
+                          });
+                          setProgressDialogOpen(true);
+                        }}
+                      >
+                        <Eye className="w-4 h-4 mr-1.5" />
+                        View Progress
+                      </Button>
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link to={`/opportunities/${membership.startup_id}`}>
+                          <ExternalLink className="w-4 h-4 mr-1.5" />
+                          View Details
+                        </Link>
+                      </Button>
                     </div>
                   </div>
-                </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
 
-                <div className="flex flex-col gap-2 shrink-0">
-                  {application.status === "accepted" && application.has_conversation && (
-                    <Button variant="teal" size="sm" asChild className="relative">
-                      <Link to={`/chat/${application.id}`}>
-                        <MessageSquare className="w-4 h-4 mr-1.5" />
-                        Open Chat
-                        {application.unread_count > 0 && (
-                          <span className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-b4-coral text-white text-xs font-medium px-1">
-                            {application.unread_count}
-                          </span>
+      {/* Applications */}
+      {applications.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <Briefcase className="w-5 h-5 text-muted-foreground" />
+            Your Applications
+          </h3>
+          <div className="grid gap-4">
+            {applications.map((application) => (
+              <Card
+                key={application.id}
+                className={`border-border/50 transition-all hover:shadow-md ${
+                  application.status === "accepted" ? "border-b4-teal/30 bg-b4-teal/5" : ""
+                }`}
+              >
+                <CardContent className="p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-2">
+                        <h3 className="text-lg font-semibold text-foreground">
+                          {application.startup?.title || "Unknown Opportunity"}
+                        </h3>
+                        {getStatusBadge(application.status)}
+                      </div>
+
+                      {application.startup?.description && (
+                        <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                          {application.startup.description}
+                        </p>
+                      )}
+
+                      <div className="flex flex-wrap items-center gap-4 text-sm">
+                        {application.role_applied && (
+                          <div className="flex items-center gap-1.5 text-muted-foreground">
+                            <Briefcase className="w-4 h-4" />
+                            <span>Applied as: <span className="text-foreground font-medium">{application.role_applied}</span></span>
+                          </div>
                         )}
-                      </Link>
-                    </Button>
-                  )}
-                  {application.status === "accepted" && !application.has_conversation && (
-                    <Button variant="outline" size="sm" asChild>
-                      <Link to={`/chat/${application.id}`}>
-                        <MessageSquare className="w-4 h-4 mr-1.5" />
-                        Start Chat
-                      </Link>
-                    </Button>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedStartup({
-                        id: application.startup_id,
-                        title: application.startup?.title || "Startup",
-                      });
-                      setProgressDialogOpen(true);
-                    }}
-                  >
-                    <Eye className="w-4 h-4 mr-1.5" />
-                    View Progress
-                  </Button>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link to={`/opportunities/${application.startup_id}`}>
-                      <ExternalLink className="w-4 h-4 mr-1.5" />
-                      View Details
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                        {application.startup?.sector && (
+                          <Badge variant="outline">{application.startup.sector}</Badge>
+                        )}
+                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                          <Clock className="w-4 h-4" />
+                          {formatDistanceToNow(new Date(application.created_at), { addSuffix: true })}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2 shrink-0">
+                      {application.status === "accepted" && application.has_conversation && (
+                        <Button variant="teal" size="sm" asChild className="relative">
+                          <Link to={`/chat/${application.id}`}>
+                            <MessageSquare className="w-4 h-4 mr-1.5" />
+                            Open Chat
+                            {application.unread_count > 0 && (
+                              <span className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-b4-coral text-white text-xs font-medium px-1">
+                                {application.unread_count}
+                              </span>
+                            )}
+                          </Link>
+                        </Button>
+                      )}
+                      {application.status === "accepted" && !application.has_conversation && (
+                        <Button variant="outline" size="sm" asChild>
+                          <Link to={`/chat/${application.id}`}>
+                            <MessageSquare className="w-4 h-4 mr-1.5" />
+                            Start Chat
+                          </Link>
+                        </Button>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedStartup({
+                            id: application.startup_id,
+                            title: application.startup?.title || "Startup",
+                          });
+                          setProgressDialogOpen(true);
+                        }}
+                      >
+                        <Eye className="w-4 h-4 mr-1.5" />
+                        View Progress
+                      </Button>
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link to={`/opportunities/${application.startup_id}`}>
+                          <ExternalLink className="w-4 h-4 mr-1.5" />
+                          View Details
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Progress View Dialog */}
       {selectedStartup && (
