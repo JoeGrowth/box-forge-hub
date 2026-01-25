@@ -78,12 +78,12 @@ const Opportunities = () => {
 
     const fetchCertifications = async () => {
       if (!user) return;
-      
+
       const { data } = await supabase
         .from("user_certifications")
         .select("id, certification_type")
         .eq("user_id", user.id);
-      
+
       if (data) {
         setCertifications(data);
       }
@@ -97,9 +97,7 @@ const Opportunities = () => {
     }
   }, [user, isApproved, onboardingLoading]);
 
-  const hasInitiatorCertification = certifications.some(
-    (cert) => cert.certification_type === "initiator_b4"
-  );
+  const hasInitiatorCertification = certifications.some((cert) => cert.certification_type === "initiator_b4");
 
   const handleAddIdea = () => {
     navigate("/create-idea");
@@ -279,7 +277,7 @@ const Opportunities = () => {
                           By {idea.creator_profile?.full_name || "Unknown"}
                         </span>
                         <Button variant="ghost" size="sm" onClick={() => navigate(`/opportunities/${idea.id}`)}>
-                          View Details
+                          View opportunity
                           <ArrowRight className="ml-1 w-3 h-3" />
                         </Button>
                       </div>
