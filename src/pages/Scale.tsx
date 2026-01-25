@@ -121,7 +121,7 @@ const Scale = () => {
   const [searchParams] = useSearchParams();
   const { user, loading: authLoading } = useAuth();
   const { naturalRole, onboardingState, refetch } = useOnboarding();
-  const { canAccessScaling, userStatus, getStatusLabel, loading: statusLoading } = useUserStatus();
+  const { canAccessScaling, userStatus, getStatusLabel, loading: statusLoading, statusData } = useUserStatus();
   const { toast } = useToast();
 
   // Read section from URL query param
@@ -180,8 +180,10 @@ const Scale = () => {
   }, [user, authLoading, navigate]);
 
   // Redirect if user doesn't have access to scaling
+  // Wait for statusData to be loaded (not just statusLoading to be false)
   useEffect(() => {
-    if (!authLoading && !statusLoading && user && !canAccessScaling) {
+    // Only check access after status data is fully loaded and user is authenticated
+    if (!authLoading && !statusLoading && user && statusData !== null && !canAccessScaling) {
       toast({
         title: "Access Restricted",
         description: "Complete a boosting journey to unlock the Scale page.",
@@ -189,7 +191,7 @@ const Scale = () => {
       });
       navigate("/journey", { replace: true });
     }
-  }, [authLoading, statusLoading, user, canAccessScaling, navigate, toast]);
+  }, [authLoading, statusLoading, user, statusData, canAccessScaling, navigate, toast]);
 
   useEffect(() => {
     if (naturalRole) {
