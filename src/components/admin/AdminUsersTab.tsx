@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { UserWithDetails } from "@/hooks/useAdmin";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,6 +34,7 @@ import {
   AlertTriangle,
   Mail,
   Loader2,
+  X,
 } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
@@ -51,14 +53,20 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [isRefreshing, setIsRefreshing] = useState(false);
   
-  // Delete dialog state
+  // Bulk selection state
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  
+  // Delete dialog state (works for both single and bulk)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<UserWithDetails | null>(null);
+  const [usersToDelete, setUsersToDelete] = useState<UserWithDetails[]>([]);
+  const [isBulkDelete, setIsBulkDelete] = useState(false);
   const [deleteType, setDeleteType] = useState<DeleteType>("soft");
   const [deleteStep, setDeleteStep] = useState<DeleteStep>("choose");
   const [confirmationCode, setConfirmationCode] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [testModeCode, setTestModeCode] = useState<string | null>(null);
+  const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0 });
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -136,27 +144,77 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
     return `S${total}`;
   };
 
+  // Selection handlers
+  const toggleUserSelection = (userId: string) => {
+    setSelectedUserIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(userId)) {
+        newSet.delete(userId);
+      } else {
+        newSet.add(userId);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedUserIds.size === filteredUsers.length) {
+      setSelectedUserIds(new Set());
+    } else {
+      setSelectedUserIds(new Set(filteredUsers.map(u => u.id)));
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedUserIds(new Set());
+  };
+
+  // Single user delete
   const openDeleteDialog = (user: UserWithDetails) => {
     setUserToDelete(user);
+    setUsersToDelete([]);
+    setIsBulkDelete(false);
     setDeleteType("soft");
     setDeleteStep("choose");
     setConfirmationCode("");
     setTestModeCode(null);
+    setBulkProgress({ current: 0, total: 0 });
+    setDeleteDialogOpen(true);
+  };
+
+  // Bulk delete
+  const openBulkDeleteDialog = () => {
+    const selectedUsers = filteredUsers.filter(u => selectedUserIds.has(u.id));
+    if (selectedUsers.length === 0) return;
+    
+    setUserToDelete(null);
+    setUsersToDelete(selectedUsers);
+    setIsBulkDelete(true);
+    setDeleteType("soft");
+    setDeleteStep("choose");
+    setConfirmationCode("");
+    setTestModeCode(null);
+    setBulkProgress({ current: 0, total: selectedUsers.length });
     setDeleteDialogOpen(true);
   };
 
   const closeDeleteDialog = () => {
     setDeleteDialogOpen(false);
     setUserToDelete(null);
+    setUsersToDelete([]);
+    setIsBulkDelete(false);
     setDeleteType("soft");
     setDeleteStep("choose");
     setConfirmationCode("");
     setTestModeCode(null);
     setIsProcessing(false);
+    setBulkProgress({ current: 0, total: 0 });
   };
 
   const handleSendConfirmationCode = async () => {
-    if (!userToDelete) return;
+    // For bulk delete, we just need to send one code (use first user as reference)
+    const targetUser = isBulkDelete ? usersToDelete[0] : userToDelete;
+    if (!targetUser) return;
     
     setIsProcessing(true);
     try {
@@ -165,7 +223,9 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
         body: {
           action: "send_confirmation",
           isAdminAction: true,
-          targetUserId: userToDelete.id,
+          targetUserId: targetUser.id,
+          isBulkAction: isBulkDelete,
+          bulkUserCount: isBulkDelete ? usersToDelete.length : undefined,
         },
         headers: {
           Authorization: `Bearer ${sessionData.session?.access_token}`,
@@ -199,6 +259,14 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
   };
 
   const handleDeleteUser = async () => {
+    if (isBulkDelete) {
+      await handleBulkDelete();
+    } else {
+      await handleSingleDelete();
+    }
+  };
+
+  const handleSingleDelete = async () => {
     if (!userToDelete) return;
     
     setIsProcessing(true);
@@ -246,6 +314,68 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
     }
   };
 
+  const handleBulkDelete = async () => {
+    if (usersToDelete.length === 0) return;
+    
+    setIsProcessing(true);
+    setBulkProgress({ current: 0, total: usersToDelete.length });
+    
+    const { data: sessionData } = await supabase.auth.getSession();
+    let successCount = 0;
+    let failCount = 0;
+
+    for (let i = 0; i < usersToDelete.length; i++) {
+      const user = usersToDelete[i];
+      setBulkProgress({ current: i + 1, total: usersToDelete.length });
+      
+      try {
+        const body: any = {
+          deleteType,
+          isAdminAction: true,
+          targetUserId: user.id,
+        };
+
+        if (deleteType === "hard") {
+          body.confirmationCode = confirmationCode;
+        }
+
+        const response = await supabase.functions.invoke("delete-account", {
+          body,
+          headers: {
+            Authorization: `Bearer ${sessionData.session?.access_token}`,
+          },
+        });
+
+        if (response.error) {
+          failCount++;
+        } else {
+          successCount++;
+        }
+      } catch {
+        failCount++;
+      }
+    }
+
+    const actionText = deleteType === "soft" ? "deactivated" : "deleted";
+    
+    if (failCount === 0) {
+      toast({
+        title: `All accounts ${actionText}`,
+        description: `Successfully ${actionText} ${successCount} user(s)`,
+      });
+    } else {
+      toast({
+        title: `Bulk ${deleteType === "soft" ? "deactivation" : "deletion"} completed`,
+        description: `${successCount} succeeded, ${failCount} failed`,
+        variant: failCount > 0 ? "destructive" : "default",
+      });
+    }
+
+    setSelectedUserIds(new Set());
+    closeDeleteDialog();
+    await onRefresh();
+  };
+
   const handleProceedWithDelete = () => {
     if (deleteType === "hard") {
       handleSendConfirmationCode();
@@ -253,6 +383,48 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
       handleDeleteUser();
     }
   };
+
+  const getDeleteDialogTitle = () => {
+    if (isBulkDelete) {
+      return `Delete ${usersToDelete.length} User Account${usersToDelete.length > 1 ? 's' : ''}`;
+    }
+    return "Delete User Account";
+  };
+
+  const getDeleteDialogDescription = () => {
+    if (deleteStep === "choose") {
+      if (isBulkDelete) {
+        return (
+          <>
+            Choose how to handle <strong>{usersToDelete.length} selected user{usersToDelete.length > 1 ? 's' : ''}</strong>:
+          </>
+        );
+      }
+      return (
+        <>
+          Choose how to handle <strong>{userToDelete?.profile?.full_name || "this user"}</strong>'s account:
+        </>
+      );
+    }
+    if (deleteStep === "confirm_code") {
+      if (isBulkDelete) {
+        return (
+          <>
+            Enter the 6-digit confirmation code sent to your admin email to permanently delete {usersToDelete.length} account{usersToDelete.length > 1 ? 's' : ''}.
+          </>
+        );
+      }
+      return (
+        <>
+          Enter the 6-digit confirmation code sent to your admin email to permanently delete this account.
+        </>
+      );
+    }
+    return null;
+  };
+
+  const isAllSelected = filteredUsers.length > 0 && selectedUserIds.size === filteredUsers.length;
+  const isSomeSelected = selectedUserIds.size > 0 && selectedUserIds.size < filteredUsers.length;
 
   return (
     <div className="space-y-6">
@@ -299,6 +471,14 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/50">
+                <TableHead className="w-[50px]">
+                  <Checkbox
+                    checked={isAllSelected}
+                    onCheckedChange={toggleSelectAll}
+                    aria-label="Select all users"
+                    className={isSomeSelected ? "data-[state=checked]:bg-primary/50" : ""}
+                  />
+                </TableHead>
                 <TableHead>User Name</TableHead>
                 <TableHead>Vision</TableHead>
                 <TableHead>Status</TableHead>
@@ -311,7 +491,7 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
             <TableBody>
               {filteredUsers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground py-12">
+                  <TableCell colSpan={8} className="text-center text-muted-foreground py-12">
                     No users found
                   </TableCell>
                 </TableRow>
@@ -323,9 +503,17 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
                   const certLabel = getCertificationLabel(user);
                   const scalingLabel = getScalingLabel(user);
                   const visionLabel = getVisionLabel(user);
+                  const isSelected = selectedUserIds.has(user.id);
 
                   return (
-                    <TableRow key={user.id}>
+                    <TableRow key={user.id} className={isSelected ? "bg-primary/5" : ""}>
+                      <TableCell>
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={() => toggleUserSelection(user.id)}
+                          aria-label={`Select ${user.profile?.full_name || "user"}`}
+                        />
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-b4-teal/20 to-b4-coral/20 flex items-center justify-center flex-shrink-0">
@@ -412,30 +600,70 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
         Showing {filteredUsers.length} of {users.length} users
       </div>
 
+      {/* Floating Bulk Action Bar */}
+      {selectedUserIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4">
+          <div className="flex items-center gap-4 bg-card border border-border rounded-full px-6 py-3 shadow-xl">
+            <span className="text-sm font-medium">
+              {selectedUserIds.size} user{selectedUserIds.size > 1 ? 's' : ''} selected
+            </span>
+            <div className="h-4 w-px bg-border" />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearSelection}
+              className="gap-1"
+            >
+              <X className="w-4 h-4" />
+              Clear
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={openBulkDeleteDialog}
+              className="gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete Selected
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Delete Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-destructive" />
-              Delete User Account
+              {getDeleteDialogTitle()}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {deleteStep === "choose" && (
-                <>
-                  Choose how to handle <strong>{userToDelete?.profile?.full_name || "this user"}</strong>'s account:
-                </>
-              )}
-              {deleteStep === "confirm_code" && (
-                <>
-                  Enter the 6-digit confirmation code sent to your admin email to permanently delete this account.
-                </>
-              )}
+              {getDeleteDialogDescription()}
             </AlertDialogDescription>
           </AlertDialogHeader>
 
           {deleteStep === "choose" && (
             <div className="space-y-3 py-4">
+              {/* Show selected users preview for bulk delete */}
+              {isBulkDelete && usersToDelete.length > 0 && (
+                <div className="p-3 rounded-lg bg-muted/50 border border-border mb-4 max-h-32 overflow-y-auto">
+                  <p className="text-xs text-muted-foreground mb-2">Selected users:</p>
+                  <div className="flex flex-wrap gap-1">
+                    {usersToDelete.slice(0, 5).map(u => (
+                      <span key={u.id} className="text-xs px-2 py-1 rounded-full bg-background border">
+                        {u.profile?.full_name || "Unnamed"}
+                      </span>
+                    ))}
+                    {usersToDelete.length > 5 && (
+                      <span className="text-xs px-2 py-1 rounded-full bg-background border text-muted-foreground">
+                        +{usersToDelete.length - 5} more
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Soft Delete Option */}
               <div
                 className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
@@ -449,13 +677,13 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
                   <Archive className="w-5 h-5 text-amber-500 mt-0.5" />
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">Deactivate Account</span>
+                      <span className="font-medium">Deactivate Account{isBulkDelete && usersToDelete.length > 1 ? 's' : ''}</span>
                       <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">
                         Recommended
                       </span>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Marks the account as deleted but preserves data. Can be recovered if needed.
+                      Marks the account{isBulkDelete && usersToDelete.length > 1 ? 's' : ''} as deleted but preserves data. Can be recovered if needed.
                     </p>
                   </div>
                 </div>
@@ -518,6 +746,21 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
                   </InputOTPGroup>
                 </InputOTP>
               </div>
+
+              {isProcessing && isBulkDelete && (
+                <div className="mt-4">
+                  <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                    <span>Deleting users...</span>
+                    <span>{bulkProgress.current}/{bulkProgress.total}</span>
+                  </div>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-destructive transition-all duration-300"
+                      style={{ width: `${(bulkProgress.current / bulkProgress.total) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -532,7 +775,7 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
                 disabled={isProcessing}
               >
                 {isProcessing && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                Deactivate Account
+                Deactivate {isBulkDelete ? `${usersToDelete.length} Account${usersToDelete.length > 1 ? 's' : ''}` : 'Account'}
               </AlertDialogAction>
             )}
 
@@ -554,7 +797,10 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
                 variant="destructive"
               >
                 {isProcessing && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                Permanently Delete
+                {isBulkDelete 
+                  ? `Delete ${usersToDelete.length} Account${usersToDelete.length > 1 ? 's' : ''}`
+                  : 'Permanently Delete'
+                }
               </Button>
             )}
           </AlertDialogFooter>
