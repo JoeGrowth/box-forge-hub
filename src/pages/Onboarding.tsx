@@ -5,6 +5,7 @@ import { PathSelectionStep } from "@/components/onboarding/steps/PathSelectionSt
 import { NaturalRoleDefinitionStep } from "@/components/onboarding/steps/NaturalRoleDefinitionStep";
 import { PromiseCheckStep, NotReadyStep, PracticeCheckStep, TrainingCheckStep, ConsultingCheckStep } from "@/components/onboarding/steps/AssessmentSteps";
 import { ScalingStep } from "@/components/onboarding/steps/ScalingStep";
+import { ProfileInfoStep } from "@/components/onboarding/steps/ProfileInfoStep";
 import { CompletionStep } from "@/components/onboarding/steps/CompletionStep";
 import { PendingHelpStep } from "@/components/onboarding/steps/PendingHelpStep";
 import { useOnboarding } from "@/hooks/useOnboarding";
@@ -34,8 +35,8 @@ const Onboarding = () => {
       }
       
       setCurrentStep(onboardingState.current_step);
-      // Redirect if truly completed (step 8 for both paths) and not needing support
-      if (onboardingState.current_step >= 8 && 
+      // Redirect if truly completed (step 9 for both paths) and not needing support
+      if (onboardingState.current_step >= 9 && 
           onboardingState.onboarding_completed && 
           naturalRole?.status !== "assistance_requested") {
         navigate("/", { replace: true });
@@ -61,7 +62,7 @@ const Onboarding = () => {
     );
   }
 
-  const totalSteps = 8; // Same steps for both entrepreneurs and co-builders
+  const totalSteps = 9; // Same steps for both entrepreneurs and co-builders
 
   const handleBack = () => {
     if (showPendingHelp) {
@@ -88,7 +89,8 @@ const Onboarding = () => {
       5: "Assessment: Training",
       6: "Assessment: Consulting",
       7: "Scaling your impact",
-      8: "Activation",
+      8: "Your Profile",
+      9: "Activation",
     };
     return labels[currentStep] || "";
   };
@@ -151,6 +153,8 @@ const Onboarding = () => {
       case 7:
         return <ScalingStep onNext={() => setCurrentStep(8)} />;
       case 8:
+        return <ProfileInfoStep onNext={() => setCurrentStep(9)} />;
+      case 9:
         return <CompletionStep />;
       default:
         return <PathSelectionStep onNext={() => setCurrentStep(2)} />;
