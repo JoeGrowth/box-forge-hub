@@ -237,6 +237,17 @@ export function ChatBell() {
       <PopoverContent className="w-80 p-0" align="end">
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <h3 className="font-semibold text-foreground">Messages</h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs text-primary hover:text-primary"
+            onClick={() => {
+              navigate("/messages");
+              setIsOpen(false);
+            }}
+          >
+            View All
+          </Button>
         </div>
         <ScrollArea className="h-[300px]">
           {loading ? (
