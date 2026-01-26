@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, User, Briefcase, Loader2, Pencil, Check, X, ShieldCheck, Award } from "lucide-react";
+import { Search, User, Briefcase, Loader2, Pencil, Check, X, ShieldCheck, Award, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { DirectorySkeletonGrid } from "@/components/ui/skeleton-card";
 
@@ -41,6 +41,7 @@ const CoBuilders = () => {
   const [editingSkills, setEditingSkills] = useState(false);
   const [skillsInput, setSkillsInput] = useState("");
   const [savingSkills, setSavingSkills] = useState(false);
+  const [startingChat, setStartingChat] = useState<string | null>(null);
 
   // Derive approval status from cached onboarding state
   const isApproved =
@@ -157,6 +158,44 @@ const CoBuilders = () => {
     const currentUserProfile = cobuilders.find((cb) => cb.user_id === user?.id);
     setSkillsInput(currentUserProfile?.primary_skills || "");
     setEditingSkills(false);
+  };
+
+  const handleStartChat = async (otherUserId: string) => {
+    if (!user) return;
+    
+    setStartingChat(otherUserId);
+    try {
+      // Check if conversation already exists (in either direction)
+      const { data: existingConv } = await supabase
+        .from("direct_conversations")
+        .select("id")
+        .or(`and(participant_one_id.eq.${user.id},participant_two_id.eq.${otherUserId}),and(participant_one_id.eq.${otherUserId},participant_two_id.eq.${user.id})`)
+        .maybeSingle();
+
+      if (existingConv) {
+        navigate(`/messages/${existingConv.id}`);
+        return;
+      }
+
+      // Create new conversation
+      const { data: newConv, error } = await supabase
+        .from("direct_conversations")
+        .insert({
+          participant_one_id: user.id,
+          participant_two_id: otherUserId,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      navigate(`/messages/${newConv.id}`);
+    } catch (error) {
+      console.error("Error starting chat:", error);
+      toast.error("Failed to start chat");
+    } finally {
+      setStartingChat(null);
+    }
   };
 
   // Filter co-builders based on search
@@ -442,6 +481,26 @@ const CoBuilders = () => {
                           <p className="text-sm text-muted-foreground italic mt-2">
                             No skills or natural role added yet.
                           </p>
+                        )}
+
+                        {/* Message Button */}
+                        {!isCurrentUser && (
+                          <div className="mt-4 pt-4 border-t border-border">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleStartChat(cobuilder.user_id)}
+                              disabled={startingChat === cobuilder.user_id}
+                              className="w-full gap-2"
+                            >
+                              {startingChat === cobuilder.user_id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <MessageCircle className="w-4 h-4" />
+                              )}
+                              Message
+                            </Button>
+                          </div>
                         )}
                       </div>
                     );
