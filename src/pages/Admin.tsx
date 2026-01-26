@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
+import { supabase } from "@/integrations/supabase/client";
 import { AdminNotificationsTab } from "@/components/admin/AdminNotificationsTab";
 import { AdminUsersTab } from "@/components/admin/AdminUsersTab";
 import { AdminApplicationsTab } from "@/components/admin/AdminApplicationsTab";
@@ -37,43 +38,41 @@ const Admin = () => {
   const [certifiedInitiators, setCertifiedInitiators] = useState(0);
   const [certifiedConsultants, setCertifiedConsultants] = useState(0);
 
+  const fetchCounts = async () => {
+    // Approved opportunities count
+    const { count: approvedCount } = await supabase
+      .from("startup_ideas")
+      .select("*", { count: "exact", head: true })
+      .eq("review_status", "approved");
+
+    setApprovedOpportunities(approvedCount || 0);
+
+    // Certified Co-Builders count
+    const { count: cobuilderCount } = await supabase
+      .from("user_certifications")
+      .select("*", { count: "exact", head: true })
+      .eq("certification_type", "cobuilder_b4");
+
+    setCertifiedCoBuilders(cobuilderCount || 0);
+
+    // Certified Initiators count
+    const { count: initiatorCount } = await supabase
+      .from("user_certifications")
+      .select("*", { count: "exact", head: true })
+      .eq("certification_type", "initiator_b4");
+
+    setCertifiedInitiators(initiatorCount || 0);
+
+    // Certified Consultants count
+    const { count: consultantCount } = await supabase
+      .from("user_certifications")
+      .select("*", { count: "exact", head: true })
+      .eq("certification_type", "consultant_b4");
+
+    setCertifiedConsultants(consultantCount || 0);
+  };
+
   useEffect(() => {
-    const fetchCounts = async () => {
-      const { supabase } = await import("@/integrations/supabase/client");
-
-      // Approved opportunities count
-      const { count: approvedCount } = await supabase
-        .from("startup_ideas")
-        .select("*", { count: "exact", head: true })
-        .eq("review_status", "approved");
-
-      setApprovedOpportunities(approvedCount || 0);
-
-      // Certified Co-Builders count
-      const { count: cobuilderCount } = await supabase
-        .from("user_certifications")
-        .select("*", { count: "exact", head: true })
-        .eq("certification_type", "cobuilder_b4");
-
-      setCertifiedCoBuilders(cobuilderCount || 0);
-
-      // Certified Initiators count
-      const { count: initiatorCount } = await supabase
-        .from("user_certifications")
-        .select("*", { count: "exact", head: true })
-        .eq("certification_type", "initiator_b4");
-
-      setCertifiedInitiators(initiatorCount || 0);
-
-      // Certified Consultants count
-      const { count: consultantCount } = await supabase
-        .from("user_certifications")
-        .select("*", { count: "exact", head: true })
-        .eq("certification_type", "consultant_b4");
-
-      setCertifiedConsultants(consultantCount || 0);
-    };
-
     if (isAdmin) {
       fetchCounts();
     }
@@ -96,6 +95,67 @@ const Admin = () => {
       fetchNotifications();
       fetchUsers();
     }
+  }, [isAdmin]);
+
+  // Realtime subscriptions for auto-refresh
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    // Subscribe to profiles changes (new users, profile updates)
+    const profilesChannel = supabase
+      .channel('admin-profiles')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'profiles' },
+        () => {
+          fetchUsers();
+        }
+      )
+      .subscribe();
+
+    // Subscribe to onboarding_state changes (user completes onboarding)
+    const onboardingChannel = supabase
+      .channel('admin-onboarding')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'onboarding_state' },
+        () => {
+          fetchUsers();
+        }
+      )
+      .subscribe();
+
+    // Subscribe to user_certifications changes
+    const certificationsChannel = supabase
+      .channel('admin-certifications')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'user_certifications' },
+        () => {
+          fetchUsers();
+          fetchCounts();
+        }
+      )
+      .subscribe();
+
+    // Subscribe to startup_ideas changes
+    const ideasChannel = supabase
+      .channel('admin-ideas')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'startup_ideas' },
+        () => {
+          fetchCounts();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(profilesChannel);
+      supabase.removeChannel(onboardingChannel);
+      supabase.removeChannel(certificationsChannel);
+      supabase.removeChannel(ideasChannel);
+    };
   }, [isAdmin]);
 
   if (authLoading || adminLoading) {
