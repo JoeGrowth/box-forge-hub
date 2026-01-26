@@ -648,7 +648,7 @@ export const ConsultingCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps)
 
       <div className="space-y-4 text-left mb-6">
         <div>
-          <Label htmlFor="withWhom">With whom have you consulted?</Label>
+          <Label htmlFor="withWhom">With whom have you consulted? [Companies,individuals,Organizations]</Label>
           <Textarea
             id="withWhom"
             value={withWhom}
