@@ -272,7 +272,7 @@ export const PracticeCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) =
         <div className="space-y-4 text-left mb-6">
           <div>
             <Label htmlFor="entities">
-              Which entities did you practice with? [Comapany names,organizations, projects..]
+              Which entities did you practice with? [Company names,organizations, projects..]
             </Label>
             <Textarea
               id="entities"
