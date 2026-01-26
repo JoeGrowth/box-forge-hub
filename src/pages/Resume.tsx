@@ -31,8 +31,10 @@ import {
   Users,
   Target,
   Sparkles,
-  Lock
+  Lock,
+  Download
 } from "lucide-react";
+import { exportResumeToPdf } from "@/lib/resumePdfExport";
 import { Progress } from "@/components/ui/progress";
 import { format } from "date-fns";
 
@@ -64,11 +66,18 @@ const Resume = () => {
   
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [versions, setVersions] = useState<AnswerVersion[]>([]);
   const [showGlobalHistory, setShowGlobalHistory] = useState(false);
   const [sectionHistory, setSectionHistory] = useState<string | null>(null);
   const [isTogglingPromise, setIsTogglingPromise] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [profile, setProfile] = useState<{
+    full_name: string | null;
+    bio: string | null;
+    primary_skills: string | null;
+    years_of_experience: number | null;
+  } | null>(null);
   const [editData, setEditData] = useState({
     description: "",
     practice_entities: "",
@@ -173,6 +182,63 @@ const Resume = () => {
     
     fetchVersions();
   }, [user]);
+
+  // Fetch profile data
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user) return;
+      
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("full_name, bio, primary_skills, years_of_experience")
+        .eq("user_id", user.id)
+        .single();
+      
+      if (!error && data) {
+        setProfile(data);
+      }
+    };
+    
+    fetchProfile();
+  }, [user]);
+
+  const handleExportPdf = async () => {
+    if (!user) return;
+    
+    setIsExporting(true);
+    try {
+      exportResumeToPdf({
+        userName: profile?.full_name || undefined,
+        bio: profile?.bio || undefined,
+        primarySkills: profile?.primary_skills || undefined,
+        yearsOfExperience: profile?.years_of_experience,
+        description: naturalRole?.description || undefined,
+        promiseCheck: naturalRole?.promise_check || false,
+        practiceCheck: naturalRole?.practice_check || false,
+        practiceEntities: naturalRole?.practice_entities || undefined,
+        practiceCaseStudies: naturalRole?.practice_case_studies,
+        trainingCheck: naturalRole?.training_check || false,
+        trainingContexts: naturalRole?.training_contexts || undefined,
+        trainingCount: naturalRole?.training_count,
+        consultingCheck: naturalRole?.consulting_check || false,
+        consultingWithWhom: naturalRole?.consulting_with_whom || undefined,
+        consultingCaseStudies: naturalRole?.consulting_case_studies || undefined,
+      });
+      
+      toast({
+        title: "Resume Exported",
+        description: "Your resume has been downloaded as a PDF.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Export Failed",
+        description: error.message || "Failed to export resume.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!user || !naturalRole) return;
@@ -394,10 +460,21 @@ const Resume = () => {
                   <FileText className="w-8 h-8" />
                   <h1 className="font-display text-3xl font-bold">Your Resume</h1>
                 </div>
-                <p className="text-primary-foreground/80 max-w-xl">
+                <p className="text-primary-foreground/80 max-w-xl mb-4">
                   Track your journey progress and add new experiences as you grow. 
                   Each update is saved in your version history.
                 </p>
+                {naturalRole && (
+                  <Button
+                    variant="hero-outline"
+                    onClick={handleExportPdf}
+                    disabled={isExporting}
+                    className="gap-2"
+                  >
+                    {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                    Export PDF
+                  </Button>
+                )}
               </div>
               
               {naturalRole && (
