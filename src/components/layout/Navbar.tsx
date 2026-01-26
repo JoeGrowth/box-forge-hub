@@ -8,6 +8,7 @@ import { useLearningJourneys } from "@/hooks/useLearningJourneys";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { supabase } from "@/integrations/supabase/client";
 import { NotificationBell } from "./NotificationBell";
+import { ChatBell } from "./ChatBell";
 
 // Links for logged-out users
 const guestNavLinks = [
@@ -126,6 +127,7 @@ export function Navbar() {
             {!loading && (
               user ? (
                 <>
+                  <ChatBell />
                   <NotificationBell />
                   {isAdmin && (
                     <Button variant="ghost" size="sm" asChild>

@@ -35,6 +35,7 @@ import Contact from "./pages/Contact";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Chat from "./pages/Chat";
+import DirectChat from "./pages/DirectChat";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -76,6 +77,7 @@ const App = () => (
                 <Route path="/create-idea" element={<CreateIdea />} />
                 <Route path="/edit-idea/:id" element={<EditIdea />} />
                 <Route path="/chat/:applicationId" element={<Chat />} />
+                <Route path="/messages/:conversationId" element={<DirectChat />} />
                 <Route path="/stories" element={<Stories />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/privacy" element={<Privacy />} />
