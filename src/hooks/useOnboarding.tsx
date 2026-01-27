@@ -160,7 +160,9 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateNaturalRole = async (updates: Partial<NaturalRole>) => {
-    if (!user) return;
+    if (!user) {
+      throw new Error("User not authenticated");
+    }
 
     if (!naturalRole) {
       // Create new natural role
@@ -173,21 +175,30 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
         ...updates,
       };
 
+      console.log("Creating new natural role:", newNR);
       const { data, error } = await supabase
         .from("natural_roles")
         .insert(newNR)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error inserting natural role:", error);
+        throw error;
+      }
+      console.log("Natural role created:", data);
       setNaturalRole(data as NaturalRole);
     } else {
+      console.log("Updating natural role:", updates);
       const { error } = await supabase
         .from("natural_roles")
         .update(updates)
         .eq("user_id", user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error updating natural role:", error);
+        throw error;
+      }
       setNaturalRole({ ...naturalRole, ...updates });
     }
   };

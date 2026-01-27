@@ -48,10 +48,11 @@ export const NaturalRoleDefinitionStep = ({ onNext, onNeedHelp, showFormDirectly
       );
       await updateOnboardingState({ current_step: 2 });
       onNeedHelp();
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Failed to request help:", error);
       toast({
         title: "Error",
-        description: "Failed to send request. Please try again.",
+        description: error?.message || "Failed to send request. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -79,10 +80,11 @@ export const NaturalRoleDefinitionStep = ({ onNext, onNeedHelp, showFormDirectly
       );
       
       onNext();
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Failed to save natural role:", error);
       toast({
         title: "Error",
-        description: "Failed to save. Please try again.",
+        description: error?.message || "Failed to save. Please try again.",
         variant: "destructive",
       });
     } finally {
