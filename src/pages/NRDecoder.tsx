@@ -67,6 +67,8 @@ const NRDecoder = () => {
   const [isComplete, setIsComplete] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasExistingSubmission, setHasExistingSubmission] = useState(false);
+  const [checkingSubmission, setCheckingSubmission] = useState(true);
+  const [hasInitialized, setHasInitialized] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -80,47 +82,63 @@ const NRDecoder = () => {
   // Check for existing submission
   useEffect(() => {
     const checkExistingSubmission = async () => {
-      if (!user) return;
+      if (!user) {
+        setCheckingSubmission(false);
+        return;
+      }
       
-      const { data } = await supabase
-        .from("nr_decoder_submissions")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
-      
-      if (data) {
-        setHasExistingSubmission(true);
-        if (data.status === "completed") {
-          setIsComplete(true);
+      try {
+        const { data } = await supabase
+          .from("nr_decoder_submissions")
+          .select("*")
+          .eq("user_id", user.id)
+          .single();
+        
+        if (data) {
+          setHasExistingSubmission(true);
+          if (data.status === "completed") {
+            setIsComplete(true);
+          }
         }
+      } catch (error) {
+        // No existing submission found - this is fine
+      } finally {
+        setCheckingSubmission(false);
       }
     };
     
-    if (user) {
+    if (!authLoading) {
       checkExistingSubmission();
     }
-  }, [user]);
+  }, [user, authLoading]);
 
-  // Initialize first message
+  // Initialize first message - only run once after we've checked for existing submission
   useEffect(() => {
-    if (!authLoading && user && !hasExistingSubmission) {
-      const welcomeMessage: Message = {
-        id: "welcome",
-        type: "bot",
-        content: "Welcome to the Natural Role Decoder! 🧠\n\nI'll ask you 7 questions to help discover your natural role. Take your time - there are no right or wrong answers.",
-        timestamp: new Date(),
-      };
+    if (authLoading || checkingSubmission || hasInitialized) return;
+    if (!user || hasExistingSubmission) return;
+    
+    setHasInitialized(true);
+    
+    const welcomeMessage: Message = {
+      id: "welcome",
+      type: "bot",
+      content: "Welcome to the Natural Role Decoder! 🧠\n\nI'll ask you 7 questions to help discover your natural role. Take your time - there are no right or wrong answers.",
+      timestamp: new Date(),
+    };
+    
+    const timeoutId1 = setTimeout(() => {
+      setMessages([welcomeMessage]);
       
-      setTimeout(() => {
-        setMessages([welcomeMessage]);
-        
-        // Add first question after a delay
-        setTimeout(() => {
-          addBotQuestion(0);
-        }, 1000);
-      }, 500);
-    }
-  }, [authLoading, user, hasExistingSubmission]);
+      // Add first question after a delay
+      const timeoutId2 = setTimeout(() => {
+        addBotQuestion(0);
+      }, 1000);
+      
+      return () => clearTimeout(timeoutId2);
+    }, 500);
+    
+    return () => clearTimeout(timeoutId1);
+  }, [authLoading, checkingSubmission, user, hasExistingSubmission, hasInitialized]);
 
   const addBotQuestion = (index: number) => {
     const question = QUESTIONS[index];
@@ -212,7 +230,7 @@ const NRDecoder = () => {
     }
   };
 
-  if (authLoading) {
+  if (authLoading || checkingSubmission) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Loading...</div>
