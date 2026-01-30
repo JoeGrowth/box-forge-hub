@@ -213,7 +213,7 @@ type ActiveSection = "initiator" | "cobuilder" | "consultant";
 
 const Journey = () => {
   const { user, loading: authLoading } = useAuth();
-  const { loading: onboardingLoading } = useOnboarding();
+  const { onboardingState, loading: onboardingLoading } = useOnboarding();
   const { journeys, phaseResponses, certifications } = useLearningJourneys();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -231,6 +231,17 @@ const Journey = () => {
   });
   const [quizDialogOpen, setQuizDialogOpen] = useState(false);
   const [selectedStep, setSelectedStep] = useState<number>(1);
+
+  // Check if user is approved
+  const isApproved = onboardingState?.journey_status === "approved" || 
+    onboardingState?.journey_status === "entrepreneur_approved";
+
+  // Redirect unapproved users to dashboard
+  useEffect(() => {
+    if (!authLoading && !onboardingLoading && user && !isApproved) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [user, authLoading, onboardingLoading, isApproved, navigate]);
 
   const [cobuilderQuizOpen, setCobuilderQuizOpen] = useState(false);
   const [consultantQuizOpen, setConsultantQuizOpen] = useState(false);
