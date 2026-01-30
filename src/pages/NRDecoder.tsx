@@ -68,8 +68,9 @@ const NRDecoder = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasExistingSubmission, setHasExistingSubmission] = useState(false);
   const [checkingSubmission, setCheckingSubmission] = useState(true);
-  const [hasInitialized, setHasInitialized] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const hasCheckedSubmission = useRef(false);
+  const hasInitialized = useRef(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -79,13 +80,18 @@ const NRDecoder = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Check for existing submission
+  // Check for existing submission - only run once per user
   useEffect(() => {
+    // Skip if already checked or still loading auth
+    if (hasCheckedSubmission.current || authLoading) return;
+    
     const checkExistingSubmission = async () => {
       if (!user) {
         setCheckingSubmission(false);
         return;
       }
+      
+      hasCheckedSubmission.current = true;
       
       try {
         const { data } = await supabase
@@ -107,17 +113,15 @@ const NRDecoder = () => {
       }
     };
     
-    if (!authLoading) {
-      checkExistingSubmission();
-    }
-  }, [user, authLoading]);
+    checkExistingSubmission();
+  }, [user?.id, authLoading]);
 
   // Initialize first message - only run once after we've checked for existing submission
   useEffect(() => {
-    if (authLoading || checkingSubmission || hasInitialized) return;
+    if (authLoading || checkingSubmission || hasInitialized.current) return;
     if (!user || hasExistingSubmission) return;
     
-    setHasInitialized(true);
+    hasInitialized.current = true;
     
     const welcomeMessage: Message = {
       id: "welcome",
@@ -130,15 +134,20 @@ const NRDecoder = () => {
       setMessages([welcomeMessage]);
       
       // Add first question after a delay
-      const timeoutId2 = setTimeout(() => {
-        addBotQuestion(0);
+      setTimeout(() => {
+        const question = QUESTIONS[0];
+        const questionMessage: Message = {
+          id: `q-${question.id}`,
+          type: "bot",
+          content: `**Question ${question.id}/7**\n\n${question.question}${question.hint ? `\n\n_${question.hint}_` : ""}`,
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, questionMessage]);
       }, 1000);
-      
-      return () => clearTimeout(timeoutId2);
     }, 500);
     
     return () => clearTimeout(timeoutId1);
-  }, [authLoading, checkingSubmission, user, hasExistingSubmission, hasInitialized]);
+  }, [authLoading, checkingSubmission, user, hasExistingSubmission]);
 
   const addBotQuestion = (index: number) => {
     const question = QUESTIONS[index];
