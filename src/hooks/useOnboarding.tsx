@@ -234,7 +234,8 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
   const completeOnboarding = async () => {
     await updateOnboardingState({ 
       onboarding_completed: true,
-      journey_status: 'pending_approval'
+      journey_status: 'pending_approval',
+      current_step: 9  // Ensure step is always 9 when completing
     });
   };
 
