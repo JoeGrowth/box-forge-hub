@@ -1,28 +1,25 @@
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
-import { PageTransition } from "@/components/layout/PageTransition";
-import { HeroSection } from "@/components/home/HeroSection";
-import { BoxesSection } from "@/components/home/BoxesSection";
-import { HowItWorksSection } from "@/components/home/HowItWorksSection";
-import { ProgramsSection } from "@/components/home/ProgramsSection";
-import { CTASection } from "@/components/home/CTASection";
+import { useAuth } from "@/hooks/useAuth";
+import Landing from "./Landing";
+import Dashboard from "./Dashboard";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Index = () => {
-  return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <PageTransition>
-        <main>
-          <HeroSection />
-          <BoxesSection />
-          <HowItWorksSection />
-          <ProgramsSection />
-          <CTASection />
-        </main>
-      </PageTransition>
-      <Footer />
-    </div>
-  );
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="space-y-4 w-full max-w-md px-4">
+          <Skeleton className="h-12 w-3/4 mx-auto" />
+          <Skeleton className="h-6 w-full" />
+          <Skeleton className="h-6 w-5/6 mx-auto" />
+        </div>
+      </div>
+    );
+  }
+
+  // Show Dashboard for logged-in users, Landing for guests
+  return user ? <Dashboard /> : <Landing />;
 };
 
 export default Index;
