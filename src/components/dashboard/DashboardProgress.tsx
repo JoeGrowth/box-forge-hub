@@ -110,13 +110,17 @@ export function DashboardProgress() {
   const isOnboardingTrulyComplete = onboardingState?.onboarding_completed && 
     (onboardingState?.current_step ?? 0) >= 9;
 
+  // Check if user is approved by admin
+  const isApproved = onboardingState?.journey_status === "approved" || 
+    onboardingState?.journey_status === "entrepreneur_approved";
+
   const overallProgress = () => {
     let completed = 0;
-    let total = 4; // Base milestones
+    let total = 4; // Base milestones: Decoder, Onboarding, Approval, Learning
 
-    if (isOnboardingTrulyComplete) completed++;
-    if (naturalRoleComplete) completed++;
     if (nrDecoderComplete) completed++;
+    if (isOnboardingTrulyComplete) completed++;
+    if (isApproved) completed++;
     if (journeys.some((j) => j.status === "approved")) completed++;
 
     return Math.round((completed / total) * 100);
@@ -136,8 +140,27 @@ export function DashboardProgress() {
         <Progress value={overallProgress()} className="h-2" />
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Core Milestones */}
+        {/* Core Milestones - Reordered */}
         <div className="space-y-3">
+          {/* 1. Natural Role Decoder - First */}
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+            {nrDecoderComplete ? (
+              <CheckCircle2 className="w-5 h-5 text-b4-teal flex-shrink-0" />
+            ) : (
+              <Circle className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+            )}
+            <div className="flex-1">
+              <div className="font-medium">Natural Role Decoder</div>
+              <div className="text-sm text-muted-foreground">Discover your unique strengths</div>
+            </div>
+            {!nrDecoderComplete && (
+              <Button size="sm" variant="outline" asChild>
+                <Link to="/decoder">Take Test</Link>
+              </Button>
+            )}
+          </div>
+
+          {/* 2. Complete Onboarding - Second */}
           <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
             {isOnboardingTrulyComplete ? (
               <CheckCircle2 className="w-5 h-5 text-b4-teal flex-shrink-0" />
@@ -159,20 +182,27 @@ export function DashboardProgress() {
             )}
           </div>
 
+          {/* 3. Getting Approved - Third */}
           <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-            {nrDecoderComplete ? (
+            {isApproved ? (
               <CheckCircle2 className="w-5 h-5 text-b4-teal flex-shrink-0" />
+            ) : isOnboardingTrulyComplete ? (
+              <Circle className="w-5 h-5 text-amber-500 flex-shrink-0" />
             ) : (
-              <Circle className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+              <Lock className="w-5 h-5 text-muted-foreground flex-shrink-0" />
             )}
             <div className="flex-1">
-              <div className="font-medium">Natural Role Decoder</div>
-              <div className="text-sm text-muted-foreground">Discover your unique strengths</div>
+              <div className="font-medium">Getting Approved</div>
+              <div className="text-sm text-muted-foreground">
+                {isApproved 
+                  ? "You can now access all learning paths" 
+                  : isOnboardingTrulyComplete 
+                    ? "Pending admin review"
+                    : "Complete onboarding first"}
+              </div>
             </div>
-            {!nrDecoderComplete && (
-              <Button size="sm" variant="outline" asChild>
-                <Link to="/decoder">Take Test</Link>
-              </Button>
+            {isOnboardingTrulyComplete && !isApproved && (
+              <Badge variant="secondary">Pending</Badge>
             )}
           </div>
 
