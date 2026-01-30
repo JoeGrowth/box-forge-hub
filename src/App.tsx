@@ -8,6 +8,7 @@ import { OnboardingProvider } from "@/hooks/useOnboarding";
 import { LearningJourneysProvider } from "@/hooks/useLearningJourneys";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
 import Index from "./pages/Index";
+import Home from "./pages/Home";
 import About from "./pages/About";
 import Boxes from "./pages/Boxes";
 import BoxDetail from "./pages/BoxDetail";
@@ -54,6 +55,7 @@ const App = () => (
               <ScrollToTop />
               <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/home" element={<Home />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/boxes" element={<Boxes />} />
                 <Route path="/boxes/:boxId" element={<BoxDetail />} />
