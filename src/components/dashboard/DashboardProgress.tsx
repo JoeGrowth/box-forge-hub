@@ -106,11 +106,15 @@ export function DashboardProgress() {
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
+  // Check if onboarding is truly complete (step 9 AND completed flag)
+  const isOnboardingTrulyComplete = onboardingState?.onboarding_completed && 
+    (onboardingState?.current_step ?? 0) >= 9;
+
   const overallProgress = () => {
     let completed = 0;
     let total = 4; // Base milestones
 
-    if (onboardingState?.onboarding_completed) completed++;
+    if (isOnboardingTrulyComplete) completed++;
     if (naturalRoleComplete) completed++;
     if (nrDecoderComplete) completed++;
     if (journeys.some((j) => j.status === "approved")) completed++;
@@ -135,16 +139,20 @@ export function DashboardProgress() {
         {/* Core Milestones */}
         <div className="space-y-3">
           <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-            {onboardingState?.onboarding_completed ? (
+            {isOnboardingTrulyComplete ? (
               <CheckCircle2 className="w-5 h-5 text-b4-teal flex-shrink-0" />
             ) : (
               <Circle className="w-5 h-5 text-muted-foreground flex-shrink-0" />
             )}
             <div className="flex-1">
               <div className="font-medium">Complete Onboarding</div>
-              <div className="text-sm text-muted-foreground">Define your role and goals</div>
+              <div className="text-sm text-muted-foreground">
+                {isOnboardingTrulyComplete 
+                  ? "Define your role and goals" 
+                  : `Step ${onboardingState?.current_step || 1} of 9 - Continue where you left off`}
+              </div>
             </div>
-            {!onboardingState?.onboarding_completed && (
+            {!isOnboardingTrulyComplete && (
               <Button size="sm" variant="outline" asChild>
                 <Link to="/onboarding">Continue</Link>
               </Button>
