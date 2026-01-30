@@ -13,12 +13,12 @@ export function HeroSection() {
     if (!user) {
       return { text: "Start Building", link: "/auth?mode=signup" };
     }
-    
+
     // User is logged in - check onboarding status
     if (onboardingState?.onboarding_completed) {
-      return { text: "Go to Dashboard", link: "/profile" };
+      return { text: "Go to Dashboard", link: "/dashboard" };
     }
-    
+
     return { text: "Continue Your Journey", link: "/onboarding" };
   };
 
@@ -29,7 +29,10 @@ export function HeroSection() {
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 -right-32 w-96 h-96 bg-b4-teal/20 rounded-full blur-3xl animate-pulse-soft" />
-        <div className="absolute bottom-1/4 -left-32 w-80 h-80 bg-b4-coral/10 rounded-full blur-3xl animate-pulse-soft" style={{ animationDelay: "1s" }} />
+        <div
+          className="absolute bottom-1/4 -left-32 w-80 h-80 bg-b4-coral/10 rounded-full blur-3xl animate-pulse-soft"
+          style={{ animationDelay: "1s" }}
+        />
       </div>
 
       <div className="container mx-auto px-4 pt-24 pb-16 relative z-10">
@@ -40,18 +43,24 @@ export function HeroSection() {
               <span className="w-2 h-2 rounded-full bg-b4-teal animate-pulse" />
               <span className="text-sm font-medium">Revolutionizing Startup Building</span>
             </div>
-            
-            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 animate-fade-in" style={{ animationDelay: "0.1s" }}>
+
+            <h1
+              className="font-display text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 animate-fade-in"
+              style={{ animationDelay: "0.1s" }}
+            >
               Build Startups.
               <br />
               <span className="text-gradient">Earn Equity.</span>
               <br />
               Shape The Future.
             </h1>
-            
-            <p className="text-lg md:text-xl text-primary-foreground/80 mb-8 max-w-lg animate-fade-in" style={{ animationDelay: "0.2s" }}>
-              B4 Platform connects visionary entrepreneurs with skilled co-builders. 
-              Together, we create impactful startups across health, agriculture, education, and more.
+
+            <p
+              className="text-lg md:text-xl text-primary-foreground/80 mb-8 max-w-lg animate-fade-in"
+              style={{ animationDelay: "0.2s" }}
+            >
+              B4 Platform connects visionary entrepreneurs with skilled co-builders. Together, we create impactful
+              startups across health, agriculture, education, and more.
             </p>
 
             <div className="flex flex-wrap gap-4 mb-12 animate-fade-in" style={{ animationDelay: "0.3s" }}>
@@ -96,7 +105,7 @@ export function HeroSection() {
                     <p className="text-sm text-muted-foreground">From idea to impact</p>
                   </div>
                 </div>
-                
+
                 <div className="space-y-4">
                   {[
                     { icon: Target, label: "Discover Your Role", desc: "Natural Role Decoder" },
@@ -117,7 +126,10 @@ export function HeroSection() {
               </div>
 
               {/* Floating badge */}
-              <div className="absolute -top-4 -right-4 glass rounded-2xl p-4 shadow-xl animate-float" style={{ animationDelay: "0.5s" }}>
+              <div
+                className="absolute -top-4 -right-4 glass rounded-2xl p-4 shadow-xl animate-float"
+                style={{ animationDelay: "0.5s" }}
+              >
                 <div className="text-2xl font-bold text-b4-teal">$2.5M</div>
                 <div className="text-xs text-muted-foreground">Equity Distributed</div>
               </div>
