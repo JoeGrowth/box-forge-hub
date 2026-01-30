@@ -83,7 +83,7 @@ export function HeroSection() {
           </div>
 
           {/* Visual */}
-          <div className="hidden lg:block relative">
+          <div className="hidden md:block relative">
             <div className="relative animate-float">
               {/* Main card */}
               <div className="glass rounded-3xl p-8 shadow-2xl">
