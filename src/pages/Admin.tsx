@@ -14,6 +14,7 @@ import { AdminOpportunitiesTab } from "@/components/admin/AdminOpportunitiesTab"
 import { AdminJourneyResponsesTab } from "@/components/admin/AdminJourneyResponsesTab";
 import { AdminAnalyticsTab } from "@/components/admin/AdminAnalyticsTab";
 import { AdminLearningJourneysTab } from "@/components/admin/AdminLearningJourneysTab";
+import { AdminNRDecoderTab } from "@/components/admin/AdminNRDecoderTab";
 import {
   Shield,
   Users,
@@ -26,6 +27,7 @@ import {
   FileText,
   Award,
   ShieldCheck,
+  Brain,
 } from "lucide-react";
 
 const Admin = () => {
@@ -251,7 +253,7 @@ const Admin = () => {
 
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-8 mb-8">
+              <TabsList className="grid w-full grid-cols-9 mb-8">
                 <TabsTrigger value="analytics" className="flex items-center gap-2">
                   <BarChart3 className="w-4 h-4" />
                   Analytics
@@ -275,6 +277,10 @@ const Admin = () => {
                 <TabsTrigger value="journeys" className="flex items-center gap-2">
                   <ClipboardList className="w-4 h-4" />
                   Journeys
+                </TabsTrigger>
+                <TabsTrigger value="decoder" className="flex items-center gap-2">
+                  <Brain className="w-4 h-4" />
+                  NR Decoder
                 </TabsTrigger>
                 <TabsTrigger value="users" className="flex items-center gap-2">
                   <Users className="w-4 h-4" />
@@ -308,6 +314,10 @@ const Admin = () => {
 
               <TabsContent value="journeys">
                 <AdminJourneyResponsesTab />
+              </TabsContent>
+
+              <TabsContent value="decoder">
+                <AdminNRDecoderTab />
               </TabsContent>
 
               <TabsContent value="users">

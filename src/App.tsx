@@ -37,6 +37,7 @@ import Terms from "./pages/Terms";
 import Chat from "./pages/Chat";
 import DirectChat from "./pages/DirectChat";
 import Messages from "./pages/Messages";
+import NRDecoder from "./pages/NRDecoder";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -84,6 +85,7 @@ const App = () => (
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/terms" element={<Terms />} />
+                <Route path="/decoder" element={<NRDecoder />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
