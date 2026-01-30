@@ -179,21 +179,6 @@ const NRDecoder = () => {
 
         if (error) throw error;
 
-        // Send admin notification
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("full_name")
-          .eq("user_id", user!.id)
-          .single();
-
-        await supabase.from("admin_notifications").insert({
-          user_id: user!.id,
-          notification_type: "nr_decoder_submission",
-          user_name: profile?.full_name || "Unknown",
-          user_email: user!.email,
-          message: "New Natural Role Decoder submission ready for review",
-        });
-
         setIsComplete(true);
         toast({
           title: "Submission Complete!",
