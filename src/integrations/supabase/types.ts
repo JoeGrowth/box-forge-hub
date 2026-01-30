@@ -492,6 +492,45 @@ export type Database = {
         }
         Relationships: []
       }
+      nr_decoder_submissions: {
+        Row: {
+          admin_notes: string | null
+          answers: Json
+          created_at: string
+          id: string
+          result_pdf_url: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          answers?: Json
+          created_at?: string
+          id?: string
+          result_pdf_url?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          answers?: Json
+          created_at?: string
+          id?: string
+          result_pdf_url?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       onboarding_answer_versions: {
         Row: {
           change_notes: string | null
