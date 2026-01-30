@@ -40,6 +40,7 @@ import Chat from "./pages/Chat";
 import DirectChat from "./pages/DirectChat";
 import Messages from "./pages/Messages";
 import NRDecoder from "./pages/NRDecoder";
+import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -69,6 +70,7 @@ const App = () => (
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/onboarding" element={<Onboarding />} />
+                <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/admin/opportunity/:id" element={<AdminOpportunityDetail />} />
