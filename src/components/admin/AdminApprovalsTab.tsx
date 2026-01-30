@@ -301,13 +301,20 @@ export const AdminApprovalsTab = ({ onRefresh }: AdminApprovalsTabProps) => {
                     </div>
                   )}
 
-                  {approval.naturalRole?.description && (
+                  {approval.naturalRole?.description ? (
                     <div className="mt-3 p-3 bg-muted/50 rounded-lg">
                       <p className="text-sm text-foreground italic">
                         "{approval.naturalRole.description}"
                       </p>
                     </div>
-                  )}
+                  ) : approval.naturalRole && !approval.naturalRole.is_ready ? (
+                    <div className="mt-3 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                      <p className="text-sm text-amber-600 font-medium flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4" />
+                        Needs help defining Natural Role
+                      </p>
+                    </div>
+                  ) : null}
 
                   <div className="flex items-center gap-2 mt-3">
                     {approval.naturalRole?.is_ready ? (
