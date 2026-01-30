@@ -31,9 +31,11 @@ interface NaturalRoleDetails {
   practice_check: boolean | null;
   practice_entities: string | null;
   practice_case_studies: number | null;
+  practice_needs_help: boolean | null;
   training_check: boolean | null;
   training_contexts: string | null;
   training_count: number | null;
+  training_needs_help: boolean | null;
   consulting_check: boolean | null;
   consulting_with_whom: string | null;
   consulting_case_studies: string | null;
@@ -92,7 +94,7 @@ export const AdminApprovalsTab = ({ onRefresh }: AdminApprovalsTabProps) => {
 
       const { data: naturalRoles } = await supabase
         .from("natural_roles")
-        .select("user_id, description, is_ready, promise_check, practice_check, practice_entities, practice_case_studies, training_check, training_contexts, training_count, consulting_check, consulting_with_whom, consulting_case_studies, wants_to_scale")
+        .select("user_id, description, is_ready, promise_check, practice_check, practice_entities, practice_case_studies, practice_needs_help, training_check, training_contexts, training_count, training_needs_help, consulting_check, consulting_with_whom, consulting_case_studies, wants_to_scale")
         .in("user_id", userIds);
 
       // Combine data
@@ -214,6 +216,78 @@ export const AdminApprovalsTab = ({ onRefresh }: AdminApprovalsTabProps) => {
   const handlePreview = (approval: PendingApproval) => {
     setSelectedApproval(approval);
     setPreviewOpen(true);
+  };
+
+  // Enhanced status badge with detailed states
+  const getStatusInfo = (
+    checked: boolean | null, 
+    needsHelp?: boolean,
+    details?: string | number | null
+  ): { status: string; color: string; icon: React.ReactNode } => {
+    if (needsHelp) {
+      return { 
+        status: "Requested help", 
+        color: "text-orange-600 bg-orange-100", 
+        icon: <AlertCircle className="w-3 h-3" /> 
+      };
+    }
+    if (checked === null) {
+      return { 
+        status: "Pending", 
+        color: "text-amber-600 bg-amber-100", 
+        icon: <Clock className="w-3 h-3" /> 
+      };
+    }
+    if (checked === false) {
+      return { 
+        status: "Not needed", 
+        color: "text-muted-foreground bg-muted", 
+        icon: <XCircle className="w-3 h-3" /> 
+      };
+    }
+    return { 
+      status: "Completed", 
+      color: "text-b4-teal bg-b4-teal/10", 
+      icon: <CheckCircle className="w-3 h-3" /> 
+    };
+  };
+
+  const DetailedStatusRow = ({ 
+    label, 
+    checked, 
+    needsHelp,
+    details 
+  }: { 
+    label: string; 
+    checked: boolean | null; 
+    needsHelp?: boolean;
+    details?: string | number | null;
+  }) => {
+    const statusInfo = getStatusInfo(checked, needsHelp, details);
+    return (
+      <div className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+        <div className="flex items-center gap-2">
+          <span className={`p-1 rounded-full ${statusInfo.color}`}>
+            {statusInfo.icon}
+          </span>
+          <div>
+            <span className="font-medium text-foreground">{label}</span>
+            {details && checked && (
+              <p className="text-xs text-muted-foreground mt-0.5">{details}</p>
+            )}
+            {needsHelp && (
+              <p className="text-xs text-orange-600 mt-0.5">Requested assistance</p>
+            )}
+            {checked === false && (
+              <p className="text-xs text-muted-foreground mt-0.5">No experience yet</p>
+            )}
+          </div>
+        </div>
+        <Badge variant="outline" className={statusInfo.color}>
+          {statusInfo.status}
+        </Badge>
+      </div>
+    );
   };
 
   const StatusBadge = ({ checked, label }: { checked: boolean | null; label: string }) => (
@@ -430,14 +504,49 @@ export const AdminApprovalsTab = ({ onRefresh }: AdminApprovalsTabProps) => {
                 </p>
               </div>
 
-              {/* Assessment Status Grid */}
+              {/* Detailed Current Status - like the reference screenshot */}
               <div className="bg-muted/30 rounded-xl p-4 border border-border">
-                <h4 className="font-semibold text-foreground mb-3">Maturity Assessment</h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <StatusBadge checked={selectedApproval.naturalRole?.promise_check} label="Promise" />
-                  <StatusBadge checked={selectedApproval.naturalRole?.practice_check} label="Practice" />
-                  <StatusBadge checked={selectedApproval.naturalRole?.training_check} label="Training" />
-                  <StatusBadge checked={selectedApproval.naturalRole?.consulting_check} label="Consulting" />
+                <h4 className="font-semibold text-foreground mb-3">Current Status</h4>
+                <div className="space-y-1">
+                  <DetailedStatusRow 
+                    label="Natural Role Definition" 
+                    checked={!!selectedApproval.naturalRole?.description} 
+                    details={selectedApproval.naturalRole?.description}
+                  />
+                  <DetailedStatusRow 
+                    label="Promise to Deliver" 
+                    checked={selectedApproval.naturalRole?.promise_check} 
+                  />
+                  <DetailedStatusRow 
+                    label="Practice Experience" 
+                    checked={selectedApproval.naturalRole?.practice_check}
+                    needsHelp={selectedApproval.naturalRole?.practice_needs_help}
+                    details={selectedApproval.naturalRole?.practice_case_studies 
+                      ? `${selectedApproval.naturalRole.practice_case_studies} case studies with ${selectedApproval.naturalRole.practice_entities || 'various entities'}`
+                      : undefined}
+                  />
+                  <DetailedStatusRow 
+                    label="Training Experience" 
+                    checked={selectedApproval.naturalRole?.training_check}
+                    needsHelp={selectedApproval.naturalRole?.training_needs_help}
+                    details={selectedApproval.naturalRole?.training_count 
+                      ? `${selectedApproval.naturalRole.training_count} trainings in ${selectedApproval.naturalRole.training_contexts || 'various contexts'}`
+                      : undefined}
+                  />
+                  <DetailedStatusRow 
+                    label="Consulting Experience" 
+                    checked={selectedApproval.naturalRole?.consulting_check}
+                    details={selectedApproval.naturalRole?.consulting_with_whom 
+                      ? `With ${selectedApproval.naturalRole.consulting_with_whom}`
+                      : undefined}
+                  />
+                  <DetailedStatusRow 
+                    label="Scaling Interest" 
+                    checked={selectedApproval.naturalRole?.wants_to_scale}
+                    details={selectedApproval.naturalRole?.wants_to_scale 
+                      ? "Interested in scaling" 
+                      : undefined}
+                  />
                 </div>
               </div>
 
