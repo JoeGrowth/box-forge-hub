@@ -27,9 +27,11 @@ const ResetPassword = () => {
 
   useEffect(() => {
     // Set up auth state listener first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state change:", event, !!session);
-      
+
       if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
         setHasValidSession(true);
         setIsCheckingSession(false);
@@ -41,10 +43,12 @@ const ResetPassword = () => {
     // Then check for existing session
     const checkSession = async () => {
       // Give the auth state listener time to process URL tokens
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
       if (session) {
         setHasValidSession(true);
       } else {
@@ -58,7 +62,7 @@ const ResetPassword = () => {
       }
       setIsCheckingSession(false);
     };
-    
+
     checkSession();
 
     return () => subscription.unsubscribe();
@@ -111,7 +115,7 @@ const ResetPassword = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
+
       <main className="pt-20">
         <section className="min-h-[calc(100vh-5rem)] flex items-center justify-center py-16 px-4">
           <div className="w-full max-w-md">
@@ -122,12 +126,8 @@ const ResetPassword = () => {
                   <span className="text-primary-foreground font-bold text-xl">B4</span>
                 </div>
               </Link>
-              <h1 className="font-display text-3xl font-bold text-foreground mb-2">
-                Set New Password
-              </h1>
-              <p className="text-muted-foreground">
-                Enter your new password below
-              </p>
+              <h1 className="font-display text-3xl font-bold text-foreground mb-2">Set New Password</h1>
+              <p className="text-muted-foreground">Enter your new password below</p>
             </div>
 
             <div className="bg-card rounded-2xl border border-border p-8 shadow-lg">
@@ -142,14 +142,8 @@ const ResetPassword = () => {
                     <CheckCircle className="w-8 h-8 text-b4-teal" />
                   </div>
                   <h2 className="text-xl font-semibold text-foreground mb-2">Password Reset Complete</h2>
-                  <p className="text-muted-foreground mb-6">
-                    Your password has been successfully updated.
-                  </p>
-                  <Button
-                    variant="teal"
-                    className="w-full"
-                    onClick={() => navigate("/profile")}
-                  >
+                  <p className="text-muted-foreground mb-6">Your password has been successfully updated.</p>
+                  <Button variant="teal" className="w-full" onClick={() => navigate("/dashboard")}>
                     Go to Dashboard
                   </Button>
                 </div>
@@ -201,13 +195,7 @@ const ResetPassword = () => {
                     {errors.confirmPassword && <p className="text-sm text-destructive">{errors.confirmPassword}</p>}
                   </div>
 
-                  <Button
-                    type="submit"
-                    variant="teal"
-                    size="lg"
-                    className="w-full"
-                    disabled={isLoading}
-                  >
+                  <Button type="submit" variant="teal" size="lg" className="w-full" disabled={isLoading}>
                     {isLoading ? "Updating..." : "Update Password"}
                   </Button>
                 </form>
