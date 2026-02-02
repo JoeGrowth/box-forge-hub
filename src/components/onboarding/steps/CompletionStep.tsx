@@ -196,7 +196,7 @@ export const CompletionStep = () => {
           : "Your application has been submitted for admin review. You'll be notified once approved.",
       });
       
-      navigate("/profile", { replace: true });
+      navigate("/", { replace: true });
     } catch (error) {
       toast({
         title: "Error",
