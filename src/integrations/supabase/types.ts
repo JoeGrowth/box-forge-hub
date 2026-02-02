@@ -160,6 +160,66 @@ export type Database = {
           },
         ]
       }
+      consultant_opportunities: {
+        Row: {
+          amount_per_day: number
+          client_name: string
+          completed_at: string | null
+          consulting_firm: string
+          created_at: string
+          description: string | null
+          id: string
+          is_completed: boolean
+          number_of_days: number
+          offer_date: string
+          source: string
+          source_other: string | null
+          technical_offer_url: string | null
+          title: string
+          total_amount: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_per_day?: number
+          client_name: string
+          completed_at?: string | null
+          consulting_firm: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_completed?: boolean
+          number_of_days?: number
+          offer_date: string
+          source: string
+          source_other?: string | null
+          technical_offer_url?: string | null
+          title: string
+          total_amount?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_per_day?: number
+          client_name?: string
+          completed_at?: string | null
+          consulting_firm?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_completed?: boolean
+          number_of_days?: number
+          offer_date?: string
+          source?: string
+          source_other?: string | null
+          technical_offer_url?: string | null
+          title?: string
+          total_amount?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       direct_conversations: {
         Row: {
           created_at: string
