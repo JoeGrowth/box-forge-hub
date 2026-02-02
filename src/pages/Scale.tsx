@@ -53,6 +53,7 @@ import {
 import { ScaleStepDialog } from "@/components/scale/ScaleStepDialog";
 import { IdeaDevelopDialog } from "@/components/idea/IdeaDevelopDialog";
 import { CoBuilderApplicationsSection } from "@/components/scale/CoBuilderApplicationsSection";
+import { ConsultantOpportunities } from "@/components/scale/ConsultantOpportunities";
 import { format } from "date-fns";
 
 interface AnswerVersion {
@@ -691,6 +692,9 @@ const Scale = () => {
             {/* Scale Your NR Section */}
             {activeSection === "scale" && (
               <div className="space-y-8 animate-fade-in">
+                {/* Step 0: Work as Consultant */}
+                <ConsultantOpportunities />
+
                 {/* Concept Explanation */}
                 <Card className="border-violet-500/20 bg-gradient-to-br from-violet-500/5 to-purple-500/5">
                   <CardContent className="pt-6">
