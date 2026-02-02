@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +15,7 @@ import {
   SCALING_PATH_PHASES,
 } from "@/hooks/useLearningJourneys";
 import { useAuth } from "@/hooks/useAuth";
-import { ArrowLeft, ArrowRight, CheckCircle, Clock, Send, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, Clock, Send, Loader2, Award, Rocket } from "lucide-react";
 import { JourneyFileUpload } from "./JourneyFileUpload";
 interface JourneyPhaseViewProps {
   journeyType: JourneyType;
@@ -22,6 +23,7 @@ interface JourneyPhaseViewProps {
 }
 
 export const JourneyPhaseView = ({ journeyType, onBack }: JourneyPhaseViewProps) => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const {
     getJourney,
@@ -323,6 +325,41 @@ export const JourneyPhaseView = ({ journeyType, onBack }: JourneyPhaseViewProps)
         </CardContent>
       </Card>
 
+      {journey.status === "approved" && (
+        <Card className="bg-gradient-to-r from-b4-teal/10 to-emerald-500/10 border-b4-teal/30">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-3">
+                <Award className="w-6 h-6 text-b4-teal" />
+                <div>
+                  <p className="font-medium text-b4-teal">
+                    🎉 Congratulations! You're Certified!
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Your {journeyType === "scaling_path" ? "Consultant" : journeyType === "skill_ptc" ? "Co-Builder" : "Initiator"} certification has been approved.
+                  </p>
+                </div>
+              </div>
+              <Button
+                onClick={() => {
+                  if (journeyType === "scaling_path") {
+                    navigate("/scale?section=consultant");
+                  } else if (journeyType === "skill_ptc") {
+                    navigate("/scale?section=cobuilder");
+                  } else {
+                    navigate("/scale?section=initiator");
+                  }
+                }}
+                className="bg-b4-teal hover:bg-b4-teal/90"
+              >
+                <Rocket className="w-4 h-4 mr-2" />
+                {journeyType === "scaling_path" ? "Start Scaling" : "Go to Scale"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {journey.status === "pending_approval" && (
         <Card className="bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800">
           <CardContent className="pt-6">
@@ -330,10 +367,10 @@ export const JourneyPhaseView = ({ journeyType, onBack }: JourneyPhaseViewProps)
               <Clock className="w-5 h-5 text-amber-500" />
               <div>
                 <p className="font-medium text-amber-800 dark:text-amber-200">
-                  Awaiting Admin Approval
+                  Journey Completed - Pending Review
                 </p>
                 <p className="text-sm text-amber-600 dark:text-amber-400">
-                  Your journey has been submitted and is being reviewed by an admin.
+                  Congratulations! You have completed all the steps for this journey. An admin will review your answers and approve your certification, or get back to you with feedback.
                 </p>
               </div>
             </div>
