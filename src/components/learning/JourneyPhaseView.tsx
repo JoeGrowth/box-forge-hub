@@ -31,6 +31,7 @@ export const JourneyPhaseView = ({ journeyType, onBack }: JourneyPhaseViewProps)
     updatePhaseResponse,
     completePhase,
     submitForApproval,
+    refetch,
   } = useLearningJourneys();
 
   const journey = getJourney(journeyType);
@@ -40,6 +41,11 @@ export const JourneyPhaseView = ({ journeyType, onBack }: JourneyPhaseViewProps)
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Refetch journey data on mount to ensure fresh status
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   const phases =
     journeyType === "skill_ptc"
