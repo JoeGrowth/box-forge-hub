@@ -13,7 +13,7 @@ interface NaturalRoleDefinitionStepProps {
 }
 
 export const NaturalRoleDefinitionStep = ({ onNext, onNeedHelp, showFormDirectly = false, onBackToHelp }: NaturalRoleDefinitionStepProps) => {
-  const { naturalRole, updateOnboardingState, updateNaturalRole, sendAdminNotification, sendMilestoneNotification } = useOnboarding();
+  const { naturalRole, updateOnboardingState, updateNaturalRole, sendAdminNotification } = useOnboarding();
   const { toast } = useToast();
   // If user previously had assistance_requested or showFormDirectly is true, show them the description form right away
   const [knowsNR, setKnowsNR] = useState<boolean | null>(
@@ -70,14 +70,6 @@ export const NaturalRoleDefinitionStep = ({ onNext, onNeedHelp, showFormDirectly
         status: "defined" 
       });
       await updateOnboardingState({ current_step: 3 });
-      
-      // Send milestone notification
-      await sendMilestoneNotification(
-        "natural_role_defined",
-        "Natural Role Defined! ✨",
-        "You've defined your Natural Role. Now let's assess your experience.",
-        "/onboarding"
-      );
       
       onNext();
     } catch (error: any) {

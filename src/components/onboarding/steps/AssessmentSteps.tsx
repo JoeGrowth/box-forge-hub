@@ -14,7 +14,7 @@ interface AssessmentStepProps {
 
 // Step 3.1 - Promise Check
 export const PromiseCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) => {
-  const { updateNaturalRole, updateOnboardingState, sendAdminNotification, sendMilestoneNotification } =
+  const { updateNaturalRole, updateOnboardingState, sendAdminNotification } =
     useOnboarding();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -29,16 +29,6 @@ export const PromiseCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) =>
       }
 
       await updateOnboardingState({ current_step: 4 });
-
-      // Send milestone notification
-      await sendMilestoneNotification(
-        "onboarding_step_complete",
-        "Promise Check Complete! ✓",
-        hasPromise
-          ? "Great! You've committed to delivering value. Let's check your practice experience."
-          : "We understand. Let's continue to see how we can help you develop.",
-        "/onboarding",
-      );
 
       onNext();
     } catch (error) {
@@ -148,7 +138,7 @@ export const NotReadyStep = ({ onNeedHelp }: { onNeedHelp: () => void }) => {
 
 // Step 3.2 - Practice Check
 export const PracticeCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) => {
-  const { updateNaturalRole, updateOnboardingState, sendAdminNotification, sendMilestoneNotification, naturalRole } =
+  const { updateNaturalRole, updateOnboardingState, sendAdminNotification, naturalRole } =
     useOnboarding();
   const { toast } = useToast();
   const [hasPracticed, setHasPracticed] = useState<boolean | null>(null);
@@ -169,14 +159,6 @@ export const PracticeCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) =
         practice_case_studies: parseInt(caseStudies) || 0,
       });
       await updateOnboardingState({ current_step: 5 });
-
-      // Send milestone notification
-      await sendMilestoneNotification(
-        "onboarding_step_complete",
-        "Practice Check Complete! ✓",
-        `You have ${caseStudies || 0} case studies of practice experience. Moving on to training!`,
-        "/onboarding",
-      );
 
       onNext();
     } catch (error) {
@@ -207,16 +189,6 @@ export const PracticeCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) =
       }
 
       await updateOnboardingState({ current_step: 5 });
-
-      // Send milestone notification
-      await sendMilestoneNotification(
-        "onboarding_step_complete",
-        "Practice Check Complete! ✓",
-        wantsHelp
-          ? "We've noted you'd like help with practice. Our team will reach out!"
-          : "Moving on to check your training experience.",
-        "/onboarding",
-      );
 
       onNext();
     } catch (error) {
@@ -346,7 +318,7 @@ export const PracticeCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) =
 
 // Step 3.3 - Training Check
 export const TrainingCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) => {
-  const { updateNaturalRole, updateOnboardingState, sendAdminNotification, sendMilestoneNotification } =
+  const { updateNaturalRole, updateOnboardingState, sendAdminNotification } =
     useOnboarding();
   const { toast } = useToast();
   const [hasTrained, setHasTrained] = useState<boolean | null>(null);
@@ -363,14 +335,6 @@ export const TrainingCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) =
         training_contexts: contexts,
       });
       await updateOnboardingState({ current_step: 6 });
-
-      // Send milestone notification
-      await sendMilestoneNotification(
-        "onboarding_step_complete",
-        "Training Check Complete! ✓",
-        `You've trained others ${trainingCount || 0} times. Almost done - one more step!`,
-        "/onboarding",
-      );
 
       onNext();
     } catch (error) {
@@ -405,16 +369,6 @@ export const TrainingCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) =
       }
 
       await updateOnboardingState({ current_step: 6 });
-
-      // Send milestone notification
-      await sendMilestoneNotification(
-        "onboarding_step_complete",
-        "Training Check Complete! ✓",
-        wantsHelp
-          ? "We've noted you'd like help with training. Almost done!"
-          : "Moving on to the final assessment step.",
-        "/onboarding",
-      );
 
       onNext();
     } catch (error) {
@@ -540,7 +494,7 @@ export const TrainingCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) =
 
 // Step 3.4 - Consulting Check
 export const ConsultingCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) => {
-  const { updateNaturalRole, updateOnboardingState, sendMilestoneNotification } = useOnboarding();
+  const { updateNaturalRole, updateOnboardingState } = useOnboarding();
   const { toast } = useToast();
   const [hasConsulted, setHasConsulted] = useState<boolean | null>(null);
   const [withWhom, setWithWhom] = useState("");
@@ -556,14 +510,6 @@ export const ConsultingCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps)
         consulting_case_studies: caseStudies,
       });
       await updateOnboardingState({ current_step: 7 });
-
-      // Send milestone notification
-      await sendMilestoneNotification(
-        "onboarding_step_complete",
-        "Consulting Check Complete! ✓",
-        "All assessment steps complete! Time for the final review.",
-        "/onboarding",
-      );
 
       onNext();
     } catch (error) {
@@ -582,14 +528,6 @@ export const ConsultingCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps)
     try {
       await updateNaturalRole({ consulting_check: false });
       await updateOnboardingState({ current_step: 7 });
-
-      // Send milestone notification
-      await sendMilestoneNotification(
-        "onboarding_step_complete",
-        "Consulting Check Complete! ✓",
-        "Assessment complete! Time for the final review.",
-        "/onboarding",
-      );
 
       onNext();
     } catch (error) {

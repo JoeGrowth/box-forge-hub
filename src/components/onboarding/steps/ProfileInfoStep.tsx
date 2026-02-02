@@ -14,7 +14,7 @@ interface ProfileInfoStepProps {
 }
 
 export const ProfileInfoStep = ({ onNext }: ProfileInfoStepProps) => {
-  const { updateOnboardingState, sendMilestoneNotification } = useOnboarding();
+  const { updateOnboardingState } = useOnboarding();
   const { user } = useAuth();
   const { toast } = useToast();
   const [bio, setBio] = useState("");
@@ -40,13 +40,6 @@ export const ProfileInfoStep = ({ onNext }: ProfileInfoStepProps) => {
       if (error) throw error;
 
       await updateOnboardingState({ current_step: 9 });
-
-      await sendMilestoneNotification(
-        "onboarding_step_complete",
-        "Profile Info Complete! ✓",
-        "Great! Your profile information has been saved. One final step to go!",
-        "/onboarding"
-      );
 
       onNext();
     } catch (error) {
