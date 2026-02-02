@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Menu, X, LogOut, User, Shield, Lock } from "lucide-react";
+import { Menu, X, LogOut, User, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useLearningJourneys } from "@/hooks/useLearningJourneys";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { supabase } from "@/integrations/supabase/client";
 import { NotificationBell } from "./NotificationBell";
@@ -47,11 +45,7 @@ export function Navbar() {
   const [isAdmin, setIsAdmin] = useState(false);
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
-  const { journeys } = useLearningJourneys();
-  const { userStatus, canAccessBoosting, canAccessScaling, loading: statusLoading } = useUserStatus();
-
-  // Count journeys in progress
-  const journeysInProgress = journeys.filter(j => j.status === "in_progress").length;
+  const { canAccessBoosting, canAccessScaling } = useUserStatus();
 
   useEffect(() => {
     const checkUserStatus = async () => {
@@ -106,18 +100,13 @@ export function Navbar() {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`text-sm font-medium transition-colors hover:text-b4-teal flex items-center gap-1.5 ${
+                className={`text-sm font-medium transition-colors hover:text-b4-teal ${
                   location.pathname === link.path
                     ? "text-b4-teal"
                     : "text-muted-foreground"
                 }`}
               >
                 {link.name}
-                {link.name === "Boost" && user && journeysInProgress > 0 && (
-                  <Badge className="bg-b4-teal text-white text-xs px-1.5 py-0 min-w-[18px] h-[18px] flex items-center justify-center">
-                    {journeysInProgress}
-                  </Badge>
-                )}
               </Link>
             ))}
           </div>
@@ -179,7 +168,7 @@ export function Navbar() {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     location.pathname === link.path
                       ? "bg-muted text-b4-teal"
                       : "text-muted-foreground hover:bg-muted"
@@ -187,11 +176,6 @@ export function Navbar() {
                   onClick={() => setIsOpen(false)}
                 >
                   {link.name}
-                  {link.name === "Boost" && user && journeysInProgress > 0 && (
-                    <Badge className="bg-b4-teal text-white text-xs px-1.5 py-0 min-w-[18px] h-[18px] flex items-center justify-center">
-                      {journeysInProgress}
-                    </Badge>
-                  )}
                 </Link>
               ))}
               <div className="flex flex-col gap-2 px-4 pt-2">
