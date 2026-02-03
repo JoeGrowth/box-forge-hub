@@ -68,6 +68,20 @@ interface ConsultantOpportunity {
   updated_at: string;
 }
 
+type Currency = "TND" | "USD" | "EUR" | "GBP" | "MAD" | "DZD" | "EGP" | "SAR" | "AED";
+
+const CURRENCIES: { value: Currency; label: string; symbol: string }[] = [
+  { value: "TND", label: "TND - Tunisian Dinar", symbol: "TND" },
+  { value: "USD", label: "USD - US Dollar", symbol: "$" },
+  { value: "EUR", label: "EUR - Euro", symbol: "€" },
+  { value: "GBP", label: "GBP - British Pound", symbol: "£" },
+  { value: "MAD", label: "MAD - Moroccan Dirham", symbol: "MAD" },
+  { value: "DZD", label: "DZD - Algerian Dinar", symbol: "DZD" },
+  { value: "EGP", label: "EGP - Egyptian Pound", symbol: "EGP" },
+  { value: "SAR", label: "SAR - Saudi Riyal", symbol: "SAR" },
+  { value: "AED", label: "AED - UAE Dirham", symbol: "AED" },
+];
+
 interface FormData {
   source: "word_of_mouth" | "linkedin" | "other";
   source_other: string;
@@ -78,6 +92,7 @@ interface FormData {
   description: string;
   number_of_days: number;
   amount_per_day: number;
+  currency: Currency;
 }
 
 const MAX_OPPORTUNITIES = 20;
@@ -107,6 +122,7 @@ export const ConsultantOpportunities = () => {
     description: "",
     number_of_days: 1,
     amount_per_day: 0,
+    currency: "TND",
   });
 
   const fetchOpportunities = useCallback(async () => {
@@ -148,6 +164,7 @@ export const ConsultantOpportunities = () => {
       description: "",
       number_of_days: 1,
       amount_per_day: 0,
+      currency: "TND",
     });
     setTechnicalOfferFile(null);
     setEditingId(null);
@@ -178,6 +195,7 @@ export const ConsultantOpportunities = () => {
       description: opportunity.description || "",
       number_of_days: opportunity.number_of_days,
       amount_per_day: Number(opportunity.amount_per_day),
+      currency: ((opportunity as any).currency as Currency) || "TND",
     });
     setDialogOpen(true);
   };
@@ -508,7 +526,7 @@ export const ConsultantOpportunities = () => {
                         <DollarSign className="w-4 h-4 text-b4-teal" />
                         <span>{opportunity.number_of_days} days × {opportunity.amount_per_day.toLocaleString()} = </span>
                         <span className="text-b4-teal font-bold">
-                          {Number(opportunity.total_amount).toLocaleString()} TND
+                          {Number(opportunity.total_amount).toLocaleString()} {(opportunity as any).currency || "TND"}
                         </span>
                       </div>
                       {opportunity.technical_offer_url && (
@@ -702,7 +720,7 @@ export const ConsultantOpportunities = () => {
             {/* Financial Offer */}
             <div className="space-y-3">
               <Label>Financial Offer</Label>
-              <div className="grid sm:grid-cols-3 gap-4 items-end">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                 <div className="space-y-2">
                   <Label htmlFor="days" className="text-xs text-muted-foreground">
                     Number of Days
@@ -717,7 +735,7 @@ export const ConsultantOpportunities = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="rate" className="text-xs text-muted-foreground">
-                    Amount per Day (TND)
+                    Amount per Day
                   </Label>
                   <Input
                     id="rate"
@@ -728,10 +746,32 @@ export const ConsultantOpportunities = () => {
                     onChange={(e) => setFormData({ ...formData, amount_per_day: parseFloat(e.target.value) || 0 })}
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="currency" className="text-xs text-muted-foreground">
+                    Currency
+                  </Label>
+                  <Select
+                    value={formData.currency}
+                    onValueChange={(value: Currency) =>
+                      setFormData({ ...formData, currency: value })
+                    }
+                  >
+                    <SelectTrigger id="currency">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CURRENCIES.map((curr) => (
+                        <SelectItem key={curr.value} value={curr.value}>
+                          {curr.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="p-3 bg-b4-teal/10 rounded-lg text-center">
                   <div className="text-xs text-muted-foreground mb-1">Total Amount</div>
                   <div className="text-lg font-bold text-b4-teal">
-                    {totalAmount.toLocaleString()} TND
+                    {totalAmount.toLocaleString()} {formData.currency}
                   </div>
                 </div>
               </div>
