@@ -690,12 +690,9 @@ const Scale = () => {
             </div>
 
             {/* Scale Your NR Section */}
-            {activeSection === "scale" && (
-              <div className="space-y-8 animate-fade-in">
+            <div className={`space-y-8 ${activeSection === "scale" ? "block" : "hidden"}`}>
                 {/* Step 0: Work as Consultant */}
                 <ConsultantOpportunities />
-
-                {/* Concept Explanation */}
                 <Card className="border-violet-500/20 bg-gradient-to-br from-violet-500/5 to-purple-500/5">
                   <CardContent className="pt-6">
                     <div className="flex flex-col md:flex-row items-start gap-6">
@@ -847,12 +844,10 @@ const Scale = () => {
                     </CardContent>
                   </Card>
                 )}
-              </div>
-            )}
+            </div>
 
             {/* Your Ideas Section */}
-            {activeSection === "ideas" && (
-              <div className="space-y-6 animate-fade-in">
+            <div className={`space-y-6 ${activeSection === "ideas" ? "block" : "hidden"}`}>
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <div>
                     <h2 className="text-2xl font-display font-bold text-foreground">Your Ideas</h2>
@@ -1043,15 +1038,12 @@ const Scale = () => {
                     </CollapsibleContent>
                   </Collapsible>
                 )}
-              </div>
-            )}
+            </div>
 
             {/* Scale as Co-Builder Section */}
-            {activeSection === "cobuilder" && user && (
-              <div className="animate-fade-in">
-                <CoBuilderApplicationsSection userId={user.id} />
-              </div>
-            )}
+            <div className={`${activeSection === "cobuilder" && user ? "block" : "hidden"}`}>
+              {user && <CoBuilderApplicationsSection userId={user.id} />}
+            </div>
           </div>
         </section>
       </main>

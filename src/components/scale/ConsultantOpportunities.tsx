@@ -31,7 +31,6 @@ import {
   Plus,
   Briefcase,
   Calendar,
-  DollarSign,
   Building2,
   FileText,
   Loader2,
@@ -524,7 +523,7 @@ export const ConsultantOpportunities = () => {
                     {/* Financial info */}
                     <div className="flex items-center gap-4 text-sm">
                       <div className="flex items-center gap-1 text-foreground font-medium">
-                        <DollarSign className="w-4 h-4 text-b4-teal" />
+                        <span className="text-b4-teal font-semibold">Amount:</span>
                         <span>{opportunity.number_of_days} days × {opportunity.amount_per_day.toLocaleString()} = </span>
                         <span className="text-b4-teal font-bold">
                           {Number(opportunity.total_amount).toLocaleString()} {(opportunity as any).currency || "TND"}
