@@ -102,6 +102,7 @@ export const ConsultantOpportunities = () => {
   
   const [opportunities, setOpportunities] = useState<ConsultantOpportunity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasFetched, setHasFetched] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -127,7 +128,11 @@ export const ConsultantOpportunities = () => {
   const fetchOpportunities = useCallback(async () => {
     if (!user) return;
     
-    setLoading(true);
+    // Only show loading spinner on initial fetch, not on refetches
+    if (!hasFetched) {
+      setLoading(true);
+    }
+    
     const { data, error } = await supabase
       .from("consultant_opportunities")
       .select("*")
@@ -146,7 +151,8 @@ export const ConsultantOpportunities = () => {
       setOpportunities(data as ConsultantOpportunity[]);
     }
     setLoading(false);
-  }, [user, toast]);
+    setHasFetched(true);
+  }, [user, toast, hasFetched]);
 
   useEffect(() => {
     fetchOpportunities();
