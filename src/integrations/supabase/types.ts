@@ -167,6 +167,7 @@ export type Database = {
           completed_at: string | null
           consulting_firm: string
           created_at: string
+          currency: string
           description: string | null
           id: string
           is_completed: boolean
@@ -186,6 +187,7 @@ export type Database = {
           completed_at?: string | null
           consulting_firm: string
           created_at?: string
+          currency?: string
           description?: string | null
           id?: string
           is_completed?: boolean
@@ -205,6 +207,7 @@ export type Database = {
           completed_at?: string | null
           consulting_firm?: string
           created_at?: string
+          currency?: string
           description?: string | null
           id?: string
           is_completed?: boolean

@@ -280,6 +280,7 @@ export const ConsultantOpportunities = () => {
         description: formData.description.trim() || null,
         number_of_days: formData.number_of_days,
         amount_per_day: formData.amount_per_day,
+        currency: formData.currency,
         ...(technicalOfferUrl && { technical_offer_url: technicalOfferUrl }),
       };
       
