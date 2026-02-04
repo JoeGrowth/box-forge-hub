@@ -81,16 +81,18 @@ const Admin = () => {
   }, [isAdmin]);
 
   useEffect(() => {
+    // Only redirect if auth is fully loaded and user is not authenticated
     if (!authLoading && !user) {
       navigate("/auth", { replace: true });
     }
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
-    if (!adminLoading && !isAdmin && user) {
-      navigate("/", { replace: true });
+    // Only redirect if both auth and admin checks are fully loaded
+    if (!adminLoading && !authLoading && !isAdmin && user) {
+      navigate("/dashboard", { replace: true });
     }
-  }, [isAdmin, adminLoading, user, navigate]);
+  }, [isAdmin, adminLoading, authLoading, user, navigate]);
 
   useEffect(() => {
     if (isAdmin) {
