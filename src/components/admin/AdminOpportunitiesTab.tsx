@@ -52,6 +52,7 @@ interface AdminOpportunitiesTabProps {
 }
 
 export function AdminOpportunitiesTab({ onRefresh }: AdminOpportunitiesTabProps) {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"pending" | "approved" | "all">("pending");
@@ -453,7 +454,7 @@ export function AdminOpportunitiesTab({ onRefresh }: AdminOpportunitiesTabProps)
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    onClick={() => window.location.href = `/admin/opportunity/${opp.id}`}
+                    onClick={() => navigate(`/admin/opportunity/${opp.id}`)}
                   >
                     <Eye className="w-4 h-4 mr-1" />
                     View Details
