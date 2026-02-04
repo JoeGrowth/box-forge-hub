@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { Search, X, Plus, Loader2, DollarSign, PieChart, Check, Clock } from "lucide-react";
 import { toast } from "sonner";
@@ -42,16 +41,22 @@ interface TeamMemberSearchProps {
 }
 
 const ROLE_LABELS: Record<string, string> = {
-  MVCB: "Most Valuable Co-Builder",
-  MMCB: "Most Matching Co-Builder",
-  MLCB: "Most Loyal Co-Builder",
+  MVCB: "MVCB - Most Valuable - Existing",
+  MMCB: "MMCB - Most Matching - Earning",
+  MLCB: "MLCB - Most Loyal - Growing",
+};
+
+// Auto-assign role based on total equity percentage
+const getRoleFromEquity = (totalEquity: number): "MVCB" | "MMCB" | "MLCB" => {
+  if (totalEquity >= 11) return "MVCB";
+  if (totalEquity >= 6) return "MMCB";
+  return "MLCB";
 };
 
 export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: TeamMemberSearchProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<CoBuilder[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [selectedRole, setSelectedRole] = useState<"MVCB" | "MMCB" | "MLCB">("MVCB");
   const [isSearching, setIsSearching] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [loadingTeam, setLoadingTeam] = useState(true);
@@ -216,7 +221,7 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
       const { error } = await supabase.from("startup_team_members").insert({
         startup_id: startupId,
         member_user_id: cobuilder.user_id,
-        role_type: selectedRole,
+        role_type: "MLCB", // Default role, will be auto-updated based on equity after negotiation
         added_by: currentUserId,
       });
 
@@ -235,7 +240,7 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
         {
           id: crypto.randomUUID(),
           member_user_id: cobuilder.user_id,
-          role_type: selectedRole,
+          role_type: "MLCB", // Default role
           full_name: cobuilder.full_name,
           avatar_url: cobuilder.avatar_url,
         },
@@ -244,7 +249,7 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
       // Remove from search results
       setSearchResults((prev) => prev.filter((r) => r.user_id !== cobuilder.user_id));
 
-      toast.success(`${cobuilder.full_name || "Co-builder"} added as ${ROLE_LABELS[selectedRole]}`);
+      toast.success(`${cobuilder.full_name || "Co-builder"} added to team`);
       onTeamUpdated();
     } catch (error) {
       console.error("Error adding team member:", error);
@@ -284,122 +289,11 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
       .slice(0, 2);
   };
 
-  return (
+    return (
     <div className="space-y-6">
-      {/* Current Team Members */}
-      <div>
-        <h4 className="text-sm font-medium text-foreground mb-3">Current Team</h4>
-        {loadingTeam ? (
-          <div className="flex items-center justify-center py-4">
-            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-          </div>
-        ) : teamMembers.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-2">No team members added yet. Search below to add co-builders.</p>
-        ) : (
-          <div className="space-y-2">
-            {teamMembers.map((member) => {
-              const hasOffer = !!member.compensation;
-              const isAgreed = member.compensation?.status === "accepted";
-              const totalEquity = (member.compensation?.time_equity_percentage || 0) + (member.compensation?.performance_equity_percentage || 0);
-              const isMyTurn = member.compensation && member.compensation.current_proposer_id !== currentUserId;
-              
-              return (
-                <div
-                  key={member.id}
-                  className="flex items-center justify-between p-3 rounded-lg border bg-card"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-b4-teal/10 flex items-center justify-center text-b4-teal text-sm font-medium">
-                      {member.avatar_url ? (
-                        <img
-                          src={member.avatar_url}
-                          alt={member.full_name || ""}
-                          className="w-full h-full rounded-full object-cover"
-                        />
-                      ) : (
-                        getInitials(member.full_name)
-                      )}
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium text-foreground">{member.full_name || "Unknown"}</p>
-                      <div className="flex items-center gap-1 flex-wrap">
-                        <Badge variant="outline" className="text-xs">
-                          {ROLE_LABELS[member.role_type]}
-                        </Badge>
-                        {isAgreed ? (
-                          <Badge className="text-xs bg-b4-teal">
-                            <Check className="w-3 h-3 mr-1" />
-                            {totalEquity}% Equity Agreed
-                          </Badge>
-                        ) : hasOffer ? (
-                          <Badge variant="secondary" className="text-xs">
-                            <Clock className="w-3 h-3 mr-1" />
-                            {isMyTurn ? "Your Turn" : "Pending"}
-                          </Badge>
-                        ) : null}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant={hasOffer ? "outline" : "teal"}
-                      size="sm"
-                      onClick={() => {
-                        setSelectedMemberForCompensation(member);
-                        setCompensationDialogOpen(true);
-                      }}
-                      className="gap-1"
-                    >
-                      {isAgreed ? (
-                        <>
-                          <PieChart className="w-3 h-3" />
-                          <span className="hidden sm:inline">View</span>
-                        </>
-                      ) : hasOffer ? (
-                        <>
-                          <DollarSign className="w-3 h-3" />
-                          <span className="hidden sm:inline">Negotiate</span>
-                        </>
-                      ) : (
-                        <>
-                          <DollarSign className="w-3 h-3" />
-                          <span className="hidden sm:inline">Set Compensation</span>
-                        </>
-                      )}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveMember(member)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Search Section */}
+      {/* Add Team Members Section - Now First */}
       <div className="space-y-3">
         <h4 className="text-sm font-medium text-foreground">Add Team Members</h4>
-        
-        {/* Role Selection */}
-        <div className="flex gap-2">
-          <Select value={selectedRole} onValueChange={(v) => setSelectedRole(v as "MVCB" | "MMCB" | "MLCB")}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Select role" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="MVCB">MVCB - Most Valuable</SelectItem>
-              <SelectItem value="MMCB">MMCB - Most Matching</SelectItem>
-              <SelectItem value="MLCB">MLCB - Most Loyal</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
 
         {/* Search Input */}
         <div className="relative">
@@ -461,6 +355,106 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
           <p className="text-sm text-muted-foreground text-center py-4">
             No co-builders found matching "{searchQuery}"
           </p>
+        )}
+      </div>
+
+      {/* Current Team Members - Now Second */}
+      <div>
+        <h4 className="text-sm font-medium text-foreground mb-3">Current Team</h4>
+        {loadingTeam ? (
+          <div className="flex items-center justify-center py-4">
+            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : teamMembers.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-2">No team members added yet. Search above to add co-builders.</p>
+        ) : (
+          <div className="space-y-2">
+            {teamMembers.map((member) => {
+              const hasOffer = !!member.compensation;
+              const isAgreed = member.compensation?.status === "accepted";
+              const totalEquity = (member.compensation?.time_equity_percentage || 0) + (member.compensation?.performance_equity_percentage || 0);
+              const isMyTurn = member.compensation && member.compensation.current_proposer_id !== currentUserId;
+              
+              // Auto-assign role label based on total equity when agreed
+              const displayRole = isAgreed ? getRoleFromEquity(totalEquity) : member.role_type;
+              
+              return (
+                <div
+                  key={member.id}
+                  className="flex items-center justify-between p-3 rounded-lg border bg-card"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-b4-teal/10 flex items-center justify-center text-b4-teal text-sm font-medium">
+                      {member.avatar_url ? (
+                        <img
+                          src={member.avatar_url}
+                          alt={member.full_name || ""}
+                          className="w-full h-full rounded-full object-cover"
+                        />
+                      ) : (
+                        getInitials(member.full_name)
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-foreground">{member.full_name || "Unknown"}</p>
+                      <div className="flex items-center gap-1 flex-wrap">
+                        <Badge variant="outline" className="text-xs">
+                          {ROLE_LABELS[displayRole]}
+                        </Badge>
+                        {isAgreed ? (
+                          <Badge className="text-xs bg-b4-teal">
+                            <Check className="w-3 h-3 mr-1" />
+                            {totalEquity}% Equity Agreed
+                          </Badge>
+                        ) : hasOffer ? (
+                          <Badge variant="secondary" className="text-xs">
+                            <Clock className="w-3 h-3 mr-1" />
+                            {isMyTurn ? "Your Turn" : "Pending"}
+                          </Badge>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant={hasOffer ? "outline" : "teal"}
+                      size="sm"
+                      onClick={() => {
+                        setSelectedMemberForCompensation(member);
+                        setCompensationDialogOpen(true);
+                      }}
+                      className="gap-1"
+                    >
+                      {isAgreed ? (
+                        <>
+                          <PieChart className="w-3 h-3" />
+                          <span className="hidden sm:inline">View</span>
+                        </>
+                      ) : hasOffer ? (
+                        <>
+                          <DollarSign className="w-3 h-3" />
+                          <span className="hidden sm:inline">Negotiate</span>
+                        </>
+                      ) : (
+                        <>
+                          <DollarSign className="w-3 h-3" />
+                          <span className="hidden sm:inline">Set Compensation</span>
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoveMember(member)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
 
