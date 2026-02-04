@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -6,7 +6,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -15,14 +14,14 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  Save, 
   Loader2, 
   CheckCircle, 
   Rocket, 
   Building2, 
   Settings, 
   Target, 
-  Crown 
+  Crown,
+  Check
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -165,6 +164,8 @@ export const ScaleStepDialog = ({
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<string>("");
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pendingDataRef = useRef<Record<number, PhaseData>>({});
 
   const relevantPhases = STEP_TO_PHASES[stepNumber];
   const phasesConfig = PHASES.filter(p => relevantPhases.includes(p.id));
@@ -247,42 +248,25 @@ export const ScaleStepDialog = ({
     setCompletedPhases(completed);
   };
 
-  const handleInputChange = (phaseId: number, taskId: string, value: string | boolean) => {
-    setPhaseData(prev => ({
-      ...prev,
-      [phaseId]: {
-        ...(prev[phaseId] || {}),
-        [taskId]: value,
-      },
-    }));
-  };
-
-  const isPhaseComplete = (phaseId: number) => {
-    const phase = PHASES.find(p => p.id === phaseId);
-    if (!phase) return false;
-    
-    const data = phaseData[phaseId] || {};
-    return phase.tasks.every(task => {
-      if (task.type === "checkbox") return data[task.id] === true;
-      if (task.type === "logo_with_name" && task.logoField && task.nameField) {
-        // For logo_with_name, check that both logo URL and name are provided
-        const logoValue = data[task.logoField];
-        const nameValue = data[task.nameField];
-        return nameValue && String(nameValue).trim().length > 0; // Name is required, logo is optional
-      }
-      const value = data[task.id];
-      return value && String(value).trim().length > 0;
-    });
-  };
-
-  const saveAllProgress = async () => {
+  // Auto-save function (debounced)
+  const autoSave = useCallback(async (dataToSave: Record<number, PhaseData>) => {
     if (!user || !journeyId) return;
 
     setIsSaving(true);
     try {
       for (const phase of phasesConfig) {
-        const currentData = phaseData[phase.id] || {};
-        const allTasksComplete = isPhaseComplete(phase.id);
+        const currentData = dataToSave[phase.id] || {};
+        const allTasksComplete = (() => {
+          return phase.tasks.every(task => {
+            if (task.type === "checkbox") return currentData[task.id] === true;
+            if (task.type === "logo_with_name" && task.logoField && task.nameField) {
+              const nameValue = currentData[task.nameField];
+              return nameValue && String(nameValue).trim().length > 0;
+            }
+            const value = currentData[task.id];
+            return value && String(value).trim().length > 0;
+          });
+        })();
 
         const { data: existingResponse } = await supabase
           .from("journey_phase_responses")
@@ -319,23 +303,68 @@ export const ScaleStepDialog = ({
           setCompletedPhases(prev => [...prev, phase.id]);
         }
       }
-
-      toast({
-        title: "Progress Saved",
-        description: "Your progress has been saved successfully.",
-      });
-
-      onComplete();
     } catch (error) {
-      console.error("Error saving progress:", error);
-      toast({
-        title: "Error",
-        description: "Failed to save progress",
-        variant: "destructive",
-      });
+      console.error("Error auto-saving progress:", error);
     } finally {
       setIsSaving(false);
     }
+  }, [user, journeyId, phasesConfig, completedPhases]);
+
+  // Debounced save trigger
+  const triggerAutoSave = useCallback((newData: Record<number, PhaseData>) => {
+    pendingDataRef.current = newData;
+    
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    saveTimeoutRef.current = setTimeout(() => {
+      autoSave(pendingDataRef.current);
+    }, 1000); // 1 second debounce
+  }, [autoSave]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+        // Save any pending data on unmount
+        if (Object.keys(pendingDataRef.current).length > 0) {
+          autoSave(pendingDataRef.current);
+        }
+      }
+    };
+  }, [autoSave]);
+
+  const handleInputChange = (phaseId: number, taskId: string, value: string | boolean) => {
+    setPhaseData(prev => {
+      const newData = {
+        ...prev,
+        [phaseId]: {
+          ...(prev[phaseId] || {}),
+          [taskId]: value,
+        },
+      };
+      triggerAutoSave(newData);
+      return newData;
+    });
+  };
+
+  const isPhaseComplete = (phaseId: number) => {
+    const phase = PHASES.find(p => p.id === phaseId);
+    if (!phase) return false;
+    
+    const data = phaseData[phaseId] || {};
+    return phase.tasks.every(task => {
+      if (task.type === "checkbox") return data[task.id] === true;
+      if (task.type === "logo_with_name" && task.logoField && task.nameField) {
+        const logoValue = data[task.logoField];
+        const nameValue = data[task.nameField];
+        return nameValue && String(nameValue).trim().length > 0;
+      }
+      const value = data[task.id];
+      return value && String(value).trim().length > 0;
+    });
   };
 
   const getPhaseProgress = (phaseId: number) => {
@@ -347,7 +376,7 @@ export const ScaleStepDialog = ({
       if (task.type === "checkbox") return data[task.id] === true;
       if (task.type === "logo_with_name" && task.logoField && task.nameField) {
         const nameValue = data[task.nameField];
-        return nameValue && String(nameValue).trim().length > 0; // Name is required
+        return nameValue && String(nameValue).trim().length > 0;
       }
       const value = data[task.id];
       return value && String(value).trim().length > 0;
@@ -454,23 +483,20 @@ export const ScaleStepDialog = ({
                     <Badge className="bg-b4-teal text-white ml-2">All Complete</Badge>
                   )}
                 </div>
-                <Button 
-                  variant="teal" 
-                  onClick={saveAllProgress} 
-                  disabled={isSaving}
-                >
+                {/* Auto-save indicator */}
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   {isSaving ? (
                     <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Saving...
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Saving...</span>
                     </>
                   ) : (
                     <>
-                      <Save className="w-4 h-4 mr-2" />
-                      Save Progress
+                      <Check className="w-4 h-4 text-b4-teal" />
+                      <span>Auto-saved</span>
                     </>
                   )}
-                </Button>
+                </div>
               </div>
             </div>
           </>
