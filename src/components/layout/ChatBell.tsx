@@ -206,6 +206,38 @@ export function ChatBell() {
     };
   }, [user]);
 
+  const markAllMessagesAsRead = async () => {
+    if (!user) return;
+    
+    // Mark all chat messages as read
+    for (const conv of conversations) {
+      if (conv.type === "application") {
+        await supabase
+          .from("chat_messages")
+          .update({ is_read: true })
+          .eq("conversation_id", conv.id)
+          .neq("sender_id", user.id);
+      } else {
+        await supabase
+          .from("direct_messages")
+          .update({ is_read: true })
+          .eq("conversation_id", conv.id)
+          .neq("sender_id", user.id);
+      }
+    }
+    
+    // Update local state
+    setConversations(prev => prev.map(c => ({ ...c, unreadCount: 0 })));
+    setTotalUnread(0);
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (open && totalUnread > 0) {
+      markAllMessagesAsRead();
+    }
+  };
+
   const handleConversationClick = (conv: ConversationWithDetails) => {
     if (conv.type === "application" && conv.applicationId) {
       navigate(`/chat/${conv.applicationId}`);
@@ -223,7 +255,7 @@ export function ChatBell() {
   if (!user) return null;
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover open={isOpen} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="sm" className="relative">
           <MessageCircle size={18} />
