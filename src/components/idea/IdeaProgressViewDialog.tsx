@@ -116,7 +116,8 @@ export const IdeaProgressViewDialog = ({
         const { data, error } = await supabase
           .from("idea_journey_progress")
           .select("*")
-          .eq("startup_id", startupId);
+          .eq("startup_id", startupId)
+          .eq("episode", "development");
 
         if (error) throw error;
 
