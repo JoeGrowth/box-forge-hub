@@ -52,9 +52,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ScaleStepDialog } from "@/components/scale/ScaleStepDialog";
 import { IdeaDevelopDialog } from "@/components/idea/IdeaDevelopDialog";
+import { IdeaValidationDialog } from "@/components/idea/IdeaValidationDialog";
+import { IdeaGrowthDialog } from "@/components/idea/IdeaGrowthDialog";
+import { IdeaEpisodesDialog } from "@/components/idea/IdeaEpisodesDialog";
 import { CoBuilderApplicationsSection } from "@/components/scale/CoBuilderApplicationsSection";
 import { ConsultantOpportunities } from "@/components/scale/ConsultantOpportunities";
 import { format } from "date-fns";
+import { Film, Shield } from "lucide-react";
 
 interface AnswerVersion {
   id: string;
@@ -83,6 +87,10 @@ interface StartupIdea {
   review_status: string | null;
   status: string | null;
   created_at: string;
+  current_episode: string;
+  development_completed_at: string | null;
+  validation_completed_at: string | null;
+  growth_completed_at: string | null;
 }
 
 const SCALE_NR_STEPS = [
@@ -162,7 +170,10 @@ const Scale = () => {
   const [activeStep, setActiveStep] = useState<1 | 2 | 3>(1);
   const [stepCompletionStatus, setStepCompletionStatus] = useState<Record<number, boolean>>({});
   const [developDialogOpen, setDevelopDialogOpen] = useState(false);
-  const [selectedIdea, setSelectedIdea] = useState<{ id: string; title: string } | null>(null);
+  const [validationDialogOpen, setValidationDialogOpen] = useState(false);
+  const [growthDialogOpen, setGrowthDialogOpen] = useState(false);
+  const [episodesDialogOpen, setEpisodesDialogOpen] = useState(false);
+  const [selectedIdea, setSelectedIdea] = useState<{ id: string; title: string; currentEpisode: string } | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [ideaToDelete, setIdeaToDelete] = useState<{ id: string; title: string } | null>(null);
   const [deleteType, setDeleteType] = useState<"archive" | "permanent" | null>(null);
@@ -252,7 +263,7 @@ const Scale = () => {
       setLoadingIdeas(true);
       const { data, error } = await supabase
         .from("startup_ideas")
-        .select("id, title, description, sector, review_status, status, created_at")
+        .select("id, title, description, sector, review_status, status, created_at, current_episode, development_completed_at, validation_completed_at, growth_completed_at")
         .eq("creator_id", user.id)
         .order("created_at", { ascending: false });
 
@@ -925,16 +936,68 @@ const Scale = () => {
                                 <Link to={`/opportunities/${idea.id}`}>View</Link>
                               </Button>
                               {idea.review_status === "approved" && (
-                                <Button
-                                  variant="teal"
-                                  size="sm"
-                                  onClick={() => {
-                                    setSelectedIdea({ id: idea.id, title: idea.title });
-                                    setDevelopDialogOpen(true);
-                                  }}
-                                >
-                                  Develop
-                                </Button>
+                                <>
+                                  {/* Episodes button - shows when development is completed */}
+                                  {idea.development_completed_at && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => {
+                                        setSelectedIdea({ id: idea.id, title: idea.title, currentEpisode: idea.current_episode });
+                                        setEpisodesDialogOpen(true);
+                                      }}
+                                    >
+                                      <Film className="w-4 h-4 mr-1" />
+                                      Episodes
+                                    </Button>
+                                  )}
+                                  
+                                  {/* Dynamic action button based on current episode */}
+                                  {idea.current_episode === "development" && (
+                                    <Button
+                                      variant="teal"
+                                      size="sm"
+                                      onClick={() => {
+                                        setSelectedIdea({ id: idea.id, title: idea.title, currentEpisode: idea.current_episode });
+                                        setDevelopDialogOpen(true);
+                                      }}
+                                    >
+                                      Develop
+                                    </Button>
+                                  )}
+                                  {idea.current_episode === "validation" && (
+                                    <Button
+                                      variant="teal"
+                                      size="sm"
+                                      onClick={() => {
+                                        setSelectedIdea({ id: idea.id, title: idea.title, currentEpisode: idea.current_episode });
+                                        setValidationDialogOpen(true);
+                                      }}
+                                    >
+                                      <Shield className="w-4 h-4 mr-1" />
+                                      Validate
+                                    </Button>
+                                  )}
+                                  {idea.current_episode === "growth" && (
+                                    <Button
+                                      variant="teal"
+                                      size="sm"
+                                      onClick={() => {
+                                        setSelectedIdea({ id: idea.id, title: idea.title, currentEpisode: idea.current_episode });
+                                        setGrowthDialogOpen(true);
+                                      }}
+                                    >
+                                      <TrendingUp className="w-4 h-4 mr-1" />
+                                      Grow
+                                    </Button>
+                                  )}
+                                  {idea.current_episode === "completed" && (
+                                    <Badge className="bg-b4-teal text-white">
+                                      <CheckCircle className="w-3 h-3 mr-1" />
+                                      Journey Complete
+                                    </Badge>
+                                  )}
+                                </>
                               )}
                             </div>
                           </div>
@@ -1055,12 +1118,73 @@ const Scale = () => {
         onComplete={() => fetchStepCompletionStatus()}
       />
       {selectedIdea && (
-        <IdeaDevelopDialog
-          open={developDialogOpen}
-          onOpenChange={setDevelopDialogOpen}
-          ideaId={selectedIdea.id}
-          ideaTitle={selectedIdea.title}
-        />
+        <>
+          <IdeaDevelopDialog
+            open={developDialogOpen}
+            onOpenChange={setDevelopDialogOpen}
+            ideaId={selectedIdea.id}
+            ideaTitle={selectedIdea.title}
+            onEpisodeComplete={async () => {
+              // Refresh ideas to get updated episode status
+              const { data } = await supabase
+                .from("startup_ideas")
+                .select("id, title, description, sector, review_status, status, created_at, current_episode, development_completed_at, validation_completed_at, growth_completed_at")
+                .eq("creator_id", user?.id)
+                .order("created_at", { ascending: false });
+              if (data) {
+                const active = data.filter((idea) => idea.status !== "archived");
+                const archived = data.filter((idea) => idea.status === "archived");
+                setUserIdeas(active);
+                setArchivedIdeas(archived);
+              }
+            }}
+          />
+          <IdeaValidationDialog
+            open={validationDialogOpen}
+            onOpenChange={setValidationDialogOpen}
+            ideaId={selectedIdea.id}
+            ideaTitle={selectedIdea.title}
+            onEpisodeComplete={async () => {
+              const { data } = await supabase
+                .from("startup_ideas")
+                .select("id, title, description, sector, review_status, status, created_at, current_episode, development_completed_at, validation_completed_at, growth_completed_at")
+                .eq("creator_id", user?.id)
+                .order("created_at", { ascending: false });
+              if (data) {
+                const active = data.filter((idea) => idea.status !== "archived");
+                const archived = data.filter((idea) => idea.status === "archived");
+                setUserIdeas(active);
+                setArchivedIdeas(archived);
+              }
+            }}
+          />
+          <IdeaGrowthDialog
+            open={growthDialogOpen}
+            onOpenChange={setGrowthDialogOpen}
+            ideaId={selectedIdea.id}
+            ideaTitle={selectedIdea.title}
+            onEpisodeComplete={async () => {
+              const { data } = await supabase
+                .from("startup_ideas")
+                .select("id, title, description, sector, review_status, status, created_at, current_episode, development_completed_at, validation_completed_at, growth_completed_at")
+                .eq("creator_id", user?.id)
+                .order("created_at", { ascending: false });
+              if (data) {
+                const active = data.filter((idea) => idea.status !== "archived");
+                const archived = data.filter((idea) => idea.status === "archived");
+                setUserIdeas(active);
+                setArchivedIdeas(archived);
+              }
+            }}
+          />
+          <IdeaEpisodesDialog
+            open={episodesDialogOpen}
+            onOpenChange={setEpisodesDialogOpen}
+            startupId={selectedIdea.id}
+            startupTitle={selectedIdea.title}
+            currentEpisode={selectedIdea.currentEpisode}
+          />
+        </>
       )}
 
       {/* Delete Confirmation Dialog */}

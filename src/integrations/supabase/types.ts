@@ -340,6 +340,7 @@ export type Database = {
           completed_at: string | null
           completed_tasks: Json | null
           created_at: string
+          episode: string
           id: string
           is_completed: boolean | null
           phase_name: string
@@ -353,6 +354,7 @@ export type Database = {
           completed_at?: string | null
           completed_tasks?: Json | null
           created_at?: string
+          episode?: string
           id?: string
           is_completed?: boolean | null
           phase_name: string
@@ -366,6 +368,7 @@ export type Database = {
           completed_at?: string | null
           completed_tasks?: Json | null
           created_at?: string
+          episode?: string
           id?: string
           is_completed?: boolean | null
           phase_name?: string
@@ -805,7 +808,10 @@ export type Database = {
           admin_notes: string | null
           created_at: string
           creator_id: string
+          current_episode: string
           description: string
+          development_completed_at: string | null
+          growth_completed_at: string | null
           id: string
           is_looking_for_cobuilders: boolean | null
           review_status: string | null
@@ -815,12 +821,16 @@ export type Database = {
           status: string | null
           title: string
           updated_at: string
+          validation_completed_at: string | null
         }
         Insert: {
           admin_notes?: string | null
           created_at?: string
           creator_id: string
+          current_episode?: string
           description: string
+          development_completed_at?: string | null
+          growth_completed_at?: string | null
           id?: string
           is_looking_for_cobuilders?: boolean | null
           review_status?: string | null
@@ -830,12 +840,16 @@ export type Database = {
           status?: string | null
           title: string
           updated_at?: string
+          validation_completed_at?: string | null
         }
         Update: {
           admin_notes?: string | null
           created_at?: string
           creator_id?: string
+          current_episode?: string
           description?: string
+          development_completed_at?: string | null
+          growth_completed_at?: string | null
           id?: string
           is_looking_for_cobuilders?: boolean | null
           review_status?: string | null
@@ -845,6 +859,7 @@ export type Database = {
           status?: string | null
           title?: string
           updated_at?: string
+          validation_completed_at?: string | null
         }
         Relationships: []
       }
