@@ -9,10 +9,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { 
   Loader2, 
   CheckCircle, 
@@ -33,6 +39,14 @@ interface PhaseData {
   [key: string]: string | boolean | number;
 }
 
+interface ConsultantOpportunity {
+  id: string;
+  title: string;
+  client_name: string;
+  total_amount: number | null;
+  currency: string;
+}
+
 interface PhaseConfig {
   id: number;
   title: string;
@@ -42,7 +56,7 @@ interface PhaseConfig {
   tasks: {
     id: string;
     label: string;
-    type: "text" | "url" | "textarea" | "checkbox" | "logo_with_name";
+    type: "text" | "url" | "textarea" | "checkbox" | "logo_with_name" | "mission_select";
     logoField?: string;
     nameField?: string;
   }[];
@@ -75,7 +89,7 @@ const PHASES: PhaseConfig[] = [
       { id: "company_services", label: "Services linked indirectly to natural role", type: "textarea" },
       { id: "company_website", label: "Company Website", type: "url" },
       { id: "proposal_template", label: "Technical & Financial Proposal template (adapted to services)", type: "textarea" },
-      { id: "first_invoice_external", label: "First invoice for a mission with paying external people (as independent)", type: "checkbox" },
+      { id: "first_invoice_external", label: "First invoice for a mission with paying external people (as independent)", type: "mission_select" },
     ],
   },
   {
@@ -164,6 +178,7 @@ export const ScaleStepDialog = ({
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<string>("");
+  const [completedMissions, setCompletedMissions] = useState<ConsultantOpportunity[]>([]);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pendingDataRef = useRef<Record<number, PhaseData>>({});
 
@@ -174,9 +189,25 @@ export const ScaleStepDialog = ({
   useEffect(() => {
     if (open && user) {
       fetchOrCreateJourney();
+      fetchCompletedMissions();
       setActiveTab(`phase-${relevantPhases[0]}`);
     }
   }, [open, user, stepNumber]);
+
+  const fetchCompletedMissions = async () => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from("consultant_opportunities")
+      .select("id, title, client_name, total_amount, currency")
+      .eq("user_id", user.id)
+      .eq("is_completed", true)
+      .order("completed_at", { ascending: false });
+
+    if (!error && data) {
+      setCompletedMissions(data);
+    }
+  };
 
   const fetchOrCreateJourney = async () => {
     if (!user) return;
@@ -259,6 +290,10 @@ export const ScaleStepDialog = ({
         const allTasksComplete = (() => {
           return phase.tasks.every(task => {
             if (task.type === "checkbox") return currentData[task.id] === true;
+            if (task.type === "mission_select") {
+              const value = currentData[task.id];
+              return value && String(value).trim().length > 0;
+            }
             if (task.type === "logo_with_name" && task.logoField && task.nameField) {
               const nameValue = currentData[task.nameField];
               return nameValue && String(nameValue).trim().length > 0;
@@ -357,8 +392,11 @@ export const ScaleStepDialog = ({
     const data = phaseData[phaseId] || {};
     return phase.tasks.every(task => {
       if (task.type === "checkbox") return data[task.id] === true;
+      if (task.type === "mission_select") {
+        const value = data[task.id];
+        return value && String(value).trim().length > 0;
+      }
       if (task.type === "logo_with_name" && task.logoField && task.nameField) {
-        const logoValue = data[task.logoField];
         const nameValue = data[task.nameField];
         return nameValue && String(nameValue).trim().length > 0;
       }
@@ -374,6 +412,10 @@ export const ScaleStepDialog = ({
     const data = phaseData[phaseId] || {};
     const completedTasks = phase.tasks.filter(task => {
       if (task.type === "checkbox") return data[task.id] === true;
+      if (task.type === "mission_select") {
+        const value = data[task.id];
+        return value && String(value).trim().length > 0;
+      }
       if (task.type === "logo_with_name" && task.logoField && task.nameField) {
         const nameValue = data[task.nameField];
         return nameValue && String(nameValue).trim().length > 0;
@@ -420,6 +462,7 @@ export const ScaleStepDialog = ({
                       handleInputChange(phasesConfig[0].id, taskId, value)
                     }
                     userId={user?.id || ""}
+                    completedMissions={completedMissions}
                   />
                 ) : (
                   // Multiple phases - use tabs
@@ -456,6 +499,7 @@ export const ScaleStepDialog = ({
                             handleInputChange(phase.id, taskId, value)
                           }
                           userId={user?.id || ""}
+                          completedMissions={completedMissions}
                         />
                       </TabsContent>
                     ))}
@@ -514,9 +558,10 @@ interface PhaseContentProps {
   progress: number;
   onInputChange: (taskId: string, value: string | boolean) => void;
   userId: string;
+  completedMissions: ConsultantOpportunity[];
 }
 
-const PhaseContent = ({ phase, data, isComplete, progress, onInputChange, userId }: PhaseContentProps) => {
+const PhaseContent = ({ phase, data, isComplete, progress, onInputChange, userId, completedMissions }: PhaseContentProps) => {
   const Icon = phase.icon;
 
   return (
@@ -568,15 +613,56 @@ const PhaseContent = ({ phase, data, isComplete, progress, onInputChange, userId
                 onNameChange={(name) => onInputChange(task.nameField!, name)}
                 label={task.label}
               />
+            ) : task.type === "mission_select" ? (
+              <>
+                <Label className="text-sm font-medium">{task.label}</Label>
+                <Select
+                  value={String(data[task.id] || "")}
+                  onValueChange={(value) => onInputChange(task.id, value)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a completed mission from 'Work as Consultant'" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {completedMissions.length === 0 ? (
+                      <div className="px-3 py-4 text-sm text-muted-foreground text-center">
+                        No completed missions yet.
+                        <br />
+                        <span className="text-xs">Mark a mission as "Done" in Work as Consultant first.</span>
+                      </div>
+                    ) : (
+                      completedMissions.map((mission) => (
+                        <SelectItem key={mission.id} value={mission.id}>
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="w-4 h-4 text-b4-teal shrink-0" />
+                            <span className="truncate">{mission.title}</span>
+                            <span className="text-muted-foreground text-xs">
+                              ({mission.client_name})
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+                {data[task.id] && (
+                  <p className="text-xs text-b4-teal flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3" />
+                    Mission linked successfully
+                  </p>
+                )}
+              </>
             ) : (
               <>
                 <Label className="text-sm font-medium">{task.label}</Label>
                 {task.type === "checkbox" ? (
                   <div className="flex items-center gap-2">
-                    <Checkbox
+                    <input
+                      type="checkbox"
                       id={`${phase.id}-${task.id}`}
                       checked={data[task.id] === true}
-                      onCheckedChange={(checked) => onInputChange(task.id, !!checked)}
+                      onChange={(e) => onInputChange(task.id, e.target.checked)}
+                      className="h-4 w-4 rounded border-muted-foreground/30 text-b4-teal focus:ring-b4-teal"
                     />
                     <label 
                       htmlFor={`${phase.id}-${task.id}`}
