@@ -904,6 +904,140 @@ export type Database = {
           },
         ]
       }
+      team_compensation_history: {
+        Row: {
+          action: string
+          cliff_years: number | null
+          created_at: string
+          id: string
+          monthly_salary: number | null
+          notes: string | null
+          offer_id: string
+          performance_equity_percentage: number | null
+          performance_milestone: string | null
+          proposer_id: string
+          salary_currency: string | null
+          time_equity_percentage: number | null
+          version: number
+          vesting_years: number | null
+        }
+        Insert: {
+          action: string
+          cliff_years?: number | null
+          created_at?: string
+          id?: string
+          monthly_salary?: number | null
+          notes?: string | null
+          offer_id: string
+          performance_equity_percentage?: number | null
+          performance_milestone?: string | null
+          proposer_id: string
+          salary_currency?: string | null
+          time_equity_percentage?: number | null
+          version: number
+          vesting_years?: number | null
+        }
+        Update: {
+          action?: string
+          cliff_years?: number | null
+          created_at?: string
+          id?: string
+          monthly_salary?: number | null
+          notes?: string | null
+          offer_id?: string
+          performance_equity_percentage?: number | null
+          performance_milestone?: string | null
+          proposer_id?: string
+          salary_currency?: string | null
+          time_equity_percentage?: number | null
+          version?: number
+          vesting_years?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_compensation_history_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "team_compensation_offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_compensation_offers: {
+        Row: {
+          cliff_years: number | null
+          cobuilder_user_id: string
+          created_at: string
+          current_proposer_id: string
+          id: string
+          initiator_user_id: string
+          monthly_salary: number | null
+          performance_equity_percentage: number | null
+          performance_milestone: string | null
+          salary_currency: string | null
+          startup_id: string
+          status: string
+          team_member_id: string
+          time_equity_percentage: number | null
+          updated_at: string
+          version: number
+          vesting_years: number | null
+        }
+        Insert: {
+          cliff_years?: number | null
+          cobuilder_user_id: string
+          created_at?: string
+          current_proposer_id: string
+          id?: string
+          initiator_user_id: string
+          monthly_salary?: number | null
+          performance_equity_percentage?: number | null
+          performance_milestone?: string | null
+          salary_currency?: string | null
+          startup_id: string
+          status?: string
+          team_member_id: string
+          time_equity_percentage?: number | null
+          updated_at?: string
+          version?: number
+          vesting_years?: number | null
+        }
+        Update: {
+          cliff_years?: number | null
+          cobuilder_user_id?: string
+          created_at?: string
+          current_proposer_id?: string
+          id?: string
+          initiator_user_id?: string
+          monthly_salary?: number | null
+          performance_equity_percentage?: number | null
+          performance_milestone?: string | null
+          salary_currency?: string | null
+          startup_id?: string
+          status?: string
+          team_member_id?: string
+          time_equity_percentage?: number | null
+          updated_at?: string
+          version?: number
+          vesting_years?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_compensation_offers_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startup_ideas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_compensation_offers_team_member_id_fkey"
+            columns: ["team_member_id"]
+            isOneToOne: true
+            referencedRelation: "startup_team_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_certifications: {
         Row: {
           certification_type: string

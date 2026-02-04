@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, X, Plus, Loader2 } from "lucide-react";
+import { Search, X, Plus, Loader2, DollarSign, PieChart, Check, Clock } from "lucide-react";
 import { toast } from "sonner";
+import { CompensationDialog } from "./CompensationDialog";
 
 interface CoBuilder {
   id: string;
@@ -16,12 +17,22 @@ interface CoBuilder {
   natural_role_description: string | null;
 }
 
+interface CompensationOffer {
+  id: string;
+  status: string;
+  time_equity_percentage: number;
+  performance_equity_percentage: number;
+  monthly_salary: number | null;
+  current_proposer_id: string;
+}
+
 interface TeamMember {
   id: string;
   member_user_id: string;
   role_type: "MVCB" | "MMCB" | "MLCB";
   full_name: string | null;
   avatar_url: string | null;
+  compensation?: CompensationOffer | null;
 }
 
 interface TeamMemberSearchProps {
@@ -45,52 +56,76 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
   const [isAdding, setIsAdding] = useState(false);
   const [loadingTeam, setLoadingTeam] = useState(true);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Compensation dialog state
+  const [compensationDialogOpen, setCompensationDialogOpen] = useState(false);
+  const [selectedMemberForCompensation, setSelectedMemberForCompensation] = useState<TeamMember | null>(null);
 
-  // Fetch existing team members
-  useEffect(() => {
-    const fetchTeamMembers = async () => {
-      setLoadingTeam(true);
-      const { data: members, error } = await supabase
-        .from("startup_team_members")
-        .select("id, member_user_id, role_type")
-        .eq("startup_id", startupId);
+  // Fetch existing team members and their compensation offers
+  const fetchTeamMembers = useCallback(async () => {
+    setLoadingTeam(true);
+    const { data: members, error } = await supabase
+      .from("startup_team_members")
+      .select("id, member_user_id, role_type")
+      .eq("startup_id", startupId);
 
-      if (error) {
-        console.error("Error fetching team members:", error);
-        setLoadingTeam(false);
-        return;
-      }
+    if (error) {
+      console.error("Error fetching team members:", error);
+      setLoadingTeam(false);
+      return;
+    }
 
-      if (!members || members.length === 0) {
-        setTeamMembers([]);
-        setLoadingTeam(false);
-        return;
-      }
+    if (!members || members.length === 0) {
+      setTeamMembers([]);
+      setLoadingTeam(false);
+      return;
+    }
 
-      // Fetch profile info for each team member
-      const userIds = members.map((m) => m.member_user_id);
-      const { data: profiles } = await supabase
+    // Fetch profile info for each team member
+    const userIds = members.map((m) => m.member_user_id);
+    const memberIds = members.map((m) => m.id);
+    
+    const [profilesResult, compensationResult] = await Promise.all([
+      supabase
         .from("profiles")
         .select("user_id, full_name, avatar_url")
-        .in("user_id", userIds);
+        .in("user_id", userIds),
+      supabase
+        .from("team_compensation_offers")
+        .select("id, team_member_id, status, time_equity_percentage, performance_equity_percentage, monthly_salary, current_proposer_id")
+        .in("team_member_id", memberIds),
+    ]);
 
-      const enrichedMembers: TeamMember[] = members.map((m) => {
-        const profile = profiles?.find((p) => p.user_id === m.member_user_id);
-        return {
-          id: m.id,
-          member_user_id: m.member_user_id,
-          role_type: m.role_type as "MVCB" | "MMCB" | "MLCB",
-          full_name: profile?.full_name || null,
-          avatar_url: profile?.avatar_url || null,
-        };
-      });
+    const profiles = profilesResult.data;
+    const compensations = compensationResult.data;
 
-      setTeamMembers(enrichedMembers);
-      setLoadingTeam(false);
-    };
+    const enrichedMembers: TeamMember[] = members.map((m) => {
+      const profile = profiles?.find((p) => p.user_id === m.member_user_id);
+      const compensation = compensations?.find((c) => c.team_member_id === m.id);
+      return {
+        id: m.id,
+        member_user_id: m.member_user_id,
+        role_type: m.role_type as "MVCB" | "MMCB" | "MLCB",
+        full_name: profile?.full_name || null,
+        avatar_url: profile?.avatar_url || null,
+        compensation: compensation ? {
+          id: compensation.id,
+          status: compensation.status,
+          time_equity_percentage: compensation.time_equity_percentage,
+          performance_equity_percentage: compensation.performance_equity_percentage,
+          monthly_salary: compensation.monthly_salary,
+          current_proposer_id: compensation.current_proposer_id,
+        } : null,
+      };
+    });
 
-    fetchTeamMembers();
+    setTeamMembers(enrichedMembers);
+    setLoadingTeam(false);
   }, [startupId]);
+
+  useEffect(() => {
+    fetchTeamMembers();
+  }, [fetchTeamMembers]);
 
   // Search for co-builders
   const performSearch = useCallback(async (query: string) => {
@@ -262,40 +297,88 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
           <p className="text-sm text-muted-foreground py-2">No team members added yet. Search below to add co-builders.</p>
         ) : (
           <div className="space-y-2">
-            {teamMembers.map((member) => (
-              <div
-                key={member.id}
-                className="flex items-center justify-between p-3 rounded-lg border bg-card"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-b4-teal/10 flex items-center justify-center text-b4-teal text-sm font-medium">
-                    {member.avatar_url ? (
-                      <img
-                        src={member.avatar_url}
-                        alt={member.full_name || ""}
-                        className="w-full h-full rounded-full object-cover"
-                      />
-                    ) : (
-                      getInitials(member.full_name)
-                    )}
+            {teamMembers.map((member) => {
+              const hasOffer = !!member.compensation;
+              const isAgreed = member.compensation?.status === "accepted";
+              const totalEquity = (member.compensation?.time_equity_percentage || 0) + (member.compensation?.performance_equity_percentage || 0);
+              const isMyTurn = member.compensation && member.compensation.current_proposer_id !== currentUserId;
+              
+              return (
+                <div
+                  key={member.id}
+                  className="flex items-center justify-between p-3 rounded-lg border bg-card"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-b4-teal/10 flex items-center justify-center text-b4-teal text-sm font-medium">
+                      {member.avatar_url ? (
+                        <img
+                          src={member.avatar_url}
+                          alt={member.full_name || ""}
+                          className="w-full h-full rounded-full object-cover"
+                        />
+                      ) : (
+                        getInitials(member.full_name)
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-foreground">{member.full_name || "Unknown"}</p>
+                      <div className="flex items-center gap-1 flex-wrap">
+                        <Badge variant="outline" className="text-xs">
+                          {ROLE_LABELS[member.role_type]}
+                        </Badge>
+                        {isAgreed ? (
+                          <Badge className="text-xs bg-b4-teal">
+                            <Check className="w-3 h-3 mr-1" />
+                            {totalEquity}% Equity Agreed
+                          </Badge>
+                        ) : hasOffer ? (
+                          <Badge variant="secondary" className="text-xs">
+                            <Clock className="w-3 h-3 mr-1" />
+                            {isMyTurn ? "Your Turn" : "Pending"}
+                          </Badge>
+                        ) : null}
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{member.full_name || "Unknown"}</p>
-                    <Badge variant="outline" className="text-xs">
-                      {ROLE_LABELS[member.role_type]}
-                    </Badge>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant={hasOffer ? "outline" : "teal"}
+                      size="sm"
+                      onClick={() => {
+                        setSelectedMemberForCompensation(member);
+                        setCompensationDialogOpen(true);
+                      }}
+                      className="gap-1"
+                    >
+                      {isAgreed ? (
+                        <>
+                          <PieChart className="w-3 h-3" />
+                          <span className="hidden sm:inline">View</span>
+                        </>
+                      ) : hasOffer ? (
+                        <>
+                          <DollarSign className="w-3 h-3" />
+                          <span className="hidden sm:inline">Negotiate</span>
+                        </>
+                      ) : (
+                        <>
+                          <DollarSign className="w-3 h-3" />
+                          <span className="hidden sm:inline">Set Compensation</span>
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoveMember(member)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleRemoveMember(member)}
-                  className="text-destructive hover:text-destructive"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -380,6 +463,20 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
           </p>
         )}
       </div>
+
+      {/* Compensation Dialog */}
+      <CompensationDialog
+        open={compensationDialogOpen}
+        onOpenChange={setCompensationDialogOpen}
+        teamMember={selectedMemberForCompensation}
+        startupId={startupId}
+        currentUserId={currentUserId}
+        isInitiator={true}
+        onOfferSubmitted={() => {
+          fetchTeamMembers();
+          onTeamUpdated();
+        }}
+      />
     </div>
   );
 };

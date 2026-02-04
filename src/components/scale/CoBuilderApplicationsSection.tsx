@@ -14,9 +14,12 @@ import {
   Users,
   ExternalLink,
   Eye,
+  DollarSign,
+  PieChart,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { IdeaProgressViewDialog } from "@/components/idea/IdeaProgressViewDialog";
+import { CompensationDialog } from "@/components/idea/CompensationDialog";
 
 interface Application {
   id: string;
@@ -40,12 +43,21 @@ interface TeamMembership {
   startup_id: string;
   role_type: string;
   added_at: string;
+  member_user_id: string;
   startup?: {
     id: string;
     title: string;
     description: string;
     sector: string | null;
   };
+  compensation?: {
+    id: string;
+    status: string;
+    time_equity_percentage: number;
+    performance_equity_percentage: number;
+    monthly_salary: number | null;
+    current_proposer_id: string;
+  } | null;
 }
 
 interface CoBuilderApplicationsSectionProps {
@@ -58,6 +70,8 @@ export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSe
   const [loading, setLoading] = useState(true);
   const [progressDialogOpen, setProgressDialogOpen] = useState(false);
   const [selectedStartup, setSelectedStartup] = useState<{ id: string; title: string } | null>(null);
+  const [compensationDialogOpen, setCompensationDialogOpen] = useState(false);
+  const [selectedMembership, setSelectedMembership] = useState<TeamMembership | null>(null);
 
   const fetchApplications = useCallback(async () => {
     if (!userId) return;
@@ -119,6 +133,7 @@ export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSe
           startup_id,
           role_type,
           added_at,
+          member_user_id,
           startup:startup_ideas(id, title, description, sector)
         `)
         .eq("member_user_id", userId)
@@ -126,14 +141,39 @@ export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSe
 
       if (membershipError) throw membershipError;
 
+      // Get member IDs to fetch compensation offers
+      const memberIds = (memberships || []).map(m => m.id);
+      
+      // Fetch compensation offers for these memberships
+      let compensationOffers: any[] = [];
+      if (memberIds.length > 0) {
+        const { data: offers } = await supabase
+          .from("team_compensation_offers")
+          .select("id, team_member_id, status, time_equity_percentage, performance_equity_percentage, monthly_salary, current_proposer_id")
+          .in("team_member_id", memberIds);
+        compensationOffers = offers || [];
+      }
+
       // Filter out memberships for startups where user already has an application
       const applicationStartupIds = new Set(applicationsWithChat.map(a => a.startup_id));
-      const filteredMemberships = (memberships || [])
+      const filteredMemberships: TeamMembership[] = (memberships || [])
         .filter(m => !applicationStartupIds.has(m.startup_id))
-        .map(m => ({
-          ...m,
-          startup: m.startup as TeamMembership["startup"],
-        }));
+        .map(m => {
+          const compensation = compensationOffers.find(c => c.team_member_id === m.id);
+          return {
+            ...m,
+            member_user_id: m.member_user_id,
+            startup: m.startup as TeamMembership["startup"],
+            compensation: compensation ? {
+              id: compensation.id,
+              status: compensation.status,
+              time_equity_percentage: compensation.time_equity_percentage,
+              performance_equity_percentage: compensation.performance_equity_percentage,
+              monthly_salary: compensation.monthly_salary,
+              current_proposer_id: compensation.current_proposer_id,
+            } : null,
+          };
+        });
 
       setTeamMemberships(filteredMemberships);
     } catch (error) {
@@ -175,6 +215,19 @@ export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSe
         },
         () => {
           // Refresh to update unread counts
+          fetchApplications();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "team_compensation_offers",
+          filter: `cobuilder_user_id=eq.${userId}`,
+        },
+        () => {
+          // Refresh when compensation offers change
           fetchApplications();
         }
       )
@@ -280,71 +333,122 @@ export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSe
             Teams You're Part Of
           </h3>
           <div className="grid gap-4">
-            {teamMemberships.map((membership) => (
-              <Card
-                key={membership.id}
-                className="border-b4-teal/30 bg-b4-teal/5 transition-all hover:shadow-md"
-              >
-                <CardContent className="p-6">
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap mb-2">
-                        <h3 className="text-lg font-semibold text-foreground">
-                          {membership.startup?.title || "Unknown Startup"}
-                        </h3>
-                        <Badge className="bg-b4-teal text-white">
-                          <Users className="w-3 h-3 mr-1" />
-                          Team Member
-                        </Badge>
-                      </div>
-
-                      {membership.startup?.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                          {membership.startup.description}
-                        </p>
-                      )}
-
-                      <div className="flex flex-wrap items-center gap-4 text-sm">
-                        <div className="flex items-center gap-1.5 text-muted-foreground">
-                          <Briefcase className="w-4 h-4" />
-                          <span>Role: <span className="text-foreground font-medium">{membership.role_type}</span></span>
+            {teamMemberships.map((membership) => {
+              const hasOffer = !!membership.compensation;
+              const isAgreed = membership.compensation?.status === "accepted";
+              const totalEquity = (membership.compensation?.time_equity_percentage || 0) + (membership.compensation?.performance_equity_percentage || 0);
+              const isMyTurn = hasOffer && membership.compensation?.current_proposer_id !== userId;
+              
+              return (
+                <Card
+                  key={membership.id}
+                  className={`border-b4-teal/30 bg-b4-teal/5 transition-all hover:shadow-md ${isMyTurn && !isAgreed ? "ring-2 ring-b4-coral ring-offset-2" : ""}`}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-2">
+                          <h3 className="text-lg font-semibold text-foreground">
+                            {membership.startup?.title || "Unknown Startup"}
+                          </h3>
+                          <Badge className="bg-b4-teal text-white">
+                            <Users className="w-3 h-3 mr-1" />
+                            Team Member
+                          </Badge>
+                          {isAgreed ? (
+                            <Badge className="bg-b4-teal/80">
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              {totalEquity}% Equity Agreed
+                            </Badge>
+                          ) : hasOffer && isMyTurn ? (
+                            <Badge variant="destructive">
+                              <DollarSign className="w-3 h-3 mr-1" />
+                              Action Required
+                            </Badge>
+                          ) : hasOffer ? (
+                            <Badge variant="secondary">
+                              <Clock className="w-3 h-3 mr-1" />
+                              Awaiting Response
+                            </Badge>
+                          ) : null}
                         </div>
-                        {membership.startup?.sector && (
-                          <Badge variant="outline">{membership.startup.sector}</Badge>
+
+                        {membership.startup?.description && (
+                          <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                            {membership.startup.description}
+                          </p>
                         )}
-                        <div className="flex items-center gap-1.5 text-muted-foreground">
-                          <Clock className="w-4 h-4" />
-                          Added {formatDistanceToNow(new Date(membership.added_at), { addSuffix: true })}
+
+                        <div className="flex flex-wrap items-center gap-4 text-sm">
+                          <div className="flex items-center gap-1.5 text-muted-foreground">
+                            <Briefcase className="w-4 h-4" />
+                            <span>Role: <span className="text-foreground font-medium">{membership.role_type}</span></span>
+                          </div>
+                          {membership.startup?.sector && (
+                            <Badge variant="outline">{membership.startup.sector}</Badge>
+                          )}
+                          <div className="flex items-center gap-1.5 text-muted-foreground">
+                            <Clock className="w-4 h-4" />
+                            Added {formatDistanceToNow(new Date(membership.added_at), { addSuffix: true })}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="flex flex-col gap-2 shrink-0">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedStartup({
-                            id: membership.startup_id,
-                            title: membership.startup?.title || "Startup",
-                          });
-                          setProgressDialogOpen(true);
-                        }}
-                      >
-                        <Eye className="w-4 h-4 mr-1.5" />
-                        View Progress
-                      </Button>
-                      <Button variant="ghost" size="sm" asChild>
-                        <Link to={`/opportunities/${membership.startup_id}`}>
-                          <ExternalLink className="w-4 h-4 mr-1.5" />
-                          View Details
-                        </Link>
-                      </Button>
+                      <div className="flex flex-col gap-2 shrink-0">
+                        {/* Compensation Button */}
+                        {hasOffer && (
+                          <Button
+                            variant={isMyTurn && !isAgreed ? "destructive" : isAgreed ? "outline" : "secondary"}
+                            size="sm"
+                            onClick={() => {
+                              setSelectedMembership(membership);
+                              setCompensationDialogOpen(true);
+                            }}
+                          >
+                            {isAgreed ? (
+                              <>
+                                <PieChart className="w-4 h-4 mr-1.5" />
+                                View Offer
+                              </>
+                            ) : isMyTurn ? (
+                              <>
+                                <DollarSign className="w-4 h-4 mr-1.5" />
+                                Review Offer
+                              </>
+                            ) : (
+                              <>
+                                <Clock className="w-4 h-4 mr-1.5" />
+                                View Offer
+                              </>
+                            )}
+                          </Button>
+                        )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedStartup({
+                              id: membership.startup_id,
+                              title: membership.startup?.title || "Startup",
+                            });
+                            setProgressDialogOpen(true);
+                          }}
+                        >
+                          <Eye className="w-4 h-4 mr-1.5" />
+                          View Progress
+                        </Button>
+                        <Button variant="ghost" size="sm" asChild>
+                          <Link to={`/opportunities/${membership.startup_id}`}>
+                            <ExternalLink className="w-4 h-4 mr-1.5" />
+                            View Details
+                          </Link>
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       )}
@@ -455,6 +559,26 @@ export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSe
           onOpenChange={setProgressDialogOpen}
           startupId={selectedStartup.id}
           startupTitle={selectedStartup.title}
+        />
+      )}
+
+      {/* Compensation Dialog */}
+      {selectedMembership && (
+        <CompensationDialog
+          open={compensationDialogOpen}
+          onOpenChange={setCompensationDialogOpen}
+          teamMember={{
+            id: selectedMembership.id,
+            member_user_id: selectedMembership.member_user_id,
+            role_type: selectedMembership.role_type,
+            full_name: null, // Will be fetched in dialog
+          }}
+          startupId={selectedMembership.startup_id}
+          currentUserId={userId}
+          isInitiator={false}
+          onOfferSubmitted={() => {
+            fetchApplications();
+          }}
         />
       )}
     </div>
