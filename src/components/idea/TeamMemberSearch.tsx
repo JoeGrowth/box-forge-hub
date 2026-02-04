@@ -218,12 +218,16 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
   const handleAddMember = async (cobuilder: CoBuilder) => {
     setIsAdding(true);
     try {
-      const { error } = await supabase.from("startup_team_members").insert({
-        startup_id: startupId,
-        member_user_id: cobuilder.user_id,
-        role_type: "MLCB", // Default role, will be auto-updated based on equity after negotiation
-        added_by: currentUserId,
-      });
+      const { data: newMember, error } = await supabase
+        .from("startup_team_members")
+        .insert({
+          startup_id: startupId,
+          member_user_id: cobuilder.user_id,
+          role_type: "MLCB", // Default role, will be auto-updated based on equity after negotiation
+          added_by: currentUserId,
+        })
+        .select("id")
+        .single();
 
       if (error) {
         if (error.code === "23505") {
@@ -234,11 +238,11 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
         return;
       }
 
-      // Add to local state
+      // Add to local state with the actual database ID
       setTeamMembers((prev) => [
         ...prev,
         {
-          id: crypto.randomUUID(),
+          id: newMember.id,
           member_user_id: cobuilder.user_id,
           role_type: "MLCB", // Default role
           full_name: cobuilder.full_name,
