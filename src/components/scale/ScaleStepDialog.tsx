@@ -6,6 +6,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -27,7 +28,7 @@ import {
   Settings, 
   Target, 
   Crown,
-  Check
+  Save
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -527,20 +528,24 @@ export const ScaleStepDialog = ({
                     <Badge className="bg-b4-teal text-white ml-2">All Complete</Badge>
                   )}
                 </div>
-                {/* Auto-save indicator */}
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Button 
+                  variant="teal" 
+                  size="sm"
+                  onClick={() => autoSave(phaseData)}
+                  disabled={isSaving}
+                >
                   {isSaving ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Saving...</span>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
                     </>
                   ) : (
                     <>
-                      <Check className="w-4 h-4 text-b4-teal" />
-                      <span>Auto-saved</span>
+                      <Save className="w-4 h-4 mr-2" />
+                      Save
                     </>
                   )}
-                </div>
+                </Button>
               </div>
             </div>
           </>
