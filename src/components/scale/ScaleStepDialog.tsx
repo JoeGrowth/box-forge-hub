@@ -451,7 +451,7 @@ export const ScaleStepDialog = ({
           </div>
         ) : (
           <>
-            <ScrollArea className="flex-1 min-h-0">
+            <ScrollArea className="flex-1 overflow-auto" style={{ maxHeight: 'calc(85vh - 200px)' }}>
               <div className="p-6">
                 {phasesConfig.length === 1 ? (
                   // Single phase - no tabs needed
