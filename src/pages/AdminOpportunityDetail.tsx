@@ -65,6 +65,16 @@ interface NaturalRole {
   is_ready: boolean;
 }
 
+interface EntrepreneurJourneyResponses {
+  vision: string | null;
+  problem: string | null;
+  market: string | null;
+  business_model: string | null;
+  roles_needed: string | null;
+  cobuilder_plan: string | null;
+  execution_plan: string | null;
+}
+
 const AdminOpportunityDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -76,6 +86,7 @@ const AdminOpportunityDetail = () => {
   const [creatorProfile, setCreatorProfile] = useState<CreatorProfile | null>(null);
   const [creatorOnboarding, setCreatorOnboarding] = useState<CreatorOnboarding | null>(null);
   const [creatorNaturalRole, setCreatorNaturalRole] = useState<NaturalRole | null>(null);
+  const [journeyResponses, setJourneyResponses] = useState<EntrepreneurJourneyResponses | null>(null);
   const [creatorEmail, setCreatorEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [adminNotes, setAdminNotes] = useState("");
@@ -149,6 +160,17 @@ const AdminOpportunityDetail = () => {
 
       if (nrData) {
         setCreatorNaturalRole(nrData);
+      }
+
+      // Fetch entrepreneur journey responses for this idea
+      const { data: journeyData } = await supabase
+        .from("entrepreneur_journey_responses")
+        .select("vision, problem, market, business_model, roles_needed, cobuilder_plan, execution_plan")
+        .eq("idea_id", oppData.id)
+        .maybeSingle();
+
+      if (journeyData) {
+        setJourneyResponses(journeyData);
       }
 
       setLoading(false);
@@ -474,6 +496,81 @@ const AdminOpportunityDetail = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Entrepreneur Journey Responses */}
+                {journeyResponses && (
+                  <div className="bg-card rounded-2xl border border-border p-6">
+                    <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                      <Target className="w-5 h-5 text-b4-teal" />
+                      Initiator's Idea Development Answers
+                    </h3>
+                    <div className="space-y-5">
+                      {journeyResponses.vision && (
+                        <div>
+                          <h4 className="text-sm font-medium text-b4-teal mb-1">Vision</h4>
+                          <p className="text-foreground text-sm bg-muted/50 p-3 rounded-lg">
+                            {journeyResponses.vision}
+                          </p>
+                        </div>
+                      )}
+                      {journeyResponses.problem && (
+                        <div>
+                          <h4 className="text-sm font-medium text-b4-coral mb-1">Problem</h4>
+                          <p className="text-foreground text-sm bg-muted/50 p-3 rounded-lg">
+                            {journeyResponses.problem}
+                          </p>
+                        </div>
+                      )}
+                      {journeyResponses.market && (
+                        <div>
+                          <h4 className="text-sm font-medium text-amber-600 mb-1">Market</h4>
+                          <p className="text-foreground text-sm bg-muted/50 p-3 rounded-lg">
+                            {journeyResponses.market}
+                          </p>
+                        </div>
+                      )}
+                      {journeyResponses.business_model && (
+                        <div>
+                          <h4 className="text-sm font-medium text-purple-600 mb-1">Business Model</h4>
+                          <p className="text-foreground text-sm bg-muted/50 p-3 rounded-lg">
+                            {journeyResponses.business_model}
+                          </p>
+                        </div>
+                      )}
+                      {journeyResponses.roles_needed && (
+                        <div>
+                          <h4 className="text-sm font-medium text-blue-600 mb-1">Roles Needed</h4>
+                          <p className="text-foreground text-sm bg-muted/50 p-3 rounded-lg">
+                            {journeyResponses.roles_needed}
+                          </p>
+                        </div>
+                      )}
+                      {journeyResponses.cobuilder_plan && (
+                        <div>
+                          <h4 className="text-sm font-medium text-green-600 mb-1">Co-Builder Plan</h4>
+                          <p className="text-foreground text-sm bg-muted/50 p-3 rounded-lg">
+                            {journeyResponses.cobuilder_plan}
+                          </p>
+                        </div>
+                      )}
+                      {journeyResponses.execution_plan && (
+                        <div>
+                          <h4 className="text-sm font-medium text-indigo-600 mb-1">Execution Plan</h4>
+                          <p className="text-foreground text-sm bg-muted/50 p-3 rounded-lg">
+                            {journeyResponses.execution_plan}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    {!journeyResponses.vision && !journeyResponses.problem && !journeyResponses.market && 
+                     !journeyResponses.business_model && !journeyResponses.roles_needed && 
+                     !journeyResponses.cobuilder_plan && !journeyResponses.execution_plan && (
+                      <p className="text-muted-foreground text-sm italic">
+                        No journey responses submitted yet.
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 {/* Admin Notes */}
                 <div className="bg-card rounded-2xl border border-border p-6">
