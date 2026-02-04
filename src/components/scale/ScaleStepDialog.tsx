@@ -28,7 +28,8 @@ import {
   Settings, 
   Target, 
   Crown,
-  Save
+  Save,
+  ArrowRight
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -510,41 +511,31 @@ export const ScaleStepDialog = ({
             </ScrollArea>
 
             <div className="p-6 pt-4 border-t bg-muted/30">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-2">
-                  {relevantPhases.map(phaseId => {
-                    const isComplete = completedPhases.includes(phaseId) || isPhaseComplete(phaseId);
-                    return (
-                      <div
-                        key={phaseId}
-                        className={cn(
-                          "w-3 h-3 rounded-full transition-colors",
-                          isComplete ? "bg-b4-teal" : "bg-muted-foreground/30"
-                        )}
-                      />
-                    );
-                  })}
-                  {allPhasesComplete && (
-                    <Badge className="bg-b4-teal text-white ml-2">All Complete</Badge>
-                  )}
-                </div>
+              <div className="flex gap-4">
                 <Button 
-                  variant="teal" 
-                  size="sm"
+                  variant="outline" 
                   onClick={() => autoSave(phaseData)}
                   disabled={isSaving}
+                  className="flex-1"
                 >
                   {isSaving ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Saving...
-                    </>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   ) : (
-                    <>
-                      <Save className="w-4 h-4 mr-2" />
-                      Save
-                    </>
+                    <Save className="w-4 h-4 mr-2" />
                   )}
+                  Save Progress
+                </Button>
+                <Button 
+                  onClick={() => {
+                    autoSave(phaseData);
+                    onComplete();
+                    onOpenChange(false);
+                  }}
+                  disabled={!allPhasesComplete || isSaving}
+                  className="flex-1"
+                >
+                  Complete Phase
+                  <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
             </div>
