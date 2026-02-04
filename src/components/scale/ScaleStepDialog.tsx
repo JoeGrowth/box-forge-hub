@@ -435,8 +435,8 @@ export const ScaleStepDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[85vh] p-0 overflow-hidden">
-        <DialogHeader className="p-6 pb-4 border-b">
+      <DialogContent className="max-w-3xl max-h-[85vh] p-0 overflow-hidden flex flex-col">
+        <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
           <DialogTitle className="text-xl font-display">
             Step {stepNumber}: {stepInfo.title}
           </DialogTitle>
@@ -446,12 +446,12 @@ export const ScaleStepDialog = ({
         </DialogHeader>
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
+          <div className="flex items-center justify-center py-12 flex-1">
             <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
           </div>
         ) : (
           <>
-            <ScrollArea className="flex-1 max-h-[calc(85vh-180px)]">
+            <ScrollArea className="flex-1 min-h-0">
               <div className="p-6">
                 {phasesConfig.length === 1 ? (
                   // Single phase - no tabs needed
@@ -467,7 +467,7 @@ export const ScaleStepDialog = ({
                     completedMissions={completedMissions}
                   />
                 ) : (
-                  // Multiple phases - use tabs
+                  // Multiple phases - use tabs with CSS visibility to prevent reload
                   <Tabs value={activeTab} onValueChange={setActiveTab}>
                     <TabsList className="w-full justify-start mb-6 bg-muted/50">
                       {phasesConfig.map((phase) => {
@@ -490,27 +490,35 @@ export const ScaleStepDialog = ({
                       })}
                     </TabsList>
 
-                    {phasesConfig.map((phase) => (
-                      <TabsContent key={phase.id} value={`phase-${phase.id}`} className="mt-0">
-                        <PhaseContent
-                          phase={phase}
-                          data={phaseData[phase.id] || {}}
-                          isComplete={completedPhases.includes(phase.id)}
-                          progress={getPhaseProgress(phase.id)}
-                          onInputChange={(taskId, value) => 
-                            handleInputChange(phase.id, taskId, value)
-                          }
-                          userId={user?.id || ""}
-                          completedMissions={completedMissions}
-                        />
-                      </TabsContent>
-                    ))}
+                    {/* Use CSS visibility instead of conditional rendering to prevent data reload */}
+                    <div className="relative">
+                      {phasesConfig.map((phase) => (
+                        <div
+                          key={phase.id}
+                          className={cn(
+                            activeTab === `phase-${phase.id}` ? "block" : "hidden"
+                          )}
+                        >
+                          <PhaseContent
+                            phase={phase}
+                            data={phaseData[phase.id] || {}}
+                            isComplete={completedPhases.includes(phase.id)}
+                            progress={getPhaseProgress(phase.id)}
+                            onInputChange={(taskId, value) => 
+                              handleInputChange(phase.id, taskId, value)
+                            }
+                            userId={user?.id || ""}
+                            completedMissions={completedMissions}
+                          />
+                        </div>
+                      ))}
+                    </div>
                   </Tabs>
                 )}
               </div>
             </ScrollArea>
 
-            <div className="p-6 pt-4 border-t bg-muted/30">
+            <div className="p-6 pt-4 border-t bg-muted/30 flex-shrink-0">
               <div className="flex gap-4">
                 <Button 
                   variant="outline" 
