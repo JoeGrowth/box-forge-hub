@@ -28,6 +28,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { MaskLogoUpload } from "./MaskLogoUpload";
 
 interface PhaseData {
   [key: string]: string | boolean | number;
@@ -42,7 +43,9 @@ interface PhaseConfig {
   tasks: {
     id: string;
     label: string;
-    type: "text" | "url" | "textarea" | "checkbox";
+    type: "text" | "url" | "textarea" | "checkbox" | "logo_with_name";
+    logoField?: string;
+    nameField?: string;
   }[];
 }
 
@@ -54,7 +57,7 @@ const PHASES: PhaseConfig[] = [
     icon: Rocket,
     description: "100% earned by the person. Build your foundation with your personal brand.",
     tasks: [
-      { id: "logo_name", label: "Logo & Name for entity (based 100% on the person)", type: "text" },
+      { id: "entity_logo_and_name", label: "Logo & Name for entity (based 100% on the person)", type: "logo_with_name", logoField: "entity_logo_url", nameField: "entity_name" },
       { id: "service_1", label: "Service 1", type: "text" },
       { id: "service_2", label: "Service 2", type: "text" },
       { id: "service_3", label: "Service 3", type: "text" },
@@ -69,7 +72,7 @@ const PHASES: PhaseConfig[] = [
     icon: Building2,
     description: "70% earned by the person. Main activities: consulting and training.",
     tasks: [
-      { id: "company_logo_name_brand", label: "Logo + Name + Brand as company", type: "text" },
+      { id: "company_logo_and_name", label: "Logo + Name + Brand as company", type: "logo_with_name", logoField: "company_logo_url", nameField: "company_name" },
       { id: "company_services", label: "Services linked indirectly to natural role", type: "textarea" },
       { id: "company_website", label: "Company Website", type: "url" },
       { id: "proposal_template", label: "Technical & Financial Proposal template (adapted to services)", type: "textarea" },
@@ -260,8 +263,14 @@ export const ScaleStepDialog = ({
     
     const data = phaseData[phaseId] || {};
     return phase.tasks.every(task => {
+      if (task.type === "checkbox") return data[task.id] === true;
+      if (task.type === "logo_with_name" && task.logoField && task.nameField) {
+        // For logo_with_name, check that both logo URL and name are provided
+        const logoValue = data[task.logoField];
+        const nameValue = data[task.nameField];
+        return nameValue && String(nameValue).trim().length > 0; // Name is required, logo is optional
+      }
       const value = data[task.id];
-      if (task.type === "checkbox") return value === true;
       return value && String(value).trim().length > 0;
     });
   };
@@ -335,8 +344,12 @@ export const ScaleStepDialog = ({
 
     const data = phaseData[phaseId] || {};
     const completedTasks = phase.tasks.filter(task => {
+      if (task.type === "checkbox") return data[task.id] === true;
+      if (task.type === "logo_with_name" && task.logoField && task.nameField) {
+        const nameValue = data[task.nameField];
+        return nameValue && String(nameValue).trim().length > 0; // Name is required
+      }
       const value = data[task.id];
-      if (task.type === "checkbox") return value === true;
       return value && String(value).trim().length > 0;
     }).length;
 
@@ -377,6 +390,7 @@ export const ScaleStepDialog = ({
                     onInputChange={(taskId, value) => 
                       handleInputChange(phasesConfig[0].id, taskId, value)
                     }
+                    userId={user?.id || ""}
                   />
                 ) : (
                   // Multiple phases - use tabs
@@ -412,6 +426,7 @@ export const ScaleStepDialog = ({
                           onInputChange={(taskId, value) => 
                             handleInputChange(phase.id, taskId, value)
                           }
+                          userId={user?.id || ""}
                         />
                       </TabsContent>
                     ))}
@@ -472,9 +487,10 @@ interface PhaseContentProps {
   isComplete: boolean;
   progress: number;
   onInputChange: (taskId: string, value: string | boolean) => void;
+  userId: string;
 }
 
-const PhaseContent = ({ phase, data, isComplete, progress, onInputChange }: PhaseContentProps) => {
+const PhaseContent = ({ phase, data, isComplete, progress, onInputChange, userId }: PhaseContentProps) => {
   const Icon = phase.icon;
 
   return (
@@ -516,35 +532,49 @@ const PhaseContent = ({ phase, data, isComplete, progress, onInputChange }: Phas
       <div className="space-y-4 pt-2">
         {phase.tasks.map((task) => (
           <div key={task.id} className="space-y-2">
-            <Label className="text-sm font-medium">{task.label}</Label>
-            {task.type === "checkbox" ? (
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id={`${phase.id}-${task.id}`}
-                  checked={data[task.id] === true}
-                  onCheckedChange={(checked) => onInputChange(task.id, !!checked)}
-                />
-                <label 
-                  htmlFor={`${phase.id}-${task.id}`}
-                  className="text-sm text-muted-foreground cursor-pointer"
-                >
-                  Mark as completed
-                </label>
-              </div>
-            ) : task.type === "textarea" ? (
-              <Textarea
-                value={String(data[task.id] || "")}
-                onChange={(e) => onInputChange(task.id, e.target.value)}
-                placeholder={`Enter ${task.label.toLowerCase()}...`}
-                rows={3}
+            {task.type === "logo_with_name" && task.logoField && task.nameField ? (
+              <MaskLogoUpload
+                userId={userId}
+                phaseId={phase.id}
+                currentLogoUrl={String(data[task.logoField] || "")}
+                entityName={String(data[task.nameField] || "")}
+                onLogoChange={(url) => onInputChange(task.logoField!, url)}
+                onNameChange={(name) => onInputChange(task.nameField!, name)}
+                label={task.label}
               />
             ) : (
-              <Input
-                type={task.type === "url" ? "url" : "text"}
-                value={String(data[task.id] || "")}
-                onChange={(e) => onInputChange(task.id, e.target.value)}
-                placeholder={task.type === "url" ? "https://..." : `Enter ${task.label.toLowerCase()}...`}
-              />
+              <>
+                <Label className="text-sm font-medium">{task.label}</Label>
+                {task.type === "checkbox" ? (
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id={`${phase.id}-${task.id}`}
+                      checked={data[task.id] === true}
+                      onCheckedChange={(checked) => onInputChange(task.id, !!checked)}
+                    />
+                    <label 
+                      htmlFor={`${phase.id}-${task.id}`}
+                      className="text-sm text-muted-foreground cursor-pointer"
+                    >
+                      Mark as completed
+                    </label>
+                  </div>
+                ) : task.type === "textarea" ? (
+                  <Textarea
+                    value={String(data[task.id] || "")}
+                    onChange={(e) => onInputChange(task.id, e.target.value)}
+                    placeholder={`Enter ${task.label.toLowerCase()}...`}
+                    rows={3}
+                  />
+                ) : (
+                  <Input
+                    type={task.type === "url" ? "url" : "text"}
+                    value={String(data[task.id] || "")}
+                    onChange={(e) => onInputChange(task.id, e.target.value)}
+                    placeholder={task.type === "url" ? "https://..." : `Enter ${task.label.toLowerCase()}...`}
+                  />
+                )}
+              </>
             )}
           </div>
         ))}
