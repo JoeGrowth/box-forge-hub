@@ -149,9 +149,17 @@ export const CompensationDialog = ({
     // Validation
     const timeEq = parseFloat(timeEquity) || 0;
     const perfEq = parseFloat(performanceEquity) || 0;
+    const cliff = parseInt(cliffYears) || 0;
+    const vesting = parseInt(vestingYears) || 0;
 
     if (timeEq <= 0 && perfEq <= 0) {
       toast.error("Equity is required. Please add time-based or performance-based equity.");
+      return;
+    }
+
+    // Time-Based Equity must equal Cliff + Vesting years
+    if (timeEq > 0 && timeEq !== cliff + vesting) {
+      toast.error(`Time-Based Equity (${timeEq}%) must equal Cliff (${cliff}) + Vesting (${vesting}) = ${cliff + vesting}%`);
       return;
     }
 
