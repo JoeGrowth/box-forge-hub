@@ -1,11 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,24 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { 
-  Loader2, 
-  CheckCircle, 
-  Rocket, 
-  Building2, 
-  Settings, 
-  Target, 
-  Crown,
-  Save,
-  ArrowRight
-} from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, CheckCircle, Rocket, Building2, Settings, Target, Crown, Save, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -70,9 +48,15 @@ const PHASES: PhaseConfig[] = [
     title: "Personal Entity",
     subtitle: "Personal journey towards structure and growth",
     icon: Rocket,
-    description: "100% earned by the person. Build your foundation with your personal brand.",
+    description: " Build your foundation with your personal brand.100% earned by the person.",
     tasks: [
-      { id: "entity_logo_and_name", label: "Logo & Name for entity (based 100% on the person)", type: "logo_with_name", logoField: "entity_logo_url", nameField: "entity_name" },
+      {
+        id: "entity_logo_and_name",
+        label: "Logo & Name for entity (based 100% on the person)",
+        type: "logo_with_name",
+        logoField: "entity_logo_url",
+        nameField: "entity_name",
+      },
       { id: "service_1", label: "Service 1", type: "text" },
       { id: "service_2", label: "Service 2", type: "text" },
       { id: "service_3", label: "Service 3", type: "text" },
@@ -87,11 +71,25 @@ const PHASES: PhaseConfig[] = [
     icon: Building2,
     description: "70% earned by the person. Main activities: consulting and training.",
     tasks: [
-      { id: "company_logo_and_name", label: "Logo + Name + Brand as company", type: "logo_with_name", logoField: "company_logo_url", nameField: "company_name" },
+      {
+        id: "company_logo_and_name",
+        label: "Logo + Name + Brand as company",
+        type: "logo_with_name",
+        logoField: "company_logo_url",
+        nameField: "company_name",
+      },
       { id: "company_services", label: "Services linked indirectly to natural role", type: "textarea" },
       { id: "company_website", label: "Company Website", type: "url" },
-      { id: "proposal_template", label: "Technical & Financial Proposal template (adapted to services)", type: "textarea" },
-      { id: "first_invoice_external", label: "First invoice for a mission with paying external people (as independent)", type: "mission_select" },
+      {
+        id: "proposal_template",
+        label: "Technical & Financial Proposal template (adapted to services)",
+        type: "textarea",
+      },
+      {
+        id: "first_invoice_external",
+        label: "First invoice for a mission with paying external people (as independent)",
+        type: "mission_select",
+      },
     ],
   },
   {
@@ -104,7 +102,12 @@ const PHASES: PhaseConfig[] = [
       { id: "put_the_process", label: 'Put "the process"', type: "textarea" },
       { id: "implement_the_process", label: 'Implement "the process"', type: "checkbox" },
       { id: "review_the_process", label: 'Review "the process"', type: "textarea" },
-      { id: "first_mission_mixed", label: "1st Mission delivered successfully (invoice) with paying external people (independent) and internal people (fees or salary)", type: "mission_select" },
+      {
+        id: "first_mission_mixed",
+        label:
+          "1st Mission delivered successfully (invoice) with paying external people (independent) and internal people (fees or salary)",
+        type: "mission_select",
+      },
     ],
   },
   {
@@ -146,32 +149,27 @@ interface ScaleStepDialogProps {
 
 // Map step numbers to phases
 const STEP_TO_PHASES: Record<1 | 2 | 3, number[]> = {
-  1: [1],        // Step 1: Create the Mask → Phase 1
-  2: [2, 3, 4],  // Step 2: Code the Mask → Phases 2, 3, 4
-  3: [5],        // Step 3: Detach & Scale → Phase 5
+  1: [1], // Step 1: Create the Mask → Phase 1
+  2: [2, 3, 4], // Step 2: Code the Mask → Phases 2, 3, 4
+  3: [5], // Step 3: Detach & Scale → Phase 5
 };
 
 const STEP_TITLES: Record<1 | 2 | 3, { title: string; description: string }> = {
-  1: { 
-    title: "Create the Mask", 
-    description: "Build your personal entity foundation" 
+  1: {
+    title: "Create the Mask",
+    description: "Build your personal entity foundation",
   },
-  2: { 
-    title: "Code the Mask", 
-    description: "Structure your entity with processes and systems" 
+  2: {
+    title: "Code the Mask",
+    description: "Structure your entity with processes and systems",
   },
-  3: { 
-    title: "Detach & Scale", 
-    description: "Achieve decentralized scalability" 
+  3: {
+    title: "Detach & Scale",
+    description: "Achieve decentralized scalability",
   },
 };
 
-export const ScaleStepDialog = ({ 
-  open, 
-  onOpenChange, 
-  stepNumber, 
-  onComplete 
-}: ScaleStepDialogProps) => {
+export const ScaleStepDialog = ({ open, onOpenChange, stepNumber, onComplete }: ScaleStepDialogProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [journeyId, setJourneyId] = useState<string | null>(null);
@@ -185,7 +183,7 @@ export const ScaleStepDialog = ({
   const pendingDataRef = useRef<Record<number, PhaseData>>({});
 
   const relevantPhases = STEP_TO_PHASES[stepNumber];
-  const phasesConfig = PHASES.filter(p => relevantPhases.includes(p.id));
+  const phasesConfig = PHASES.filter((p) => relevantPhases.includes(p.id));
   const stepInfo = STEP_TITLES[stepNumber];
 
   useEffect(() => {
@@ -198,7 +196,7 @@ export const ScaleStepDialog = ({
 
   const fetchCompletedMissions = async () => {
     if (!user) return;
-    
+
     const { data, error } = await supabase
       .from("consultant_opportunities")
       .select("id, title, client_name, total_amount, currency")
@@ -256,10 +254,7 @@ export const ScaleStepDialog = ({
   };
 
   const fetchPhaseResponses = async (jId: string) => {
-    const { data: responses, error } = await supabase
-      .from("journey_phase_responses")
-      .select("*")
-      .eq("journey_id", jId);
+    const { data: responses, error } = await supabase.from("journey_phase_responses").select("*").eq("journey_id", jId);
 
     if (error) {
       console.error("Error fetching phase responses:", error);
@@ -270,7 +265,7 @@ export const ScaleStepDialog = ({
     const completed: number[] = [];
 
     responses?.forEach((response) => {
-      const phaseResponses = response.responses as PhaseData || {};
+      const phaseResponses = (response.responses as PhaseData) || {};
       dataMap[response.phase_number] = phaseResponses;
       if (response.is_completed) {
         completed.push(response.phase_number);
@@ -282,50 +277,49 @@ export const ScaleStepDialog = ({
   };
 
   // Auto-save function (debounced)
-  const autoSave = useCallback(async (dataToSave: Record<number, PhaseData>) => {
-    if (!user || !journeyId) return;
+  const autoSave = useCallback(
+    async (dataToSave: Record<number, PhaseData>) => {
+      if (!user || !journeyId) return;
 
-    setIsSaving(true);
-    try {
-      for (const phase of phasesConfig) {
-        const currentData = dataToSave[phase.id] || {};
-        const allTasksComplete = (() => {
-          return phase.tasks.every(task => {
-            if (task.type === "checkbox") return currentData[task.id] === true;
-            if (task.type === "mission_select") {
+      setIsSaving(true);
+      try {
+        for (const phase of phasesConfig) {
+          const currentData = dataToSave[phase.id] || {};
+          const allTasksComplete = (() => {
+            return phase.tasks.every((task) => {
+              if (task.type === "checkbox") return currentData[task.id] === true;
+              if (task.type === "mission_select") {
+                const value = currentData[task.id];
+                return value && String(value).trim().length > 0;
+              }
+              if (task.type === "logo_with_name" && task.logoField && task.nameField) {
+                const nameValue = currentData[task.nameField];
+                return nameValue && String(nameValue).trim().length > 0;
+              }
               const value = currentData[task.id];
               return value && String(value).trim().length > 0;
-            }
-            if (task.type === "logo_with_name" && task.logoField && task.nameField) {
-              const nameValue = currentData[task.nameField];
-              return nameValue && String(nameValue).trim().length > 0;
-            }
-            const value = currentData[task.id];
-            return value && String(value).trim().length > 0;
-          });
-        })();
+            });
+          })();
 
-        const { data: existingResponse } = await supabase
-          .from("journey_phase_responses")
-          .select("id")
-          .eq("journey_id", journeyId)
-          .eq("phase_number", phase.id)
-          .maybeSingle();
+          const { data: existingResponse } = await supabase
+            .from("journey_phase_responses")
+            .select("id")
+            .eq("journey_id", journeyId)
+            .eq("phase_number", phase.id)
+            .maybeSingle();
 
-        if (existingResponse) {
-          await supabase
-            .from("journey_phase_responses")
-            .update({
-              responses: currentData,
-              is_completed: allTasksComplete,
-              completed_at: allTasksComplete ? new Date().toISOString() : null,
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", existingResponse.id);
-        } else {
-          await supabase
-            .from("journey_phase_responses")
-            .insert({
+          if (existingResponse) {
+            await supabase
+              .from("journey_phase_responses")
+              .update({
+                responses: currentData,
+                is_completed: allTasksComplete,
+                completed_at: allTasksComplete ? new Date().toISOString() : null,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", existingResponse.id);
+          } else {
+            await supabase.from("journey_phase_responses").insert({
               user_id: user.id,
               journey_id: journeyId,
               phase_number: phase.id,
@@ -334,31 +328,36 @@ export const ScaleStepDialog = ({
               is_completed: allTasksComplete,
               completed_at: allTasksComplete ? new Date().toISOString() : null,
             });
-        }
+          }
 
-        if (allTasksComplete && !completedPhases.includes(phase.id)) {
-          setCompletedPhases(prev => [...prev, phase.id]);
+          if (allTasksComplete && !completedPhases.includes(phase.id)) {
+            setCompletedPhases((prev) => [...prev, phase.id]);
+          }
         }
+      } catch (error) {
+        console.error("Error auto-saving progress:", error);
+      } finally {
+        setIsSaving(false);
       }
-    } catch (error) {
-      console.error("Error auto-saving progress:", error);
-    } finally {
-      setIsSaving(false);
-    }
-  }, [user, journeyId, phasesConfig, completedPhases]);
+    },
+    [user, journeyId, phasesConfig, completedPhases],
+  );
 
   // Debounced save trigger
-  const triggerAutoSave = useCallback((newData: Record<number, PhaseData>) => {
-    pendingDataRef.current = newData;
-    
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
+  const triggerAutoSave = useCallback(
+    (newData: Record<number, PhaseData>) => {
+      pendingDataRef.current = newData;
 
-    saveTimeoutRef.current = setTimeout(() => {
-      autoSave(pendingDataRef.current);
-    }, 1000); // 1 second debounce
-  }, [autoSave]);
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+
+      saveTimeoutRef.current = setTimeout(() => {
+        autoSave(pendingDataRef.current);
+      }, 1000); // 1 second debounce
+    },
+    [autoSave],
+  );
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -374,7 +373,7 @@ export const ScaleStepDialog = ({
   }, [autoSave]);
 
   const handleInputChange = (phaseId: number, taskId: string, value: string | boolean) => {
-    setPhaseData(prev => {
+    setPhaseData((prev) => {
       const newData = {
         ...prev,
         [phaseId]: {
@@ -388,11 +387,11 @@ export const ScaleStepDialog = ({
   };
 
   const isPhaseComplete = (phaseId: number) => {
-    const phase = PHASES.find(p => p.id === phaseId);
+    const phase = PHASES.find((p) => p.id === phaseId);
     if (!phase) return false;
-    
+
     const data = phaseData[phaseId] || {};
-    return phase.tasks.every(task => {
+    return phase.tasks.every((task) => {
       if (task.type === "checkbox") return data[task.id] === true;
       if (task.type === "mission_select") {
         const value = data[task.id];
@@ -408,11 +407,11 @@ export const ScaleStepDialog = ({
   };
 
   const getPhaseProgress = (phaseId: number) => {
-    const phase = PHASES.find(p => p.id === phaseId);
+    const phase = PHASES.find((p) => p.id === phaseId);
     if (!phase) return 0;
 
     const data = phaseData[phaseId] || {};
-    const completedTasks = phase.tasks.filter(task => {
+    const completedTasks = phase.tasks.filter((task) => {
       if (task.type === "checkbox") return data[task.id] === true;
       if (task.type === "mission_select") {
         const value = data[task.id];
@@ -429,8 +428,8 @@ export const ScaleStepDialog = ({
     return Math.round((completedTasks / phase.tasks.length) * 100);
   };
 
-  const allPhasesComplete = relevantPhases.every(phaseId => 
-    completedPhases.includes(phaseId) || isPhaseComplete(phaseId)
+  const allPhasesComplete = relevantPhases.every(
+    (phaseId) => completedPhases.includes(phaseId) || isPhaseComplete(phaseId),
   );
 
   return (
@@ -440,9 +439,7 @@ export const ScaleStepDialog = ({
           <DialogTitle className="text-xl font-display">
             Step {stepNumber}: {stepInfo.title}
           </DialogTitle>
-          <DialogDescription>
-            {stepInfo.description}
-          </DialogDescription>
+          <DialogDescription>{stepInfo.description}</DialogDescription>
         </DialogHeader>
 
         {isLoading ? (
@@ -451,7 +448,7 @@ export const ScaleStepDialog = ({
           </div>
         ) : (
           <>
-            <ScrollArea className="flex-1 overflow-auto" style={{ maxHeight: 'calc(85vh - 200px)' }}>
+            <ScrollArea className="flex-1 overflow-auto" style={{ maxHeight: "calc(85vh - 200px)" }}>
               <div className="p-6">
                 {phasesConfig.length === 1 ? (
                   // Single phase - no tabs needed
@@ -460,9 +457,7 @@ export const ScaleStepDialog = ({
                     data={phaseData[phasesConfig[0].id] || {}}
                     isComplete={completedPhases.includes(phasesConfig[0].id)}
                     progress={getPhaseProgress(phasesConfig[0].id)}
-                    onInputChange={(taskId, value) => 
-                      handleInputChange(phasesConfig[0].id, taskId, value)
-                    }
+                    onInputChange={(taskId, value) => handleInputChange(phasesConfig[0].id, taskId, value)}
                     userId={user?.id || ""}
                     completedMissions={completedMissions}
                   />
@@ -474,11 +469,7 @@ export const ScaleStepDialog = ({
                         const Icon = phase.icon;
                         const isComplete = completedPhases.includes(phase.id) || isPhaseComplete(phase.id);
                         return (
-                          <TabsTrigger 
-                            key={phase.id} 
-                            value={`phase-${phase.id}`}
-                            className="flex items-center gap-2"
-                          >
+                          <TabsTrigger key={phase.id} value={`phase-${phase.id}`} className="flex items-center gap-2">
                             {isComplete ? (
                               <CheckCircle className="w-4 h-4 text-b4-teal" />
                             ) : (
@@ -493,20 +484,13 @@ export const ScaleStepDialog = ({
                     {/* Use CSS visibility instead of conditional rendering to prevent data reload */}
                     <div className="relative">
                       {phasesConfig.map((phase) => (
-                        <div
-                          key={phase.id}
-                          className={cn(
-                            activeTab === `phase-${phase.id}` ? "block" : "hidden"
-                          )}
-                        >
+                        <div key={phase.id} className={cn(activeTab === `phase-${phase.id}` ? "block" : "hidden")}>
                           <PhaseContent
                             phase={phase}
                             data={phaseData[phase.id] || {}}
                             isComplete={completedPhases.includes(phase.id)}
                             progress={getPhaseProgress(phase.id)}
-                            onInputChange={(taskId, value) => 
-                              handleInputChange(phase.id, taskId, value)
-                            }
+                            onInputChange={(taskId, value) => handleInputChange(phase.id, taskId, value)}
                             userId={user?.id || ""}
                             completedMissions={completedMissions}
                           />
@@ -520,20 +504,11 @@ export const ScaleStepDialog = ({
 
             <div className="p-6 pt-4 border-t bg-muted/30 flex-shrink-0">
               <div className="flex gap-4">
-                <Button 
-                  variant="outline" 
-                  onClick={() => autoSave(phaseData)}
-                  disabled={isSaving}
-                  className="flex-1"
-                >
-                  {isSaving ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <Save className="w-4 h-4 mr-2" />
-                  )}
+                <Button variant="outline" onClick={() => autoSave(phaseData)} disabled={isSaving} className="flex-1">
+                  {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
                   Save Progress
                 </Button>
-                <Button 
+                <Button
                   onClick={() => {
                     autoSave(phaseData);
                     onComplete();
@@ -565,39 +540,37 @@ interface PhaseContentProps {
   completedMissions: ConsultantOpportunity[];
 }
 
-const PhaseContent = ({ phase, data, isComplete, progress, onInputChange, userId, completedMissions }: PhaseContentProps) => {
+const PhaseContent = ({
+  phase,
+  data,
+  isComplete,
+  progress,
+  onInputChange,
+  userId,
+  completedMissions,
+}: PhaseContentProps) => {
   const Icon = phase.icon;
 
   return (
     <div className="space-y-6">
       <div className="flex items-start gap-4">
-        <div className={cn(
-          "p-3 rounded-xl shrink-0",
-          isComplete ? "bg-b4-teal/10" : "bg-muted"
-        )}>
-          {isComplete ? (
-            <CheckCircle className="w-6 h-6 text-b4-teal" />
-          ) : (
-            <Icon className="w-6 h-6 text-foreground" />
-          )}
+        <div className={cn("p-3 rounded-xl shrink-0", isComplete ? "bg-b4-teal/10" : "bg-muted")}>
+          {isComplete ? <CheckCircle className="w-6 h-6 text-b4-teal" /> : <Icon className="w-6 h-6 text-foreground" />}
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-lg font-semibold">Phase {phase.id}: {phase.title}</h3>
-            {isComplete && (
-              <Badge className="bg-b4-teal text-white">Complete</Badge>
-            )}
+            <h3 className="text-lg font-semibold">
+              Phase {phase.id}: {phase.title}
+            </h3>
+            {isComplete && <Badge className="bg-b4-teal text-white">Complete</Badge>}
           </div>
           <p className="text-sm text-muted-foreground mb-2">{phase.subtitle}</p>
           <p className="text-sm text-muted-foreground italic">{phase.description}</p>
-          
+
           {/* Progress bar */}
           <div className="flex items-center gap-2 mt-3">
             <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-b4-teal transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              />
+              <div className="h-full bg-b4-teal transition-all duration-300" style={{ width: `${progress}%` }} />
             </div>
             <span className="text-xs text-muted-foreground">{progress}%</span>
           </div>
@@ -620,10 +593,7 @@ const PhaseContent = ({ phase, data, isComplete, progress, onInputChange, userId
             ) : task.type === "mission_select" ? (
               <>
                 <Label className="text-sm font-medium">{task.label}</Label>
-                <Select
-                  value={String(data[task.id] || "")}
-                  onValueChange={(value) => onInputChange(task.id, value)}
-                >
+                <Select value={String(data[task.id] || "")} onValueChange={(value) => onInputChange(task.id, value)}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a completed mission from 'Work as Consultant'" />
                   </SelectTrigger>
@@ -640,9 +610,7 @@ const PhaseContent = ({ phase, data, isComplete, progress, onInputChange, userId
                           <div className="flex items-center gap-2">
                             <CheckCircle className="w-4 h-4 text-b4-teal shrink-0" />
                             <span className="truncate">{mission.title}</span>
-                            <span className="text-muted-foreground text-xs">
-                              ({mission.client_name})
-                            </span>
+                            <span className="text-muted-foreground text-xs">({mission.client_name})</span>
                           </div>
                         </SelectItem>
                       ))
@@ -668,10 +636,7 @@ const PhaseContent = ({ phase, data, isComplete, progress, onInputChange, userId
                       onChange={(e) => onInputChange(task.id, e.target.checked)}
                       className="h-4 w-4 rounded border-muted-foreground/30 text-b4-teal focus:ring-b4-teal"
                     />
-                    <label 
-                      htmlFor={`${phase.id}-${task.id}`}
-                      className="text-sm text-muted-foreground cursor-pointer"
-                    >
+                    <label htmlFor={`${phase.id}-${task.id}`} className="text-sm text-muted-foreground cursor-pointer">
                       Mark as completed
                     </label>
                   </div>
