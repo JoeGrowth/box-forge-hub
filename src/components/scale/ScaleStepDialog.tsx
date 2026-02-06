@@ -104,7 +104,7 @@ const PHASES: PhaseConfig[] = [
       { id: "put_the_process", label: 'Put "the process"', type: "textarea" },
       { id: "implement_the_process", label: 'Implement "the process"', type: "checkbox" },
       { id: "review_the_process", label: 'Review "the process"', type: "textarea" },
-      { id: "first_mission_mixed", label: "1st Mission delivered successfully (invoice) with paying external people (independent) and internal people (fees or salary)", type: "checkbox" },
+      { id: "first_mission_mixed", label: "1st Mission delivered successfully (invoice) with paying external people (independent) and internal people (fees or salary)", type: "mission_select" },
     ],
   },
   {
