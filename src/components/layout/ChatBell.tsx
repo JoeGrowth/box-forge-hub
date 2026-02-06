@@ -209,8 +209,13 @@ export function ChatBell() {
   const markAllMessagesAsRead = async () => {
     if (!user) return;
     
-    // Mark all chat messages as read
+    // Optimistic update: hide badge immediately
+    setTotalUnread(0);
+    setConversations(prev => prev.map(c => ({ ...c, unreadCount: 0 })));
+    
+    // Persist to DB in background
     for (const conv of conversations) {
+      if (conv.unreadCount === 0) continue;
       if (conv.type === "application") {
         await supabase
           .from("chat_messages")
@@ -225,10 +230,6 @@ export function ChatBell() {
           .neq("sender_id", user.id);
       }
     }
-    
-    // Update local state
-    setConversations(prev => prev.map(c => ({ ...c, unreadCount: 0 })));
-    setTotalUnread(0);
   };
 
   const handleOpenChange = (open: boolean) => {
