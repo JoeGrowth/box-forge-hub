@@ -14,7 +14,7 @@ const QUESTIONS = [
   {
     id: 1,
     question: "When people come to you for help, what is the type of help they expect?",
-    hint: "e.g., clarity, ideas, structure, solutions, emotional support, growth, design, decision-making...",
+    hint: "e.g. ideas, structure, clarity, solutions, emotional support, growth, design, decision-making...",
   },
   {
     id: 2,
@@ -23,7 +23,7 @@ const QUESTIONS = [
   },
   {
     id: 3,
-    question: "What are you doing when you feel \"in flow\"?",
+    question: 'What are you doing when you feel "in flow"?',
     hint: "You lose track of time.",
   },
   {
@@ -33,7 +33,7 @@ const QUESTIONS = [
   },
   {
     id: 5,
-    question: "Finish the sentence: \"What I naturally do is: to __\"",
+    question: 'Finish the sentence: "What I naturally do is: to __"',
     hint: "",
   },
   {
@@ -59,7 +59,7 @@ const NRDecoder = () => {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userInput, setUserInput] = useState("");
@@ -84,22 +84,18 @@ const NRDecoder = () => {
   useEffect(() => {
     // Skip if already checked or still loading auth
     if (hasCheckedSubmission.current || authLoading) return;
-    
+
     const checkExistingSubmission = async () => {
       if (!user) {
         setCheckingSubmission(false);
         return;
       }
-      
+
       hasCheckedSubmission.current = true;
-      
+
       try {
-        const { data } = await supabase
-          .from("nr_decoder_submissions")
-          .select("*")
-          .eq("user_id", user.id)
-          .single();
-        
+        const { data } = await supabase.from("nr_decoder_submissions").select("*").eq("user_id", user.id).single();
+
         if (data) {
           setHasExistingSubmission(true);
           if (data.status === "completed") {
@@ -112,7 +108,7 @@ const NRDecoder = () => {
         setCheckingSubmission(false);
       }
     };
-    
+
     checkExistingSubmission();
   }, [user?.id, authLoading]);
 
@@ -120,19 +116,20 @@ const NRDecoder = () => {
   useEffect(() => {
     if (authLoading || checkingSubmission || hasInitialized.current) return;
     if (!user || hasExistingSubmission) return;
-    
+
     hasInitialized.current = true;
-    
+
     const welcomeMessage: Message = {
       id: "welcome",
       type: "bot",
-      content: "Welcome to the Natural Role Decoder! 🧠\n\nI'll ask you 7 questions to help discover your natural role. Take your time - there are no right or wrong answers.",
+      content:
+        "Welcome to the Natural Role Decoder! 🧠\n\nI'll ask you 7 questions to help discover your natural role. Take your time - there are no right or wrong answers.",
       timestamp: new Date(),
     };
-    
+
     const timeoutId1 = setTimeout(() => {
       setMessages([welcomeMessage]);
-      
+
       // Add first question after a delay
       setTimeout(() => {
         const question = QUESTIONS[0];
@@ -142,10 +139,10 @@ const NRDecoder = () => {
           content: `**Question ${question.id}/7**\n\n${question.question}${question.hint ? `\n\n_${question.hint}_` : ""}`,
           timestamp: new Date(),
         };
-        setMessages(prev => [...prev, questionMessage]);
+        setMessages((prev) => [...prev, questionMessage]);
       }, 1000);
     }, 500);
-    
+
     return () => clearTimeout(timeoutId1);
   }, [authLoading, checkingSubmission, user, hasExistingSubmission]);
 
@@ -157,14 +154,14 @@ const NRDecoder = () => {
       content: `**Question ${question.id}/7**\n\n${question.question}${question.hint ? `\n\n_${question.hint}_` : ""}`,
       timestamp: new Date(),
     };
-    setMessages(prev => [...prev, questionMessage]);
+    setMessages((prev) => [...prev, questionMessage]);
   };
 
   const handleSendAnswer = async () => {
     if (!userInput.trim() || isSubmitting) return;
 
     const currentQuestion = QUESTIONS[currentQuestionIndex];
-    
+
     // Add user message
     const userMessage: Message = {
       id: `a-${currentQuestion.id}`,
@@ -172,8 +169,8 @@ const NRDecoder = () => {
       content: userInput.trim(),
       timestamp: new Date(),
     };
-    setMessages(prev => [...prev, userMessage]);
-    
+    setMessages((prev) => [...prev, userMessage]);
+
     // Save answer
     const newAnswers = { ...answers, [currentQuestion.id]: userInput.trim() };
     setAnswers(newAnswers);
@@ -182,27 +179,26 @@ const NRDecoder = () => {
     // Check if this was the last question
     if (currentQuestionIndex === QUESTIONS.length - 1) {
       setIsSubmitting(true);
-      
+
       // Add completion message
       setTimeout(() => {
         const completionMessage: Message = {
           id: "completion",
           type: "bot",
-          content: "Thank you for completing the Natural Role Decoder! ✨\n\nYour answers have been submitted. An admin will review them and send you a personalized PDF with your Natural Role blueprint.",
+          content:
+            "Thank you for completing the Natural Role Decoder! ✨\n\nYour answers have been submitted. An admin will review them and send you a personalized PDF with your Natural Role blueprint.",
           timestamp: new Date(),
         };
-        setMessages(prev => [...prev, completionMessage]);
+        setMessages((prev) => [...prev, completionMessage]);
       }, 500);
 
       // Submit to database
       try {
-        const { error } = await supabase
-          .from("nr_decoder_submissions")
-          .insert({
-            user_id: user!.id,
-            answers: newAnswers,
-            status: "pending",
-          });
+        const { error } = await supabase.from("nr_decoder_submissions").insert({
+          user_id: user!.id,
+          answers: newAnswers,
+          status: "pending",
+        });
 
         if (error) throw error;
 
@@ -225,7 +221,7 @@ const NRDecoder = () => {
       // Move to next question
       const nextIndex = currentQuestionIndex + 1;
       setCurrentQuestionIndex(nextIndex);
-      
+
       setTimeout(() => {
         addBotQuestion(nextIndex);
       }, 800);
@@ -254,12 +250,8 @@ const NRDecoder = () => {
         <main className="pt-20 pb-16">
           <div className="container mx-auto px-4 py-16 text-center">
             <Brain className="w-16 h-16 text-b4-teal mx-auto mb-6" />
-            <h1 className="font-display text-3xl font-bold text-foreground mb-4">
-              Natural Role Decoder
-            </h1>
-            <p className="text-muted-foreground mb-8">
-              Please sign in to take the Natural Role Decoder test.
-            </p>
+            <h1 className="font-display text-3xl font-bold text-foreground mb-4">Natural Role Decoder</h1>
+            <p className="text-muted-foreground mb-8">Please sign in to take the Natural Role Decoder test.</p>
             <Button variant="teal" onClick={() => navigate("/auth")}>
               Sign In
             </Button>
@@ -277,11 +269,10 @@ const NRDecoder = () => {
         <main className="pt-20 pb-16">
           <div className="container mx-auto px-4 py-16 text-center">
             <CheckCircle2 className="w-16 h-16 text-b4-teal mx-auto mb-6" />
-            <h1 className="font-display text-3xl font-bold text-foreground mb-4">
-              Already Submitted!
-            </h1>
+            <h1 className="font-display text-3xl font-bold text-foreground mb-4">Already Submitted!</h1>
             <p className="text-muted-foreground mb-8">
-              You've already completed the Natural Role Decoder. An admin will review your submission and send you your personalized blueprint.
+              You've already completed the Natural Role Decoder. An admin will review your submission and send you your
+              personalized blueprint.
             </p>
             <Button variant="outline" onClick={() => navigate("/")}>
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -297,7 +288,7 @@ const NRDecoder = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
-      
+
       <main className="flex-1 pt-20 pb-4 flex flex-col">
         {/* Header */}
         <div className="bg-gradient-to-r from-b4-teal to-emerald-500 text-primary-foreground py-4 px-4">
@@ -319,10 +310,7 @@ const NRDecoder = () => {
           <div className="container mx-auto px-4 py-6 max-w-2xl">
             <div className="space-y-4">
               {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
-                >
+                <div key={message.id} className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}>
                   <div className={`flex gap-2 max-w-[85%] ${message.type === "user" ? "flex-row-reverse" : ""}`}>
                     {message.type === "bot" && (
                       <Avatar className="w-8 h-8 flex-shrink-0">
@@ -341,15 +329,25 @@ const NRDecoder = () => {
                       <div className="text-sm whitespace-pre-wrap">
                         {message.content.split("\n").map((line, i) => {
                           if (line.startsWith("**") && line.endsWith("**")) {
-                            return <p key={i} className="font-semibold">{line.slice(2, -2)}</p>;
+                            return (
+                              <p key={i} className="font-semibold">
+                                {line.slice(2, -2)}
+                              </p>
+                            );
                           }
                           if (line.startsWith("_") && line.endsWith("_")) {
-                            return <p key={i} className="text-muted-foreground italic text-xs mt-1">{line.slice(1, -1)}</p>;
+                            return (
+                              <p key={i} className="text-muted-foreground italic text-xs mt-1">
+                                {line.slice(1, -1)}
+                              </p>
+                            );
                           }
                           return <p key={i}>{line}</p>;
                         })}
                       </div>
-                      <p className={`text-xs mt-1 ${message.type === "user" ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                      <p
+                        className={`text-xs mt-1 ${message.type === "user" ? "text-primary-foreground/70" : "text-muted-foreground"}`}
+                      >
                         {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                       </p>
                     </div>
