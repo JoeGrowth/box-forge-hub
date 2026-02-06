@@ -353,9 +353,24 @@ const Journey = () => {
     return phaseResponse?.responses || null;
   };
 
+  // Check if a step is accessible (all prior steps must be completed)
+  const isStepAccessible = (section: ActiveSection, stepNumber: number): boolean => {
+    if (stepNumber === 1) return true; // First step is always accessible
+    // All prior steps must be completed
+    for (let i = 1; i < stepNumber; i++) {
+      if (!isStepCompleted(section, i)) return false;
+    }
+    return true;
+  };
+
   const handleOpenStep = (section: string, stepNum: number) => {
     // Don't open dialog if certified - show read-only
     if (isSectionCertified(section as ActiveSection)) {
+      return;
+    }
+
+    // Don't allow opening if prior steps aren't completed
+    if (!isStepAccessible(section as ActiveSection, stepNum)) {
       return;
     }
     
@@ -665,12 +680,17 @@ const Journey = () => {
                                       size="sm"
                                       onClick={() => handleOpenStep(activeSection, step.step)}
                                       className="shrink-0"
-                                      disabled={isStepCompleted(activeSection, step.step)}
+                                      disabled={isStepCompleted(activeSection, step.step) || !isStepAccessible(activeSection, step.step)}
                                     >
                                       {isStepCompleted(activeSection, step.step) ? (
                                         <>
                                           <CheckCircle className="w-4 h-4 mr-1" />
                                           Done
+                                        </>
+                                      ) : !isStepAccessible(activeSection, step.step) ? (
+                                        <>
+                                          <Clock className="w-4 h-4 mr-1" />
+                                          Locked
                                         </>
                                       ) : (
                                         <>

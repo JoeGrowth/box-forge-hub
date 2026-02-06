@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle, XCircle, Clock, User, Eye, Award, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { CheckCircle, XCircle, Clock, User, Eye, Award, Loader2, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface LearningJourney {
@@ -387,6 +387,42 @@ export const AdminLearningJourneysTab = () => {
                       </Button>
                     </CollapsibleTrigger>
                     <CollapsibleContent className="mt-4 space-y-4">
+                      {/* Missing phases warning */}
+                      {(() => {
+                        const expectedPhases = journey.journey_type === "skill_ptc" ? 3
+                          : journey.journey_type === "idea_ptc" ? 4
+                          : journey.journey_type === "scaling_path" ? 5 : 0;
+                        const existingPhases = (phaseResponses[journey.id] || []).length;
+                        const missingCount = expectedPhases - existingPhases;
+                        
+                        if (missingCount > 0) {
+                          const completedPhaseNumbers = new Set(
+                            (phaseResponses[journey.id] || []).map(r => r.phase_number)
+                          );
+                          const missingPhaseNames: string[] = [];
+                          for (let i = 0; i < expectedPhases; i++) {
+                            if (!completedPhaseNumbers.has(i)) {
+                              missingPhaseNames.push(`Phase ${i + 1}`);
+                            }
+                          }
+                          
+                          return (
+                            <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 flex items-start gap-2">
+                              <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                              <div>
+                                <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                                  Incomplete Journey — {missingCount} phase(s) missing
+                                </p>
+                                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                                  Missing: {missingPhaseNames.join(", ")}. User may have skipped steps. Consider rejecting and asking them to complete all phases.
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+                      
                       {(phaseResponses[journey.id] || [])
                         .sort((a, b) => a.phase_number - b.phase_number)
                         .map((response) => (
