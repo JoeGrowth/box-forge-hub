@@ -45,6 +45,20 @@ export function NotificationBell() {
     }
   };
 
+  // Mark all as read in DB and optimistically clear badge
+  const clearAllUnread = async () => {
+    // Optimistic update first
+    setUnreadCount(0);
+    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+
+    // Then persist to DB
+    await supabase
+      .from("user_notifications")
+      .update({ is_read: true })
+      .eq("user_id", user?.id)
+      .eq("is_read", false);
+  };
+
   useEffect(() => {
     fetchNotifications();
 
@@ -83,16 +97,8 @@ export function NotificationBell() {
     setUnreadCount((prev) => Math.max(0, prev - 1));
   };
 
-  const markAllAsRead = async () => {
-    await supabase
-      .from("user_notifications")
-      .update({ is_read: true })
-      .eq("user_id", user?.id)
-      .eq("is_read", false);
-
-    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
-    setUnreadCount(0);
-  };
+  // Keep markAllAsRead for the button inside the popover
+  const markAllAsRead = clearAllUnread;
 
   const handleNotificationClick = (notification: Notification) => {
     if (!notification.is_read) {
@@ -143,7 +149,7 @@ export function NotificationBell() {
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     if (open && unreadCount > 0) {
-      markAllAsRead();
+      clearAllUnread();
     }
   };
 
