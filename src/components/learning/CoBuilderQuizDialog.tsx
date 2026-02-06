@@ -381,21 +381,39 @@ export function CoBuilderQuizDialog({
           ignoreDuplicates: false,
         });
       
-      // Update journey current phase
+      // Update journey current phase - only mark as pending_approval if ALL phases are completed
       const isLastStep = stepNumber === 3;
+      let canSubmitForApproval = false;
+      
+      if (isLastStep) {
+        // Verify all prior phases exist
+        const { data: allPhases } = await supabase
+          .from("journey_phase_responses")
+          .select("phase_number, is_completed")
+          .eq("journey_id", journeyId);
+        
+        const completedPhases = new Set((allPhases || []).filter(p => p.is_completed).map(p => p.phase_number));
+        // Current step (phase_number 2) was just saved above, so add it
+        completedPhases.add(stepNumber - 1);
+        // Check all 3 phases (0, 1, 2) are completed
+        canSubmitForApproval = completedPhases.has(0) && completedPhases.has(1) && completedPhases.has(2);
+      }
+      
       await supabase
         .from("learning_journeys")
         .update({
           current_phase: stepNumber,
-          status: isLastStep ? "pending_approval" : "in_progress",
-          completed_at: isLastStep ? new Date().toISOString() : null,
+          status: canSubmitForApproval ? "pending_approval" : "in_progress",
+          completed_at: canSubmitForApproval ? new Date().toISOString() : null,
         })
         .eq("id", journeyId);
       
       onComplete(stepNumber);
       toast.success(`Step ${stepNumber} completed!`, {
-        description: isLastStep 
+        description: canSubmitForApproval 
           ? "Your Co-Builder journey has been submitted for approval! 🎓" 
+          : isLastStep && !canSubmitForApproval
+          ? "Please complete all prior steps before your journey can be submitted for approval."
           : "Moving to the next step.",
       });
       onOpenChange(false);

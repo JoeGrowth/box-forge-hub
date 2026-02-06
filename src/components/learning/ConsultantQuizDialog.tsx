@@ -403,14 +403,28 @@ export function ConsultantQuizDialog({
           ignoreDuplicates: false,
         });
       
-      // Update journey current phase
+      // Update journey current phase - only mark as pending_approval if ALL phases are completed
       const isLastStep = stepNumber === 5;
+      let canSubmitForApproval = false;
+      
+      if (isLastStep) {
+        const { data: allPhases } = await supabase
+          .from("journey_phase_responses")
+          .select("phase_number, is_completed")
+          .eq("journey_id", journeyId);
+        
+        const completedPhases = new Set((allPhases || []).filter(p => p.is_completed).map(p => p.phase_number));
+        completedPhases.add(stepNumber - 1);
+        // Check all 5 phases (0, 1, 2, 3, 4) are completed
+        canSubmitForApproval = [0, 1, 2, 3, 4].every(p => completedPhases.has(p));
+      }
+      
       const { error: updateError } = await supabase
         .from("learning_journeys")
         .update({
-          current_phase: stepNumber - 1, // 0-indexed to match phase_number
-          status: isLastStep ? "pending_approval" : "in_progress",
-          completed_at: isLastStep ? new Date().toISOString() : null,
+          current_phase: stepNumber - 1,
+          status: canSubmitForApproval ? "pending_approval" : "in_progress",
+          completed_at: canSubmitForApproval ? new Date().toISOString() : null,
         })
         .eq("id", journeyId);
       
@@ -420,8 +434,10 @@ export function ConsultantQuizDialog({
       
       onComplete(stepNumber);
       toast.success(`Step ${stepNumber} completed!`, {
-        description: isLastStep 
+        description: canSubmitForApproval 
           ? "Your Consultant journey has been submitted for approval! 🎓" 
+          : isLastStep && !canSubmitForApproval
+          ? "Please complete all prior steps before your journey can be submitted for approval."
           : "Moving to the next step.",
       });
       onOpenChange(false);
