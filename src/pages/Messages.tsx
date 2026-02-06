@@ -36,6 +36,7 @@ interface ConversationWithDetails {
   unreadCount: number;
   applicationId?: string;
   startupTitle?: string;
+  coverMessage?: string | null;
 }
 
 const Messages = () => {
@@ -105,26 +106,31 @@ const Messages = () => {
         for (const conv of appConvs) {
           const otherUserId = conv.initiator_id === user.id ? conv.applicant_id : conv.initiator_id;
           
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("full_name, avatar_url")
-            .eq("user_id", otherUserId)
-            .single();
-
-          const { data: lastMsg } = await supabase
-            .from("chat_messages")
-            .select("content, created_at")
-            .eq("conversation_id", conv.id)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .single();
-
-          const { count } = await supabase
-            .from("chat_messages")
-            .select("*", { count: "exact", head: true })
-            .eq("conversation_id", conv.id)
-            .eq("is_read", false)
-            .neq("sender_id", user.id);
+          const [{ data: profile }, { data: lastMsg }, { count }, { data: appData }] = await Promise.all([
+            supabase
+              .from("profiles")
+              .select("full_name, avatar_url")
+              .eq("user_id", otherUserId)
+              .single(),
+            supabase
+              .from("chat_messages")
+              .select("content, created_at")
+              .eq("conversation_id", conv.id)
+              .order("created_at", { ascending: false })
+              .limit(1)
+              .single(),
+            supabase
+              .from("chat_messages")
+              .select("*", { count: "exact", head: true })
+              .eq("conversation_id", conv.id)
+              .eq("is_read", false)
+              .neq("sender_id", user.id),
+            supabase
+              .from("startup_applications")
+              .select("cover_message")
+              .eq("id", conv.application_id)
+              .single(),
+          ]);
 
           const startupIdea = conv.startup_ideas as unknown as { title: string } | null;
 
@@ -139,6 +145,7 @@ const Messages = () => {
             unreadCount: count || 0,
             applicationId: conv.application_id,
             startupTitle: startupIdea?.title,
+            coverMessage: appData?.cover_message || null,
           });
         }
       }
@@ -523,11 +530,20 @@ const Messages = () => {
 
               {/* Messages */}
               <ScrollArea className="flex-1 p-6">
+                {/* Application cover message - always visible */}
+                {selectedConversation.type === "application" && selectedConversation.coverMessage && (
+                  <div className="bg-muted/50 rounded-xl p-4 text-center mb-4 sticky top-0 z-10 border border-border/50 shadow-sm">
+                    <MessageSquare className="w-6 h-6 text-muted-foreground mx-auto mb-1" />
+                    <p className="text-xs text-muted-foreground mb-1">Application Message:</p>
+                    <p className="text-sm text-foreground italic">"{selectedConversation.coverMessage}"</p>
+                  </div>
+                )}
+
                 {loadingMessages ? (
                   <div className="flex items-center justify-center h-full">
                     <Loader2 className="w-6 h-6 animate-spin text-primary" />
                   </div>
-                ) : messages.length === 0 ? (
+                ) : messages.length === 0 && !selectedConversation.coverMessage ? (
                   <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                     <MessageSquare className="w-16 h-16 mb-4 opacity-50" />
                     <p className="font-medium">No messages yet</p>

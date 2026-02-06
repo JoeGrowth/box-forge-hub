@@ -339,17 +339,12 @@ const Chat = () => {
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {/* Application context message */}
-          {application?.cover_message && messages.length === 0 && (
-            <div className="bg-muted/50 rounded-xl p-4 text-center">
-              <MessageSquare className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground mb-2">Application Message:</p>
+          {/* Application context message - always visible */}
+          {application?.cover_message && (
+            <div className="bg-muted/50 rounded-xl p-4 text-center sticky top-0 z-10 border border-border/50 shadow-sm">
+              <MessageSquare className="w-6 h-6 text-muted-foreground mx-auto mb-1" />
+              <p className="text-xs text-muted-foreground mb-1">Application Message:</p>
               <p className="text-sm text-foreground italic">"{application.cover_message}"</p>
-              {isInitiator && (
-                <p className="text-xs text-muted-foreground mt-3">
-                  Send a message to start the conversation
-                </p>
-              )}
             </div>
           )}
 
