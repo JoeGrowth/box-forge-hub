@@ -6,10 +6,11 @@ import { PageTransition } from "@/components/layout/PageTransition";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, User, Briefcase, Loader2, Pencil, Check, X, ShieldCheck, Award, MessageCircle } from "lucide-react";
+import { Search, User, Briefcase, Loader2, Pencil, Check, X, ShieldCheck, Award, MessageCircle, Rocket } from "lucide-react";
 import { toast } from "sonner";
 import { DirectorySkeletonGrid } from "@/components/ui/skeleton-card";
 
@@ -29,6 +30,9 @@ interface CoBuilder {
   primary_skills: string | null;
   natural_role_description: string | null;
   certifications: Certification[];
+  has_opportunity: boolean;
+  opportunity_id: string | null;
+  opportunity_title: string | null;
 }
 
 const CoBuilders = () => {
@@ -97,14 +101,28 @@ const CoBuilders = () => {
 
         if (certsError) throw certsError;
 
+        // Get active startup ideas (opportunities) for these users
+        const { data: startupIdeas, error: ideasError } = await supabase
+          .from("startup_ideas")
+          .select("id, creator_id, title")
+          .eq("status", "active")
+          .eq("is_looking_for_cobuilders", true)
+          .in("creator_id", approvedUserIds);
+
+        if (ideasError) throw ideasError;
+
         // Combine data
         const combinedData: CoBuilder[] = (profiles || []).map((profile) => {
           const naturalRole = naturalRoles?.find((nr) => nr.user_id === profile.user_id);
           const userCerts = certifications?.filter((c) => c.user_id === profile.user_id) || [];
+          const userIdea = startupIdeas?.find((idea) => idea.creator_id === profile.user_id);
           return {
             ...profile,
             natural_role_description: naturalRole?.description || null,
             certifications: userCerts,
+            has_opportunity: !!userIdea,
+            opportunity_id: userIdea?.id || null,
+            opportunity_title: userIdea?.title || null,
           };
         });
 
@@ -330,15 +348,33 @@ const CoBuilders = () => {
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredCobuilders.map((cobuilder) => {
                     const isCurrentUser = cobuilder.user_id === user?.id;
+                    const certCount = cobuilder.certifications.length;
+
+                    // Visual differentiation based on certification count
+                    const getCardStyle = () => {
+                      if (isCurrentUser) return "bg-b4-teal/5 border-b4-teal ring-2 ring-b4-teal/20";
+                      if (certCount >= 2) return "bg-card border-b4-purple/40 ring-1 ring-b4-purple/20 hover:border-b4-purple/60";
+                      if (certCount === 1) return "bg-card border-b4-teal/40 ring-1 ring-b4-teal/20 hover:border-b4-teal/60";
+                      return "bg-card border-border hover:border-muted-foreground/30";
+                    };
+
+                    const getAvatarStyle = () => {
+                      if (isCurrentUser) return "bg-b4-teal text-white";
+                      if (certCount >= 2) return "bg-gradient-to-br from-b4-teal to-b4-purple text-white";
+                      if (certCount === 1) return "bg-b4-teal/15 text-b4-teal";
+                      return "bg-muted text-muted-foreground";
+                    };
+
+                    const getStatusLabel = () => {
+                      if (certCount >= 2) return "Fully Certified";
+                      if (certCount === 1) return "Certified";
+                      return "Approved - Ready to boost";
+                    };
 
                     return (
                       <div
                         key={cobuilder.id}
-                        className={`rounded-2xl border p-6 transition-colors ${
-                          isCurrentUser
-                            ? "bg-b4-teal/5 border-b4-teal ring-2 ring-b4-teal/20"
-                            : "bg-card border-border hover:border-b4-teal/50"
-                        }`}
+                        className={`rounded-2xl border p-6 transition-all ${getCardStyle()}`}
                       >
                         {/* Current User Badge */}
                         {isCurrentUser && (
@@ -350,9 +386,7 @@ const CoBuilders = () => {
                         {/* Avatar and Name */}
                         <div className="flex items-center gap-4 mb-4">
                           <div
-                            className={`w-14 h-14 rounded-full flex items-center justify-center font-semibold text-lg ${
-                              isCurrentUser ? "bg-b4-teal text-white" : "bg-b4-teal/10 text-b4-teal"
-                            }`}
+                            className={`w-14 h-14 rounded-full flex items-center justify-center font-semibold text-lg ${getAvatarStyle()}`}
                           >
                             {cobuilder.avatar_url ? (
                               <img
@@ -369,14 +403,43 @@ const CoBuilders = () => {
                               <h3 className="font-display font-semibold text-foreground">
                                 {cobuilder.full_name || "Anonymous Co-Builder"}
                               </h3>
-                              {cobuilder.certifications.some((c) => c.verified) && (
-                                <span title="Verified Co-Builder">
+                              {certCount >= 2 && (
+                                <span title="Fully Certified">
+                                  <ShieldCheck className="w-4 h-4 text-b4-purple" />
+                                </span>
+                              )}
+                              {certCount === 1 && (
+                                <span title="Certified">
                                   <ShieldCheck className="w-4 h-4 text-b4-teal" />
                                 </span>
                               )}
+                              {/* Opportunity Icon */}
+                              {cobuilder.has_opportunity && (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          navigate(`/opportunities/${cobuilder.opportunity_id}`);
+                                        }}
+                                        className="text-amber-500 hover:text-amber-600 transition-colors"
+                                        title={cobuilder.opportunity_title || "View Opportunity"}
+                                      >
+                                        <Rocket className="w-4 h-4" />
+                                      </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="text-xs">Has an idea: {cobuilder.opportunity_title}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              )}
                             </div>
                             <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                              <span className="text-sm text-muted-foreground">Approved - Ready to boost</span>
+                              <span className={`text-sm ${certCount >= 2 ? "text-b4-purple font-medium" : certCount === 1 ? "text-b4-teal font-medium" : "text-muted-foreground"}`}>
+                                {getStatusLabel()}
+                              </span>
                               {cobuilder.certifications.map((cert) => (
                                 <Badge
                                   key={cert.id}
