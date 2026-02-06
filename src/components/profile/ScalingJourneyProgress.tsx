@@ -7,6 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { 
   ChevronDown, 
   Rocket, 
@@ -72,7 +79,7 @@ const PHASES = [
       { id: "put_the_process", label: 'Put "the process"', type: "textarea" },
       { id: "implement_the_process", label: 'Implement "the process"', type: "checkbox" },
       { id: "review_the_process", label: 'Review "the process"', type: "textarea" },
-      { id: "first_mission_mixed", label: "1st Mission delivered successfully (invoice) with paying external people (independent) and internal people (fees or salary)", type: "checkbox" },
+      { id: "first_mission_mixed", label: "1st Mission delivered successfully (invoice) with paying external people (independent) and internal people (fees or salary)", type: "mission_select" },
     ],
   },
   {
@@ -114,12 +121,27 @@ export const ScalingJourneyProgress = ({ onUpdate }: ScalingJourneyProgressProps
   const [openPhase, setOpenPhase] = useState<number | null>(1);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [completedMissions, setCompletedMissions] = useState<{ id: string; title: string; client_name: string; total_amount: number | null; currency: string }[]>([]);
 
   useEffect(() => {
     if (user) {
       fetchOrCreateJourney();
+      fetchCompletedMissions();
     }
   }, [user]);
+
+  const fetchCompletedMissions = async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from("consultant_opportunities")
+      .select("id, title, client_name, total_amount, currency")
+      .eq("user_id", user.id)
+      .eq("is_completed", true)
+      .order("completed_at", { ascending: false });
+    if (!error && data) {
+      setCompletedMissions(data);
+    }
+  };
 
   const fetchOrCreateJourney = async () => {
     if (!user) return;
@@ -412,7 +434,45 @@ export const ScalingJourneyProgress = ({ onUpdate }: ScalingJourneyProgressProps
                   {phase.tasks.map((task) => (
                     <div key={task.id} className="space-y-2">
                       <Label className="text-sm font-medium">{task.label}</Label>
-                      {task.type === "checkbox" ? (
+                      {task.type === "mission_select" ? (
+                        <>
+                          <Select
+                            value={String(data[task.id] || "")}
+                            onValueChange={(value) => handleInputChange(phase.id, task.id, value)}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select a completed mission from 'Work as Consultant'" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {completedMissions.length === 0 ? (
+                                <div className="px-3 py-4 text-sm text-muted-foreground text-center">
+                                  No completed missions yet.
+                                  <br />
+                                  <span className="text-xs">Mark a mission as "Done" in Work as Consultant first.</span>
+                                </div>
+                              ) : (
+                                completedMissions.map((mission) => (
+                                  <SelectItem key={mission.id} value={mission.id}>
+                                    <div className="flex items-center gap-2">
+                                      <CheckCircle className="w-4 h-4 text-b4-teal shrink-0" />
+                                      <span className="truncate">{mission.title}</span>
+                                      <span className="text-muted-foreground text-xs">
+                                        ({mission.client_name})
+                                      </span>
+                                    </div>
+                                  </SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                          {data[task.id] && (
+                            <p className="text-xs text-b4-teal flex items-center gap-1">
+                              <CheckCircle className="w-3 h-3" />
+                              Mission linked successfully
+                            </p>
+                          )}
+                        </>
+                      ) : task.type === "checkbox" ? (
                         <div className="flex items-center gap-2">
                           <Checkbox
                             id={`${phase.id}-${task.id}`}
