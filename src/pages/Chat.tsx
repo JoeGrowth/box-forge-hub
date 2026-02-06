@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Send, Loader2, MessageSquare, Briefcase } from "lucide-react";
 import { format } from "date-fns";
+import { ChatFileUpload } from "@/components/chat/ChatFileUpload";
+import { ChatMessageBubble } from "@/components/chat/ChatMessageBubble";
 
 interface Message {
   id: string;
@@ -17,6 +19,9 @@ interface Message {
   content: string;
   created_at: string;
   is_read: boolean;
+  file_url?: string | null;
+  file_name?: string | null;
+  file_type?: string | null;
 }
 
 interface Conversation {
@@ -53,6 +58,7 @@ const Chat = () => {
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [pendingFile, setPendingFile] = useState<{ url: string; name: string; type: string } | null>(null);
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [otherUser, setOtherUser] = useState<Profile | null>(null);
@@ -243,8 +249,16 @@ const Chat = () => {
     };
   }, [conversation, user]);
 
+  const handleFileUploaded = (fileUrl: string, fileName: string, fileType: string) => {
+    if (fileUrl) {
+      setPendingFile({ url: fileUrl, name: fileName, type: fileType });
+    } else {
+      setPendingFile(null);
+    }
+  };
+
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !conversation || !user) return;
+    if ((!newMessage.trim() && !pendingFile) || !conversation || !user) return;
 
     setSending(true);
     try {
@@ -252,6 +266,9 @@ const Chat = () => {
         conversation_id: conversation.id,
         sender_id: user.id,
         content: newMessage.trim(),
+        file_url: pendingFile?.url || null,
+        file_name: pendingFile?.name || null,
+        file_type: pendingFile?.type || null,
       });
 
       if (error) throw error;
@@ -265,11 +282,12 @@ const Chat = () => {
         user_id: recipientId,
         notification_type: "chat_message",
         title: "New Message 💬",
-        message: `${user.user_metadata?.full_name || "Someone"} sent you a message`,
+        message: `${user.user_metadata?.full_name || "Someone"} sent you ${pendingFile ? "a file" : "a message"}`,
         link: `/chat/${applicationId}`,
       });
 
       setNewMessage("");
+      setPendingFile(null);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -356,39 +374,29 @@ const Chat = () => {
             </div>
           )}
 
-          {messages.map((message) => {
-            const isOwnMessage = message.sender_id === user?.id;
-            return (
-              <div
-                key={message.id}
-                className={`flex ${isOwnMessage ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-[75%] rounded-2xl px-4 py-2 ${
-                    isOwnMessage
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-foreground"
-                  }`}
-                >
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                  <p
-                    className={`text-xs mt-1 ${
-                      isOwnMessage ? "text-primary-foreground/70" : "text-muted-foreground"
-                    }`}
-                  >
-                    {format(new Date(message.created_at), "HH:mm")}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
+          {messages.map((message) => (
+            <ChatMessageBubble
+              key={message.id}
+              content={message.content}
+              isOwnMessage={message.sender_id === user?.id}
+              createdAt={message.created_at}
+              fileUrl={message.file_url}
+              fileName={message.file_name}
+              fileType={message.file_type}
+            />
+          ))}
           <div ref={messagesEndRef} />
         </div>
 
         {/* Input */}
         {conversation ? (
           <div className="border-t border-border bg-card p-4">
-            <div className="flex gap-3">
+            <div className="flex items-end gap-2">
+              <ChatFileUpload
+                userId={user?.id || ""}
+                onFileUploaded={handleFileUploaded}
+                disabled={sending}
+              />
               <Input
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
@@ -399,7 +407,7 @@ const Chat = () => {
               />
               <Button
                 onClick={handleSendMessage}
-                disabled={!newMessage.trim() || sending}
+                disabled={(!newMessage.trim() && !pendingFile) || sending}
                 className="px-6"
               >
                 {sending ? (
