@@ -8,8 +8,11 @@ import {
 } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import jsPDF from "jspdf";
 import {
   CheckCircle,
   Loader2,
@@ -26,9 +29,16 @@ import {
   DollarSign,
   UsersRound,
   Play,
+  Download,
 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface IdeaEpisodesDialogProps {
   open: boolean;
@@ -167,6 +177,105 @@ export const IdeaEpisodesDialog = ({
     );
   };
 
+  const handleDownloadEpisode = (episodeId: string) => {
+    const episode = EPISODES.find((e) => e.id === episodeId);
+    if (!episode) return;
+
+    const progress = episodeProgress[episodeId] || [];
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 20;
+    const contentWidth = pageWidth - margin * 2;
+    let yPosition = 20;
+
+    // Title
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${episode.name}`, pageWidth / 2, yPosition, { align: "center" });
+    yPosition += 10;
+
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Startup: ${startupTitle}`, pageWidth / 2, yPosition, { align: "center" });
+    yPosition += 8;
+
+    doc.setFontSize(10);
+    doc.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth / 2, yPosition, { align: "center" });
+    yPosition += 15;
+
+    doc.setDrawColor(200);
+    doc.line(margin, yPosition, pageWidth - margin, yPosition);
+    yPosition += 15;
+
+    // Phases
+    episode.phases.forEach((phase) => {
+      const phaseProgress = progress.find((p) => p.phase_number === phase.number);
+
+      if (yPosition > 250) {
+        doc.addPage();
+        yPosition = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(0, 128, 128);
+      doc.text(phase.name, margin, yPosition);
+      yPosition += 8;
+
+      if (phaseProgress && Object.keys(phaseProgress.responses).length > 0) {
+        Object.entries(phaseProgress.responses).forEach(([key, value]) => {
+          if (!value) return;
+
+          if (yPosition > 270) {
+            doc.addPage();
+            yPosition = 20;
+          }
+
+          doc.setFontSize(10);
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(80);
+          const label = key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+          doc.text(label, margin, yPosition);
+          yPosition += 6;
+
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(60);
+          const lines = doc.splitTextToSize(String(value), contentWidth);
+          lines.forEach((line: string) => {
+            if (yPosition > 280) {
+              doc.addPage();
+              yPosition = 20;
+            }
+            doc.text(line, margin, yPosition);
+            yPosition += 5;
+          });
+          yPosition += 5;
+        });
+      } else {
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "italic");
+        doc.setTextColor(150);
+        doc.text("No responses recorded", margin, yPosition);
+        yPosition += 8;
+      }
+
+      yPosition += 5;
+    });
+
+    // Footer
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(9);
+      doc.setTextColor(150);
+      doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, 290, { align: "center" });
+    }
+
+    const fileName = `${startupTitle.toLowerCase().replace(/\s+/g, "-")}-${episodeId}.pdf`;
+    doc.save(fileName);
+    toast.success(`${episode.name} downloaded as PDF`);
+  };
+
   const getEpisodeStatusBadge = (episodeId: string) => {
     if (isEpisodeCompleted(episodeId)) {
       return (
@@ -222,7 +331,7 @@ export const IdeaEpisodesDialog = ({
                     open={isExpanded}
                     onOpenChange={() => toggleEpisode(episode.id)}
                   >
-                    <Card className={`border-border/50 ${isCompleted ? "border-b4-teal/30" : ""}`}>
+                     <Card className={`border-border/50 ${isCompleted ? "border-b4-teal/30" : ""}`}>
                       <CollapsibleTrigger asChild>
                         <CardHeader className="cursor-pointer hover:bg-muted/30 transition-colors">
                           <div className="flex items-center gap-3">
@@ -242,11 +351,33 @@ export const IdeaEpisodesDialog = ({
                                 {episode.description}
                               </p>
                             </div>
-                            <ChevronDown
-                              className={`w-5 h-5 text-muted-foreground transition-transform ${
-                                isExpanded ? "rotate-180" : ""
-                              }`}
-                            />
+                            <div className="flex items-center gap-1">
+                              {isCompleted && (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-b4-teal hover:text-b4-teal hover:bg-b4-teal/10"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDownloadEpisode(episode.id);
+                                        }}
+                                      >
+                                        <Download className="w-4 h-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Download as PDF</TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              )}
+                              <ChevronDown
+                                className={`w-5 h-5 text-muted-foreground transition-transform ${
+                                  isExpanded ? "rotate-180" : ""
+                                }`}
+                              />
+                            </div>
                           </div>
                         </CardHeader>
                       </CollapsibleTrigger>

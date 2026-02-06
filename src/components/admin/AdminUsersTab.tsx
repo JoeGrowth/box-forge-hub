@@ -35,8 +35,16 @@ import {
   Mail,
   Loader2,
   X,
+  Eye,
 } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { AdminUserPreviewDialog } from "./AdminUserPreviewDialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface AdminUsersTabProps {
   users: UserWithDetails[];
@@ -55,6 +63,10 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
   
   // Bulk selection state
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  
+  // Preview dialog state
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+  const [previewUser, setPreviewUser] = useState<UserWithDetails | null>(null);
   
   // Delete dialog state (works for both single and bulk)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -564,14 +576,34 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
                       </TableCell>
 
                       <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={() => openDeleteDialog(user)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
+                                  onClick={() => {
+                                    setPreviewUser(user);
+                                    setPreviewDialogOpen(true);
+                                  }}
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Preview user</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => openDeleteDialog(user)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
@@ -779,6 +811,13 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* User Preview Dialog */}
+      <AdminUserPreviewDialog
+        open={previewDialogOpen}
+        onOpenChange={setPreviewDialogOpen}
+        user={previewUser}
+      />
     </div>
   );
 }
