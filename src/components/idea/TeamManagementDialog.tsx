@@ -53,6 +53,7 @@ interface TeamMemberData {
     performance_milestone: string | null;
     current_proposer_id: string;
     version: number;
+    cancellation_reason: string | null;
   } | null;
 }
 
@@ -70,7 +71,61 @@ const ROLE_LABELS: Record<string, string> = {
   MLCB: "Most Loyal Co-Builder",
 };
 
-const getStatusBadge = (status: string) => {
+const getCompensationStatusBadge = (member: TeamMemberData, currentUserId: string) => {
+  if (!member.compensation) {
+    return (
+      <Badge variant="secondary" className="text-xs">
+        <Clock className="w-3 h-3 mr-1" />
+        No Offer Yet
+      </Badge>
+    );
+  }
+
+  const { status, current_proposer_id, cancellation_reason } = member.compensation;
+
+  switch (status) {
+    case "accepted":
+      return (
+        <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
+          <CheckCircle className="w-3 h-3 mr-1" />
+          Agreed
+        </Badge>
+      );
+    case "canceled":
+      return (
+        <div className="flex flex-col items-end gap-1">
+          <Badge variant="destructive" className="bg-destructive/10 text-destructive border-destructive/20">
+            <XCircle className="w-3 h-3 mr-1" />
+            Canceled
+          </Badge>
+          {cancellation_reason && (
+            <span className="text-[10px] text-destructive/70 max-w-[180px] text-right line-clamp-2">
+              {cancellation_reason}
+            </span>
+          )}
+        </div>
+      );
+    case "pending":
+    default: {
+      const isMyTurn = current_proposer_id !== currentUserId;
+      return (
+        <Badge
+          variant="secondary"
+          className={
+            isMyTurn
+              ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
+              : "bg-blue-500/10 text-blue-600 border-blue-500/20"
+          }
+        >
+          <MessageCircle className="w-3 h-3 mr-1" />
+          {isMyTurn ? "Negotiation — Your Turn" : "Negotiation — Waiting"}
+        </Badge>
+      );
+    }
+  }
+};
+
+const getApplicantStatusBadge = (status: string) => {
   switch (status) {
     case "accepted":
       return (
@@ -160,7 +215,7 @@ export const TeamManagementDialog = ({
           ? supabase
               .from("team_compensation_offers")
               .select(
-                "team_member_id, status, time_equity_percentage, performance_equity_percentage, monthly_salary, salary_currency, cliff_years, vesting_years, performance_milestone, current_proposer_id, version"
+                "team_member_id, status, time_equity_percentage, performance_equity_percentage, monthly_salary, salary_currency, cliff_years, vesting_years, performance_milestone, current_proposer_id, version, cancellation_reason"
               )
               .in("team_member_id", memberIds)
           : { data: [] },
@@ -202,6 +257,7 @@ export const TeamManagementDialog = ({
                 performance_milestone: comp.performance_milestone,
                 current_proposer_id: comp.current_proposer_id,
                 version: comp.version,
+                cancellation_reason: comp.cancellation_reason,
               }
             : null,
         };
@@ -320,7 +376,7 @@ export const TeamManagementDialog = ({
                                 )}
                               </div>
                             </div>
-                            {getStatusBadge(applicant.status)}
+                            {getApplicantStatusBadge(applicant.status)}
                           </div>
 
                           <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
@@ -364,12 +420,9 @@ export const TeamManagementDialog = ({
                   ) : (
                     teamMembers.map((member) => {
                       const hasComp = !!member.compensation;
-                      const isAgreed = member.compensation?.status === "accepted";
                       const totalEquity =
                         (member.compensation?.time_equity_percentage || 0) +
                         (member.compensation?.performance_equity_percentage || 0);
-                      const isMyTurn =
-                        hasComp && member.compensation!.current_proposer_id !== currentUserId;
 
                       return (
                         <div
@@ -399,28 +452,7 @@ export const TeamManagementDialog = ({
                               </div>
                             </div>
                             <div className="flex flex-col items-end gap-1">
-                              {isAgreed ? (
-                                <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
-                                  <CheckCircle className="w-3 h-3 mr-1" />
-                                  Agreed
-                                </Badge>
-                              ) : hasComp ? (
-                                <Badge
-                                  variant="secondary"
-                                  className={
-                                    isMyTurn
-                                      ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
-                                      : "bg-blue-500/10 text-blue-600 border-blue-500/20"
-                                  }
-                                >
-                                  <Clock className="w-3 h-3 mr-1" />
-                                  {isMyTurn ? "Your Turn" : "Waiting on Co-builder"}
-                                </Badge>
-                              ) : (
-                                <Badge variant="secondary" className="text-xs">
-                                  No Offer Yet
-                                </Badge>
-                              )}
+                              {getCompensationStatusBadge(member, currentUserId)}
                               <span className="text-xs text-muted-foreground">
                                 Added {format(new Date(member.added_at), "MMM d, yyyy")}
                               </span>

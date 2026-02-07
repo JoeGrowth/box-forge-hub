@@ -983,6 +983,7 @@ export type Database = {
       }
       team_compensation_offers: {
         Row: {
+          cancellation_reason: string | null
           cliff_years: number | null
           cobuilder_user_id: string
           created_at: string
@@ -1002,6 +1003,7 @@ export type Database = {
           vesting_years: number | null
         }
         Insert: {
+          cancellation_reason?: string | null
           cliff_years?: number | null
           cobuilder_user_id: string
           created_at?: string
@@ -1021,6 +1023,7 @@ export type Database = {
           vesting_years?: number | null
         }
         Update: {
+          cancellation_reason?: string | null
           cliff_years?: number | null
           cobuilder_user_id?: string
           created_at?: string
