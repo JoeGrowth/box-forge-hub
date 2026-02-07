@@ -35,7 +35,10 @@ import {
   Briefcase,
   Send,
   CheckCircle,
-  Clock
+  Clock,
+  BookOpen,
+  ArrowRight,
+  Lock
 } from "lucide-react";
 
 interface StartupIdea {
@@ -78,6 +81,7 @@ const OpportunityDetail = () => {
   const [applying, setApplying] = useState(false);
   const [existingApplication, setExistingApplication] = useState<Application | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [hasCoBuilderCert, setHasCoBuilderCert] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -133,6 +137,16 @@ const OpportunityDetail = () => {
       if (applicationData) {
         setExistingApplication(applicationData);
       }
+
+      // Check co-builder certification
+      const { data: certData } = await supabase
+        .from("user_certifications")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("certification_type", "cobuilder_b4")
+        .maybeSingle();
+
+      setHasCoBuilderCert(!!certData);
 
       setLoading(false);
     };
@@ -415,6 +429,25 @@ const OpportunityDetail = () => {
                     </p>
                   ) : existingApplication ? (
                     getApplicationStatusUI()
+                  ) : !hasCoBuilderCert ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Lock className="w-5 h-5" />
+                        <span className="font-medium text-foreground">Certification Required</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Complete the Co-Builder learning journey to unlock applications.
+                      </p>
+                      <Button 
+                        variant="teal" 
+                        className="w-full"
+                        onClick={() => navigate("/journey?section=cobuilder")}
+                      >
+                        <BookOpen className="w-4 h-4 mr-2" />
+                        Learn to be a Co-Builder
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    </div>
                   ) : (
                     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                       <DialogTrigger asChild>

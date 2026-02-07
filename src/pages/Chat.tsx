@@ -323,7 +323,7 @@ const Chat = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
       
-      <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full">
+      <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full pt-16 md:pt-20">
         {/* Header */}
         <div className="border-b border-border bg-card px-4 py-4">
           <div className="flex items-center gap-4">
