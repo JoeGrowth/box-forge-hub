@@ -240,8 +240,11 @@ export const CompensationDialog = ({
         });
       }
 
-      // Send notification to other party
+      // Send notification to other party with role-appropriate link
       const otherUserId = isInitiator ? teamMember.member_user_id : existingOffer?.initiator_user_id;
+      const notificationLink = isInitiator 
+        ? "/start?section=cobuilder"   // Co-builder sees their teams
+        : "/start?section=initiator";  // Initiator sees their idea management
       if (otherUserId) {
         await supabase.from("user_notifications").insert({
           user_id: otherUserId,
@@ -250,7 +253,7 @@ export const CompensationDialog = ({
             ? `${teamMember.full_name || "A co-builder"} has accepted the compensation offer.`
             : `A new compensation offer has been proposed. Please review and respond.`,
           notification_type: "compensation_offer",
-          link: "/start?section=cobuilder",
+          link: notificationLink,
         });
       }
 
