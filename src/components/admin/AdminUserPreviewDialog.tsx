@@ -89,9 +89,9 @@ export function AdminUserPreviewDialog({
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-b4-teal/20 to-b4-coral/20 flex items-center justify-center flex-shrink-0">
               <User className="w-5 h-5 text-foreground" />
             </div>
-            <div>
-              <span className="text-lg">{user.profile?.full_name || "Unnamed User"}</span>
-              <p className="text-sm text-muted-foreground font-normal">{user.email}</p>
+            <div className="min-w-0">
+              <span className="text-lg block">{user.profile?.full_name || "Unnamed User"}</span>
+              <p className="text-xs text-muted-foreground font-normal truncate">{user.email}</p>
             </div>
           </DialogTitle>
           <DialogDescription className="sr-only">
