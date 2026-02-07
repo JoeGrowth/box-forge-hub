@@ -250,7 +250,7 @@ export const CompensationDialog = ({
             ? `${teamMember.full_name || "A co-builder"} has accepted the compensation offer.`
             : `A new compensation offer has been proposed. Please review and respond.`,
           notification_type: "compensation_offer",
-          link: "/scale",
+          link: "/start?section=cobuilder",
         });
       }
 
