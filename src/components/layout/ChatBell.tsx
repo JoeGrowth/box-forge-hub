@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,9 +33,16 @@ export function ChatBell() {
   const [totalUnread, setTotalUnread] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  
+  // Suppress re-fetches temporarily after marking as read
+  const suppressFetchRef = useRef(false);
+  const suppressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const fetchConversations = async () => {
+  const fetchConversations = useCallback(async () => {
     if (!user) return;
+    
+    // Skip fetch if we just marked messages as read (prevents badge flicker)
+    if (suppressFetchRef.current) return;
 
     try {
       // Fetch application-based conversations
@@ -64,14 +71,12 @@ export function ChatBell() {
         for (const conv of appConvs) {
           const otherUserId = conv.initiator_id === user.id ? conv.applicant_id : conv.initiator_id;
           
-          // Get other user's profile
           const { data: profile } = await supabase
             .from("profiles")
             .select("full_name, avatar_url")
             .eq("user_id", otherUserId)
             .single();
 
-          // Get last message
           const { data: lastMsg } = await supabase
             .from("chat_messages")
             .select("content, created_at")
@@ -80,7 +85,6 @@ export function ChatBell() {
             .limit(1)
             .single();
 
-          // Get unread count
           const { count } = await supabase
             .from("chat_messages")
             .select("*", { count: "exact", head: true })
@@ -112,14 +116,12 @@ export function ChatBell() {
             ? conv.participant_two_id 
             : conv.participant_one_id;
           
-          // Get other user's profile
           const { data: profile } = await supabase
             .from("profiles")
             .select("full_name, avatar_url")
             .eq("user_id", otherUserId)
             .single();
 
-          // Get last message
           const { data: lastMsg } = await supabase
             .from("direct_messages")
             .select("content, created_at")
@@ -128,7 +130,6 @@ export function ChatBell() {
             .limit(1)
             .single();
 
-          // Get unread count
           const { count } = await supabase
             .from("direct_messages")
             .select("*", { count: "exact", head: true })
@@ -157,14 +158,17 @@ export function ChatBell() {
         return new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime();
       });
 
-      setConversations(allConversations);
-      setTotalUnread(allConversations.reduce((sum, c) => sum + c.unreadCount, 0));
+      // Only update if not suppressed (double-check after async work)
+      if (!suppressFetchRef.current) {
+        setConversations(allConversations);
+        setTotalUnread(allConversations.reduce((sum, c) => sum + c.unreadCount, 0));
+      }
     } catch (error) {
       console.error("Error fetching conversations:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchConversations();
@@ -204,17 +208,25 @@ export function ChatBell() {
       supabase.removeChannel(appChannel);
       supabase.removeChannel(directChannel);
     };
-  }, [user]);
+  }, [user, fetchConversations]);
 
   const markAllMessagesAsRead = async () => {
     if (!user) return;
+    
+    // Suppress re-fetches for a period to prevent badge flicker
+    suppressFetchRef.current = true;
+    if (suppressTimeoutRef.current) clearTimeout(suppressTimeoutRef.current);
+    suppressTimeoutRef.current = setTimeout(() => {
+      suppressFetchRef.current = false;
+    }, 5000); // 5 second grace period
     
     // Optimistic update: hide badge immediately
     setTotalUnread(0);
     setConversations(prev => prev.map(c => ({ ...c, unreadCount: 0 })));
     
     // Persist to DB in background
-    for (const conv of conversations) {
+    const convSnapshot = [...conversations];
+    for (const conv of convSnapshot) {
       if (conv.unreadCount === 0) continue;
       if (conv.type === "application") {
         await supabase
@@ -230,7 +242,19 @@ export function ChatBell() {
           .neq("sender_id", user.id);
       }
     }
+    
+    // After all DB updates complete, lift suppression and do a clean fetch
+    suppressFetchRef.current = false;
+    if (suppressTimeoutRef.current) clearTimeout(suppressTimeoutRef.current);
+    fetchConversations();
   };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (suppressTimeoutRef.current) clearTimeout(suppressTimeoutRef.current);
+    };
+  }, []);
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
