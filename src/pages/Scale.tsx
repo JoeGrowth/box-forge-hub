@@ -40,6 +40,7 @@ import {
   RotateCcw,
   Archive,
 } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -178,6 +179,7 @@ const Scale = () => {
   const [ideaToDelete, setIdeaToDelete] = useState<{ id: string; title: string } | null>(null);
   const [deleteType, setDeleteType] = useState<"archive" | "permanent" | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [hasConsultantCert, setHasConsultantCert] = useState(false);
   const [showScaleExperience, setShowScaleExperience] = useState(() => {
     // Initialize from localStorage
     if (typeof window !== 'undefined') {
@@ -278,6 +280,21 @@ const Scale = () => {
     };
 
     fetchUserIdeas();
+  }, [user]);
+
+  // Fetch consultant certification
+  useEffect(() => {
+    const fetchConsultantCert = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from("user_certifications")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("certification_type", "consultant_b4")
+        .maybeSingle();
+      setHasConsultantCert(!!data);
+    };
+    fetchConsultantCert();
   }, [user]);
 
   // Handle idea deletion
@@ -702,6 +719,32 @@ const Scale = () => {
 
             {/* Scale Your NR Section */}
             <div className={`space-y-8 ${activeSection === "scale" ? "block" : "hidden"}`}>
+                {!hasConsultantCert && (
+                  <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-violet-500/5">
+                    <CardContent className="pt-6">
+                      <div className="flex flex-col items-center text-center space-y-4">
+                        <div className="p-3 rounded-2xl bg-gradient-to-br from-purple-500 to-violet-500">
+                          <Lock className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-display font-bold text-foreground mb-2">Certification Required</h3>
+                          <p className="text-muted-foreground max-w-md mx-auto">
+                            Complete the Consultant learning journey to unlock the full scaling experience and track your consulting missions.
+                          </p>
+                        </div>
+                        <Button 
+                          variant="teal" 
+                          onClick={() => navigate("/journey?section=consultant")}
+                          className="gap-2"
+                        >
+                          <BookOpen className="w-4 h-4" />
+                          Learn to be a Consultant
+                          <ArrowRight className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
                 {/* Step 0: Work as Consultant */}
                 <ConsultantOpportunities />
                 <Card className="border-violet-500/20 bg-gradient-to-br from-violet-500/5 to-purple-500/5">
