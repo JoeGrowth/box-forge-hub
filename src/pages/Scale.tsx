@@ -56,6 +56,7 @@ import { IdeaDevelopDialog } from "@/components/idea/IdeaDevelopDialog";
 import { IdeaValidationDialog } from "@/components/idea/IdeaValidationDialog";
 import { IdeaGrowthDialog } from "@/components/idea/IdeaGrowthDialog";
 import { IdeaEpisodesDialog } from "@/components/idea/IdeaEpisodesDialog";
+import { TeamManagementDialog } from "@/components/idea/TeamManagementDialog";
 import { CoBuilderApplicationsSection } from "@/components/scale/CoBuilderApplicationsSection";
 import { ConsultantOpportunities } from "@/components/scale/ConsultantOpportunities";
 import { format } from "date-fns";
@@ -175,6 +176,8 @@ const Scale = () => {
   const [growthDialogOpen, setGrowthDialogOpen] = useState(false);
   const [episodesDialogOpen, setEpisodesDialogOpen] = useState(false);
   const [selectedIdea, setSelectedIdea] = useState<{ id: string; title: string; currentEpisode: string } | null>(null);
+  const [teamDialogOpen, setTeamDialogOpen] = useState(false);
+  const [teamDialogIdea, setTeamDialogIdea] = useState<{ id: string; title: string } | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [ideaToDelete, setIdeaToDelete] = useState<{ id: string; title: string } | null>(null);
   const [deleteType, setDeleteType] = useState<"archive" | "permanent" | null>(null);
@@ -1011,6 +1014,19 @@ const Scale = () => {
                               </Button>
                               {idea.review_status === "approved" && (
                                 <>
+                                  {/* Team button */}
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      setTeamDialogIdea({ id: idea.id, title: idea.title });
+                                      setTeamDialogOpen(true);
+                                    }}
+                                  >
+                                    <Users className="w-4 h-4 mr-1" />
+                                    Team
+                                  </Button>
+
                                   {/* Episodes button - shows when development is completed */}
                                   {idea.development_completed_at && (
                                     <Button
@@ -1369,6 +1385,17 @@ const Scale = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Team Management Dialog */}
+      {teamDialogIdea && (
+        <TeamManagementDialog
+          open={teamDialogOpen}
+          onOpenChange={setTeamDialogOpen}
+          startupId={teamDialogIdea.id}
+          startupTitle={teamDialogIdea.title}
+          currentUserId={user?.id || ""}
+        />
+      )}
     </div>
   );
 };
