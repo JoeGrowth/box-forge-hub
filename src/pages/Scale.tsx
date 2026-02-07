@@ -180,6 +180,7 @@ const Scale = () => {
   const [deleteType, setDeleteType] = useState<"archive" | "permanent" | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [hasConsultantCert, setHasConsultantCert] = useState(false);
+  const [hasTeamMemberships, setHasTeamMemberships] = useState<boolean | null>(null);
   const [showScaleExperience, setShowScaleExperience] = useState(() => {
     // Initialize from localStorage
     if (typeof window !== 'undefined') {
@@ -194,6 +195,22 @@ const Scale = () => {
     consulting_with_whom: "",
     consulting_case_studies: "",
   });
+
+  // Check if user has team memberships or compensation offers (allows non-boosted users to access cobuilder section)
+  useEffect(() => {
+    const checkTeamMemberships = async () => {
+      if (!user) {
+        setHasTeamMemberships(false);
+        return;
+      }
+      const { count } = await supabase
+        .from("startup_team_members")
+        .select("id", { count: "exact", head: true })
+        .eq("member_user_id", user.id);
+      setHasTeamMemberships((count || 0) > 0);
+    };
+    checkTeamMemberships();
+  }, [user]);
 
   // Sync activeSection with URL query param
   useEffect(() => {
@@ -213,11 +230,11 @@ const Scale = () => {
     }
   }, [user, authLoading, navigate]);
 
-  // Redirect if user doesn't have access to scaling
-  // Wait for statusData to be loaded (not just statusLoading to be false)
+  // Redirect if user doesn't have access to scaling AND has no team memberships
+  // Wait for statusData and hasTeamMemberships to be loaded
   useEffect(() => {
-    // Only check access after status data is fully loaded and user is authenticated
-    if (!authLoading && !statusLoading && user && statusData !== null && !canAccessScaling) {
+    // Only check access after all data is fully loaded and user is authenticated
+    if (!authLoading && !statusLoading && user && statusData !== null && hasTeamMemberships !== null && !canAccessScaling && !hasTeamMemberships) {
       toast({
         title: "Access Restricted",
         description: "Complete a boosting journey to unlock the Scale page.",
@@ -225,7 +242,11 @@ const Scale = () => {
       });
       navigate("/journey", { replace: true });
     }
-  }, [authLoading, statusLoading, user, statusData, canAccessScaling, navigate, toast]);
+    // If user has team memberships but no scaling access, force cobuilder section
+    if (!authLoading && !statusLoading && user && statusData !== null && hasTeamMemberships !== null && !canAccessScaling && hasTeamMemberships) {
+      setActiveSection("cobuilder");
+    }
+  }, [authLoading, statusLoading, user, statusData, canAccessScaling, hasTeamMemberships, navigate, toast]);
 
   useEffect(() => {
     if (naturalRole) {
@@ -628,7 +649,7 @@ const Scale = () => {
     }
   };
 
-  if (authLoading || statusLoading) {
+  if (authLoading || statusLoading || hasTeamMemberships === null) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -636,9 +657,15 @@ const Scale = () => {
     );
   }
 
-  if (!canAccessScaling) {
+  // Allow access if user can scale OR has team memberships
+  const canAccessPage = canAccessScaling || hasTeamMemberships;
+
+  if (!canAccessPage) {
     return null; // Will redirect via useEffect
   }
+
+  // Non-boosted users with team memberships can only see cobuilder section
+  const isTeamMemberOnly = !canAccessScaling && hasTeamMemberships;
 
   const StatusBadge = ({ checked }: { checked: boolean | null }) =>
     checked ? (
@@ -678,20 +705,22 @@ const Scale = () => {
             {/* Section Toggle */}
             <div className="flex justify-center mb-8">
               <div className="inline-flex rounded-xl bg-muted/50 p-1 border border-border/50 flex-wrap justify-center">
-                <button
-                  onClick={() => setActiveSection("ideas")}
-                  className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                    activeSection === "ideas"
-                      ? "bg-background shadow-sm text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Lightbulb className="w-4 h-4 inline mr-2" />
-                  Scale as Initiator
-                  {userIdeas.length > 0 && (
-                    <Badge className="ml-2 bg-b4-teal text-white text-xs">{userIdeas.length}</Badge>
-                  )}
-                </button>
+                {!isTeamMemberOnly && (
+                  <button
+                    onClick={() => setActiveSection("ideas")}
+                    className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                      activeSection === "ideas"
+                        ? "bg-background shadow-sm text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Lightbulb className="w-4 h-4 inline mr-2" />
+                    Scale as Initiator
+                    {userIdeas.length > 0 && (
+                      <Badge className="ml-2 bg-b4-teal text-white text-xs">{userIdeas.length}</Badge>
+                    )}
+                  </button>
+                )}
                 <button
                   onClick={() => setActiveSection("cobuilder")}
                   className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
@@ -701,19 +730,21 @@ const Scale = () => {
                   }`}
                 >
                   <Users className="w-4 h-4 inline mr-2" />
-                  Scale as Co-Builder
+                  {isTeamMemberOnly ? "My Teams" : "Scale as Co-Builder"}
                 </button>
-                <button
-                  onClick={() => setActiveSection("scale")}
-                  className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                    activeSection === "scale"
-                      ? "bg-background shadow-sm text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Sparkles className="w-4 h-4 inline mr-2" />
-                  Scale As Consultant
-                </button>
+                {!isTeamMemberOnly && (
+                  <button
+                    onClick={() => setActiveSection("scale")}
+                    className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                      activeSection === "scale"
+                        ? "bg-background shadow-sm text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Sparkles className="w-4 h-4 inline mr-2" />
+                    Scale As Consultant
+                  </button>
+                )}
               </div>
             </div>
 
