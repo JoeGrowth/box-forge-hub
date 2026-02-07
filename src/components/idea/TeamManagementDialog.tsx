@@ -225,7 +225,7 @@ export const TeamManagementDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] p-0 overflow-hidden flex flex-col">
+      <DialogContent className="max-w-2xl max-h-[85vh] p-0 overflow-hidden flex flex-col [&>button]:z-10">
         <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
           <DialogTitle className="text-xl font-display flex items-center gap-2">
             <Users className="w-5 h-5 text-b4-teal" />
@@ -265,8 +265,8 @@ export const TeamManagementDialog = ({
             </TabsList>
 
             {/* Applicants Tab */}
-            <TabsContent value="applicants" className="flex-1 overflow-hidden mt-0">
-              <ScrollArea className="h-full" style={{ maxHeight: "calc(85vh - 220px)" }}>
+            <TabsContent value="applicants" className="flex-1 min-h-0 mt-0">
+              <ScrollArea className="h-[calc(85vh-200px)]">
                 <div className="p-6 pt-4 space-y-3">
                   {applicants.length === 0 ? (
                     <div className="text-center py-8">
@@ -353,8 +353,8 @@ export const TeamManagementDialog = ({
             </TabsContent>
 
             {/* Team Tab */}
-            <TabsContent value="team" className="flex-1 overflow-hidden mt-0">
-              <ScrollArea className="h-full" style={{ maxHeight: "calc(85vh - 220px)" }}>
+            <TabsContent value="team" className="flex-1 min-h-0 mt-0">
+              <ScrollArea className="h-[calc(85vh-200px)]">
                 <div className="p-6 pt-4 space-y-3">
                   {teamMembers.length === 0 ? (
                     <div className="text-center py-8">
