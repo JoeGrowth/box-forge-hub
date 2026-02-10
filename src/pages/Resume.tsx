@@ -783,6 +783,71 @@ const Resume = () => {
                   </CardContent>
                 </Card>
 
+                {/* Services Related to Your Natural Role */}
+                {(naturalRole?.practice_entities || naturalRole?.training_contexts || naturalRole?.consulting_with_whom) && (
+                  <Card className="transition-all scroll-mt-24 border-primary/20 bg-primary/5">
+                    <CardHeader>
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Sparkles className="w-4 h-4 text-primary" />
+                        </div>
+                        <div>
+                          <CardTitle>Services Related to Your Natural Role</CardTitle>
+                          <CardDescription>Expand your impact based on your experience</CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-3">
+                        {naturalRole?.practice_entities && (
+                          <Button
+                            variant="outline"
+                            className="gap-2 border-b4-teal/30 text-b4-teal hover:bg-b4-teal/10"
+                            onClick={() => navigate("/coming-soon")}
+                          >
+                            <Briefcase className="w-4 h-4" />
+                            Expand Practice
+                            <ArrowRight className="w-4 h-4" />
+                          </Button>
+                        )}
+                        {naturalRole?.training_contexts && (
+                          <>
+                            <Button
+                              variant="outline"
+                              className="gap-2 border-b4-teal/30 text-b4-teal hover:bg-b4-teal/10"
+                              onClick={() => navigate("/coming-soon")}
+                            >
+                              <GraduationCap className="w-4 h-4" />
+                              Train a Team
+                              <ArrowRight className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              className="gap-2 border-b4-teal/30 text-b4-teal hover:bg-b4-teal/10"
+                              onClick={() => navigate("/coming-soon")}
+                            >
+                              <Users className="w-4 h-4" />
+                              Share Knowledge
+                              <ArrowRight className="w-4 h-4" />
+                            </Button>
+                          </>
+                        )}
+                        {naturalRole?.consulting_with_whom && (
+                          <Button
+                            variant="outline"
+                            className="gap-2 border-b4-teal/30 text-b4-teal hover:bg-b4-teal/10"
+                            onClick={() => navigate("/coming-soon")}
+                          >
+                            <Target className="w-4 h-4" />
+                            Offer Consulting
+                            <ArrowRight className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 {/* Practice, Training, Consulting - Only show when Promise is Yes */}
                 {naturalRole?.promise_check && (
                   <>
@@ -820,20 +885,9 @@ const Resume = () => {
                         rows={3}
                       />
                     ) : naturalRole?.practice_entities ? (
-                      <div>
-                        <p className="text-foreground whitespace-pre-wrap">
-                          {naturalRole.practice_entities}
-                        </p>
-                        <Button
-                          variant="outline"
-                          className="mt-4 gap-2 border-b4-teal/30 text-b4-teal hover:bg-b4-teal/10"
-                          onClick={() => navigate("/coming-soon")}
-                        >
-                          <Briefcase className="w-4 h-4" />
-                          Expand Practice
-                          <ArrowRight className="w-4 h-4" />
-                        </Button>
-                      </div>
+                      <p className="text-foreground whitespace-pre-wrap">
+                        {naturalRole.practice_entities}
+                      </p>
                     ) : (
                       <button 
                         onClick={() => startEditing('section-practice')}
@@ -884,31 +938,9 @@ const Resume = () => {
                         rows={3}
                       />
                     ) : naturalRole?.training_contexts ? (
-                      <div>
-                        <p className="text-foreground whitespace-pre-wrap">
-                          {naturalRole.training_contexts}
-                        </p>
-                        <div className="flex flex-wrap gap-3 mt-4">
-                          <Button
-                            variant="outline"
-                            className="gap-2 border-b4-teal/30 text-b4-teal hover:bg-b4-teal/10"
-                            onClick={() => navigate("/coming-soon")}
-                          >
-                            <Users className="w-4 h-4" />
-                            Train a Team
-                            <ArrowRight className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            className="gap-2 border-b4-teal/30 text-b4-teal hover:bg-b4-teal/10"
-                            onClick={() => navigate("/coming-soon")}
-                          >
-                            <GraduationCap className="w-4 h-4" />
-                            Share Knowledge
-                            <ArrowRight className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
+                      <p className="text-foreground whitespace-pre-wrap">
+                        {naturalRole.training_contexts}
+                      </p>
                     ) : (
                       <button 
                         onClick={() => startEditing('section-training')}
@@ -990,15 +1022,6 @@ const Resume = () => {
                             </p>
                           </div>
                         )}
-                        <Button
-                          variant="outline"
-                          className="gap-2 border-b4-teal/30 text-b4-teal hover:bg-b4-teal/10"
-                          onClick={() => navigate("/coming-soon")}
-                        >
-                          <Users className="w-4 h-4" />
-                          Offer Consulting
-                          <ArrowRight className="w-4 h-4" />
-                        </Button>
                       </div>
                     ) : (
                       <button 
