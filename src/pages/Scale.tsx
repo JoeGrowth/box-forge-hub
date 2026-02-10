@@ -780,6 +780,7 @@ const Scale = () => {
                   </Card>
                 )}
                 {/* Work as Consultant is now inside Step 1 dialog as Phase 0 */}
+                {hasConsultantCert && (
                 <Card className="border-violet-500/20 bg-gradient-to-br from-violet-500/5 to-purple-500/5">
                   <CardContent className="pt-6">
                     <div className="flex flex-col md:flex-row items-start gap-6">
@@ -824,9 +825,10 @@ const Scale = () => {
                     </div>
                   </CardContent>
                 </Card>
+                )}
 
                 {/* Journey Progress Header - Only show when experience is started */}
-                {showScaleExperience && (
+                {hasConsultantCert && showScaleExperience && (
                   <div className="text-center animate-fade-in">
                     <h2 className="text-2xl font-display font-bold text-foreground mb-2">Scale Your Natural Role</h2>
                     <p className="text-muted-foreground">A 3-step journey to build scalable impact</p>
@@ -834,7 +836,7 @@ const Scale = () => {
                 )}
 
                 {/* Journey Steps - Only show when experience is started */}
-                {showScaleExperience && (
+                {hasConsultantCert && showScaleExperience && (
                   <div className="relative animate-fade-in">
                     {/* Connection Line */}
                     <div
@@ -912,7 +914,7 @@ const Scale = () => {
                 )}
 
                 {/* Outcome Message - Only show when experience is started */}
-                {showScaleExperience && (
+                {hasConsultantCert && showScaleExperience && (
                   <Card className="border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 animate-fade-in">
                     <CardContent className="pt-6">
                       <div className="text-center space-y-4">
