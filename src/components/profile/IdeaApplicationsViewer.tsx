@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { sendNotificationEmail } from "@/lib/emailNotifications";
 import {
   User,
@@ -12,6 +13,8 @@ import {
   MessageSquare,
   Briefcase,
   RefreshCw,
+  PieChart,
+  DollarSign,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -22,6 +25,14 @@ interface Application {
   cover_message: string | null;
   status: string;
   created_at: string;
+  proposed_monthly_salary: number | null;
+  proposed_salary_currency: string | null;
+  proposed_time_equity_percentage: number | null;
+  proposed_cliff_years: number | null;
+  proposed_vesting_years: number | null;
+  proposed_performance_equity_percentage: number | null;
+  proposed_performance_milestone: string | null;
+  proposed_include_salary: boolean | null;
   applicant_profile?: {
     full_name: string | null;
   };
@@ -34,6 +45,7 @@ interface IdeaApplicationsViewerProps {
 }
 
 export function IdeaApplicationsViewer({ ideaId, ideaTitle }: IdeaApplicationsViewerProps) {
+  const { user } = useAuth();
   const { toast } = useToast();
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,6 +107,77 @@ export function IdeaApplicationsViewer({ ideaId, ideaTitle }: IdeaApplicationsVi
 
       if (error) throw error;
 
+      // On acceptance, create team member and compensation offer
+      if (newStatus === "accepted" && user) {
+        const application = applications.find(a => a.id === applicationId);
+        
+        // Create team member
+        const { data: teamMember, error: tmError } = await supabase
+          .from("startup_team_members")
+          .insert({
+            startup_id: ideaId,
+            member_user_id: applicantId,
+            added_by: user.id,
+            role_type: application?.role_applied || "MMCB",
+          })
+          .select()
+          .single();
+
+        if (tmError) {
+          console.error("Error creating team member:", tmError);
+        }
+
+        // Create compensation offer from applicant's proposal
+        if (teamMember && application) {
+          const timeEq = application.proposed_time_equity_percentage || 0;
+          const perfEq = application.proposed_performance_equity_percentage || 0;
+
+          if (timeEq > 0 || perfEq > 0) {
+            const { data: offer, error: offerError } = await supabase
+              .from("team_compensation_offers")
+              .insert({
+                startup_id: ideaId,
+                team_member_id: teamMember.id,
+                cobuilder_user_id: applicantId,
+                initiator_user_id: user.id,
+                monthly_salary: application.proposed_include_salary ? application.proposed_monthly_salary : null,
+                salary_currency: application.proposed_salary_currency || "USD",
+                time_equity_percentage: timeEq,
+                cliff_years: application.proposed_cliff_years || 1,
+                vesting_years: application.proposed_vesting_years || 4,
+                performance_equity_percentage: perfEq,
+                performance_milestone: application.proposed_performance_milestone,
+                current_proposer_id: applicantId, // Applicant proposed, so it's initiator's turn to respond
+                status: "pending",
+                version: 1,
+              })
+              .select()
+              .single();
+
+            if (offerError) {
+              console.error("Error creating compensation offer:", offerError);
+            }
+
+            // Create history entry
+            if (offer) {
+              await supabase.from("team_compensation_history").insert({
+                offer_id: offer.id,
+                proposer_id: applicantId,
+                monthly_salary: application.proposed_include_salary ? application.proposed_monthly_salary : null,
+                salary_currency: application.proposed_salary_currency || "USD",
+                time_equity_percentage: timeEq,
+                cliff_years: application.proposed_cliff_years || 1,
+                vesting_years: application.proposed_vesting_years || 4,
+                performance_equity_percentage: perfEq,
+                performance_milestone: application.proposed_performance_milestone,
+                version: 1,
+                action: "proposed",
+              });
+            }
+          }
+        }
+      }
+
       // Create in-app notification for applicant
       await supabase.from("user_notifications").insert({
         user_id: applicantId,
@@ -102,15 +185,17 @@ export function IdeaApplicationsViewer({ ideaId, ideaTitle }: IdeaApplicationsVi
           ? "Application Accepted! 🎉" 
           : "Application Update",
         message: newStatus === "accepted"
-          ? `Your application to join "${ideaTitle}" has been accepted! The initiator will reach out to you.`
+          ? `Your application to join "${ideaTitle}" has been accepted! Review and negotiate your compensation package.`
           : `Your application to join "${ideaTitle}" was not accepted at this time.`,
         notification_type: `application_${newStatus}`,
-        link: "/opportunities",
+        link: newStatus === "accepted" ? "/start?section=cobuilder" : "/opportunities",
       });
 
       toast({
         title: newStatus === "accepted" ? "Application Accepted" : "Application Rejected",
-        description: `The applicant has been notified.`,
+        description: newStatus === "accepted" 
+          ? "The applicant has been added to your team with their compensation proposal."
+          : "The applicant has been notified.",
       });
 
       fetchApplications();
@@ -202,6 +287,30 @@ export function IdeaApplicationsViewer({ ideaId, ideaTitle }: IdeaApplicationsVi
                 {application.cover_message && (
                   <div className="bg-background/50 rounded-md p-3 mt-2">
                     <p className="text-sm text-foreground">{application.cover_message}</p>
+                  </div>
+                )}
+
+                {/* Compensation Proposal Summary */}
+                {((application.proposed_time_equity_percentage || 0) > 0 || (application.proposed_performance_equity_percentage || 0) > 0) && (
+                  <div className="bg-muted/50 rounded-md p-3 mt-2 space-y-1">
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-foreground">
+                      <PieChart className="w-3.5 h-3.5 text-b4-teal" />
+                      Compensation Proposal
+                    </div>
+                    <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                      {(application.proposed_time_equity_percentage || 0) > 0 && (
+                        <span>Time Equity: <span className="text-foreground font-medium">{application.proposed_time_equity_percentage}%</span> ({application.proposed_cliff_years}y cliff + {application.proposed_vesting_years}y vest)</span>
+                      )}
+                      {(application.proposed_performance_equity_percentage || 0) > 0 && (
+                        <span>Perf Equity: <span className="text-foreground font-medium">{application.proposed_performance_equity_percentage}%</span></span>
+                      )}
+                      {application.proposed_include_salary && application.proposed_monthly_salary && (
+                        <span className="flex items-center gap-1">
+                          <DollarSign className="w-3 h-3" />
+                          {application.proposed_monthly_salary.toLocaleString()} {application.proposed_salary_currency}/mo
+                        </span>
+                      )}
+                    </div>
                   </div>
                 )}
 

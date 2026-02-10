@@ -786,6 +786,14 @@ export type Database = {
           cover_message: string | null
           created_at: string
           id: string
+          proposed_cliff_years: number | null
+          proposed_include_salary: boolean | null
+          proposed_monthly_salary: number | null
+          proposed_performance_equity_percentage: number | null
+          proposed_performance_milestone: string | null
+          proposed_salary_currency: string | null
+          proposed_time_equity_percentage: number | null
+          proposed_vesting_years: number | null
           role_applied: string | null
           startup_id: string
           status: string
@@ -796,6 +804,14 @@ export type Database = {
           cover_message?: string | null
           created_at?: string
           id?: string
+          proposed_cliff_years?: number | null
+          proposed_include_salary?: boolean | null
+          proposed_monthly_salary?: number | null
+          proposed_performance_equity_percentage?: number | null
+          proposed_performance_milestone?: string | null
+          proposed_salary_currency?: string | null
+          proposed_time_equity_percentage?: number | null
+          proposed_vesting_years?: number | null
           role_applied?: string | null
           startup_id: string
           status?: string
@@ -806,6 +822,14 @@ export type Database = {
           cover_message?: string | null
           created_at?: string
           id?: string
+          proposed_cliff_years?: number | null
+          proposed_include_salary?: boolean | null
+          proposed_monthly_salary?: number | null
+          proposed_performance_equity_percentage?: number | null
+          proposed_performance_milestone?: string | null
+          proposed_salary_currency?: string | null
+          proposed_time_equity_percentage?: number | null
+          proposed_vesting_years?: number | null
           role_applied?: string | null
           startup_id?: string
           status?: string
