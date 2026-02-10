@@ -187,15 +187,16 @@ export const IdeaGrowthDialog = ({
           .maybeSingle();
 
         if (existing) {
-          await supabase
+          const { error } = await supabase
             .from("idea_journey_progress")
             .update({
               responses: responsesToSave,
               updated_at: new Date().toISOString(),
             })
             .eq("id", existing.id);
+          if (error) throw error;
         } else {
-          await supabase.from("idea_journey_progress").insert({
+          const { error } = await supabase.from("idea_journey_progress").insert({
             startup_id: ideaId,
             user_id: user.id,
             phase_number: phaseNum,
@@ -203,6 +204,7 @@ export const IdeaGrowthDialog = ({
             episode: "growth",
             responses: responsesToSave,
           });
+          if (error) throw error;
         }
       } catch (error) {
         console.error("Auto-save error:", error);
@@ -316,15 +318,16 @@ export const IdeaGrowthDialog = ({
         .maybeSingle();
 
       if (existing) {
-        await supabase
+        const { error } = await supabase
           .from("idea_journey_progress")
           .update({
             responses,
             updated_at: new Date().toISOString(),
           })
           .eq("id", existing.id);
+        if (error) throw error;
       } else {
-        await supabase.from("idea_journey_progress").insert({
+        const { error } = await supabase.from("idea_journey_progress").insert({
           startup_id: ideaId,
           user_id: user.id,
           phase_number: currentPhase,
@@ -332,6 +335,7 @@ export const IdeaGrowthDialog = ({
           episode: "growth",
           responses,
         });
+        if (error) throw error;
       }
 
       setPhaseProgress((prev) => ({
@@ -371,7 +375,7 @@ export const IdeaGrowthDialog = ({
         .maybeSingle();
 
       if (existing) {
-        await supabase
+        const { error } = await supabase
           .from("idea_journey_progress")
           .update({
             responses,
@@ -380,8 +384,9 @@ export const IdeaGrowthDialog = ({
             updated_at: new Date().toISOString(),
           })
           .eq("id", existing.id);
+        if (error) throw error;
       } else {
-        await supabase.from("idea_journey_progress").insert({
+        const { error } = await supabase.from("idea_journey_progress").insert({
           startup_id: ideaId,
           user_id: user.id,
           phase_number: currentPhase,
@@ -391,6 +396,7 @@ export const IdeaGrowthDialog = ({
           is_completed: true,
           completed_at: new Date().toISOString(),
         });
+        if (error) throw error;
       }
 
       setPhaseProgress((prev) => ({
