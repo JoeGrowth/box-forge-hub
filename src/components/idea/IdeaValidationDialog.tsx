@@ -277,8 +277,7 @@ export const IdeaValidationDialog = ({
   }, []);
 
   const handleSaveProgress = async () => {
-    console.log("[Validation Save] user:", user?.id, "ideaId:", ideaId, "phase:", currentPhase, "responses:", responses);
-    if (!user) { console.log("[Validation Save] No user, aborting"); return; }
+    if (!user) return;
 
     setIsSaving(true);
     try {
@@ -335,8 +334,7 @@ export const IdeaValidationDialog = ({
   };
 
   const handleCompletePhase = async () => {
-    console.log("[Validation Complete] user:", user?.id, "ideaId:", ideaId, "phase:", currentPhase, "isPhaseComplete:", isPhaseComplete(), "responses:", responses);
-    if (!user || !isPhaseComplete()) { console.log("[Validation Complete] Blocked - user:", !!user, "complete:", isPhaseComplete()); return; }
+    if (!user || !isPhaseComplete()) return;
 
     setIsSaving(true);
     try {

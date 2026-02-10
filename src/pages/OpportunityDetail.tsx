@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,7 +40,10 @@ import {
   Clock,
   BookOpen,
   ArrowRight,
-  Lock
+  Lock,
+  DollarSign,
+  PieChart,
+  Target
 } from "lucide-react";
 
 interface StartupIdea {
@@ -82,6 +87,16 @@ const OpportunityDetail = () => {
   const [existingApplication, setExistingApplication] = useState<Application | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [hasCoBuilderCert, setHasCoBuilderCert] = useState(false);
+
+  // Compensation proposal state
+  const [includeSalary, setIncludeSalary] = useState(false);
+  const [monthlySalary, setMonthlySalary] = useState("");
+  const [salaryCurrency, setSalaryCurrency] = useState("USD");
+  const [timeEquity, setTimeEquity] = useState("");
+  const [cliffYears, setCliffYears] = useState("1");
+  const [vestingYears, setVestingYears] = useState("4");
+  const [performanceEquity, setPerformanceEquity] = useState("");
+  const [performanceMilestone, setPerformanceMilestone] = useState("");
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -159,9 +174,29 @@ const OpportunityDetail = () => {
   const handleApply = async () => {
     if (!user || !idea) return;
 
+    // Validate compensation
+    const timeEq = parseFloat(timeEquity) || 0;
+    const perfEq = parseFloat(performanceEquity) || 0;
+    const cliff = parseInt(cliffYears) || 0;
+    const vesting = parseInt(vestingYears) || 0;
+
+    if (timeEq <= 0 && perfEq <= 0) {
+      toast({ title: "Equity Required", description: "Please propose at least time-based or performance-based equity.", variant: "destructive" });
+      return;
+    }
+
+    if (timeEq > 0 && timeEq !== cliff + vesting) {
+      toast({ title: "Equity Rule", description: `Time-Based Equity (${timeEq}%) must equal Cliff (${cliff}) + Vesting (${vesting}) = ${cliff + vesting}%`, variant: "destructive" });
+      return;
+    }
+
+    if (perfEq > 0 && !performanceMilestone.trim()) {
+      toast({ title: "Milestone Required", description: "Please describe the performance milestone.", variant: "destructive" });
+      return;
+    }
+
     setApplying(true);
     try {
-      // Insert application into the new table
       const { data: appData, error: appError } = await supabase
         .from("startup_applications")
         .insert({
@@ -169,33 +204,39 @@ const OpportunityDetail = () => {
           applicant_id: user.id,
           role_applied: selectedRole || null,
           cover_message: applyMessage || null,
+          proposed_include_salary: includeSalary,
+          proposed_monthly_salary: includeSalary ? parseFloat(monthlySalary) || null : null,
+          proposed_salary_currency: salaryCurrency,
+          proposed_time_equity_percentage: timeEq,
+          proposed_cliff_years: cliff || 1,
+          proposed_vesting_years: vesting || 4,
+          proposed_performance_equity_percentage: perfEq,
+          proposed_performance_milestone: perfEq > 0 ? performanceMilestone : null,
         })
         .select()
         .single();
 
       if (appError) throw appError;
 
-      // Create user notification for the idea creator with link to chat
       await supabase.from("user_notifications").insert({
         user_id: idea.creator_id,
         notification_type: "application_received",
         title: "New Co-Builder Application 📩",
-        message: `${user.user_metadata?.full_name || user.email || "A co-builder"} wants to join your startup "${idea.title}"${selectedRole ? ` as ${selectedRole}` : ""}. Click to start a conversation!`,
+        message: `${user.user_metadata?.full_name || user.email || "A co-builder"} wants to join your startup "${idea.title}"${selectedRole ? ` as ${selectedRole}` : ""} with a compensation proposal. Review it now!`,
         link: `/chat/${appData.id}`,
       });
 
-      // Also create admin notification for tracking
       await supabase.from("admin_notifications").insert({
         user_id: idea.creator_id,
         notification_type: "application_received",
         user_name: user.user_metadata?.full_name || user.email,
         user_email: user.email,
-        message: `${user.user_metadata?.full_name || "A co-builder"} applied to "${idea.title}"${selectedRole ? ` for role: ${selectedRole}` : ""}. Message: ${applyMessage || "No message provided."}`,
+        message: `${user.user_metadata?.full_name || "A co-builder"} applied to "${idea.title}"${selectedRole ? ` for role: ${selectedRole}` : ""} with equity proposal: ${(timeEq + perfEq).toFixed(1)}%.`,
       });
 
       toast({
         title: "Application Sent!",
-        description: "The initiator will be notified of your interest.",
+        description: "The initiator will review your application and compensation proposal.",
       });
 
       setExistingApplication({
@@ -456,11 +497,11 @@ const OpportunityDetail = () => {
                           Apply to Join
                         </Button>
                       </DialogTrigger>
-                      <DialogContent>
+                      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                           <DialogTitle>Apply to Join "{idea.title}"</DialogTitle>
                           <DialogDescription>
-                            Send a message to the initiator explaining why you'd be a great co-builder for this startup.
+                            Send your application with a compensation proposal to the initiator.
                           </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 pt-4">
@@ -483,19 +524,114 @@ const OpportunityDetail = () => {
                           <div className="space-y-2">
                             <Label>Your message to the initiator</Label>
                             <Textarea
-                              placeholder="Introduce yourself, share your relevant skills and experience, and explain why you're excited about this opportunity..."
+                              placeholder="Introduce yourself, share your relevant skills and experience..."
                               value={applyMessage}
                               onChange={(e) => setApplyMessage(e.target.value)}
-                              rows={5}
+                              rows={3}
                             />
                           </div>
+
+                          <Separator />
+
+                          {/* Compensation Proposal */}
+                          <div className="space-y-1">
+                            <h3 className="text-sm font-semibold flex items-center gap-2">
+                              <PieChart className="w-4 h-4 text-b4-teal" />
+                              Your Compensation Proposal
+                            </h3>
+                            <p className="text-xs text-muted-foreground">
+                              Propose your equity and salary terms. The initiator can accept, counter-propose, or decline.
+                            </p>
+                          </div>
+
+                          {/* Time-Based Equity */}
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4 text-blue-600" />
+                              <Label className="text-sm font-medium">Time-Based Equity</Label>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              Retention incentive. Rule: Equity % = Cliff + Vesting years.
+                            </p>
+                            <div className="grid grid-cols-3 gap-2">
+                              <div>
+                                <Label className="text-xs">Equity %</Label>
+                                <Input type="number" placeholder="e.g. 5" value={timeEquity} onChange={(e) => setTimeEquity(e.target.value)} min="0" max="85" step="0.1" />
+                              </div>
+                              <div>
+                                <Label className="text-xs">Cliff (years)</Label>
+                                <Input type="number" placeholder="1" value={cliffYears} onChange={(e) => setCliffYears(e.target.value)} min="0" max="4" />
+                              </div>
+                              <div>
+                                <Label className="text-xs">Vesting (years)</Label>
+                                <Input type="number" placeholder="4" value={vestingYears} onChange={(e) => setVestingYears(e.target.value)} min="1" max="6" />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Performance-Based Equity */}
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Target className="w-4 h-4 text-orange-600" />
+                              <Label className="text-sm font-medium">Performance-Based Equity</Label>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              Unlocks only after a board-verified milestone.
+                            </p>
+                            <div>
+                              <Label className="text-xs">Equity %</Label>
+                              <Input type="number" placeholder="e.g. 2" value={performanceEquity} onChange={(e) => setPerformanceEquity(e.target.value)} min="0" max="85" step="0.1" />
+                            </div>
+                            {(parseFloat(performanceEquity) || 0) > 0 && (
+                              <div>
+                                <Label className="text-xs">Milestone Description</Label>
+                                <Textarea placeholder="Describe the milestone..." value={performanceMilestone} onChange={(e) => setPerformanceMilestone(e.target.value)} className="min-h-[50px]" />
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Monthly Salary (Optional) */}
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <DollarSign className="w-4 h-4 text-green-600" />
+                                <Label className="text-sm font-medium">Monthly Salary (Optional)</Label>
+                              </div>
+                              <Switch checked={includeSalary} onCheckedChange={setIncludeSalary} />
+                            </div>
+                            {includeSalary && (
+                              <div className="flex gap-2">
+                                <Input type="number" placeholder="Amount" value={monthlySalary} onChange={(e) => setMonthlySalary(e.target.value)} className="flex-1" />
+                                <select value={salaryCurrency} onChange={(e) => setSalaryCurrency(e.target.value)} className="border rounded-md px-3 py-2 bg-background text-sm">
+                                  <option value="USD">USD</option>
+                                  <option value="EUR">EUR</option>
+                                  <option value="TND">TND</option>
+                                </select>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Summary */}
+                          <div className="bg-muted/50 rounded-lg p-3 space-y-1">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-muted-foreground">Total Equity Proposed:</span>
+                              <span className="font-medium">{((parseFloat(timeEquity) || 0) + (parseFloat(performanceEquity) || 0)).toFixed(1)}%</span>
+                            </div>
+                            {includeSalary && monthlySalary && (
+                              <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Monthly Salary:</span>
+                                <span className="font-medium">{parseFloat(monthlySalary).toLocaleString()} {salaryCurrency}</span>
+                              </div>
+                            )}
+                          </div>
+
                           <Button 
                             variant="teal" 
                             className="w-full"
                             onClick={handleApply}
                             disabled={applying || (!selectedRole && idea.roles_needed && idea.roles_needed.length > 0)}
                           >
-                            {applying ? "Sending..." : "Send Application"}
+                            {applying ? "Sending..." : "Send Application & Proposal"}
                           </Button>
                         </div>
                       </DialogContent>
