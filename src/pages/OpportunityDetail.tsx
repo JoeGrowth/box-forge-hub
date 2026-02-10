@@ -87,6 +87,7 @@ const OpportunityDetail = () => {
   const [existingApplication, setExistingApplication] = useState<Application | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [hasCoBuilderCert, setHasCoBuilderCert] = useState(false);
+  const [dialogStep, setDialogStep] = useState<1 | 2>(1);
 
   // Compensation proposal state
   const [includeSalary, setIncludeSalary] = useState(false);
@@ -490,7 +491,7 @@ const OpportunityDetail = () => {
                       </Button>
                     </div>
                   ) : (
-                    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                    <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setDialogStep(1); }}>
                       <DialogTrigger asChild>
                         <Button variant="teal" className="w-full">
                           <Send className="w-4 h-4 mr-2" />
@@ -498,142 +499,158 @@ const OpportunityDetail = () => {
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle>Apply to Join "{idea.title}"</DialogTitle>
-                          <DialogDescription>
-                            Send your application with a compensation proposal to the initiator.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-4 pt-4">
-                          {idea.roles_needed && idea.roles_needed.length > 0 && (
-                            <div className="space-y-2">
-                              <Label>Which role are you applying for?</Label>
-                              <Select value={selectedRole} onValueChange={setSelectedRole}>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select a role..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {idea.roles_needed.map((role, i) => (
-                                    <SelectItem key={i} value={role}>{role}</SelectItem>
-                                  ))}
-                                  <SelectItem value="other">Other / Multiple Roles</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          )}
-                          <div className="space-y-2">
-                            <Label>Your message to the initiator</Label>
-                            <Textarea
-                              placeholder="Introduce yourself, share your relevant skills and experience..."
-                              value={applyMessage}
-                              onChange={(e) => setApplyMessage(e.target.value)}
-                              rows={3}
-                            />
-                          </div>
-
-                          <Separator />
-
-                          {/* Compensation Proposal */}
-                          <div className="space-y-1">
-                            <h3 className="text-sm font-semibold flex items-center gap-2">
-                              <PieChart className="w-4 h-4 text-b4-teal" />
-                              Your Compensation Proposal
-                            </h3>
-                            <p className="text-xs text-muted-foreground">
-                              Propose your equity and salary terms. The initiator can accept, counter-propose, or decline.
-                            </p>
-                          </div>
-
-                          {/* Time-Based Equity */}
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                              <Clock className="w-4 h-4 text-blue-600" />
-                              <Label className="text-sm font-medium">Time-Based Equity</Label>
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                              Retention incentive. Rule: Equity % = Cliff + Vesting years.
-                            </p>
-                            <div className="grid grid-cols-3 gap-2">
-                              <div>
-                                <Label className="text-xs">Equity %</Label>
-                                <Input type="number" placeholder="e.g. 5" value={timeEquity} onChange={(e) => setTimeEquity(e.target.value)} min="0" max="85" step="0.1" />
+                        {dialogStep === 1 ? (
+                          <>
+                            <DialogHeader>
+                              <DialogTitle>Apply to Join "{idea.title}"</DialogTitle>
+                              <DialogDescription>
+                                Step 1 of 2 — Tell the initiator about yourself and your interest.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4 pt-4">
+                              {idea.roles_needed && idea.roles_needed.length > 0 && (
+                                <div className="space-y-2">
+                                  <Label>Which role are you applying for?</Label>
+                                  <Select value={selectedRole} onValueChange={setSelectedRole}>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select a role..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {idea.roles_needed.map((role, i) => (
+                                        <SelectItem key={i} value={role}>{role}</SelectItem>
+                                      ))}
+                                      <SelectItem value="other">Other / Multiple Roles</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              )}
+                              <div className="space-y-2">
+                                <Label>Your message to the initiator</Label>
+                                <Textarea
+                                  placeholder="Introduce yourself, share your relevant skills and experience..."
+                                  value={applyMessage}
+                                  onChange={(e) => setApplyMessage(e.target.value)}
+                                  rows={4}
+                                />
                               </div>
-                              <div>
-                                <Label className="text-xs">Cliff (years)</Label>
-                                <Input type="number" placeholder="1" value={cliffYears} onChange={(e) => setCliffYears(e.target.value)} min="0" max="4" />
-                              </div>
-                              <div>
-                                <Label className="text-xs">Vesting (years)</Label>
-                                <Input type="number" placeholder="4" value={vestingYears} onChange={(e) => setVestingYears(e.target.value)} min="1" max="6" />
-                              </div>
+                              <Button
+                                variant="teal"
+                                className="w-full"
+                                onClick={() => setDialogStep(2)}
+                                disabled={!!(idea.roles_needed && idea.roles_needed.length > 0 && !selectedRole)}
+                              >
+                                Next: Compensation Proposal
+                                <ArrowRight className="w-4 h-4 ml-2" />
+                              </Button>
                             </div>
-                          </div>
+                          </>
+                        ) : (
+                          <>
+                            <DialogHeader>
+                              <DialogTitle>Your Compensation Proposal</DialogTitle>
+                              <DialogDescription>
+                                Step 2 of 2 — Propose your equity and salary terms. The initiator can accept, counter-propose, or decline.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4 pt-4">
+                              {/* Time-Based Equity */}
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <Clock className="w-4 h-4 text-primary" />
+                                  <Label className="text-sm font-medium">Time-Based Equity</Label>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                  Retention incentive. Rule: Equity % = Cliff + Vesting years.
+                                </p>
+                                <div className="grid grid-cols-3 gap-2">
+                                  <div>
+                                    <Label className="text-xs">Equity %</Label>
+                                    <Input type="number" placeholder="e.g. 5" value={timeEquity} onChange={(e) => setTimeEquity(e.target.value)} min="0" max="85" step="0.1" />
+                                  </div>
+                                  <div>
+                                    <Label className="text-xs">Cliff (years)</Label>
+                                    <Input type="number" placeholder="1" value={cliffYears} onChange={(e) => setCliffYears(e.target.value)} min="0" max="4" />
+                                  </div>
+                                  <div>
+                                    <Label className="text-xs">Vesting (years)</Label>
+                                    <Input type="number" placeholder="4" value={vestingYears} onChange={(e) => setVestingYears(e.target.value)} min="1" max="6" />
+                                  </div>
+                                </div>
+                              </div>
 
-                          {/* Performance-Based Equity */}
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                              <Target className="w-4 h-4 text-orange-600" />
-                              <Label className="text-sm font-medium">Performance-Based Equity</Label>
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                              Unlocks only after a board-verified milestone.
-                            </p>
-                            <div>
-                              <Label className="text-xs">Equity %</Label>
-                              <Input type="number" placeholder="e.g. 2" value={performanceEquity} onChange={(e) => setPerformanceEquity(e.target.value)} min="0" max="85" step="0.1" />
-                            </div>
-                            {(parseFloat(performanceEquity) || 0) > 0 && (
-                              <div>
-                                <Label className="text-xs">Milestone Description</Label>
-                                <Textarea placeholder="Describe the milestone..." value={performanceMilestone} onChange={(e) => setPerformanceMilestone(e.target.value)} className="min-h-[50px]" />
+                              {/* Performance-Based Equity */}
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <Target className="w-4 h-4 text-accent-foreground" />
+                                  <Label className="text-sm font-medium">Performance-Based Equity</Label>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                  Unlocks only after a board-verified milestone.
+                                </p>
+                                <div>
+                                  <Label className="text-xs">Equity %</Label>
+                                  <Input type="number" placeholder="e.g. 2" value={performanceEquity} onChange={(e) => setPerformanceEquity(e.target.value)} min="0" max="85" step="0.1" />
+                                </div>
+                                {(parseFloat(performanceEquity) || 0) > 0 && (
+                                  <div>
+                                    <Label className="text-xs">Milestone Description</Label>
+                                    <Textarea placeholder="Describe the milestone..." value={performanceMilestone} onChange={(e) => setPerformanceMilestone(e.target.value)} className="min-h-[50px]" />
+                                  </div>
+                                )}
                               </div>
-                            )}
-                          </div>
 
-                          {/* Monthly Salary (Optional) */}
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <DollarSign className="w-4 h-4 text-green-600" />
-                                <Label className="text-sm font-medium">Monthly Salary (Optional)</Label>
+                              {/* Monthly Salary (Optional) */}
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <DollarSign className="w-4 h-4 text-b4-teal" />
+                                    <Label className="text-sm font-medium">Monthly Salary (Optional)</Label>
+                                  </div>
+                                  <Switch checked={includeSalary} onCheckedChange={setIncludeSalary} />
+                                </div>
+                                {includeSalary && (
+                                  <div className="flex gap-2">
+                                    <Input type="number" placeholder="Amount" value={monthlySalary} onChange={(e) => setMonthlySalary(e.target.value)} className="flex-1" />
+                                    <select value={salaryCurrency} onChange={(e) => setSalaryCurrency(e.target.value)} className="border rounded-md px-3 py-2 bg-background text-sm">
+                                      <option value="USD">USD</option>
+                                      <option value="EUR">EUR</option>
+                                      <option value="TND">TND</option>
+                                    </select>
+                                  </div>
+                                )}
                               </div>
-                              <Switch checked={includeSalary} onCheckedChange={setIncludeSalary} />
-                            </div>
-                            {includeSalary && (
+
+                              {/* Summary */}
+                              <div className="bg-muted/50 rounded-lg p-3 space-y-1">
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-muted-foreground">Total Equity Proposed:</span>
+                                  <span className="font-medium">{((parseFloat(timeEquity) || 0) + (parseFloat(performanceEquity) || 0)).toFixed(1)}%</span>
+                                </div>
+                                {includeSalary && monthlySalary && (
+                                  <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Monthly Salary:</span>
+                                    <span className="font-medium">{parseFloat(monthlySalary).toLocaleString()} {salaryCurrency}</span>
+                                  </div>
+                                )}
+                              </div>
+
                               <div className="flex gap-2">
-                                <Input type="number" placeholder="Amount" value={monthlySalary} onChange={(e) => setMonthlySalary(e.target.value)} className="flex-1" />
-                                <select value={salaryCurrency} onChange={(e) => setSalaryCurrency(e.target.value)} className="border rounded-md px-3 py-2 bg-background text-sm">
-                                  <option value="USD">USD</option>
-                                  <option value="EUR">EUR</option>
-                                  <option value="TND">TND</option>
-                                </select>
+                                <Button variant="outline" className="flex-1" onClick={() => setDialogStep(1)}>
+                                  <ArrowLeft className="w-4 h-4 mr-2" />
+                                  Back
+                                </Button>
+                                <Button
+                                  variant="teal"
+                                  className="flex-1"
+                                  onClick={handleApply}
+                                  disabled={applying}
+                                >
+                                  {applying ? "Sending..." : "Send Application"}
+                                </Button>
                               </div>
-                            )}
-                          </div>
-
-                          {/* Summary */}
-                          <div className="bg-muted/50 rounded-lg p-3 space-y-1">
-                            <div className="flex justify-between text-sm">
-                              <span className="text-muted-foreground">Total Equity Proposed:</span>
-                              <span className="font-medium">{((parseFloat(timeEquity) || 0) + (parseFloat(performanceEquity) || 0)).toFixed(1)}%</span>
                             </div>
-                            {includeSalary && monthlySalary && (
-                              <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Monthly Salary:</span>
-                                <span className="font-medium">{parseFloat(monthlySalary).toLocaleString()} {salaryCurrency}</span>
-                              </div>
-                            )}
-                          </div>
-
-                          <Button 
-                            variant="teal" 
-                            className="w-full"
-                            onClick={handleApply}
-                            disabled={applying || (!selectedRole && idea.roles_needed && idea.roles_needed.length > 0)}
-                          >
-                            {applying ? "Sending..." : "Send Application & Proposal"}
-                          </Button>
-                        </div>
+                          </>
+                        )}
                       </DialogContent>
                     </Dialog>
                   )}
