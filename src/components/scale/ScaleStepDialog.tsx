@@ -8,12 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, CheckCircle, Rocket, Building2, Settings, Target, Crown, Save, ArrowRight } from "lucide-react";
+import { Loader2, CheckCircle, Rocket, Building2, Settings, Target, Crown, Save, ArrowRight, Briefcase } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { MaskLogoUpload } from "./MaskLogoUpload";
+import { ConsultantOpportunities } from "./ConsultantOpportunities";
 
 interface PhaseData {
   [key: string]: string | boolean | number;
@@ -190,7 +191,7 @@ export const ScaleStepDialog = ({ open, onOpenChange, stepNumber, onComplete }: 
     if (open && user) {
       fetchOrCreateJourney();
       fetchCompletedMissions();
-      setActiveTab(`phase-${relevantPhases[0]}`);
+      setActiveTab(stepNumber === 1 ? "phase-0" : `phase-${relevantPhases[0]}`);
     }
   }, [open, user, stepNumber]);
 
@@ -450,7 +451,50 @@ export const ScaleStepDialog = ({ open, onOpenChange, stepNumber, onComplete }: 
           <>
             <ScrollArea className="flex-1 overflow-auto" style={{ maxHeight: "calc(85vh - 200px)" }}>
               <div className="p-6">
-                {phasesConfig.length === 1 ? (
+                {/* Step 1 has Phase 0 (Work as Consultant) + Phase 1 */}
+                {stepNumber === 1 ? (
+                  <Tabs value={activeTab} onValueChange={setActiveTab}>
+                    <TabsList className="w-full justify-start mb-6 bg-muted/50">
+                      <TabsTrigger value="phase-0" className="flex items-center gap-2">
+                        <Briefcase className="w-4 h-4" />
+                        <span className="hidden sm:inline">Phase 0</span>
+                      </TabsTrigger>
+                      {phasesConfig.map((phase) => {
+                        const Icon = phase.icon;
+                        const isComplete = completedPhases.includes(phase.id) || isPhaseComplete(phase.id);
+                        return (
+                          <TabsTrigger key={phase.id} value={`phase-${phase.id}`} className="flex items-center gap-2">
+                            {isComplete ? (
+                              <CheckCircle className="w-4 h-4 text-b4-teal" />
+                            ) : (
+                              <Icon className="w-4 h-4" />
+                            )}
+                            <span className="hidden sm:inline">Phase {phase.id}</span>
+                          </TabsTrigger>
+                        );
+                      })}
+                    </TabsList>
+
+                    <div className="relative">
+                      <div className={cn(activeTab === "phase-0" ? "block" : "hidden")}>
+                        <ConsultantOpportunities />
+                      </div>
+                      {phasesConfig.map((phase) => (
+                        <div key={phase.id} className={cn(activeTab === `phase-${phase.id}` ? "block" : "hidden")}>
+                          <PhaseContent
+                            phase={phase}
+                            data={phaseData[phase.id] || {}}
+                            isComplete={completedPhases.includes(phase.id)}
+                            progress={getPhaseProgress(phase.id)}
+                            onInputChange={(taskId, value) => handleInputChange(phase.id, taskId, value)}
+                            userId={user?.id || ""}
+                            completedMissions={completedMissions}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </Tabs>
+                ) : phasesConfig.length === 1 ? (
                   // Single phase - no tabs needed
                   <PhaseContent
                     phase={phasesConfig[0]}
@@ -481,7 +525,6 @@ export const ScaleStepDialog = ({ open, onOpenChange, stepNumber, onComplete }: 
                       })}
                     </TabsList>
 
-                    {/* Use CSS visibility instead of conditional rendering to prevent data reload */}
                     <div className="relative">
                       {phasesConfig.map((phase) => (
                         <div key={phase.id} className={cn(activeTab === `phase-${phase.id}` ? "block" : "hidden")}>
