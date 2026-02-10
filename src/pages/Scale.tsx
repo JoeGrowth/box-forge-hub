@@ -58,7 +58,7 @@ import { IdeaGrowthDialog } from "@/components/idea/IdeaGrowthDialog";
 import { IdeaEpisodesDialog } from "@/components/idea/IdeaEpisodesDialog";
 import { TeamManagementDialog } from "@/components/idea/TeamManagementDialog";
 import { CoBuilderApplicationsSection } from "@/components/scale/CoBuilderApplicationsSection";
-import { ConsultantOpportunities } from "@/components/scale/ConsultantOpportunities";
+
 import { format } from "date-fns";
 import { Film, Shield } from "lucide-react";
 
@@ -779,8 +779,7 @@ const Scale = () => {
                     </CardContent>
                   </Card>
                 )}
-                {/* Step 0: Work as Consultant */}
-                <ConsultantOpportunities />
+                {/* Work as Consultant is now inside Step 1 dialog as Phase 0 */}
                 <Card className="border-violet-500/20 bg-gradient-to-br from-violet-500/5 to-purple-500/5">
                   <CardContent className="pt-6">
                     <div className="flex flex-col md:flex-row items-start gap-6">
