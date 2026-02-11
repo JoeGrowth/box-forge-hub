@@ -1,0 +1,1 @@
+ALTER TABLE public.natural_roles ADD COLUMN services_description text;

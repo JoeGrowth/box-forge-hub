@@ -521,6 +521,7 @@ export type Database = {
           practice_entities: string | null
           practice_needs_help: boolean | null
           promise_check: boolean | null
+          services_description: string | null
           status: string | null
           training_check: boolean | null
           training_contexts: string | null
@@ -543,6 +544,7 @@ export type Database = {
           practice_entities?: string | null
           practice_needs_help?: boolean | null
           promise_check?: boolean | null
+          services_description?: string | null
           status?: string | null
           training_check?: boolean | null
           training_contexts?: string | null
@@ -565,6 +567,7 @@ export type Database = {
           practice_entities?: string | null
           practice_needs_help?: boolean | null
           promise_check?: boolean | null
+          services_description?: string | null
           status?: string | null
           training_check?: boolean | null
           training_contexts?: string | null
