@@ -884,6 +884,13 @@ const Resume = () => {
                         </p>
                       </button>
                     )}
+                    {naturalRole?.practice_entities && !isEditing && (
+                      <Button variant="outline" className="mt-4 gap-2" onClick={() => navigate("/opportunities")}>
+                        <Briefcase className="w-4 h-4" />
+                        Expand Practice
+                        <ArrowRight className="w-4 h-4" />
+                      </Button>
+                    )}
                     <SectionHistoryPanel sectionId="section-practice" fieldName="practice_entities" label="Practice" />
                   </CardContent>
                 </Card>
@@ -936,6 +943,13 @@ const Resume = () => {
                           Click to add training contexts and people you've mentored
                         </p>
                       </button>
+                    )}
+                    {naturalRole?.training_contexts && !isEditing && (
+                      <Button variant="outline" className="mt-4 gap-2" onClick={() => navigate("/coming-soon")}>
+                        <GraduationCap className="w-4 h-4" />
+                        Train a Team
+                        <ArrowRight className="w-4 h-4" />
+                      </Button>
                     )}
                     <SectionHistoryPanel sectionId="section-training" fieldName="training_contexts" label="Training" />
                   </CardContent>
@@ -1018,6 +1032,13 @@ const Resume = () => {
                           Click to add consulting work and case studies
                         </p>
                       </button>
+                    )}
+                    {(naturalRole?.consulting_with_whom || naturalRole?.consulting_case_studies) && !isEditing && (
+                      <Button variant="outline" className="mt-4 gap-2" onClick={() => navigate("/coming-soon")}>
+                        <Users className="w-4 h-4" />
+                        Offer Consulting
+                        <ArrowRight className="w-4 h-4" />
+                      </Button>
                     )}
                     <SectionHistoryPanel sectionId="section-consulting" fieldName="consulting_with_whom" label="Consulting" />
                   </CardContent>
