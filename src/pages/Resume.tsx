@@ -80,6 +80,7 @@ const Resume = () => {
   } | null>(null);
   const [editData, setEditData] = useState({
     description: "",
+    services_description: "",
     practice_entities: "",
     training_contexts: "",
     consulting_with_whom: "",
@@ -157,6 +158,7 @@ const Resume = () => {
     if (naturalRole) {
       setEditData({
         description: naturalRole.description || "",
+        services_description: (naturalRole as any).services_description || "",
         practice_entities: naturalRole.practice_entities || "",
         training_contexts: naturalRole.training_contexts || "",
         consulting_with_whom: naturalRole.consulting_with_whom || "",
@@ -784,69 +786,51 @@ const Resume = () => {
                 </Card>
 
                 {/* Services Related to Your Natural Role */}
-                {(naturalRole?.practice_entities || naturalRole?.training_contexts || naturalRole?.consulting_with_whom) && (
-                  <Card className="transition-all scroll-mt-24 border-primary/20 bg-primary/5">
-                    <CardHeader>
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <Sparkles className="w-4 h-4 text-primary" />
+                <Card id="section-services" className={`transition-all scroll-mt-24 ${!(naturalRole as any)?.services_description && !isEditing ? 'border-dashed border-muted-foreground/30' : ''}`}>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${(naturalRole as any)?.services_description ? 'bg-primary/10' : 'bg-muted'}`}>
+                          <Sparkles className={`w-4 h-4 ${(naturalRole as any)?.services_description ? 'text-primary' : 'text-muted-foreground'}`} />
                         </div>
-                        <div>
-                          <CardTitle>Services Related to Your Natural Role</CardTitle>
-                          <CardDescription>Expand your impact based on your experience</CardDescription>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex flex-wrap gap-3">
-                        {naturalRole?.practice_entities && (
-                          <Button
-                            variant="outline"
-                            className="gap-2 border-b4-teal/30 text-b4-teal hover:bg-b4-teal/10"
-                            onClick={() => navigate("/coming-soon")}
-                          >
-                            <Briefcase className="w-4 h-4" />
-                            Expand Practice
-                            <ArrowRight className="w-4 h-4" />
-                          </Button>
-                        )}
-                        {naturalRole?.training_contexts && (
-                          <>
-                            <Button
-                              variant="outline"
-                              className="gap-2 border-b4-teal/30 text-b4-teal hover:bg-b4-teal/10"
-                              onClick={() => navigate("/coming-soon")}
-                            >
-                              <GraduationCap className="w-4 h-4" />
-                              Train a Team
-                              <ArrowRight className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              className="gap-2 border-b4-teal/30 text-b4-teal hover:bg-b4-teal/10"
-                              onClick={() => navigate("/coming-soon")}
-                            >
-                              <Users className="w-4 h-4" />
-                              Share Knowledge
-                              <ArrowRight className="w-4 h-4" />
-                            </Button>
-                          </>
-                        )}
-                        {naturalRole?.consulting_with_whom && (
-                          <Button
-                            variant="outline"
-                            className="gap-2 border-b4-teal/30 text-b4-teal hover:bg-b4-teal/10"
-                            onClick={() => navigate("/coming-soon")}
-                          >
-                            <Target className="w-4 h-4" />
-                            Offer Consulting
-                            <ArrowRight className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+                        Services Related to Your Natural Role
+                      </CardTitle>
+                      <SectionActions
+                        hasContent={!!(naturalRole as any)?.services_description}
+                        isEditing={isEditing}
+                        showHistory={false}
+                        onEdit={() => startEditing('section-services')}
+                        onToggleHistory={() => {}}
+                        onAdd={() => startEditing('section-services')}
+                      />
+                    </div>
+                    <CardDescription>
+                      Describe the services you offer based on your natural role expertise
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {isEditing ? (
+                      <Textarea
+                        value={editData.services_description}
+                        onChange={(e) => setEditData(prev => ({ ...prev, services_description: e.target.value }))}
+                        placeholder="Describe the services you can offer — consulting, training, practice expansion, etc."
+                        rows={4}
+                      />
+                    ) : (naturalRole as any)?.services_description ? (
+                      <p className="text-foreground whitespace-pre-wrap bg-muted/30 rounded-lg p-4">
+                        {(naturalRole as any).services_description}
+                      </p>
+                    ) : (
+                      <button 
+                        onClick={() => startEditing('section-services')}
+                        className="w-full text-center py-4 text-muted-foreground hover:bg-muted/30 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <Sparkles className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                        <p>Click to describe your services</p>
+                      </button>
+                    )}
+                  </CardContent>
+                </Card>
 
                 {/* Practice, Training, Consulting - Only show when Promise is Yes */}
                 {naturalRole?.promise_check && (
