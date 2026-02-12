@@ -262,7 +262,7 @@ const Auth = () => {
                         }`}
                       />
                       <div className="font-medium text-sm text-foreground">Organization</div>
-                      <div className="text-xs text-b4-teal">To collaborate</div>
+                      <div className="text-xs text-b4-teal">To collaborate together</div>
                     </button>
                   </div>
                 </div>
