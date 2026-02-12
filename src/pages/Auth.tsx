@@ -164,23 +164,21 @@ const Auth = () => {
     setOrgSubmitting(true);
 
     try {
-      const { error } = await supabase
-        .from("admin_notifications")
-        .insert({
-          user_id: "00000000-0000-0000-0000-000000000000",
-          notification_type: "application_submission",
-          user_name: contactName,
-          user_email: contactEmail,
-          step_name: "partner",
-          message: JSON.stringify({
-            role: "organization",
-            contactName,
-            contactEmail,
-            organizationName: orgName,
-            partnershipInterest,
-            bio: orgBio,
-          }),
-        });
+      const { error } = await supabase.from("admin_notifications").insert({
+        user_id: "00000000-0000-0000-0000-000000000000",
+        notification_type: "application_submission",
+        user_name: contactName,
+        user_email: contactEmail,
+        step_name: "partner",
+        message: JSON.stringify({
+          role: "organization",
+          contactName,
+          contactEmail,
+          organizationName: orgName,
+          partnershipInterest,
+          bio: orgBio,
+        }),
+      });
 
       if (error) throw error;
 
@@ -244,12 +242,10 @@ const Auth = () => {
                       }`}
                     >
                       <User
-                        className={`w-5 h-5 mb-2 ${
-                          joinType === "person" ? "text-b4-teal" : "text-muted-foreground"
-                        }`}
+                        className={`w-5 h-5 mb-2 ${joinType === "person" ? "text-b4-teal" : "text-muted-foreground"}`}
                       />
                       <div className="font-medium text-sm text-foreground">Person</div>
-                      <div className="text-xs text-b4-teal">Run with us</div>
+                      <div className="text-xs text-b4-teal">Join Us</div>
                     </button>
                     <button
                       type="button"
