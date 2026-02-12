@@ -75,10 +75,12 @@ const Onboarding = () => {
     }
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
+    } else {
+      navigate("/choose-path");
     }
   };
 
-  const canGoBack = currentStep > 1 || showPendingHelp || showNotReady;
+  const canGoBack = currentStep >= 1 || showPendingHelp || showNotReady;
 
   const getStepLabel = () => {
     const labels: Record<number, string> = {
