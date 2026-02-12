@@ -245,7 +245,7 @@ const Auth = () => {
                         className={`w-5 h-5 mb-2 ${joinType === "person" ? "text-b4-teal" : "text-muted-foreground"}`}
                       />
                       <div className="font-medium text-sm text-foreground">Person</div>
-                      <div className="text-xs text-b4-teal">Join Us</div>
+                      <div className="text-xs text-b4-teal">To grow</div>
                     </button>
                     <button
                       type="button"
@@ -262,7 +262,7 @@ const Auth = () => {
                         }`}
                       />
                       <div className="font-medium text-sm text-foreground">Organization</div>
-                      <div className="text-xs text-b4-teal">Collaborate with us</div>
+                      <div className="text-xs text-b4-teal">To collaborate</div>
                     </button>
                   </div>
                 </div>
