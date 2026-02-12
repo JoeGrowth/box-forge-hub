@@ -76,7 +76,7 @@ export function AdminNotificationsTab({ notifications, onRefresh }: AdminNotific
         notification_type: "natural_role_retry",
         title: "You can now define your Natural Role",
         message: "An admin has enabled you to retry defining your Natural Role. Please log in to continue your onboarding journey.",
-        link: "/onboarding"
+        link: "/professional-onboarding"
       });
 
       // Mark admin notification as read

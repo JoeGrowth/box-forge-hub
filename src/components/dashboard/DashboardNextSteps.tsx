@@ -55,7 +55,7 @@ export function DashboardNextSteps() {
           icon: Target,
           title: "Complete Your Onboarding",
           description: "Finish setting up your profile to unlock all features",
-          link: "/onboarding",
+          link: "/professional-onboarding",
           priority: "high",
         });
       }

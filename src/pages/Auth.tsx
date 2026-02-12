@@ -72,7 +72,7 @@ const Auth = () => {
       if (isCoBuilderComplete || isEntrepreneurComplete) {
         navigate("/", { replace: true });
       } else {
-        navigate("/onboarding", { replace: true });
+        navigate("/professional-onboarding", { replace: true });
       }
     }
   }, [user, onboardingState, onboardingLoading, navigate]);

@@ -32,7 +32,7 @@ export const PathSelectionStep = ({ onNext }: PathSelectionStepProps) => {
         "onboarding_path_selected",
         "Path Selected! 🎯",
         `You've chosen the ${roleName} path. Let's continue your journey!`,
-        "/onboarding",
+        "/professional-onboarding",
       );
 
       onNext();

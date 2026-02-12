@@ -62,7 +62,7 @@ export function DashboardProgress() {
           status: "in_progress",
           currentPhase: onboardingState.current_step || 1,
           totalPhases: 5,
-          link: "/onboarding",
+          link: "/professional-onboarding",
         });
       }
 
@@ -177,7 +177,7 @@ export function DashboardProgress() {
             </div>
             {!isOnboardingTrulyComplete && (
               <Button size="sm" variant="outline" asChild>
-                <Link to="/onboarding">Continue</Link>
+                <Link to="/professional-onboarding">Continue</Link>
               </Button>
             )}
           </div>
