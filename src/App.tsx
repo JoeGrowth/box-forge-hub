@@ -32,6 +32,7 @@ import Mask from "./pages/Mask";
 import Scale from "./pages/Scale";
 import Checklist from "./pages/Checklist";
 import Resume from "./pages/Resume";
+import TrackRecord from "./pages/TrackRecord";
 import CreateIdea from "./pages/CreateIdea";
 import EditIdea from "./pages/EditIdea";
 import Stories from "./pages/Stories";
@@ -87,6 +88,7 @@ const App = () => (
                 <Route path="/start" element={<Scale />} />
                 <Route path="/checklist" element={<Checklist />} />
                 <Route path="/resume" element={<Resume />} />
+                <Route path="/track-record" element={<TrackRecord />} />
                 <Route path="/create-idea" element={<CreateIdea />} />
                 <Route path="/edit-idea/:id" element={<EditIdea />} />
                 <Route path="/chat/:applicationId" element={<Chat />} />
