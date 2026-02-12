@@ -42,10 +42,31 @@ interface NaturalRoleDetails {
   wants_to_scale: boolean | null;
 }
 
+interface EntrepreneurialDetails {
+  has_developed_project: boolean | null;
+  project_description: string | null;
+  project_count: number | null;
+  project_needs_help: boolean | null;
+  has_built_product: boolean | null;
+  product_description: string | null;
+  product_count: number | null;
+  product_needs_help: boolean | null;
+  has_run_business: boolean | null;
+  business_description: string | null;
+  business_count: number | null;
+  business_needs_help: boolean | null;
+  has_served_on_board: boolean | null;
+  board_description: string | null;
+  board_count: number | null;
+  board_needs_help: boolean | null;
+  is_completed: boolean | null;
+}
+
 interface PendingApproval {
   id: string;
   user_id: string;
   primary_role: string | null;
+  potential_role: string | null;
   current_step: number;
   journey_status: string;
   created_at: string;
@@ -57,6 +78,7 @@ interface PendingApproval {
     years_of_experience: number | null;
   } | null;
   naturalRole: NaturalRoleDetails | null;
+  entrepreneurialData: EntrepreneurialDetails | null;
 }
 
 interface AdminApprovalsTabProps {
@@ -97,11 +119,18 @@ export const AdminApprovalsTab = ({ onRefresh }: AdminApprovalsTabProps) => {
         .select("user_id, description, is_ready, promise_check, practice_check, practice_entities, practice_case_studies, practice_needs_help, training_check, training_contexts, training_count, training_needs_help, consulting_check, consulting_with_whom, consulting_case_studies, wants_to_scale")
         .in("user_id", userIds);
 
+      // Fetch entrepreneurial onboarding data
+      const { data: entrepreneurialData } = await supabase
+        .from("entrepreneurial_onboarding")
+        .select("*")
+        .in("user_id", userIds);
+
       // Combine data
       const combined: PendingApproval[] = (onboardingData || []).map(o => ({
         ...o,
         profile: profiles?.find(p => p.user_id === o.user_id) || null,
         naturalRole: naturalRoles?.find(n => n.user_id === o.user_id) || null,
+        entrepreneurialData: entrepreneurialData?.find(e => e.user_id === o.user_id) || null,
       }));
 
       setPendingApprovals(combined);
@@ -362,6 +391,10 @@ export const AdminApprovalsTab = ({ onRefresh }: AdminApprovalsTabProps) => {
                       </h3>
                       <p className="text-sm text-muted-foreground">
                         Applied {formatDate(approval.updated_at)}
+                        {" · "}
+                        <Badge variant="outline" className="ml-1 text-xs">
+                          {approval.primary_role === "entrepreneur" ? "Entrepreneurial" : "Professional"}
+                        </Badge>
                       </p>
                     </div>
                   </div>
@@ -375,7 +408,15 @@ export const AdminApprovalsTab = ({ onRefresh }: AdminApprovalsTabProps) => {
                     </div>
                   )}
 
-                  {approval.naturalRole?.description ? (
+                  {approval.primary_role === "entrepreneur" ? (
+                    approval.entrepreneurialData?.is_completed ? (
+                      <div className="mt-3 p-3 bg-muted/50 rounded-lg">
+                        <p className="text-sm text-foreground italic">
+                          Entrepreneurial journey completed
+                        </p>
+                      </div>
+                    ) : null
+                  ) : approval.naturalRole?.description ? (
                     <div className="mt-3 p-3 bg-muted/50 rounded-lg">
                       <p className="text-sm text-foreground italic">
                         "{approval.naturalRole.description}"
@@ -391,7 +432,12 @@ export const AdminApprovalsTab = ({ onRefresh }: AdminApprovalsTabProps) => {
                   ) : null}
 
                   <div className="flex items-center gap-2 mt-3">
-                    {approval.naturalRole?.is_ready ? (
+                    {approval.primary_role === "entrepreneur" ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-b4-teal/10 text-b4-teal text-xs font-medium">
+                        <CheckCircle className="w-3 h-3" />
+                        Entrepreneur
+                      </span>
+                    ) : approval.naturalRole?.is_ready ? (
                       <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-b4-teal/10 text-b4-teal text-xs font-medium">
                         <CheckCircle className="w-3 h-3" />
                         Ready
@@ -451,7 +497,7 @@ export const AdminApprovalsTab = ({ onRefresh }: AdminApprovalsTabProps) => {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <User className="w-5 h-5 text-b4-teal" />
-              Co-Builder Profile Review - {selectedApproval?.profile?.full_name || "Unknown User"}
+              {selectedApproval?.primary_role === "entrepreneur" ? "Entrepreneur" : "Co-Builder"} Profile Review - {selectedApproval?.profile?.full_name || "Unknown User"}
             </DialogTitle>
           </DialogHeader>
 
@@ -493,137 +539,188 @@ export const AdminApprovalsTab = ({ onRefresh }: AdminApprovalsTabProps) => {
                 </div>
               </div>
 
-              {/* Natural Role Description */}
-              <div className="bg-muted/30 rounded-xl p-4 border border-border">
-                <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-                  <Briefcase className="w-4 h-4 text-b4-teal" />
-                  Natural Role
-                </h4>
-                <p className="text-sm text-foreground italic bg-background/50 p-3 rounded-lg">
-                  "{selectedApproval.naturalRole?.description || "Not provided"}"
-                </p>
+              {/* Path Badge */}
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="text-sm">
+                  {selectedApproval.primary_role === "entrepreneur" ? "🚀 Entrepreneurial Journey" : "💼 Professional Journey"}
+                </Badge>
               </div>
 
-              {/* Detailed Current Status - like the reference screenshot */}
-              <div className="bg-muted/30 rounded-xl p-4 border border-border">
-                <h4 className="font-semibold text-foreground mb-3">Current Status</h4>
-                <div className="space-y-1">
-                  <DetailedStatusRow 
-                    label="Natural Role Definition" 
-                    checked={!!selectedApproval.naturalRole?.description} 
-                    details={selectedApproval.naturalRole?.description}
-                  />
-                  <DetailedStatusRow 
-                    label="Promise to Deliver" 
-                    checked={selectedApproval.naturalRole?.promise_check} 
-                  />
-                  <DetailedStatusRow 
-                    label="Practice Experience" 
-                    checked={selectedApproval.naturalRole?.practice_check}
-                    needsHelp={selectedApproval.naturalRole?.practice_needs_help}
-                    details={selectedApproval.naturalRole?.practice_case_studies 
-                      ? `${selectedApproval.naturalRole.practice_case_studies} case studies with ${selectedApproval.naturalRole.practice_entities || 'various entities'}`
-                      : undefined}
-                  />
-                  <DetailedStatusRow 
-                    label="Training Experience" 
-                    checked={selectedApproval.naturalRole?.training_check}
-                    needsHelp={selectedApproval.naturalRole?.training_needs_help}
-                    details={selectedApproval.naturalRole?.training_count 
-                      ? `${selectedApproval.naturalRole.training_count} trainings in ${selectedApproval.naturalRole.training_contexts || 'various contexts'}`
-                      : undefined}
-                  />
-                  <DetailedStatusRow 
-                    label="Consulting Experience" 
-                    checked={selectedApproval.naturalRole?.consulting_check}
-                    details={selectedApproval.naturalRole?.consulting_with_whom 
-                      ? `With ${selectedApproval.naturalRole.consulting_with_whom}`
-                      : undefined}
-                  />
-                  <DetailedStatusRow 
-                    label="Scaling Interest" 
-                    checked={selectedApproval.naturalRole?.wants_to_scale}
-                    details={selectedApproval.naturalRole?.wants_to_scale 
-                      ? "Interested in scaling" 
-                      : undefined}
-                  />
-                </div>
-              </div>
+              {/* Professional Journey content */}
+              {selectedApproval.primary_role !== "entrepreneur" && (
+                <>
+                  <div className="bg-muted/30 rounded-xl p-4 border border-border">
+                    <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                      <Briefcase className="w-4 h-4 text-b4-teal" />
+                      Natural Role
+                    </h4>
+                    <p className="text-sm text-foreground italic bg-background/50 p-3 rounded-lg">
+                      "{selectedApproval.naturalRole?.description || "Not provided"}"
+                    </p>
+                  </div>
 
-              {/* Practice Details */}
-              {selectedApproval.naturalRole?.practice_check && (
-                <div className="bg-muted/30 rounded-xl p-4 border border-border">
-                  <h4 className="font-semibold text-foreground mb-3">Practice Experience</h4>
-                  <div className="space-y-2">
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Entities/Organizations</Label>
-                      <p className="text-sm text-foreground mt-1">
-                        {selectedApproval.naturalRole?.practice_entities || "Not provided"}
-                      </p>
+                  <div className="bg-muted/30 rounded-xl p-4 border border-border">
+                    <h4 className="font-semibold text-foreground mb-3">Current Status</h4>
+                    <div className="space-y-1">
+                      <DetailedStatusRow 
+                        label="Natural Role Definition" 
+                        checked={!!selectedApproval.naturalRole?.description} 
+                        details={selectedApproval.naturalRole?.description}
+                      />
+                      <DetailedStatusRow 
+                        label="Promise to Deliver" 
+                        checked={selectedApproval.naturalRole?.promise_check} 
+                      />
+                      <DetailedStatusRow 
+                        label="Practice Experience" 
+                        checked={selectedApproval.naturalRole?.practice_check}
+                        needsHelp={!!selectedApproval.naturalRole?.practice_needs_help}
+                        details={selectedApproval.naturalRole?.practice_case_studies 
+                          ? `${selectedApproval.naturalRole.practice_case_studies} case studies with ${selectedApproval.naturalRole.practice_entities || 'various entities'}`
+                          : undefined}
+                      />
+                      <DetailedStatusRow 
+                        label="Training Experience" 
+                        checked={selectedApproval.naturalRole?.training_check}
+                        needsHelp={!!selectedApproval.naturalRole?.training_needs_help}
+                        details={selectedApproval.naturalRole?.training_count 
+                          ? `${selectedApproval.naturalRole.training_count} trainings in ${selectedApproval.naturalRole.training_contexts || 'various contexts'}`
+                          : undefined}
+                      />
+                      <DetailedStatusRow 
+                        label="Consulting Experience" 
+                        checked={selectedApproval.naturalRole?.consulting_check}
+                        details={selectedApproval.naturalRole?.consulting_with_whom 
+                          ? `With ${selectedApproval.naturalRole.consulting_with_whom}`
+                          : undefined}
+                      />
+                      <DetailedStatusRow 
+                        label="Scaling Interest" 
+                        checked={selectedApproval.naturalRole?.wants_to_scale}
+                        details={selectedApproval.naturalRole?.wants_to_scale 
+                          ? "Interested in scaling" 
+                          : undefined}
+                      />
                     </div>
-                    {selectedApproval.naturalRole?.practice_case_studies && (
-                      <p className="text-xs text-muted-foreground">
-                        Case studies: {selectedApproval.naturalRole.practice_case_studies}
-                      </p>
-                    )}
+                  </div>
+
+                  {selectedApproval.naturalRole?.practice_check && (
+                    <div className="bg-muted/30 rounded-xl p-4 border border-border">
+                      <h4 className="font-semibold text-foreground mb-3">Practice Experience</h4>
+                      <div className="space-y-2">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Entities/Organizations</Label>
+                          <p className="text-sm text-foreground mt-1">
+                            {selectedApproval.naturalRole?.practice_entities || "Not provided"}
+                          </p>
+                        </div>
+                        {selectedApproval.naturalRole?.practice_case_studies && (
+                          <p className="text-xs text-muted-foreground">
+                            Case studies: {selectedApproval.naturalRole.practice_case_studies}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedApproval.naturalRole?.training_check && (
+                    <div className="bg-muted/30 rounded-xl p-4 border border-border">
+                      <h4 className="font-semibold text-foreground mb-3">Training Experience</h4>
+                      <div className="space-y-2">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Training Contexts</Label>
+                          <p className="text-sm text-foreground mt-1">
+                            {selectedApproval.naturalRole?.training_contexts || "Not provided"}
+                          </p>
+                        </div>
+                        {selectedApproval.naturalRole?.training_count && (
+                          <p className="text-xs text-muted-foreground">
+                            Training count: {selectedApproval.naturalRole.training_count}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedApproval.naturalRole?.consulting_check && (
+                    <div className="bg-muted/30 rounded-xl p-4 border border-border">
+                      <h4 className="font-semibold text-foreground mb-3">Consulting Experience</h4>
+                      <div className="space-y-2">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Consulted With</Label>
+                          <p className="text-sm text-foreground mt-1">
+                            {selectedApproval.naturalRole?.consulting_with_whom || "Not provided"}
+                          </p>
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Case Studies</Label>
+                          <p className="text-sm text-foreground mt-1">
+                            {selectedApproval.naturalRole?.consulting_case_studies || "Not provided"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="bg-muted/30 rounded-xl p-4 border border-border">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Interested in Scaling</span>
+                      <Badge variant={selectedApproval.naturalRole?.wants_to_scale ? "default" : "secondary"}>
+                        {selectedApproval.naturalRole?.wants_to_scale ? "Yes" : "No"}
+                      </Badge>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Entrepreneurial Journey content */}
+              {selectedApproval.primary_role === "entrepreneur" && (
+                <div className="bg-muted/30 rounded-xl p-4 border border-border">
+                  <h4 className="font-semibold text-foreground mb-3">Entrepreneurial Track Record</h4>
+                  <div className="space-y-1">
+                    <DetailedStatusRow 
+                      label="Project Development" 
+                      checked={selectedApproval.entrepreneurialData?.has_developed_project ?? null}
+                      needsHelp={!!selectedApproval.entrepreneurialData?.project_needs_help}
+                      details={selectedApproval.entrepreneurialData?.has_developed_project 
+                        ? `${selectedApproval.entrepreneurialData.project_count || 0} project(s) — ${selectedApproval.entrepreneurialData.project_description || "No description"}`
+                        : undefined}
+                    />
+                    <DetailedStatusRow 
+                      label="Product Building" 
+                      checked={selectedApproval.entrepreneurialData?.has_built_product ?? null}
+                      needsHelp={!!selectedApproval.entrepreneurialData?.product_needs_help}
+                      details={selectedApproval.entrepreneurialData?.has_built_product 
+                        ? `${selectedApproval.entrepreneurialData.product_count || 0} product(s) — ${selectedApproval.entrepreneurialData.product_description || "No description"}`
+                        : undefined}
+                    />
+                    <DetailedStatusRow 
+                      label="Business Experience" 
+                      checked={selectedApproval.entrepreneurialData?.has_run_business ?? null}
+                      needsHelp={!!selectedApproval.entrepreneurialData?.business_needs_help}
+                      details={selectedApproval.entrepreneurialData?.has_run_business 
+                        ? `${selectedApproval.entrepreneurialData.business_count || 0} business(es) — ${selectedApproval.entrepreneurialData.business_description || "No description"}`
+                        : undefined}
+                    />
+                    <DetailedStatusRow 
+                      label="Board Service" 
+                      checked={selectedApproval.entrepreneurialData?.has_served_on_board ?? null}
+                      needsHelp={!!selectedApproval.entrepreneurialData?.board_needs_help}
+                      details={selectedApproval.entrepreneurialData?.has_served_on_board 
+                        ? `${selectedApproval.entrepreneurialData.board_count || 0} board(s) — ${selectedApproval.entrepreneurialData.board_description || "No description"}`
+                        : undefined}
+                    />
                   </div>
                 </div>
               )}
-
-              {/* Training Details */}
-              {selectedApproval.naturalRole?.training_check && (
-                <div className="bg-muted/30 rounded-xl p-4 border border-border">
-                  <h4 className="font-semibold text-foreground mb-3">Training Experience</h4>
-                  <div className="space-y-2">
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Training Contexts</Label>
-                      <p className="text-sm text-foreground mt-1">
-                        {selectedApproval.naturalRole?.training_contexts || "Not provided"}
-                      </p>
-                    </div>
-                    {selectedApproval.naturalRole?.training_count && (
-                      <p className="text-xs text-muted-foreground">
-                        Training count: {selectedApproval.naturalRole.training_count}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Consulting Details */}
-              {selectedApproval.naturalRole?.consulting_check && (
-                <div className="bg-muted/30 rounded-xl p-4 border border-border">
-                  <h4 className="font-semibold text-foreground mb-3">Consulting Experience</h4>
-                  <div className="space-y-2">
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Consulted With</Label>
-                      <p className="text-sm text-foreground mt-1">
-                        {selectedApproval.naturalRole?.consulting_with_whom || "Not provided"}
-                      </p>
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Case Studies</Label>
-                      <p className="text-sm text-foreground mt-1">
-                        {selectedApproval.naturalRole?.consulting_case_studies || "Not provided"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Scaling Interest */}
-              <div className="bg-muted/30 rounded-xl p-4 border border-border">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Interested in Scaling</span>
-                  <Badge variant={selectedApproval.naturalRole?.wants_to_scale ? "default" : "secondary"}>
-                    {selectedApproval.naturalRole?.wants_to_scale ? "Yes" : "No"}
-                  </Badge>
-                </div>
-              </div>
 
               {/* Readiness Status */}
               <div className="flex items-center justify-center gap-2 py-2">
-                {selectedApproval.naturalRole?.is_ready ? (
+                {selectedApproval.primary_role === "entrepreneur" ? (
+                  <Badge className="bg-b4-teal text-white px-4 py-2">
+                    <CheckCircle className="w-4 h-4 mr-2" /> Entrepreneurial Journey Complete
+                  </Badge>
+                ) : selectedApproval.naturalRole?.is_ready ? (
                   <Badge className="bg-b4-teal text-white px-4 py-2">
                     <CheckCircle className="w-4 h-4 mr-2" /> Ready for Approval
                   </Badge>

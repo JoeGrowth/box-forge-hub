@@ -152,6 +152,14 @@ export function AdminUserPreviewDialog({
               </h4>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
+                  <span className="text-xs text-muted-foreground">Path</span>
+                  <div>
+                    <Badge variant="outline">
+                      {user.onboarding?.primary_role === "entrepreneur" ? "🚀 Entrepreneurial" : "💼 Professional"}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="space-y-1">
                   <span className="text-xs text-muted-foreground">Completed</span>
                   <div className="flex items-center gap-1.5">
                     {user.onboarding?.onboarding_completed ? (
