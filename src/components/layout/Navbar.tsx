@@ -16,27 +16,22 @@ const guestNavLinks = [
   { name: "Boxes", path: "/boxes" },
 ];
 
-// Base links for all logged-in users (applied status)
-const appliedUserLinks = [
+// Helper to build links based on role
+const getAppliedLinks = (isEntrepreneur: boolean) => [
   { name: "Opportunities", path: "/opportunities" },
   { name: "People", path: "/cobuilders" },
-  { name: "Resume", path: "/resume" },
+  ...(isEntrepreneur
+    ? [{ name: "Track Record", path: "/track-record" }]
+    : [{ name: "Resume", path: "/resume" }]),
 ];
 
-// Links for approved users (includes Boosting)
-const approvedUserLinks = [
-  { name: "Opportunities", path: "/opportunities" },
-  { name: "People", path: "/cobuilders" },
-  { name: "Resume", path: "/resume" },
+const getApprovedLinks = (isEntrepreneur: boolean) => [
+  ...getAppliedLinks(isEntrepreneur),
   { name: "Boost", path: "/journey" },
 ];
 
-// Links for boosted/scaled users (includes Scale)
-const boostedUserLinks = [
-  { name: "Opportunities", path: "/opportunities" },
-  { name: "People", path: "/cobuilders" },
-  { name: "Resume", path: "/resume" },
-  { name: "Boost", path: "/journey" },
+const getBoostedLinks = (isEntrepreneur: boolean) => [
+  ...getApprovedLinks(isEntrepreneur),
   { name: "Scale", path: "/start" },
 ];
 
@@ -45,7 +40,7 @@ export function Navbar() {
   const [isAdmin, setIsAdmin] = useState(false);
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
-  const { canAccessBoosting, canAccessScaling } = useUserStatus();
+  const { canAccessBoosting, canAccessScaling, potentialRole } = useUserStatus();
 
   useEffect(() => {
     const checkUserStatus = async () => {
@@ -67,17 +62,13 @@ export function Navbar() {
   }, [user]);
 
   // Build nav links based on authentication and user status
+  const isEntrepreneur = potentialRole === "potential_entrepreneur";
+  
   const getNavLinks = () => {
     if (!user) return guestNavLinks;
-    
-    // Boosted or scaled users get Scale page
-    if (canAccessScaling) return boostedUserLinks;
-    
-    // Approved users get Boosting page (but not Scale)
-    if (canAccessBoosting) return approvedUserLinks;
-    
-    // Applied users (default for logged-in)
-    return appliedUserLinks;
+    if (canAccessScaling) return getBoostedLinks(isEntrepreneur);
+    if (canAccessBoosting) return getApprovedLinks(isEntrepreneur);
+    return getAppliedLinks(isEntrepreneur);
   };
 
   const navLinks = getNavLinks();
