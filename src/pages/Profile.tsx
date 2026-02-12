@@ -253,7 +253,7 @@ const Profile = () => {
         description: "You can now redo your onboarding journey.",
       });
 
-      navigate("/onboarding");
+      navigate("/professional-onboarding");
     } catch (error: any) {
       toast({
         title: "Error",
@@ -1142,7 +1142,7 @@ const Profile = () => {
                   You requested help defining your Natural Role. Our team will reach out to assist you. Once you define
                   your Natural Role, you can continue your onboarding journey and submit for approval.
                 </p>
-                <Button variant="teal" onClick={() => navigate("/onboarding")}>
+                <Button variant="teal" onClick={() => navigate("/professional-onboarding")}>
                   Define My Natural Role
                   <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
@@ -1156,7 +1156,7 @@ const Profile = () => {
                 <p className="text-muted-foreground mb-4">
                   Finish setting up your profile to unlock all platform features.
                 </p>
-                <Button variant="teal" onClick={() => navigate("/onboarding")}>
+                <Button variant="teal" onClick={() => navigate("/professional-onboarding")}>
                   Continue Onboarding
                   <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
