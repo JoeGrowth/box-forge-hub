@@ -97,12 +97,12 @@ export const AdminApprovalsTab = ({ onRefresh }: AdminApprovalsTabProps) => {
   const fetchPendingApprovals = async () => {
     setLoading(true);
     try {
-      // Fetch onboarding states with pending_approval status AND step 9 (completed)
+      // Fetch onboarding states with pending_approval status (completed onboarding)
       const { data: onboardingData, error: onboardingError } = await supabase
         .from("onboarding_state")
         .select("*")
         .eq("journey_status", "pending_approval")
-        .gte("current_step", 9);
+        .eq("onboarding_completed", true);
 
       if (onboardingError) throw onboardingError;
 
@@ -125,13 +125,29 @@ export const AdminApprovalsTab = ({ onRefresh }: AdminApprovalsTabProps) => {
         .select("*")
         .in("user_id", userIds);
 
-      // Combine data
-      const combined: PendingApproval[] = (onboardingData || []).map(o => ({
-        ...o,
-        profile: profiles?.find(p => p.user_id === o.user_id) || null,
-        naturalRole: naturalRoles?.find(n => n.user_id === o.user_id) || null,
-        entrepreneurialData: entrepreneurialData?.find(e => e.user_id === o.user_id) || null,
-      }));
+      // Combine data — determine actual path from data, not just primary_role
+      const combined: PendingApproval[] = (onboardingData || []).map(o => {
+        const nr = naturalRoles?.find(n => n.user_id === o.user_id) || null;
+        const ed = entrepreneurialData?.find(e => e.user_id === o.user_id) || null;
+        
+        // Determine actual role from data: if user has natural_roles data, they're professional
+        // If they have entrepreneurial_onboarding data, they're entrepreneur
+        // Fall back to primary_role if neither exists
+        let effectiveRole = o.primary_role;
+        if (nr && !ed) {
+          effectiveRole = "cobuilder";
+        } else if (ed && !nr) {
+          effectiveRole = "entrepreneur";
+        }
+        
+        return {
+          ...o,
+          primary_role: effectiveRole,
+          profile: profiles?.find(p => p.user_id === o.user_id) || null,
+          naturalRole: nr,
+          entrepreneurialData: ed,
+        };
+      });
 
       setPendingApprovals(combined);
     } catch (error) {
