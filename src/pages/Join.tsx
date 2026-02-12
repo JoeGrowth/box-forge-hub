@@ -4,33 +4,59 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ApplicationForm } from "@/components/join/ApplicationForm";
 import { 
-  User, 
+  Lightbulb, 
+  Users, 
   Building2,
+  CheckCircle,
   Rocket,
   Award,
   Handshake
 } from "lucide-react";
 
-type Role = "person" | "organization";
+type Role = "entrepreneur" | "cobuilder" | "partner";
 
-const roles: { id: Role; icon: typeof User; title: string; subtitle: string }[] = [
+const roles: { id: Role; icon: typeof Lightbulb; title: string; description: string; benefits: string[] }[] = [
   {
-    id: "person",
-    icon: User,
-    title: "Person",
-    subtitle: "Run with us",
+    id: "entrepreneur",
+    icon: Lightbulb,
+    title: "Entrepreneur",
+    description: "You have a startup idea and want to build it with equity-based co-builders.",
+    benefits: [
+      "Access to vetted co-builders",
+      "Structured startup creation process",
+      "Fair equity distribution framework",
+      "Box-specific mentorship",
+    ],
   },
   {
-    id: "organization",
+    id: "cobuilder",
+    icon: Users,
+    title: "Co-Builder",
+    description: "You have skills to contribute and want to earn equity in promising startups.",
+    benefits: [
+      "Earn equity, not just salary",
+      "Build a portfolio of investments",
+      "Certified training program",
+      "Work on meaningful projects",
+    ],
+  },
+  {
+    id: "partner",
     icon: Building2,
-    title: "Organization",
-    subtitle: "Collaborate with us",
+    title: "Partner",
+    description: "You represent an organization that wants to collaborate with B4 Platform.",
+    benefits: [
+      "Access to startup pipeline",
+      "Co-innovation opportunities",
+      "Talent network access",
+      "Custom partnership models",
+    ],
   },
 ];
 
 const Join = () => {
   const [searchParams] = useSearchParams();
-  const initialRole = (searchParams.get("role") as Role) || "person";
+  const initialRole = (searchParams.get("role") as Role) || "entrepreneur";
   const [selectedRole, setSelectedRole] = useState<Role>(initialRole);
 
   return (
@@ -63,29 +89,53 @@ const Join = () => {
               {/* Role Selection */}
               <div>
                 <h2 className="font-display text-2xl font-bold text-foreground mb-6">
-                  I want to join as:
+                  I want to join as...
                 </h2>
                 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4">
                   {roles.map((role) => (
                     <button
                       key={role.id}
                       onClick={() => setSelectedRole(role.id)}
-                      className={`text-left p-6 rounded-2xl border-2 transition-all ${
+                      className={`w-full text-left p-6 rounded-2xl border-2 transition-all ${
                         selectedRole === role.id
                           ? "border-b4-teal bg-b4-teal/5"
                           : "border-border bg-card hover:border-muted-foreground/30"
                       }`}
                     >
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${
-                        selectedRole === role.id 
-                          ? "bg-b4-teal text-primary-foreground" 
-                          : "bg-muted text-muted-foreground"
-                      }`}>
-                        <role.icon className="w-5 h-5" />
+                      <div className="flex items-start gap-4">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                          selectedRole === role.id 
+                            ? "bg-b4-teal text-primary-foreground" 
+                            : "bg-muted text-muted-foreground"
+                        }`}>
+                          <role.icon className="w-6 h-6" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg text-foreground mb-1">{role.title}</h3>
+                          <p className="text-sm text-muted-foreground mb-4">{role.description}</p>
+                          
+                          {selectedRole === role.id && (
+                            <ul className="space-y-2 animate-fade-in">
+                              {role.benefits.map((benefit) => (
+                                <li key={benefit} className="flex items-center gap-2 text-sm text-foreground">
+                                  <CheckCircle className="w-4 h-4 text-b4-teal flex-shrink-0" />
+                                  {benefit}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                          selectedRole === role.id 
+                            ? "border-b4-teal bg-b4-teal" 
+                            : "border-muted-foreground/30"
+                        }`}>
+                          {selectedRole === role.id && (
+                            <div className="w-2 h-2 rounded-full bg-primary-foreground" />
+                          )}
+                        </div>
                       </div>
-                      <h3 className="font-semibold text-lg text-foreground">{role.title}</h3>
-                      <p className="text-sm text-b4-teal">{role.subtitle}</p>
                     </button>
                   ))}
                 </div>
