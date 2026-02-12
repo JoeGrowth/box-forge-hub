@@ -353,6 +353,78 @@ export type Database = {
           },
         ]
       }
+      entrepreneurial_onboarding: {
+        Row: {
+          board_count: number | null
+          board_description: string | null
+          board_needs_help: boolean | null
+          business_count: number | null
+          business_description: string | null
+          business_needs_help: boolean | null
+          created_at: string
+          has_built_product: boolean | null
+          has_developed_project: boolean | null
+          has_run_business: boolean | null
+          has_served_on_board: boolean | null
+          id: string
+          is_completed: boolean | null
+          product_count: number | null
+          product_description: string | null
+          product_needs_help: boolean | null
+          project_count: number | null
+          project_description: string | null
+          project_needs_help: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          board_count?: number | null
+          board_description?: string | null
+          board_needs_help?: boolean | null
+          business_count?: number | null
+          business_description?: string | null
+          business_needs_help?: boolean | null
+          created_at?: string
+          has_built_product?: boolean | null
+          has_developed_project?: boolean | null
+          has_run_business?: boolean | null
+          has_served_on_board?: boolean | null
+          id?: string
+          is_completed?: boolean | null
+          product_count?: number | null
+          product_description?: string | null
+          product_needs_help?: boolean | null
+          project_count?: number | null
+          project_description?: string | null
+          project_needs_help?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          board_count?: number | null
+          board_description?: string | null
+          board_needs_help?: boolean | null
+          business_count?: number | null
+          business_description?: string | null
+          business_needs_help?: boolean | null
+          created_at?: string
+          has_built_product?: boolean | null
+          has_developed_project?: boolean | null
+          has_run_business?: boolean | null
+          has_served_on_board?: boolean | null
+          id?: string
+          is_completed?: boolean | null
+          product_count?: number | null
+          product_description?: string | null
+          product_needs_help?: boolean | null
+          project_count?: number | null
+          project_description?: string | null
+          project_needs_help?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       idea_journey_progress: {
         Row: {
           completed_at: string | null

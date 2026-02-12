@@ -19,6 +19,8 @@ import Auth from "./pages/Auth";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Onboarding from "./pages/Onboarding";
+import ChoosePath from "./pages/ChoosePath";
+import EntrepreneurialOnboarding from "./pages/EntrepreneurialOnboarding";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import AdminOpportunityDetail from "./pages/AdminOpportunityDetail";
@@ -71,6 +73,8 @@ const App = () => (
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/professional-onboarding" element={<Onboarding />} />
+                <Route path="/choose-path" element={<ChoosePath />} />
+                <Route path="/entrepreneurial-onboarding" element={<EntrepreneurialOnboarding />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/admin" element={<Admin />} />
