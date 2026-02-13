@@ -2,35 +2,52 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowRight, CheckCircle, XCircle, HelpCircle } from "lucide-react";
+
+export interface ExtraField {
+  key: string;
+  label: string;
+  type: "text" | "number" | "textarea" | "select";
+  placeholder?: string;
+  options?: { value: string; label: string }[];
+}
 
 interface EntrepreneurialExperienceStepProps {
   question: string;
+  subtitle?: string;
   hasExperience: boolean | null;
   description: string;
   count: string;
   needsHelp: boolean;
   countLabel: string;
   descPlaceholder: string;
+  extraFields?: ExtraField[];
+  extraValues?: Record<string, string>;
   onHasExperienceChange: (val: boolean) => void;
   onDescriptionChange: (val: string) => void;
   onCountChange: (val: string) => void;
   onNeedsHelpChange: (val: boolean) => void;
+  onExtraFieldChange?: (key: string, val: string) => void;
   onNext: () => void;
 }
 
 export const EntrepreneurialExperienceStep = ({
   question,
+  subtitle,
   hasExperience,
   description,
   count,
   needsHelp,
   countLabel,
   descPlaceholder,
+  extraFields,
+  extraValues = {},
   onHasExperienceChange,
   onDescriptionChange,
   onCountChange,
   onNeedsHelpChange,
+  onExtraFieldChange,
   onNext,
 }: EntrepreneurialExperienceStepProps) => {
   const canProceed =
@@ -38,11 +55,79 @@ export const EntrepreneurialExperienceStep = ({
       ? description.trim().length > 0 && count.trim().length > 0
       : hasExperience === false;
 
+  const renderExtraField = (field: ExtraField) => {
+    const value = extraValues[field.key] || "";
+
+    switch (field.type) {
+      case "select":
+        return (
+          <div key={field.key}>
+            <Label className="mb-2 block">{field.label}</Label>
+            <Select
+              value={value}
+              onValueChange={(val) => onExtraFieldChange?.(field.key, val)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={field.placeholder || "Select..."} />
+              </SelectTrigger>
+              <SelectContent>
+                {field.options?.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        );
+      case "textarea":
+        return (
+          <div key={field.key}>
+            <Label className="mb-2 block">{field.label}</Label>
+            <Textarea
+              value={value}
+              onChange={(e) => onExtraFieldChange?.(field.key, e.target.value)}
+              placeholder={field.placeholder}
+              className="min-h-[80px]"
+            />
+          </div>
+        );
+      case "number":
+        return (
+          <div key={field.key}>
+            <Label className="mb-2 block">{field.label}</Label>
+            <Input
+              type="number"
+              min="0"
+              value={value}
+              onChange={(e) => onExtraFieldChange?.(field.key, e.target.value)}
+              placeholder={field.placeholder}
+              className="max-w-[150px]"
+            />
+          </div>
+        );
+      default:
+        return (
+          <div key={field.key}>
+            <Label className="mb-2 block">{field.label}</Label>
+            <Input
+              value={value}
+              onChange={(e) => onExtraFieldChange?.(field.key, e.target.value)}
+              placeholder={field.placeholder}
+            />
+          </div>
+        );
+    }
+  };
+
   return (
     <div className="text-center">
-      <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-8">
+      <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-3">
         {question}
       </h1>
+      {subtitle && (
+        <p className="text-muted-foreground text-sm mb-8 max-w-lg mx-auto">{subtitle}</p>
+      )}
 
       {/* Yes / No Selection */}
       <div className="grid grid-cols-2 gap-4 mb-8">
@@ -85,7 +170,7 @@ export const EntrepreneurialExperienceStep = ({
         </button>
       </div>
 
-      {/* Yes: show description + count */}
+      {/* Yes: show description + count + extra fields */}
       {hasExperience === true && (
         <div className="space-y-5 text-left mb-8 animate-fade-in">
           <div>
@@ -109,6 +194,7 @@ export const EntrepreneurialExperienceStep = ({
               className="max-w-[150px]"
             />
           </div>
+          {extraFields?.map(renderExtraField)}
         </div>
       )}
 
