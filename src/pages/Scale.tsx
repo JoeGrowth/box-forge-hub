@@ -753,6 +753,24 @@ const Scale = () => {
 
             {/* Scale Your NR Section */}
             <div className={`space-y-8 ${activeSection === "scale" ? "block" : "hidden"}`}>
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <div>
+                    <h2 className="text-2xl font-display font-bold text-foreground">Your Consultant Journey</h2>
+                    <p className="text-muted-foreground mt-1">Build your Mask, scale your expertise, and operate beyond yourself</p>
+                  </div>
+                  {hasConsultantCert ? (
+                    <Button variant="outline" onClick={() => handleOpenStepDialog(1)}>
+                      <Theater className="w-4 h-4 mr-2" />
+                      Open Your Mask
+                    </Button>
+                  ) : (
+                    <Button variant="teal" onClick={() => navigate("/journey?section=consultant")}>
+                      <BookOpen className="w-4 h-4 mr-2" />
+                      Get Certified
+                    </Button>
+                  )}
+                </div>
+
                 {!hasConsultantCert && (
                   <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-violet-500/5">
                     <CardContent className="pt-6">
