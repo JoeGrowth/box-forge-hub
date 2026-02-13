@@ -113,7 +113,7 @@ const SCALE_NR_STEPS = [
   {
     step: 2,
     title: "Code the Mask",
-    subtitle: "Personal thinking → operational systems",
+    subtitle: "Operational systems",
     icon: Code2,
     description:
       "Transform personal thinking into operational systems. Your Mask becomes coded through frameworks, processes, and methods.",
@@ -186,8 +186,8 @@ const Scale = () => {
   const [hasTeamMemberships, setHasTeamMemberships] = useState<boolean | null>(null);
   const [showScaleExperience, setShowScaleExperience] = useState(() => {
     // Initialize from localStorage
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('showScaleExperience') === 'true';
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("showScaleExperience") === "true";
     }
     return false;
   });
@@ -237,7 +237,15 @@ const Scale = () => {
   // Wait for statusData and hasTeamMemberships to be loaded
   useEffect(() => {
     // Only check access after all data is fully loaded and user is authenticated
-    if (!authLoading && !statusLoading && user && statusData !== null && hasTeamMemberships !== null && !canAccessScaling && !hasTeamMemberships) {
+    if (
+      !authLoading &&
+      !statusLoading &&
+      user &&
+      statusData !== null &&
+      hasTeamMemberships !== null &&
+      !canAccessScaling &&
+      !hasTeamMemberships
+    ) {
       toast({
         title: "Access Restricted",
         description: "Complete a boosting journey to unlock the Scale page.",
@@ -246,7 +254,15 @@ const Scale = () => {
       navigate("/journey", { replace: true });
     }
     // If user has team memberships but no scaling access, force cobuilder section
-    if (!authLoading && !statusLoading && user && statusData !== null && hasTeamMemberships !== null && !canAccessScaling && hasTeamMemberships) {
+    if (
+      !authLoading &&
+      !statusLoading &&
+      user &&
+      statusData !== null &&
+      hasTeamMemberships !== null &&
+      !canAccessScaling &&
+      hasTeamMemberships
+    ) {
       setActiveSection("cobuilder");
     }
   }, [authLoading, statusLoading, user, statusData, canAccessScaling, hasTeamMemberships, navigate, toast]);
@@ -289,7 +305,9 @@ const Scale = () => {
       setLoadingIdeas(true);
       const { data, error } = await supabase
         .from("startup_ideas")
-        .select("id, title, description, sector, review_status, status, created_at, current_episode, development_completed_at, validation_completed_at, growth_completed_at")
+        .select(
+          "id, title, description, sector, review_status, status, created_at, current_episode, development_completed_at, validation_completed_at, growth_completed_at",
+        )
         .eq("creator_id", user.id)
         .order("created_at", { ascending: false });
 
@@ -478,14 +496,14 @@ const Scale = () => {
     const hasCompletedAnyStep = Object.values(stepCompletionStatus).some(Boolean);
     if (hasCompletedAnyStep) {
       setShowScaleExperience(true);
-      localStorage.setItem('showScaleExperience', 'true');
+      localStorage.setItem("showScaleExperience", "true");
     }
   }, [stepCompletionStatus]);
 
   // Persist showScaleExperience to localStorage when it changes
   useEffect(() => {
     if (showScaleExperience) {
-      localStorage.setItem('showScaleExperience', 'true');
+      localStorage.setItem("showScaleExperience", "true");
     }
   }, [showScaleExperience]);
 
@@ -753,52 +771,51 @@ const Scale = () => {
 
             {/* Scale Your NR Section */}
             <div className={`space-y-8 ${activeSection === "scale" ? "block" : "hidden"}`}>
-                <div className="flex items-center justify-between flex-wrap gap-4">
-                  <div>
-                    <h2 className="text-2xl font-display font-bold text-foreground">Your Consultant Journey</h2>
-                    <p className="text-muted-foreground mt-1">Build your Mask, scale your expertise, and operate beyond yourself</p>
-                  </div>
-                  {hasConsultantCert ? (
-                    <Button variant="outline" onClick={() => handleOpenStepDialog(1)}>
-                      <Theater className="w-4 h-4 mr-2" />
-                      Open Your Mask
-                    </Button>
-                  ) : (
-                    <Button variant="teal" onClick={() => navigate("/journey?section=consultant")}>
-                      <BookOpen className="w-4 h-4 mr-2" />
-                      Get Certified
-                    </Button>
-                  )}
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                  <h2 className="text-2xl font-display font-bold text-foreground">Your Consultant Journey</h2>
+                  <p className="text-muted-foreground mt-1">
+                    Build your Mask, scale your expertise, and operate beyond yourself
+                  </p>
                 </div>
-
-                {!hasConsultantCert && (
-                  <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-violet-500/5">
-                    <CardContent className="pt-6">
-                      <div className="flex flex-col items-center text-center space-y-4">
-                        <div className="p-3 rounded-2xl bg-gradient-to-br from-purple-500 to-violet-500">
-                          <Lock className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-display font-bold text-foreground mb-2">Certification Required</h3>
-                          <p className="text-muted-foreground max-w-md mx-auto">
-                            Complete the Consultant learning journey to unlock the full scaling experience and track your consulting missions.
-                          </p>
-                        </div>
-                        <Button 
-                          variant="teal" 
-                          onClick={() => navigate("/journey?section=consultant")}
-                          className="gap-2"
-                        >
-                          <BookOpen className="w-4 h-4" />
-                          Learn to be a Consultant
-                          <ArrowRight className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                {hasConsultantCert ? (
+                  <Button variant="outline" onClick={() => handleOpenStepDialog(1)}>
+                    <Theater className="w-4 h-4 mr-2" />
+                    Open Your Mask
+                  </Button>
+                ) : (
+                  <Button variant="teal" onClick={() => navigate("/journey?section=consultant")}>
+                    <BookOpen className="w-4 h-4 mr-2" />
+                    Get Certified
+                  </Button>
                 )}
-                {/* Work as Consultant is now inside Step 1 dialog as Phase 0 */}
-                {hasConsultantCert && (
+              </div>
+
+              {!hasConsultantCert && (
+                <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-violet-500/5">
+                  <CardContent className="pt-6">
+                    <div className="flex flex-col items-center text-center space-y-4">
+                      <div className="p-3 rounded-2xl bg-gradient-to-br from-purple-500 to-violet-500">
+                        <Lock className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-display font-bold text-foreground mb-2">Certification Required</h3>
+                        <p className="text-muted-foreground max-w-md mx-auto">
+                          Complete the Consultant learning journey to unlock the full scaling experience and track your
+                          consulting missions.
+                        </p>
+                      </div>
+                      <Button variant="teal" onClick={() => navigate("/journey?section=consultant")} className="gap-2">
+                        <BookOpen className="w-4 h-4" />
+                        Learn to be a Consultant
+                        <ArrowRight className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              {/* Work as Consultant is now inside Step 1 dialog as Phase 0 */}
+              {hasConsultantCert && (
                 <Card className="border-violet-500/20 bg-gradient-to-br from-violet-500/5 to-purple-500/5">
                   <CardContent className="pt-6">
                     <div className="flex flex-col md:flex-row items-start gap-6">
@@ -829,11 +846,7 @@ const Scale = () => {
                         </div>
                         {!showScaleExperience && (
                           <div className="pt-4">
-                            <Button 
-                              variant="teal" 
-                              onClick={() => setShowScaleExperience(true)}
-                              className="gap-2"
-                            >
+                            <Button variant="teal" onClick={() => setShowScaleExperience(true)} className="gap-2">
                               <Sparkles className="w-4 h-4" />
                               Start The Experience
                             </Button>
@@ -843,166 +856,332 @@ const Scale = () => {
                     </div>
                   </CardContent>
                 </Card>
-                )}
+              )}
 
-                {/* Journey Progress Header - Only show when experience is started */}
-                {hasConsultantCert && showScaleExperience && (
-                  <div className="text-center animate-fade-in">
-                    <h2 className="text-2xl font-display font-bold text-foreground mb-2">Scale Your Natural Role</h2>
-                    <p className="text-muted-foreground">A 3-step journey to build scalable impact</p>
-                  </div>
-                )}
+              {/* Journey Progress Header - Only show when experience is started */}
+              {hasConsultantCert && showScaleExperience && (
+                <div className="text-center animate-fade-in">
+                  <h2 className="text-2xl font-display font-bold text-foreground mb-2">Scale Your Natural Role</h2>
+                  <p className="text-muted-foreground">A 3-step journey to build scalable impact</p>
+                </div>
+              )}
 
-                {/* Journey Steps - Only show when experience is started */}
-                {hasConsultantCert && showScaleExperience && (
-                  <div className="relative animate-fade-in">
-                    {/* Connection Line */}
-                    <div
-                      className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-violet-500 via-blue-500 to-emerald-500 hidden md:block"
-                      style={{ transform: "translateX(-50%)" }}
-                    />
+              {/* Journey Steps - Only show when experience is started */}
+              {hasConsultantCert && showScaleExperience && (
+                <div className="relative animate-fade-in">
+                  {/* Connection Line */}
+                  <div
+                    className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-violet-500 via-blue-500 to-emerald-500 hidden md:block"
+                    style={{ transform: "translateX(-50%)" }}
+                  />
 
-                    <div className="space-y-6">
-                      {SCALE_NR_STEPS.map((step, index) => (
-                        <div key={step.step} className={`relative ${index % 2 === 0 ? "md:pr-[52%]" : "md:pl-[52%]"}`}>
-                          {/* Step Number Badge */}
-                          <div
-                            className={`hidden md:flex absolute left-1/2 top-6 w-10 h-10 rounded-full bg-gradient-to-r ${step.color} items-center justify-center text-white font-bold text-lg shadow-lg z-10`}
-                            style={{ transform: "translateX(-50%)" }}
-                          >
-                            {step.step}
-                          </div>
+                  <div className="space-y-6">
+                    {SCALE_NR_STEPS.map((step, index) => (
+                      <div key={step.step} className={`relative ${index % 2 === 0 ? "md:pr-[52%]" : "md:pl-[52%]"}`}>
+                        {/* Step Number Badge */}
+                        <div
+                          className={`hidden md:flex absolute left-1/2 top-6 w-10 h-10 rounded-full bg-gradient-to-r ${step.color} items-center justify-center text-white font-bold text-lg shadow-lg z-10`}
+                          style={{ transform: "translateX(-50%)" }}
+                        >
+                          {step.step}
+                        </div>
 
-                          <Card className="border-border/50 hover:shadow-lg transition-shadow overflow-hidden">
-                            <div className={`h-1 bg-gradient-to-r ${step.color}`} />
-                            <CardContent className="pt-6">
-                              <div className="flex items-start gap-4">
-                                <div className={`md:hidden p-3 rounded-xl bg-gradient-to-r ${step.color} shrink-0`}>
-                                  <step.icon className="w-6 h-6 text-white" />
-                                </div>
-                                <div className="hidden md:block p-3 rounded-xl bg-muted shrink-0">
-                                  <step.icon className="w-6 h-6 text-foreground" />
-                                </div>
-                                <div className="flex-1 space-y-3">
-                                  <div className="flex items-start justify-between">
-                                    <div>
-                                      <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                          Step {step.step}
-                                        </span>
-                                        <Badge variant="outline" className="text-xs">
-                                          {step.subtitle}
-                                        </Badge>
-                                      </div>
-                                      <h3 className="text-lg font-display font-bold text-foreground">{step.title}</h3>
-                                    </div>
-                                    <Button
-                                      variant={stepCompletionStatus[step.step] ? "outline" : "teal"}
-                                      size="sm"
-                                      onClick={() => handleOpenStepDialog(step.step as 1 | 2 | 3)}
-                                      className="shrink-0"
-                                    >
-                                      {stepCompletionStatus[step.step] ? (
-                                        <>
-                                          <Pencil className="w-4 h-4 mr-1" />
-                                          Done
-                                        </>
-                                      ) : (
-                                        "Fill it"
-                                      )}
-                                    </Button>
-                                  </div>
-                                  <p className="text-sm text-muted-foreground">{step.description}</p>
-                                  <ul className="space-y-2">
-                                    {step.details.map((detail, i) => (
-                                      <li key={i} className="flex items-start gap-2 text-sm">
-                                        <CheckCircle className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
-                                        <span className="text-muted-foreground">{detail}</span>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
+                        <Card className="border-border/50 hover:shadow-lg transition-shadow overflow-hidden">
+                          <div className={`h-1 bg-gradient-to-r ${step.color}`} />
+                          <CardContent className="pt-6">
+                            <div className="flex items-start gap-4">
+                              <div className={`md:hidden p-3 rounded-xl bg-gradient-to-r ${step.color} shrink-0`}>
+                                <step.icon className="w-6 h-6 text-white" />
                               </div>
-                            </CardContent>
-                          </Card>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Outcome Message - Only show when experience is started */}
-                {hasConsultantCert && showScaleExperience && (
-                  <Card className="border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 animate-fade-in">
-                    <CardContent className="pt-6">
-                      <div className="text-center space-y-4">
-                        <div className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500">
-                          <Zap className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-display font-bold text-foreground mb-2">The Outcome</h3>
-                          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                            You scale your impact{" "}
-                            <strong className="text-foreground">without being the bottleneck</strong>. Your Mask operates
-                            independently — value becomes repeatable, transferable, and truly scalable.
-                          </p>
-                        </div>
+                              <div className="hidden md:block p-3 rounded-xl bg-muted shrink-0">
+                                <step.icon className="w-6 h-6 text-foreground" />
+                              </div>
+                              <div className="flex-1 space-y-3">
+                                <div className="flex items-start justify-between">
+                                  <div>
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                        Step {step.step}
+                                      </span>
+                                      <Badge variant="outline" className="text-xs">
+                                        {step.subtitle}
+                                      </Badge>
+                                    </div>
+                                    <h3 className="text-lg font-display font-bold text-foreground">{step.title}</h3>
+                                  </div>
+                                  <Button
+                                    variant={stepCompletionStatus[step.step] ? "outline" : "teal"}
+                                    size="sm"
+                                    onClick={() => handleOpenStepDialog(step.step as 1 | 2 | 3)}
+                                    className="shrink-0"
+                                  >
+                                    {stepCompletionStatus[step.step] ? (
+                                      <>
+                                        <Pencil className="w-4 h-4 mr-1" />
+                                        Done
+                                      </>
+                                    ) : (
+                                      "Fill it"
+                                    )}
+                                  </Button>
+                                </div>
+                                <p className="text-sm text-muted-foreground">{step.description}</p>
+                                <ul className="space-y-2">
+                                  {step.details.map((detail, i) => (
+                                    <li key={i} className="flex items-start gap-2 text-sm">
+                                      <CheckCircle className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+                                      <span className="text-muted-foreground">{detail}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
                       </div>
-                    </CardContent>
-                  </Card>
-                )}
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Outcome Message - Only show when experience is started */}
+              {hasConsultantCert && showScaleExperience && (
+                <Card className="border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 animate-fade-in">
+                  <CardContent className="pt-6">
+                    <div className="text-center space-y-4">
+                      <div className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500">
+                        <Zap className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-display font-bold text-foreground mb-2">The Outcome</h3>
+                        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                          You scale your impact{" "}
+                          <strong className="text-foreground">without being the bottleneck</strong>. Your Mask operates
+                          independently — value becomes repeatable, transferable, and truly scalable.
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
 
             {/* Your Ideas Section */}
             <div className={`space-y-6 ${activeSection === "ideas" ? "block" : "hidden"}`}>
-                <div className="flex items-center justify-between flex-wrap gap-4">
-                  <div>
-                    <h2 className="text-2xl font-display font-bold text-foreground">Your Ideas</h2>
-                    <p className="text-muted-foreground mt-1">Startup ideas you've created and their status</p>
-                  </div>
-                  <Button variant="teal" asChild>
-                    <Link to="/create-idea">
-                      <Lightbulb className="w-4 h-4 mr-2" />
-                      Create New Idea
-                    </Link>
-                  </Button>
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                  <h2 className="text-2xl font-display font-bold text-foreground">Your Ideas</h2>
+                  <p className="text-muted-foreground mt-1">Startup ideas you've created and their status</p>
                 </div>
+                <Button variant="teal" asChild>
+                  <Link to="/create-idea">
+                    <Lightbulb className="w-4 h-4 mr-2" />
+                    Create New Idea
+                  </Link>
+                </Button>
+              </div>
 
-                {loadingIdeas ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                  </div>
-                ) : userIdeas.length === 0 ? (
-                  <Card className="border-border/50">
-                    <CardContent className="py-12 text-center">
-                      <Lightbulb className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-                      <h3 className="text-lg font-medium text-foreground mb-2">No Ideas Yet</h3>
-                      <p className="text-muted-foreground mb-4">
-                        Start by creating your first startup idea and get it reviewed.
-                      </p>
-                      <Button variant="teal" asChild>
-                        <Link to="/create-idea">
-                          <Lightbulb className="w-4 h-4 mr-2" />
-                          Create Your First Idea
-                        </Link>
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <div className="grid gap-4">
-                    {userIdeas.map((idea) => (
-                      <Card key={idea.id} className="border-border/50 hover:shadow-md transition-shadow">
+              {loadingIdeas ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : userIdeas.length === 0 ? (
+                <Card className="border-border/50">
+                  <CardContent className="py-12 text-center">
+                    <Lightbulb className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
+                    <h3 className="text-lg font-medium text-foreground mb-2">No Ideas Yet</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Start by creating your first startup idea and get it reviewed.
+                    </p>
+                    <Button variant="teal" asChild>
+                      <Link to="/create-idea">
+                        <Lightbulb className="w-4 h-4 mr-2" />
+                        Create Your First Idea
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-4">
+                  {userIdeas.map((idea) => (
+                    <Card key={idea.id} className="border-border/50 hover:shadow-md transition-shadow">
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-3 mb-2">
+                              <h3 className="text-lg font-display font-bold text-foreground truncate">{idea.title}</h3>
+                              {getReviewStatusBadge(idea.review_status)}
+                            </div>
+                            <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{idea.description}</p>
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                              {idea.sector && (
+                                <span className="flex items-center gap-1">
+                                  <Target className="w-3 h-3" />
+                                  {idea.sector}
+                                </span>
+                              )}
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {format(new Date(idea.created_at), "MMM d, yyyy")}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex gap-2 shrink-0">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                              onClick={() => {
+                                setIdeaToDelete({ id: idea.id, title: idea.title });
+                                setDeleteDialogOpen(true);
+                              }}
+                              title="Delete idea"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                            <Button variant="outline" size="sm" asChild>
+                              <Link to={`/opportunities/${idea.id}`}>View</Link>
+                            </Button>
+                            {idea.review_status === "approved" && (
+                              <>
+                                {/* Team button */}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setTeamDialogIdea({ id: idea.id, title: idea.title });
+                                    setTeamDialogOpen(true);
+                                  }}
+                                >
+                                  <Users className="w-4 h-4 mr-1" />
+                                  Team
+                                </Button>
+
+                                {/* Episodes button - shows when development is completed */}
+                                {idea.development_completed_at && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      setSelectedIdea({
+                                        id: idea.id,
+                                        title: idea.title,
+                                        currentEpisode: idea.current_episode,
+                                      });
+                                      setEpisodesDialogOpen(true);
+                                    }}
+                                  >
+                                    <Film className="w-4 h-4 mr-1" />
+                                    Episodes
+                                  </Button>
+                                )}
+
+                                {/* Dynamic action button based on current episode */}
+                                {idea.current_episode === "development" && (
+                                  <Button
+                                    variant="teal"
+                                    size="sm"
+                                    onClick={() => {
+                                      setSelectedIdea({
+                                        id: idea.id,
+                                        title: idea.title,
+                                        currentEpisode: idea.current_episode,
+                                      });
+                                      setDevelopDialogOpen(true);
+                                    }}
+                                  >
+                                    Develop
+                                  </Button>
+                                )}
+                                {idea.current_episode === "validation" && (
+                                  <Button
+                                    variant="teal"
+                                    size="sm"
+                                    onClick={() => {
+                                      setSelectedIdea({
+                                        id: idea.id,
+                                        title: idea.title,
+                                        currentEpisode: idea.current_episode,
+                                      });
+                                      setValidationDialogOpen(true);
+                                    }}
+                                  >
+                                    <Shield className="w-4 h-4 mr-1" />
+                                    Validate
+                                  </Button>
+                                )}
+                                {idea.current_episode === "growth" && (
+                                  <Button
+                                    variant="teal"
+                                    size="sm"
+                                    onClick={() => {
+                                      setSelectedIdea({
+                                        id: idea.id,
+                                        title: idea.title,
+                                        currentEpisode: idea.current_episode,
+                                      });
+                                      setGrowthDialogOpen(true);
+                                    }}
+                                  >
+                                    <TrendingUp className="w-4 h-4 mr-1" />
+                                    Grow
+                                  </Button>
+                                )}
+                                {idea.current_episode === "completed" && (
+                                  <Badge className="bg-b4-teal text-white">
+                                    <CheckCircle className="w-3 h-3 mr-1" />
+                                    Journey Complete
+                                  </Badge>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+
+              {/* Archived Ideas Section */}
+              {archivedIdeas.length > 0 && (
+                <Collapsible open={showArchivedSection} onOpenChange={setShowArchivedSection} className="mt-8">
+                  <CollapsibleTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-between text-muted-foreground hover:text-foreground"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Archive className="w-4 h-4" />
+                        <span>Archived Ideas</span>
+                        <Badge variant="secondary" className="text-xs">
+                          {archivedIdeas.length}
+                        </Badge>
+                      </div>
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform duration-200 ${
+                          showArchivedSection ? "rotate-180" : ""
+                        }`}
+                      />
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-4 space-y-4">
+                    {archivedIdeas.map((idea) => (
+                      <Card key={idea.id} className="border-border/50 bg-muted/30 hover:shadow-md transition-shadow">
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-3 mb-2">
-                                <h3 className="text-lg font-display font-bold text-foreground truncate">
+                                <h3 className="text-lg font-display font-bold text-muted-foreground truncate">
                                   {idea.title}
                                 </h3>
-                                {getReviewStatusBadge(idea.review_status)}
+                                <Badge variant="secondary" className="opacity-70">
+                                  <Archive className="w-3 h-3 mr-1" />
+                                  Archived
+                                </Badge>
                               </div>
-                              <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{idea.description}</p>
-                              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                              <p className="text-sm text-muted-foreground/80 line-clamp-2 mb-3">{idea.description}</p>
+                              <div className="flex items-center gap-4 text-xs text-muted-foreground/60">
                                 {idea.sector && (
                                   <span className="flex items-center gap-1">
                                     <Target className="w-3 h-3" />
@@ -1017,199 +1196,42 @@ const Scale = () => {
                             </div>
                             <div className="flex gap-2 shrink-0">
                               <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleRestoreIdea({ id: idea.id, title: idea.title })}
+                                disabled={restoringIdeaId === idea.id}
+                                className="text-b4-teal hover:text-b4-teal hover:bg-b4-teal/10 border-b4-teal/30"
+                              >
+                                {restoringIdeaId === idea.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <>
+                                    <RotateCcw className="w-4 h-4 mr-1" />
+                                    Restore
+                                  </>
+                                )}
+                              </Button>
+                              <Button
                                 variant="ghost"
                                 size="icon"
                                 className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                                 onClick={() => {
                                   setIdeaToDelete({ id: idea.id, title: idea.title });
+                                  setDeleteType("permanent");
                                   setDeleteDialogOpen(true);
                                 }}
-                                title="Delete idea"
+                                title="Delete permanently"
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
-                              <Button variant="outline" size="sm" asChild>
-                                <Link to={`/opportunities/${idea.id}`}>View</Link>
-                              </Button>
-                              {idea.review_status === "approved" && (
-                                <>
-                                  {/* Team button */}
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => {
-                                      setTeamDialogIdea({ id: idea.id, title: idea.title });
-                                      setTeamDialogOpen(true);
-                                    }}
-                                  >
-                                    <Users className="w-4 h-4 mr-1" />
-                                    Team
-                                  </Button>
-
-                                  {/* Episodes button - shows when development is completed */}
-                                  {idea.development_completed_at && (
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => {
-                                        setSelectedIdea({ id: idea.id, title: idea.title, currentEpisode: idea.current_episode });
-                                        setEpisodesDialogOpen(true);
-                                      }}
-                                    >
-                                      <Film className="w-4 h-4 mr-1" />
-                                      Episodes
-                                    </Button>
-                                  )}
-                                  
-                                  {/* Dynamic action button based on current episode */}
-                                  {idea.current_episode === "development" && (
-                                    <Button
-                                      variant="teal"
-                                      size="sm"
-                                      onClick={() => {
-                                        setSelectedIdea({ id: idea.id, title: idea.title, currentEpisode: idea.current_episode });
-                                        setDevelopDialogOpen(true);
-                                      }}
-                                    >
-                                      Develop
-                                    </Button>
-                                  )}
-                                  {idea.current_episode === "validation" && (
-                                    <Button
-                                      variant="teal"
-                                      size="sm"
-                                      onClick={() => {
-                                        setSelectedIdea({ id: idea.id, title: idea.title, currentEpisode: idea.current_episode });
-                                        setValidationDialogOpen(true);
-                                      }}
-                                    >
-                                      <Shield className="w-4 h-4 mr-1" />
-                                      Validate
-                                    </Button>
-                                  )}
-                                  {idea.current_episode === "growth" && (
-                                    <Button
-                                      variant="teal"
-                                      size="sm"
-                                      onClick={() => {
-                                        setSelectedIdea({ id: idea.id, title: idea.title, currentEpisode: idea.current_episode });
-                                        setGrowthDialogOpen(true);
-                                      }}
-                                    >
-                                      <TrendingUp className="w-4 h-4 mr-1" />
-                                      Grow
-                                    </Button>
-                                  )}
-                                  {idea.current_episode === "completed" && (
-                                    <Badge className="bg-b4-teal text-white">
-                                      <CheckCircle className="w-3 h-3 mr-1" />
-                                      Journey Complete
-                                    </Badge>
-                                  )}
-                                </>
-                              )}
                             </div>
                           </div>
                         </CardContent>
                       </Card>
                     ))}
-                  </div>
-                )}
-
-                {/* Archived Ideas Section */}
-                {archivedIdeas.length > 0 && (
-                  <Collapsible open={showArchivedSection} onOpenChange={setShowArchivedSection} className="mt-8">
-                    <CollapsibleTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-between text-muted-foreground hover:text-foreground"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Archive className="w-4 h-4" />
-                          <span>Archived Ideas</span>
-                          <Badge variant="secondary" className="text-xs">
-                            {archivedIdeas.length}
-                          </Badge>
-                        </div>
-                        <ChevronDown
-                          className={`h-4 w-4 transition-transform duration-200 ${
-                            showArchivedSection ? "rotate-180" : ""
-                          }`}
-                        />
-                      </Button>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="mt-4 space-y-4">
-                      {archivedIdeas.map((idea) => (
-                        <Card
-                          key={idea.id}
-                          className="border-border/50 bg-muted/30 hover:shadow-md transition-shadow"
-                        >
-                          <CardContent className="p-6">
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-3 mb-2">
-                                  <h3 className="text-lg font-display font-bold text-muted-foreground truncate">
-                                    {idea.title}
-                                  </h3>
-                                  <Badge variant="secondary" className="opacity-70">
-                                    <Archive className="w-3 h-3 mr-1" />
-                                    Archived
-                                  </Badge>
-                                </div>
-                                <p className="text-sm text-muted-foreground/80 line-clamp-2 mb-3">
-                                  {idea.description}
-                                </p>
-                                <div className="flex items-center gap-4 text-xs text-muted-foreground/60">
-                                  {idea.sector && (
-                                    <span className="flex items-center gap-1">
-                                      <Target className="w-3 h-3" />
-                                      {idea.sector}
-                                    </span>
-                                  )}
-                                  <span className="flex items-center gap-1">
-                                    <Clock className="w-3 h-3" />
-                                    {format(new Date(idea.created_at), "MMM d, yyyy")}
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="flex gap-2 shrink-0">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleRestoreIdea({ id: idea.id, title: idea.title })}
-                                  disabled={restoringIdeaId === idea.id}
-                                  className="text-b4-teal hover:text-b4-teal hover:bg-b4-teal/10 border-b4-teal/30"
-                                >
-                                  {restoringIdeaId === idea.id ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <>
-                                      <RotateCcw className="w-4 h-4 mr-1" />
-                                      Restore
-                                    </>
-                                  )}
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                                  onClick={() => {
-                                    setIdeaToDelete({ id: idea.id, title: idea.title });
-                                    setDeleteType("permanent");
-                                    setDeleteDialogOpen(true);
-                                  }}
-                                  title="Delete permanently"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </CollapsibleContent>
-                  </Collapsible>
-                )}
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
             </div>
 
             {/* Scale as Co-Builder Section */}
@@ -1237,7 +1259,9 @@ const Scale = () => {
               // Refresh ideas to get updated episode status
               const { data } = await supabase
                 .from("startup_ideas")
-                .select("id, title, description, sector, review_status, status, created_at, current_episode, development_completed_at, validation_completed_at, growth_completed_at")
+                .select(
+                  "id, title, description, sector, review_status, status, created_at, current_episode, development_completed_at, validation_completed_at, growth_completed_at",
+                )
                 .eq("creator_id", user?.id)
                 .order("created_at", { ascending: false });
               if (data) {
@@ -1256,7 +1280,9 @@ const Scale = () => {
             onEpisodeComplete={async () => {
               const { data } = await supabase
                 .from("startup_ideas")
-                .select("id, title, description, sector, review_status, status, created_at, current_episode, development_completed_at, validation_completed_at, growth_completed_at")
+                .select(
+                  "id, title, description, sector, review_status, status, created_at, current_episode, development_completed_at, validation_completed_at, growth_completed_at",
+                )
                 .eq("creator_id", user?.id)
                 .order("created_at", { ascending: false });
               if (data) {
@@ -1275,7 +1301,9 @@ const Scale = () => {
             onEpisodeComplete={async () => {
               const { data } = await supabase
                 .from("startup_ideas")
-                .select("id, title, description, sector, review_status, status, created_at, current_episode, development_completed_at, validation_completed_at, growth_completed_at")
+                .select(
+                  "id, title, description, sector, review_status, status, created_at, current_episode, development_completed_at, validation_completed_at, growth_completed_at",
+                )
                 .eq("creator_id", user?.id)
                 .order("created_at", { ascending: false });
               if (data) {
@@ -1297,12 +1325,15 @@ const Scale = () => {
       )}
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={(open) => {
-        setDeleteDialogOpen(open);
-        if (!open) {
-          setDeleteType(null);
-        }
-      }}>
+      <AlertDialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open);
+          if (!open) {
+            setDeleteType(null);
+          }
+        }}
+      >
         <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle>Choose deletion type</AlertDialogTitle>
@@ -1336,12 +1367,8 @@ const Scale = () => {
                     The idea will be hidden from public view but can be restored later.
                   </p>
                   <div className="flex flex-wrap gap-2 mt-2">
-                    <span className="text-xs px-2 py-1 rounded-full bg-green-500/10 text-green-600">
-                      Recoverable
-                    </span>
-                    <span className="text-xs px-2 py-1 rounded-full bg-blue-500/10 text-blue-600">
-                      Data preserved
-                    </span>
+                    <span className="text-xs px-2 py-1 rounded-full bg-green-500/10 text-green-600">Recoverable</span>
+                    <span className="text-xs px-2 py-1 rounded-full bg-blue-500/10 text-blue-600">Data preserved</span>
                   </div>
                 </div>
               </div>
@@ -1387,9 +1414,10 @@ const Scale = () => {
             <AlertDialogAction
               onClick={handleDeleteIdea}
               disabled={isDeleting || !deleteType}
-              className={deleteType === "permanent" 
-                ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" 
-                : "bg-amber-500 text-white hover:bg-amber-600"
+              className={
+                deleteType === "permanent"
+                  ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  : "bg-amber-500 text-white hover:bg-amber-600"
               }
             >
               {isDeleting ? (
@@ -1397,8 +1425,10 @@ const Scale = () => {
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   {deleteType === "permanent" ? "Deleting..." : "Archiving..."}
                 </>
+              ) : deleteType === "permanent" ? (
+                "Delete Permanently"
               ) : (
-                deleteType === "permanent" ? "Delete Permanently" : "Archive Idea"
+                "Archive Idea"
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
