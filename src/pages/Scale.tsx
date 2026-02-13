@@ -815,47 +815,13 @@ const Scale = () => {
                 </Card>
               )}
               {/* Work as Consultant is now inside Step 1 dialog as Phase 0 */}
-              {hasConsultantCert && (
-                <Card className="border-violet-500/20 bg-gradient-to-br from-violet-500/5 to-purple-500/5">
-                  <CardContent className="pt-6">
-                    <div className="flex flex-col md:flex-row items-start gap-6">
-                      <div className="p-4 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 shrink-0">
-                        <Theater className="w-8 h-8 text-white" />
-                      </div>
-                      <div className="space-y-3 flex-1">
-                        <h3 className="text-xl font-display font-bold text-foreground">What is a Mask?</h3>
-                        <p className="text-muted-foreground leading-relaxed">
-                          A <strong className="text-foreground">Mask</strong> is an entity you create and fully own. It
-                          represents a structured version of your natural role — allowing you to operate beyond
-                          yourself.
-                        </p>
-                        <div className="flex flex-wrap items-center gap-4 pt-2">
-                          <div className="flex items-center gap-2 text-sm">
-                            <div className="w-2 h-2 rounded-full bg-violet-500" />
-                            <span className="text-muted-foreground">
-                              <strong className="text-foreground">Person:</strong> Youssef Ben Younes
-                            </span>
-                          </div>
-                          <ArrowRight className="w-4 h-4 text-muted-foreground hidden sm:block" />
-                          <div className="flex items-center gap-2 text-sm">
-                            <div className="w-2 h-2 rounded-full bg-purple-500" />
-                            <span className="text-muted-foreground">
-                              <strong className="text-foreground">Mask:</strong> Hackit
-                            </span>
-                          </div>
-                        </div>
-                        {!showScaleExperience && (
-                          <div className="pt-4">
-                            <Button variant="teal" onClick={() => setShowScaleExperience(true)} className="gap-2">
-                              <Sparkles className="w-4 h-4" />
-                              Start The Experience
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+              {hasConsultantCert && !showScaleExperience && (
+                <div className="text-center">
+                  <Button variant="teal" onClick={() => setShowScaleExperience(true)} className="gap-2">
+                    <Sparkles className="w-4 h-4" />
+                    Start The Experience
+                  </Button>
+                </div>
               )}
 
               {/* Journey Progress Header - Only show when experience is started */}
