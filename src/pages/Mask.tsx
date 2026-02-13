@@ -60,8 +60,8 @@ interface AnswerVersion {
 const SCALE_NR_STEPS = [
   {
     step: 1,
-    title: "Create the Mask",
-    subtitle: "Freelancers → structured consultants",
+    title: "Structure",
+    subtitle: "Branding Phase",
     icon: Theater,
     description: "Create your Mask — the structured entity that represents your natural role. This is the gamified first step to scaling beyond yourself.",
     details: [
@@ -73,8 +73,8 @@ const SCALE_NR_STEPS = [
   },
   {
     step: 2,
-    title: "Code the Mask",
-    subtitle: "Personal thinking → operational systems",
+    title: "Detach",
+    subtitle: "Systemization Phase",
     icon: Code2,
     description: "Transform personal thinking into operational systems. Your Mask becomes coded through frameworks, processes, and methods.",
     details: [
@@ -86,8 +86,8 @@ const SCALE_NR_STEPS = [
   },
   {
     step: 3,
-    title: "Detach & Scale",
-    subtitle: "Clients ask for the brand",
+    title: "Scale",
+    subtitle: "Asset Phase",
     icon: Users,
     description: "Clients ask for the Mask, not you. Work becomes deliverable by others. Value becomes scalable, repeatable, and transferable.",
     details: [
