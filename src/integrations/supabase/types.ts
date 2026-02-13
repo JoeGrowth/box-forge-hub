@@ -357,13 +357,18 @@ export type Database = {
         Row: {
           board_count: number | null
           board_description: string | null
+          board_equity_details: string | null
           board_needs_help: boolean | null
+          board_role_type: string | null
           business_count: number | null
           business_description: string | null
+          business_duration: string | null
           business_needs_help: boolean | null
+          business_revenue: string | null
           created_at: string
           has_built_product: boolean | null
           has_developed_project: boolean | null
+          has_led_team: boolean | null
           has_run_business: boolean | null
           has_served_on_board: boolean | null
           id: string
@@ -371,22 +376,35 @@ export type Database = {
           product_count: number | null
           product_description: string | null
           product_needs_help: boolean | null
+          product_stage: string | null
+          product_users_count: string | null
           project_count: number | null
           project_description: string | null
           project_needs_help: boolean | null
+          project_outcome: string | null
+          project_role: string | null
+          team_description: string | null
+          team_needs_help: boolean | null
+          team_role: string | null
+          team_size: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
           board_count?: number | null
           board_description?: string | null
+          board_equity_details?: string | null
           board_needs_help?: boolean | null
+          board_role_type?: string | null
           business_count?: number | null
           business_description?: string | null
+          business_duration?: string | null
           business_needs_help?: boolean | null
+          business_revenue?: string | null
           created_at?: string
           has_built_product?: boolean | null
           has_developed_project?: boolean | null
+          has_led_team?: boolean | null
           has_run_business?: boolean | null
           has_served_on_board?: boolean | null
           id?: string
@@ -394,22 +412,35 @@ export type Database = {
           product_count?: number | null
           product_description?: string | null
           product_needs_help?: boolean | null
+          product_stage?: string | null
+          product_users_count?: string | null
           project_count?: number | null
           project_description?: string | null
           project_needs_help?: boolean | null
+          project_outcome?: string | null
+          project_role?: string | null
+          team_description?: string | null
+          team_needs_help?: boolean | null
+          team_role?: string | null
+          team_size?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
           board_count?: number | null
           board_description?: string | null
+          board_equity_details?: string | null
           board_needs_help?: boolean | null
+          board_role_type?: string | null
           business_count?: number | null
           business_description?: string | null
+          business_duration?: string | null
           business_needs_help?: boolean | null
+          business_revenue?: string | null
           created_at?: string
           has_built_product?: boolean | null
           has_developed_project?: boolean | null
+          has_led_team?: boolean | null
           has_run_business?: boolean | null
           has_served_on_board?: boolean | null
           id?: string
@@ -417,9 +448,17 @@ export type Database = {
           product_count?: number | null
           product_description?: string | null
           product_needs_help?: boolean | null
+          product_stage?: string | null
+          product_users_count?: string | null
           project_count?: number | null
           project_description?: string | null
           project_needs_help?: boolean | null
+          project_outcome?: string | null
+          project_role?: string | null
+          team_description?: string | null
+          team_needs_help?: boolean | null
+          team_role?: string | null
+          team_size?: number | null
           updated_at?: string
           user_id?: string
         }
