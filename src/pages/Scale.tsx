@@ -99,7 +99,7 @@ const SCALE_NR_STEPS = [
   {
     step: 1,
     title: "Create the Mask",
-    subtitle: "Freelancers → structured consultants",
+    subtitle: "Structured consultants",
     icon: Theater,
     description:
       "Create your Mask — the structured entity that represents your natural role. This is the gamified first step to scaling beyond yourself.",
