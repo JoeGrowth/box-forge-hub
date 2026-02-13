@@ -99,7 +99,7 @@ const SCALE_NR_STEPS = [
   {
     step: 1,
     title: "Create the Mask",
-    subtitle: "Entity Creation",
+    subtitle: "Freelancers → structured consultants",
     icon: Theater,
     description:
       "Create your Mask — the structured entity that represents your natural role. This is the gamified first step to scaling beyond yourself.",
@@ -113,7 +113,7 @@ const SCALE_NR_STEPS = [
   {
     step: 2,
     title: "Code the Mask",
-    subtitle: "Structure the Entity",
+    subtitle: "Personal thinking → operational systems",
     icon: Code2,
     description:
       "Transform personal thinking into operational systems. Your Mask becomes coded through frameworks, processes, and methods.",
@@ -127,7 +127,7 @@ const SCALE_NR_STEPS = [
   {
     step: 3,
     title: "Detach & Scale",
-    subtitle: "Person → Entity Separation",
+    subtitle: "Clients ask for the brand",
     icon: Users,
     description:
       "Clients ask for the Mask, not you. Work becomes deliverable by others. Value becomes scalable, repeatable, and transferable.",
