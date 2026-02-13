@@ -40,7 +40,7 @@ import {
   RotateCcw,
   Archive,
 } from "lucide-react";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Rocket } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -98,8 +98,8 @@ interface StartupIdea {
 const SCALE_NR_STEPS = [
   {
     step: 1,
-    title: "Create the Mask",
-    subtitle: "Structured consultants",
+    title: "Structure",
+    subtitle: "Branding Phase",
     icon: Theater,
     description:
       "Create your Mask — the structured entity that represents your natural role. This is the gamified first step to scaling beyond yourself.",
@@ -112,8 +112,8 @@ const SCALE_NR_STEPS = [
   },
   {
     step: 2,
-    title: "Code the Mask",
-    subtitle: "Operational systems",
+    title: "Detach",
+    subtitle: "Systemization Phase",
     icon: Code2,
     description:
       "Transform personal thinking into operational systems. Your Mask becomes coded through frameworks, processes, and methods.",
@@ -126,8 +126,8 @@ const SCALE_NR_STEPS = [
   },
   {
     step: 3,
-    title: "Detach & Scale",
-    subtitle: "Clients ask for the brand",
+    title: "Scale",
+    subtitle: "Asset Phase",
     icon: Users,
     description:
       "Clients ask for the Mask, not you. Work becomes deliverable by others. Value becomes scalable, repeatable, and transferable.",
@@ -952,7 +952,7 @@ const Scale = () => {
                       <div className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500">
                         <Zap className="w-6 h-6 text-white" />
                       </div>
-                      <div>
+                    <div>
                         <h3 className="text-xl font-display font-bold text-foreground mb-2">The Outcome</h3>
                         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                           You scale your impact{" "}
@@ -960,6 +960,19 @@ const Scale = () => {
                           independently — value becomes repeatable, transferable, and truly scalable.
                         </p>
                       </div>
+                      {stepCompletionStatus[1] && stepCompletionStatus[2] && stepCompletionStatus[3] && (
+                        <div className="pt-4">
+                          <Button
+                            variant="hero"
+                            size="lg"
+                            onClick={() => navigate("/entrepreneurial-onboarding")}
+                            className="gap-2"
+                          >
+                            <Rocket className="w-5 h-5" />
+                            Explore the Entrepreneurial Journey
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
