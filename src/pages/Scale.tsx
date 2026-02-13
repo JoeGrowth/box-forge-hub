@@ -127,7 +127,7 @@ const SCALE_NR_STEPS = [
   {
     step: 3,
     title: "Scale (Asset Phase)",
-    subtitle: "Asset Phase",
+    subtitle: "Clients ask for the brand",
     icon: Users,
     description:
       "Clients ask for the Mask, not you. Work becomes deliverable by others. Value becomes scalable, repeatable, and transferable.",
