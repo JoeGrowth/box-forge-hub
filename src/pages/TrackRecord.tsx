@@ -16,9 +16,11 @@ import { supabase } from "@/integrations/supabase/client";
 import ResumeEditBar from "@/components/resume/ResumeEditBar";
 import SectionActions from "@/components/resume/SectionActions";
 import { Progress } from "@/components/ui/progress";
+import { exportTrackRecordToPdf } from "@/lib/trackRecordPdfExport";
 import {
   FileText,
   Loader2,
+  Download,
   TrendingUp,
   Lightbulb,
   Package,
@@ -442,16 +444,59 @@ const TrackRecord = () => {
                 </p>
               </div>
               {data && (
-                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 min-w-[200px]">
-                  <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="w-4 h-4" />
-                    <span className="text-sm font-medium">Experience</span>
+                <div className="flex items-start gap-4">
+                  <Button
+                    variant="hero-outline"
+                    onClick={async () => {
+                      const { data: profile } = await supabase
+                        .from("profiles")
+                        .select("full_name")
+                        .eq("user_id", user!.id)
+                        .maybeSingle();
+                      exportTrackRecordToPdf({
+                        userName: profile?.full_name || undefined,
+                        hasProject: data.has_developed_project,
+                        projectDescription: data.project_description,
+                        projectCount: data.project_count,
+                        projectRole: data.project_role,
+                        projectOutcome: data.project_outcome,
+                        hasProduct: data.has_built_product,
+                        productDescription: data.product_description,
+                        productCount: data.product_count,
+                        productStage: data.product_stage,
+                        productUsersCount: data.product_users_count,
+                        hasTeam: data.has_led_team,
+                        teamDescription: data.team_description,
+                        teamSize: data.team_size,
+                        teamRole: data.team_role,
+                        hasBusiness: data.has_run_business,
+                        businessDescription: data.business_description,
+                        businessCount: data.business_count,
+                        businessRevenue: data.business_revenue,
+                        businessDuration: data.business_duration,
+                        hasBoard: data.has_served_on_board,
+                        boardDescription: data.board_description,
+                        boardCount: data.board_count,
+                        boardRoleType: data.board_role_type,
+                        boardEquityDetails: data.board_equity_details,
+                      });
+                    }}
+                    className="gap-2"
+                  >
+                    <Download className="w-4 h-4" />
+                    Export PDF
+                  </Button>
+                  <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 min-w-[200px]">
+                    <div className="flex items-center gap-2 mb-2">
+                      <TrendingUp className="w-4 h-4" />
+                      <span className="text-sm font-medium">Experience</span>
+                    </div>
+                    <div className="text-3xl font-bold mb-2">{progress.percentage}%</div>
+                    <Progress value={progress.percentage} className="h-2 bg-white/20" />
+                    <p className="text-xs text-primary-foreground/70 mt-2">
+                      {progress.completed} of {progress.total} areas with experience
+                    </p>
                   </div>
-                  <div className="text-3xl font-bold mb-2">{progress.percentage}%</div>
-                  <Progress value={progress.percentage} className="h-2 bg-white/20" />
-                  <p className="text-xs text-primary-foreground/70 mt-2">
-                    {progress.completed} of {progress.total} areas with experience
-                  </p>
                 </div>
               )}
             </div>
