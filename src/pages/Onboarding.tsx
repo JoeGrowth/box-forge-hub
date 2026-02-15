@@ -81,7 +81,7 @@ const Onboarding = () => {
       if (user) {
         await supabase
           .from("onboarding_state")
-          .update({ current_step: 1, primary_role: null })
+          .update({ current_step: 1, primary_role: null, onboarding_completed: false })
           .eq("user_id", user.id);
       }
       navigate("/choose-path");
