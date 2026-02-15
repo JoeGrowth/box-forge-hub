@@ -20,6 +20,7 @@ const Onboarding = () => {
   const [showNotReady, setShowNotReady] = useState(false);
   const [showPendingHelp, setShowPendingHelp] = useState(false);
   const [showFormDirectly, setShowFormDirectly] = useState(false);
+  const [hasRestarted, setHasRestarted] = useState(false);
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/auth", { replace: true });
@@ -29,10 +30,15 @@ const Onboarding = () => {
   useEffect(() => {
     if (onboardingState) {
       // If user has assistance_requested status but came back to define their NR,
-      // start them at step 2 (NR definition)
-      if (naturalRole?.status === "assistance_requested" && onboardingState.onboarding_completed) {
+      // start them at step 2 (NR definition) — only if they haven't restarted
+      if (naturalRole?.status === "assistance_requested" && onboardingState.onboarding_completed && !hasRestarted) {
         setCurrentStep(2);
         return;
+      }
+      
+      // If current_step is 1, user is starting fresh (e.g. came from choose-path)
+      if (onboardingState.current_step <= 1) {
+        setHasRestarted(true);
       }
       
       setCurrentStep(onboardingState.current_step);
@@ -43,17 +49,17 @@ const Onboarding = () => {
         navigate("/", { replace: true });
       }
     }
-  }, [onboardingState, naturalRole, navigate]);
+  }, [onboardingState, naturalRole, navigate, hasRestarted]);
 
   useEffect(() => {
-    // Only show pending help if they just requested it (not if they're coming back or on step 1)
-    if (naturalRole?.status === "assistance_requested" && !onboardingState?.onboarding_completed && currentStep > 1) {
+    // Only show pending help if they just requested it in this session, not from stale DB state
+    if (naturalRole?.status === "assistance_requested" && !onboardingState?.onboarding_completed && currentStep > 1 && !hasRestarted) {
       setShowPendingHelp(true);
     }
     if (naturalRole?.promise_check === false && currentStep >= 4) {
       setShowNotReady(true);
     }
-  }, [naturalRole, currentStep, onboardingState]);
+  }, [naturalRole, currentStep, onboardingState, hasRestarted]);
 
   if (authLoading || onboardingLoading) {
     return (
