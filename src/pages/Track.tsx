@@ -239,18 +239,18 @@ const Track = () => {
     return (
       <Card className="relative overflow-hidden">
         <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-b4-teal/10">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-start sm:items-center gap-3">
+              <div className="p-2 rounded-lg bg-b4-teal/10 shrink-0">
                 <Icon className="w-6 h-6 text-b4-teal" />
               </div>
-              <div>
-                <CardTitle className="text-xl">{title}</CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
+              <div className="min-w-0">
+                <CardTitle className="text-lg sm:text-xl">{title}</CardTitle>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">{subtitle}</p>
               </div>
             </div>
             {!isBlurred && hasData && (
-              <Button variant="outline" size="sm" asChild>
+              <Button variant="outline" size="sm" className="w-full sm:w-auto shrink-0" asChild>
                 <Link to={linkTo}>
                   View Full Details <ArrowRight className="ml-2 w-4 h-4" />
                 </Link>
@@ -277,13 +277,15 @@ const Track = () => {
             {items.map((item, idx) => {
               const ItemIcon = item.icon;
               return (
-                <div key={idx} className="flex items-center gap-4 py-4 first:pt-0 last:pb-0">
-                  {getStatusIcon(item.status)}
+                <div key={idx} className="flex items-start sm:items-center gap-3 py-4 first:pt-0 last:pb-0">
+                  <div className="shrink-0 mt-0.5 sm:mt-0">{getStatusIcon(item.status)}</div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm">{item.label}</p>
-                    <p className="text-xs text-muted-foreground truncate">{item.subtitle}</p>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
+                      <p className="font-medium text-sm">{item.label}</p>
+                      <div className="shrink-0">{getStatusBadge(item.status)}</div>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">{item.subtitle}</p>
                   </div>
-                  {getStatusBadge(item.status)}
                 </div>
               );
             })}
