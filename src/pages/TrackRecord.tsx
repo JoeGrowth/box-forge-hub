@@ -528,6 +528,27 @@ const TrackRecord = () => {
               </Card>
             )}
 
+            {/* Build Your Professional Resume CTA */}
+            <Card className="mb-8 border-b4-teal/20 bg-b4-teal/5">
+              <CardContent className="py-8">
+                <div className="flex flex-col items-center text-center gap-4">
+                  <div className="w-16 h-16 rounded-full bg-b4-teal/10 flex items-center justify-center">
+                    <FileText className="w-8 h-8 text-b4-teal" />
+                  </div>
+                  <div>
+                    <h3 className="font-display text-xl font-semibold text-foreground mb-2">Build Your Professional Resume</h3>
+                    <p className="text-muted-foreground max-w-md mb-4">
+                      Showcase your natural role, skills, and professional experience in a structured resume.
+                    </p>
+                    <Button variant="teal" onClick={() => navigate("/resume")}>
+                      Go to Resume
+                      <ArrowRight className="ml-2 w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {data && (
               <div className="space-y-6 animate-fade-in">
                 {/* Quick Stats */}
