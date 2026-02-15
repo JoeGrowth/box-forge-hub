@@ -18,8 +18,8 @@ const ChoosePath = () => {
 
   useEffect(() => {
     if (!onboardingLoading && onboardingState) {
-      // If onboarding is already completed, redirect to home
-      if (onboardingState.onboarding_completed) {
+      // If onboarding is already completed and they have a role, redirect to home
+      if (onboardingState.onboarding_completed && onboardingState.primary_role) {
         navigate("/", { replace: true });
       }
       // If they already chose a path and started, redirect accordingly

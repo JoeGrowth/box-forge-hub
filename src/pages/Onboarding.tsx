@@ -9,6 +9,7 @@ import { ProfileInfoStep } from "@/components/onboarding/steps/ProfileInfoStep";
 import { CompletionStep } from "@/components/onboarding/steps/CompletionStep";
 import { PendingHelpStep } from "@/components/onboarding/steps/PendingHelpStep";
 import { useOnboarding } from "@/hooks/useOnboarding";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
 const Onboarding = () => {
@@ -64,7 +65,7 @@ const Onboarding = () => {
 
   const totalSteps = 9; // Same steps for both entrepreneurs and co-builders
 
-  const handleBack = () => {
+  const handleBack = async () => {
     if (showPendingHelp) {
       setShowPendingHelp(false);
       return;
@@ -76,6 +77,13 @@ const Onboarding = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     } else {
+      // Reset current_step in DB so ChoosePath doesn't redirect back
+      if (user) {
+        await supabase
+          .from("onboarding_state")
+          .update({ current_step: 1, primary_role: null })
+          .eq("user_id", user.id);
+      }
       navigate("/choose-path");
     }
   };
