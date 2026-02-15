@@ -17,21 +17,19 @@ const guestNavLinks = [
 ];
 
 // Helper to build links based on role
-const getAppliedLinks = (isEntrepreneur: boolean) => [
+const getAppliedLinks = () => [
   { name: "Opportunities", path: "/opportunities" },
   { name: "People", path: "/cobuilders" },
-  ...(isEntrepreneur
-    ? [{ name: "Track Record", path: "/track-record" }]
-    : [{ name: "Resume", path: "/resume" }]),
+  { name: "Track", path: "/track" },
 ];
 
-const getApprovedLinks = (isEntrepreneur: boolean) => [
-  ...getAppliedLinks(isEntrepreneur),
+const getApprovedLinks = () => [
+  ...getAppliedLinks(),
   { name: "Boost", path: "/journey" },
 ];
 
-const getBoostedLinks = (isEntrepreneur: boolean) => [
-  ...getApprovedLinks(isEntrepreneur),
+const getBoostedLinks = () => [
+  ...getApprovedLinks(),
   { name: "Scale", path: "/start" },
 ];
 
@@ -61,14 +59,11 @@ export function Navbar() {
     checkUserStatus();
   }, [user]);
 
-  // Build nav links based on authentication and user status
-  const isEntrepreneur = potentialRole === "potential_entrepreneur";
-  
   const getNavLinks = () => {
     if (!user) return guestNavLinks;
-    if (canAccessScaling) return getBoostedLinks(isEntrepreneur);
-    if (canAccessBoosting) return getApprovedLinks(isEntrepreneur);
-    return getAppliedLinks(isEntrepreneur);
+    if (canAccessScaling) return getBoostedLinks();
+    if (canAccessBoosting) return getApprovedLinks();
+    return getAppliedLinks();
   };
 
   const navLinks = getNavLinks();
