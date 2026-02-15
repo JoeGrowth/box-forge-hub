@@ -67,11 +67,12 @@ export function DashboardHero() {
             </Link>
           </Button>
           <Button 
-            className="bg-b4-teal hover:bg-b4-teal/90 text-white"
+            variant="outline" 
+            className="border-white/20 text-white hover:bg-white/10"
             asChild
           >
             <Link to="/cobuilders">
-              Co-Builders <ArrowRight className="ml-2 w-4 h-4" />
+              Explore Co-Builders <ArrowRight className="ml-2 w-4 h-4" />
             </Link>
           </Button>
         </div>
