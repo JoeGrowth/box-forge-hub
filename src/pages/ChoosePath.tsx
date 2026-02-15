@@ -95,12 +95,9 @@ const ChoosePath = () => {
                     <path.icon className="w-6 h-6" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-display text-lg font-semibold text-foreground">
-                        {path.title}
-                      </h3>
-                      <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-b4-teal transition-colors" />
-                    </div>
+                    <h3 className="font-display text-lg font-semibold text-foreground">
+                      {path.title}
+                    </h3>
                     <p className="text-sm text-muted-foreground mt-1">
                       {path.description}
                     </p>
