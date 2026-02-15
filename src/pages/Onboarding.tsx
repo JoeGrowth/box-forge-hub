@@ -46,8 +46,8 @@ const Onboarding = () => {
   }, [onboardingState, naturalRole, navigate]);
 
   useEffect(() => {
-    // Only show pending help if they just requested it (not if they're coming back)
-    if (naturalRole?.status === "assistance_requested" && !onboardingState?.onboarding_completed) {
+    // Only show pending help if they just requested it (not if they're coming back or on step 1)
+    if (naturalRole?.status === "assistance_requested" && !onboardingState?.onboarding_completed && currentStep > 1) {
       setShowPendingHelp(true);
     }
     if (naturalRole?.promise_check === false && currentStep >= 4) {
