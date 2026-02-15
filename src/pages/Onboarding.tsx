@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
-import { PathSelectionStep } from "@/components/onboarding/steps/PathSelectionStep";
 import { NaturalRoleDefinitionStep } from "@/components/onboarding/steps/NaturalRoleDefinitionStep";
 import { PromiseCheckStep, NotReadyStep, PracticeCheckStep, TrainingCheckStep, ConsultingCheckStep } from "@/components/onboarding/steps/AssessmentSteps";
 import { ScalingStep } from "@/components/onboarding/steps/ScalingStep";
@@ -39,6 +38,12 @@ const Onboarding = () => {
       // If current_step is 1, user is starting fresh (e.g. came from choose-path)
       if (onboardingState.current_step <= 1) {
         setHasRestarted(true);
+      }
+      
+      // If step is 1 or less, user hasn't selected a path yet - send to choose-path
+      if (onboardingState.current_step <= 1) {
+        navigate("/choose-path", { replace: true });
+        return;
       }
       
       setCurrentStep(onboardingState.current_step);
@@ -80,10 +85,10 @@ const Onboarding = () => {
       setShowNotReady(false);
       return;
     }
-    if (currentStep > 1) {
+    if (currentStep > 2) {
       setCurrentStep(currentStep - 1);
     } else {
-      // Reset state in both DB and context so ChoosePath doesn't redirect back
+      // Going back from first professional step (step 2) → reset and go to choose-path
       try {
         await updateOnboardingState({ current_step: 1, primary_role: null, onboarding_completed: false });
       } catch (e) {
@@ -128,11 +133,7 @@ const Onboarding = () => {
     if (showPendingHelp) return <PendingHelpStep onDefineNow={handleDefineNowFromPendingHelp} onBack={handleBackToChoiceScreen} />;
     if (showNotReady) return <NotReadyStep onNeedHelp={() => navigate("/")} />;
 
-    if (currentStep === 1) {
-      return <PathSelectionStep onNext={() => setCurrentStep(2)} />;
-    }
-
-    // Both entrepreneurs and co-builders go through the same Natural Role journey
+    // Professional journey starts at step 2 (NR definition) - step 1 is handled by ChoosePath
     switch (currentStep) {
       case 2:
         return (
@@ -172,7 +173,7 @@ const Onboarding = () => {
       case 9:
         return <CompletionStep />;
       default:
-        return <PathSelectionStep onNext={() => setCurrentStep(2)} />;
+        return null;
     }
   };
 
