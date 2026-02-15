@@ -71,8 +71,8 @@ export function DashboardHero() {
             className="border-white/20 text-white hover:bg-white/10"
             asChild
           >
-            <Link to="/profile">
-              View Profile
+            <Link to="/cobuilders">
+              Co-Builders
             </Link>
           </Button>
         </div>
