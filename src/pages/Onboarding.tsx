@@ -71,7 +71,7 @@ const Onboarding = () => {
 
   const totalSteps = 9; // Same steps for both entrepreneurs and co-builders
 
-  const handleBack = async () => {
+  const handleBack = () => {
     if (showPendingHelp) {
       setShowPendingHelp(false);
       return;
@@ -85,12 +85,16 @@ const Onboarding = () => {
     } else {
       // Reset current_step in DB so ChoosePath doesn't redirect back
       if (user) {
-        await supabase
+        supabase
           .from("onboarding_state")
           .update({ current_step: 1, primary_role: null, onboarding_completed: false })
-          .eq("user_id", user.id);
+          .eq("user_id", user.id)
+          .then(() => {
+            navigate("/choose-path");
+          });
+      } else {
+        navigate("/choose-path");
       }
-      navigate("/choose-path");
     }
   };
 
