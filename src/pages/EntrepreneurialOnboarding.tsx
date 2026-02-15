@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
@@ -125,7 +126,20 @@ const EntrepreneurialOnboarding = () => {
 
   const handleBack = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
-    else navigate("/choose-path");
+    else {
+      // Reset DB state so ChoosePath doesn't redirect back
+      if (user) {
+        supabase
+          .from("onboarding_state")
+          .update({ current_step: 1, primary_role: null, onboarding_completed: false })
+          .eq("user_id", user.id)
+          .then(() => {
+            navigate("/choose-path");
+          });
+      } else {
+        navigate("/choose-path");
+      }
+    }
   };
 
   const updateField = <K extends keyof EntrepreneurialData>(key: K, value: EntrepreneurialData[K]) => {
