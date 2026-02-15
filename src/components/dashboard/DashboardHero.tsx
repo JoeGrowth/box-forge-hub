@@ -14,11 +14,7 @@ export function DashboardHero() {
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user) return;
-      const { data } = await supabase
-        .from("profiles")
-        .select("full_name")
-        .eq("user_id", user.id)
-        .single();
+      const { data } = await supabase.from("profiles").select("full_name").eq("user_id", user.id).single();
       setProfile(data);
     };
     fetchProfile();
@@ -45,9 +41,7 @@ export function DashboardHero() {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="w-5 h-5 text-b4-teal" />
-            <span className="text-b4-teal text-sm font-medium">
-              {format(new Date(), "EEEE, MMMM d")}
-            </span>
+            <span className="text-b4-teal text-sm font-medium">{format(new Date(), "EEEE, MMMM d")}</span>
           </div>
           <h1 className="font-display text-3xl md:text-4xl font-bold text-white mb-2">
             {getGreeting()}, {firstName}! 👋
@@ -58,21 +52,14 @@ export function DashboardHero() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
-          <Button 
-            className="bg-b4-teal hover:bg-b4-teal/90 text-white"
-            asChild
-          >
+          <Button className="bg-b4-teal hover:bg-b4-teal/90 text-white" asChild>
             <Link to="/opportunities">
               Explore Opportunities <ArrowRight className="ml-2 w-4 h-4" />
             </Link>
           </Button>
-          <Button 
-            variant="outline" 
-            className="border-white/20 text-white hover:bg-white/10"
-            asChild
-          >
+          <Button variant="outline" className="border-white/20 text-white hover:bg-white/10" asChild>
             <Link to="/cobuilders">
-              Explore Co-Builders <ArrowRight className="ml-2 w-4 h-4" />
+              Connect Co-Builders <ArrowRight className="ml-2 w-4 h-4" />
             </Link>
           </Button>
         </div>
