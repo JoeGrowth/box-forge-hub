@@ -124,21 +124,16 @@ const EntrepreneurialOnboarding = () => {
     7: "Review & Submit",
   };
 
-  const handleBack = () => {
+  const handleBack = async () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
     else {
-      // Reset DB state so ChoosePath doesn't redirect back
-      if (user) {
-        supabase
-          .from("onboarding_state")
-          .update({ current_step: 1, primary_role: null, onboarding_completed: false })
-          .eq("user_id", user.id)
-          .then(() => {
-            navigate("/choose-path");
-          });
-      } else {
-        navigate("/choose-path");
+      // Reset state in both DB and context so ChoosePath doesn't redirect back
+      try {
+        await updateOnboardingState({ current_step: 1, primary_role: null, onboarding_completed: false });
+      } catch (e) {
+        console.error("Failed to reset onboarding state:", e);
       }
+      navigate("/choose-path");
     }
   };
 
