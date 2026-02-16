@@ -762,19 +762,6 @@ const Scale = () => {
                   <Users className="w-4 h-4 inline mr-2" />
                   {isTeamMemberOnly ? "My Teams" : "Scale as Co-Builder"}
                 </button>
-                {!isTeamMemberOnly && hasConsultantAccess && (
-                  <button
-                    onClick={() => setActiveSection("scale")}
-                    className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                      activeSection === "scale"
-                        ? "bg-background shadow-sm text-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Sparkles className="w-4 h-4 inline mr-2" />
-                    Scale As Consultant
-                  </button>
-                )}
               </div>
             </div>
 
