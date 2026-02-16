@@ -16,28 +16,31 @@ const guestNavLinks = [
   { name: "Boxes", path: "/boxes" },
 ];
 
-// Helper to build links based on role
+// Helper to build links based on role and access
 const getAppliedLinks = () => [
   { name: "Opportunities", path: "/opportunities" },
   { name: "People", path: "/cobuilders" },
   { name: "Track", path: "/track" },
 ];
 
-const getApprovedLinks = (hideVaccines: boolean) => [
+const getApprovedLinks = (hideVaccines: boolean, hasConsultantAccess: boolean) => [
   ...getAppliedLinks(),
   ...(!hideVaccines ? [{ name: "Vaccines", path: "/journey" }] : []),
-  { name: "Advisory", path: "/advisory" },
+  ...(hasConsultantAccess ? [{ name: "Advisory", path: "/advisory" }] : []),
 ];
 
-const getBoostedLinks = (hideVaccines: boolean) => [
-  ...getApprovedLinks(hideVaccines),
+const getBoostedLinks = (hideVaccines: boolean, hasConsultantAccess: boolean) => [
+  ...getAppliedLinks(),
+  ...(!hideVaccines ? [{ name: "Vaccines", path: "/journey" }] : []),
   { name: "Scale", path: "/start" },
+  ...(hasConsultantAccess ? [{ name: "Advisory", path: "/advisory" }] : []),
 ];
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [allVaccinesDone, setAllVaccinesDone] = useState(false);
+  const [hasConsultantAccess, setHasConsultantAccess] = useState(false);
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
   const { canAccessBoosting, canAccessScaling, potentialRole } = useUserStatus();
@@ -47,11 +50,12 @@ export function Navbar() {
       if (!user) {
         setIsAdmin(false);
         setAllVaccinesDone(false);
+        setHasConsultantAccess(false);
         return;
       }
 
       // Check admin role and certifications in parallel
-      const [adminResult, certsResult] = await Promise.all([
+      const [adminResult, certsResult, onboardingResult] = await Promise.all([
         supabase
           .from("user_roles")
           .select("role")
@@ -63,6 +67,11 @@ export function Navbar() {
           .select("certification_type")
           .eq("user_id", user.id)
           .in("certification_type", ["cobuilder_b4", "initiator_b4"]),
+        supabase
+          .from("onboarding_state")
+          .select("consultant_access")
+          .eq("user_id", user.id)
+          .maybeSingle(),
       ]);
 
       setIsAdmin(!!adminResult.data);
@@ -72,16 +81,17 @@ export function Navbar() {
       setAllVaccinesDone(
         certTypes.includes("cobuilder_b4") && certTypes.includes("initiator_b4")
       );
+      setHasConsultantAccess(!!onboardingResult.data?.consultant_access);
     };
     checkUserStatus();
   }, [user]);
 
   const navLinks = useMemo(() => {
     if (!user) return guestNavLinks;
-    if (canAccessScaling) return getBoostedLinks(allVaccinesDone);
-    if (canAccessBoosting) return getApprovedLinks(allVaccinesDone);
+    if (canAccessScaling) return getBoostedLinks(allVaccinesDone, hasConsultantAccess);
+    if (canAccessBoosting) return getApprovedLinks(allVaccinesDone, hasConsultantAccess);
     return getAppliedLinks();
-  }, [user, canAccessScaling, canAccessBoosting, allVaccinesDone]);
+  }, [user, canAccessScaling, canAccessBoosting, allVaccinesDone, hasConsultantAccess]);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
