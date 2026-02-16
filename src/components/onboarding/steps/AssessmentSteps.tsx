@@ -494,7 +494,7 @@ export const TrainingCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) =
 
 // Step 3.4 - Consulting Check
 export const ConsultingCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps) => {
-  const { updateNaturalRole, updateOnboardingState } = useOnboarding();
+  const { updateNaturalRole, updateOnboardingState, sendAdminNotification } = useOnboarding();
   const { toast } = useToast();
   const [hasConsulted, setHasConsulted] = useState<boolean | null>(null);
   const [withWhom, setWithWhom] = useState("");
@@ -523,10 +523,23 @@ export const ConsultingCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps)
     }
   };
 
-  const handleNoConsulting = async () => {
+  const handleNeedsHelpAnswer = async (wantsHelp: boolean) => {
     setIsLoading(true);
     try {
       await updateNaturalRole({ consulting_check: false });
+
+      if (wantsHelp) {
+        await sendAdminNotification(
+          "consulting_help",
+          "Consulting Check",
+          "User wants help starting to consult others using their Natural Role",
+        );
+        toast({
+          title: "Request sent!",
+          description: "Our team will help you start consulting.",
+        });
+      }
+
       await updateOnboardingState({ current_step: 7 });
 
       onNext();
@@ -562,15 +575,44 @@ export const ConsultingCheckStep = ({ onNext, onNeedHelp }: AssessmentStepProps)
           <Button
             variant="outline"
             size="lg"
-            onClick={() => {
-              setHasConsulted(false);
-              handleNoConsulting();
-            }}
+            onClick={() => setHasConsulted(false)}
             disabled={isLoading}
             className="h-20 text-lg border-2 hover:border-muted-foreground"
           >
             <X className="mr-2 h-5 w-5" />
             No
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (hasConsulted === false) {
+    return (
+      <div className="text-center">
+        <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
+          Do you want help to start consulting others?
+        </h1>
+        <p className="text-muted-foreground text-lg mb-8">We can help you develop your consulting capabilities</p>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Button
+            variant="teal"
+            size="lg"
+            onClick={() => handleNeedsHelpAnswer(true)}
+            disabled={isLoading}
+            className="h-20 text-lg"
+          >
+            Yes, help me
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => handleNeedsHelpAnswer(false)}
+            disabled={isLoading}
+            className="h-20 text-lg border-2"
+          >
+            No, continue
           </Button>
         </div>
       </div>
