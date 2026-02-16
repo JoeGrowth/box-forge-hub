@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, LogOut, User, Shield } from "lucide-react";
@@ -23,20 +23,21 @@ const getAppliedLinks = () => [
   { name: "Track", path: "/track" },
 ];
 
-const getApprovedLinks = () => [
+const getApprovedLinks = (hideVaccines: boolean) => [
   ...getAppliedLinks(),
-  { name: "Vaccins", path: "/journey" },
+  ...(!hideVaccines ? [{ name: "Vaccines", path: "/journey" }] : []),
   { name: "Advisory", path: "/advisory" },
 ];
 
-const getBoostedLinks = () => [
-  ...getApprovedLinks(),
+const getBoostedLinks = (hideVaccines: boolean) => [
+  ...getApprovedLinks(hideVaccines),
   { name: "Scale", path: "/start" },
 ];
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [allVaccinesDone, setAllVaccinesDone] = useState(false);
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
   const { canAccessBoosting, canAccessScaling, potentialRole } = useUserStatus();
@@ -45,29 +46,42 @@ export function Navbar() {
     const checkUserStatus = async () => {
       if (!user) {
         setIsAdmin(false);
+        setAllVaccinesDone(false);
         return;
       }
 
-      // Check admin role
-      const { data: adminData } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin")
-        .maybeSingle();
-      setIsAdmin(!!adminData);
+      // Check admin role and certifications in parallel
+      const [adminResult, certsResult] = await Promise.all([
+        supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .eq("role", "admin")
+          .maybeSingle(),
+        supabase
+          .from("user_certifications")
+          .select("certification_type")
+          .eq("user_id", user.id)
+          .in("certification_type", ["cobuilder_b4", "initiator_b4"]),
+      ]);
+
+      setIsAdmin(!!adminResult.data);
+
+      // Hide Vaccines tab if user has both cobuilder and initiator certifications
+      const certTypes = (certsResult.data || []).map((c: any) => c.certification_type);
+      setAllVaccinesDone(
+        certTypes.includes("cobuilder_b4") && certTypes.includes("initiator_b4")
+      );
     };
     checkUserStatus();
   }, [user]);
 
-  const getNavLinks = () => {
+  const navLinks = useMemo(() => {
     if (!user) return guestNavLinks;
-    if (canAccessScaling) return getBoostedLinks();
-    if (canAccessBoosting) return getApprovedLinks();
+    if (canAccessScaling) return getBoostedLinks(allVaccinesDone);
+    if (canAccessBoosting) return getApprovedLinks(allVaccinesDone);
     return getAppliedLinks();
-  };
-
-  const navLinks = getNavLinks();
+  }, [user, canAccessScaling, canAccessBoosting, allVaccinesDone]);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
