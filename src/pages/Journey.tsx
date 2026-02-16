@@ -32,7 +32,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { InitiatorQuizDialog } from "@/components/learning/InitiatorQuizDialog";
 import { CoBuilderQuizDialog } from "@/components/learning/CoBuilderQuizDialog";
-import { ConsultantQuizDialog } from "@/components/learning/ConsultantQuizDialog";
+
 
 interface JourneyStep {
   step: number;
@@ -141,75 +141,7 @@ const COBUILDER_STEPS: JourneyStep[] = [
   },
 ];
 
-const CONSULTANT_STEPS: JourneyStep[] = [
-  {
-    step: 1,
-    title: "Foundations",
-    subtitle: "Consulting Basics",
-    icon: BookOpen,
-    description: "Learn the fundamentals of consulting. Understand client needs, project scoping, and engagement models.",
-    details: [
-      "Master consulting frameworks",
-      "Learn client engagement",
-      "Understand project scoping",
-    ],
-    color: "from-purple-500 to-violet-500",
-  },
-  {
-    step: 2,
-    title: "Strategy",
-    subtitle: "Strategic Thinking",
-    icon: Target,
-    description: "Develop strategic thinking capabilities. Learn to analyze complex problems and create actionable solutions.",
-    details: [
-      "Strategic analysis methods",
-      "Problem-solving frameworks",
-      "Solution development",
-    ],
-    color: "from-violet-500 to-purple-600",
-  },
-  {
-    step: 3,
-    title: "Advisory",
-    subtitle: "Client Relations",
-    icon: Handshake,
-    description: "Build strong client relationships. Learn to communicate effectively and manage stakeholder expectations.",
-    details: [
-      "Client relationship management",
-      "Stakeholder communication",
-      "Expectation management",
-    ],
-    color: "from-purple-600 to-fuchsia-500",
-  },
-  {
-    step: 4,
-    title: "Leadership",
-    subtitle: "Thought Leadership",
-    icon: TrendingUp,
-    description: "Establish yourself as a thought leader. Create content, speak at events, and build your personal brand.",
-    details: [
-      "Develop thought leadership",
-      "Build personal brand",
-      "Lead consulting engagements",
-    ],
-    color: "from-fuchsia-500 to-pink-500",
-  },
-  {
-    step: 5,
-    title: "Mastery",
-    subtitle: "Expert Consultant",
-    icon: GraduationCap,
-    description: "Achieve mastery as a consultant. Lead complex engagements and mentor the next generation.",
-    details: [
-      "Lead complex projects",
-      "Mentor other consultants",
-      "Achieve expert certification",
-    ],
-    color: "from-pink-500 to-rose-500",
-  },
-];
-
-type ActiveSection = "initiator" | "cobuilder" | "consultant";
+type ActiveSection = "initiator" | "cobuilder";
 
 const Journey = () => {
   const { user, loading: authLoading } = useAuth();
@@ -219,7 +151,7 @@ const Journey = () => {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<ActiveSection>(() => {
     const section = searchParams.get("section");
-    if (section === "initiator" || section === "cobuilder" || section === "consultant") {
+    if (section === "initiator" || section === "cobuilder") {
       return section;
     }
     return "initiator";
@@ -227,7 +159,6 @@ const Journey = () => {
   const [stepCompletionStatus, setStepCompletionStatus] = useState<Record<string, Record<number, boolean>>>({
     initiator: {},
     cobuilder: {},
-    consultant: {},
   });
   const [quizDialogOpen, setQuizDialogOpen] = useState(false);
   const [selectedStep, setSelectedStep] = useState<number>(1);
@@ -244,7 +175,7 @@ const Journey = () => {
   }, [user, authLoading, onboardingLoading, isApproved, navigate]);
 
   const [cobuilderQuizOpen, setCobuilderQuizOpen] = useState(false);
-  const [consultantQuizOpen, setConsultantQuizOpen] = useState(false);
+  
 
   // Map journey types to section names
   const getJourneyTypeForSection = (section: ActiveSection): string => {
@@ -253,8 +184,6 @@ const Journey = () => {
         return "idea_ptc";
       case "cobuilder":
         return "skill_ptc";
-      case "consultant":
-        return "scaling_path"; // Using scaling_path for consultant
       default:
         return "";
     }
@@ -267,8 +196,6 @@ const Journey = () => {
         return INITIATOR_STEPS.length;
       case "cobuilder":
         return COBUILDER_STEPS.length;
-      case "consultant":
-        return CONSULTANT_STEPS.length;
       default:
         return 0;
     }
@@ -330,8 +257,6 @@ const Journey = () => {
         return certifications.some(c => c.certification_type === "initiator_b4");
       case "cobuilder":
         return certifications.some(c => c.certification_type === "cobuilder_b4");
-      case "consultant":
-        return certifications.some(c => c.certification_type === "consultant_b4");
       default:
         return false;
     }
@@ -364,8 +289,6 @@ const Journey = () => {
       setQuizDialogOpen(true);
     } else if (section === "cobuilder") {
       setCobuilderQuizOpen(true);
-    } else if (section === "consultant") {
-      setConsultantQuizOpen(true);
     }
   };
 
@@ -417,8 +340,6 @@ const Journey = () => {
         return INITIATOR_STEPS;
       case "cobuilder":
         return COBUILDER_STEPS;
-      case "consultant":
-        return CONSULTANT_STEPS;
     }
   };
 
@@ -439,14 +360,6 @@ const Journey = () => {
           icon: Users,
           color: "from-teal-500 to-cyan-500",
           outcome: "You become a certified Co-Builder — ready to contribute meaningfully to startups and build your portfolio.",
-        };
-      case "consultant":
-        return {
-          title: "Learn to be a Consultant",
-          description: "A 5-step journey to achieve advisory excellence",
-          icon: Briefcase,
-          color: "from-purple-500 to-violet-500",
-          outcome: "You become a certified Consultant — ready to guide startups strategically and lead engagements.",
         };
     }
   };
@@ -499,17 +412,6 @@ const Journey = () => {
                     <Users className="w-4 h-4 inline mr-2" />
                     Learn to be a Co-Builder
                   </button>
-                  <button
-                    onClick={() => setActiveSection("consultant")}
-                    className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                      activeSection === "consultant"
-                        ? "bg-background shadow-sm text-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Briefcase className="w-4 h-4 inline mr-2" />
-                    Learn to be a Consultant
-                  </button>
                 </div>
               </div>
 
@@ -544,14 +446,6 @@ const Journey = () => {
                           className="bg-b4-teal hover:bg-b4-teal/90 text-white shrink-0 ml-4"
                         >
                           Co Build a Venture
-                        </Button>
-                      )}
-                      {activeSection === 'consultant' && (
-                        <Button 
-                          onClick={() => navigate('/advisory')}
-                          className="bg-b4-teal hover:bg-b4-teal/90 text-white shrink-0 ml-4"
-                        >
-                          Start Scaling
                         </Button>
                       )}
                     </div>
@@ -792,13 +686,6 @@ const Journey = () => {
         onComplete={handleStepComplete}
       />
 
-      {/* Quiz Dialog for Consultant */}
-      <ConsultantQuizDialog
-        open={consultantQuizOpen}
-        onOpenChange={setConsultantQuizOpen}
-        stepNumber={selectedStep}
-        onComplete={handleStepComplete}
-      />
     </div>
   );
 };
