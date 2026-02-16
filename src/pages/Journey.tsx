@@ -548,7 +548,7 @@ const Journey = () => {
                       )}
                       {activeSection === 'consultant' && (
                         <Button 
-                          onClick={() => navigate('/start?section=consultant')}
+                          onClick={() => navigate('/advisory')}
                           className="bg-b4-teal hover:bg-b4-teal/90 text-white shrink-0 ml-4"
                         >
                           Start Scaling
