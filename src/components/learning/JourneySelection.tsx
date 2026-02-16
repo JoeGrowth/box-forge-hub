@@ -93,7 +93,7 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
       icon: Users,
       color: "b4-teal",
       phases: ["Skills Assessment", "Practice", "Train", "Consult"],
-      result: "Co Builder B4 Model Based + Verified Badge",
+      result: "Vaccinated Co Builder + Verified Badge",
     },
     {
       type: "idea_ptc" as JourneyType,
@@ -104,7 +104,7 @@ export const JourneySelection = ({ onSelectJourney }: JourneySelectionProps) => 
       icon: Lightbulb,
       color: "b4-coral",
       phases: ["Ideation", "Structuring", "Team Building", "Launch"],
-      result: "Initiator B4 Model Based",
+      result: "Vaccinated Initiator",
     },
   ];
 
