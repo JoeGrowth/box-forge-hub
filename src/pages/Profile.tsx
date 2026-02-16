@@ -922,45 +922,7 @@ const Profile = () => {
               </div>
             )}
 
-            {/* Part 2: Approved Co-Builder Dashboard - Section 1: Action Cards */}
-            {isApprovedCoBuilder && (
-              <div className="bg-gradient-to-br from-b4-teal/10 to-b4-navy/10 rounded-3xl border border-b4-teal/20 p-8 mb-8">
-                <h2 className="font-display text-xl font-bold text-foreground mb-2">🎉 Welcome to the platform!</h2>
-                <p className="text-muted-foreground mb-6">
-                  Choose how you want to scale through an idea (venture promise)
-                </p>
-
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="bg-card rounded-xl border border-border p-6 hover:border-b4-teal/50 transition-colors">
-                    <div className="w-12 h-12 rounded-xl bg-b4-teal/10 flex items-center justify-center mb-4">
-                      <Users className="w-6 h-6 text-b4-teal" />
-                    </div>
-                    <h3 className="font-semibold text-foreground mb-2">Co-Build a Startup</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Browse startup ideas looking for co-builders with roles matching your skills.
-                    </p>
-                    <Button variant="outline" size="sm" onClick={() => navigate("/opportunities")}>
-                      View Opportunities
-                      <ArrowRight className="ml-2 w-4 h-4" />
-                    </Button>
-                  </div>
-
-                  <div className="bg-card rounded-xl border border-border p-6 hover:border-b4-coral/50 transition-colors">
-                    <div className="w-12 h-12 rounded-xl bg-b4-coral/10 flex items-center justify-center mb-4">
-                      <Lightbulb className="w-6 h-6 text-b4-coral" />
-                    </div>
-                    <h3 className="font-semibold text-foreground mb-2">Be an Initiator</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Create your own startup idea and find co-builders to join your venture.
-                    </p>
-                    <Button variant="outline" size="sm" onClick={() => navigate("/create-idea")}>
-                      Create Startup Idea
-                      <ArrowRight className="ml-2 w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
+            {/* Part 2: Welcome section - temporarily deactivated */}
 
             {/* Part 3: Learning Journeys + Onboarding Answers (Combined Section) */}
             {isApprovedCoBuilder && (
@@ -1092,12 +1054,7 @@ const Profile = () => {
               </div>
             )}
 
-            {/* Part 5: Scaling Journey (for users who want to scale their natural role) */}
-            {isApprovedCoBuilder && naturalRole?.wants_to_scale && (
-              <div className="bg-card rounded-3xl border border-border p-8 mb-8">
-                <ScalingJourneyProgress onUpdate={refetch} />
-              </div>
-            )}
+            {/* Part 5: Scaling Journey - temporarily deactivated */}
 
             {isApprovedCoBuilder && userIdeas.some((i) => i.review_status === "pending") && (
               <div className="bg-gradient-to-br from-amber-500/10 to-b4-coral/10 rounded-3xl border border-amber-500/20 p-8 mb-8">
