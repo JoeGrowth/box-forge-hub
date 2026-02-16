@@ -552,7 +552,7 @@ const CoBuilders = () => {
                             <Button
                               variant="teal"
                               size="sm"
-                              onClick={() => navigate("/journey")}
+                              onClick={() => navigate("/journey?section=cobuilder")}
                               className="w-full gap-2"
                             >
                               <ShieldCheck className="w-4 h-4" />
