@@ -20,7 +20,7 @@ const guestNavLinks = [
 const getAppliedLinks = () => [
   { name: "Opportunities", path: "/opportunities" },
   { name: "People", path: "/cobuilders" },
-  { name: "Track", path: "/track" },
+  { name: "Personal Track", path: "/track" },
 ];
 
 const getApprovedLinks = (hideVaccines: boolean, hasConsultantAccess: boolean) => [
@@ -32,7 +32,7 @@ const getApprovedLinks = (hideVaccines: boolean, hasConsultantAccess: boolean) =
 const getBoostedLinks = (hideVaccines: boolean, hasConsultantAccess: boolean) => [
   ...getAppliedLinks(),
   ...(!hideVaccines ? [{ name: "Vaccines", path: "/journey" }] : []),
-  { name: "Scale", path: "/start" },
+  { name: "Ventures Track", path: "/start" },
   ...(hasConsultantAccess ? [{ name: "Advisory", path: "/advisory" }] : []),
 ];
 
