@@ -25,7 +25,8 @@ const getAppliedLinks = () => [
 
 const getApprovedLinks = () => [
   ...getAppliedLinks(),
-  { name: "Boost", path: "/journey" },
+  { name: "Vaccins", path: "/journey" },
+  { name: "Certificates", path: "/certificates" },
 ];
 
 const getBoostedLinks = () => [
