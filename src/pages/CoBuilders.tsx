@@ -10,9 +10,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, User, Briefcase, Loader2, Pencil, Check, X, ShieldCheck, Award, MessageCircle, Rocket } from "lucide-react";
+import { Search, User, Briefcase, Loader2, Pencil, Check, X, ShieldCheck, Award, MessageCircle, Rocket, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { DirectorySkeletonGrid } from "@/components/ui/skeleton-card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface Certification {
   id: string;
@@ -35,6 +36,20 @@ interface CoBuilder {
   opportunity_title: string | null;
 }
 
+interface NaturalRolePreview {
+  description: string | null;
+  promise_check: boolean | null;
+  practice_check: boolean | null;
+  practice_entities: string | null;
+  practice_case_studies: number | null;
+  training_check: boolean | null;
+  training_count: number | null;
+  training_contexts: string | null;
+  consulting_check: boolean | null;
+  consulting_with_whom: string | null;
+  consulting_case_studies: string | null;
+}
+
 const CoBuilders = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
@@ -46,7 +61,10 @@ const CoBuilders = () => {
   const [skillsInput, setSkillsInput] = useState("");
   const [savingSkills, setSavingSkills] = useState(false);
   const [startingChat, setStartingChat] = useState<string | null>(null);
-
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewData, setPreviewData] = useState<NaturalRolePreview | null>(null);
+  const [previewName, setPreviewName] = useState<string>("");
+  const [previewLoading, setPreviewLoading] = useState(false);
   // Derive approval status from cached onboarding state
   const isApproved =
     onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved";
@@ -220,6 +238,26 @@ const CoBuilders = () => {
     }
   };
 
+  const handlePreview = async (cobuilder: CoBuilder) => {
+    setPreviewName(cobuilder.full_name || "Co-Builder");
+    setPreviewOpen(true);
+    setPreviewLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("natural_roles")
+        .select("description, promise_check, practice_check, practice_entities, practice_case_studies, training_check, training_count, training_contexts, consulting_check, consulting_with_whom, consulting_case_studies")
+        .eq("user_id", cobuilder.user_id)
+        .maybeSingle();
+      if (error) throw error;
+      setPreviewData(data as NaturalRolePreview | null);
+    } catch (error) {
+      console.error("Error fetching preview:", error);
+      toast.error("Failed to load preview");
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
   // Filter co-builders based on search
   const filteredCobuilders = cobuilders.filter((cb) => {
     const searchLower = searchQuery.toLowerCase();
@@ -378,8 +416,16 @@ const CoBuilders = () => {
                     return (
                       <div
                         key={cobuilder.id}
-                        className={`rounded-2xl border p-6 transition-all ${getCardStyle()}`}
+                        className={`rounded-2xl border p-6 transition-all relative ${getCardStyle()}`}
                       >
+                        {/* Preview Button - top right */}
+                        <button
+                          onClick={() => handlePreview(cobuilder)}
+                          className="absolute top-3 right-3 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                          title="Preview"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
                         {/* Current User Badge */}
                         {isCurrentUser && (
                           <div className="mb-3">
@@ -593,6 +639,82 @@ const CoBuilders = () => {
           </section>
         </main>
       </PageTransition>
+      {/* Preview Dialog */}
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="w-5 h-5 text-b4-teal" />
+              {previewName} — Aperçu
+            </DialogTitle>
+          </DialogHeader>
+          {previewLoading ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-b4-teal" />
+            </div>
+          ) : !previewData ? (
+            <p className="text-sm text-muted-foreground italic py-4">No onboarding data available.</p>
+          ) : (
+            <div className="space-y-4 text-sm">
+              {/* Natural Role */}
+              <div>
+                <h4 className="font-semibold text-foreground flex items-center gap-2 mb-1">
+                  <Briefcase className="w-4 h-4 text-b4-teal" /> Natural Role
+                </h4>
+                <p className="text-muted-foreground italic">
+                  {previewData.description ? `"${previewData.description}"` : "Not defined"}
+                </p>
+              </div>
+
+              <div className="border-t border-border" />
+
+              {/* Practice */}
+              <div>
+                <h4 className="font-semibold text-foreground mb-1">Practice</h4>
+                {previewData.practice_check ? (
+                  <div className="space-y-1 text-muted-foreground">
+                    {previewData.practice_entities && <p><span className="font-medium text-foreground">Entities:</span> {previewData.practice_entities}</p>}
+                    {previewData.practice_case_studies != null && <p><span className="font-medium text-foreground">Case studies:</span> {previewData.practice_case_studies}</p>}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground italic">No practice experience</p>
+                )}
+              </div>
+
+              <div className="border-t border-border" />
+
+              {/* Training */}
+              <div>
+                <h4 className="font-semibold text-foreground mb-1">Training</h4>
+                {previewData.training_check ? (
+                  <div className="space-y-1 text-muted-foreground">
+                    {previewData.training_count != null && <p><span className="font-medium text-foreground">Sessions:</span> {previewData.training_count}</p>}
+                    {previewData.training_contexts && <p><span className="font-medium text-foreground">Contexts:</span> {previewData.training_contexts}</p>}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground italic">No training experience</p>
+                )}
+              </div>
+
+              <div className="border-t border-border" />
+
+              {/* Consulting */}
+              <div>
+                <h4 className="font-semibold text-foreground mb-1">Consulting</h4>
+                {previewData.consulting_check ? (
+                  <div className="space-y-1 text-muted-foreground">
+                    {previewData.consulting_with_whom && <p><span className="font-medium text-foreground">With:</span> {previewData.consulting_with_whom}</p>}
+                    {previewData.consulting_case_studies && <p><span className="font-medium text-foreground">Case studies:</span> {previewData.consulting_case_studies}</p>}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground italic">No consulting experience</p>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <Footer />
     </div>
   );
