@@ -90,13 +90,30 @@ const EntrepreneurialOnboarding = () => {
     }
   }, [user, authLoading, navigate]);
 
+  // Only redirect if the user completed entrepreneurial onboarding as their primary path
+  // Don't redirect cobuilders who are starting entrepreneurial as a secondary journey
   useEffect(() => {
     if (onboardingState) {
-      if (onboardingState.primary_role === "entrepreneur" && onboardingState.onboarding_completed) {
-        navigate("/", { replace: true });
+      if (
+        onboardingState.primary_role === "entrepreneur" &&
+        onboardingState.onboarding_completed
+      ) {
+        // Check if entrepreneurial onboarding is actually completed
+        // If user is a cobuilder doing this as secondary, don't redirect
+        if (!user) return;
+        supabase
+          .from("entrepreneurial_onboarding")
+          .select("is_completed")
+          .eq("user_id", user.id)
+          .maybeSingle()
+          .then(({ data: entData }) => {
+            if (entData?.is_completed) {
+              navigate("/", { replace: true });
+            }
+          });
       }
     }
-  }, [onboardingState, navigate]);
+  }, [onboardingState, navigate, user]);
 
   if (authLoading || onboardingLoading) {
     return (
@@ -107,6 +124,10 @@ const EntrepreneurialOnboarding = () => {
   }
 
   const ensureEntrepreneurRole = async () => {
+    // Don't change primary_role if user already completed cobuilder onboarding (secondary journey)
+    if (onboardingState?.onboarding_completed && onboardingState?.primary_role === "cobuilder") {
+      return;
+    }
     if (!onboardingState?.primary_role || onboardingState.primary_role !== "entrepreneur") {
       await updateOnboardingState({ primary_role: "entrepreneur", potential_role: "potential_entrepreneur" });
     }
@@ -127,7 +148,12 @@ const EntrepreneurialOnboarding = () => {
   const handleBack = async () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
     else {
-      // Reset state in both DB and context so ChoosePath doesn't redirect back
+      // If user is a completed cobuilder doing secondary journey, go back to track
+      if (onboardingState?.onboarding_completed && onboardingState?.primary_role === "cobuilder") {
+        navigate("/track");
+        return;
+      }
+      // Otherwise reset state and go to choose-path
       try {
         await updateOnboardingState({ current_step: 1, primary_role: null, onboarding_completed: false });
       } catch (e) {
