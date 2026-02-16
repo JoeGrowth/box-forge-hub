@@ -183,7 +183,6 @@ const Scale = () => {
   const [deleteType, setDeleteType] = useState<"archive" | "permanent" | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [hasConsultantCert, setHasConsultantCert] = useState(false);
-  const [hasConsultantAccess, setHasConsultantAccess] = useState(false);
   const [hasTeamMemberships, setHasTeamMemberships] = useState<boolean | null>(null);
   const [showScaleExperience, setShowScaleExperience] = useState(() => {
     // Initialize from localStorage
@@ -325,27 +324,19 @@ const Scale = () => {
     fetchUserIdeas();
   }, [user]);
 
-  // Fetch consultant certification and access
+  // Fetch consultant certification
   useEffect(() => {
-    const fetchConsultantData = async () => {
+    const fetchConsultantCert = async () => {
       if (!user) return;
-      const [certResult, accessResult] = await Promise.all([
-        supabase
-          .from("user_certifications")
-          .select("id")
-          .eq("user_id", user.id)
-          .eq("certification_type", "consultant_b4")
-          .maybeSingle(),
-        supabase
-          .from("onboarding_state")
-          .select("consultant_access")
-          .eq("user_id", user.id)
-          .maybeSingle(),
-      ]);
-      setHasConsultantCert(!!certResult.data);
-      setHasConsultantAccess(!!accessResult.data?.consultant_access);
+      const { data } = await supabase
+        .from("user_certifications")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("certification_type", "consultant_b4")
+        .maybeSingle();
+      setHasConsultantCert(!!data);
     };
-    fetchConsultantData();
+    fetchConsultantCert();
   }, [user]);
 
   // Handle idea deletion
@@ -762,6 +753,19 @@ const Scale = () => {
                   <Users className="w-4 h-4 inline mr-2" />
                   {isTeamMemberOnly ? "My Teams" : "Scale as Co-Builder"}
                 </button>
+                {!isTeamMemberOnly && (
+                  <button
+                    onClick={() => setActiveSection("scale")}
+                    className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                      activeSection === "scale"
+                        ? "bg-background shadow-sm text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Sparkles className="w-4 h-4 inline mr-2" />
+                    Scale As Consultant
+                  </button>
+                )}
               </div>
             </div>
 
@@ -945,8 +949,8 @@ const Scale = () => {
             <div className={`space-y-6 ${activeSection === "ideas" ? "block" : "hidden"}`}>
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>
-                  <h2 className="text-2xl font-display font-bold text-foreground">Your Ideas</h2>
-                  <p className="text-muted-foreground mt-1">Startup ideas you initiated and their status</p>
+                  <h2 className="text-2xl font-display font-bold text-foreground">Your Joy</h2>
+                  <p className="text-muted-foreground mt-1">Startup ideas you've created and their status</p>
                 </div>
                 <Button variant="teal" asChild>
                   <Link to="/create-idea">
