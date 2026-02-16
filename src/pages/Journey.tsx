@@ -167,12 +167,7 @@ const Journey = () => {
   const isApproved = onboardingState?.journey_status === "approved" || 
     onboardingState?.journey_status === "entrepreneur_approved";
 
-  // Redirect unapproved users to dashboard
-  useEffect(() => {
-    if (!authLoading && !onboardingLoading && user && !isApproved) {
-      navigate("/dashboard", { replace: true });
-    }
-  }, [user, authLoading, onboardingLoading, isApproved, navigate]);
+  // Redirect logic removed to make journey accessible for all authenticated users
 
   const [cobuilderQuizOpen, setCobuilderQuizOpen] = useState(false);
   

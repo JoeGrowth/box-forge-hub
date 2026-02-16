@@ -23,15 +23,16 @@ const getAppliedLinks = () => [
   { name: "Track", path: "/track" },
 ];
 
-const getApprovedLinks = (hideVaccines: boolean, hasConsultantAccess: boolean) => [
+const getApprovedLinks = (hasConsultantAccess: boolean) => [
   ...getAppliedLinks(),
-  ...(!hideVaccines ? [{ name: "Vaccines", path: "/journey" }] : []),
+  { name: "Vaccines", path: "/journey" },
   ...(hasConsultantAccess ? [{ name: "Advisory", path: "/advisory" }] : []),
 ];
 
-const getBoostedLinks = (hideVaccines: boolean, hasConsultantAccess: boolean) => [
+const getBoostedLinks = (hasConsultantAccess: boolean) => [
   ...getAppliedLinks(),
-  ...(!hideVaccines ? [{ name: "Vaccines", path: "/journey" }] : []),
+  { name: "Track", path: "/track" },
+  { name: "Vaccines", path: "/journey" },
   { name: "Startups", path: "/start" },
   ...(hasConsultantAccess ? [{ name: "Advisory", path: "/advisory" }] : []),
 ];
@@ -39,7 +40,6 @@ const getBoostedLinks = (hideVaccines: boolean, hasConsultantAccess: boolean) =>
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [allVaccinesDone, setAllVaccinesDone] = useState(false);
   const [hasConsultantAccess, setHasConsultantAccess] = useState(false);
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
@@ -49,24 +49,18 @@ export function Navbar() {
     const checkUserStatus = async () => {
       if (!user) {
         setIsAdmin(false);
-        setAllVaccinesDone(false);
         setHasConsultantAccess(false);
         return;
       }
 
       // Check admin role and certifications in parallel
-      const [adminResult, certsResult, onboardingResult] = await Promise.all([
+      const [adminResult, onboardingResult] = await Promise.all([
         supabase
           .from("user_roles")
           .select("role")
           .eq("user_id", user.id)
           .eq("role", "admin")
           .maybeSingle(),
-        supabase
-          .from("user_certifications")
-          .select("certification_type")
-          .eq("user_id", user.id)
-          .in("certification_type", ["cobuilder_b4", "initiator_b4"]),
         supabase
           .from("onboarding_state")
           .select("consultant_access")
@@ -76,11 +70,6 @@ export function Navbar() {
 
       setIsAdmin(!!adminResult.data);
 
-      // Hide Vaccines tab if user has both cobuilder and initiator certifications
-      const certTypes = (certsResult.data || []).map((c: any) => c.certification_type);
-      setAllVaccinesDone(
-        certTypes.includes("cobuilder_b4") && certTypes.includes("initiator_b4")
-      );
       setHasConsultantAccess(!!onboardingResult.data?.consultant_access);
     };
     checkUserStatus();
@@ -88,10 +77,10 @@ export function Navbar() {
 
   const navLinks = useMemo(() => {
     if (!user) return guestNavLinks;
-    if (canAccessScaling) return getBoostedLinks(allVaccinesDone, hasConsultantAccess);
-    if (canAccessBoosting) return getApprovedLinks(allVaccinesDone, hasConsultantAccess);
+    if (canAccessScaling) return getBoostedLinks(hasConsultantAccess);
+    if (canAccessBoosting) return getApprovedLinks(hasConsultantAccess);
     return getAppliedLinks();
-  }, [user, canAccessScaling, canAccessBoosting, allVaccinesDone, hasConsultantAccess]);
+  }, [user, canAccessScaling, canAccessBoosting, hasConsultantAccess]);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">

@@ -233,13 +233,11 @@ export function DashboardProgress() {
           ))}
         </div>
 
-        {isApproved && (
-          <Button variant="ghost" className="w-full mt-4" asChild>
-            <Link to="/journey">
-              View All Learning Paths <ArrowRight className="ml-2 w-4 h-4" />
-            </Link>
-          </Button>
-        )}
+        <Button variant="ghost" className="w-full mt-4" asChild>
+          <Link to="/journey">
+            View All Learning Paths <ArrowRight className="ml-2 w-4 h-4" />
+          </Link>
+        </Button>
       </CardContent>
     </Card>
   );
