@@ -183,6 +183,7 @@ const Scale = () => {
   const [deleteType, setDeleteType] = useState<"archive" | "permanent" | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [hasConsultantCert, setHasConsultantCert] = useState(false);
+  const [hasConsultantAccess, setHasConsultantAccess] = useState(false);
   const [hasTeamMemberships, setHasTeamMemberships] = useState<boolean | null>(null);
   const [showScaleExperience, setShowScaleExperience] = useState(() => {
     // Initialize from localStorage
@@ -324,19 +325,27 @@ const Scale = () => {
     fetchUserIdeas();
   }, [user]);
 
-  // Fetch consultant certification
+  // Fetch consultant certification and access
   useEffect(() => {
-    const fetchConsultantCert = async () => {
+    const fetchConsultantData = async () => {
       if (!user) return;
-      const { data } = await supabase
-        .from("user_certifications")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("certification_type", "consultant_b4")
-        .maybeSingle();
-      setHasConsultantCert(!!data);
+      const [certResult, accessResult] = await Promise.all([
+        supabase
+          .from("user_certifications")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("certification_type", "consultant_b4")
+          .maybeSingle(),
+        supabase
+          .from("onboarding_state")
+          .select("consultant_access")
+          .eq("user_id", user.id)
+          .maybeSingle(),
+      ]);
+      setHasConsultantCert(!!certResult.data);
+      setHasConsultantAccess(!!accessResult.data?.consultant_access);
     };
-    fetchConsultantCert();
+    fetchConsultantData();
   }, [user]);
 
   // Handle idea deletion
@@ -753,7 +762,7 @@ const Scale = () => {
                   <Users className="w-4 h-4 inline mr-2" />
                   {isTeamMemberOnly ? "My Teams" : "Scale as Co-Builder"}
                 </button>
-                {!isTeamMemberOnly && (
+                {!isTeamMemberOnly && hasConsultantAccess && (
                   <button
                     onClick={() => setActiveSection("scale")}
                     className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
