@@ -80,7 +80,8 @@ export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSe
       // Fetch applications where user is the applicant (not initiator)
       const { data: apps, error } = await supabase
         .from("startup_applications")
-        .select(`
+        .select(
+          `
           id,
           startup_id,
           role_applied,
@@ -88,7 +89,8 @@ export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSe
           status,
           created_at,
           startup:startup_ideas(id, title, description, sector)
-        `)
+        `,
+        )
         .eq("applicant_id", userId)
         .order("created_at", { ascending: false });
 
@@ -120,7 +122,7 @@ export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSe
             has_conversation: !!conversation,
             unread_count: unreadCount,
           };
-        })
+        }),
       );
 
       setApplications(applicationsWithChat);
@@ -128,50 +130,56 @@ export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSe
       // Fetch team memberships where user was directly added
       const { data: memberships, error: membershipError } = await supabase
         .from("startup_team_members")
-        .select(`
+        .select(
+          `
           id,
           startup_id,
           role_type,
           added_at,
           member_user_id,
           startup:startup_ideas(id, title, description, sector)
-        `)
+        `,
+        )
         .eq("member_user_id", userId)
         .order("added_at", { ascending: false });
 
       if (membershipError) throw membershipError;
 
       // Get member IDs to fetch compensation offers
-      const memberIds = (memberships || []).map(m => m.id);
-      
+      const memberIds = (memberships || []).map((m) => m.id);
+
       // Fetch compensation offers for these memberships
       let compensationOffers: any[] = [];
       if (memberIds.length > 0) {
         const { data: offers } = await supabase
           .from("team_compensation_offers")
-          .select("id, team_member_id, status, time_equity_percentage, performance_equity_percentage, monthly_salary, current_proposer_id")
+          .select(
+            "id, team_member_id, status, time_equity_percentage, performance_equity_percentage, monthly_salary, current_proposer_id",
+          )
           .in("team_member_id", memberIds);
         compensationOffers = offers || [];
       }
 
       // Filter out memberships for startups where user already has an application
-      const applicationStartupIds = new Set(applicationsWithChat.map(a => a.startup_id));
+      const applicationStartupIds = new Set(applicationsWithChat.map((a) => a.startup_id));
       const filteredMemberships: TeamMembership[] = (memberships || [])
-        .filter(m => !applicationStartupIds.has(m.startup_id))
-        .map(m => {
-          const compensation = compensationOffers.find(c => c.team_member_id === m.id);
+        .filter((m) => !applicationStartupIds.has(m.startup_id))
+        .map((m) => {
+          const compensation = compensationOffers.find((c) => c.team_member_id === m.id);
           return {
             ...m,
             member_user_id: m.member_user_id,
             startup: m.startup as TeamMembership["startup"],
-            compensation: compensation ? {
-              id: compensation.id,
-              status: compensation.status,
-              time_equity_percentage: compensation.time_equity_percentage,
-              performance_equity_percentage: compensation.performance_equity_percentage,
-              monthly_salary: compensation.monthly_salary,
-              current_proposer_id: compensation.current_proposer_id,
-            } : null,
+            compensation: compensation
+              ? {
+                  id: compensation.id,
+                  status: compensation.status,
+                  time_equity_percentage: compensation.time_equity_percentage,
+                  performance_equity_percentage: compensation.performance_equity_percentage,
+                  monthly_salary: compensation.monthly_salary,
+                  current_proposer_id: compensation.current_proposer_id,
+                }
+              : null,
           };
         });
 
@@ -204,7 +212,7 @@ export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSe
         },
         () => {
           fetchApplications();
-        }
+        },
       )
       .on(
         "postgres_changes",
@@ -216,7 +224,7 @@ export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSe
         () => {
           // Refresh to update unread counts
           fetchApplications();
-        }
+        },
       )
       .on(
         "postgres_changes",
@@ -229,7 +237,7 @@ export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSe
         () => {
           // Refresh when compensation offers change
           fetchApplications();
-        }
+        },
       )
       .subscribe();
 
@@ -302,9 +310,7 @@ export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSe
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h2 className="text-2xl font-display font-bold text-foreground">Your Co-Builder Journey</h2>
-          <p className="text-muted-foreground mt-1">
-            Teams you're part of and opportunities you've applied to
-          </p>
+          <p className="text-muted-foreground mt-1">Startups you're part of and opportunities you've applied to</p>
         </div>
         <Button variant="outline" asChild>
           <Link to="/opportunities">
@@ -336,9 +342,11 @@ export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSe
             {teamMemberships.map((membership) => {
               const hasOffer = !!membership.compensation;
               const isAgreed = membership.compensation?.status === "accepted";
-              const totalEquity = (membership.compensation?.time_equity_percentage || 0) + (membership.compensation?.performance_equity_percentage || 0);
+              const totalEquity =
+                (membership.compensation?.time_equity_percentage || 0) +
+                (membership.compensation?.performance_equity_percentage || 0);
               const isMyTurn = hasOffer && membership.compensation?.current_proposer_id !== userId;
-              
+
               return (
                 <Card
                   key={membership.id}
@@ -382,11 +390,11 @@ export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSe
                         <div className="flex flex-wrap items-center gap-4 text-sm">
                           <div className="flex items-center gap-1.5 text-muted-foreground">
                             <Briefcase className="w-4 h-4" />
-                            <span>Role: <span className="text-foreground font-medium">{membership.role_type}</span></span>
+                            <span>
+                              Role: <span className="text-foreground font-medium">{membership.role_type}</span>
+                            </span>
                           </div>
-                          {membership.startup?.sector && (
-                            <Badge variant="outline">{membership.startup.sector}</Badge>
-                          )}
+                          {membership.startup?.sector && <Badge variant="outline">{membership.startup.sector}</Badge>}
                           <div className="flex items-center gap-1.5 text-muted-foreground">
                             <Clock className="w-4 h-4" />
                             Added {formatDistanceToNow(new Date(membership.added_at), { addSuffix: true })}
@@ -488,12 +496,13 @@ export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSe
                         {application.role_applied && (
                           <div className="flex items-center gap-1.5 text-muted-foreground">
                             <Briefcase className="w-4 h-4" />
-                            <span>Applied as: <span className="text-foreground font-medium">{application.role_applied}</span></span>
+                            <span>
+                              Applied as:{" "}
+                              <span className="text-foreground font-medium">{application.role_applied}</span>
+                            </span>
                           </div>
                         )}
-                        {application.startup?.sector && (
-                          <Badge variant="outline">{application.startup.sector}</Badge>
-                        )}
+                        {application.startup?.sector && <Badge variant="outline">{application.startup.sector}</Badge>}
                         <div className="flex items-center gap-1.5 text-muted-foreground">
                           <Clock className="w-4 h-4" />
                           {formatDistanceToNow(new Date(application.created_at), { addSuffix: true })}
