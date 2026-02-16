@@ -546,6 +546,21 @@ const CoBuilders = () => {
                           </p>
                         )}
 
+                        {/* Get Vaccinated Button - shown on current user's card if no cobuilder certification */}
+                        {isCurrentUser && !cobuilder.certifications.some(c => c.certification_type === "cobuilder_b4") && (
+                          <div className="mt-4 pt-4 border-t border-border">
+                            <Button
+                              variant="teal"
+                              size="sm"
+                              onClick={() => navigate("/journey")}
+                              className="w-full gap-2"
+                            >
+                              <ShieldCheck className="w-4 h-4" />
+                              Get Vaccinated Co Builder
+                            </Button>
+                          </div>
+                        )}
+
                         {/* Message Button */}
                         {!isCurrentUser && (
                           <div className="mt-4 pt-4 border-t border-border">
