@@ -47,6 +47,7 @@ import NRDecoder from "./pages/NRDecoder";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import ComingSoon from "./pages/ComingSoon";
+import Certificates from "./pages/Certificates";
 
 const queryClient = new QueryClient();
 
@@ -101,6 +102,7 @@ const App = () => (
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/decoder" element={<NRDecoder />} />
+                <Route path="/certificates" element={<Certificates />} />
                 <Route path="/coming-soon" element={<ComingSoon />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
