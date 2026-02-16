@@ -922,32 +922,6 @@ const Profile = () => {
               </div>
             )}
 
-            {/* Get Vaccinated Co Builder CTA */}
-            {onboardingState?.primary_role === "cobuilder" && (
-              <div className="bg-gradient-to-r from-b4-teal/10 to-b4-navy/10 rounded-3xl border border-b4-teal/20 p-6 mb-8 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-b4-teal/10 flex items-center justify-center flex-shrink-0">
-                    <ShieldCheck className="w-6 h-6 text-b4-teal" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground">Get Vaccinated as a Co-Builder</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Complete your learning journey to earn your Co-Builder certification
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  variant="teal"
-                  size="sm"
-                  onClick={() => navigate("/journey")}
-                  className="flex-shrink-0"
-                >
-                  Get Vaccinated
-                  <ArrowRight className="ml-2 w-4 h-4" />
-                </Button>
-              </div>
-            )}
-
             {/* Part 2: Approved Co-Builder Dashboard - Section 1: Action Cards */}
             {isApprovedCoBuilder && (
               <div className="bg-gradient-to-br from-b4-teal/10 to-b4-navy/10 rounded-3xl border border-b4-teal/20 p-8 mb-8">
