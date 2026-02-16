@@ -126,11 +126,15 @@ const CoBuilders = () => {
           };
         });
 
-        // Sort: current user first, then by certification count (most first)
+        // Sort: current user first, then by certification count, then by filled skills
         combinedData.sort((a, b) => {
           if (a.user_id === user?.id) return -1;
           if (b.user_id === user?.id) return 1;
-          return b.certifications.length - a.certifications.length;
+          const certDiff = b.certifications.length - a.certifications.length;
+          if (certDiff !== 0) return certDiff;
+          const aHasSkills = a.primary_skills && a.primary_skills.trim().length > 0 ? 1 : 0;
+          const bHasSkills = b.primary_skills && b.primary_skills.trim().length > 0 ? 1 : 0;
+          return bHasSkills - aHasSkills;
         });
 
         setCobuilders(combinedData);
