@@ -817,6 +817,7 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
         open={previewDialogOpen}
         onOpenChange={setPreviewDialogOpen}
         user={previewUser}
+        onUserUpdated={onRefresh}
       />
     </div>
   );

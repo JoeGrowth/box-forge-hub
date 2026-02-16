@@ -792,6 +792,7 @@ export type Database = {
       onboarding_state: {
         Row: {
           boost_type: string | null
+          consultant_access: boolean | null
           created_at: string | null
           current_step: number | null
           entrepreneur_step: number | null
@@ -808,6 +809,7 @@ export type Database = {
         }
         Insert: {
           boost_type?: string | null
+          consultant_access?: boolean | null
           created_at?: string | null
           current_step?: number | null
           entrepreneur_step?: number | null
@@ -824,6 +826,7 @@ export type Database = {
         }
         Update: {
           boost_type?: string | null
+          consultant_access?: boolean | null
           created_at?: string | null
           current_step?: number | null
           entrepreneur_step?: number | null

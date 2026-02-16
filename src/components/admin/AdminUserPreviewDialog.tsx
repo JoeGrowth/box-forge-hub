@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -7,8 +8,10 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import { UserWithDetails } from "@/hooks/useAdmin";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 import {
   User,
   Lightbulb,
@@ -20,19 +23,25 @@ import {
   Clock,
   TrendingUp,
   Rocket,
+  ShieldCheck,
+  ShieldOff,
 } from "lucide-react";
 
 interface AdminUserPreviewDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   user: UserWithDetails | null;
+  onUserUpdated?: () => void;
 }
 
 export function AdminUserPreviewDialog({
   open,
   onOpenChange,
   user,
+  onUserUpdated,
 }: AdminUserPreviewDialogProps) {
+  const [toggling, setToggling] = useState(false);
+
   if (!user) return null;
 
   const getUserStatusLevel = (): string => {
@@ -257,6 +266,47 @@ export function AdminUserPreviewDialog({
               </CardContent>
             </Card>
           )}
+          {/* Consultant Access Control */}
+          <Card className="border-dashed">
+            <CardContent className="pt-4 space-y-3">
+              <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                {user.consultantAccess ? (
+                  <ShieldCheck className="w-4 h-4 text-green-500" />
+                ) : (
+                  <ShieldOff className="w-4 h-4 text-muted-foreground" />
+                )}
+                Consultant Access
+              </h4>
+              <p className="text-xs text-muted-foreground">
+                {user.consultantAccess
+                  ? "This user can access \"Learn as Consultant\" and \"Scale as Consultant\" flows."
+                  : "This user cannot access consultant flows yet."}
+              </p>
+              <Button
+                size="sm"
+                variant={user.consultantAccess ? "outline" : "default"}
+                disabled={toggling}
+                className="w-full"
+                onClick={async () => {
+                  setToggling(true);
+                  const newValue = !user.consultantAccess;
+                  const { error } = await supabase
+                    .from("onboarding_state")
+                    .update({ consultant_access: newValue } as any)
+                    .eq("user_id", user.id);
+                  setToggling(false);
+                  if (error) {
+                    toast({ title: "Error", description: "Failed to update consultant access.", variant: "destructive" });
+                  } else {
+                    toast({ title: newValue ? "Access Granted" : "Access Revoked", description: `Consultant access has been ${newValue ? "enabled" : "disabled"}.` });
+                    onUserUpdated?.();
+                  }
+                }}
+              >
+                {toggling ? "Updating..." : user.consultantAccess ? "Revoke Consultant Access" : "Grant Consultant Access"}
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </DialogContent>
     </Dialog>
