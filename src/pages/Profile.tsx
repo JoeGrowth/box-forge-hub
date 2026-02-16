@@ -925,7 +925,7 @@ const Profile = () => {
             {/* Part 2: Welcome section - temporarily deactivated */}
 
             {/* Part 3: Learning Journeys + Onboarding Answers (Combined Section) */}
-            {isApprovedCoBuilder && (
+            {onboardingState?.onboarding_completed && (
               <div className="bg-card rounded-3xl border border-border p-8 mb-8">
                 {/* Learning Journeys + Certifications */}
                 <div className="mb-6">
