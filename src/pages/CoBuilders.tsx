@@ -126,11 +126,11 @@ const CoBuilders = () => {
           };
         });
 
-        // Sort to put current user first
+        // Sort: current user first, then by certification count (most first)
         combinedData.sort((a, b) => {
           if (a.user_id === user?.id) return -1;
           if (b.user_id === user?.id) return 1;
-          return 0;
+          return b.certifications.length - a.certifications.length;
         });
 
         setCobuilders(combinedData);
