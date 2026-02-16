@@ -42,6 +42,7 @@ export interface UserWithDetails {
   ideasAsInitiator: number;
   ideasAsCoBuilder: number;
   hasConsultantScaling: boolean;
+  consultantAccess: boolean;
 }
 
 export function useAdmin() {
@@ -97,7 +98,7 @@ export function useAdmin() {
       learningJourneysResult
     ] = await Promise.all([
       supabase.from("profiles").select("*"),
-      supabase.from("onboarding_state").select("*"),
+      supabase.from("onboarding_state").select("*, consultant_access"),
       supabase.from("natural_roles").select("*"),
       supabase.from("user_certifications").select("user_id, certification_type"),
       supabase.from("startup_ideas").select("id, creator_id, status"),
@@ -178,6 +179,7 @@ export function useAdmin() {
         ideasAsInitiator: ideasAsInitiatorByUser[profile.user_id] || 0,
         ideasAsCoBuilder: ideasAsCoBuilderByUser[profile.user_id] || 0,
         hasConsultantScaling: hasConsultantScalingByUser[profile.user_id] || false,
+        consultantAccess: onboarding?.consultant_access || false,
       };
     });
 
