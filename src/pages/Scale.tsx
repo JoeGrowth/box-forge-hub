@@ -150,10 +150,8 @@ const Scale = () => {
 
   // Read section from URL query param
   const sectionFromUrl = searchParams.get("section");
-  const getInitialSection = (): "scale" | "ideas" | "cobuilder" => {
-    if (sectionFromUrl === "consultant" || sectionFromUrl === "scale") return "scale";
+  const getInitialSection = (): "ideas" | "cobuilder" => {
     if (sectionFromUrl === "cobuilder") return "cobuilder";
-    if (sectionFromUrl === "initiator" || sectionFromUrl === "ideas") return "ideas";
     return "ideas";
   };
 
@@ -162,7 +160,7 @@ const Scale = () => {
   const [versions, setVersions] = useState<AnswerVersion[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [changeNotes, setChangeNotes] = useState("");
-  const [activeSection, setActiveSection] = useState<"scale" | "ideas" | "cobuilder">(getInitialSection());
+  const [activeSection, setActiveSection] = useState<"ideas" | "cobuilder">(getInitialSection());
   const [userIdeas, setUserIdeas] = useState<StartupIdea[]>([]);
   const [archivedIdeas, setArchivedIdeas] = useState<StartupIdea[]>([]);
   const [loadingIdeas, setLoadingIdeas] = useState(true);
@@ -218,9 +216,7 @@ const Scale = () => {
   // Sync activeSection with URL query param
   useEffect(() => {
     const section = searchParams.get("section");
-    if (section === "consultant" || section === "scale") {
-      setActiveSection("scale");
-    } else if (section === "cobuilder") {
+    if (section === "cobuilder") {
       setActiveSection("cobuilder");
     } else if (section === "initiator" || section === "ideas") {
       setActiveSection("ideas");
@@ -753,196 +749,7 @@ const Scale = () => {
                   <Users className="w-4 h-4 inline mr-2" />
                   {isTeamMemberOnly ? "My Teams" : "Scale as Co-Builder"}
                 </button>
-                {!isTeamMemberOnly && (
-                  <button
-                    onClick={() => setActiveSection("scale")}
-                    className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                      activeSection === "scale"
-                        ? "bg-background shadow-sm text-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Sparkles className="w-4 h-4 inline mr-2" />
-                    Scale As Consultant
-                  </button>
-                )}
               </div>
-            </div>
-
-            {/* Scale Your NR Section */}
-            <div className={`space-y-8 ${activeSection === "scale" ? "block" : "hidden"}`}>
-              <div className="flex items-center justify-between flex-wrap gap-4">
-                <div>
-                  <h2 className="text-2xl font-display font-bold text-foreground">Your Consultant Journey</h2>
-                  <p className="text-muted-foreground mt-1">
-                    Build your Mask, scale your expertise, and operate beyond yourself
-                  </p>
-                </div>
-                {hasConsultantCert ? (
-                  <Button variant="outline" onClick={() => handleOpenStepDialog(1)}>
-                    <Theater className="w-4 h-4 mr-2" />
-                    Open Your Mask
-                  </Button>
-                ) : (
-                  <Button variant="teal" onClick={() => navigate("/journey?section=consultant")}>
-                    <BookOpen className="w-4 h-4 mr-2" />
-                    Get Certified
-                  </Button>
-                )}
-              </div>
-
-              {!hasConsultantCert && (
-                <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-violet-500/5">
-                  <CardContent className="pt-6">
-                    <div className="flex flex-col items-center text-center space-y-4">
-                      <div className="p-3 rounded-2xl bg-gradient-to-br from-purple-500 to-violet-500">
-                        <Lock className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-display font-bold text-foreground mb-2">Certification Required</h3>
-                        <p className="text-muted-foreground max-w-md mx-auto">
-                          Complete the Consultant learning journey to unlock the full scaling experience and track your
-                          consulting missions.
-                        </p>
-                      </div>
-                      <Button variant="teal" onClick={() => navigate("/journey?section=consultant")} className="gap-2">
-                        <BookOpen className="w-4 h-4" />
-                        Learn to be a Consultant
-                        <ArrowRight className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-              {/* Work as Consultant is now inside Step 1 dialog as Phase 0 */}
-              {hasConsultantCert && !showScaleExperience && (
-                <div className="text-center">
-                  <Button variant="teal" onClick={() => setShowScaleExperience(true)} className="gap-2">
-                    <Sparkles className="w-4 h-4" />
-                    Start The Experience
-                  </Button>
-                </div>
-              )}
-
-              {/* Journey Progress Header - Only show when experience is started */}
-              {hasConsultantCert && showScaleExperience && (
-                <div className="text-center animate-fade-in">
-                  <h2 className="text-2xl font-display font-bold text-foreground mb-2">Scale Your Natural Role</h2>
-                  <p className="text-muted-foreground">A 3-step journey to build scalable impact</p>
-                </div>
-              )}
-
-              {/* Journey Steps - Only show when experience is started */}
-              {hasConsultantCert && showScaleExperience && (
-                <div className="relative animate-fade-in">
-                  {/* Connection Line */}
-                  <div
-                    className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-violet-500 via-blue-500 to-emerald-500 hidden md:block"
-                    style={{ transform: "translateX(-50%)" }}
-                  />
-
-                  <div className="space-y-6">
-                    {SCALE_NR_STEPS.map((step, index) => (
-                      <div key={step.step} className={`relative ${index % 2 === 0 ? "md:pr-[52%]" : "md:pl-[52%]"}`}>
-                        {/* Step Number Badge */}
-                        <div
-                          className={`hidden md:flex absolute left-1/2 top-6 w-10 h-10 rounded-full bg-gradient-to-r ${step.color} items-center justify-center text-white font-bold text-lg shadow-lg z-10`}
-                          style={{ transform: "translateX(-50%)" }}
-                        >
-                          {step.step}
-                        </div>
-
-                        <Card className="border-border/50 hover:shadow-lg transition-shadow overflow-hidden">
-                          <div className={`h-1 bg-gradient-to-r ${step.color}`} />
-                          <CardContent className="pt-6">
-                            <div className="flex items-start gap-4">
-                              <div className={`md:hidden p-3 rounded-xl bg-gradient-to-r ${step.color} shrink-0`}>
-                                <step.icon className="w-6 h-6 text-white" />
-                              </div>
-                              <div className="hidden md:block p-3 rounded-xl bg-muted shrink-0">
-                                <step.icon className="w-6 h-6 text-foreground" />
-                              </div>
-                              <div className="flex-1 space-y-3">
-                                <div className="flex items-start justify-between">
-                                  <div>
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                        Step {step.step}
-                                      </span>
-                                      <Badge variant="outline" className="text-xs">
-                                        {step.subtitle}
-                                      </Badge>
-                                    </div>
-                                    <h3 className="text-lg font-display font-bold text-foreground">{step.title}</h3>
-                                  </div>
-                                  <Button
-                                    variant={stepCompletionStatus[step.step] ? "outline" : "teal"}
-                                    size="sm"
-                                    onClick={() => handleOpenStepDialog(step.step as 1 | 2 | 3)}
-                                    className="shrink-0"
-                                  >
-                                    {stepCompletionStatus[step.step] ? (
-                                      <>
-                                        <Pencil className="w-4 h-4 mr-1" />
-                                        Done
-                                      </>
-                                    ) : (
-                                      "Fill it"
-                                    )}
-                                  </Button>
-                                </div>
-                                <p className="text-sm text-muted-foreground">{step.description}</p>
-                                <ul className="space-y-2">
-                                  {step.details.map((detail, i) => (
-                                    <li key={i} className="flex items-start gap-2 text-sm">
-                                      <CheckCircle className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
-                                      <span className="text-muted-foreground">{detail}</span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Outcome Message - Only show when experience is started */}
-              {hasConsultantCert && showScaleExperience && (
-                <Card className="border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 animate-fade-in">
-                  <CardContent className="pt-6">
-                    <div className="text-center space-y-4">
-                      <div className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500">
-                        <Zap className="w-6 h-6 text-white" />
-                      </div>
-                    <div>
-                        <h3 className="text-xl font-display font-bold text-foreground mb-2">The Outcome</h3>
-                        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                          You scale your impact{" "}
-                          <strong className="text-foreground">without being the bottleneck</strong>. Your Mask operates
-                          independently — value becomes repeatable, transferable, and truly scalable.
-                        </p>
-                      </div>
-                      {stepCompletionStatus[1] && stepCompletionStatus[2] && stepCompletionStatus[3] && (
-                        <div className="pt-4">
-                          <Button
-                            variant="hero"
-                            size="lg"
-                            onClick={() => navigate("/entrepreneurial-onboarding")}
-                            className="gap-2"
-                          >
-                            <Rocket className="w-5 h-5" />
-                            Explore the Entrepreneurial Journey
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
             </div>
 
             {/* Your Ideas Section */}
