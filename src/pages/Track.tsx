@@ -370,7 +370,7 @@ const Track = () => {
               )}
 
               {renderSection(
-                "Entrepreneurial Resume",
+                "Entrepreneurial Career",
                 "Your ventures, products & business achievements",
                 Rocket,
                 entrepreneurialItems,
