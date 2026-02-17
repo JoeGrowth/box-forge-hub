@@ -90,8 +90,8 @@ const SCALE_NR_STEPS = [
     title: "Structure (Branding Phase)",
     subtitle: "Structured consultants",
     icon: Theater,
-    description: "Create your Mask — the structured entity that represents your natural role.",
-    details: ["Define your Mask's identity and purpose", "Structure your natural role into an entity", "Ownership: 100% yours"],
+    description: "Create your Brand — the structured entity that represents your natural role.",
+    details: ["Define your Brand's identity and purpose", "Structure your natural role into an entity", "Ownership: 100% yours"],
     color: "from-violet-500 to-purple-600",
   },
   {
@@ -108,8 +108,8 @@ const SCALE_NR_STEPS = [
     title: "Scale (Asset Phase)",
     subtitle: "Clients ask for the brand",
     icon: Users,
-    description: "Clients ask for the Mask, not you. Work becomes deliverable by others.",
-    details: ["Build delivery capacity beyond yourself", "Enable others to operate as the Mask", "Scale impact without being the bottleneck"],
+    description: "Clients ask for the Brand, not you. Work becomes deliverable by others.",
+    details: ["Build delivery capacity beyond yourself", "Enable others to operate as the Brand", "Scale impact without being the bottleneck"],
     color: "from-emerald-500 to-teal-500",
   },
 ];
@@ -291,7 +291,7 @@ const Advisory = () => {
               </div>
               <p className="text-primary-foreground/80 max-w-2xl">
                 {hasConsultantCert
-                  ? "Scale your expertise as a certified consultant. Build your Mask and operate beyond yourself."
+                  ? "Scale your expertise as a certified consultant. Build your Brand and operate beyond yourself."
                   : "Master the art of consulting. Complete your learning journey to earn your certification."}
               </p>
             </div>
@@ -535,7 +535,7 @@ const Advisory = () => {
                               <h3 className="text-xl font-display font-bold text-foreground mb-2">The Outcome</h3>
                               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                                 You scale your impact{" "}
-                                <strong className="text-foreground">without being the bottleneck</strong>. Your Mask operates
+                                <strong className="text-foreground">without being the bottleneck</strong>. Your Brand operates
                                 independently — value becomes repeatable, transferable, and truly scalable.
                               </p>
                             </div>
