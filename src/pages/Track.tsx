@@ -359,7 +359,7 @@ const Track = () => {
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
               {renderSection(
-                "Professional Career",
+                "Professional",
                 "Your natural role, skills & consulting experience",
                 Briefcase,
                 professionalItems,
@@ -370,7 +370,7 @@ const Track = () => {
               )}
 
               {renderSection(
-                "Entrepreneurial Career",
+                "Entrepreneurial",
                 "Your ventures, products & business achievements",
                 Rocket,
                 entrepreneurialItems,
