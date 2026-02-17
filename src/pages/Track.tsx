@@ -65,7 +65,9 @@ const Track = () => {
       try {
         const { data } = await supabase
           .from("entrepreneurial_onboarding")
-          .select("has_developed_project, project_needs_help, has_built_product, product_needs_help, has_led_team, team_needs_help, has_run_business, business_needs_help, has_served_on_board, board_needs_help, is_completed")
+          .select(
+            "has_developed_project, project_needs_help, has_built_product, product_needs_help, has_led_team, team_needs_help, has_run_business, business_needs_help, has_served_on_board, board_needs_help, is_completed",
+          )
           .eq("user_id", user.id)
           .maybeSingle();
         setEntrepreneurialData(data as EntrepreneurialData | null);
@@ -93,10 +95,12 @@ const Track = () => {
 
   // The primary path is always visible; the other starts blurred
   const isProfessionalPrimary = primaryRole === "cobuilder" || (!primaryRole && hasProfessional && !hasEntrepreneurial);
-  const isEntrepreneurialPrimary = primaryRole === "entrepreneur" || (!primaryRole && hasEntrepreneurial && !hasProfessional);
+  const isEntrepreneurialPrimary =
+    primaryRole === "entrepreneur" || (!primaryRole && hasEntrepreneurial && !hasProfessional);
 
   const showProfessional = isProfessionalPrimary || professionalUnlocked || (hasProfessional && hasEntrepreneurial);
-  const showEntrepreneurial = isEntrepreneurialPrimary || entrepreneurialUnlocked || (hasProfessional && hasEntrepreneurial);
+  const showEntrepreneurial =
+    isEntrepreneurialPrimary || entrepreneurialUnlocked || (hasProfessional && hasEntrepreneurial);
 
   // Professional summary items
   const professionalItems = [
@@ -117,8 +121,8 @@ const Track = () => {
       subtitle: naturalRole?.practice_check
         ? naturalRole.practice_entities || "Practice documented"
         : naturalRole?.practice_needs_help
-        ? "Requested assistance"
-        : "No practice experience yet",
+          ? "Requested assistance"
+          : "No practice experience yet",
       status: naturalRole?.practice_check ? "completed" : naturalRole?.practice_needs_help ? "help" : "pending",
       icon: Briefcase,
     },
@@ -127,8 +131,8 @@ const Track = () => {
       subtitle: naturalRole?.training_check
         ? naturalRole.training_contexts || "Training documented"
         : naturalRole?.training_needs_help
-        ? "Requested assistance"
-        : "No training experience yet",
+          ? "Requested assistance"
+          : "No training experience yet",
       status: naturalRole?.training_check ? "completed" : naturalRole?.training_needs_help ? "help" : "pending",
       icon: GraduationCap,
     },
@@ -155,9 +159,13 @@ const Track = () => {
       subtitle: entrepreneurialData?.has_developed_project
         ? "Experience documented"
         : entrepreneurialData?.project_needs_help
-        ? "Requested assistance"
-        : "No experience yet",
-      status: entrepreneurialData?.has_developed_project ? "completed" : entrepreneurialData?.project_needs_help ? "help" : "pending",
+          ? "Requested assistance"
+          : "No experience yet",
+      status: entrepreneurialData?.has_developed_project
+        ? "completed"
+        : entrepreneurialData?.project_needs_help
+          ? "help"
+          : "pending",
       icon: Lightbulb,
     },
     {
@@ -165,9 +173,13 @@ const Track = () => {
       subtitle: entrepreneurialData?.has_built_product
         ? "Experience documented"
         : entrepreneurialData?.product_needs_help
-        ? "Requested assistance"
-        : "No experience yet",
-      status: entrepreneurialData?.has_built_product ? "completed" : entrepreneurialData?.product_needs_help ? "help" : "pending",
+          ? "Requested assistance"
+          : "No experience yet",
+      status: entrepreneurialData?.has_built_product
+        ? "completed"
+        : entrepreneurialData?.product_needs_help
+          ? "help"
+          : "pending",
       icon: Package,
     },
     {
@@ -175,9 +187,13 @@ const Track = () => {
       subtitle: entrepreneurialData?.has_led_team
         ? "Experience documented"
         : entrepreneurialData?.team_needs_help
-        ? "Requested assistance"
-        : "No experience yet",
-      status: entrepreneurialData?.has_led_team ? "completed" : entrepreneurialData?.team_needs_help ? "help" : "pending",
+          ? "Requested assistance"
+          : "No experience yet",
+      status: entrepreneurialData?.has_led_team
+        ? "completed"
+        : entrepreneurialData?.team_needs_help
+          ? "help"
+          : "pending",
       icon: Users,
     },
     {
@@ -185,9 +201,13 @@ const Track = () => {
       subtitle: entrepreneurialData?.has_run_business
         ? "Experience documented"
         : entrepreneurialData?.business_needs_help
-        ? "Requested assistance"
-        : "No experience yet",
-      status: entrepreneurialData?.has_run_business ? "completed" : entrepreneurialData?.business_needs_help ? "help" : "pending",
+          ? "Requested assistance"
+          : "No experience yet",
+      status: entrepreneurialData?.has_run_business
+        ? "completed"
+        : entrepreneurialData?.business_needs_help
+          ? "help"
+          : "pending",
       icon: Building2,
     },
     {
@@ -195,9 +215,13 @@ const Track = () => {
       subtitle: entrepreneurialData?.has_served_on_board
         ? "Experience documented"
         : entrepreneurialData?.board_needs_help
-        ? "Requested assistance"
-        : "No experience yet",
-      status: entrepreneurialData?.has_served_on_board ? "completed" : entrepreneurialData?.board_needs_help ? "help" : "pending",
+          ? "Requested assistance"
+          : "No experience yet",
+      status: entrepreneurialData?.has_served_on_board
+        ? "completed"
+        : entrepreneurialData?.board_needs_help
+          ? "help"
+          : "pending",
       icon: HandCoins,
     },
   ];
@@ -220,7 +244,11 @@ const Track = () => {
       case "help":
         return <Badge className="bg-amber-50 text-amber-600 border-amber-200 text-xs">Needs help</Badge>;
       default:
-        return <Badge variant="outline" className="text-xs text-muted-foreground">Not needed</Badge>;
+        return (
+          <Badge variant="outline" className="text-xs text-muted-foreground">
+            Not needed
+          </Badge>
+        );
     }
   };
 
@@ -232,7 +260,7 @@ const Track = () => {
     isBlurred: boolean,
     onUnlock: () => void,
     linkTo: string,
-    hasData: boolean
+    hasData: boolean,
   ) => {
     const Icon = icon;
 
@@ -273,7 +301,9 @@ const Track = () => {
             </div>
           )}
 
-          <div className={`space-y-1 divide-y divide-border ${isBlurred ? "filter blur-[6px] pointer-events-none select-none" : ""}`}>
+          <div
+            className={`space-y-1 divide-y divide-border ${isBlurred ? "filter blur-[6px] pointer-events-none select-none" : ""}`}
+          >
             {items.map((item, idx) => {
               const ItemIcon = item.icon;
               return (
@@ -293,9 +323,7 @@ const Track = () => {
 
           {!isBlurred && !hasData && (
             <div className="mt-4 p-4 bg-muted/30 rounded-lg border border-dashed text-center">
-              <p className="text-sm text-muted-foreground mb-3">
-                You haven't started this journey yet.
-              </p>
+              <p className="text-sm text-muted-foreground mb-3">You haven't started this journey yet.</p>
               <Button variant="outline" size="sm" asChild>
                 <Link to={linkTo === "/resume" ? "/professional-onboarding" : "/entrepreneurial-onboarding"}>
                   Start Journey <ArrowRight className="ml-2 w-4 h-4" />
@@ -320,8 +348,8 @@ const Track = () => {
               <h1 className="font-display text-3xl font-bold">Your Track</h1>
             </div>
             <p className="text-primary-foreground/80 max-w-xl">
-              View your professional and entrepreneurial journeys side by side. 
-              Focus on your primary path, and unlock the other when you're ready.
+              View your professional and entrepreneurial journeys side by side. Focus on your primary path, and unlock
+              the other when you're ready.
             </p>
           </div>
         </section>
@@ -331,14 +359,14 @@ const Track = () => {
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
               {renderSection(
-                "Professional Resume",
+                "Professional Career",
                 "Your natural role, skills & consulting experience",
                 Briefcase,
                 professionalItems,
                 !showProfessional,
                 () => setProfessionalUnlocked(true),
                 "/resume",
-                hasProfessional
+                hasProfessional,
               )}
 
               {renderSection(
@@ -349,7 +377,7 @@ const Track = () => {
                 !showEntrepreneurial,
                 () => setEntrepreneurialUnlocked(true),
                 "/track-record",
-                hasEntrepreneurial
+                hasEntrepreneurial,
               )}
             </div>
           </div>
