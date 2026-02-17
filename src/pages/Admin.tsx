@@ -15,6 +15,7 @@ import { AdminJourneyResponsesTab } from "@/components/admin/AdminJourneyRespons
 import { AdminAnalyticsTab } from "@/components/admin/AdminAnalyticsTab";
 import { AdminLearningJourneysTab } from "@/components/admin/AdminLearningJourneysTab";
 import { AdminNRDecoderTab } from "@/components/admin/AdminNRDecoderTab";
+import { AdminTrainingsTab } from "@/components/admin/AdminTrainingsTab";
 import {
   Shield,
   Users,
@@ -255,7 +256,7 @@ const Admin = () => {
 
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-9 mb-8">
+              <TabsList className="grid w-full grid-cols-10 mb-8">
                 <TabsTrigger value="analytics" className="flex items-center gap-2">
                   <BarChart3 className="w-4 h-4" />
                   Analytics
@@ -275,6 +276,10 @@ const Admin = () => {
                 <TabsTrigger value="learning" className="flex items-center gap-2">
                   <GraduationCap className="w-4 h-4" />
                   Learning
+                </TabsTrigger>
+                <TabsTrigger value="trainings" className="flex items-center gap-2">
+                  <GraduationCap className="w-4 h-4" />
+                  Trainings
                 </TabsTrigger>
                 <TabsTrigger value="journeys" className="flex items-center gap-2">
                   <ClipboardList className="w-4 h-4" />
@@ -312,6 +317,10 @@ const Admin = () => {
 
               <TabsContent value="learning">
                 <AdminLearningJourneysTab />
+              </TabsContent>
+
+              <TabsContent value="trainings">
+                <AdminTrainingsTab />
               </TabsContent>
 
               <TabsContent value="journeys">

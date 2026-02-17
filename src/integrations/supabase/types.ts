@@ -1200,6 +1200,57 @@ export type Database = {
           },
         ]
       }
+      training_opportunities: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          description: string
+          duration: string | null
+          format: string | null
+          id: string
+          review_status: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          sector: string | null
+          target_audience: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          description: string
+          duration?: string | null
+          format?: string | null
+          id?: string
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          sector?: string | null
+          target_audience?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          description?: string
+          duration?: string | null
+          format?: string | null
+          id?: string
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          sector?: string | null
+          target_audience?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_certifications: {
         Row: {
           certification_type: string
