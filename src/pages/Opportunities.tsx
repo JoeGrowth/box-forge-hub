@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Users, Briefcase, MapPin, ArrowRight, Filter, Rocket, Loader2, Plus } from "lucide-react";
+import { Search, Users, Briefcase, MapPin, ArrowRight, Filter, Rocket, Loader2, Plus, GraduationCap, FileText, Globe } from "lucide-react";
 import { DirectorySkeletonGrid } from "@/components/ui/skeleton-card";
 
 interface StartupIdea {
@@ -37,6 +37,7 @@ const Opportunities = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [sectorFilter, setSectorFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("ideas");
   const [certifications, setCertifications] = useState<Certification[]>([]);
 
   // Derive approval status from cached onboarding state
@@ -172,12 +173,37 @@ const Opportunities = () => {
       <Navbar />
       <PageTransition>
         <main className="pt-20">
+          {/* Category Tabs */}
+          <section className="py-4 border-b border-border bg-muted/30">
+            <div className="container mx-auto px-4">
+              <div className="flex items-center gap-2 overflow-x-auto">
+                {[
+                  { key: "ideas", label: "Ideas", icon: Rocket },
+                  { key: "trainings", label: "Trainings", icon: GraduationCap },
+                  { key: "tenders", label: "Tenders", icon: FileText },
+                  { key: "environments", label: "Environments", icon: Globe },
+                ].map((cat) => (
+                  <Button
+                    key={cat.key}
+                    variant={categoryFilter === cat.key ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCategoryFilter(cat.key)}
+                    className={categoryFilter === cat.key ? "bg-b4-teal hover:bg-b4-teal/90 text-white" : ""}
+                  >
+                    <cat.icon className="w-4 h-4 mr-1.5" />
+                    {cat.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </section>
+
           {/* Header */}
           <section className="py-12 gradient-hero text-primary-foreground">
             <div className="container mx-auto px-4">
               <div className="flex items-center gap-3 mb-2">
                 <Users className="w-8 h-8" />
-                <h1 className="font-display text-3xl font-bold">Ideas</h1>
+                <h1 className="font-display text-3xl font-bold">Opportunities</h1>
               </div>
               <p className="text-primary-foreground/80 max-w-2xl">
                 Browse startup ideas looking for Talented People. Find opportunities that match your skills and natural
@@ -208,10 +234,12 @@ const Opportunities = () => {
                     className="pl-10 w-48"
                   />
                 </div>
-                <Button variant="teal" onClick={handleAddIdea}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Idea
-                </Button>
+                {categoryFilter === "ideas" && (
+                  <Button variant="teal" onClick={handleAddIdea}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Idea
+                  </Button>
+                )}
               </div>
             </div>
           </section>
@@ -219,7 +247,21 @@ const Opportunities = () => {
           {/* Opportunities List */}
           <section className="py-12">
             <div className="container mx-auto px-4">
-              {loading ? (
+              {categoryFilter !== "ideas" ? (
+                <div className="text-center py-16">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+                    {categoryFilter === "trainings" && <GraduationCap className="w-8 h-8 text-muted-foreground/50" />}
+                    {categoryFilter === "tenders" && <FileText className="w-8 h-8 text-muted-foreground/50" />}
+                    {categoryFilter === "environments" && <Globe className="w-8 h-8 text-muted-foreground/50" />}
+                  </div>
+                  <h2 className="font-display text-2xl font-bold text-foreground mb-2">Coming Soon</h2>
+                  <p className="text-muted-foreground">
+                    {categoryFilter === "trainings" && "Training opportunities will be available here soon."}
+                    {categoryFilter === "tenders" && "Tender opportunities will be available here soon."}
+                    {categoryFilter === "environments" && "Environment opportunities will be available here soon."}
+                  </p>
+                </div>
+              ) : loading ? (
                 <DirectorySkeletonGrid count={6} type="opportunity" />
               ) : filteredIdeas.length === 0 ? (
                 <div className="text-center py-16">
