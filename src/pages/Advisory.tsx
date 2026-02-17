@@ -316,34 +316,6 @@ const Advisory = () => {
                       </Alert>
                     )}
 
-                    {/* Concept Card */}
-                    <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-violet-500/5">
-                      <CardContent className="pt-6">
-                        <div className="flex flex-col md:flex-row items-start gap-6">
-                          <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-500 to-violet-500 shrink-0">
-                            <Briefcase className="w-8 h-8 text-white" />
-                          </div>
-                          <div className="space-y-3">
-                            <h3 className="text-xl font-display font-bold text-foreground">Learn to be a Consultant</h3>
-                            <p className="text-muted-foreground leading-relaxed">
-                              A 5-step journey to achieve advisory excellence
-                            </p>
-                            <div className="flex items-center gap-2 text-sm">
-                              <div className="w-2 h-2 rounded-full bg-gradient-to-r from-purple-500 to-violet-500" />
-                              <span className="text-muted-foreground">
-                                <strong className="text-foreground">5 Steps</strong> to certification
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Learning Journey Header */}
-                    <div className="text-center">
-                      <h2 className="text-2xl font-display font-bold text-foreground mb-2">Your Learning Journey</h2>
-                      <p className="text-muted-foreground">A 5-step journey to achieve advisory excellence</p>
-                    </div>
 
                     {/* Learning Steps */}
                     <div className="relative">
@@ -460,18 +432,6 @@ const Advisory = () => {
                       </div>
                     </Alert>
 
-                    <div className="flex items-center justify-between flex-wrap gap-4">
-                      <div>
-                        <h2 className="text-2xl font-display font-bold text-foreground">Your Consultant Journey</h2>
-                        <p className="text-muted-foreground mt-1">
-                          Build your Mask, scale your expertise, and operate beyond yourself
-                        </p>
-                      </div>
-                      <Button variant="outline" onClick={() => handleOpenScaleStepDialog(1)}>
-                        <Theater className="w-4 h-4 mr-2" />
-                        Open Your Mask
-                      </Button>
-                    </div>
 
                     {!showScaleExperience && (
                       <div className="text-center">
