@@ -20,7 +20,7 @@ const guestNavLinks = [
 const getAppliedLinks = () => [
   { name: "Opportunities", path: "/opportunities" },
   { name: "People", path: "/cobuilders" },
-  { name: "Track", path: "/track" },
+  { name: "Career", path: "/track" },
 ];
 
 const getApprovedLinks = (hasConsultantAccess: boolean) => [
