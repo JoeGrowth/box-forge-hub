@@ -24,6 +24,18 @@ interface StartupIdea {
   };
 }
 
+interface TrainingOpportunity {
+  id: string;
+  title: string;
+  description: string;
+  target_audience: string | null;
+  duration: string | null;
+  format: string | null;
+  sector: string | null;
+  created_at: string;
+  trainer_name?: string | null;
+}
+
 interface Certification {
   id: string;
   certification_type: string;
@@ -34,6 +46,7 @@ const Opportunities = () => {
   const { user, loading: authLoading } = useAuth();
   const { onboardingState, loading: onboardingLoading } = useOnboarding();
   const [ideas, setIdeas] = useState<StartupIdea[]>([]);
+  const [trainings, setTrainings] = useState<TrainingOpportunity[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [sectorFilter, setSectorFilter] = useState("");
@@ -90,9 +103,36 @@ const Opportunities = () => {
       }
     };
 
+    const fetchTrainings = async () => {
+      if (!isApproved) return;
+
+      const { data, error } = await supabase
+        .from("training_opportunities" as any)
+        .select("*")
+        .eq("review_status", "approved")
+        .order("created_at", { ascending: false });
+
+      if (!error && data) {
+        // Fetch trainer profiles
+        const userIds = (data as any[]).map((t: any) => t.user_id);
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, full_name")
+          .in("user_id", userIds);
+
+        setTrainings(
+          (data as any[]).map((t: any) => ({
+            ...t,
+            trainer_name: profiles?.find((p) => p.user_id === t.user_id)?.full_name,
+          }))
+        );
+      }
+    };
+
     if (user && isApproved) {
       fetchIdeas();
       fetchCertifications();
+      fetchTrainings();
     } else if (!onboardingLoading) {
       setLoading(false);
     }
@@ -109,6 +149,14 @@ const Opportunities = () => {
       idea.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       idea.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesSector = !sectorFilter || idea.sector?.toLowerCase().includes(sectorFilter.toLowerCase());
+    return matchesSearch && matchesSector;
+  });
+
+  const filteredTrainings = trainings.filter((t) => {
+    const matchesSearch =
+      t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSector = !sectorFilter || t.sector?.toLowerCase().includes(sectorFilter.toLowerCase());
     return matchesSearch && matchesSector;
   });
 
@@ -247,16 +295,73 @@ const Opportunities = () => {
           {/* Opportunities List */}
           <section className="py-12">
             <div className="container mx-auto px-4">
-              {categoryFilter !== "ideas" ? (
+              {categoryFilter === "trainings" ? (
+                loading ? (
+                  <DirectorySkeletonGrid count={6} type="opportunity" />
+                ) : filteredTrainings.length === 0 ? (
+                  <div className="text-center py-16">
+                    <GraduationCap className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
+                    <h2 className="font-display text-2xl font-bold text-foreground mb-2">No trainings yet</h2>
+                    <p className="text-muted-foreground">
+                      Training opportunities will appear here once approved.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredTrainings.map((training) => (
+                      <div
+                        key={training.id}
+                        className="bg-card rounded-2xl border border-border p-6 hover:border-b4-teal/50 transition-colors"
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                            <GraduationCap className="w-6 h-6 text-amber-600" />
+                          </div>
+                          {training.sector && (
+                            <span className="px-3 py-1 rounded-full bg-muted text-xs font-medium text-muted-foreground">
+                              {training.sector}
+                            </span>
+                          )}
+                        </div>
+
+                        <h3 className="font-display text-lg font-bold text-foreground mb-2">{training.title}</h3>
+                        <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{training.description}</p>
+
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {training.format && (
+                            <span className="px-2 py-1 rounded-full bg-b4-teal/10 text-b4-teal text-xs">
+                              {training.format}
+                            </span>
+                          )}
+                          {training.duration && (
+                            <span className="px-2 py-1 rounded-full bg-muted text-xs text-muted-foreground">
+                              {training.duration}
+                            </span>
+                          )}
+                          {training.target_audience && (
+                            <span className="px-2 py-1 rounded-full bg-muted text-xs text-muted-foreground">
+                              {training.target_audience}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="pt-4 border-t border-border">
+                          <span className="text-xs text-muted-foreground">
+                            By {training.trainer_name || "Unknown"}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )
+              ) : categoryFilter !== "ideas" ? (
                 <div className="text-center py-16">
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-                    {categoryFilter === "trainings" && <GraduationCap className="w-8 h-8 text-muted-foreground/50" />}
                     {categoryFilter === "tenders" && <FileText className="w-8 h-8 text-muted-foreground/50" />}
                     {categoryFilter === "environments" && <Globe className="w-8 h-8 text-muted-foreground/50" />}
                   </div>
                   <h2 className="font-display text-2xl font-bold text-foreground mb-2">Coming Soon</h2>
                   <p className="text-muted-foreground">
-                    {categoryFilter === "trainings" && "Training opportunities will be available here soon."}
                     {categoryFilter === "tenders" && "Tender opportunities will be available here soon."}
                     {categoryFilter === "environments" && "Environment opportunities will be available here soon."}
                   </p>

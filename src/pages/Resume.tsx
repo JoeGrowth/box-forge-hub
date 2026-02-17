@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { exportResumeToPdf } from "@/lib/resumePdfExport";
 import { Progress } from "@/components/ui/progress";
+import { TrainTeamDialog } from "@/components/resume/TrainTeamDialog";
 import { format } from "date-fns";
 
 interface AnswerVersion {
@@ -72,6 +73,7 @@ const Resume = () => {
   const [sectionHistory, setSectionHistory] = useState<string | null>(null);
   const [isTogglingPromise, setIsTogglingPromise] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [showTrainDialog, setShowTrainDialog] = useState(false);
   const [profile, setProfile] = useState<{
     full_name: string | null;
     bio: string | null;
@@ -945,7 +947,7 @@ const Resume = () => {
                       </button>
                     )}
                     {naturalRole?.training_contexts && !isEditing && (
-                      <Button variant="outline" className="mt-4 gap-2" onClick={() => navigate("/coming-soon")}>
+                      <Button variant="outline" className="mt-4 gap-2" onClick={() => setShowTrainDialog(true)}>
                         <GraduationCap className="w-4 h-4" />
                         Train a Team
                         <ArrowRight className="w-4 h-4" />
@@ -1093,6 +1095,7 @@ const Resume = () => {
         />
       </main>
       <Footer />
+      <TrainTeamDialog open={showTrainDialog} onOpenChange={setShowTrainDialog} />
     </div>
   );
 };
