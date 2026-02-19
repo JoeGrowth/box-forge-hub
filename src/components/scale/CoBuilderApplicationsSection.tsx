@@ -309,7 +309,7 @@ export function CoBuilderApplicationsSection({ userId }: CoBuilderApplicationsSe
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h2 className="text-2xl font-display font-bold text-foreground">Your Investment </h2>
+          <h2 className="text-2xl font-display font-bold text-foreground">Your Applications </h2>
           <p className="text-muted-foreground mt-1">Teams you're part of and opportunities you've applied to</p>
         </div>
         <Button variant="outline" asChild>
