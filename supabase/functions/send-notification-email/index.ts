@@ -10,30 +10,28 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-type NotificationType = 
-  // Onboarding achievements
-  | "onboarding_path_selected"
-  | "natural_role_defined"
-  | "onboarding_step_complete"
-  | "onboarding_complete"
-  // Co-builder achievements
-  | "cobuilder_submitted"
-  | "cobuilder_approved"
-  // Opportunity achievements
-  | "opportunity_created"
-  | "opportunity_submitted"
-  | "opportunity_approved"
-  | "opportunity_rejected"
-  | "opportunity_declined"
-  | "opportunity_needs_enhancement"
-  // Entrepreneur journey achievements
-  | "entrepreneur_step_complete"
-  | "entrepreneur_journey_complete"
-  // Application achievements
-  | "application_submitted"
-  | "application_received"
-  | "application_accepted"
-  | "application_rejected";
+const VALID_NOTIFICATION_TYPES = [
+  "onboarding_path_selected",
+  "natural_role_defined",
+  "onboarding_step_complete",
+  "onboarding_complete",
+  "cobuilder_submitted",
+  "cobuilder_approved",
+  "opportunity_created",
+  "opportunity_submitted",
+  "opportunity_approved",
+  "opportunity_rejected",
+  "opportunity_declined",
+  "opportunity_needs_enhancement",
+  "entrepreneur_step_complete",
+  "entrepreneur_journey_complete",
+  "application_submitted",
+  "application_received",
+  "application_accepted",
+  "application_rejected",
+] as const;
+
+type NotificationType = typeof VALID_NOTIFICATION_TYPES[number];
 
 interface NotificationEmailRequest {
   to: string;
@@ -47,6 +45,65 @@ interface NotificationEmailRequest {
     applicantName?: string;
     roleName?: string;
   };
+}
+
+// Simple validation helpers
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 255;
+}
+
+function isValidUUID(str: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+}
+
+function sanitizeString(str: string, maxLength: number): string {
+  return String(str).trim().slice(0, maxLength);
+}
+
+function validateRequest(body: any): { valid: true; data: NotificationEmailRequest } | { valid: false; error: string } {
+  if (!body || typeof body !== 'object') {
+    return { valid: false, error: 'Request body must be a JSON object' };
+  }
+
+  const { to, userName, userId, type, data } = body;
+
+  if (!to || typeof to !== 'string' || !isValidEmail(to)) {
+    return { valid: false, error: 'Invalid or missing email address' };
+  }
+
+  if (!userName || typeof userName !== 'string' || userName.trim().length === 0 || userName.length > 100) {
+    return { valid: false, error: 'Invalid or missing userName (1-100 characters)' };
+  }
+
+  if (!type || !VALID_NOTIFICATION_TYPES.includes(type)) {
+    return { valid: false, error: 'Invalid notification type' };
+  }
+
+  if (userId !== undefined && (typeof userId !== 'string' || !isValidUUID(userId))) {
+    return { valid: false, error: 'Invalid userId format' };
+  }
+
+  if (data !== undefined && typeof data !== 'object') {
+    return { valid: false, error: 'Invalid data format' };
+  }
+
+  const sanitizedData: NotificationEmailRequest = {
+    to: to.trim(),
+    userName: sanitizeString(userName, 100),
+    type,
+    ...(userId ? { userId } : {}),
+    ...(data ? {
+      data: {
+        ...(data.ideaTitle ? { ideaTitle: sanitizeString(data.ideaTitle, 200) } : {}),
+        ...(data.stepNumber !== undefined ? { stepNumber: Math.min(Math.max(1, Math.floor(Number(data.stepNumber))), 10) } : {}),
+        ...(data.stepName ? { stepName: sanitizeString(data.stepName, 100) } : {}),
+        ...(data.applicantName ? { applicantName: sanitizeString(data.applicantName, 100) } : {}),
+        ...(data.roleName ? { roleName: sanitizeString(data.roleName, 50) } : {}),
+      }
+    } : {}),
+  };
+
+  return { valid: true, data: sanitizedData };
 }
 
 const getEmailContent = (type: string, userName: string, data?: NotificationEmailRequest["data"]) => {
@@ -417,8 +474,46 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { to, userName, userId, type, data }: NotificationEmailRequest = await req.json();
+    // Authenticate the caller
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
 
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(
+        JSON.stringify({ error: "Invalid token" }),
+        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    const callerUserId = claimsData.claims.sub;
+    console.log("Authenticated caller:", callerUserId);
+
+    // Validate input
+    const body = await req.json();
+    const validation = validateRequest(body);
+    if (!validation.valid) {
+      return new Response(
+        JSON.stringify({ error: validation.error }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    const { to, userName, userId, type, data } = validation.data;
     console.log(`Sending ${type} email to ${to} for user ${userName}`);
 
     const emailContent = getEmailContent(type, userName, data);
@@ -426,7 +521,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email
     const emailResponse = await resend.emails.send({
-      from: "B4 Platform <onboarding@resend.dev>",
+      from: "B4 Platform <noreply@box4solutions.com>",
       to: [to],
       subject,
       html,
@@ -434,10 +529,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Email sent successfully:", emailResponse);
 
-    // Also create in-app notification if userId is provided
+    // Also create in-app notification if userId is provided (using service role to bypass RLS)
     if (userId && inAppTitle && inAppMessage) {
-      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-      const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
       const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
       const { error: notifError } = await supabase
@@ -467,7 +560,7 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("Error in send-notification-email function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "An error occurred processing your request" }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
