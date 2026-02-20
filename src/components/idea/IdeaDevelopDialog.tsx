@@ -106,7 +106,7 @@ const IDEA_DEVELOP_PHASES = [
   },
   {
     number: 2,
-    name: "Role Definition",
+    name: "1st Role",
     description: "Define the first critical role you need for your venture",
     icon: Target,
     color: "from-rose-500 to-pink-500",
