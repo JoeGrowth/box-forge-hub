@@ -27,8 +27,10 @@ import {
   Lock,
   Save,
   Target,
+  Scale,
 } from "lucide-react";
 import { TeamMemberSearch } from "./TeamMemberSearch";
+import { EquityResponsibilityEditor, type EquityResponsibilityData } from "./EquityResponsibilityEditor";
 
 interface IdeaDevelopDialogProps {
   open: boolean;
@@ -140,6 +142,22 @@ const IDEA_DEVELOP_PHASES = [
   },
   {
     number: 3,
+    name: "Equity & Responsibility",
+    description: "Define equity allocation and responsibility structure per startup stage",
+    icon: Scale,
+    color: "from-indigo-500 to-blue-500",
+    tasks: [
+      {
+        id: "equity_responsibility",
+        label: "Equity & Responsibility Matrix",
+        type: "equity_editor",
+        description:
+          "Define 3 customizable stages of your startup lifecycle. For each stage, specify roles, responsibilities, equity ranges, and vesting triggers.",
+      },
+    ],
+  },
+  {
+    number: 4,
     name: "Team Building",
     description: "Find and onboard the right co-builders from the directory",
     icon: Users,
@@ -155,7 +173,7 @@ const IDEA_DEVELOP_PHASES = [
     ],
   },
   {
-    number: 4,
+    number: 5,
     name: "Launch",
     description: "Execute your plan with structured guidance",
     icon: Rocket,
@@ -208,11 +226,11 @@ export const IdeaDevelopDialog = ({
   const totalPhases = IDEA_DEVELOP_PHASES.length;
   const isLastPhase = currentPhase === totalPhases - 1;
 
-  // Check if Team Building (phase 3) is complete
+  // Check if Team Building (phase 4) is complete
   const isTeamBuildingComplete = hasTeamMembers;
   
-  // Check if Launch phase (phase 4) is locked
-  const isLaunchLocked = currentPhase === 4 && !phaseProgress[3]?.is_completed;
+  // Check if Launch phase (phase 5) is locked
+  const isLaunchLocked = currentPhase === 5 && !phaseProgress[4]?.is_completed;
 
   // Auto-save function with debounce
   const autoSaveProgress = useCallback(async (phaseNum: number, responsesToSave: Record<string, string>) => {
@@ -415,9 +433,21 @@ export const IdeaDevelopDialog = ({
   };
 
   const isPhaseComplete = () => {
-    // For Team Building phase (now phase 3), check if there are team members
-    if (currentPhase === 3) {
+    // For Team Building phase (now phase 4), check if there are team members
+    if (currentPhase === 4) {
       return hasTeamMembers;
+    }
+
+    // For equity editor phase, check if data exists
+    if (currentPhase === 3) {
+      const eqData = responses["equity_responsibility"];
+      if (!eqData) return false;
+      try {
+        const parsed: EquityResponsibilityData = JSON.parse(eqData);
+        return parsed.stages?.some((s) => s.rows.some((r) => r.role.trim().length > 0));
+      } catch {
+        return false;
+      }
     }
 
     // For other phases, check if all questions are answered
@@ -519,8 +549,8 @@ export const IdeaDevelopDialog = ({
   const canAccessPhase = (phaseNum: number) => {
     // Phase 0 is always accessible
     if (phaseNum === 0) return true;
-    // Phase 4 (Launch) requires Phase 3 (Team Building) to be complete
-    if (phaseNum === 4) return phaseProgress[3]?.is_completed || false;
+    // Phase 5 (Launch) requires Phase 4 (Team Building) to be complete
+    if (phaseNum === 5) return phaseProgress[4]?.is_completed || false;
     // Other phases require previous phase to be complete
     return phaseProgress[phaseNum - 1]?.is_completed || false;
   };
@@ -610,7 +640,7 @@ export const IdeaDevelopDialog = ({
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Locked state for Launch phase */}
-                {currentPhase === 4 && !canAccessPhase(4) && (
+                {currentPhase === 5 && !canAccessPhase(5) && (
                   <div className="flex items-center gap-3 p-4 rounded-lg bg-amber-50 border border-amber-200 dark:bg-amber-950/20 dark:border-amber-800">
                     <Lock className="w-5 h-5 text-amber-500" />
                     <div>
@@ -639,6 +669,30 @@ export const IdeaDevelopDialog = ({
                           onTeamUpdated={handleTeamUpdated}
                         />
                       </div>
+                    ) : task.type === "equity_editor" ? (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-sm font-medium">{task.label}</label>
+                          <p className="text-sm text-muted-foreground">{task.description}</p>
+                        </div>
+                        <EquityResponsibilityEditor
+                          value={
+                            responses[task.id]
+                              ? (() => {
+                                  try {
+                                    return JSON.parse(responses[task.id]);
+                                  } catch {
+                                    return null;
+                                  }
+                                })()
+                              : null
+                          }
+                          onChange={(data) =>
+                            handleResponseChange(task.id, JSON.stringify(data))
+                          }
+                          disabled={!canAccessPhase(currentPhase)}
+                        />
+                      </div>
                     ) : task.type === "question" ? (
                       <div className="space-y-2">
                         <label className="text-sm font-medium">{task.label}</label>
@@ -648,7 +702,7 @@ export const IdeaDevelopDialog = ({
                           onChange={(e) => handleResponseChange(task.id, e.target.value)}
                           placeholder="Enter your response..."
                           rows={4}
-                          disabled={currentPhase === 4 && !canAccessPhase(4)}
+                          disabled={currentPhase === 5 && !canAccessPhase(5)}
                         />
                       </div>
                     ) : null}
@@ -660,7 +714,7 @@ export const IdeaDevelopDialog = ({
                   <Button
                     variant="outline"
                     onClick={handleSaveProgress}
-                    disabled={isSaving || (currentPhase === 4 && !canAccessPhase(4))}
+                    disabled={isSaving || (currentPhase === 5 && !canAccessPhase(5))}
                     className="flex-1"
                   >
                     {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
@@ -669,7 +723,7 @@ export const IdeaDevelopDialog = ({
 
                   <Button
                     onClick={handleCompletePhase}
-                    disabled={!isPhaseComplete() || isSaving || (currentPhase === 4 && !canAccessPhase(4))}
+                    disabled={!isPhaseComplete() || isSaving || (currentPhase === 5 && !canAccessPhase(5))}
                     className="flex-1"
                   >
                     {isLastPhase ? "Complete Journey" : "Complete Phase"}
