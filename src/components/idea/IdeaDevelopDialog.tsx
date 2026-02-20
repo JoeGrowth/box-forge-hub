@@ -1,11 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -142,7 +136,7 @@ const IDEA_DEVELOP_PHASES = [
   },
   {
     number: 3,
-    name: "Equity & Responsibility",
+    name: "E&R",
     description: "Define equity allocation and responsibility structure per startup stage",
     icon: Scale,
     color: "from-indigo-500 to-blue-500",
@@ -228,51 +222,54 @@ export const IdeaDevelopDialog = ({
 
   // Check if Team Building (phase 4) is complete
   const isTeamBuildingComplete = hasTeamMembers;
-  
+
   // Check if Launch phase (phase 5) is locked
   const isLaunchLocked = currentPhase === 5 && !phaseProgress[4]?.is_completed;
 
   // Auto-save function with debounce
-  const autoSaveProgress = useCallback(async (phaseNum: number, responsesToSave: Record<string, string>) => {
-    if (!user) return;
+  const autoSaveProgress = useCallback(
+    async (phaseNum: number, responsesToSave: Record<string, string>) => {
+      if (!user) return;
 
-    setIsAutoSaving(true);
-    try {
-      const currentPhaseName = IDEA_DEVELOP_PHASES[phaseNum].name;
-      const { data: existing } = await supabase
-        .from("idea_journey_progress")
-        .select("id")
-        .eq("startup_id", ideaId)
-        .eq("phase_number", phaseNum)
-        .eq("episode", "development")
-        .maybeSingle();
-
-      if (existing) {
-        await supabase
+      setIsAutoSaving(true);
+      try {
+        const currentPhaseName = IDEA_DEVELOP_PHASES[phaseNum].name;
+        const { data: existing } = await supabase
           .from("idea_journey_progress")
-          .update({
-            responses: responsesToSave,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", existing.id);
-      } else {
-        await supabase.from("idea_journey_progress").insert({
-          startup_id: ideaId,
-          user_id: user.id,
-          phase_number: phaseNum,
-          phase_name: currentPhaseName,
-          episode: "development",
-          responses: responsesToSave,
-        });
-      }
+          .select("id")
+          .eq("startup_id", ideaId)
+          .eq("phase_number", phaseNum)
+          .eq("episode", "development")
+          .maybeSingle();
 
-      console.log("Auto-saved progress for phase", phaseNum);
-    } catch (error) {
-      console.error("Auto-save error:", error);
-    } finally {
-      setIsAutoSaving(false);
-    }
-  }, [user, ideaId]);
+        if (existing) {
+          await supabase
+            .from("idea_journey_progress")
+            .update({
+              responses: responsesToSave,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", existing.id);
+        } else {
+          await supabase.from("idea_journey_progress").insert({
+            startup_id: ideaId,
+            user_id: user.id,
+            phase_number: phaseNum,
+            phase_name: currentPhaseName,
+            episode: "development",
+            responses: responsesToSave,
+          });
+        }
+
+        console.log("Auto-saved progress for phase", phaseNum);
+      } catch (error) {
+        console.error("Auto-save error:", error);
+      } finally {
+        setIsAutoSaving(false);
+      }
+    },
+    [user, ideaId],
+  );
 
   // Load progress only once when dialog opens
   useEffect(() => {
@@ -337,7 +334,7 @@ export const IdeaDevelopDialog = ({
   // Update responses when phase changes - use cached data from phaseProgress
   useEffect(() => {
     if (!hasLoadedInitial) return;
-    
+
     if (phaseProgress[currentPhase]) {
       setResponses(phaseProgress[currentPhase].responses);
     } else {
@@ -348,7 +345,7 @@ export const IdeaDevelopDialog = ({
   const handleResponseChange = (taskId: string, value: string) => {
     const newResponses = { ...responses, [taskId]: value };
     setResponses(newResponses);
-    
+
     // Update phaseProgress immediately so it persists when switching tabs
     setPhaseProgress((prev) => ({
       ...prev,
@@ -559,12 +556,8 @@ export const IdeaDevelopDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-display text-xl">
-            Develop: {ideaTitle}
-          </DialogTitle>
-          <DialogDescription>
-            Complete each phase to bring your startup idea to life
-          </DialogDescription>
+          <DialogTitle className="font-display text-xl">Develop: {ideaTitle}</DialogTitle>
+          <DialogDescription>Complete each phase to bring your startup idea to life</DialogDescription>
         </DialogHeader>
 
         {isLoading ? (
@@ -606,10 +599,10 @@ export const IdeaDevelopDialog = ({
                       isCurrent
                         ? "bg-primary text-primary-foreground border-primary"
                         : isCompleted
-                        ? "bg-b4-teal/10 text-b4-teal border-b4-teal/30"
-                        : isAccessible
-                        ? "hover:bg-muted border-border"
-                        : "opacity-50 cursor-not-allowed border-border"
+                          ? "bg-b4-teal/10 text-b4-teal border-b4-teal/30"
+                          : isAccessible
+                            ? "hover:bg-muted border-border"
+                            : "opacity-50 cursor-not-allowed border-border"
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -644,9 +637,7 @@ export const IdeaDevelopDialog = ({
                   <div className="flex items-center gap-3 p-4 rounded-lg bg-amber-50 border border-amber-200 dark:bg-amber-950/20 dark:border-amber-800">
                     <Lock className="w-5 h-5 text-amber-500" />
                     <div>
-                      <p className="font-medium text-amber-800 dark:text-amber-200">
-                        Complete Team Building First
-                      </p>
+                      <p className="font-medium text-amber-800 dark:text-amber-200">Complete Team Building First</p>
                       <p className="text-sm text-amber-600 dark:text-amber-400">
                         Add at least one team member in the Team Building phase to unlock Launch.
                       </p>
@@ -687,9 +678,7 @@ export const IdeaDevelopDialog = ({
                                 })()
                               : null
                           }
-                          onChange={(data) =>
-                            handleResponseChange(task.id, JSON.stringify(data))
-                          }
+                          onChange={(data) => handleResponseChange(task.id, JSON.stringify(data))}
                           disabled={!canAccessPhase(currentPhase)}
                         />
                       </div>
