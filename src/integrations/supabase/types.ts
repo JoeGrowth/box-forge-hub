@@ -1357,7 +1357,11 @@ export type Database = {
         | "pending_approval"
         | "approved"
         | "rejected"
-      journey_type: "skill_ptc" | "idea_ptc" | "scaling_path"
+      journey_type:
+        | "skill_ptc"
+        | "idea_ptc"
+        | "scaling_path"
+        | "finance_literacy"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1493,7 +1497,12 @@ export const Constants = {
         "approved",
         "rejected",
       ],
-      journey_type: ["skill_ptc", "idea_ptc", "scaling_path"],
+      journey_type: [
+        "skill_ptc",
+        "idea_ptc",
+        "scaling_path",
+        "finance_literacy",
+      ],
     },
   },
 } as const

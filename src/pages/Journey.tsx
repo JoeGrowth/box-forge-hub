@@ -32,6 +32,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { InitiatorQuizDialog } from "@/components/learning/InitiatorQuizDialog";
 import { CoBuilderQuizDialog } from "@/components/learning/CoBuilderQuizDialog";
+import { FinanceQuizDialog } from "@/components/learning/FinanceQuizDialog";
 
 
 interface JourneyStep {
@@ -99,6 +100,62 @@ const INITIATOR_STEPS: JourneyStep[] = [
   },
 ];
 
+const FINANCE_STEPS: JourneyStep[] = [
+  {
+    step: 1,
+    title: "Fundamentals & Practice",
+    subtitle: "Finance Foundations",
+    icon: BookOpen,
+    description: "Master core principles of corporate finance. Read financial statements and make informed decisions.",
+    details: [
+      "Financial Statements (Balance Sheet, Income, Cash Flow)",
+      "Basic Ratios & Metrics (Liquidity, Profitability, Solvency)",
+      "Cash vs Profit — why cash is king",
+      "Finance mindset for decision-making",
+    ],
+    color: "from-emerald-500 to-teal-500",
+  },
+  {
+    step: 2,
+    title: "Budgeting & Forecasting",
+    subtitle: "Resource Planning",
+    icon: Briefcase,
+    description: "Plan and allocate resources effectively. Forecast, budget, and control financial outcomes.",
+    details: [
+      "Operating budgets and departmental allocation",
+      "Capital budgeting — ROI, NPV basics",
+      "Variance analysis — actual vs planned",
+    ],
+    color: "from-blue-500 to-indigo-500",
+  },
+  {
+    step: 3,
+    title: "Financial Decision-Making",
+    subtitle: "Strategic Finance",
+    icon: TrendingUp,
+    description: "Use finance to make better business decisions. Drive decisions with data and analysis.",
+    details: [
+      "Cost-benefit analysis",
+      "Break-even & contribution margin",
+      "Investment appraisal — ROI, payback period",
+    ],
+    color: "from-violet-500 to-purple-500",
+  },
+  {
+    step: 4,
+    title: "Metrics, KPIs & Reporting",
+    subtitle: "Performance Tracking",
+    icon: Target,
+    description: "Track performance and communicate financial insights. Interpret metrics and advise others.",
+    details: [
+      "Key Performance Indicators selection",
+      "Dashboard creation for stakeholders",
+      "Financial communication to non-finance peers",
+    ],
+    color: "from-rose-500 to-pink-500",
+  },
+];
+
 const COBUILDER_STEPS: JourneyStep[] = [
   {
     step: 1,
@@ -141,7 +198,7 @@ const COBUILDER_STEPS: JourneyStep[] = [
   },
 ];
 
-type ActiveSection = "initiator" | "cobuilder";
+type ActiveSection = "initiator" | "cobuilder" | "finance";
 
 const Journey = () => {
   const { user, loading: authLoading } = useAuth();
@@ -151,7 +208,7 @@ const Journey = () => {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<ActiveSection>(() => {
     const section = searchParams.get("section");
-    if (section === "initiator" || section === "cobuilder") {
+    if (section === "initiator" || section === "cobuilder" || section === "finance") {
       return section;
     }
     return "initiator";
@@ -159,6 +216,7 @@ const Journey = () => {
   const [stepCompletionStatus, setStepCompletionStatus] = useState<Record<string, Record<number, boolean>>>({
     initiator: {},
     cobuilder: {},
+    finance: {},
   });
   const [quizDialogOpen, setQuizDialogOpen] = useState(false);
   const [selectedStep, setSelectedStep] = useState<number>(1);
@@ -170,7 +228,7 @@ const Journey = () => {
   // Redirect logic removed to make journey accessible for all authenticated users
 
   const [cobuilderQuizOpen, setCobuilderQuizOpen] = useState(false);
-  
+  const [financeQuizOpen, setFinanceQuizOpen] = useState(false);
 
   // Map journey types to section names
   const getJourneyTypeForSection = (section: ActiveSection): string => {
@@ -179,6 +237,8 @@ const Journey = () => {
         return "idea_ptc";
       case "cobuilder":
         return "skill_ptc";
+      case "finance":
+        return "finance_literacy";
       default:
         return "";
     }
@@ -191,6 +251,8 @@ const Journey = () => {
         return INITIATOR_STEPS.length;
       case "cobuilder":
         return COBUILDER_STEPS.length;
+      case "finance":
+        return FINANCE_STEPS.length;
       default:
         return 0;
     }
@@ -252,6 +314,8 @@ const Journey = () => {
         return certifications.some(c => c.certification_type === "initiator_b4");
       case "cobuilder":
         return certifications.some(c => c.certification_type === "cobuilder_b4");
+      case "finance":
+        return certifications.some(c => c.certification_type === "finance_literacy");
       default:
         return false;
     }
@@ -284,6 +348,8 @@ const Journey = () => {
       setQuizDialogOpen(true);
     } else if (section === "cobuilder") {
       setCobuilderQuizOpen(true);
+    } else if (section === "finance") {
+      setFinanceQuizOpen(true);
     }
   };
 
@@ -335,6 +401,8 @@ const Journey = () => {
         return INITIATOR_STEPS;
       case "cobuilder":
         return COBUILDER_STEPS;
+      case "finance":
+        return FINANCE_STEPS;
     }
   };
 
@@ -355,6 +423,14 @@ const Journey = () => {
           icon: Users,
           color: "from-teal-500 to-cyan-500",
           outcome: "You become a certified Co-Builder — ready to contribute meaningfully to startups and build your portfolio.",
+        };
+      case "finance":
+        return {
+          title: "Learn Finance",
+          description: "A 4-step journey to gain corporate finance literacy",
+          icon: TrendingUp,
+          color: "from-emerald-500 to-green-600",
+          outcome: "You become a Certified Corporate Finance Professional — confident in reading statements, budgeting, decision-making, and advising others.",
         };
     }
   };
@@ -406,6 +482,17 @@ const Journey = () => {
                   >
                     <Users className="w-4 h-4 inline mr-2" />
                     Learn to be a Co-Builder
+                  </button>
+                  <button
+                    onClick={() => setActiveSection("finance")}
+                    className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                      activeSection === "finance"
+                        ? "bg-background shadow-sm text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <TrendingUp className="w-4 h-4 inline mr-2" />
+                    Learn Finance
                   </button>
                 </div>
               </div>
@@ -462,9 +549,10 @@ const Journey = () => {
                 )}
 
                 {/* Concept Explanation */}
-                <Card className={`border-${activeSection === 'initiator' ? 'amber' : activeSection === 'cobuilder' ? 'teal' : 'purple'}-500/20 bg-gradient-to-br ${
+                <Card className={`border-${activeSection === 'initiator' ? 'amber' : activeSection === 'cobuilder' ? 'teal' : activeSection === 'finance' ? 'emerald' : 'purple'}-500/20 bg-gradient-to-br ${
                   activeSection === 'initiator' ? 'from-amber-500/5 to-orange-500/5' :
                   activeSection === 'cobuilder' ? 'from-teal-500/5 to-cyan-500/5' :
+                  activeSection === 'finance' ? 'from-emerald-500/5 to-green-500/5' :
                   'from-purple-500/5 to-violet-500/5'
                 }`}>
                   <CardContent className="pt-6">
@@ -503,6 +591,7 @@ const Journey = () => {
                     className={`absolute left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b ${
                       activeSection === 'initiator' ? 'from-amber-500 via-orange-500 to-purple-500' :
                       activeSection === 'cobuilder' ? 'from-teal-500 via-cyan-500 to-indigo-500' :
+                      activeSection === 'finance' ? 'from-emerald-500 via-blue-500 to-pink-500' :
                       'from-purple-500 via-fuchsia-500 to-rose-500'
                     } hidden md:block`}
                     style={{ transform: "translateX(-50%)" }}
@@ -639,9 +728,10 @@ const Journey = () => {
                 </div>
 
                 {/* Outcome Message */}
-                <Card className={`border-${activeSection === 'initiator' ? 'orange' : activeSection === 'cobuilder' ? 'cyan' : 'violet'}-500/20 bg-gradient-to-br ${
+                <Card className={`border-${activeSection === 'initiator' ? 'orange' : activeSection === 'cobuilder' ? 'cyan' : activeSection === 'finance' ? 'emerald' : 'violet'}-500/20 bg-gradient-to-br ${
                   activeSection === 'initiator' ? 'from-orange-500/5 to-red-500/5' :
                   activeSection === 'cobuilder' ? 'from-cyan-500/5 to-blue-500/5' :
+                  activeSection === 'finance' ? 'from-emerald-500/5 to-green-500/5' :
                   'from-violet-500/5 to-purple-500/5'
                 }`}>
                   <CardContent className="pt-6">
@@ -677,6 +767,14 @@ const Journey = () => {
       <CoBuilderQuizDialog
         open={cobuilderQuizOpen}
         onOpenChange={setCobuilderQuizOpen}
+        stepNumber={selectedStep}
+        onComplete={handleStepComplete}
+      />
+
+      {/* Quiz Dialog for Finance */}
+      <FinanceQuizDialog
+        open={financeQuizOpen}
+        onOpenChange={setFinanceQuizOpen}
         stepNumber={selectedStep}
         onComplete={handleStepComplete}
       />

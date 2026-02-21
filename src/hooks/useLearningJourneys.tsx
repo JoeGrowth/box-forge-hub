@@ -3,7 +3,7 @@ import { useAuth } from "./useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./use-toast";
 
-export type JourneyType = "skill_ptc" | "idea_ptc" | "scaling_path";
+export type JourneyType = "skill_ptc" | "idea_ptc" | "scaling_path" | "finance_literacy";
 export type JourneyStatus = "not_started" | "in_progress" | "pending_approval" | "approved" | "rejected";
 
 export interface LearningJourney {
