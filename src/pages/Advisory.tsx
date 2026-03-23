@@ -119,6 +119,57 @@ const SCALE_NR_STEPS = [
   },
 ];
 
+const ALL_JOURNEY_PHASES = [
+  {
+    phase: 0,
+    title: "Work as Consultant",
+    subtitle: "Certification",
+    icon: Briefcase,
+    description: "Complete the 5-step learning journey to earn your Certified Consultant badge and unlock the scaling phases.",
+    details: ["Master consulting frameworks", "Develop strategic thinking", "Build client relationships", "Establish thought leadership", "Achieve expert certification"],
+  },
+  {
+    phase: 1,
+    title: "Personal Entity",
+    subtitle: "Foundation",
+    icon: Rocket,
+    description: "Build your foundation with your personal brand. 100% earned by the person.",
+    details: ["Logo & Name for entity", "Define 3 core services", "Website link", "List 10 missions delivered alone"],
+  },
+  {
+    phase: 2,
+    title: "Company Formation",
+    subtitle: "Collaboration",
+    icon: Building2,
+    description: "70% earned by the person. Collaborating and sharing value with external contributors.",
+    details: ["Logo + Name + Brand as company", "Services linked to natural role", "Proposal template", "First invoice with external people"],
+  },
+  {
+    phase: 3,
+    title: "Process Implementation",
+    subtitle: "Operations",
+    icon: Settings,
+    description: "Define and implement your operational process through successful missions.",
+    details: ["Put the process", "Implement the process", "Review the process", "1st mission with mixed team"],
+  },
+  {
+    phase: 4,
+    title: "Autonomous Structure",
+    subtitle: "Optimization",
+    icon: Target,
+    description: "Scale operations with a dedicated process manager.",
+    details: ["Optimize & enhance the process", "3 missions delivered successfully", "Review the process", "Process manager (internal)"],
+  },
+  {
+    phase: 5,
+    title: "Decentralized Structure",
+    subtitle: "Scalability",
+    icon: Crown,
+    description: "Achieve true scalability with decentralized operations and ownership shift.",
+    details: ["Optimize & enhance the process", "5 missions delivered successfully", "Review the process", "Structure handler (internal)"],
+  },
+];
+
 const Advisory = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
