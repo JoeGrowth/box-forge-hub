@@ -112,6 +112,7 @@ const App = () => (
           </TooltipProvider>
         </LearningJourneysProvider>
       </OnboardingProvider>
+      </UserStatusProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
