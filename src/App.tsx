@@ -8,6 +8,7 @@ import { OnboardingProvider } from "@/hooks/useOnboarding";
 import { LearningJourneysProvider } from "@/hooks/useLearningJourneys";
 import { UserStatusProvider } from "@/hooks/useUserStatus";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
+import { PersistentNavbarLayout } from "@/components/layout/PersistentNavbarLayout";
 import Index from "./pages/Index";
 import Home from "./pages/Home";
 import Landing from "./pages/Landing";
@@ -56,62 +57,64 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <UserStatusProvider>
-      <OnboardingProvider>
-        <LearningJourneysProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <ScrollToTop />
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/home" element={<Home />} />
-                <Route path="/landing" element={<Landing />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/boxes" element={<Boxes />} />
-                <Route path="/boxes/:boxId" element={<BoxDetail />} />
-                <Route path="/programs" element={<Programs />} />
-                <Route path="/join" element={<Join />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/login" element={<Auth />} />
-                <Route path="/signup" element={<Auth />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/professional-onboarding" element={<Onboarding />} />
-                <Route path="/choose-path" element={<ChoosePath />} />
-                <Route path="/entrepreneurial-onboarding" element={<EntrepreneurialOnboarding />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/admin" element={<Admin />} />
-                <Route path="/admin/opportunity/:id" element={<AdminOpportunityDetail />} />
-                <Route path="/opportunities" element={<Opportunities />} />
-                <Route path="/opportunities/:id" element={<OpportunityDetail />} />
-                <Route path="/cobuilders" element={<CoBuilders />} />
-                <Route path="/journey" element={<Journey />} />
-                <Route path="/mask" element={<Mask />} />
-                <Route path="/start" element={<Scale />} />
-                <Route path="/checklist" element={<Checklist />} />
-                <Route path="/resume" element={<Resume />} />
-                <Route path="/track-record" element={<TrackRecord />} />
-                <Route path="/track" element={<Track />} />
-                <Route path="/create-idea" element={<CreateIdea />} />
-                <Route path="/edit-idea/:id" element={<EditIdea />} />
-                <Route path="/chat/:applicationId" element={<Chat />} />
-                <Route path="/messages" element={<Messages />} />
-                <Route path="/messages/:conversationId" element={<Messages />} />
-                <Route path="/stories" element={<Stories />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/privacy" element={<Privacy />} />
-                <Route path="/terms" element={<Terms />} />
-                <Route path="/decoder" element={<NRDecoder />} />
-                <Route path="/advisory" element={<Advisory />} />
-                <Route path="/coming-soon" element={<ComingSoon />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </LearningJourneysProvider>
-      </OnboardingProvider>
+        <OnboardingProvider>
+          <LearningJourneysProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <ScrollToTop />
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/home" element={<Home />} />
+                  <Route path="/landing" element={<Landing />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/boxes" element={<Boxes />} />
+                  <Route path="/boxes/:boxId" element={<BoxDetail />} />
+                  <Route path="/programs" element={<Programs />} />
+                  <Route path="/join" element={<Join />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/login" element={<Auth />} />
+                  <Route path="/signup" element={<Auth />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/professional-onboarding" element={<Onboarding />} />
+                  <Route path="/choose-path" element={<ChoosePath />} />
+                  <Route path="/entrepreneurial-onboarding" element={<EntrepreneurialOnboarding />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/admin" element={<Admin />} />
+                  <Route path="/admin/opportunity/:id" element={<AdminOpportunityDetail />} />
+                  <Route element={<PersistentNavbarLayout />}>
+                    <Route path="/opportunities" element={<Opportunities />} />
+                    <Route path="/cobuilders" element={<CoBuilders />} />
+                    <Route path="/journey" element={<Journey />} />
+                    <Route path="/start" element={<Scale />} />
+                    <Route path="/track" element={<Track />} />
+                    <Route path="/advisory" element={<Advisory />} />
+                  </Route>
+                  <Route path="/opportunities/:id" element={<OpportunityDetail />} />
+                  <Route path="/mask" element={<Mask />} />
+                  <Route path="/checklist" element={<Checklist />} />
+                  <Route path="/resume" element={<Resume />} />
+                  <Route path="/track-record" element={<TrackRecord />} />
+                  <Route path="/create-idea" element={<CreateIdea />} />
+                  <Route path="/edit-idea/:id" element={<EditIdea />} />
+                  <Route path="/chat/:applicationId" element={<Chat />} />
+                  <Route path="/messages" element={<Messages />} />
+                  <Route path="/messages/:conversationId" element={<Messages />} />
+                  <Route path="/stories" element={<Stories />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/privacy" element={<Privacy />} />
+                  <Route path="/terms" element={<Terms />} />
+                  <Route path="/decoder" element={<NRDecoder />} />
+                  <Route path="/coming-soon" element={<ComingSoon />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </LearningJourneysProvider>
+        </OnboardingProvider>
       </UserStatusProvider>
     </AuthProvider>
   </QueryClientProvider>
