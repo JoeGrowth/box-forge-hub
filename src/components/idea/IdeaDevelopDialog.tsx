@@ -214,7 +214,7 @@ export const IdeaDevelopDialog = ({
   const [hasTeamMembers, setHasTeamMembers] = useState(false);
   const [hasLoadedInitial, setHasLoadedInitial] = useState(false);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
-  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const phase = IDEA_DEVELOP_PHASES[currentPhase];
   const totalPhases = IDEA_DEVELOP_PHASES.length;

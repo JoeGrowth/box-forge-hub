@@ -137,7 +137,7 @@ export const IdeaValidationDialog = ({
   const [isLoading, setIsLoading] = useState(true);
   const [hasLoadedInitial, setHasLoadedInitial] = useState(false);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
-  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const phase = VALIDATION_PHASES[currentPhase];
   const totalPhases = VALIDATION_PHASES.length;

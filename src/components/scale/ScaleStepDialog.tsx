@@ -180,7 +180,7 @@ export const ScaleStepDialog = ({ open, onOpenChange, stepNumber, onComplete }: 
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<string>("");
   const [completedMissions, setCompletedMissions] = useState<ConsultantOpportunity[]>([]);
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingDataRef = useRef<Record<number, PhaseData>>({});
 
   const relevantPhases = STEP_TO_PHASES[stepNumber];
