@@ -24,15 +24,19 @@ const getAppliedLinks = () => [
 ];
 
 const getApprovedLinks = (hasConsultantAccess: boolean) => [
-  ...getAppliedLinks(),
+  { name: "Opportunities", path: "/opportunities" },
+  { name: "People", path: "/cobuilders" },
+  { name: "Career", path: "/track" },
   { name: "Vaccines", path: "/journey" },
   ...(hasConsultantAccess ? [{ name: "Advisory", path: "/advisory" }] : []),
 ];
 
 const getBoostedLinks = (hasConsultantAccess: boolean) => [
-  ...getAppliedLinks(),
-  { name: "Vaccines", path: "/journey" },
+  { name: "Opportunities", path: "/opportunities" },
+  { name: "People", path: "/cobuilders" },
   { name: "Startups", path: "/start" },
+  { name: "Career", path: "/track" },
+  { name: "Vaccines", path: "/journey" },
   ...(hasConsultantAccess ? [{ name: "Advisory", path: "/advisory" }] : []),
 ];
 
