@@ -27,16 +27,16 @@ const getApprovedLinks = (hasConsultantAccess: boolean) => [
   { name: "Opportunities", path: "/opportunities" },
   { name: "People", path: "/cobuilders" },
   { name: "Career", path: "/track" },
-  { name: "Vaccines", path: "/journey" },
+  { name: "Certifications", path: "/journey" },
   ...(hasConsultantAccess ? [{ name: "Advisory", path: "/advisory" }] : []),
 ];
 
 const getBoostedLinks = (hasConsultantAccess: boolean) => [
   { name: "Opportunities", path: "/opportunities" },
   { name: "People", path: "/cobuilders" },
-  { name: "Startups", path: "/start" },
+  { name: "Projects", path: "/start" },
   { name: "Career", path: "/track" },
-  { name: "Vaccines", path: "/journey" },
+  { name: "Certifications", path: "/journey" },
   ...(hasConsultantAccess ? [{ name: "Advisory", path: "/advisory" }] : []),
 ];
 
