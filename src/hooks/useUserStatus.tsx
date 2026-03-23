@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, createContext, useContext, ReactNode, useCallback } from "react";
 import { useAuth } from "./useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -17,12 +17,28 @@ interface UserStatusData {
   primary_role: string | null;
 }
 
-export const useUserStatus = () => {
+interface UserStatusContextType {
+  statusData: UserStatusData | null;
+  loading: boolean;
+  refetch: () => Promise<void>;
+  canAccessBoosting: boolean;
+  canAccessScaling: boolean;
+  getStatusLabel: () => string;
+  getStatusBadgeVariant: () => "default" | "secondary" | "outline";
+  userStatus: UserStatus | null;
+  potentialRole: PotentialRole;
+  boostType: BoostType;
+  scaleType: ScaleType;
+}
+
+const UserStatusContext = createContext<UserStatusContextType | undefined>(undefined);
+
+export const UserStatusProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const [statusData, setStatusData] = useState<UserStatusData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchStatus = async () => {
+  const fetchStatus = useCallback(async () => {
     if (!user) {
       setStatusData(null);
       setLoading(false);
@@ -48,13 +64,12 @@ export const useUserStatus = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchStatus();
-  }, [user]);
+  }, [fetchStatus]);
 
-  // Access control helpers
   const canAccessBoosting = statusData?.user_status === "approved" || 
                             statusData?.user_status === "boosted" || 
                             statusData?.user_status === "scaled";
@@ -64,13 +79,10 @@ export const useUserStatus = () => {
 
   const getStatusLabel = (): string => {
     if (!statusData) return "Unknown";
-    
     switch (statusData.user_status) {
-      case "applied":
-        return "Applied – Pending Review";
-      case "approved":
-        return "Approved – Ready to Boost";
-      case "boosted":
+      case "applied": return "Applied – Pending Review";
+      case "approved": return "Approved – Ready to Boost";
+      case "boosted": {
         if (statusData.boost_type) {
           const boostLabels: Record<string, string> = {
             boosted_co_builder: "Boosted Co-Builder",
@@ -80,7 +92,8 @@ export const useUserStatus = () => {
           return boostLabels[statusData.boost_type] || "Boosted";
         }
         return "Boosted";
-      case "scaled":
+      }
+      case "scaled": {
         if (statusData.scale_type) {
           const scaleLabels: Record<string, string> = {
             venture_promise: "Scaled – Venture Promise",
@@ -89,38 +102,45 @@ export const useUserStatus = () => {
           return scaleLabels[statusData.scale_type] || "Scaled User";
         }
         return "Scaled User";
-      default:
-        return "Member";
+      }
+      default: return "Member";
     }
   };
 
   const getStatusBadgeVariant = (): "default" | "secondary" | "outline" => {
     if (!statusData?.user_status) return "secondary";
-    
     switch (statusData.user_status) {
-      case "applied":
-        return "secondary";
-      case "approved":
-        return "outline";
+      case "applied": return "secondary";
+      case "approved": return "outline";
       case "boosted":
-      case "scaled":
-        return "default";
-      default:
-        return "secondary";
+      case "scaled": return "default";
+      default: return "secondary";
     }
   };
 
-  return {
-    statusData,
-    loading,
-    refetch: fetchStatus,
-    canAccessBoosting,
-    canAccessScaling,
-    getStatusLabel,
-    getStatusBadgeVariant,
-    userStatus: statusData?.user_status ?? null,
-    potentialRole: statusData?.potential_role ?? null,
-    boostType: statusData?.boost_type ?? null,
-    scaleType: statusData?.scale_type ?? null,
-  };
+  return (
+    <UserStatusContext.Provider value={{
+      statusData,
+      loading,
+      refetch: fetchStatus,
+      canAccessBoosting,
+      canAccessScaling,
+      getStatusLabel,
+      getStatusBadgeVariant,
+      userStatus: statusData?.user_status ?? null,
+      potentialRole: statusData?.potential_role ?? null,
+      boostType: statusData?.boost_type ?? null,
+      scaleType: statusData?.scale_type ?? null,
+    }}>
+      {children}
+    </UserStatusContext.Provider>
+  );
+};
+
+export const useUserStatus = () => {
+  const context = useContext(UserStatusContext);
+  if (context === undefined) {
+    throw new Error("useUserStatus must be used within a UserStatusProvider");
+  }
+  return context;
 };

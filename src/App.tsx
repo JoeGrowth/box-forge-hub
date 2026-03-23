@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { OnboardingProvider } from "@/hooks/useOnboarding";
 import { LearningJourneysProvider } from "@/hooks/useLearningJourneys";
+import { UserStatusProvider } from "@/hooks/useUserStatus";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
 import Index from "./pages/Index";
 import Home from "./pages/Home";
@@ -54,6 +55,7 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
+      <UserStatusProvider>
       <OnboardingProvider>
         <LearningJourneysProvider>
           <TooltipProvider>
@@ -110,6 +112,7 @@ const App = () => (
           </TooltipProvider>
         </LearningJourneysProvider>
       </OnboardingProvider>
+      </UserStatusProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
