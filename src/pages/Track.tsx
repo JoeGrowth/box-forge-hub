@@ -337,7 +337,6 @@ const Track = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
       <main className="pt-20">
         {/* Header */}
         <section className="py-12 gradient-hero text-primary-foreground">
