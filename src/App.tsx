@@ -55,6 +55,7 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
+      <UserStatusProvider>
       <OnboardingProvider>
         <LearningJourneysProvider>
           <TooltipProvider>
