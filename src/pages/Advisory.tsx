@@ -409,22 +409,67 @@ const Advisory = () => {
                     </Card>
                   )}
 
-                  {/* Outcome */}
-                  <Card className="border-violet-500/20 bg-gradient-to-r from-violet-500/5 via-purple-500/5 to-rose-500/5">
-                    <CardContent className="p-6">
-                      <div className="flex items-center gap-4">
-                        <div className="p-3 rounded-2xl bg-gradient-to-br from-purple-500 to-violet-500 shrink-0">
-                          <Trophy className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-display font-bold text-foreground">🎓 Certified Consultant</h3>
-                          <p className="text-sm text-muted-foreground">
-                            Complete all 5 steps to earn your certification and unlock the scaling journey.
+                  {/* Full Journey Overview — All Phases */}
+                  <div className="space-y-4 pt-4">
+                    <div className="text-center">
+                      <h2 className="text-xl font-display font-bold text-foreground mb-1">Your Complete Journey</h2>
+                      <p className="text-sm text-muted-foreground">From learning to scaling — here's the full roadmap</p>
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {/* Phase 0 — Certification */}
+                      <Card className={`overflow-hidden border-border/50 ${isAllLearningStepsCompleted() ? "border-primary/30 shadow-md" : ""}`}>
+                        <div className="h-1.5 bg-gradient-to-r from-purple-500 to-violet-500" />
+                        <CardContent className="p-4 space-y-3">
+                          <div className="flex items-center gap-2.5">
+                            <div className={`p-2 rounded-lg ${isAllLearningStepsCompleted() ? "bg-gradient-to-br from-purple-500 to-violet-500" : "bg-muted"}`}>
+                              <GraduationCap className={`w-4 h-4 ${isAllLearningStepsCompleted() ? "text-white" : "text-muted-foreground"}`} />
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Phase 0</p>
+                              <h3 className="text-sm font-display font-bold text-foreground">Certification</h3>
+                            </div>
+                          </div>
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            Complete 5 learning steps to earn your Certified Consultant badge.
                           </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                          <div className="flex items-center gap-2">
+                            <div className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
+                              <div
+                                className="h-full rounded-full bg-gradient-to-r from-purple-500 to-violet-500 transition-all"
+                                style={{ width: `${(completedLearningCount / CONSULTANT_LEARNING_STEPS.length) * 100}%` }}
+                              />
+                            </div>
+                            <span className="text-[10px] font-medium text-muted-foreground">{completedLearningCount}/5</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Phase 1, 2, 3 — Scaling */}
+                      {SCALE_NR_STEPS.map((step) => (
+                        <Card key={step.step} className="overflow-hidden border-border/50 opacity-60">
+                          <div className={`h-1.5 bg-gradient-to-r ${step.color}`} />
+                          <CardContent className="p-4 space-y-3">
+                            <div className="flex items-center gap-2.5">
+                              <div className="p-2 rounded-lg bg-muted">
+                                <step.icon className="w-4 h-4 text-muted-foreground" />
+                              </div>
+                              <div>
+                                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Phase {step.step}</p>
+                                <h3 className="text-sm font-display font-bold text-foreground">{step.title}</h3>
+                              </div>
+                            </div>
+                            <Badge variant="outline" className="text-[10px]">{step.subtitle}</Badge>
+                            <p className="text-xs text-muted-foreground leading-relaxed">{step.description}</p>
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <Lock className="w-3 h-3" />
+                              <span>Unlocks after certification</span>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
 
