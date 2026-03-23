@@ -33,6 +33,10 @@ import {
   ArrowRight,
   Trophy,
   ChevronRight,
+  Building2,
+  Settings,
+  Crown,
+  Briefcase,
 } from "lucide-react";
 import { ScaleStepDialog } from "@/components/scale/ScaleStepDialog";
 import { ConsultantQuizDialog } from "@/components/learning/ConsultantQuizDialog";
