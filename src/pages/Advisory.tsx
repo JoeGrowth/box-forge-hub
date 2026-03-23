@@ -200,6 +200,8 @@ const Advisory = () => {
     if (!authLoading && !onboardingLoading && user && !isApproved) navigate("/dashboard", { replace: true });
   }, [authLoading, onboardingLoading, user, isApproved, navigate]);
 
+  const [individualPhaseCompletion, setIndividualPhaseCompletion] = useState<Record<number, boolean>>({});
+
   useEffect(() => {
     const fetch = async () => {
       if (!user) return;
@@ -215,6 +217,12 @@ const Advisory = () => {
         2: completedPhases.includes(2) && completedPhases.includes(3) && completedPhases.includes(4),
         3: completedPhases.includes(5),
       });
+      // Track individual phase completion for the overview tabs
+      const phaseMap: Record<number, boolean> = {};
+      for (let i = 1; i <= 5; i++) {
+        phaseMap[i] = completedPhases.includes(i);
+      }
+      setIndividualPhaseCompletion(phaseMap);
     };
     fetch();
   }, [user]);
