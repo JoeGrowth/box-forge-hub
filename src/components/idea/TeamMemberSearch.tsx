@@ -60,7 +60,7 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
   const [isSearching, setIsSearching] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [loadingTeam, setLoadingTeam] = useState(true);
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // Compensation dialog state
   const [compensationDialogOpen, setCompensationDialogOpen] = useState(false);
