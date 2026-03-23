@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
-import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
