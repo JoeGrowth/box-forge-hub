@@ -132,6 +132,7 @@ const Advisory = () => {
   const [selectedStep, setSelectedStep] = useState<number>(1);
   const [learningCompletionStatus, setLearningCompletionStatus] = useState<Record<number, boolean>>({});
   const [viewingStep, setViewingStep] = useState<number | null>(null);
+  const [activePhase, setActivePhase] = useState<number>(0);
 
   const isApproved = onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved";
   const hasConsultantCert = certifications.some((c) => c.certification_type === "consultant_b4");
