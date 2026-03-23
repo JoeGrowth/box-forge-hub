@@ -567,28 +567,82 @@ const Advisory = () => {
                         })}
                       </div>
 
-                      {/* Scale Outcome */}
-                      <Card className="border-emerald-500/20 bg-gradient-to-r from-emerald-500/5 to-teal-500/5">
-                        <CardContent className="p-6">
-                          <div className="flex items-center gap-4">
-                            <div className="p-3 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 shrink-0">
-                              <Zap className="w-6 h-6 text-white" />
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="text-lg font-display font-bold text-foreground mb-1">The Outcome</h3>
-                              <p className="text-sm text-muted-foreground">
-                                Scale your impact <strong className="text-foreground">without being the bottleneck</strong>. Your Brand operates independently.
+                      {/* Full Journey Overview — All Phases */}
+                      <div className="space-y-4 pt-2">
+                        <div className="text-center">
+                          <h2 className="text-xl font-display font-bold text-foreground mb-1">Complete Journey Overview</h2>
+                          <p className="text-sm text-muted-foreground">From certification to scaling — your full roadmap</p>
+                        </div>
+
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                          {/* Phase 0 — Certification (completed) */}
+                          <Card className="overflow-hidden border-primary/30 shadow-md">
+                            <div className="h-1.5 bg-gradient-to-r from-purple-500 to-violet-500" />
+                            <CardContent className="p-4 space-y-3">
+                              <div className="flex items-center gap-2.5">
+                                <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-violet-500">
+                                  <GraduationCap className="w-4 h-4 text-white" />
+                                </div>
+                                <div>
+                                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Phase 0</p>
+                                  <h3 className="text-sm font-display font-bold text-foreground">Certification</h3>
+                                </div>
+                              </div>
+                              <p className="text-xs text-muted-foreground leading-relaxed">
+                                5 learning steps completed. Certified Consultant earned.
                               </p>
-                            </div>
-                            {scaleCompletionStatus[1] && scaleCompletionStatus[2] && scaleCompletionStatus[3] && (
-                              <Button variant="hero" onClick={() => navigate("/entrepreneurial-onboarding")} className="gap-2 shrink-0">
-                                <Rocket className="w-4 h-4" />
-                                Next Journey
-                              </Button>
-                            )}
+                              <div className="flex items-center gap-2 text-xs text-primary font-semibold">
+                                <CheckCircle className="w-3.5 h-3.5" />
+                                Completed
+                              </div>
+                            </CardContent>
+                          </Card>
+
+                          {/* Phases 1-3 — Scaling */}
+                          {SCALE_NR_STEPS.map((step) => {
+                            const completed = scaleCompletionStatus[step.step];
+                            return (
+                              <Card key={step.step} className={`overflow-hidden ${completed ? "border-primary/30 shadow-md" : "border-border/50"}`}>
+                                <div className={`h-1.5 bg-gradient-to-r ${step.color}`} />
+                                <CardContent className="p-4 space-y-3">
+                                  <div className="flex items-center gap-2.5">
+                                    <div className={`p-2 rounded-lg ${completed ? `bg-gradient-to-br ${step.color}` : "bg-muted"}`}>
+                                      <step.icon className={`w-4 h-4 ${completed ? "text-white" : "text-muted-foreground"}`} />
+                                    </div>
+                                    <div>
+                                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Phase {step.step}</p>
+                                      <h3 className="text-sm font-display font-bold text-foreground">{step.title}</h3>
+                                    </div>
+                                  </div>
+                                  <Badge variant="outline" className="text-[10px]">{step.subtitle}</Badge>
+                                  <p className="text-xs text-muted-foreground leading-relaxed">{step.description}</p>
+                                  {completed ? (
+                                    <div className="flex items-center gap-2 text-xs text-primary font-semibold">
+                                      <CheckCircle className="w-3.5 h-3.5" />
+                                      Completed
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                      <Clock className="w-3 h-3" />
+                                      In progress
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            );
+                          })}
+                        </div>
+
+                        {/* Next Journey CTA */}
+                        {scaleCompletionStatus[1] && scaleCompletionStatus[2] && scaleCompletionStatus[3] && (
+                          <div className="text-center pt-2">
+                            <Button variant="hero" onClick={() => navigate("/entrepreneurial-onboarding")} className="gap-2">
+                              <Rocket className="w-4 h-4" />
+                              Explore the Entrepreneurial Journey
+                            </Button>
                           </div>
-                        </CardContent>
-                      </Card>
+                        )}
+                      </div>
                     </>
                   )}
                 </div>
