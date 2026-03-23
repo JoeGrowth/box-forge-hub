@@ -33,6 +33,10 @@ import {
   ArrowRight,
   Trophy,
   ChevronRight,
+  Building2,
+  Settings,
+  Crown,
+  Briefcase,
 } from "lucide-react";
 import { ScaleStepDialog } from "@/components/scale/ScaleStepDialog";
 import { ConsultantQuizDialog } from "@/components/learning/ConsultantQuizDialog";
@@ -115,6 +119,57 @@ const SCALE_NR_STEPS = [
   },
 ];
 
+const ALL_JOURNEY_PHASES = [
+  {
+    phase: 0,
+    title: "Work as Consultant",
+    subtitle: "Certification",
+    icon: Briefcase,
+    description: "Complete the 5-step learning journey to earn your Certified Consultant badge and unlock the scaling phases.",
+    details: ["Master consulting frameworks", "Develop strategic thinking", "Build client relationships", "Establish thought leadership", "Achieve expert certification"],
+  },
+  {
+    phase: 1,
+    title: "Personal Entity",
+    subtitle: "Foundation",
+    icon: Rocket,
+    description: "Build your foundation with your personal brand. 100% earned by the person.",
+    details: ["Logo & Name for entity", "Define 3 core services", "Website link", "List 10 missions delivered alone"],
+  },
+  {
+    phase: 2,
+    title: "Company Formation",
+    subtitle: "Collaboration",
+    icon: Building2,
+    description: "70% earned by the person. Collaborating and sharing value with external contributors.",
+    details: ["Logo + Name + Brand as company", "Services linked to natural role", "Proposal template", "First invoice with external people"],
+  },
+  {
+    phase: 3,
+    title: "Process Implementation",
+    subtitle: "Operations",
+    icon: Settings,
+    description: "Define and implement your operational process through successful missions.",
+    details: ["Put the process", "Implement the process", "Review the process", "1st mission with mixed team"],
+  },
+  {
+    phase: 4,
+    title: "Autonomous Structure",
+    subtitle: "Optimization",
+    icon: Target,
+    description: "Scale operations with a dedicated process manager.",
+    details: ["Optimize & enhance the process", "3 missions delivered successfully", "Review the process", "Process manager (internal)"],
+  },
+  {
+    phase: 5,
+    title: "Decentralized Structure",
+    subtitle: "Scalability",
+    icon: Crown,
+    description: "Achieve true scalability with decentralized operations and ownership shift.",
+    details: ["Optimize & enhance the process", "5 missions delivered successfully", "Review the process", "Structure handler (internal)"],
+  },
+];
+
 const Advisory = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
@@ -145,6 +200,8 @@ const Advisory = () => {
     if (!authLoading && !onboardingLoading && user && !isApproved) navigate("/dashboard", { replace: true });
   }, [authLoading, onboardingLoading, user, isApproved, navigate]);
 
+  const [individualPhaseCompletion, setIndividualPhaseCompletion] = useState<Record<number, boolean>>({});
+
   useEffect(() => {
     const fetch = async () => {
       if (!user) return;
@@ -160,6 +217,12 @@ const Advisory = () => {
         2: completedPhases.includes(2) && completedPhases.includes(3) && completedPhases.includes(4),
         3: completedPhases.includes(5),
       });
+      // Track individual phase completion for the overview tabs
+      const phaseMap: Record<number, boolean> = {};
+      for (let i = 1; i <= 5; i++) {
+        phaseMap[i] = completedPhases.includes(i);
+      }
+      setIndividualPhaseCompletion(phaseMap);
     };
     fetch();
   }, [user]);
@@ -568,7 +631,7 @@ const Advisory = () => {
                         })}
                       </div>
 
-                      {/* Segmented Phase Tabs */}
+                      {/* Segmented Phase Tabs — Phase 0 to 5 */}
                       <div className="space-y-6 pt-4">
                         <div className="text-center">
                           <h2 className="text-xl font-display font-bold text-foreground mb-1">Complete Journey Overview</h2>
@@ -577,100 +640,79 @@ const Advisory = () => {
 
                         {/* Tab bar */}
                         <div className="flex flex-wrap gap-1 p-1 rounded-xl bg-muted/50 border border-border/50">
-                          {[
-                            { phase: 0, label: "Phase 0", icon: GraduationCap, completed: true },
-                            ...SCALE_NR_STEPS.map((s) => ({
-                              phase: s.step,
-                              label: `Phase ${s.step}`,
-                              icon: s.icon,
-                              completed: !!scaleCompletionStatus[s.step],
-                            })),
-                          ].map((tab) => (
-                            <button
-                              key={tab.phase}
-                              onClick={() => setActivePhase(tab.phase)}
-                              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                                activePhase === tab.phase
-                                  ? "bg-background shadow-sm text-foreground"
-                                  : "text-muted-foreground hover:text-foreground"
-                              }`}
-                            >
-                              {tab.completed ? (
-                                <CheckCircle className="w-4 h-4 text-b4-teal" />
-                              ) : (
-                                <tab.icon className="w-4 h-4" />
-                              )}
-                              {tab.label}
-                            </button>
-                          ))}
+                          {ALL_JOURNEY_PHASES.map((tab) => {
+                            const isCompleted = tab.phase === 0 ? true : !!individualPhaseCompletion[tab.phase];
+                            return (
+                              <button
+                                key={tab.phase}
+                                onClick={() => setActivePhase(tab.phase)}
+                                className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                                  activePhase === tab.phase
+                                    ? "bg-background shadow-sm text-foreground"
+                                    : "text-muted-foreground hover:text-foreground"
+                                }`}
+                              >
+                                {isCompleted ? (
+                                  <CheckCircle className="w-4 h-4 text-b4-teal" />
+                                ) : (
+                                  <tab.icon className="w-4 h-4" />
+                                )}
+                                Phase {tab.phase}
+                              </button>
+                            );
+                          })}
                         </div>
 
                         {/* Phase content */}
-                        <Card className="overflow-hidden border-border/50 animate-fade-in" key={activePhase}>
-                          <CardContent className="p-6">
-                            {activePhase === 0 ? (
-                              <div className="space-y-4">
-                                <div className="flex items-center gap-3">
-                                  <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-violet-500">
-                                    <GraduationCap className="w-6 h-6 text-white" />
-                                  </div>
-                                  <div>
-                                    <h3 className="text-lg font-display font-bold text-foreground">Certification</h3>
-                                    <p className="text-sm text-muted-foreground">5-step learning journey completed</p>
-                                  </div>
-                                </div>
-                                <p className="text-sm text-muted-foreground leading-relaxed">
-                                  You mastered consulting foundations, strategy, advisory, leadership, and achieved expert-level mastery. Your Certified Consultant badge is earned.
-                                </p>
-                                <div className="flex items-center gap-2 text-primary font-semibold text-sm">
-                                  <CheckCircle className="w-4 h-4" />
-                                  Completed
-                                </div>
-                              </div>
-                            ) : (
-                              (() => {
-                                const step = SCALE_NR_STEPS.find((s) => s.step === activePhase);
-                                if (!step) return null;
-                                const completed = scaleCompletionStatus[step.step];
-                                return (
-                                  <div className="space-y-4">
-                                    <div className="flex items-center gap-3">
-                                      <div className={`p-3 rounded-xl ${completed ? `bg-gradient-to-br ${step.color}` : "bg-muted"}`}>
-                                        <step.icon className={`w-6 h-6 ${completed ? "text-white" : "text-foreground"}`} />
-                                      </div>
-                                      <div>
-                                        <h3 className="text-lg font-display font-bold text-foreground">{step.title}</h3>
-                                        <Badge variant="outline" className="text-xs">{step.subtitle}</Badge>
-                                      </div>
+                        {(() => {
+                          const phase = ALL_JOURNEY_PHASES.find((p) => p.phase === activePhase);
+                          if (!phase) return null;
+                          const isCompleted = phase.phase === 0 ? true : !!individualPhaseCompletion[phase.phase];
+                          const phaseToStep = (p: number): 1 | 2 | 3 => {
+                            if (p === 1) return 1;
+                            if (p >= 2 && p <= 4) return 2;
+                            return 3;
+                          };
+                          return (
+                            <Card className="overflow-hidden border-border/50 animate-fade-in" key={activePhase}>
+                              <CardContent className="p-6">
+                                <div className="space-y-4">
+                                  <div className="flex items-center gap-3">
+                                    <div className={`p-3 rounded-xl ${isCompleted ? "bg-gradient-to-br from-b4-teal to-b4-teal-light" : "bg-muted"}`}>
+                                      <phase.icon className={`w-6 h-6 ${isCompleted ? "text-white" : "text-foreground"}`} />
                                     </div>
-                                    <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
-                                    <ul className="space-y-2">
-                                      {step.details.map((d, i) => (
-                                        <li key={i} className="flex items-center gap-2.5 text-sm">
-                                          <ChevronRight className={`w-3.5 h-3.5 shrink-0 ${completed ? "text-primary" : "text-muted-foreground"}`} />
-                                          <span className={completed ? "text-foreground" : "text-muted-foreground"}>{d}</span>
-                                        </li>
-                                      ))}
-                                    </ul>
-                                    <div className="pt-2">
-                                      {completed ? (
-                                        <div className="flex items-center gap-2 text-primary font-semibold text-sm">
-                                          <CheckCircle className="w-4 h-4" />
-                                          Completed
-                                        </div>
-                                      ) : (
-                                        <Button onClick={() => handleOpenScaleStepDialog(step.step as 1 | 2 | 3)} className="gap-2">
-                                          <Play className="w-4 h-4" />
-                                          Start Phase
-                                        </Button>
-                                      )}
+                                    <div>
+                                      <h3 className="text-lg font-display font-bold text-foreground">{phase.title}</h3>
+                                      <Badge variant="outline" className="text-xs">{phase.subtitle}</Badge>
                                     </div>
                                   </div>
-                                );
-                              })()
-                            )}
-                          </CardContent>
-                        </Card>
+                                  <p className="text-sm text-muted-foreground leading-relaxed">{phase.description}</p>
+                                  <ul className="space-y-2">
+                                    {phase.details.map((d, i) => (
+                                      <li key={i} className="flex items-center gap-2.5 text-sm">
+                                        <ChevronRight className={`w-3.5 h-3.5 shrink-0 ${isCompleted ? "text-primary" : "text-muted-foreground"}`} />
+                                        <span className={isCompleted ? "text-foreground" : "text-muted-foreground"}>{d}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                  <div className="pt-2">
+                                    {isCompleted ? (
+                                      <div className="flex items-center gap-2 text-primary font-semibold text-sm">
+                                        <CheckCircle className="w-4 h-4" />
+                                        Completed
+                                      </div>
+                                    ) : phase.phase > 0 ? (
+                                      <Button onClick={() => handleOpenScaleStepDialog(phaseToStep(phase.phase))} className="gap-2">
+                                        <Play className="w-4 h-4" />
+                                        Start Phase
+                                      </Button>
+                                    ) : null}
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          );
+                        })()}
 
                         {/* Next Journey CTA */}
                         {scaleCompletionStatus[1] && scaleCompletionStatus[2] && scaleCompletionStatus[3] && (
