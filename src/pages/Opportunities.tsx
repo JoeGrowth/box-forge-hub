@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Button } from "@/components/ui/button";
@@ -164,7 +163,6 @@ const Opportunities = () => {
   if (authLoading || onboardingLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
         <div className="pt-20 flex items-center justify-center min-h-[60vh]">
           <Loader2 className="w-8 h-8 animate-spin text-b4-teal" />
         </div>
@@ -176,7 +174,6 @@ const Opportunities = () => {
   if (!user) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
         <PageTransition>
           <main className="pt-20">
             <section className="py-16">
@@ -195,7 +192,6 @@ const Opportunities = () => {
   if (!isApproved) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
         <PageTransition>
           <main className="pt-20">
             <section className="py-16">
@@ -218,7 +214,6 @@ const Opportunities = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
       <PageTransition>
         <main className="pt-20">
           {/* Category Tabs */}

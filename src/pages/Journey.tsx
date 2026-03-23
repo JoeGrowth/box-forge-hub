@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { useAuth } from "@/hooks/useAuth";
@@ -367,7 +366,6 @@ const Journey = () => {
   if (authLoading || onboardingLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
         <div className="pt-20 flex items-center justify-center min-h-[60vh]">
           <Loader2 className="w-8 h-8 animate-spin text-secondary" />
         </div>
@@ -379,7 +377,6 @@ const Journey = () => {
   if (!user) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
         <PageTransition>
           <main className="pt-20">
             <section className="py-16">
@@ -440,7 +437,6 @@ const Journey = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
       <PageTransition>
         <main className="pt-20">
           {/* Header */}

@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Button } from "@/components/ui/button";
@@ -303,7 +302,6 @@ const Advisory = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
       <PageTransition>
         <main className="pt-20">
           {/* Hero */}
