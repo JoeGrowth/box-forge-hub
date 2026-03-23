@@ -302,7 +302,6 @@ const Advisory = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
       <PageTransition>
         <main className="pt-20">
           {/* Hero */}
