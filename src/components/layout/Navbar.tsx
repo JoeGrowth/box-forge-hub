@@ -38,7 +38,6 @@ const getBoostedLinks = (hasConsultantAccess: boolean) => [
   { name: "Certifications", path: "/journey" },
   { name: "Career", path: "/track" },
   ...(hasConsultantAccess ? [{ name: "Advisory", path: "/advisory" }] : []),
-  ...(hasConsultantAccess ? [{ name: "Advisory", path: "/advisory" }] : []),
 ];
 
 export function Navbar() {
