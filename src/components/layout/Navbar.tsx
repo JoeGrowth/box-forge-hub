@@ -26,8 +26,8 @@ const getAppliedLinks = () => [
 const getApprovedLinks = (hasConsultantAccess: boolean) => [
   { name: "Opportunities", path: "/opportunities" },
   { name: "People", path: "/cobuilders" },
-  { name: "Career", path: "/track" },
   { name: "Certifications", path: "/journey" },
+  { name: "Career", path: "/track" },
   ...(hasConsultantAccess ? [{ name: "Advisory", path: "/advisory" }] : []),
 ];
 
@@ -35,8 +35,9 @@ const getBoostedLinks = (hasConsultantAccess: boolean) => [
   { name: "Opportunities", path: "/opportunities" },
   { name: "People", path: "/cobuilders" },
   { name: "Projects", path: "/start" },
-  { name: "Career", path: "/track" },
   { name: "Certifications", path: "/journey" },
+  { name: "Career", path: "/track" },
+  ...(hasConsultantAccess ? [{ name: "Advisory", path: "/advisory" }] : []),
   ...(hasConsultantAccess ? [{ name: "Advisory", path: "/advisory" }] : []),
 ];
 
