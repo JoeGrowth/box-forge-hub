@@ -60,6 +60,15 @@ const steps = [
     link: "/opportunities?tab=tenders",
     cta: "View Tenders",
   },
+  {
+    number: 6,
+    icon: Users,
+    title: "Join a Team",
+    description:
+      "Browse team environments looking for talent. Apply for roles that match your Natural Role and join an existing organization.",
+    link: "/opportunities?tab=environments",
+    cta: "Browse Environments",
+  },
 ];
 
 const Career = () => {
