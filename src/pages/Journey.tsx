@@ -818,10 +818,11 @@ const Journey = () => {
                 </div>
 
                 {/* Outcome Message */}
-                <Card className={`border-${activeSection === 'initiator' ? 'orange' : activeSection === 'cobuilder' ? 'cyan' : activeSection === 'finance' ? 'emerald' : 'violet'}-500/20 bg-gradient-to-br ${
+                <Card className={`border-${activeSection === 'initiator' ? 'orange' : activeSection === 'cobuilder' ? 'cyan' : activeSection === 'finance' ? 'emerald' : activeSection === 'security' ? 'red' : 'violet'}-500/20 bg-gradient-to-br ${
                   activeSection === 'initiator' ? 'from-orange-500/5 to-red-500/5' :
                   activeSection === 'cobuilder' ? 'from-cyan-500/5 to-blue-500/5' :
                   activeSection === 'finance' ? 'from-emerald-500/5 to-green-500/5' :
+                  activeSection === 'security' ? 'from-red-500/5 to-orange-500/5' :
                   'from-violet-500/5 to-purple-500/5'
                 }`}>
                   <CardContent className="pt-6">
