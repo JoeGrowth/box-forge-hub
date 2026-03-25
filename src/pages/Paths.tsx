@@ -89,6 +89,7 @@ const pathsData = [
 ];
 
 const STORAGE_KEY = "b4-favorite-steps";
+const ORDER_STORAGE_KEY = "b4-paths-order";
 
 const Paths = () => {
   const [favoriteSteps, setFavoriteSteps] = useState<string[]>(() => {
@@ -99,6 +100,38 @@ const Paths = () => {
       return [];
     }
   });
+
+  const [pathOrder, setPathOrder] = useState<PathKey[]>(() => {
+    try {
+      const stored = localStorage.getItem(ORDER_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored) as PathKey[];
+        if (parsed.length === 3) return parsed;
+      }
+    } catch {}
+    return ["career", "entrepreneurship", "consulting"];
+  });
+
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    localStorage.setItem(ORDER_STORAGE_KEY, JSON.stringify(pathOrder));
+  }, [pathOrder]);
+
+  const orderedPaths = pathOrder.map((key) => pathsData.find((p) => p.key === key)!);
+
+  const handleDragStart = (idx: number) => setDragIndex(idx);
+  const handleDragOver = (e: React.DragEvent) => e.preventDefault();
+  const handleDrop = (targetIdx: number) => {
+    if (dragIndex === null || dragIndex === targetIdx) return;
+    setPathOrder((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(dragIndex, 1);
+      next.splice(targetIdx, 0, moved);
+      return next;
+    });
+    setDragIndex(null);
+  };
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(favoriteSteps));
