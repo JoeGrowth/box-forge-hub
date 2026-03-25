@@ -39,7 +39,7 @@ const Paths = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <PageTransition>
-        <main className="container mx-auto px-4 py-8 md:py-12">
+        <main className="container mx-auto px-4 pt-24 md:pt-28 pb-8 md:pb-12">
           <div className="text-center mb-16">
             <h1 className="font-display text-3xl md:text-5xl font-bold text-foreground mb-4">
               Choose Your Path
