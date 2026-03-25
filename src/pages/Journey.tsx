@@ -382,6 +382,8 @@ const Journey = () => {
         return certifications.some(c => c.certification_type === "cobuilder_b4");
       case "finance":
         return certifications.some(c => c.certification_type === "finance_literacy");
+      case "security":
+        return certifications.some(c => c.certification_type === "security_literacy");
       default:
         return false;
     }
