@@ -175,6 +175,18 @@ const Opportunities = () => {
       iconColor: "text-amber-600",
       link: "/journey",
     },
+    {
+      id: "b4-security",
+      title: "Learn to Be Secure",
+      description: "Practical security decisions, risk awareness, security best practices, and behavioral habits for professionals.",
+      format: "Interactive Journey",
+      duration: "4 Phases",
+      sector: "Cybersecurity",
+      icon: Shield,
+      bgColor: "bg-red-500/10",
+      iconColor: "text-red-600",
+      link: "/journey",
+    },
   ];
 
   const hasInitiatorCertification = certifications.some((cert) => cert.certification_type === "initiator_b4");
