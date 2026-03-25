@@ -10,6 +10,7 @@ import {
   BookOpen,
   FileText,
   Users,
+  Briefcase,
   ArrowRight,
   ArrowLeft,
 } from "lucide-react";
