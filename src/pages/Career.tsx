@@ -26,6 +26,15 @@ const steps = [
   },
   {
     number: 3,
+    icon: Users,
+    title: "Join a Team",
+    description:
+      "Browse team environments looking for talent. Apply for roles that match your Natural Role and join an existing organization.",
+    link: "/opportunities?tab=environments",
+    cta: "Browse Environments",
+  },
+  {
+    number: 4,
     icon: GraduationCap,
     title: "Strengthen What You Do",
     description:
@@ -34,7 +43,7 @@ const steps = [
     cta: "Browse Trainings",
   },
   {
-    number: 4,
+    number: 5,
     icon: BookOpen,
     title: "Propose a Training",
     description:
@@ -43,7 +52,7 @@ const steps = [
     cta: "Create Training",
   },
   {
-    number: 5,
+    number: 6,
     icon: Briefcase,
     title: "Propose a Service",
     description:
@@ -52,22 +61,13 @@ const steps = [
     cta: "Create Service",
   },
   {
-    number: 6,
+    number: 7,
     icon: FileText,
     title: "Apply for a Tender",
     description:
       "Find consulting and project tenders that match your Natural Role and apply with your track record.",
     link: "/opportunities?tab=tenders",
     cta: "View Tenders",
-  },
-  {
-    number: 7,
-    icon: Users,
-    title: "Join a Team",
-    description:
-      "Browse team environments looking for talent. Apply for roles that match your Natural Role and join an existing organization.",
-    link: "/opportunities?tab=environments",
-    cta: "Browse Environments",
   },
 ];
 
