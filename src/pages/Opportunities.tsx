@@ -138,6 +138,45 @@ const Opportunities = () => {
     }
   }, [user, isApproved, onboardingLoading]);
 
+  const b4Trainings = [
+    {
+      id: "b4-cobuilder",
+      title: "Learn to be a Co-Builder",
+      description: "Practice, Training, Consulting based on the B4 model. Learn the fundamentals, apply through case studies, and become a certified Co-Builder.",
+      format: "Interactive Journey",
+      duration: "3 Phases",
+      sector: "Professional Development",
+      icon: Users,
+      bgColor: "bg-b4-teal/10",
+      iconColor: "text-b4-teal",
+      link: "/journey",
+    },
+    {
+      id: "b4-initiator",
+      title: "Learn to be an Initiator",
+      description: "Ideation, Structuring, Team Building, and Launch. Transform your idea into a structured startup with the right team.",
+      format: "Interactive Journey",
+      duration: "4 Phases",
+      sector: "Entrepreneurship",
+      icon: Lightbulb,
+      bgColor: "bg-b4-coral/10",
+      iconColor: "text-b4-coral",
+      link: "/journey",
+    },
+    {
+      id: "b4-finance",
+      title: "Learn Finance",
+      description: "Master corporate finance fundamentals: financial statements, budgeting, forecasting, ROI analysis, and KPI reporting.",
+      format: "Interactive Journey",
+      duration: "4 Phases",
+      sector: "Finance",
+      icon: DollarSign,
+      bgColor: "bg-amber-500/10",
+      iconColor: "text-amber-600",
+      link: "/journey",
+    },
+  ];
+
   const hasInitiatorCertification = certifications.some((cert) => cert.certification_type === "initiator_b4");
 
   const handleAddIdea = () => {
