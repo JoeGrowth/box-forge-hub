@@ -274,6 +274,7 @@ const Journey = () => {
     initiator: {},
     cobuilder: {},
     finance: {},
+    security: {},
   });
   const [quizDialogOpen, setQuizDialogOpen] = useState(false);
   const [selectedStep, setSelectedStep] = useState<number>(1);
