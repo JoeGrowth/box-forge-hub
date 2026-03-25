@@ -36,7 +36,7 @@ const steps = [
   {
     number: 3,
     icon: BookOpen,
-    title: "Join a Training",
+    title: "Strengthen What You Do",
     description:
       "Browse available trainings from other experts and level up your skills in areas that matter to you.",
     link: "/opportunities?tab=trainings",
