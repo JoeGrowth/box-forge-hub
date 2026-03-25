@@ -113,6 +113,10 @@ const App = () => (
                   <Route path="/terms" element={<Terms />} />
                   <Route path="/decoder" element={<NRDecoder />} />
                   <Route path="/coming-soon" element={<ComingSoon />} />
+                  <Route path="/paths" element={<Paths />} />
+                  <Route path="/career" element={<Career />} />
+                  <Route path="/entrepreneurship" element={<Entrepreneurship />} />
+                  <Route path="/consulting" element={<Consulting />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
