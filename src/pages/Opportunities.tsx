@@ -292,64 +292,132 @@ const Opportunities = () => {
           <section className="py-12">
             <div className="container mx-auto px-4">
               {categoryFilter === "trainings" ? (
-                loading ? (
-                  <DirectorySkeletonGrid count={6} type="opportunity" />
-                ) : filteredTrainings.length === 0 ? (
-                  <div className="text-center py-16">
-                    <GraduationCap className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
-                    <h2 className="font-display text-2xl font-bold text-foreground mb-2">No trainings yet</h2>
-                    <p className="text-muted-foreground">
-                      Training opportunities will appear here once approved.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredTrainings.map((training) => (
-                      <div
-                        key={training.id}
-                        className="bg-card rounded-2xl border border-border p-6 hover:border-b4-teal/50 transition-colors"
-                      >
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                            <GraduationCap className="w-6 h-6 text-amber-600" />
+                <div className="space-y-12">
+                  {/* B4 Platform Certifications */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-6">
+                      <Rocket className="w-5 h-5 text-b4-teal" />
+                      <h2 className="font-display text-xl font-bold text-foreground">B4 Certification Programs</h2>
+                    </div>
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {b4Trainings
+                        .filter((t) => {
+                          const matchesSearch =
+                            t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            t.description.toLowerCase().includes(searchQuery.toLowerCase());
+                          const matchesSector = !sectorFilter || t.sector?.toLowerCase().includes(sectorFilter.toLowerCase());
+                          return matchesSearch && matchesSector;
+                        })
+                        .map((training) => (
+                          <div
+                            key={training.id}
+                            onClick={() => navigate(training.link)}
+                            className="bg-card rounded-2xl border border-border p-6 hover:border-b4-teal/50 transition-colors cursor-pointer"
+                          >
+                            <div className="flex items-start justify-between mb-4">
+                              <div className={`w-12 h-12 rounded-xl ${training.bgColor} flex items-center justify-center`}>
+                                <training.icon className={`w-6 h-6 ${training.iconColor}`} />
+                              </div>
+                              <span className="px-3 py-1 rounded-full bg-b4-teal/10 text-xs font-medium text-b4-teal">
+                                B4 Program
+                              </span>
+                            </div>
+
+                            <h3 className="font-display text-lg font-bold text-foreground mb-2">{training.title}</h3>
+                            <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{training.description}</p>
+
+                            <div className="flex flex-wrap gap-2 mb-4">
+                              <span className="px-2 py-1 rounded-full bg-b4-teal/10 text-b4-teal text-xs">
+                                {training.format}
+                              </span>
+                              <span className="px-2 py-1 rounded-full bg-muted text-xs text-muted-foreground">
+                                {training.duration}
+                              </span>
+                              {training.sector && (
+                                <span className="px-2 py-1 rounded-full bg-muted text-xs text-muted-foreground">
+                                  {training.sector}
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="pt-4 border-t border-border flex items-center justify-between">
+                              <span className="text-xs text-muted-foreground">By B4</span>
+                              <Button variant="ghost" size="sm">
+                                Start Learning
+                                <ArrowRight className="ml-1 w-3 h-3" />
+                              </Button>
+                            </div>
                           </div>
-                          {training.sector && (
-                            <span className="px-3 py-1 rounded-full bg-muted text-xs font-medium text-muted-foreground">
-                              {training.sector}
-                            </span>
-                          )}
-                        </div>
-
-                        <h3 className="font-display text-lg font-bold text-foreground mb-2">{training.title}</h3>
-                        <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{training.description}</p>
-
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {training.format && (
-                            <span className="px-2 py-1 rounded-full bg-b4-teal/10 text-b4-teal text-xs">
-                              {training.format}
-                            </span>
-                          )}
-                          {training.duration && (
-                            <span className="px-2 py-1 rounded-full bg-muted text-xs text-muted-foreground">
-                              {training.duration}
-                            </span>
-                          )}
-                          {training.target_audience && (
-                            <span className="px-2 py-1 rounded-full bg-muted text-xs text-muted-foreground">
-                              {training.target_audience}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="pt-4 border-t border-border">
-                          <span className="text-xs text-muted-foreground">
-                            By {training.trainer_name || "Unknown"}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                        ))}
+                    </div>
                   </div>
-                )
+
+                  {/* User-Submitted Trainings */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-6">
+                      <Users className="w-5 h-5 text-amber-600" />
+                      <h2 className="font-display text-xl font-bold text-foreground">Community Trainings</h2>
+                    </div>
+                    {loading ? (
+                      <DirectorySkeletonGrid count={6} type="opportunity" />
+                    ) : filteredTrainings.length === 0 ? (
+                      <div className="text-center py-12 bg-muted/20 rounded-2xl border border-border">
+                        <GraduationCap className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
+                        <h3 className="font-display text-lg font-bold text-foreground mb-1">No community trainings yet</h3>
+                        <p className="text-muted-foreground text-sm">
+                          Training opportunities proposed by members will appear here once approved.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {filteredTrainings.map((training) => (
+                          <div
+                            key={training.id}
+                            className="bg-card rounded-2xl border border-border p-6 hover:border-b4-teal/50 transition-colors"
+                          >
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                                <GraduationCap className="w-6 h-6 text-amber-600" />
+                              </div>
+                              {training.sector && (
+                                <span className="px-3 py-1 rounded-full bg-muted text-xs font-medium text-muted-foreground">
+                                  {training.sector}
+                                </span>
+                              )}
+                            </div>
+
+                            <h3 className="font-display text-lg font-bold text-foreground mb-2">{training.title}</h3>
+                            <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{training.description}</p>
+
+                            <div className="flex flex-wrap gap-2 mb-4">
+                              {training.format && (
+                                <span className="px-2 py-1 rounded-full bg-b4-teal/10 text-b4-teal text-xs">
+                                  {training.format}
+                                </span>
+                              )}
+                              {training.duration && (
+                                <span className="px-2 py-1 rounded-full bg-muted text-xs text-muted-foreground">
+                                  {training.duration}
+                                </span>
+                              )}
+                              {training.target_audience && (
+                                <span className="px-2 py-1 rounded-full bg-muted text-xs text-muted-foreground">
+                                  {training.target_audience}
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="pt-4 border-t border-border">
+                              <span className="text-xs text-muted-foreground">
+                                By {training.trainer_name || "Unknown"}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
               ) : categoryFilter !== "ideas" ? (
                 <div className="text-center py-16">
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
