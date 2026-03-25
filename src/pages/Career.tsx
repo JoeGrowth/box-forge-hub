@@ -9,6 +9,7 @@ import {
   GraduationCap,
   BookOpen,
   FileText,
+  Users,
   ArrowRight,
   ArrowLeft,
 } from "lucide-react";
@@ -58,6 +59,15 @@ const steps = [
       "Find consulting and project tenders that match your Natural Role and apply with your track record.",
     link: "/opportunities?tab=tenders",
     cta: "View Tenders",
+  },
+  {
+    number: 6,
+    icon: Users,
+    title: "Join a Team",
+    description:
+      "Browse team environments looking for talent. Apply for roles that match your Natural Role and join an existing organization.",
+    link: "/opportunities?tab=environments",
+    cta: "Browse Environments",
   },
 ];
 
