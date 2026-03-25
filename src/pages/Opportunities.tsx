@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Users, Briefcase, MapPin, ArrowRight, Filter, Rocket, Loader2, Plus, GraduationCap, FileText, Globe } from "lucide-react";
+import { Search, Users, Briefcase, MapPin, ArrowRight, Filter, Rocket, Loader2, Plus, GraduationCap, FileText, Globe, Lightbulb, DollarSign } from "lucide-react";
 import { DirectorySkeletonGrid } from "@/components/ui/skeleton-card";
 
 interface StartupIdea {
