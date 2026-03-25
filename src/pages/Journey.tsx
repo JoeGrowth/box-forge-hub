@@ -290,6 +290,7 @@ const Journey = () => {
 
   const [cobuilderQuizOpen, setCobuilderQuizOpen] = useState(false);
   const [financeQuizOpen, setFinanceQuizOpen] = useState(false);
+  const [securityQuizOpen, setSecurityQuizOpen] = useState(false);
 
   // Map journey types to section names
   const getJourneyTypeForSection = (section: ActiveSection): string => {
