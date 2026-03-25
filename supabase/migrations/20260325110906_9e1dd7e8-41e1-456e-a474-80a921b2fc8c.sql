@@ -1,0 +1,1 @@
+ALTER TYPE public.journey_type ADD VALUE IF NOT EXISTS 'security_literacy';
