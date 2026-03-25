@@ -265,7 +265,7 @@ const Journey = () => {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<ActiveSection>(() => {
     const section = searchParams.get("section");
-    if (section === "initiator" || section === "cobuilder" || section === "finance") {
+    if (section === "initiator" || section === "cobuilder" || section === "finance" || section === "security") {
       return section;
     }
     return "initiator";
