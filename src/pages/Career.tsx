@@ -35,21 +35,21 @@ const steps = [
   },
   {
     number: 3,
-    icon: GraduationCap,
-    title: "Propose a Training",
-    description:
-      "Package your expertise into a training offer. Share your knowledge and earn revenue by teaching others.",
-    link: "/resume",
-    cta: "Create Training",
-  },
-  {
-    number: 4,
     icon: BookOpen,
     title: "Join a Training",
     description:
       "Browse available trainings from other experts and level up your skills in areas that matter to you.",
     link: "/opportunities?tab=trainings",
     cta: "Browse Trainings",
+  },
+  {
+    number: 4,
+    icon: GraduationCap,
+    title: "Propose a Training",
+    description:
+      "Package your expertise into a training offer. Share your knowledge and earn revenue by teaching others.",
+    link: "/resume",
+    cta: "Create Training",
   },
   {
     number: 5,
