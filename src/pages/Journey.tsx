@@ -23,7 +23,11 @@ import {
   Play,
   Clock,
   AlertCircle,
-  Award
+  Award,
+  Shield,
+  Wifi,
+  UserCheck,
+  BarChart3
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
