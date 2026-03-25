@@ -243,10 +243,15 @@ const Resume = () => {
     try {
       exportResumeToPdf({
         userName: profile?.full_name || undefined,
+        professionalTitle: profile?.professional_title || undefined,
         bio: profile?.bio || undefined,
         primarySkills: profile?.primary_skills || undefined,
         yearsOfExperience: profile?.years_of_experience,
+        keyProjects: profile?.key_projects || undefined,
+        educationCertifications: profile?.education_certifications || undefined,
+        summaryStatement: profile?.summary_statement || undefined,
         description: naturalRole?.description || undefined,
+        servicesDescription: (naturalRole as any)?.services_description || undefined,
         promiseCheck: naturalRole?.promise_check || false,
         practiceCheck: naturalRole?.practice_check || false,
         practiceEntities: naturalRole?.practice_entities || undefined,
@@ -257,6 +262,7 @@ const Resume = () => {
         consultingCheck: naturalRole?.consulting_check || false,
         consultingWithWhom: naturalRole?.consulting_with_whom || undefined,
         consultingCaseStudies: naturalRole?.consulting_case_studies || undefined,
+        wantsToScale: naturalRole?.wants_to_scale ?? undefined,
       });
       
       toast({
