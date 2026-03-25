@@ -18,7 +18,7 @@ const steps = [
   {
     number: 2,
     icon: ShoppingBag,
-    title: "Sell What You Do",
+    title: "Shape What You Do",
     description:
       "Build your professional resume and track record to showcase your expertise and attract opportunities.",
     link: "/resume",
