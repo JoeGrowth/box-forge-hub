@@ -50,6 +50,10 @@ import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import ComingSoon from "./pages/ComingSoon";
 import Advisory from "./pages/Advisory";
+import Paths from "./pages/Paths";
+import Career from "./pages/Career";
+import Entrepreneurship from "./pages/Entrepreneurship";
+import Consulting from "./pages/Consulting";
 
 const queryClient = new QueryClient();
 
@@ -109,6 +113,10 @@ const App = () => (
                   <Route path="/terms" element={<Terms />} />
                   <Route path="/decoder" element={<NRDecoder />} />
                   <Route path="/coming-soon" element={<ComingSoon />} />
+                  <Route path="/paths" element={<Paths />} />
+                  <Route path="/career" element={<Career />} />
+                  <Route path="/entrepreneurship" element={<Entrepreneurship />} />
+                  <Route path="/consulting" element={<Consulting />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
