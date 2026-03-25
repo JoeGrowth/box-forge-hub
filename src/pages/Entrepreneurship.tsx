@@ -3,7 +3,7 @@ import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Rocket, Users, ArrowRight, ArrowLeft } from "lucide-react";
+import { Rocket, Users, ArrowRight, ArrowLeft, Settings } from "lucide-react";
 
 const steps = [
   {
@@ -23,6 +23,15 @@ const steps = [
       "Browse existing startup projects looking for co-builders. Apply with your Natural Role and earn equity by contributing your skills.",
     link: "/opportunities",
     cta: "Browse Projects",
+  },
+  {
+    number: 3,
+    icon: Settings,
+    title: "Manage a Project",
+    description:
+      "Continue developing your startup ideas. Scale as an Initiator or as a Co-Builder — manage milestones, team, and growth.",
+    link: "/start",
+    cta: "Manage Your Project",
   },
 ];
 
