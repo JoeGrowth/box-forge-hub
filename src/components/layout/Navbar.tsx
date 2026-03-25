@@ -37,7 +37,7 @@ const getBoostedLinks = () => [
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [hasConsultantAccess, setHasConsultantAccess] = useState(false);
+  
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
   const { canAccessBoosting, canAccessScaling, potentialRole } = useUserStatus();
