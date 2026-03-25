@@ -157,6 +157,8 @@ export const JourneyPhaseView = ({ journeyType, onBack }: JourneyPhaseViewProps)
         return "Idea PTC Journey";
       case "scaling_path":
         return "Scaling Path Journey";
+      case "security_literacy":
+        return "Security Literacy Journey";
     }
   };
 
