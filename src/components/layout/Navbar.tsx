@@ -18,20 +18,20 @@ const guestNavLinks = [
 
 // Helper to build links based on role and access
 const getAppliedLinks = () => [
-  { name: "Opportunities", path: "/opportunities" },
   { name: "People", path: "/cobuilders" },
+  { name: "Opportunities", path: "/opportunities" },
 ];
 
 const getApprovedLinks = () => [
-  { name: "Opportunities", path: "/opportunities" },
-  { name: "People", path: "/cobuilders" },
   { name: "Paths", path: "/paths" },
+  { name: "People", path: "/cobuilders" },
+  { name: "Opportunities", path: "/opportunities" },
 ];
 
 const getBoostedLinks = () => [
-  { name: "Opportunities", path: "/opportunities" },
-  { name: "People", path: "/cobuilders" },
   { name: "Paths", path: "/paths" },
+  { name: "People", path: "/cobuilders" },
+  { name: "Opportunities", path: "/opportunities" },
 ];
 
 export function Navbar() {
