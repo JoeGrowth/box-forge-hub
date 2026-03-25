@@ -47,7 +47,7 @@ const steps = [
     title: "Join a Training",
     description:
       "Browse available trainings from other experts and level up your skills in areas that matter to you.",
-    link: "/opportunities",
+    link: "/opportunities?tab=trainings",
     cta: "Browse Trainings",
   },
   {
