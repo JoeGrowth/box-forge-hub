@@ -157,6 +157,62 @@ const FINANCE_STEPS: JourneyStep[] = [
   },
 ];
 
+const SECURITY_STEPS: JourneyStep[] = [
+  {
+    step: 1,
+    title: "Security Fundamentals & Awareness",
+    subtitle: "Foundations",
+    icon: Shield,
+    description: "Master the basics of cybersecurity and risk awareness. Build a security mindset and learn to protect yourself.",
+    details: [
+      "Security mindset — think like a defender",
+      "Common threats: phishing, social engineering, malware",
+      "Basic protections: strong passwords, 2FA, safe browsing",
+      "Principles: least privilege, need-to-know access",
+    ],
+    color: "from-red-500 to-orange-500",
+  },
+  {
+    step: 2,
+    title: "Device & Network Security",
+    subtitle: "Infrastructure",
+    icon: Wifi,
+    description: "Protect your devices, networks, and data. Learn to secure your digital environment.",
+    details: [
+      "Device security: OS updates, antivirus, firewalls",
+      "Network security: secure Wi-Fi, VPN usage",
+      "Data protection: backups, encryption, secure sharing",
+    ],
+    color: "from-blue-500 to-indigo-500",
+  },
+  {
+    step: 3,
+    title: "Application & Behavioral Security",
+    subtitle: "Daily Habits",
+    icon: UserCheck,
+    description: "Integrate security practices into daily workflow. Act securely instinctively.",
+    details: [
+      "Safe collaboration and file sharing",
+      "Social engineering awareness and defense",
+      "Incident reporting and security culture",
+    ],
+    color: "from-violet-500 to-purple-500",
+  },
+  {
+    step: 4,
+    title: "Metrics, Monitoring & Leadership",
+    subtitle: "Leadership",
+    icon: BarChart3,
+    description: "Track, monitor, and guide security in your environment. Lead by example.",
+    details: [
+      "Security metrics and KPIs",
+      "Monitoring, alerts, and log interpretation",
+      "Security leadership and peer education",
+    ],
+    color: "from-rose-500 to-pink-500",
+  },
+];
+
 const COBUILDER_STEPS: JourneyStep[] = [
   {
     step: 1,
