@@ -317,6 +317,8 @@ const Journey = () => {
         return COBUILDER_STEPS.length;
       case "finance":
         return FINANCE_STEPS.length;
+      case "security":
+        return SECURITY_STEPS.length;
       default:
         return 0;
     }
