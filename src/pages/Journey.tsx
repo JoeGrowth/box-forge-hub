@@ -867,6 +867,14 @@ const Journey = () => {
         onComplete={handleStepComplete}
       />
 
+      {/* Quiz Dialog for Security */}
+      <SecurityQuizDialog
+        open={securityQuizOpen}
+        onOpenChange={setSecurityQuizOpen}
+        stepNumber={selectedStep}
+        onComplete={handleStepComplete}
+      />
+
     </div>
   );
 };
