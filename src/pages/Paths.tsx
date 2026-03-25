@@ -165,12 +165,18 @@ const Paths = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {pathsData.map((path) => (
+          <p className="text-xs text-muted-foreground mt-2">Drag cards to reorder</p>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto mt-4">
+            {orderedPaths.map((path, idx) => (
               <Link
-                key={path.title}
+                key={path.key}
                 to={path.link}
-                className="group relative rounded-2xl border border-border bg-card p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-secondary/30"
+                draggable
+                onDragStart={(e) => { e.stopPropagation(); handleDragStart(idx); }}
+                onDragOver={handleDragOver}
+                onDrop={(e) => { e.preventDefault(); handleDrop(idx); }}
+                className={`group relative rounded-2xl border border-border bg-card p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-secondary/30 ${dragIndex === idx ? "opacity-50" : ""}`}
               >
                 <div
                   className={`w-14 h-14 rounded-xl bg-gradient-to-br ${path.gradient} flex items-center justify-center mb-6`}
