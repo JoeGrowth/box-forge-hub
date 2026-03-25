@@ -53,6 +53,8 @@ export const JourneyPhaseView = ({ journeyType, onBack }: JourneyPhaseViewProps)
       ? SKILL_PTC_PHASES
       : journeyType === "idea_ptc"
       ? IDEA_PTC_PHASES
+      : journeyType === "security_literacy"
+      ? SECURITY_PHASES
       : SCALING_PATH_PHASES;
 
   const phase = phases[currentPhase];
