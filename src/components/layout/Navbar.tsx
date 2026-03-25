@@ -20,24 +20,18 @@ const guestNavLinks = [
 const getAppliedLinks = () => [
   { name: "Opportunities", path: "/opportunities" },
   { name: "People", path: "/cobuilders" },
-  { name: "Career", path: "/track" },
 ];
 
-const getApprovedLinks = (hasConsultantAccess: boolean) => [
+const getApprovedLinks = () => [
   { name: "Opportunities", path: "/opportunities" },
   { name: "People", path: "/cobuilders" },
   { name: "Paths", path: "/paths" },
-  { name: "Career", path: "/track" },
-  ...(hasConsultantAccess ? [{ name: "Advisory", path: "/advisory" }] : []),
 ];
 
-const getBoostedLinks = (hasConsultantAccess: boolean) => [
+const getBoostedLinks = () => [
   { name: "Opportunities", path: "/opportunities" },
   { name: "People", path: "/cobuilders" },
-  { name: "Projects", path: "/start" },
   { name: "Paths", path: "/paths" },
-  { name: "Career", path: "/track" },
-  ...(hasConsultantAccess ? [{ name: "Advisory", path: "/advisory" }] : []),
 ];
 
 export function Navbar() {
