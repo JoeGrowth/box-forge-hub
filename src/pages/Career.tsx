@@ -9,6 +9,7 @@ import {
   GraduationCap,
   BookOpen,
   FileText,
+  Users,
   ArrowRight,
   ArrowLeft,
 } from "lucide-react";
