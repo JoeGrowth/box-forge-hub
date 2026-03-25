@@ -46,38 +46,27 @@ export function Navbar() {
     const checkUserStatus = async () => {
       if (!user) {
         setIsAdmin(false);
-        setHasConsultantAccess(false);
         return;
       }
 
-      // Check admin role and certifications in parallel
-      const [adminResult, onboardingResult] = await Promise.all([
-        supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", user.id)
-          .eq("role", "admin")
-          .maybeSingle(),
-        supabase
-          .from("onboarding_state")
-          .select("consultant_access")
-          .eq("user_id", user.id)
-          .maybeSingle(),
-      ]);
+      const adminResult = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
 
       setIsAdmin(!!adminResult.data);
-
-      setHasConsultantAccess(!!onboardingResult.data?.consultant_access);
     };
     checkUserStatus();
   }, [user]);
 
   const navLinks = useMemo(() => {
     if (!user) return guestNavLinks;
-    if (canAccessScaling) return getBoostedLinks(hasConsultantAccess);
-    if (canAccessBoosting) return getApprovedLinks(hasConsultantAccess);
+    if (canAccessScaling) return getBoostedLinks();
+    if (canAccessBoosting) return getApprovedLinks();
     return getAppliedLinks();
-  }, [user, canAccessScaling, canAccessBoosting, hasConsultantAccess]);
+  }, [user, canAccessScaling, canAccessBoosting]);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
