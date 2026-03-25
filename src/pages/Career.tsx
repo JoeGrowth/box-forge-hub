@@ -71,7 +71,7 @@ const steps = [
     cta: "View Tenders",
   },
   {
-    number: 6,
+    number: 7,
     icon: Users,
     title: "Join a Team",
     description:
