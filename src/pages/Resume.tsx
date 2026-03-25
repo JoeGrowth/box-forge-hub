@@ -214,12 +214,21 @@ const Resume = () => {
       
       const { data, error } = await supabase
         .from("profiles")
-        .select("full_name, bio, primary_skills, years_of_experience")
+        .select("full_name, bio, primary_skills, years_of_experience, professional_title, key_projects, education_certifications, summary_statement")
         .eq("user_id", user.id)
         .single();
       
       if (!error && data) {
-        setProfile(data);
+        setProfile(data as any);
+        setProfileEditData({
+          professional_title: (data as any).professional_title || "",
+          bio: data.bio || "",
+          primary_skills: data.primary_skills || "",
+          years_of_experience: data.years_of_experience?.toString() || "",
+          key_projects: (data as any).key_projects || "",
+          education_certifications: (data as any).education_certifications || "",
+          summary_statement: (data as any).summary_statement || "",
+        });
       }
     };
     
