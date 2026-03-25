@@ -32,8 +32,14 @@ import {
   Target,
   Sparkles,
   Lock,
-  Download
+  Download,
+  User,
+  FolderOpen,
+  Award,
+  Lightbulb,
+  BookOpen
 } from "lucide-react";
+import { ScrollToTopButton } from "@/components/layout/ScrollToTopButton";
 import { exportResumeToPdf } from "@/lib/resumePdfExport";
 import { Progress } from "@/components/ui/progress";
 import { TrainTeamDialog } from "@/components/resume/TrainTeamDialog";
@@ -462,7 +468,7 @@ const Resume = () => {
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <FileText className="w-8 h-8" />
-                  <h1 className="font-display text-3xl font-bold">Your Resume</h1>
+                  <h1 className="font-display text-3xl font-bold">Profile Summary</h1>
                 </div>
                 <p className="text-primary-foreground/80 max-w-xl mb-4">
                   Track your journey progress and add new experiences as you grow. 
@@ -739,7 +745,7 @@ const Resume = () => {
               )}
               {/* Resume Cards */}
               <div className="grid gap-6">
-                {/* Natural Role Definition */}
+                {/* Natural Role */}
                 <Card id="section-natural-role" className={`transition-all scroll-mt-24 ${!naturalRole?.description && !isEditing ? 'border-dashed border-muted-foreground/30' : ''}`}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
@@ -747,7 +753,7 @@ const Resume = () => {
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${naturalRole?.description ? 'bg-b4-teal/10' : 'bg-muted'}`}>
                           <Target className={`w-4 h-4 ${naturalRole?.description ? 'text-b4-teal' : 'text-muted-foreground'}`} />
                         </div>
-                        Natural Role Definition
+                        Natural Role
                       </CardTitle>
                       <SectionActions
                         hasContent={!!naturalRole?.description}
@@ -787,15 +793,321 @@ const Resume = () => {
                   </CardContent>
                 </Card>
 
-                {/* Services Related to Your Natural Role */}
+                {/* Professional Title */}
+                <Card id="section-professional-title" className="transition-all scroll-mt-24 border-dashed border-muted-foreground/30">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted">
+                        <Briefcase className="w-4 h-4 text-muted-foreground" />
+                      </div>
+                      Professional Title
+                    </CardTitle>
+                    <CardDescription>
+                      Your current professional title or headline
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="w-full text-center py-4 text-muted-foreground rounded-lg bg-muted/20">
+                      <Briefcase className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                      <p className="text-sm">Coming soon — define your professional title</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Profile Overview */}
+                <Card id="section-profile-overview" className="transition-all scroll-mt-24">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${profile?.bio ? 'bg-b4-teal/10' : 'bg-muted'}`}>
+                        <User className={`w-4 h-4 ${profile?.bio ? 'text-b4-teal' : 'text-muted-foreground'}`} />
+                      </div>
+                      Profile Overview
+                    </CardTitle>
+                    <CardDescription>
+                      Your bio, skills, and years of experience
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {profile?.bio || profile?.primary_skills || profile?.years_of_experience ? (
+                      <div className="space-y-4">
+                        {profile.bio && (
+                          <div>
+                            <Label className="text-sm font-medium text-muted-foreground">Bio</Label>
+                            <p className="text-foreground whitespace-pre-wrap mt-1 bg-muted/30 rounded-lg p-3">{profile.bio}</p>
+                          </div>
+                        )}
+                        {profile.primary_skills && (
+                          <div>
+                            <Label className="text-sm font-medium text-muted-foreground">Primary Skills</Label>
+                            <p className="text-foreground whitespace-pre-wrap mt-1">{profile.primary_skills}</p>
+                          </div>
+                        )}
+                        {profile.years_of_experience != null && (
+                          <div>
+                            <Label className="text-sm font-medium text-muted-foreground">Years of Experience</Label>
+                            <p className="text-foreground mt-1">{profile.years_of_experience} years</p>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="w-full text-center py-4 text-muted-foreground rounded-lg bg-muted/20">
+                        <User className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                        <p className="text-sm">Complete your profile to see your overview here</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Professional Experience (Practice + Training + Consulting) */}
+                {naturalRole?.promise_check && (
+                  <Card id="section-professional-experience" className="transition-all scroll-mt-24">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-b4-teal/10">
+                          <FolderOpen className="w-4 h-4 text-b4-teal" />
+                        </div>
+                        Professional Experience
+                      </CardTitle>
+                      <CardDescription>
+                        Your practice, training, and consulting experience
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-8">
+                      {/* Practice Experience */}
+                      <div id="section-practice" className="scroll-mt-24">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-semibold flex items-center gap-2">
+                            <Briefcase className={`w-4 h-4 ${naturalRole?.practice_check ? 'text-b4-teal' : 'text-amber-600'}`} />
+                            Practice Experience
+                            {naturalRole?.practice_case_studies ? (
+                              <Badge variant="outline" className="ml-2 text-xs">{naturalRole.practice_case_studies} case studies</Badge>
+                            ) : null}
+                          </h4>
+                          <SectionActions
+                            hasContent={!!naturalRole?.practice_entities}
+                            isEditing={isEditing}
+                            showHistory={sectionHistory === 'section-practice'}
+                            onEdit={() => startEditing('section-practice')}
+                            onToggleHistory={() => toggleSectionHistory('section-practice')}
+                            onAdd={() => startEditing('section-practice')}
+                          />
+                        </div>
+                        {isEditing ? (
+                          <Textarea
+                            value={editData.practice_entities}
+                            onChange={(e) => setEditData(prev => ({ ...prev, practice_entities: e.target.value }))}
+                            placeholder="List the entities/companies you've worked with..."
+                            rows={3}
+                          />
+                        ) : naturalRole?.practice_entities ? (
+                          <p className="text-foreground whitespace-pre-wrap">{naturalRole.practice_entities}</p>
+                        ) : (
+                          <button onClick={() => startEditing('section-practice')} className="w-full text-center py-4 border-2 border-dashed border-muted-foreground/20 rounded-lg hover:bg-muted/30 transition-all cursor-pointer">
+                            <Plus className="w-6 h-6 mx-auto mb-1 text-muted-foreground" />
+                            <p className="text-sm text-muted-foreground">Add practice experience</p>
+                          </button>
+                        )}
+                        {naturalRole?.practice_entities && !isEditing && (
+                          <Button variant="outline" className="mt-3 gap-2" size="sm" onClick={() => navigate("/opportunities")}>
+                            <Briefcase className="w-4 h-4" /> Expand Practice <ArrowRight className="w-4 h-4" />
+                          </Button>
+                        )}
+                        <SectionHistoryPanel sectionId="section-practice" fieldName="practice_entities" label="Practice" />
+                      </div>
+
+                      <div className="border-t border-border" />
+
+                      {/* Training Experience */}
+                      <div id="section-training" className="scroll-mt-24">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-semibold flex items-center gap-2">
+                            <GraduationCap className={`w-4 h-4 ${naturalRole?.training_check ? 'text-b4-teal' : 'text-amber-600'}`} />
+                            Training Experience
+                            {naturalRole?.training_count ? (
+                              <Badge variant="outline" className="ml-2 text-xs">{naturalRole.training_count} trained</Badge>
+                            ) : null}
+                          </h4>
+                          <SectionActions
+                            hasContent={!!naturalRole?.training_contexts}
+                            isEditing={isEditing}
+                            showHistory={sectionHistory === 'section-training'}
+                            onEdit={() => startEditing('section-training')}
+                            onToggleHistory={() => toggleSectionHistory('section-training')}
+                            onAdd={() => startEditing('section-training')}
+                          />
+                        </div>
+                        {isEditing ? (
+                          <Textarea
+                            value={editData.training_contexts}
+                            onChange={(e) => setEditData(prev => ({ ...prev, training_contexts: e.target.value }))}
+                            placeholder="Describe the contexts where you've trained others..."
+                            rows={3}
+                          />
+                        ) : naturalRole?.training_contexts ? (
+                          <p className="text-foreground whitespace-pre-wrap">{naturalRole.training_contexts}</p>
+                        ) : (
+                          <button onClick={() => startEditing('section-training')} className="w-full text-center py-4 border-2 border-dashed border-muted-foreground/20 rounded-lg hover:bg-muted/30 transition-all cursor-pointer">
+                            <Plus className="w-6 h-6 mx-auto mb-1 text-muted-foreground" />
+                            <p className="text-sm text-muted-foreground">Add training experience</p>
+                          </button>
+                        )}
+                        {naturalRole?.training_contexts && !isEditing && (
+                          <Button variant="outline" className="mt-3 gap-2" size="sm" onClick={() => setShowTrainDialog(true)}>
+                            <GraduationCap className="w-4 h-4" /> Train a Team <ArrowRight className="w-4 h-4" />
+                          </Button>
+                        )}
+                        <SectionHistoryPanel sectionId="section-training" fieldName="training_contexts" label="Training" />
+                      </div>
+
+                      <div className="border-t border-border" />
+
+                      {/* Consulting Experience */}
+                      <div id="section-consulting" className="scroll-mt-24">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-semibold flex items-center gap-2">
+                            <Users className={`w-4 h-4 ${naturalRole?.consulting_check ? 'text-b4-teal' : 'text-amber-600'}`} />
+                            Consulting Experience
+                          </h4>
+                          <SectionActions
+                            hasContent={!!(naturalRole?.consulting_with_whom || naturalRole?.consulting_case_studies)}
+                            isEditing={isEditing}
+                            showHistory={sectionHistory === 'section-consulting'}
+                            onEdit={() => startEditing('section-consulting')}
+                            onToggleHistory={() => toggleSectionHistory('section-consulting')}
+                            onAdd={() => startEditing('section-consulting')}
+                          />
+                        </div>
+                        {isEditing ? (
+                          <div className="space-y-4">
+                            <div>
+                              <Label className="text-sm font-medium text-foreground">With Whom</Label>
+                              <Textarea
+                                value={editData.consulting_with_whom}
+                                onChange={(e) => setEditData(prev => ({ ...prev, consulting_with_whom: e.target.value }))}
+                                placeholder="List the organizations or individuals you've consulted..."
+                                rows={2}
+                                className="mt-1"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium text-foreground">Case Studies</Label>
+                              <Textarea
+                                value={editData.consulting_case_studies}
+                                onChange={(e) => setEditData(prev => ({ ...prev, consulting_case_studies: e.target.value }))}
+                                placeholder="Describe specific consulting projects and outcomes..."
+                                rows={2}
+                                className="mt-1"
+                              />
+                            </div>
+                          </div>
+                        ) : (naturalRole?.consulting_with_whom || naturalRole?.consulting_case_studies) ? (
+                          <div className="space-y-3">
+                            {naturalRole?.consulting_with_whom && (
+                              <div>
+                                <Label className="text-sm font-medium text-muted-foreground">With Whom</Label>
+                                <p className="text-foreground whitespace-pre-wrap mt-1">{naturalRole.consulting_with_whom}</p>
+                              </div>
+                            )}
+                            {naturalRole?.consulting_case_studies && (
+                              <div>
+                                <Label className="text-sm font-medium text-muted-foreground">Case Studies</Label>
+                                <p className="text-foreground whitespace-pre-wrap mt-1">{naturalRole.consulting_case_studies}</p>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <button onClick={() => startEditing('section-consulting')} className="w-full text-center py-4 border-2 border-dashed border-muted-foreground/20 rounded-lg hover:bg-muted/30 transition-all cursor-pointer">
+                            <Plus className="w-6 h-6 mx-auto mb-1 text-muted-foreground" />
+                            <p className="text-sm text-muted-foreground">Add consulting experience</p>
+                          </button>
+                        )}
+                        {(naturalRole?.consulting_with_whom || naturalRole?.consulting_case_studies) && !isEditing && (
+                          <Button variant="outline" className="mt-3 gap-2" size="sm" onClick={() => navigate("/coming-soon")}>
+                            <Users className="w-4 h-4" /> Offer Consulting <ArrowRight className="w-4 h-4" />
+                          </Button>
+                        )}
+                        <SectionHistoryPanel sectionId="section-consulting" fieldName="consulting_with_whom" label="Consulting" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Key Projects & Solutions */}
+                <Card id="section-projects" className="transition-all scroll-mt-24 border-dashed border-muted-foreground/30">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted">
+                        <Lightbulb className="w-4 h-4 text-muted-foreground" />
+                      </div>
+                      Key Projects & Solutions
+                    </CardTitle>
+                    <CardDescription>
+                      Highlight your most impactful projects and solutions
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="w-full text-center py-4 text-muted-foreground rounded-lg bg-muted/20">
+                      <Lightbulb className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                      <p className="text-sm">Coming soon — showcase your key projects</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Skills & Competencies */}
+                <Card id="section-skills" className="transition-all scroll-mt-24">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${profile?.primary_skills ? 'bg-b4-teal/10' : 'bg-muted'}`}>
+                        <Sparkles className={`w-4 h-4 ${profile?.primary_skills ? 'text-b4-teal' : 'text-muted-foreground'}`} />
+                      </div>
+                      Skills & Competencies
+                    </CardTitle>
+                    <CardDescription>
+                      Your core skills and areas of expertise
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {profile?.primary_skills ? (
+                      <p className="text-foreground whitespace-pre-wrap bg-muted/30 rounded-lg p-4">{profile.primary_skills}</p>
+                    ) : (
+                      <div className="w-full text-center py-4 text-muted-foreground rounded-lg bg-muted/20">
+                        <Sparkles className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                        <p className="text-sm">Add skills in your profile to see them here</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Education & Certifications */}
+                <Card id="section-education" className="transition-all scroll-mt-24 border-dashed border-muted-foreground/30">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted">
+                        <Award className="w-4 h-4 text-muted-foreground" />
+                      </div>
+                      Education & Certifications
+                    </CardTitle>
+                    <CardDescription>
+                      Your academic background and professional certifications
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="w-full text-center py-4 text-muted-foreground rounded-lg bg-muted/20">
+                      <Award className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                      <p className="text-sm">Coming soon — add your education and certifications</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Services aligned to Your Natural Role */}
                 <Card id="section-services" className={`transition-all scroll-mt-24 ${!(naturalRole as any)?.services_description && !isEditing ? 'border-dashed border-muted-foreground/30' : ''}`}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2">
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${(naturalRole as any)?.services_description ? 'bg-primary/10' : 'bg-muted'}`}>
-                          <Sparkles className={`w-4 h-4 ${(naturalRole as any)?.services_description ? 'text-primary' : 'text-muted-foreground'}`} />
+                          <BookOpen className={`w-4 h-4 ${(naturalRole as any)?.services_description ? 'text-primary' : 'text-muted-foreground'}`} />
                         </div>
-                        Services Related to Your Natural Role
+                        Services Aligned to Your Natural Role
                       </CardTitle>
                       <SectionActions
                         hasContent={!!(naturalRole as any)?.services_description}
@@ -827,226 +1139,33 @@ const Resume = () => {
                         onClick={() => startEditing('section-services')}
                         className="w-full text-center py-4 text-muted-foreground hover:bg-muted/30 rounded-lg transition-colors cursor-pointer"
                       >
-                        <Sparkles className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                        <BookOpen className="w-8 h-8 mx-auto mb-2 opacity-40" />
                         <p>Click to describe your services</p>
                       </button>
                     )}
                   </CardContent>
                 </Card>
 
-                {/* Practice, Training, Consulting - Only show when Promise is Yes */}
-                {naturalRole?.promise_check && (
-                  <>
-                {/* Practice Experience */}
-                <Card id="section-practice" className={`transition-all scroll-mt-24 ${!naturalRole?.practice_check && !isEditing ? 'border-dashed border-amber-500/30 bg-amber-500/5' : ''}`}>
+                {/* Summary Statement */}
+                <Card id="section-summary" className="transition-all scroll-mt-24 border-dashed border-muted-foreground/30">
                   <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="flex items-center gap-2">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${naturalRole?.practice_check ? 'bg-b4-teal/10' : 'bg-amber-500/10'}`}>
-                          <Briefcase className={`w-4 h-4 ${naturalRole?.practice_check ? 'text-b4-teal' : 'text-amber-600'}`} />
-                        </div>
-                        Practice Experience
-                      </CardTitle>
-                      <SectionActions
-                        hasContent={!!naturalRole?.practice_entities}
-                        isEditing={isEditing}
-                        showHistory={sectionHistory === 'section-practice'}
-                        onEdit={() => startEditing('section-practice')}
-                        onToggleHistory={() => toggleSectionHistory('section-practice')}
-                        onAdd={() => startEditing('section-practice')}
-                      />
-                    </div>
-                    <CardDescription>
-                      {naturalRole?.practice_case_studies 
-                        ? `${naturalRole.practice_case_studies} case studies completed`
-                        : 'Add your practical experience and case studies'}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {isEditing ? (
-                      <Textarea
-                        value={editData.practice_entities}
-                        onChange={(e) => setEditData(prev => ({ ...prev, practice_entities: e.target.value }))}
-                        placeholder="List the entities/companies you've worked with and describe your practical experience..."
-                        rows={3}
-                      />
-                    ) : naturalRole?.practice_entities ? (
-                      <p className="text-foreground whitespace-pre-wrap">
-                        {naturalRole.practice_entities}
-                      </p>
-                    ) : (
-                      <button 
-                        onClick={() => startEditing('section-practice')}
-                        className="w-full text-center py-6 border-2 border-dashed border-amber-500/20 rounded-lg bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/40 transition-all cursor-pointer"
-                      >
-                        <Plus className="w-8 h-8 mx-auto mb-2 text-amber-600" />
-                        <p className="text-amber-700 font-medium mb-1">Add Your Practice Experience</p>
-                        <p className="text-sm text-muted-foreground">
-                          Click to add case studies and practical work
-                        </p>
-                      </button>
-                    )}
-                    {naturalRole?.practice_entities && !isEditing && (
-                      <Button variant="outline" className="mt-4 gap-2" onClick={() => navigate("/opportunities")}>
-                        <Briefcase className="w-4 h-4" />
-                        Expand Practice
-                        <ArrowRight className="w-4 h-4" />
-                      </Button>
-                    )}
-                    <SectionHistoryPanel sectionId="section-practice" fieldName="practice_entities" label="Practice" />
-                  </CardContent>
-                </Card>
-
-                {/* Training Experience */}
-                <Card id="section-training" className={`transition-all scroll-mt-24 ${!naturalRole?.training_check && !isEditing ? 'border-dashed border-amber-500/30 bg-amber-500/5' : ''}`}>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="flex items-center gap-2">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${naturalRole?.training_check ? 'bg-b4-teal/10' : 'bg-amber-500/10'}`}>
-                          <GraduationCap className={`w-4 h-4 ${naturalRole?.training_check ? 'text-b4-teal' : 'text-amber-600'}`} />
-                        </div>
-                        Training Experience
-                      </CardTitle>
-                      <SectionActions
-                        hasContent={!!naturalRole?.training_contexts}
-                        isEditing={isEditing}
-                        showHistory={sectionHistory === 'section-training'}
-                        onEdit={() => startEditing('section-training')}
-                        onToggleHistory={() => toggleSectionHistory('section-training')}
-                        onAdd={() => startEditing('section-training')}
-                      />
-                    </div>
-                    <CardDescription>
-                      {naturalRole?.training_count 
-                        ? `${naturalRole.training_count} people trained`
-                        : 'Add your training and mentorship experience'}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {isEditing ? (
-                      <Textarea
-                        value={editData.training_contexts}
-                        onChange={(e) => setEditData(prev => ({ ...prev, training_contexts: e.target.value }))}
-                        placeholder="Describe the contexts where you've trained others..."
-                        rows={3}
-                      />
-                    ) : naturalRole?.training_contexts ? (
-                      <p className="text-foreground whitespace-pre-wrap">
-                        {naturalRole.training_contexts}
-                      </p>
-                    ) : (
-                      <button 
-                        onClick={() => startEditing('section-training')}
-                        className="w-full text-center py-6 border-2 border-dashed border-amber-500/20 rounded-lg bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/40 transition-all cursor-pointer"
-                      >
-                        <Plus className="w-8 h-8 mx-auto mb-2 text-amber-600" />
-                        <p className="text-amber-700 font-medium mb-1">Add Your Training Experience</p>
-                        <p className="text-sm text-muted-foreground">
-                          Click to add training contexts and people you've mentored
-                        </p>
-                      </button>
-                    )}
-                    {naturalRole?.training_contexts && !isEditing && (
-                      <Button variant="outline" className="mt-4 gap-2" onClick={() => setShowTrainDialog(true)}>
-                        <GraduationCap className="w-4 h-4" />
-                        Train a Team
-                        <ArrowRight className="w-4 h-4" />
-                      </Button>
-                    )}
-                    <SectionHistoryPanel sectionId="section-training" fieldName="training_contexts" label="Training" />
-                  </CardContent>
-                </Card>
-
-                {/* Consulting Experience */}
-                <Card id="section-consulting" className={`transition-all scroll-mt-24 ${!naturalRole?.consulting_check && !isEditing ? 'border-dashed border-amber-500/30 bg-amber-500/5' : ''}`}>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="flex items-center gap-2">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${naturalRole?.consulting_check ? 'bg-b4-teal/10' : 'bg-amber-500/10'}`}>
-                          <Users className={`w-4 h-4 ${naturalRole?.consulting_check ? 'text-b4-teal' : 'text-amber-600'}`} />
-                        </div>
-                        Consulting Experience
-                      </CardTitle>
-                      <SectionActions
-                        hasContent={!!(naturalRole?.consulting_with_whom || naturalRole?.consulting_case_studies)}
-                        isEditing={isEditing}
-                        showHistory={sectionHistory === 'section-consulting'}
-                        onEdit={() => startEditing('section-consulting')}
-                        onToggleHistory={() => toggleSectionHistory('section-consulting')}
-                        onAdd={() => startEditing('section-consulting')}
-                      />
-                    </div>
-                    <CardDescription>
-                      Your advisory and consulting work
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {isEditing ? (
-                      <div className="space-y-4">
-                        <div>
-                          <Label className="text-sm font-medium text-foreground">With Whom</Label>
-                          <Textarea
-                            value={editData.consulting_with_whom}
-                            onChange={(e) => setEditData(prev => ({ ...prev, consulting_with_whom: e.target.value }))}
-                            placeholder="List the organizations or individuals you've consulted..."
-                            rows={2}
-                            className="mt-1"
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium text-foreground">Case Studies</Label>
-                          <Textarea
-                            value={editData.consulting_case_studies}
-                            onChange={(e) => setEditData(prev => ({ ...prev, consulting_case_studies: e.target.value }))}
-                            placeholder="Describe specific consulting projects and outcomes..."
-                            rows={2}
-                            className="mt-1"
-                          />
-                        </div>
+                    <CardTitle className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted">
+                        <FileText className="w-4 h-4 text-muted-foreground" />
                       </div>
-                    ) : (naturalRole?.consulting_with_whom || naturalRole?.consulting_case_studies) ? (
-                      <div className="space-y-4">
-                        {naturalRole?.consulting_with_whom && (
-                          <div>
-                            <Label className="text-sm font-medium text-muted-foreground">With Whom</Label>
-                            <p className="text-foreground whitespace-pre-wrap mt-1">
-                              {naturalRole.consulting_with_whom}
-                            </p>
-                          </div>
-                        )}
-                        {naturalRole?.consulting_case_studies && (
-                          <div>
-                            <Label className="text-sm font-medium text-muted-foreground">Case Studies</Label>
-                            <p className="text-foreground whitespace-pre-wrap mt-1">
-                              {naturalRole.consulting_case_studies}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <button 
-                        onClick={() => startEditing('section-consulting')}
-                        className="w-full text-center py-6 border-2 border-dashed border-amber-500/20 rounded-lg bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/40 transition-all cursor-pointer"
-                      >
-                        <Plus className="w-8 h-8 mx-auto mb-2 text-amber-600" />
-                        <p className="text-amber-700 font-medium mb-1">Add Your Consulting Experience</p>
-                        <p className="text-sm text-muted-foreground">
-                          Click to add consulting work and case studies
-                        </p>
-                      </button>
-                    )}
-                    {(naturalRole?.consulting_with_whom || naturalRole?.consulting_case_studies) && !isEditing && (
-                      <Button variant="outline" className="mt-4 gap-2" onClick={() => navigate("/coming-soon")}>
-                        <Users className="w-4 h-4" />
-                        Offer Consulting
-                        <ArrowRight className="w-4 h-4" />
-                      </Button>
-                    )}
-                    <SectionHistoryPanel sectionId="section-consulting" fieldName="consulting_with_whom" label="Consulting" />
+                      Summary Statement
+                    </CardTitle>
+                    <CardDescription>
+                      A concise summary of your professional identity
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="w-full text-center py-4 text-muted-foreground rounded-lg bg-muted/20">
+                      <FileText className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                      <p className="text-sm">Coming soon — craft your summary statement</p>
+                    </div>
                   </CardContent>
                 </Card>
-                  </>
-                )}
 
                 {/* Scaling Interest */}
                 <Card className="bg-gradient-to-br from-purple-500/5 to-b4-teal/5 border-purple-500/20">
@@ -1095,6 +1214,7 @@ const Resume = () => {
         />
       </main>
       <Footer />
+      <ScrollToTopButton />
       <TrainTeamDialog open={showTrainDialog} onOpenChange={setShowTrainDialog} />
     </div>
   );
