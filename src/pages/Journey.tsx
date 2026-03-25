@@ -571,6 +571,17 @@ const Journey = () => {
                     <TrendingUp className="w-4 h-4 inline mr-2" />
                     Learn Finance
                   </button>
+                  <button
+                    onClick={() => setActiveSection("security")}
+                    className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                      activeSection === "security"
+                        ? "bg-background shadow-sm text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Shield className="w-4 h-4 inline mr-2" />
+                    Learn to Be Secure
+                  </button>
                 </div>
               </div>
 
