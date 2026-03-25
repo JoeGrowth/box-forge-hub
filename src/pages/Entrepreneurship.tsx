@@ -93,6 +93,7 @@ const Entrepreneurship = () => {
         </main>
       </PageTransition>
       <Footer />
+      <ScrollToTopButton />
     </div>
   );
 };

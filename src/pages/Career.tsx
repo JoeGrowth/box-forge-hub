@@ -128,6 +128,7 @@ const Career = () => {
         </main>
       </PageTransition>
       <Footer />
+      <ScrollToTopButton />
     </div>
   );
 };
