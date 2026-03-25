@@ -471,6 +471,8 @@ const Journey = () => {
         return COBUILDER_STEPS;
       case "finance":
         return FINANCE_STEPS;
+      case "security":
+        return SECURITY_STEPS;
     }
   };
 
@@ -499,6 +501,14 @@ const Journey = () => {
           icon: TrendingUp,
           color: "from-emerald-500 to-green-600",
           outcome: "You become a Certified Corporate Finance Professional — confident in reading statements, budgeting, decision-making, and advising others.",
+        };
+      case "security":
+        return {
+          title: "Learn to Be Secure",
+          description: "A 4-step journey to gain practical security literacy",
+          icon: Shield,
+          color: "from-red-500 to-orange-500",
+          outcome: "You become a Certified Security Literate Professional — aware of threats, confident in securing devices, able to act securely, and capable of advising peers.",
         };
     }
   };
