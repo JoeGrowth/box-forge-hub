@@ -347,7 +347,7 @@ export const JourneyPhaseView = ({ journeyType, onBack }: JourneyPhaseViewProps)
                     🎉 Congratulations! You're Certified!
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Your {journeyType === "scaling_path" ? "Consultant" : journeyType === "skill_ptc" ? "Co-Builder" : "Initiator"} certification has been approved.
+                    Your {journeyType === "scaling_path" ? "Consultant" : journeyType === "skill_ptc" ? "Co-Builder" : journeyType === "security_literacy" ? "Security Literate Professional" : "Initiator"} certification has been approved.
                   </p>
                 </div>
               </div>
