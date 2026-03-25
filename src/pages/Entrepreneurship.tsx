@@ -3,7 +3,7 @@ import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Rocket, Users, ArrowRight, ArrowLeft } from "lucide-react";
+import { Rocket, Users, ArrowRight, ArrowLeft, Settings } from "lucide-react";
 
 const steps = [
   {
