@@ -418,6 +418,8 @@ const Journey = () => {
       setCobuilderQuizOpen(true);
     } else if (section === "finance") {
       setFinanceQuizOpen(true);
+    } else if (section === "security") {
+      setSecurityQuizOpen(true);
     }
   };
 
