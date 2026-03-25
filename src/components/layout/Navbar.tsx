@@ -18,6 +18,7 @@ const guestNavLinks = [
 
 // Helper to build links based on role and access
 const getAppliedLinks = () => [
+  { name: "Paths", path: "/paths" },
   { name: "People", path: "/cobuilders" },
   { name: "Opportunities", path: "/opportunities" },
 ];
