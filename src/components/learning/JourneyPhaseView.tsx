@@ -13,6 +13,7 @@ import {
   SKILL_PTC_PHASES,
   IDEA_PTC_PHASES,
   SCALING_PATH_PHASES,
+  SECURITY_PHASES,
 } from "@/hooks/useLearningJourneys";
 import { useAuth } from "@/hooks/useAuth";
 import { ArrowLeft, ArrowRight, CheckCircle, Clock, Send, Loader2, Award, Rocket } from "lucide-react";
