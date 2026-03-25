@@ -849,14 +849,18 @@ export type Database = {
           bio: string | null
           created_at: string
           deleted_at: string | null
+          education_certifications: string | null
           full_name: string | null
           id: string
           is_deleted: boolean | null
+          key_projects: string | null
           organization_name: string | null
           partnership_interest: string | null
           preferred_sector: string | null
           primary_skills: string | null
+          professional_title: string | null
           startup_name: string | null
+          summary_statement: string | null
           updated_at: string
           user_id: string
           years_of_experience: number | null
@@ -866,14 +870,18 @@ export type Database = {
           bio?: string | null
           created_at?: string
           deleted_at?: string | null
+          education_certifications?: string | null
           full_name?: string | null
           id?: string
           is_deleted?: boolean | null
+          key_projects?: string | null
           organization_name?: string | null
           partnership_interest?: string | null
           preferred_sector?: string | null
           primary_skills?: string | null
+          professional_title?: string | null
           startup_name?: string | null
+          summary_statement?: string | null
           updated_at?: string
           user_id: string
           years_of_experience?: number | null
@@ -883,14 +891,18 @@ export type Database = {
           bio?: string | null
           created_at?: string
           deleted_at?: string | null
+          education_certifications?: string | null
           full_name?: string | null
           id?: string
           is_deleted?: boolean | null
+          key_projects?: string | null
           organization_name?: string | null
           partnership_interest?: string | null
           preferred_sector?: string | null
           primary_skills?: string | null
+          professional_title?: string | null
           startup_name?: string | null
+          summary_statement?: string | null
           updated_at?: string
           user_id?: string
           years_of_experience?: number | null

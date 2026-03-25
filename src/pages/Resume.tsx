@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -85,7 +86,21 @@ const Resume = () => {
     bio: string | null;
     primary_skills: string | null;
     years_of_experience: number | null;
+    professional_title: string | null;
+    key_projects: string | null;
+    education_certifications: string | null;
+    summary_statement: string | null;
   } | null>(null);
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+  const [profileEditData, setProfileEditData] = useState({
+    professional_title: "",
+    bio: "",
+    primary_skills: "",
+    years_of_experience: "",
+    key_projects: "",
+    education_certifications: "",
+    summary_statement: "",
+  });
   const [editData, setEditData] = useState({
     description: "",
     services_description: "",
@@ -200,12 +215,21 @@ const Resume = () => {
       
       const { data, error } = await supabase
         .from("profiles")
-        .select("full_name, bio, primary_skills, years_of_experience")
+        .select("full_name, bio, primary_skills, years_of_experience, professional_title, key_projects, education_certifications, summary_statement")
         .eq("user_id", user.id)
         .single();
       
       if (!error && data) {
-        setProfile(data);
+        setProfile(data as any);
+        setProfileEditData({
+          professional_title: (data as any).professional_title || "",
+          bio: data.bio || "",
+          primary_skills: data.primary_skills || "",
+          years_of_experience: data.years_of_experience?.toString() || "",
+          key_projects: (data as any).key_projects || "",
+          education_certifications: (data as any).education_certifications || "",
+          summary_statement: (data as any).summary_statement || "",
+        });
       }
     };
     
@@ -285,6 +309,30 @@ const Resume = () => {
         .eq("user_id", user.id);
       
       if (updateError) throw updateError;
+
+      // Save profile fields
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          professional_title: profileEditData.professional_title.trim() || null,
+          bio: profileEditData.bio.trim() || null,
+          primary_skills: profileEditData.primary_skills.trim() || null,
+          years_of_experience: profileEditData.years_of_experience ? parseInt(profileEditData.years_of_experience, 10) : null,
+          key_projects: profileEditData.key_projects.trim() || null,
+          education_certifications: profileEditData.education_certifications.trim() || null,
+          summary_statement: profileEditData.summary_statement.trim() || null,
+        })
+        .eq("user_id", user.id);
+
+      if (profileError) throw profileError;
+
+      // Refresh profile state
+      const { data: updatedProfile } = await supabase
+        .from("profiles")
+        .select("full_name, bio, primary_skills, years_of_experience, professional_title, key_projects, education_certifications, summary_statement")
+        .eq("user_id", user.id)
+        .single();
+      if (updatedProfile) setProfile(updatedProfile as any);
       
       toast({
         title: "Resume Updated",
@@ -794,55 +842,104 @@ const Resume = () => {
                 </Card>
 
                 {/* Professional Title */}
-                <Card id="section-professional-title" className="transition-all scroll-mt-24 border-dashed border-muted-foreground/30">
+                <Card id="section-professional-title" className={`transition-all scroll-mt-24 ${!profile?.professional_title && !isEditing ? 'border-dashed border-muted-foreground/30' : ''}`}>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted">
-                        <Briefcase className="w-4 h-4 text-muted-foreground" />
-                      </div>
-                      Professional Title
-                    </CardTitle>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${profile?.professional_title ? 'bg-b4-teal/10' : 'bg-muted'}`}>
+                          <Briefcase className={`w-4 h-4 ${profile?.professional_title ? 'text-b4-teal' : 'text-muted-foreground'}`} />
+                        </div>
+                        Professional Title
+                      </CardTitle>
+                      <SectionActions
+                        hasContent={!!profile?.professional_title}
+                        isEditing={isEditing}
+                        showHistory={false}
+                        onEdit={() => startEditing('section-professional-title')}
+                        onToggleHistory={() => {}}
+                        onAdd={() => startEditing('section-professional-title')}
+                      />
+                    </div>
                     <CardDescription>
                       Your current professional title or headline
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="w-full text-center py-4 text-muted-foreground rounded-lg bg-muted/20">
-                      <Briefcase className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                      <p className="text-sm">Coming soon — define your professional title</p>
-                    </div>
+                    {isEditing ? (
+                      <Input
+                        value={profileEditData.professional_title}
+                        onChange={(e) => setProfileEditData(prev => ({ ...prev, professional_title: e.target.value }))}
+                        placeholder="e.g., Senior Product Strategist, Full-Stack Developer, Business Consultant..."
+                      />
+                    ) : profile?.professional_title ? (
+                      <p className="text-foreground font-medium text-lg bg-muted/30 rounded-lg p-4">{profile.professional_title}</p>
+                    ) : (
+                      <button onClick={() => startEditing('section-professional-title')} className="w-full text-center py-4 text-muted-foreground hover:bg-muted/30 rounded-lg transition-colors cursor-pointer">
+                        <Briefcase className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                        <p>Click to add your professional title</p>
+                      </button>
+                    )}
                   </CardContent>
                 </Card>
 
                 {/* Profile Overview */}
-                <Card id="section-profile-overview" className="transition-all scroll-mt-24">
+                <Card id="section-profile-overview" className={`transition-all scroll-mt-24 ${!profile?.bio && !isEditing ? 'border-dashed border-muted-foreground/30' : ''}`}>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${profile?.bio ? 'bg-b4-teal/10' : 'bg-muted'}`}>
-                        <User className={`w-4 h-4 ${profile?.bio ? 'text-b4-teal' : 'text-muted-foreground'}`} />
-                      </div>
-                      Profile Overview
-                    </CardTitle>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${profile?.bio ? 'bg-b4-teal/10' : 'bg-muted'}`}>
+                          <User className={`w-4 h-4 ${profile?.bio ? 'text-b4-teal' : 'text-muted-foreground'}`} />
+                        </div>
+                        Profile Overview
+                      </CardTitle>
+                      <SectionActions
+                        hasContent={!!(profile?.bio || profile?.primary_skills)}
+                        isEditing={isEditing}
+                        showHistory={false}
+                        onEdit={() => startEditing('section-profile-overview')}
+                        onToggleHistory={() => {}}
+                        onAdd={() => startEditing('section-profile-overview')}
+                      />
+                    </div>
                     <CardDescription>
                       Your bio, skills, and years of experience
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {profile?.bio || profile?.primary_skills || profile?.years_of_experience ? (
+                    {isEditing ? (
                       <div className="space-y-4">
-                        {profile.bio && (
+                        <div>
+                          <Label className="text-sm font-medium text-foreground">Bio</Label>
+                          <Textarea
+                            value={profileEditData.bio}
+                            onChange={(e) => setProfileEditData(prev => ({ ...prev, bio: e.target.value }))}
+                            placeholder="A brief description of who you are and what you do..."
+                            rows={3}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium text-foreground">Years of Experience</Label>
+                          <Input
+                            type="number"
+                            min="0"
+                            max="50"
+                            value={profileEditData.years_of_experience}
+                            onChange={(e) => setProfileEditData(prev => ({ ...prev, years_of_experience: e.target.value }))}
+                            placeholder="e.g., 5"
+                            className="mt-1 max-w-[150px]"
+                          />
+                        </div>
+                      </div>
+                    ) : (profile?.bio || profile?.years_of_experience != null) ? (
+                      <div className="space-y-4">
+                        {profile?.bio && (
                           <div>
                             <Label className="text-sm font-medium text-muted-foreground">Bio</Label>
                             <p className="text-foreground whitespace-pre-wrap mt-1 bg-muted/30 rounded-lg p-3">{profile.bio}</p>
                           </div>
                         )}
-                        {profile.primary_skills && (
-                          <div>
-                            <Label className="text-sm font-medium text-muted-foreground">Primary Skills</Label>
-                            <p className="text-foreground whitespace-pre-wrap mt-1">{profile.primary_skills}</p>
-                          </div>
-                        )}
-                        {profile.years_of_experience != null && (
+                        {profile?.years_of_experience != null && (
                           <div>
                             <Label className="text-sm font-medium text-muted-foreground">Years of Experience</Label>
                             <p className="text-foreground mt-1">{profile.years_of_experience} years</p>
@@ -850,15 +947,15 @@ const Resume = () => {
                         )}
                       </div>
                     ) : (
-                      <div className="w-full text-center py-4 text-muted-foreground rounded-lg bg-muted/20">
+                      <button onClick={() => startEditing('section-profile-overview')} className="w-full text-center py-4 text-muted-foreground hover:bg-muted/30 rounded-lg transition-colors cursor-pointer">
                         <User className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                        <p className="text-sm">Complete your profile to see your overview here</p>
-                      </div>
+                        <p>Click to add your profile overview</p>
+                      </button>
                     )}
                   </CardContent>
                 </Card>
 
-                {/* Professional Experience (Practice + Training + Consulting) */}
+                {/* Professional Experience (Practice + Training + Consulting) - unchanged, kept from above */}
                 {naturalRole?.promise_check && (
                   <Card id="section-professional-experience" className="transition-all scroll-mt-24">
                     <CardHeader>
@@ -1033,69 +1130,128 @@ const Resume = () => {
                 )}
 
                 {/* Key Projects & Solutions */}
-                <Card id="section-projects" className="transition-all scroll-mt-24 border-dashed border-muted-foreground/30">
+                <Card id="section-projects" className={`transition-all scroll-mt-24 ${!profile?.key_projects && !isEditing ? 'border-dashed border-muted-foreground/30' : ''}`}>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted">
-                        <Lightbulb className="w-4 h-4 text-muted-foreground" />
-                      </div>
-                      Key Projects & Solutions
-                    </CardTitle>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${profile?.key_projects ? 'bg-b4-teal/10' : 'bg-muted'}`}>
+                          <Lightbulb className={`w-4 h-4 ${profile?.key_projects ? 'text-b4-teal' : 'text-muted-foreground'}`} />
+                        </div>
+                        Key Projects & Solutions
+                      </CardTitle>
+                      <SectionActions
+                        hasContent={!!profile?.key_projects}
+                        isEditing={isEditing}
+                        showHistory={false}
+                        onEdit={() => startEditing('section-projects')}
+                        onToggleHistory={() => {}}
+                        onAdd={() => startEditing('section-projects')}
+                      />
+                    </div>
                     <CardDescription>
                       Highlight your most impactful projects and solutions
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="w-full text-center py-4 text-muted-foreground rounded-lg bg-muted/20">
-                      <Lightbulb className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                      <p className="text-sm">Coming soon — showcase your key projects</p>
-                    </div>
+                    {isEditing ? (
+                      <Textarea
+                        value={profileEditData.key_projects}
+                        onChange={(e) => setProfileEditData(prev => ({ ...prev, key_projects: e.target.value }))}
+                        placeholder="Describe your key projects, solutions delivered, and their impact..."
+                        rows={4}
+                      />
+                    ) : profile?.key_projects ? (
+                      <p className="text-foreground whitespace-pre-wrap bg-muted/30 rounded-lg p-4">{profile.key_projects}</p>
+                    ) : (
+                      <button onClick={() => startEditing('section-projects')} className="w-full text-center py-4 text-muted-foreground hover:bg-muted/30 rounded-lg transition-colors cursor-pointer">
+                        <Lightbulb className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                        <p>Click to add your key projects</p>
+                      </button>
+                    )}
                   </CardContent>
                 </Card>
 
                 {/* Skills & Competencies */}
-                <Card id="section-skills" className="transition-all scroll-mt-24">
+                <Card id="section-skills" className={`transition-all scroll-mt-24 ${!profile?.primary_skills && !isEditing ? 'border-dashed border-muted-foreground/30' : ''}`}>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${profile?.primary_skills ? 'bg-b4-teal/10' : 'bg-muted'}`}>
-                        <Sparkles className={`w-4 h-4 ${profile?.primary_skills ? 'text-b4-teal' : 'text-muted-foreground'}`} />
-                      </div>
-                      Skills & Competencies
-                    </CardTitle>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${profile?.primary_skills ? 'bg-b4-teal/10' : 'bg-muted'}`}>
+                          <Sparkles className={`w-4 h-4 ${profile?.primary_skills ? 'text-b4-teal' : 'text-muted-foreground'}`} />
+                        </div>
+                        Skills & Competencies
+                      </CardTitle>
+                      <SectionActions
+                        hasContent={!!profile?.primary_skills}
+                        isEditing={isEditing}
+                        showHistory={false}
+                        onEdit={() => startEditing('section-skills')}
+                        onToggleHistory={() => {}}
+                        onAdd={() => startEditing('section-skills')}
+                      />
+                    </div>
                     <CardDescription>
                       Your core skills and areas of expertise
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {profile?.primary_skills ? (
+                    {isEditing ? (
+                      <Textarea
+                        value={profileEditData.primary_skills}
+                        onChange={(e) => setProfileEditData(prev => ({ ...prev, primary_skills: e.target.value }))}
+                        placeholder="e.g., Product Strategy, UX Design, Full-Stack Development, Business Analysis..."
+                        rows={3}
+                      />
+                    ) : profile?.primary_skills ? (
                       <p className="text-foreground whitespace-pre-wrap bg-muted/30 rounded-lg p-4">{profile.primary_skills}</p>
                     ) : (
-                      <div className="w-full text-center py-4 text-muted-foreground rounded-lg bg-muted/20">
+                      <button onClick={() => startEditing('section-skills')} className="w-full text-center py-4 text-muted-foreground hover:bg-muted/30 rounded-lg transition-colors cursor-pointer">
                         <Sparkles className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                        <p className="text-sm">Add skills in your profile to see them here</p>
-                      </div>
+                        <p>Click to add your skills</p>
+                      </button>
                     )}
                   </CardContent>
                 </Card>
 
                 {/* Education & Certifications */}
-                <Card id="section-education" className="transition-all scroll-mt-24 border-dashed border-muted-foreground/30">
+                <Card id="section-education" className={`transition-all scroll-mt-24 ${!profile?.education_certifications && !isEditing ? 'border-dashed border-muted-foreground/30' : ''}`}>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted">
-                        <Award className="w-4 h-4 text-muted-foreground" />
-                      </div>
-                      Education & Certifications
-                    </CardTitle>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${profile?.education_certifications ? 'bg-b4-teal/10' : 'bg-muted'}`}>
+                          <Award className={`w-4 h-4 ${profile?.education_certifications ? 'text-b4-teal' : 'text-muted-foreground'}`} />
+                        </div>
+                        Education & Certifications
+                      </CardTitle>
+                      <SectionActions
+                        hasContent={!!profile?.education_certifications}
+                        isEditing={isEditing}
+                        showHistory={false}
+                        onEdit={() => startEditing('section-education')}
+                        onToggleHistory={() => {}}
+                        onAdd={() => startEditing('section-education')}
+                      />
+                    </div>
                     <CardDescription>
                       Your academic background and professional certifications
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="w-full text-center py-4 text-muted-foreground rounded-lg bg-muted/20">
-                      <Award className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                      <p className="text-sm">Coming soon — add your education and certifications</p>
-                    </div>
+                    {isEditing ? (
+                      <Textarea
+                        value={profileEditData.education_certifications}
+                        onChange={(e) => setProfileEditData(prev => ({ ...prev, education_certifications: e.target.value }))}
+                        placeholder="List your degrees, certifications, and relevant training programs..."
+                        rows={4}
+                      />
+                    ) : profile?.education_certifications ? (
+                      <p className="text-foreground whitespace-pre-wrap bg-muted/30 rounded-lg p-4">{profile.education_certifications}</p>
+                    ) : (
+                      <button onClick={() => startEditing('section-education')} className="w-full text-center py-4 text-muted-foreground hover:bg-muted/30 rounded-lg transition-colors cursor-pointer">
+                        <Award className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                        <p>Click to add your education & certifications</p>
+                      </button>
+                    )}
                   </CardContent>
                 </Card>
 
@@ -1146,24 +1302,93 @@ const Resume = () => {
                   </CardContent>
                 </Card>
 
-                {/* Summary Statement */}
-                <Card id="section-summary" className="transition-all scroll-mt-24 border-dashed border-muted-foreground/30">
+                {/* Summary Statement - AI Generated + Editable */}
+                <Card id="section-summary" className={`transition-all scroll-mt-24 ${!profile?.summary_statement && !isEditing ? 'border-dashed border-muted-foreground/30' : ''}`}>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted">
-                        <FileText className="w-4 h-4 text-muted-foreground" />
-                      </div>
-                      Summary Statement
-                    </CardTitle>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${profile?.summary_statement ? 'bg-b4-teal/10' : 'bg-muted'}`}>
+                          <FileText className={`w-4 h-4 ${profile?.summary_statement ? 'text-b4-teal' : 'text-muted-foreground'}`} />
+                        </div>
+                        Summary Statement
+                      </CardTitle>
+                      <SectionActions
+                        hasContent={!!profile?.summary_statement}
+                        isEditing={isEditing}
+                        showHistory={false}
+                        onEdit={() => startEditing('section-summary')}
+                        onToggleHistory={() => {}}
+                        onAdd={() => startEditing('section-summary')}
+                      />
+                    </div>
                     <CardDescription>
-                      A concise summary of your professional identity
+                      AI-generated professional summary based on your profile — feel free to edit it
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="w-full text-center py-4 text-muted-foreground rounded-lg bg-muted/20">
-                      <FileText className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                      <p className="text-sm">Coming soon — craft your summary statement</p>
-                    </div>
+                    {isEditing ? (
+                      <div className="space-y-3">
+                        <Textarea
+                          value={profileEditData.summary_statement}
+                          onChange={(e) => setProfileEditData(prev => ({ ...prev, summary_statement: e.target.value }))}
+                          placeholder="Your professional summary will appear here. Click 'Generate with AI' to create one automatically."
+                          rows={4}
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={isGeneratingSummary}
+                          onClick={async () => {
+                            setIsGeneratingSummary(true);
+                            try {
+                              const { data, error } = await supabase.functions.invoke('generate-summary', {
+                                body: {
+                                  profileData: {
+                                    full_name: profile?.full_name,
+                                    professional_title: profileEditData.professional_title || profile?.professional_title,
+                                    bio: profileEditData.bio || profile?.bio,
+                                    primary_skills: profileEditData.primary_skills || profile?.primary_skills,
+                                    years_of_experience: profileEditData.years_of_experience || profile?.years_of_experience,
+                                    key_projects: profileEditData.key_projects || profile?.key_projects,
+                                    education_certifications: profileEditData.education_certifications || profile?.education_certifications,
+                                  },
+                                  naturalRoleData: naturalRole ? {
+                                    description: editData.description || naturalRole.description,
+                                    practice_entities: editData.practice_entities || naturalRole.practice_entities,
+                                    training_contexts: editData.training_contexts || naturalRole.training_contexts,
+                                    consulting_with_whom: editData.consulting_with_whom || naturalRole.consulting_with_whom,
+                                    consulting_case_studies: editData.consulting_case_studies || naturalRole.consulting_case_studies,
+                                    services_description: editData.services_description || (naturalRole as any).services_description,
+                                  } : null,
+                                },
+                              });
+                              if (error) throw error;
+                              if (data?.error) {
+                                toast({ title: "Cannot generate", description: data.error, variant: "destructive" });
+                              } else if (data?.summary) {
+                                setProfileEditData(prev => ({ ...prev, summary_statement: data.summary }));
+                                toast({ title: "Summary generated!", description: "Review and edit as needed, then save." });
+                              }
+                            } catch (err: any) {
+                              toast({ title: "Error", description: err.message || "Failed to generate summary.", variant: "destructive" });
+                            } finally {
+                              setIsGeneratingSummary(false);
+                            }
+                          }}
+                          className="gap-2"
+                        >
+                          {isGeneratingSummary ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                          {isGeneratingSummary ? "Generating..." : "Generate with AI"}
+                        </Button>
+                      </div>
+                    ) : profile?.summary_statement ? (
+                      <p className="text-foreground whitespace-pre-wrap bg-muted/30 rounded-lg p-4">{profile.summary_statement}</p>
+                    ) : (
+                      <button onClick={() => startEditing('section-summary')} className="w-full text-center py-4 text-muted-foreground hover:bg-muted/30 rounded-lg transition-colors cursor-pointer">
+                        <FileText className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                        <p>Click to generate your AI summary statement</p>
+                      </button>
+                    )}
                   </CardContent>
                 </Card>
 
