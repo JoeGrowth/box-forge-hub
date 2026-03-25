@@ -10,6 +10,7 @@ import {
   BookOpen,
   FileText,
   Users,
+  Briefcase,
   ArrowRight,
   ArrowLeft,
 } from "lucide-react";
@@ -36,7 +37,7 @@ const steps = [
   {
     number: 3,
     icon: BookOpen,
-    title: "Join a Training",
+    title: "Strengthen What You Do",
     description:
       "Browse available trainings from other experts and level up your skills in areas that matter to you.",
     link: "/opportunities?tab=trainings",
@@ -53,6 +54,15 @@ const steps = [
   },
   {
     number: 5,
+    icon: Briefcase,
+    title: "Propose a Service",
+    description:
+      "Offer your professional services on the platform. Define your expertise, set your terms, and attract clients.",
+    link: "/resume",
+    cta: "Create Service",
+  },
+  {
+    number: 6,
     icon: FileText,
     title: "Apply for a Tender",
     description:
@@ -61,7 +71,7 @@ const steps = [
     cta: "View Tenders",
   },
   {
-    number: 6,
+    number: 7,
     icon: Users,
     title: "Join a Team",
     description:
