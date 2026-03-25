@@ -42,6 +42,7 @@ interface Certification {
 
 const Opportunities = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, loading: authLoading } = useAuth();
   const { onboardingState, loading: onboardingLoading } = useOnboarding();
   const [ideas, setIdeas] = useState<StartupIdea[]>([]);
@@ -49,7 +50,7 @@ const Opportunities = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [sectorFilter, setSectorFilter] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("ideas");
+  const [categoryFilter, setCategoryFilter] = useState(searchParams.get("tab") || "ideas");
   const [certifications, setCertifications] = useState<Certification[]>([]);
 
   // Derive approval status from cached onboarding state
