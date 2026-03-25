@@ -53,6 +53,15 @@ const steps = [
   },
   {
     number: 5,
+    icon: Briefcase,
+    title: "Propose a Service",
+    description:
+      "Offer your professional services on the platform. Define your expertise, set your terms, and attract clients.",
+    link: "/resume",
+    cta: "Create Service",
+  },
+  {
+    number: 6,
     icon: FileText,
     title: "Apply for a Tender",
     description:
