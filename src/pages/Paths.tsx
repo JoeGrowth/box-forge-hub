@@ -165,7 +165,7 @@ const Paths = () => {
             </p>
           </div>
 
-          <p className="text-xs text-muted-foreground mt-2">Drag cards to reorder</p>
+          
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto mt-4">
             {orderedPaths.map((path, idx) => (
