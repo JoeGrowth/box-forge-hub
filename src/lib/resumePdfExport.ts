@@ -1,13 +1,16 @@
 import jsPDF from "jspdf";
 
 interface ResumeData {
-  // Profile info
   userName?: string;
+  professionalTitle?: string;
   bio?: string;
   primarySkills?: string;
   yearsOfExperience?: number | null;
-  // Natural role data
+  keyProjects?: string;
+  educationCertifications?: string;
+  summaryStatement?: string;
   description?: string;
+  servicesDescription?: string;
   promiseCheck?: boolean;
   practiceCheck?: boolean;
   practiceEntities?: string;
@@ -18,6 +21,7 @@ interface ResumeData {
   consultingCheck?: boolean;
   consultingWithWhom?: string;
   consultingCaseStudies?: string;
+  wantsToScale?: boolean;
 }
 
 export function exportResumeToPdf(data: ResumeData) {
@@ -27,166 +31,211 @@ export function exportResumeToPdf(data: ResumeData) {
   const contentWidth = pageWidth - margin * 2;
   let yPosition = 20;
 
-  // Title
-  doc.setFontSize(22);
+  const TEAL = [0, 128, 128] as const;
+  const DARK = [30, 30, 30] as const;
+  const MUTED = [100, 100, 100] as const;
+  const LIGHT_BG = [245, 245, 245] as const;
+
+  const checkPage = (needed: number = 20) => {
+    if (yPosition > 280 - needed) {
+      doc.addPage();
+      yPosition = 20;
+    }
+  };
+
+  // ─── Header ───
+  doc.setFontSize(24);
   doc.setFont("helvetica", "bold");
-  doc.text("Professional Resume", pageWidth / 2, yPosition, { align: "center" });
-  yPosition += 12;
+  doc.setTextColor(...DARK);
+  doc.text("Profile Summary", pageWidth / 2, yPosition, { align: "center" });
+  yPosition += 10;
 
   if (data.userName) {
     doc.setFontSize(14);
     doc.setFont("helvetica", "normal");
+    doc.setTextColor(...MUTED);
     doc.text(data.userName, pageWidth / 2, yPosition, { align: "center" });
-    yPosition += 8;
+    yPosition += 7;
   }
 
-  doc.setFontSize(10);
-  doc.setTextColor(100);
+  if (data.professionalTitle) {
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(...TEAL);
+    doc.text(data.professionalTitle, pageWidth / 2, yPosition, { align: "center" });
+    yPosition += 7;
+  }
+
+  doc.setFontSize(9);
+  doc.setTextColor(...MUTED);
   doc.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth / 2, yPosition, { align: "center" });
-  doc.setTextColor(0);
+  yPosition += 8;
+
+  // Divider
+  doc.setDrawColor(200);
+  doc.setLineWidth(0.5);
+  doc.line(margin, yPosition, pageWidth - margin, yPosition);
   yPosition += 12;
 
-  // Divider line
-  doc.setDrawColor(200);
-  doc.line(margin, yPosition, pageWidth - margin, yPosition);
-  yPosition += 15;
-
-  const addSection = (title: string, content: string | null | undefined) => {
-    if (!content) return;
-    
-    // Check if we need a new page
-    if (yPosition > 250) {
-      doc.addPage();
-      yPosition = 20;
-    }
-
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0, 128, 128); // Teal color
-    doc.text(title, margin, yPosition);
-    yPosition += 7;
-
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(60);
-
-    const lines = doc.splitTextToSize(content, contentWidth);
-    lines.forEach((line: string) => {
-      if (yPosition > 280) {
-        doc.addPage();
-        yPosition = 20;
-      }
-      doc.text(line, margin, yPosition);
-      yPosition += 6;
-    });
-
-    yPosition += 8;
-  };
-
+  // ─── Helpers ───
   const addSectionHeader = (title: string) => {
-    if (yPosition > 240) {
-      doc.addPage();
-      yPosition = 20;
-    }
-    
-    doc.setFontSize(14);
+    checkPage(25);
+    doc.setFillColor(...TEAL);
+    doc.rect(margin, yPosition - 4, 3, 14, "F");
+    doc.setFontSize(13);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(0);
-    doc.text(title, margin, yPosition);
-    yPosition += 10;
+    doc.setTextColor(...DARK);
+    doc.text(title, margin + 8, yPosition + 6);
+    yPosition += 16;
   };
 
-  // Profile Information Section
-  addSectionHeader("Profile Information");
-  
-  if (data.bio) {
-    addSection("Bio", data.bio);
-  }
-  
-  if (data.primarySkills) {
-    addSection("Primary Skills", data.primarySkills);
-  }
-  
-  if (data.yearsOfExperience !== null && data.yearsOfExperience !== undefined) {
-    addSection("Years of Experience", `${data.yearsOfExperience} years`);
-  }
+  const addField = (label: string, value: string | null | undefined) => {
+    if (!value) return;
+    checkPage(15);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...TEAL);
+    doc.text(label, margin + 4, yPosition);
+    yPosition += 5;
 
-  // Natural Role Section
-  if (data.description) {
-    addSectionHeader("Natural Role Definition");
-    addSection("Role Description", data.description);
-  }
-
-  // Promise Section
-  if (data.promiseCheck !== undefined) {
-    addSectionHeader("Promise Commitment");
-    doc.setFontSize(11);
+    doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(60);
-    doc.text(`Promise: ${data.promiseCheck ? "Yes" : "No"}`, margin, yPosition);
+    doc.setTextColor(60, 60, 60);
+    const lines = doc.splitTextToSize(value, contentWidth - 8);
+    lines.forEach((line: string) => {
+      checkPage();
+      doc.text(line, margin + 4, yPosition);
+      yPosition += 5;
+    });
+    yPosition += 4;
+  };
+
+  const addSubSection = (title: string) => {
+    checkPage(15);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(60, 60, 60);
+    doc.text(title, margin + 4, yPosition);
+    yPosition += 7;
+  };
+
+  // ─── 1. Natural Role ───
+  if (data.description) {
+    addSectionHeader("Natural Role");
+    addField("Role Description", data.description);
+  }
+
+  // ─── 2. Profile Overview ───
+  if (data.bio || data.primarySkills || data.yearsOfExperience) {
+    addSectionHeader("Profile Overview");
+    addField("Bio", data.bio);
+    addField("Primary Skills", data.primarySkills);
+    if (data.yearsOfExperience !== null && data.yearsOfExperience !== undefined) {
+      addField("Years of Experience", `${data.yearsOfExperience} years`);
+    }
+  }
+
+  // ─── 3. Professional Experience ───
+  const hasPractice = data.practiceCheck && data.promiseCheck;
+  const hasTraining = data.trainingCheck && data.promiseCheck;
+  const hasConsulting = data.consultingCheck && data.promiseCheck;
+
+  if (hasPractice || hasTraining || hasConsulting) {
+    addSectionHeader("Professional Experience");
+
+    if (hasPractice) {
+      addSubSection("Practice Experience");
+      addField("Entities Worked With", data.practiceEntities);
+      if (data.practiceCaseStudies !== null && data.practiceCaseStudies !== undefined) {
+        addField("Case Studies", `${data.practiceCaseStudies}`);
+      }
+    }
+
+    if (hasTraining) {
+      addSubSection("Training Experience");
+      addField("Training Contexts", data.trainingContexts);
+      if (data.trainingCount !== null && data.trainingCount !== undefined) {
+        addField("People Trained", `${data.trainingCount}`);
+      }
+    }
+
+    if (hasConsulting) {
+      addSubSection("Consulting Experience");
+      addField("Consulting With", data.consultingWithWhom);
+      addField("Case Studies", data.consultingCaseStudies);
+    }
+  }
+
+  // ─── 4. Key Projects & Solutions ───
+  if (data.keyProjects) {
+    addSectionHeader("Key Projects & Solutions");
+    addField("", data.keyProjects);
+  }
+
+  // ─── 5. Skills & Competencies ───
+  if (data.primarySkills) {
+    addSectionHeader("Skills & Competencies");
+    addField("", data.primarySkills);
+  }
+
+  // ─── 6. Education & Certifications ───
+  if (data.educationCertifications) {
+    addSectionHeader("Education & Certifications");
+    addField("", data.educationCertifications);
+  }
+
+  // ─── 7. Services aligned to Your Natural Role ───
+  if (data.servicesDescription) {
+    addSectionHeader("Services Aligned to Your Natural Role");
+    addField("", data.servicesDescription);
+  }
+
+  // ─── 8. Summary Statement ───
+  if (data.summaryStatement) {
+    addSectionHeader("Summary Statement");
+    // Render in a subtle background box
+    checkPage(20);
+    const summaryLines = doc.splitTextToSize(data.summaryStatement, contentWidth - 16);
+    const boxHeight = summaryLines.length * 5 + 10;
+    checkPage(boxHeight + 5);
+    doc.setFillColor(...LIGHT_BG);
+    doc.roundedRect(margin, yPosition - 4, contentWidth, boxHeight, 3, 3, "F");
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(60, 60, 60);
+    yPosition += 2;
+    summaryLines.forEach((line: string) => {
+      doc.text(line, margin + 8, yPosition);
+      yPosition += 5;
+    });
+    yPosition += 8;
+  }
+
+  // ─── 9. Scaling Interest ───
+  if (data.wantsToScale !== undefined) {
+    addSectionHeader("Scaling Interest");
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(60, 60, 60);
+    doc.text(`Interested in Scaling: ${data.wantsToScale ? "Yes" : "No"}`, margin + 4, yPosition);
     yPosition += 12;
   }
 
-  // Practice Section
-  if (data.practiceCheck && data.promiseCheck) {
-    addSectionHeader("Practice Experience");
-    
-    if (data.practiceEntities) {
-      addSection("Entities Worked With", data.practiceEntities);
-    }
-    
-    if (data.practiceCaseStudies !== null && data.practiceCaseStudies !== undefined) {
-      doc.setFontSize(11);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(60);
-      doc.text(`Case Studies: ${data.practiceCaseStudies}`, margin, yPosition);
-      yPosition += 12;
-    }
-  }
-
-  // Training Section
-  if (data.trainingCheck && data.promiseCheck) {
-    addSectionHeader("Training Experience");
-    
-    if (data.trainingContexts) {
-      addSection("Training Contexts", data.trainingContexts);
-    }
-    
-    if (data.trainingCount !== null && data.trainingCount !== undefined) {
-      doc.setFontSize(11);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(60);
-      doc.text(`People Trained: ${data.trainingCount}`, margin, yPosition);
-      yPosition += 12;
-    }
-  }
-
-  // Consulting Section
-  if (data.consultingCheck && data.promiseCheck) {
-    addSectionHeader("Consulting Experience");
-    
-    if (data.consultingWithWhom) {
-      addSection("Consulting With", data.consultingWithWhom);
-    }
-    
-    if (data.consultingCaseStudies) {
-      addSection("Case Studies", data.consultingCaseStudies);
-    }
-  }
-
-  // Footer on all pages
+  // ─── Footer ───
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
-    doc.setFontSize(9);
+    doc.setDrawColor(200);
+    doc.line(margin, 283, pageWidth - margin, 283);
+    doc.setFontSize(8);
     doc.setTextColor(150);
-    doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, 290, { align: "center" });
+    doc.text(`Profile Summary`, margin, 289);
+    doc.text(`Page ${i} of ${pageCount}`, pageWidth - margin, 289, { align: "right" });
   }
 
-  // Download the PDF
-  const fileName = data.userName 
-    ? `resume-${data.userName.toLowerCase().replace(/\s+/g, "-")}.pdf`
-    : "resume.pdf";
-  
+  const fileName = data.userName
+    ? `profile-summary-${data.userName.toLowerCase().replace(/\s+/g, "-")}.pdf`
+    : "profile-summary.pdf";
+
   doc.save(fileName);
 }
