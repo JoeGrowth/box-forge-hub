@@ -301,6 +301,8 @@ const Journey = () => {
         return "skill_ptc";
       case "finance":
         return "finance_literacy";
+      case "security":
+        return "security_literacy";
       default:
         return "";
     }
