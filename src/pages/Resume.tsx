@@ -308,6 +308,30 @@ const Resume = () => {
         .eq("user_id", user.id);
       
       if (updateError) throw updateError;
+
+      // Save profile fields
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          professional_title: profileEditData.professional_title.trim() || null,
+          bio: profileEditData.bio.trim() || null,
+          primary_skills: profileEditData.primary_skills.trim() || null,
+          years_of_experience: profileEditData.years_of_experience ? parseInt(profileEditData.years_of_experience, 10) : null,
+          key_projects: profileEditData.key_projects.trim() || null,
+          education_certifications: profileEditData.education_certifications.trim() || null,
+          summary_statement: profileEditData.summary_statement.trim() || null,
+        })
+        .eq("user_id", user.id);
+
+      if (profileError) throw profileError;
+
+      // Refresh profile state
+      const { data: updatedProfile } = await supabase
+        .from("profiles")
+        .select("full_name, bio, primary_skills, years_of_experience, professional_title, key_projects, education_certifications, summary_statement")
+        .eq("user_id", user.id)
+        .single();
+      if (updatedProfile) setProfile(updatedProfile as any);
       
       toast({
         title: "Resume Updated",
