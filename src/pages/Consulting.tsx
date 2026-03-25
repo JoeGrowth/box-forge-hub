@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { ScrollToTopButton } from "@/components/layout/ScrollToTopButton";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -83,6 +84,7 @@ const Consulting = () => {
         </main>
       </PageTransition>
       <Footer />
+      <ScrollToTopButton />
     </div>
   );
 };
