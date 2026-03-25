@@ -85,7 +85,21 @@ const Resume = () => {
     bio: string | null;
     primary_skills: string | null;
     years_of_experience: number | null;
+    professional_title: string | null;
+    key_projects: string | null;
+    education_certifications: string | null;
+    summary_statement: string | null;
   } | null>(null);
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+  const [profileEditData, setProfileEditData] = useState({
+    professional_title: "",
+    bio: "",
+    primary_skills: "",
+    years_of_experience: "",
+    key_projects: "",
+    education_certifications: "",
+    summary_statement: "",
+  });
   const [editData, setEditData] = useState({
     description: "",
     services_description: "",
