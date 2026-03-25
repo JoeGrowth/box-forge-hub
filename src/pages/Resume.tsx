@@ -32,8 +32,14 @@ import {
   Target,
   Sparkles,
   Lock,
-  Download
+  Download,
+  User,
+  FolderOpen,
+  Award,
+  Lightbulb,
+  BookOpen
 } from "lucide-react";
+import { ScrollToTopButton } from "@/components/layout/ScrollToTopButton";
 import { exportResumeToPdf } from "@/lib/resumePdfExport";
 import { Progress } from "@/components/ui/progress";
 import { TrainTeamDialog } from "@/components/resume/TrainTeamDialog";
