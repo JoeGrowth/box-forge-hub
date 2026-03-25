@@ -3,7 +3,7 @@ import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Compass, ShoppingBag, GraduationCap, BookOpen, FileText, ArrowRight, ArrowLeft } from "lucide-react";
+import { Compass, ShoppingBag, GraduationCap, BookOpen, FileText, Briefcase, Users, ArrowRight, ArrowLeft } from "lucide-react";
 
 const steps = [
   {
@@ -18,7 +18,7 @@ const steps = [
   {
     number: 2,
     icon: ShoppingBag,
-    title: "Shape What You Do",
+    title: "Sell What You Do",
     description:
       "Build your professional resume and track record to showcase your expertise and attract opportunities.",
     link: "/resume",
@@ -27,6 +27,15 @@ const steps = [
   {
     number: 3,
     icon: GraduationCap,
+    title: "Strengthen What You Do",
+    description:
+      "Browse available trainings from other experts and level up your skills in areas that matter to you.",
+    link: "/opportunities?tab=trainings",
+    cta: "Browse Trainings",
+  },
+  {
+    number: 4,
+    icon: BookOpen,
     title: "Propose a Training",
     description:
       "Package your expertise into a training offer. Share your knowledge and earn revenue by teaching others.",
@@ -34,20 +43,31 @@ const steps = [
     cta: "Create Training",
   },
   {
-    number: 4,
-    icon: BookOpen,
-    title: "Join a Training",
-    description: "Browse available trainings from other experts and level up your skills in areas that matter to you.",
-    link: "/opportunities",
-    cta: "Browse Trainings",
+    number: 5,
+    icon: Briefcase,
+    title: "Propose a Service",
+    description:
+      "Offer your professional services on the platform. Define your expertise, set your terms, and attract clients.",
+    link: "/resume",
+    cta: "Create Service",
   },
   {
-    number: 5,
+    number: 6,
     icon: FileText,
     title: "Apply for a Tender",
-    description: "Find consulting and project tenders that match your Natural Role and apply with your track record.",
-    link: "/opportunities",
+    description:
+      "Find consulting and project tenders that match your Natural Role and apply with your track record.",
+    link: "/opportunities?tab=tenders",
     cta: "View Tenders",
+  },
+  {
+    number: 7,
+    icon: Users,
+    title: "Join a Team",
+    description:
+      "Browse team environments looking for talent. Apply for roles that match your Natural Role and join an existing organization.",
+    link: "/opportunities?tab=environments",
+    cta: "Browse Environments",
   },
 ];
 
