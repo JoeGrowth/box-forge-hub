@@ -1362,6 +1362,7 @@ export type Database = {
         | "idea_ptc"
         | "scaling_path"
         | "finance_literacy"
+        | "security_literacy"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1502,6 +1503,7 @@ export const Constants = {
         "idea_ptc",
         "scaling_path",
         "finance_literacy",
+        "security_literacy",
       ],
     },
   },

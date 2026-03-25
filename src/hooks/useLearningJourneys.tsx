@@ -3,7 +3,7 @@ import { useAuth } from "./useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./use-toast";
 
-export type JourneyType = "skill_ptc" | "idea_ptc" | "scaling_path" | "finance_literacy";
+export type JourneyType = "skill_ptc" | "idea_ptc" | "scaling_path" | "finance_literacy" | "security_literacy";
 export type JourneyStatus = "not_started" | "in_progress" | "pending_approval" | "approved" | "rejected";
 
 export interface LearningJourney {
@@ -440,6 +440,54 @@ export const SCALING_PATH_PHASES = [
         type: "checklist",
         description: "Recruit a senior leader to manage overall company operations. This role handles strategic coordination, allowing you to focus on vision and growth opportunities."
       },
+    ],
+  },
+];
+
+export const SECURITY_PHASES = [
+  {
+    number: 0,
+    name: "Security Fundamentals & Awareness",
+    description: "Master the basics of cybersecurity and risk awareness",
+    duration: "1-2 weeks",
+    tasks: [
+      { id: "security_mindset", label: "Security Mindset", type: "checklist", description: "Think like a defender, not a victim. Security is everyone's responsibility." },
+      { id: "common_threats", label: "Identify common threats", type: "question", description: "Describe phishing, social engineering, malware, and weak password risks." },
+      { id: "basic_protections", label: "Basic protections checklist", type: "checklist", description: "Strong passwords & password managers, 2FA/MFA, safe browsing & email hygiene." },
+      { id: "security_principles", label: "Security principles", type: "question", description: "Explain least privilege, need-to-know access, and keeping systems updated." },
+    ],
+  },
+  {
+    number: 1,
+    name: "Device & Network Security",
+    description: "Protect your devices, networks, and data",
+    duration: "2-3 weeks",
+    tasks: [
+      { id: "device_security", label: "Device security audit", type: "question", description: "List steps to secure devices: OS updates, antivirus, firewalls, physical security." },
+      { id: "network_security", label: "Network security practices", type: "question", description: "Describe secure Wi-Fi, VPN practices, and public Wi-Fi risks." },
+      { id: "data_protection", label: "Data protection plan", type: "question", description: "Explain backup strategy, encryption, and sensitive vs public data handling." },
+    ],
+  },
+  {
+    number: 2,
+    name: "Application & Behavioral Security",
+    description: "Integrate security practices into daily workflow",
+    duration: "2-3 weeks",
+    tasks: [
+      { id: "safe_collaboration", label: "Safe collaboration practices", type: "question", description: "How do you securely share files and identify risky apps or links?" },
+      { id: "social_engineering", label: "Social engineering awareness", type: "checklist", description: "Recognize manipulation attempts and respond safely to suspicious requests." },
+      { id: "incident_reporting", label: "Incident reporting plan", type: "question", description: "How to escalate suspicious activity and create a security-conscious culture." },
+    ],
+  },
+  {
+    number: 3,
+    name: "Metrics, Monitoring & Leadership",
+    description: "Track, monitor, and guide security in your environment",
+    duration: "Ongoing",
+    tasks: [
+      { id: "security_metrics", label: "Identify security metrics", type: "question", description: "What KPIs to track: incident rate, phishing click rate, patch compliance." },
+      { id: "monitoring_alerts", label: "Monitoring & alerts", type: "checklist", description: "Learn to interpret logs, reports, and dashboards for security monitoring." },
+      { id: "security_leadership", label: "Security leadership plan", type: "question", description: "Educate peers, promote policies, and respond to incidents effectively." },
     ],
   },
 ];

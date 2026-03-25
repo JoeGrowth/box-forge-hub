@@ -13,6 +13,7 @@ import {
   SKILL_PTC_PHASES,
   IDEA_PTC_PHASES,
   SCALING_PATH_PHASES,
+  SECURITY_PHASES,
 } from "@/hooks/useLearningJourneys";
 import { useAuth } from "@/hooks/useAuth";
 import { ArrowLeft, ArrowRight, CheckCircle, Clock, Send, Loader2, Award, Rocket } from "lucide-react";
@@ -52,6 +53,8 @@ export const JourneyPhaseView = ({ journeyType, onBack }: JourneyPhaseViewProps)
       ? SKILL_PTC_PHASES
       : journeyType === "idea_ptc"
       ? IDEA_PTC_PHASES
+      : journeyType === "security_literacy"
+      ? SECURITY_PHASES
       : SCALING_PATH_PHASES;
 
   const phase = phases[currentPhase];
@@ -154,6 +157,8 @@ export const JourneyPhaseView = ({ journeyType, onBack }: JourneyPhaseViewProps)
         return "Idea PTC Journey";
       case "scaling_path":
         return "Scaling Path Journey";
+      case "security_literacy":
+        return "Security Literacy Journey";
     }
   };
 
@@ -342,7 +347,7 @@ export const JourneyPhaseView = ({ journeyType, onBack }: JourneyPhaseViewProps)
                     🎉 Congratulations! You're Certified!
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Your {journeyType === "scaling_path" ? "Consultant" : journeyType === "skill_ptc" ? "Co-Builder" : "Initiator"} certification has been approved.
+                    Your {journeyType === "scaling_path" ? "Consultant" : journeyType === "skill_ptc" ? "Co-Builder" : journeyType === "security_literacy" ? "Security Literate Professional" : "Initiator"} certification has been approved.
                   </p>
                 </div>
               </div>

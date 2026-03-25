@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Users, Briefcase, MapPin, ArrowRight, Filter, Rocket, Loader2, Plus, GraduationCap, FileText, Globe, Lightbulb, DollarSign } from "lucide-react";
+import { Search, Users, Briefcase, MapPin, ArrowRight, Filter, Rocket, Loader2, Plus, GraduationCap, FileText, Globe, Lightbulb, DollarSign, Shield } from "lucide-react";
 import { DirectorySkeletonGrid } from "@/components/ui/skeleton-card";
 
 interface StartupIdea {
@@ -173,6 +173,18 @@ const Opportunities = () => {
       icon: DollarSign,
       bgColor: "bg-amber-500/10",
       iconColor: "text-amber-600",
+      link: "/journey",
+    },
+    {
+      id: "b4-security",
+      title: "Learn to Be Secure",
+      description: "Practical security decisions, risk awareness, security best practices, and behavioral habits for professionals.",
+      format: "Interactive Journey",
+      duration: "4 Phases",
+      sector: "Cybersecurity",
+      icon: Shield,
+      bgColor: "bg-red-500/10",
+      iconColor: "text-red-600",
       link: "/journey",
     },
   ];

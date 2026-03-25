@@ -23,7 +23,11 @@ import {
   Play,
   Clock,
   AlertCircle,
-  Award
+  Award,
+  Shield,
+  Wifi,
+  UserCheck,
+  BarChart3
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,6 +36,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { InitiatorQuizDialog } from "@/components/learning/InitiatorQuizDialog";
 import { CoBuilderQuizDialog } from "@/components/learning/CoBuilderQuizDialog";
 import { FinanceQuizDialog } from "@/components/learning/FinanceQuizDialog";
+import { SecurityQuizDialog } from "@/components/learning/SecurityQuizDialog";
 
 
 interface JourneyStep {
@@ -155,6 +160,62 @@ const FINANCE_STEPS: JourneyStep[] = [
   },
 ];
 
+const SECURITY_STEPS: JourneyStep[] = [
+  {
+    step: 1,
+    title: "Security Fundamentals & Awareness",
+    subtitle: "Foundations",
+    icon: Shield,
+    description: "Master the basics of cybersecurity and risk awareness. Build a security mindset and learn to protect yourself.",
+    details: [
+      "Security mindset — think like a defender",
+      "Common threats: phishing, social engineering, malware",
+      "Basic protections: strong passwords, 2FA, safe browsing",
+      "Principles: least privilege, need-to-know access",
+    ],
+    color: "from-red-500 to-orange-500",
+  },
+  {
+    step: 2,
+    title: "Device & Network Security",
+    subtitle: "Infrastructure",
+    icon: Wifi,
+    description: "Protect your devices, networks, and data. Learn to secure your digital environment.",
+    details: [
+      "Device security: OS updates, antivirus, firewalls",
+      "Network security: secure Wi-Fi, VPN usage",
+      "Data protection: backups, encryption, secure sharing",
+    ],
+    color: "from-blue-500 to-indigo-500",
+  },
+  {
+    step: 3,
+    title: "Application & Behavioral Security",
+    subtitle: "Daily Habits",
+    icon: UserCheck,
+    description: "Integrate security practices into daily workflow. Act securely instinctively.",
+    details: [
+      "Safe collaboration and file sharing",
+      "Social engineering awareness and defense",
+      "Incident reporting and security culture",
+    ],
+    color: "from-violet-500 to-purple-500",
+  },
+  {
+    step: 4,
+    title: "Metrics, Monitoring & Leadership",
+    subtitle: "Leadership",
+    icon: BarChart3,
+    description: "Track, monitor, and guide security in your environment. Lead by example.",
+    details: [
+      "Security metrics and KPIs",
+      "Monitoring, alerts, and log interpretation",
+      "Security leadership and peer education",
+    ],
+    color: "from-rose-500 to-pink-500",
+  },
+];
+
 const COBUILDER_STEPS: JourneyStep[] = [
   {
     step: 1,
@@ -197,7 +258,7 @@ const COBUILDER_STEPS: JourneyStep[] = [
   },
 ];
 
-type ActiveSection = "initiator" | "cobuilder" | "finance";
+type ActiveSection = "initiator" | "cobuilder" | "finance" | "security";
 
 const Journey = () => {
   const { user, loading: authLoading } = useAuth();
@@ -207,7 +268,7 @@ const Journey = () => {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<ActiveSection>(() => {
     const section = searchParams.get("section");
-    if (section === "initiator" || section === "cobuilder" || section === "finance") {
+    if (section === "initiator" || section === "cobuilder" || section === "finance" || section === "security") {
       return section;
     }
     return "initiator";
@@ -216,6 +277,7 @@ const Journey = () => {
     initiator: {},
     cobuilder: {},
     finance: {},
+    security: {},
   });
   const [quizDialogOpen, setQuizDialogOpen] = useState(false);
   const [selectedStep, setSelectedStep] = useState<number>(1);
@@ -228,6 +290,7 @@ const Journey = () => {
 
   const [cobuilderQuizOpen, setCobuilderQuizOpen] = useState(false);
   const [financeQuizOpen, setFinanceQuizOpen] = useState(false);
+  const [securityQuizOpen, setSecurityQuizOpen] = useState(false);
 
   // Map journey types to section names
   const getJourneyTypeForSection = (section: ActiveSection): string => {
@@ -238,6 +301,8 @@ const Journey = () => {
         return "skill_ptc";
       case "finance":
         return "finance_literacy";
+      case "security":
+        return "security_literacy";
       default:
         return "";
     }
@@ -252,6 +317,8 @@ const Journey = () => {
         return COBUILDER_STEPS.length;
       case "finance":
         return FINANCE_STEPS.length;
+      case "security":
+        return SECURITY_STEPS.length;
       default:
         return 0;
     }
@@ -315,6 +382,8 @@ const Journey = () => {
         return certifications.some(c => c.certification_type === "cobuilder_b4");
       case "finance":
         return certifications.some(c => c.certification_type === "finance_literacy");
+      case "security":
+        return certifications.some(c => c.certification_type === "security_literacy");
       default:
         return false;
     }
@@ -349,6 +418,8 @@ const Journey = () => {
       setCobuilderQuizOpen(true);
     } else if (section === "finance") {
       setFinanceQuizOpen(true);
+    } else if (section === "security") {
+      setSecurityQuizOpen(true);
     }
   };
 
@@ -400,6 +471,8 @@ const Journey = () => {
         return COBUILDER_STEPS;
       case "finance":
         return FINANCE_STEPS;
+      case "security":
+        return SECURITY_STEPS;
     }
   };
 
@@ -428,6 +501,14 @@ const Journey = () => {
           icon: TrendingUp,
           color: "from-emerald-500 to-green-600",
           outcome: "You become a Certified Corporate Finance Professional — confident in reading statements, budgeting, decision-making, and advising others.",
+        };
+      case "security":
+        return {
+          title: "Learn to Be Secure",
+          description: "A 4-step journey to gain practical security literacy",
+          icon: Shield,
+          color: "from-red-500 to-orange-500",
+          outcome: "You become a Certified Security Literate Professional — aware of threats, confident in securing devices, able to act securely, and capable of advising peers.",
         };
     }
   };
@@ -490,6 +571,17 @@ const Journey = () => {
                     <TrendingUp className="w-4 h-4 inline mr-2" />
                     Learn Finance
                   </button>
+                  <button
+                    onClick={() => setActiveSection("security")}
+                    className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                      activeSection === "security"
+                        ? "bg-background shadow-sm text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Shield className="w-4 h-4 inline mr-2" />
+                    Learn to Be Secure
+                  </button>
                 </div>
               </div>
 
@@ -545,10 +637,11 @@ const Journey = () => {
                 )}
 
                 {/* Concept Explanation */}
-                <Card className={`border-${activeSection === 'initiator' ? 'amber' : activeSection === 'cobuilder' ? 'teal' : activeSection === 'finance' ? 'emerald' : 'purple'}-500/20 bg-gradient-to-br ${
+                <Card className={`border-${activeSection === 'initiator' ? 'amber' : activeSection === 'cobuilder' ? 'teal' : activeSection === 'finance' ? 'emerald' : activeSection === 'security' ? 'red' : 'purple'}-500/20 bg-gradient-to-br ${
                   activeSection === 'initiator' ? 'from-amber-500/5 to-orange-500/5' :
                   activeSection === 'cobuilder' ? 'from-teal-500/5 to-cyan-500/5' :
                   activeSection === 'finance' ? 'from-emerald-500/5 to-green-500/5' :
+                  activeSection === 'security' ? 'from-red-500/5 to-orange-500/5' :
                   'from-purple-500/5 to-violet-500/5'
                 }`}>
                   <CardContent className="pt-6">
@@ -588,6 +681,7 @@ const Journey = () => {
                       activeSection === 'initiator' ? 'from-amber-500 via-orange-500 to-purple-500' :
                       activeSection === 'cobuilder' ? 'from-teal-500 via-cyan-500 to-indigo-500' :
                       activeSection === 'finance' ? 'from-emerald-500 via-blue-500 to-pink-500' :
+                      activeSection === 'security' ? 'from-red-500 via-orange-500 to-pink-500' :
                       'from-purple-500 via-fuchsia-500 to-rose-500'
                     } hidden md:block`}
                     style={{ transform: "translateX(-50%)" }}
@@ -724,10 +818,11 @@ const Journey = () => {
                 </div>
 
                 {/* Outcome Message */}
-                <Card className={`border-${activeSection === 'initiator' ? 'orange' : activeSection === 'cobuilder' ? 'cyan' : activeSection === 'finance' ? 'emerald' : 'violet'}-500/20 bg-gradient-to-br ${
+                <Card className={`border-${activeSection === 'initiator' ? 'orange' : activeSection === 'cobuilder' ? 'cyan' : activeSection === 'finance' ? 'emerald' : activeSection === 'security' ? 'red' : 'violet'}-500/20 bg-gradient-to-br ${
                   activeSection === 'initiator' ? 'from-orange-500/5 to-red-500/5' :
                   activeSection === 'cobuilder' ? 'from-cyan-500/5 to-blue-500/5' :
                   activeSection === 'finance' ? 'from-emerald-500/5 to-green-500/5' :
+                  activeSection === 'security' ? 'from-red-500/5 to-orange-500/5' :
                   'from-violet-500/5 to-purple-500/5'
                 }`}>
                   <CardContent className="pt-6">
@@ -771,6 +866,14 @@ const Journey = () => {
       <FinanceQuizDialog
         open={financeQuizOpen}
         onOpenChange={setFinanceQuizOpen}
+        stepNumber={selectedStep}
+        onComplete={handleStepComplete}
+      />
+
+      {/* Quiz Dialog for Security */}
+      <SecurityQuizDialog
+        open={securityQuizOpen}
+        onOpenChange={setSecurityQuizOpen}
         stepNumber={selectedStep}
         onComplete={handleStepComplete}
       />
