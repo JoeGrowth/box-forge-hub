@@ -255,7 +255,7 @@ const COBUILDER_STEPS: JourneyStep[] = [
   },
 ];
 
-type ActiveSection = "initiator" | "cobuilder" | "finance";
+type ActiveSection = "initiator" | "cobuilder" | "finance" | "security";
 
 const Journey = () => {
   const { user, loading: authLoading } = useAuth();
