@@ -681,6 +681,7 @@ const Journey = () => {
                       activeSection === 'initiator' ? 'from-amber-500 via-orange-500 to-purple-500' :
                       activeSection === 'cobuilder' ? 'from-teal-500 via-cyan-500 to-indigo-500' :
                       activeSection === 'finance' ? 'from-emerald-500 via-blue-500 to-pink-500' :
+                      activeSection === 'security' ? 'from-red-500 via-orange-500 to-pink-500' :
                       'from-purple-500 via-fuchsia-500 to-rose-500'
                     } hidden md:block`}
                     style={{ transform: "translateX(-50%)" }}
