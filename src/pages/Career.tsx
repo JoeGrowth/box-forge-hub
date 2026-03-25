@@ -56,7 +56,7 @@ const steps = [
     title: "Apply for a Tender",
     description:
       "Find consulting and project tenders that match your Natural Role and apply with your track record.",
-    link: "/opportunities",
+    link: "/opportunities?tab=tenders",
     cta: "View Tenders",
   },
 ];
