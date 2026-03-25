@@ -468,7 +468,7 @@ const Resume = () => {
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <FileText className="w-8 h-8" />
-                  <h1 className="font-display text-3xl font-bold">Your Resume</h1>
+                  <h1 className="font-display text-3xl font-bold">Profile Summary</h1>
                 </div>
                 <p className="text-primary-foreground/80 max-w-xl mb-4">
                   Track your journey progress and add new experiences as you grow. 
