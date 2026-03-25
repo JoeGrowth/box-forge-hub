@@ -37,7 +37,6 @@ import { InitiatorQuizDialog } from "@/components/learning/InitiatorQuizDialog";
 import { CoBuilderQuizDialog } from "@/components/learning/CoBuilderQuizDialog";
 import { FinanceQuizDialog } from "@/components/learning/FinanceQuizDialog";
 import { SecurityQuizDialog } from "@/components/learning/SecurityQuizDialog";
-import { Shield } from "lucide-react";
 
 
 interface JourneyStep {
