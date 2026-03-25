@@ -637,10 +637,11 @@ const Journey = () => {
                 )}
 
                 {/* Concept Explanation */}
-                <Card className={`border-${activeSection === 'initiator' ? 'amber' : activeSection === 'cobuilder' ? 'teal' : activeSection === 'finance' ? 'emerald' : 'purple'}-500/20 bg-gradient-to-br ${
+                <Card className={`border-${activeSection === 'initiator' ? 'amber' : activeSection === 'cobuilder' ? 'teal' : activeSection === 'finance' ? 'emerald' : activeSection === 'security' ? 'red' : 'purple'}-500/20 bg-gradient-to-br ${
                   activeSection === 'initiator' ? 'from-amber-500/5 to-orange-500/5' :
                   activeSection === 'cobuilder' ? 'from-teal-500/5 to-cyan-500/5' :
                   activeSection === 'finance' ? 'from-emerald-500/5 to-green-500/5' :
+                  activeSection === 'security' ? 'from-red-500/5 to-orange-500/5' :
                   'from-purple-500/5 to-violet-500/5'
                 }`}>
                   <CardContent className="pt-6">
