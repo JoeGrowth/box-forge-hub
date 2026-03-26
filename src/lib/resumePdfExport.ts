@@ -184,16 +184,18 @@ export function exportResumeToPdf(data: ResumeData) {
     const items = text.split(/[•\-]\s*|\n/).map(s => s.trim()).filter(Boolean);
     items.forEach((item) => {
       const lines: string[] = doc.splitTextToSize(item, contentWidth - 14);
-      checkPage(lines.length * 5 + 2);
-      doc.setTextColor(...TEAL);
-      doc.text("●", marginL + 3, y);
+      checkPage(lines.length * 5 + 3);
+      // Teal filled circle as bullet
+      doc.setFillColor(...TEAL);
+      doc.circle(marginL + 4.5, y - 1.3, 1.2, "F");
       doc.setTextColor(...BODY);
-      lines.forEach((line: string) => {
-        doc.text(line, marginL + 9, y);
+      lines.forEach((line: string, idx: number) => {
+        doc.text(line, marginL + 10, y);
         y += 5;
       });
+      y += 1;
     });
-    y += 3;
+    y += 2;
   };
 
   const addSubSection = (title: string) => {
