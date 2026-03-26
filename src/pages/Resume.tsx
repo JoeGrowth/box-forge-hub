@@ -38,7 +38,9 @@ import {
   FolderOpen,
   Award,
   Lightbulb,
-  BookOpen
+  BookOpen,
+  Wand2,
+  ImageIcon
 } from "lucide-react";
 import { ScrollToTopButton } from "@/components/layout/ScrollToTopButton";
 import { exportResumeToPdf } from "@/lib/resumePdfExport";
@@ -92,6 +94,8 @@ const Resume = () => {
     summary_statement: string | null;
   } | null>(null);
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+  const [titleIconUrl, setTitleIconUrl] = useState<string | null>(null);
+  const [isGeneratingIcon, setIsGeneratingIcon] = useState(false);
   const [profileEditData, setProfileEditData] = useState({
     professional_title: "",
     bio: "",
@@ -235,6 +239,62 @@ const Resume = () => {
     
     fetchProfile();
   }, [user]);
+
+  // Load existing title icon from storage
+  useEffect(() => {
+    if (!user) return;
+    const { data } = supabase.storage
+      .from("avatars")
+      .getPublicUrl(`title-icons/${user.id}.png`);
+    const img = new Image();
+    img.onload = () => setTitleIconUrl(`${data.publicUrl}?t=${Date.now()}`);
+    img.onerror = () => {
+      const { data: webpData } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(`title-icons/${user.id}.webp`);
+      const img2 = new Image();
+      img2.onload = () => setTitleIconUrl(`${webpData.publicUrl}?t=${Date.now()}`);
+      img2.onerror = () => setTitleIconUrl(null);
+      img2.src = webpData.publicUrl;
+    };
+    img.src = data.publicUrl;
+  }, [user]);
+
+  const handleGenerateTitleIcon = async () => {
+    if (!user) return;
+    setIsGeneratingIcon(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-title-icon", {
+        body: {
+          profileData: {
+            professional_title: profile?.professional_title,
+            bio: profile?.bio,
+            primary_skills: profile?.primary_skills,
+          },
+          naturalRoleData: {
+            description: naturalRole?.description,
+          },
+        },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      setTitleIconUrl(data.iconUrl);
+      toast({
+        title: "Icon Generated",
+        description: "Your professional title icon has been created.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Generation Failed",
+        description: error.message || "Failed to generate icon. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingIcon(false);
+    }
+  };
 
   const handleExportPdf = async () => {
     if (!user) return;
@@ -852,19 +912,40 @@ const Resume = () => {
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${profile?.professional_title ? 'bg-b4-teal/10' : 'bg-muted'}`}>
-                          <Briefcase className={`w-4 h-4 ${profile?.professional_title ? 'text-b4-teal' : 'text-muted-foreground'}`} />
-                        </div>
+                        {titleIconUrl ? (
+                          <img src={titleIconUrl} alt="Professional icon" className="w-8 h-8 rounded-lg object-cover" />
+                        ) : (
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${profile?.professional_title ? 'bg-b4-teal/10' : 'bg-muted'}`}>
+                            <Briefcase className={`w-4 h-4 ${profile?.professional_title ? 'text-b4-teal' : 'text-muted-foreground'}`} />
+                          </div>
+                        )}
                         Professional Title
                       </CardTitle>
-                      <SectionActions
-                        hasContent={!!profile?.professional_title}
-                        isEditing={isEditing}
-                        showHistory={false}
-                        onEdit={() => startEditing('section-professional-title')}
-                        onToggleHistory={() => {}}
-                        onAdd={() => startEditing('section-professional-title')}
-                      />
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleGenerateTitleIcon}
+                          disabled={isGeneratingIcon}
+                          className="gap-1.5 text-xs"
+                          title="Generate an AI icon based on your profile"
+                        >
+                          {isGeneratingIcon ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Wand2 className="w-3.5 h-3.5" />
+                          )}
+                          {isGeneratingIcon ? "Generating..." : titleIconUrl ? "Regenerate Icon" : "AI Icon"}
+                        </Button>
+                        <SectionActions
+                          hasContent={!!profile?.professional_title}
+                          isEditing={isEditing}
+                          showHistory={false}
+                          onEdit={() => startEditing('section-professional-title')}
+                          onToggleHistory={() => {}}
+                          onAdd={() => startEditing('section-professional-title')}
+                        />
+                      </div>
                     </div>
                     <CardDescription>
                       Your current professional title or headline
@@ -878,7 +959,12 @@ const Resume = () => {
                         placeholder="e.g., Senior Product Strategist, Full-Stack Developer, Business Consultant..."
                       />
                     ) : profile?.professional_title ? (
-                      <p className="text-foreground font-medium text-lg bg-muted/30 rounded-lg p-4">{profile.professional_title}</p>
+                      <div className="flex items-center gap-4 bg-muted/30 rounded-lg p-4">
+                        {titleIconUrl && (
+                          <img src={titleIconUrl} alt="Professional icon" className="w-16 h-16 rounded-xl object-cover border border-border shadow-sm" />
+                        )}
+                        <p className="text-foreground font-medium text-lg">{profile.professional_title}</p>
+                      </div>
                     ) : (
                       <button onClick={() => startEditing('section-professional-title')} className="w-full text-center py-4 text-muted-foreground hover:bg-muted/30 rounded-lg transition-colors cursor-pointer">
                         <Briefcase className="w-8 h-8 mx-auto mb-2 opacity-40" />
