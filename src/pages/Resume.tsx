@@ -1012,6 +1012,16 @@ const Resume = () => {
                             rows={3}
                             className="mt-1"
                           />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={isGeneratingBio}
+                            onClick={handleGenerateBio}
+                            className="gap-2 mt-2"
+                          >
+                            {isGeneratingBio ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                            {isGeneratingBio ? "Generating..." : "Generate with AI"}
+                          </Button>
                         </div>
                         <div>
                           <Label className="text-sm font-medium text-foreground">Years of Experience</Label>
