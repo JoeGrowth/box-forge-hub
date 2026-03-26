@@ -848,20 +848,12 @@ const Scale = () => {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  disabled={fiveElementsLoading[idea.id]}
                                   onClick={() => {
-                                    if (fiveElementsData[idea.id]) {
-                                      setFiveElementsOpen(prev => ({ ...prev, [idea.id]: !prev[idea.id] }));
-                                    } else {
-                                      handleGenerateFiveElements(idea);
-                                    }
+                                    setFiveElementsIdea({ id: idea.id, title: idea.title, description: idea.description });
+                                    setFiveElementsDialogOpen(true);
                                   }}
                                 >
-                                  {fiveElementsLoading[idea.id] ? (
-                                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                                  ) : (
-                                    <Layers className="w-4 h-4 mr-1" />
-                                  )}
+                                  <Layers className="w-4 h-4 mr-1" />
                                   5 Elements
                                 </Button>
 
