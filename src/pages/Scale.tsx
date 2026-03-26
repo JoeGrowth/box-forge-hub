@@ -861,6 +861,27 @@ const Scale = () => {
                                   Team
                                 </Button>
 
+                                {/* 5 Elements button */}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={fiveElementsLoading[idea.id]}
+                                  onClick={() => {
+                                    if (fiveElementsData[idea.id]) {
+                                      setFiveElementsOpen(prev => ({ ...prev, [idea.id]: !prev[idea.id] }));
+                                    } else {
+                                      handleGenerateFiveElements(idea);
+                                    }
+                                  }}
+                                >
+                                  {fiveElementsLoading[idea.id] ? (
+                                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                  ) : (
+                                    <Layers className="w-4 h-4 mr-1" />
+                                  )}
+                                  5 Elements
+                                </Button>
+
                                 {/* Episodes button - shows when development is completed */}
                                 {idea.development_completed_at && (
                                   <Button
