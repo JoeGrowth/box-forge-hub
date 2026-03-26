@@ -57,6 +57,7 @@ import { IdeaGrowthDialog } from "@/components/idea/IdeaGrowthDialog";
 import { IdeaEpisodesDialog } from "@/components/idea/IdeaEpisodesDialog";
 import { TeamManagementDialog } from "@/components/idea/TeamManagementDialog";
 import { CoBuilderApplicationsSection } from "@/components/scale/CoBuilderApplicationsSection";
+import { FiveElementsDialog } from "@/components/idea/FiveElementsDialog";
 
 import { format } from "date-fns";
 import { Film, Shield, Layers } from "lucide-react";
