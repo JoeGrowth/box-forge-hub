@@ -28,41 +28,46 @@ export function exportResumeToPdf(data: ResumeData) {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const marginL = 22;
-  const marginR = 22;
+  const marginL = 20;
+  const marginR = 20;
   const contentWidth = pageWidth - marginL - marginR;
   let y = 0;
 
   // ─── Palette ───
   const TEAL: [number, number, number] = [0, 128, 128];
-  const TEAL_LIGHT: [number, number, number] = [230, 245, 245];
-  const DARK: [number, number, number] = [25, 25, 25];
-  const BODY: [number, number, number] = [50, 50, 50];
-  const MUTED: [number, number, number] = [120, 120, 120];
-  const LIGHT_BG: [number, number, number] = [248, 248, 248];
-  const DIVIDER: [number, number, number] = [210, 210, 210];
+  const TEAL_LIGHT: [number, number, number] = [235, 248, 248];
+  const DARK: [number, number, number] = [20, 20, 20];
+  const BODY: [number, number, number] = [45, 45, 45];
+  const MUTED: [number, number, number] = [110, 110, 110];
+  const LIGHT_BG: [number, number, number] = [245, 247, 250];
+  const DIVIDER: [number, number, number] = [200, 210, 215];
   const WHITE: [number, number, number] = [255, 255, 255];
+  const NAVY: [number, number, number] = [15, 30, 55];
 
   // ─── Page management ───
   const footerY = pageHeight - 14;
-  const safeBottom = footerY - 6;
+  const safeBottom = footerY - 8;
 
   const checkPage = (needed: number = 12) => {
     if (y > safeBottom - needed) {
       doc.addPage();
-      y = 24;
+      y = 22;
     }
   };
 
   // ═══════════════════════════════════════════════
-  //  COVER HEADER BAND
+  //  HEADER BAND — navy with teal accent
   // ═══════════════════════════════════════════════
+  doc.setFillColor(...NAVY);
+  doc.rect(0, 0, pageWidth, 48, "F");
+
+  // Teal accent strip at bottom of header
   doc.setFillColor(...TEAL);
-  doc.rect(0, 0, pageWidth, 52, "F");
+  doc.rect(0, 48, pageWidth, 2.5, "F");
 
   // Name
-  y = 20;
-  doc.setFontSize(22);
+  y = 18;
+  doc.setFontSize(20);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...WHITE);
   const displayName = data.userName || "Profile Summary";
@@ -70,135 +75,132 @@ export function exportResumeToPdf(data: ResumeData) {
 
   // Professional title
   if (data.professionalTitle) {
-    y += 9;
-    doc.setFontSize(12);
+    y += 8;
+    doc.setFontSize(11);
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(220, 250, 250);
+    doc.setTextColor(180, 220, 220);
     doc.text(data.professionalTitle, marginL, y);
   }
 
   // Date on right
-  doc.setFontSize(8);
+  doc.setFontSize(7.5);
   doc.setFont("helvetica", "normal");
-  doc.setTextColor(200, 230, 230);
-  doc.text(new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }), pageWidth - marginR, 44, { align: "right" });
+  doc.setTextColor(140, 170, 190);
+  doc.text(
+    new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
+    pageWidth - marginR, 40, { align: "right" }
+  );
 
-  y = 62;
+  y = 60;
 
   // ═══════════════════════════════════════════════
-  //  SUMMARY STATEMENT — hero block right after header
+  //  SUMMARY STATEMENT — hero quote block
   // ═══════════════════════════════════════════════
   if (data.summaryStatement) {
-    const summaryLines = doc.splitTextToSize(data.summaryStatement, contentWidth - 20);
-    const boxH = summaryLines.length * 5.5 + 14;
+    const summaryLines = doc.splitTextToSize(data.summaryStatement, contentWidth - 18);
+    const boxH = summaryLines.length * 5.2 + 12;
     checkPage(boxH + 4);
 
     doc.setFillColor(...TEAL_LIGHT);
-    doc.roundedRect(marginL, y - 2, contentWidth, boxH, 3, 3, "F");
+    doc.roundedRect(marginL, y - 2, contentWidth, boxH, 2.5, 2.5, "F");
 
     // Left accent bar
     doc.setFillColor(...TEAL);
-    doc.rect(marginL, y - 2, 3, boxH, "F");
+    doc.rect(marginL, y - 2, 2.5, boxH, "F");
 
-    doc.setFontSize(10);
+    doc.setFontSize(9.5);
     doc.setFont("helvetica", "italic");
     doc.setTextColor(...BODY);
-    let sy = y + 8;
+    let sy = y + 7;
     summaryLines.forEach((line: string) => {
-      doc.text(line, marginL + 12, sy);
-      sy += 5.5;
+      doc.text(line, marginL + 10, sy);
+      sy += 5.2;
     });
-    y = sy + 6;
+    y = sy + 5;
   }
 
   // ─── Section helpers ───
   const addSectionHeader = (title: string) => {
-    checkPage(22);
-    // Thin teal line
+    checkPage(20);
+    y += 2;
+    // Teal line
     doc.setDrawColor(...TEAL);
-    doc.setLineWidth(0.6);
+    doc.setLineWidth(0.5);
     doc.line(marginL, y, marginL + contentWidth, y);
-    y += 8;
+    y += 7;
 
-    doc.setFontSize(12);
+    doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(...TEAL);
     doc.text(title.toUpperCase(), marginL, y);
-    y += 8;
+    y += 7;
   };
 
   const addBodyText = (text: string) => {
-    doc.setFontSize(10);
+    doc.setFontSize(9.5);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(...BODY);
-    const lines = doc.splitTextToSize(text, contentWidth - 4);
+    const lines = doc.splitTextToSize(text, contentWidth - 2);
     lines.forEach((line: string) => {
       checkPage();
-      doc.text(line, marginL + 2, y);
-      y += 5.2;
+      doc.text(line, marginL + 1, y);
+      y += 5;
     });
-    y += 3;
+    y += 2;
   };
 
   const addLabelValue = (label: string, value: string | null | undefined) => {
     if (!value) return;
-    checkPage(14);
-    doc.setFontSize(9);
+    checkPage(12);
+    doc.setFontSize(8.5);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(...MUTED);
-    doc.text(label.toUpperCase(), marginL + 2, y);
-    y += 5;
+    doc.text(label.toUpperCase(), marginL + 1, y);
+    y += 4.5;
 
-    doc.setFontSize(10);
+    doc.setFontSize(9.5);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(...BODY);
-    const lines = doc.splitTextToSize(value, contentWidth - 6);
+    const lines = doc.splitTextToSize(value, contentWidth - 4);
     lines.forEach((line: string) => {
       checkPage();
-      doc.text(line, marginL + 2, y);
-      y += 5.2;
+      doc.text(line, marginL + 1, y);
+      y += 5;
     });
-    y += 3;
+    y += 2;
   };
 
   const addBulletList = (text: string) => {
-    doc.setFontSize(10);
+    doc.setFontSize(9.5);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(...BODY);
-    // Split by bullet chars or newlines
     const items = text.split(/[•\-]\s*|\n/).map(s => s.trim()).filter(Boolean);
     items.forEach((item) => {
-      checkPage(8);
-      doc.text("•", marginL + 4, y);
-      const lines = doc.splitTextToSize(item, contentWidth - 14);
-      lines.forEach((line: string, idx: number) => {
+      checkPage(7);
+      doc.setTextColor(...TEAL);
+      doc.text("●", marginL + 3, y);
+      doc.setTextColor(...BODY);
+      const lines = doc.splitTextToSize(item, contentWidth - 12);
+      lines.forEach((line: string) => {
         checkPage();
-        doc.text(line, marginL + 10, y);
-        y += 5.2;
+        doc.text(line, marginL + 9, y);
+        y += 5;
       });
     });
     y += 2;
   };
 
   const addSubSection = (title: string) => {
-    checkPage(14);
-    doc.setFontSize(10);
+    checkPage(12);
+    doc.setFontSize(9.5);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(...DARK);
-    doc.text(title, marginL + 2, y);
-    y += 6;
+    doc.text(title, marginL + 1, y);
+    y += 5.5;
   };
 
   // ═══════════════════════════════════════════════
-  //  1. NATURAL ROLE
-  // ═══════════════════════════════════════════════
-  if (data.description) {
-    addSectionHeader("Natural Role");
-    addBodyText(data.description);
-  }
-
-  // ═══════════════════════════════════════════════
-  //  2. PROFILE OVERVIEW
+  //  1. PROFILE OVERVIEW
   // ═══════════════════════════════════════════════
   if (data.bio) {
     addSectionHeader("Profile Overview");
@@ -206,7 +208,7 @@ export function exportResumeToPdf(data: ResumeData) {
   }
 
   // ═══════════════════════════════════════════════
-  //  3. PROFESSIONAL EXPERIENCE
+  //  2. PROFESSIONAL EXPERIENCE
   // ═══════════════════════════════════════════════
   const hasPractice = data.practiceCheck && data.promiseCheck;
   const hasTraining = data.trainingCheck && data.promiseCheck;
@@ -239,7 +241,7 @@ export function exportResumeToPdf(data: ResumeData) {
   }
 
   // ═══════════════════════════════════════════════
-  //  4. KEY PROJECTS & SOLUTIONS
+  //  3. KEY PROJECTS & SOLUTIONS
   // ═══════════════════════════════════════════════
   if (data.keyProjects) {
     addSectionHeader("Key Projects & Solutions");
@@ -247,49 +249,45 @@ export function exportResumeToPdf(data: ResumeData) {
   }
 
   // ═══════════════════════════════════════════════
-  //  5. SKILLS & COMPETENCIES
+  //  4. SKILLS & COMPETENCIES — tag chips
   // ═══════════════════════════════════════════════
   if (data.primarySkills) {
     addSectionHeader("Skills & Competencies");
-    // Render as inline chips-style or comma list
     const skills = data.primarySkills.split(",").map(s => s.trim()).filter(Boolean);
     if (skills.length > 0) {
-      checkPage(14);
-      doc.setFontSize(10);
+      doc.setFontSize(9);
       doc.setFont("helvetica", "normal");
-      doc.setTextColor(...BODY);
 
-      // Render as a wrapped tag row
-      let xPos = marginL + 2;
-      const tagH = 7;
-      const tagPadX = 5;
+      let xPos = marginL + 1;
+      const tagH = 6.5;
+      const tagPadX = 4.5;
       const tagGap = 3;
 
       skills.forEach((skill) => {
         const tw = doc.getTextWidth(skill) + tagPadX * 2;
         if (xPos + tw > pageWidth - marginR) {
-          xPos = marginL + 2;
+          xPos = marginL + 1;
           y += tagH + 3;
           checkPage(tagH + 4);
         }
-        // Tag background
-        doc.setFillColor(...LIGHT_BG);
-        doc.roundedRect(xPos, y - 5, tw, tagH, 2, 2, "F");
+        // Tag bg
+        doc.setFillColor(...TEAL_LIGHT);
+        doc.roundedRect(xPos, y - 4.5, tw, tagH, 1.5, 1.5, "F");
         // Tag border
-        doc.setDrawColor(...DIVIDER);
-        doc.setLineWidth(0.3);
-        doc.roundedRect(xPos, y - 5, tw, tagH, 2, 2, "S");
+        doc.setDrawColor(...TEAL);
+        doc.setLineWidth(0.25);
+        doc.roundedRect(xPos, y - 4.5, tw, tagH, 1.5, 1.5, "S");
 
-        doc.setTextColor(...BODY);
+        doc.setTextColor(...DARK);
         doc.text(skill, xPos + tagPadX, y);
         xPos += tw + tagGap;
       });
-      y += tagH + 6;
+      y += tagH + 5;
     }
   }
 
   // ═══════════════════════════════════════════════
-  //  6. EDUCATION & CERTIFICATIONS
+  //  5. EDUCATION & CERTIFICATIONS
   // ═══════════════════════════════════════════════
   if (data.educationCertifications) {
     addSectionHeader("Education & Certifications");
@@ -297,22 +295,18 @@ export function exportResumeToPdf(data: ResumeData) {
   }
 
   // ═══════════════════════════════════════════════
-  //  7. SERVICES ALIGNED TO NATURAL ROLE
+  //  6. SERVICES ALIGNED TO NATURAL ROLE
   // ═══════════════════════════════════════════════
   if (data.servicesDescription) {
     addSectionHeader("Services Aligned to Your Natural Role");
-    // Check if content has bullet points
     if (data.servicesDescription.includes("•") || data.servicesDescription.includes("-")) {
-      // Extract potential intro line (text before first bullet)
       const firstBullet = Math.min(
         data.servicesDescription.indexOf("•") >= 0 ? data.servicesDescription.indexOf("•") : 9999,
         data.servicesDescription.indexOf("\n-") >= 0 ? data.servicesDescription.indexOf("\n-") : 9999
       );
       const intro = data.servicesDescription.substring(0, firstBullet).trim();
       const rest = data.servicesDescription.substring(firstBullet).trim();
-      if (intro) {
-        addBodyText(intro);
-      }
+      if (intro) addBodyText(intro);
       addBulletList(rest);
     } else {
       addBodyText(data.servicesDescription);
@@ -320,21 +314,76 @@ export function exportResumeToPdf(data: ResumeData) {
   }
 
   // ═══════════════════════════════════════════════
-  //  8. SCALING INTEREST
+  //  7. NATURAL ROLE + SCALING INTEREST — combined end block
   // ═══════════════════════════════════════════════
-  if (data.wantsToScale !== undefined) {
-    addSectionHeader("Scaling Interest");
-    checkPage(10);
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(...BODY);
+  const hasNR = !!data.description;
+  const hasScale = data.wantsToScale !== undefined;
 
-    const badge = data.wantsToScale ? "Yes — Interested in scaling" : "Not currently seeking to scale";
-    // Small indicator dot
-    doc.setFillColor(data.wantsToScale ? 0 : 160, data.wantsToScale ? 160 : 160, data.wantsToScale ? 80 : 160);
-    doc.circle(marginL + 5, y - 1.5, 2, "F");
-    doc.text(badge, marginL + 11, y);
-    y += 10;
+  if (hasNR || hasScale) {
+    // Estimate block height
+    const nrLines = hasNR ? doc.splitTextToSize(data.description!, contentWidth - 16) : [];
+    const blockH = (hasNR ? nrLines.length * 5 + 18 : 0) + (hasScale ? 14 : 0) + 10;
+    checkPage(blockH + 6);
+
+    y += 4;
+    // Full-width navy band
+    doc.setFillColor(...NAVY);
+    const bandY = y - 2;
+    const bandH = blockH;
+    doc.roundedRect(marginL, bandY, contentWidth, bandH, 3, 3, "F");
+
+    // Teal left accent
+    doc.setFillColor(...TEAL);
+    doc.rect(marginL, bandY, 3, bandH, "F");
+
+    const innerX = marginL + 10;
+    const innerW = contentWidth - 16;
+
+    if (hasNR) {
+      y += 6;
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...TEAL);
+      doc.text("NATURAL ROLE", innerX, y);
+      y += 5.5;
+
+      doc.setFontSize(9.5);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(210, 220, 230);
+      const descLines = doc.splitTextToSize(data.description!, innerW);
+      descLines.forEach((line: string) => {
+        doc.text(line, innerX, y);
+        y += 5;
+      });
+      y += 2;
+    }
+
+    if (hasScale) {
+      if (!hasNR) y += 6;
+      // Thin separator if both sections
+      if (hasNR) {
+        doc.setDrawColor(60, 80, 100);
+        doc.setLineWidth(0.3);
+        doc.line(innerX, y - 1, innerX + innerW, y - 1);
+        y += 4;
+      }
+
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...TEAL);
+      doc.text("SCALING INTEREST", innerX, y);
+
+      const badge = data.wantsToScale ? "Yes — Interested in scaling" : "Not currently seeking to scale";
+      const dotColor: [number, number, number] = data.wantsToScale ? [0, 200, 120] : [160, 160, 160];
+      doc.setFillColor(...dotColor);
+      doc.circle(innerX + innerW - doc.getTextWidth(badge) - 8, y - 1.2, 1.8, "F");
+
+      doc.setFontSize(9.5);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(210, 220, 230);
+      doc.text(badge, innerX + innerW - doc.getTextWidth(badge) - 2, y);
+      y += 8;
+    }
   }
 
   // ═══════════════════════════════════════════════
@@ -346,21 +395,21 @@ export function exportResumeToPdf(data: ResumeData) {
 
     // Footer line
     doc.setDrawColor(...DIVIDER);
-    doc.setLineWidth(0.4);
+    doc.setLineWidth(0.3);
     doc.line(marginL, footerY - 2, pageWidth - marginR, footerY - 2);
 
-    // Left: name or "Profile Summary"
-    doc.setFontSize(7.5);
+    // Left: name
+    doc.setFontSize(7);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(...MUTED);
     doc.text(data.userName ? `${data.userName} — Profile Summary` : "Profile Summary", marginL, footerY + 2);
 
-    // Right: page number
+    // Right: page
     doc.text(`${i} / ${pageCount}`, pageWidth - marginR, footerY + 2, { align: "right" });
 
-    // Teal accent line at very bottom
+    // Bottom teal accent
     doc.setFillColor(...TEAL);
-    doc.rect(0, pageHeight - 3, pageWidth, 3, "F");
+    doc.rect(0, pageHeight - 2.5, pageWidth, 2.5, "F");
   }
 
   // ─── Save ───
