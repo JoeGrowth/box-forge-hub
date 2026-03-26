@@ -108,10 +108,18 @@ const Consulting = () => {
 
             {sellSteps.map((step, idx) => renderStep(step, idx === sellSteps.length - 1))}
 
-            {/* Next Level divider */}
+            {/* Next Level - Structure divider */}
             <div className="text-center py-6">
               <span className="inline-block text-secondary font-semibold text-sm uppercase tracking-wide mb-1">Next Level</span>
               <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">Structure What You Do</h2>
+            </div>
+
+            {structureSteps.map((step, idx) => renderStep(step, idx === structureSteps.length - 1))}
+
+            {/* Next Level - Scale divider */}
+            <div className="text-center py-6">
+              <span className="inline-block text-secondary font-semibold text-sm uppercase tracking-wide mb-1">Next Level</span>
+              <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">Scale Your Structure</h2>
             </div>
 
             {scaleSteps.map((step, idx) => renderStep(step, idx === scaleSteps.length - 1))}
