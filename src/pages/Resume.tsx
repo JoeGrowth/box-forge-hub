@@ -240,6 +240,62 @@ const Resume = () => {
     fetchProfile();
   }, [user]);
 
+  // Load existing title icon from storage
+  useEffect(() => {
+    if (!user) return;
+    const { data } = supabase.storage
+      .from("avatars")
+      .getPublicUrl(`title-icons/${user.id}.png`);
+    const img = new Image();
+    img.onload = () => setTitleIconUrl(`${data.publicUrl}?t=${Date.now()}`);
+    img.onerror = () => {
+      const { data: webpData } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(`title-icons/${user.id}.webp`);
+      const img2 = new Image();
+      img2.onload = () => setTitleIconUrl(`${webpData.publicUrl}?t=${Date.now()}`);
+      img2.onerror = () => setTitleIconUrl(null);
+      img2.src = webpData.publicUrl;
+    };
+    img.src = data.publicUrl;
+  }, [user]);
+
+  const handleGenerateTitleIcon = async () => {
+    if (!user) return;
+    setIsGeneratingIcon(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-title-icon", {
+        body: {
+          profileData: {
+            professional_title: profile?.professional_title,
+            bio: profile?.bio,
+            primary_skills: profile?.primary_skills,
+          },
+          naturalRoleData: {
+            description: naturalRole?.description,
+          },
+        },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      setTitleIconUrl(data.iconUrl);
+      toast({
+        title: "Icon Generated",
+        description: "Your professional title icon has been created.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Generation Failed",
+        description: error.message || "Failed to generate icon. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingIcon(false);
+    }
+  };
+
   const handleExportPdf = async () => {
     if (!user) return;
     
