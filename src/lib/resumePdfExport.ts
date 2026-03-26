@@ -181,7 +181,7 @@ export function exportResumeToPdf(data: ResumeData) {
   const addBulletList = (text: string) => {
     doc.setFontSize(9.5);
     doc.setFont("helvetica", "normal");
-    const items = text.split(/[•\-]\s*|\n/).map(s => s.trim()).filter(Boolean);
+    const items = text.split(/(?:^|\n)\s*[•]\s*|(?:^|\n)\s*-\s+/).map(s => s.trim()).filter(Boolean);
     items.forEach((item) => {
       const lines: string[] = doc.splitTextToSize(item, contentWidth - 14);
       checkPage(lines.length * 5 + 3);
