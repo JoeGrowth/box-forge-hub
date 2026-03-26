@@ -5,7 +5,7 @@ import { ScrollToTopButton } from "@/components/layout/ScrollToTopButton";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Compass, ShoppingBag, GraduationCap, BookOpen, FileText, Briefcase, Users, ArrowRight, ArrowLeft, Star } from "lucide-react";
+import { Compass, ShoppingBag, GraduationCap, Users, ArrowRight, ArrowLeft, Star } from "lucide-react";
 
 const STORAGE_KEY = "b4-favorite-steps";
 
