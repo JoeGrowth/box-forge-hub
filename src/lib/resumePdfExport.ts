@@ -30,6 +30,7 @@ export function exportResumeToPdf(data: ResumeData) {
   const pageHeight = doc.internal.pageSize.getHeight();
   const marginL = 20;
   const marginR = 20;
+  const maxX = pageWidth - marginR;
   const contentWidth = pageWidth - marginL - marginR;
   let y = 0;
 
@@ -39,7 +40,6 @@ export function exportResumeToPdf(data: ResumeData) {
   const DARK: [number, number, number] = [20, 20, 20];
   const BODY: [number, number, number] = [45, 45, 45];
   const MUTED: [number, number, number] = [110, 110, 110];
-  const LIGHT_BG: [number, number, number] = [245, 247, 250];
   const DIVIDER: [number, number, number] = [200, 210, 215];
   const WHITE: [number, number, number] = [255, 255, 255];
   const NAVY: [number, number, number] = [15, 30, 55];
@@ -48,87 +48,96 @@ export function exportResumeToPdf(data: ResumeData) {
   const footerY = pageHeight - 14;
   const safeBottom = footerY - 8;
 
+  const newPage = () => {
+    doc.addPage();
+    y = 22;
+  };
+
   const checkPage = (needed: number = 12) => {
-    if (y > safeBottom - needed) {
-      doc.addPage();
-      y = 22;
+    if (y + needed > safeBottom) {
+      newPage();
     }
   };
 
+  // Helper: estimate how many lines a body text will produce
+  const estimateTextHeight = (text: string, width: number, lineH = 5): number => {
+    doc.setFontSize(9.5);
+    doc.setFont("helvetica", "normal");
+    return doc.splitTextToSize(text, width).length * lineH + 4;
+  };
+
   // ═══════════════════════════════════════════════
-  //  HEADER BAND — navy with teal accent
+  //  HEADER BAND
   // ═══════════════════════════════════════════════
   doc.setFillColor(...NAVY);
   doc.rect(0, 0, pageWidth, 48, "F");
-
-  // Teal accent strip at bottom of header
   doc.setFillColor(...TEAL);
   doc.rect(0, 48, pageWidth, 2.5, "F");
 
-  // Name
   y = 18;
   doc.setFontSize(20);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...WHITE);
-  const displayName = data.userName || "Profile Summary";
-  doc.text(displayName, marginL, y);
+  doc.text(data.userName || "Profile Summary", marginL, y);
 
-  // Professional title
   if (data.professionalTitle) {
     y += 8;
     doc.setFontSize(11);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(180, 220, 220);
-    doc.text(data.professionalTitle, marginL, y);
+    const titleLines = doc.splitTextToSize(data.professionalTitle, contentWidth);
+    doc.text(titleLines[0], marginL, y);
   }
 
-  // Date on right
   doc.setFontSize(7.5);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(140, 170, 190);
   doc.text(
     new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
-    pageWidth - marginR, 40, { align: "right" }
+    maxX, 40, { align: "right" }
   );
 
   y = 60;
 
   // ═══════════════════════════════════════════════
-  //  SUMMARY STATEMENT — hero quote block
+  //  SUMMARY STATEMENT
   // ═══════════════════════════════════════════════
   if (data.summaryStatement) {
-    const summaryLines = doc.splitTextToSize(data.summaryStatement, contentWidth - 18);
-    const boxH = summaryLines.length * 5.2 + 12;
+    const textW = contentWidth - 20;
+    doc.setFontSize(9.5);
+    doc.setFont("helvetica", "italic");
+    const summaryLines: string[] = doc.splitTextToSize(data.summaryStatement, textW);
+    const lineH = 5.2;
+    const boxH = summaryLines.length * lineH + 14;
     checkPage(boxH + 4);
 
     doc.setFillColor(...TEAL_LIGHT);
     doc.roundedRect(marginL, y - 2, contentWidth, boxH, 2.5, 2.5, "F");
-
-    // Left accent bar
     doc.setFillColor(...TEAL);
     doc.rect(marginL, y - 2, 2.5, boxH, "F");
 
     doc.setFontSize(9.5);
     doc.setFont("helvetica", "italic");
     doc.setTextColor(...BODY);
-    let sy = y + 7;
+    let sy = y + 8;
     summaryLines.forEach((line: string) => {
       doc.text(line, marginL + 10, sy);
-      sy += 5.2;
+      sy += lineH;
     });
-    y = sy + 5;
+    y = sy + 6;
   }
 
   // ─── Section helpers ───
-  const addSectionHeader = (title: string) => {
-    checkPage(20);
-    y += 2;
-    // Teal line
+  // addSectionHeader now requires a minContentHeight so the header
+  // is never orphaned at the bottom of a page without content
+  const addSectionHeader = (title: string, minContentAfter: number = 20) => {
+    const needed = 16 + minContentAfter; // header height + minimum content
+    checkPage(needed);
+    y += 3;
     doc.setDrawColor(...TEAL);
     doc.setLineWidth(0.5);
-    doc.line(marginL, y, marginL + contentWidth, y);
+    doc.line(marginL, y, maxX, y);
     y += 7;
-
     doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(...TEAL);
@@ -140,30 +149,29 @@ export function exportResumeToPdf(data: ResumeData) {
     doc.setFontSize(9.5);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(...BODY);
-    const lines = doc.splitTextToSize(text, contentWidth - 2);
+    const lines: string[] = doc.splitTextToSize(text, contentWidth - 2);
     lines.forEach((line: string) => {
-      checkPage();
+      checkPage(6);
       doc.text(line, marginL + 1, y);
       y += 5;
     });
-    y += 2;
+    y += 3;
   };
 
   const addLabelValue = (label: string, value: string | null | undefined) => {
     if (!value) return;
-    checkPage(12);
+    checkPage(14);
     doc.setFontSize(8.5);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(...MUTED);
     doc.text(label.toUpperCase(), marginL + 1, y);
     y += 4.5;
-
     doc.setFontSize(9.5);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(...BODY);
-    const lines = doc.splitTextToSize(value, contentWidth - 4);
+    const lines: string[] = doc.splitTextToSize(value, contentWidth - 4);
     lines.forEach((line: string) => {
-      checkPage();
+      checkPage(6);
       doc.text(line, marginL + 1, y);
       y += 5;
     });
@@ -173,25 +181,23 @@ export function exportResumeToPdf(data: ResumeData) {
   const addBulletList = (text: string) => {
     doc.setFontSize(9.5);
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(...BODY);
     const items = text.split(/[•\-]\s*|\n/).map(s => s.trim()).filter(Boolean);
     items.forEach((item) => {
-      checkPage(7);
+      const lines: string[] = doc.splitTextToSize(item, contentWidth - 14);
+      checkPage(lines.length * 5 + 2);
       doc.setTextColor(...TEAL);
       doc.text("●", marginL + 3, y);
       doc.setTextColor(...BODY);
-      const lines = doc.splitTextToSize(item, contentWidth - 12);
       lines.forEach((line: string) => {
-        checkPage();
         doc.text(line, marginL + 9, y);
         y += 5;
       });
     });
-    y += 2;
+    y += 3;
   };
 
   const addSubSection = (title: string) => {
-    checkPage(12);
+    checkPage(16);
     doc.setFontSize(9.5);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(...DARK);
@@ -203,7 +209,8 @@ export function exportResumeToPdf(data: ResumeData) {
   //  1. PROFILE OVERVIEW
   // ═══════════════════════════════════════════════
   if (data.bio) {
-    addSectionHeader("Profile Overview");
+    const h = estimateTextHeight(data.bio, contentWidth - 2);
+    addSectionHeader("Profile Overview", Math.min(h, 40));
     addBodyText(data.bio);
   }
 
@@ -215,24 +222,18 @@ export function exportResumeToPdf(data: ResumeData) {
   const hasConsulting = data.consultingCheck && data.promiseCheck;
 
   if (hasPractice || hasTraining || hasConsulting) {
-    addSectionHeader("Professional Experience");
+    addSectionHeader("Professional Experience", 25);
 
     if (hasPractice) {
       addSubSection("Practice");
       addLabelValue("Entities", data.practiceEntities);
-      if (data.practiceCaseStudies != null) {
-        addLabelValue("Case Studies", `${data.practiceCaseStudies}`);
-      }
+      if (data.practiceCaseStudies != null) addLabelValue("Case Studies", `${data.practiceCaseStudies}`);
     }
-
     if (hasTraining) {
       addSubSection("Training");
       addLabelValue("Contexts", data.trainingContexts);
-      if (data.trainingCount != null) {
-        addLabelValue("People Trained", `${data.trainingCount}`);
-      }
+      if (data.trainingCount != null) addLabelValue("People Trained", `${data.trainingCount}`);
     }
-
     if (hasConsulting) {
       addSubSection("Consulting");
       addLabelValue("Clients", data.consultingWithWhom);
@@ -244,45 +245,55 @@ export function exportResumeToPdf(data: ResumeData) {
   //  3. KEY PROJECTS & SOLUTIONS
   // ═══════════════════════════════════════════════
   if (data.keyProjects) {
-    addSectionHeader("Key Projects & Solutions");
+    const h = estimateTextHeight(data.keyProjects, contentWidth - 2);
+    addSectionHeader("Key Projects & Solutions", Math.min(h, 40));
     addBodyText(data.keyProjects);
   }
 
   // ═══════════════════════════════════════════════
-  //  4. SKILLS & COMPETENCIES — tag chips
+  //  4. SKILLS & COMPETENCIES
   // ═══════════════════════════════════════════════
   if (data.primarySkills) {
-    addSectionHeader("Skills & Competencies");
     const skills = data.primarySkills.split(",").map(s => s.trim()).filter(Boolean);
     if (skills.length > 0) {
+      // Pre-calculate total tag rows needed
       doc.setFontSize(9);
       doc.setFont("helvetica", "normal");
-
-      let xPos = marginL + 1;
       const tagH = 6.5;
       const tagPadX = 4.5;
       const tagGap = 3;
+      let tempX = marginL + 1;
+      let rows = 1;
+      skills.forEach((skill) => {
+        const tw = doc.getTextWidth(skill) + tagPadX * 2;
+        if (tempX + tw > maxX) { tempX = marginL + 1; rows++; }
+        tempX += tw + tagGap;
+      });
+      const tagsHeight = rows * (tagH + 3) + 4;
+
+      addSectionHeader("Skills & Competencies", Math.min(tagsHeight, 30));
+
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      let xPos = marginL + 1;
 
       skills.forEach((skill) => {
         const tw = doc.getTextWidth(skill) + tagPadX * 2;
-        if (xPos + tw > pageWidth - marginR) {
+        if (xPos + tw > maxX) {
           xPos = marginL + 1;
           y += tagH + 3;
           checkPage(tagH + 4);
         }
-        // Tag bg
         doc.setFillColor(...TEAL_LIGHT);
         doc.roundedRect(xPos, y - 4.5, tw, tagH, 1.5, 1.5, "F");
-        // Tag border
         doc.setDrawColor(...TEAL);
         doc.setLineWidth(0.25);
         doc.roundedRect(xPos, y - 4.5, tw, tagH, 1.5, 1.5, "S");
-
         doc.setTextColor(...DARK);
         doc.text(skill, xPos + tagPadX, y);
         xPos += tw + tagGap;
       });
-      y += tagH + 5;
+      y += tagH + 6;
     }
   }
 
@@ -290,7 +301,8 @@ export function exportResumeToPdf(data: ResumeData) {
   //  5. EDUCATION & CERTIFICATIONS
   // ═══════════════════════════════════════════════
   if (data.educationCertifications) {
-    addSectionHeader("Education & Certifications");
+    const h = estimateTextHeight(data.educationCertifications, contentWidth - 2);
+    addSectionHeader("Education & Certifications", Math.min(h, 40));
     addBodyText(data.educationCertifications);
   }
 
@@ -298,7 +310,7 @@ export function exportResumeToPdf(data: ResumeData) {
   //  6. SERVICES ALIGNED TO NATURAL ROLE
   // ═══════════════════════════════════════════════
   if (data.servicesDescription) {
-    addSectionHeader("Services Aligned to Your Natural Role");
+    addSectionHeader("Services Aligned to Your Natural Role", 25);
     if (data.servicesDescription.includes("•") || data.servicesDescription.includes("-")) {
       const firstBullet = Math.min(
         data.servicesDescription.indexOf("•") >= 0 ? data.servicesDescription.indexOf("•") : 9999,
@@ -314,76 +326,112 @@ export function exportResumeToPdf(data: ResumeData) {
   }
 
   // ═══════════════════════════════════════════════
-  //  7. NATURAL ROLE + SCALING INTEREST — combined end block
+  //  7. NATURAL ROLE + SCALING INTEREST — side by side
   // ═══════════════════════════════════════════════
   const hasNR = !!data.description;
   const hasScale = data.wantsToScale !== undefined;
 
   if (hasNR || hasScale) {
-    // Estimate block height
-    const nrLines = hasNR ? doc.splitTextToSize(data.description!, contentWidth - 16) : [];
-    const blockH = (hasNR ? nrLines.length * 5 + 18 : 0) + (hasScale ? 14 : 0) + 10;
-    checkPage(blockH + 6);
+    const bandH = 28;
+    checkPage(bandH + 10);
 
-    y += 4;
+    y += 6;
+    const bandY = y;
+
     // Full-width navy band
     doc.setFillColor(...NAVY);
-    const bandY = y - 2;
-    const bandH = blockH;
     doc.roundedRect(marginL, bandY, contentWidth, bandH, 3, 3, "F");
 
-    // Teal left accent
+    // Teal accent at top of band
     doc.setFillColor(...TEAL);
-    doc.rect(marginL, bandY, 3, bandH, "F");
+    doc.rect(marginL, bandY, contentWidth, 2, "F");
 
-    const innerX = marginL + 10;
-    const innerW = contentWidth - 16;
+    const innerPad = 8;
+    const colGap = 6;
 
-    if (hasNR) {
-      y += 6;
-      doc.setFontSize(9);
+    if (hasNR && hasScale) {
+      // Two columns side by side
+      const colW = (contentWidth - innerPad * 2 - colGap) / 2;
+      const leftX = marginL + innerPad;
+      const rightX = marginL + innerPad + colW + colGap;
+
+      // Vertical divider
+      const divX = marginL + innerPad + colW + colGap / 2;
+      doc.setDrawColor(50, 70, 95);
+      doc.setLineWidth(0.3);
+      doc.line(divX, bandY + 6, divX, bandY + bandH - 6);
+
+      // LEFT: Natural Role
+      let ly = bandY + 10;
+      doc.setFontSize(8);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(...TEAL);
-      doc.text("NATURAL ROLE", innerX, y);
-      y += 5.5;
+      doc.text("NATURAL ROLE", leftX, ly);
+      ly += 5.5;
 
-      doc.setFontSize(9.5);
+      doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
-      doc.setTextColor(210, 220, 230);
-      const descLines = doc.splitTextToSize(data.description!, innerW);
-      descLines.forEach((line: string) => {
-        doc.text(line, innerX, y);
-        y += 5;
+      doc.setTextColor(220, 230, 240);
+      const nrLines: string[] = doc.splitTextToSize(data.description!, colW);
+      // Only render what fits (usually 2 lines max in this band)
+      const maxLines = 2;
+      nrLines.slice(0, maxLines).forEach((line: string) => {
+        doc.text(line, leftX, ly);
+        ly += 5;
       });
-      y += 2;
-    }
 
-    if (hasScale) {
-      if (!hasNR) y += 6;
-      // Thin separator if both sections
-      if (hasNR) {
-        doc.setDrawColor(60, 80, 100);
-        doc.setLineWidth(0.3);
-        doc.line(innerX, y - 1, innerX + innerW, y - 1);
-        y += 4;
-      }
-
-      doc.setFontSize(9);
+      // RIGHT: Scaling Interest
+      let ry = bandY + 10;
+      doc.setFontSize(8);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(...TEAL);
-      doc.text("SCALING INTEREST", innerX, y);
+      doc.text("SCALING INTEREST", rightX, ry);
+      ry += 5.5;
 
       const badge = data.wantsToScale ? "Yes — Interested in scaling" : "Not currently seeking to scale";
       const dotColor: [number, number, number] = data.wantsToScale ? [0, 200, 120] : [160, 160, 160];
-      doc.setFillColor(...dotColor);
-      doc.circle(innerX + innerW - doc.getTextWidth(badge) - 8, y - 1.2, 1.8, "F");
 
-      doc.setFontSize(9.5);
+      doc.setFillColor(...dotColor);
+      doc.circle(rightX + 1, ry - 1, 1.8, "F");
+
+      doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
-      doc.setTextColor(210, 220, 230);
-      doc.text(badge, innerX + innerW - doc.getTextWidth(badge) - 2, y);
-      y += 8;
+      doc.setTextColor(220, 230, 240);
+      doc.text(badge, rightX + 6, ry);
+    } else if (hasNR) {
+      // Only NR — centered
+      let ly = bandY + 10;
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...TEAL);
+      doc.text("NATURAL ROLE", marginL + innerPad, ly);
+      ly += 5.5;
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(220, 230, 240);
+      const lines: string[] = doc.splitTextToSize(data.description!, contentWidth - innerPad * 2);
+      lines.slice(0, 2).forEach((line: string) => {
+        doc.text(line, marginL + innerPad, ly);
+        ly += 5;
+      });
+    } else if (hasScale) {
+      // Only Scale — centered
+      let ry = bandY + 10;
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...TEAL);
+      doc.text("SCALING INTEREST", marginL + innerPad, ry);
+      ry += 5.5;
+      const badge = data.wantsToScale ? "Yes — Interested in scaling" : "Not currently seeking to scale";
+      doc.setFillColor(data.wantsToScale ? 0 : 160, data.wantsToScale ? 200 : 160, data.wantsToScale ? 120 : 160);
+      doc.circle(marginL + innerPad + 1, ry - 1, 1.8, "F");
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(220, 230, 240);
+      doc.text(badge, marginL + innerPad + 6, ry);
     }
+
+    y = bandY + bandH + 6;
   }
 
   // ═══════════════════════════════════════════════
@@ -393,21 +441,16 @@ export function exportResumeToPdf(data: ResumeData) {
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
 
-    // Footer line
     doc.setDrawColor(...DIVIDER);
     doc.setLineWidth(0.3);
-    doc.line(marginL, footerY - 2, pageWidth - marginR, footerY - 2);
+    doc.line(marginL, footerY - 2, maxX, footerY - 2);
 
-    // Left: name
     doc.setFontSize(7);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(...MUTED);
     doc.text(data.userName ? `${data.userName} — Profile Summary` : "Profile Summary", marginL, footerY + 2);
+    doc.text(`${i} / ${pageCount}`, maxX, footerY + 2, { align: "right" });
 
-    // Right: page
-    doc.text(`${i} / ${pageCount}`, pageWidth - marginR, footerY + 2, { align: "right" });
-
-    // Bottom teal accent
     doc.setFillColor(...TEAL);
     doc.rect(0, pageHeight - 2.5, pageWidth, 2.5, "F");
   }
