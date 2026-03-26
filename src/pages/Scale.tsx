@@ -182,26 +182,8 @@ const Scale = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [hasConsultantCert, setHasConsultantCert] = useState(false);
   const [hasTeamMemberships, setHasTeamMemberships] = useState<boolean | null>(null);
-  const [fiveElementsData, setFiveElementsData] = useState<Record<string, { problem: string; solution: string; product: string; market: string; business_model: string }>>({});
-  const [fiveElementsLoading, setFiveElementsLoading] = useState<Record<string, boolean>>({});
-  const [fiveElementsOpen, setFiveElementsOpen] = useState<Record<string, boolean>>({});
-  const [fiveElementsEditing, setFiveElementsEditing] = useState<Record<string, boolean>>({});
-
-  const handleGenerateFiveElements = async (idea: StartupIdea) => {
-    setFiveElementsLoading(prev => ({ ...prev, [idea.id]: true }));
-    setFiveElementsOpen(prev => ({ ...prev, [idea.id]: true }));
-    try {
-      const { data, error } = await supabase.functions.invoke("generate-five-elements", {
-        body: { title: idea.title, description: idea.description },
-      });
-      if (error) throw error;
-      setFiveElementsData(prev => ({ ...prev, [idea.id]: data }));
-    } catch (err: any) {
-      toast({ title: "Generation failed", description: err.message || "Could not generate 5 elements", variant: "destructive" });
-    } finally {
-      setFiveElementsLoading(prev => ({ ...prev, [idea.id]: false }));
-    }
-  };
+  const [fiveElementsDialogOpen, setFiveElementsDialogOpen] = useState(false);
+  const [fiveElementsIdea, setFiveElementsIdea] = useState<{ id: string; title: string; description: string } | null>(null);
   const [showScaleExperience, setShowScaleExperience] = useState(() => {
     // Initialize from localStorage
     if (typeof window !== "undefined") {
