@@ -8,9 +8,10 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Edit2, CheckCircle, RotateCcw, Layers, Save } from "lucide-react";
+import { Loader2, Edit2, RotateCcw, Layers, Save } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 interface FiveElementsDialogProps {
   open: boolean;
@@ -36,17 +37,54 @@ const LABELS: Record<keyof Elements, string> = {
 
 const KEYS: (keyof Elements)[] = ["problem", "solution", "product", "market", "business_model"];
 
+const EMPTY: Elements = { problem: "", solution: "", product: "", market: "", business_model: "" };
+
 export const FiveElementsDialog = ({ open, onOpenChange, idea }: FiveElementsDialogProps) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [elements, setElements] = useState<Elements | null>(null);
   const [editing, setEditing] = useState(false);
+  const [hasSaved, setHasSaved] = useState(false);
 
+  // Load saved data or generate on open
   useEffect(() => {
-    if (open && idea && !elements) {
-      generate();
+    if (open && idea) {
+      loadSaved();
+    }
+    if (!open) {
+      setElements(null);
+      setEditing(false);
+      setHasSaved(false);
     }
   }, [open, idea?.id]);
+
+  const loadSaved = async () => {
+    if (!idea) return;
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("startup_five_elements")
+        .select("problem, solution, product, market, business_model")
+        .eq("startup_id", idea.id)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (data) {
+        setElements(data);
+        setHasSaved(true);
+      } else {
+        // No saved data — generate
+        await generate();
+      }
+    } catch (err: any) {
+      toast({ title: "Error loading", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const generate = async () => {
     if (!idea) return;
@@ -58,6 +96,7 @@ export const FiveElementsDialog = ({ open, onOpenChange, idea }: FiveElementsDia
       });
       if (error) throw error;
       setElements(data);
+      setHasSaved(false);
     } catch (err: any) {
       toast({ title: "Generation failed", description: err.message || "Could not generate", variant: "destructive" });
     } finally {
@@ -65,16 +104,34 @@ export const FiveElementsDialog = ({ open, onOpenChange, idea }: FiveElementsDia
     }
   };
 
-  const handleClose = (val: boolean) => {
-    if (!val) {
-      setElements(null);
+  const handleSave = async () => {
+    if (!idea || !elements || !user) return;
+    setSaving(true);
+    try {
+      const payload = {
+        startup_id: idea.id,
+        user_id: user.id,
+        ...elements,
+        updated_at: new Date().toISOString(),
+      };
+
+      const { error } = await supabase
+        .from("startup_five_elements")
+        .upsert(payload, { onConflict: "startup_id" });
+
+      if (error) throw error;
+      setHasSaved(true);
       setEditing(false);
+      toast({ title: "Saved successfully" });
+    } catch (err: any) {
+      toast({ title: "Save failed", description: err.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
     }
-    onOpenChange(val);
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg">
@@ -87,7 +144,9 @@ export const FiveElementsDialog = ({ open, onOpenChange, idea }: FiveElementsDia
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12 gap-3">
             <Loader2 className="w-8 h-8 animate-spin text-b4-teal" />
-            <p className="text-sm text-muted-foreground">Generating 5 Elements...</p>
+            <p className="text-sm text-muted-foreground">
+              {hasSaved ? "Loading..." : "Generating 5 Elements..."}
+            </p>
           </div>
         ) : elements ? (
           <div className="space-y-4 pt-2">
@@ -108,22 +167,23 @@ export const FiveElementsDialog = ({ open, onOpenChange, idea }: FiveElementsDia
               </div>
             ))}
             <div className="flex items-center gap-2 pt-2 border-t border-border/50">
-              <Button
-                variant={editing ? "default" : "outline"}
-                size="sm"
-                onClick={() => {
-                  if (editing) {
-                    toast({ title: "Changes saved" });
-                  }
-                  setEditing(!editing);
-                }}
-              >
-                {editing ? (
-                  <><Save className="w-3.5 h-3.5 mr-1" /> Save</>
-                ) : (
-                  <><Edit2 className="w-3.5 h-3.5 mr-1" /> Edit</>
-                )}
-              </Button>
+              {editing ? (
+                <Button size="sm" onClick={handleSave} disabled={saving}>
+                  {saving ? <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> : <Save className="w-3.5 h-3.5 mr-1" />}
+                  Save
+                </Button>
+              ) : (
+                <>
+                  <Button size="sm" onClick={handleSave} disabled={saving}>
+                    {saving ? <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> : <Save className="w-3.5 h-3.5 mr-1" />}
+                    Save
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
+                    <Edit2 className="w-3.5 h-3.5 mr-1" />
+                    Edit
+                  </Button>
+                </>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
