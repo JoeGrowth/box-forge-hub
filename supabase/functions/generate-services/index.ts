@@ -45,12 +45,13 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are a professional services strategist. Generate a concise, compelling description of services aligned to the user's natural role (3-6 sentences). The description should:
-- Be written in first person
-- Describe specific services the person can offer based on their natural role, expertise, and experience
-- Cover areas like consulting, training, mentoring, practice expansion, or knowledge sharing as appropriate
-- Be actionable and market-oriented
-- NOT include any headers, labels, numbering, or quotes — just the services description text itself`
+            content: `You are a professional services strategist focused on cognitive rebuilding — restoring independent, high-fidelity thinking. Generate a services description aligned to the user's natural role. The format MUST be:
+- One opening sentence that frames the person's service philosophy or value proposition
+- Then 4-7 concise bullet points (use "•" as bullet character), each describing a specific service offering
+
+Each bullet point should be action-oriented and specific (e.g. "• Strategic advisory for early-stage founders on go-to-market execution").
+Focus on services that help clients think independently and build real capacity — not just deliver advice.
+Do NOT write paragraphs. Do NOT include headers, labels, numbering, or quotes. Just the opening sentence followed by bullet points, each on its own line.`
           },
           {
             role: "user",
