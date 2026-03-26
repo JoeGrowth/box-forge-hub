@@ -353,6 +353,7 @@ const Resume = () => {
   };
 
 
+  const handleExportPdf = async () => {
     if (!user) return;
     
     setIsExporting(true);
