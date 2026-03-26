@@ -760,7 +760,7 @@ const Scale = () => {
                   <h2 className="text-2xl font-display font-bold text-foreground leading-tight">Your Joy</h2>
                   <p className="text-sm text-muted-foreground mt-1">Startup ideas you've created and their status</p>
                 </div>
-                <div className="flex w-full md:w-auto md:shrink-0 md:justify-end">
+                <div className="flex w-full md:w-auto md:shrink-0 md:justify-end md:mr-[-1.5rem]">
                   <Button variant="teal" asChild className="w-full md:w-auto">
                     <Link to="/create-idea">
                       <Lightbulb className="w-4 h-4 mr-2" />
