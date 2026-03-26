@@ -46,7 +46,8 @@ const CONSULTANT_LEARNING_STEPS = [
     title: "Foundations",
     subtitle: "Consulting Basics",
     icon: BookOpen,
-    description: "Learn the fundamentals of consulting. Understand client needs, project scoping, and engagement models.",
+    description:
+      "Learn the fundamentals of consulting. Understand client needs, project scoping, and engagement models.",
     details: ["Master consulting frameworks", "Learn client engagement", "Understand project scoping"],
     color: "from-purple-500 to-violet-500",
   },
@@ -55,7 +56,8 @@ const CONSULTANT_LEARNING_STEPS = [
     title: "Strategy",
     subtitle: "Strategic Thinking",
     icon: Target,
-    description: "Develop strategic thinking capabilities. Learn to analyze complex problems and create actionable solutions.",
+    description:
+      "Develop strategic thinking capabilities. Learn to analyze complex problems and create actionable solutions.",
     details: ["Strategic analysis methods", "Problem-solving frameworks", "Solution development"],
     color: "from-violet-500 to-purple-600",
   },
@@ -64,7 +66,8 @@ const CONSULTANT_LEARNING_STEPS = [
     title: "Advisory",
     subtitle: "Client Relations",
     icon: Handshake,
-    description: "Build strong client relationships. Learn to communicate effectively and manage stakeholder expectations.",
+    description:
+      "Build strong client relationships. Learn to communicate effectively and manage stakeholder expectations.",
     details: ["Client relationship management", "Stakeholder communication", "Expectation management"],
     color: "from-purple-600 to-fuchsia-500",
   },
@@ -73,7 +76,8 @@ const CONSULTANT_LEARNING_STEPS = [
     title: "Leadership",
     subtitle: "Thought Leadership",
     icon: TrendingUp,
-    description: "Establish yourself as a thought leader. Create content, speak at events, and build your personal brand.",
+    description:
+      "Establish yourself as a thought leader. Create content, speak at events, and build your personal brand.",
     details: ["Develop thought leadership", "Build personal brand", "Lead consulting engagements"],
     color: "from-fuchsia-500 to-pink-500",
   },
@@ -95,7 +99,11 @@ const SCALE_NR_STEPS = [
     subtitle: "Branding Phase",
     icon: Theater,
     description: "Create your Brand — the structured entity that represents your natural role.",
-    details: ["Define your Brand's identity and purpose", "Structure your natural role into an entity", "Ownership: 100% yours"],
+    details: [
+      "Define your Brand's identity and purpose",
+      "Structure your natural role into an entity",
+      "Ownership: 100% yours",
+    ],
     color: "from-violet-500 to-purple-600",
   },
   {
@@ -104,7 +112,11 @@ const SCALE_NR_STEPS = [
     subtitle: "Systemization Phase",
     icon: Code2,
     description: "Transform personal thinking into operational systems.",
-    details: ["Training programs & curricula", "Consulting frameworks & methodologies", "Operating principles & playbooks"],
+    details: [
+      "Training programs & curricula",
+      "Consulting frameworks & methodologies",
+      "Operating principles & playbooks",
+    ],
     color: "from-blue-500 to-cyan-500",
   },
   {
@@ -113,7 +125,11 @@ const SCALE_NR_STEPS = [
     subtitle: "Asset Phase",
     icon: Users,
     description: "Clients ask for the Brand, not you. Work becomes deliverable by others.",
-    details: ["Build delivery capacity beyond yourself", "Enable others to operate as the Brand", "Scale impact without being the bottleneck"],
+    details: [
+      "Build delivery capacity beyond yourself",
+      "Enable others to operate as the Brand",
+      "Scale impact without being the bottleneck",
+    ],
     color: "from-emerald-500 to-teal-500",
   },
 ];
@@ -124,8 +140,15 @@ const ALL_JOURNEY_PHASES = [
     title: "Work as Consultant",
     subtitle: "Certification",
     icon: Briefcase,
-    description: "Complete the 5-step learning journey to earn your Certified Consultant badge and unlock the scaling phases.",
-    details: ["Master consulting frameworks", "Develop strategic thinking", "Build client relationships", "Establish thought leadership", "Achieve expert certification"],
+    description:
+      "Complete the 5-step learning journey to earn your Certified Consultant badge and unlock the scaling phases.",
+    details: [
+      "Master consulting frameworks",
+      "Develop strategic thinking",
+      "Build client relationships",
+      "Establish thought leadership",
+      "Achieve expert certification",
+    ],
   },
   {
     phase: 1,
@@ -141,7 +164,12 @@ const ALL_JOURNEY_PHASES = [
     subtitle: "Collaboration",
     icon: Building2,
     description: "70% earned by the person. Collaborating and sharing value with external contributors.",
-    details: ["Logo + Name + Brand as company", "Services linked to natural role", "Proposal template", "First invoice with external people"],
+    details: [
+      "Logo + Name + Brand as company",
+      "Services linked to natural role",
+      "Proposal template",
+      "First invoice with external people",
+    ],
   },
   {
     phase: 3,
@@ -157,7 +185,12 @@ const ALL_JOURNEY_PHASES = [
     subtitle: "Optimization",
     icon: Target,
     description: "Scale operations with a dedicated process manager.",
-    details: ["Optimize & enhance the process", "3 missions delivered successfully", "Review the process", "Process manager (internal)"],
+    details: [
+      "Optimize & enhance the process",
+      "3 missions delivered successfully",
+      "Review the process",
+      "Process manager (internal)",
+    ],
   },
   {
     phase: 5,
@@ -165,7 +198,12 @@ const ALL_JOURNEY_PHASES = [
     subtitle: "Scalability",
     icon: Crown,
     description: "Achieve true scalability with decentralized operations and ownership shift.",
-    details: ["Optimize & enhance the process", "5 missions delivered successfully", "Review the process", "Structure handler (internal)"],
+    details: [
+      "Optimize & enhance the process",
+      "5 missions delivered successfully",
+      "Review the process",
+      "Structure handler (internal)",
+    ],
   },
 ];
 
@@ -188,7 +226,8 @@ const Advisory = () => {
   const [viewingStep, setViewingStep] = useState<number | null>(null);
   const [activePhase, setActivePhase] = useState<number>(0);
 
-  const isApproved = onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved";
+  const isApproved =
+    onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved";
   const hasConsultantCert = certifications.some((c) => c.certification_type === "consultant_b4");
 
   useEffect(() => {
@@ -204,11 +243,25 @@ const Advisory = () => {
   useEffect(() => {
     const fetch = async () => {
       if (!user) return;
-      const { data: journey } = await supabase.from("learning_journeys").select("id").eq("user_id", user.id).eq("journey_type", "scaling_path").maybeSingle();
+      const { data: journey } = await supabase
+        .from("learning_journeys")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("journey_type", "scaling_path")
+        .maybeSingle();
       if (!journey) return;
-      const { data: responses } = await supabase.from("journey_phase_responses").select("phase_number, phase_name, is_completed").eq("journey_id", journey.id);
+      const { data: responses } = await supabase
+        .from("journey_phase_responses")
+        .select("phase_number, phase_name, is_completed")
+        .eq("journey_id", journey.id);
       if (!responses) return;
-      const scalePhaseNames = ["Personal Entity", "Company Formation", "Process Implementation", "Autonomous Structure", "Decentralized Structure"];
+      const scalePhaseNames = [
+        "Personal Entity",
+        "Company Formation",
+        "Process Implementation",
+        "Autonomous Structure",
+        "Decentralized Structure",
+      ];
       const scaleResponses = responses.filter((r) => scalePhaseNames.includes(r.phase_name));
       const completedPhases = scaleResponses.filter((r) => r.is_completed).map((r) => r.phase_number);
       setScaleCompletionStatus({
@@ -240,23 +293,36 @@ const Advisory = () => {
   const isLearningStepCompletedFromDB = (stepNumber: number): boolean => {
     const journey = journeys.find((j) => j.journey_type === "scaling_path");
     if (!journey) return false;
-    return !!phaseResponses.find((pr) => pr.journey_id === journey.id && pr.phase_number === stepNumber - 1 && pr.is_completed);
+    return !!phaseResponses.find(
+      (pr) => pr.journey_id === journey.id && pr.phase_number === stepNumber - 1 && pr.is_completed,
+    );
   };
 
-  const isLearningStepCompleted = (stepNumber: number): boolean => learningCompletionStatus[stepNumber] || isLearningStepCompletedFromDB(stepNumber);
+  const isLearningStepCompleted = (stepNumber: number): boolean =>
+    learningCompletionStatus[stepNumber] || isLearningStepCompletedFromDB(stepNumber);
 
-  const isJourneyPendingApproval = (): boolean => journeys.find((j) => j.journey_type === "scaling_path")?.status === "pending_approval";
+  const isJourneyPendingApproval = (): boolean =>
+    journeys.find((j) => j.journey_type === "scaling_path")?.status === "pending_approval";
 
   const isAllLearningStepsCompleted = (): boolean => {
     const journey = journeys.find((j) => j.journey_type === "scaling_path");
     if (!journey) return false;
-    return phaseResponses.filter((pr) => pr.journey_id === journey.id && pr.is_completed).length >= CONSULTANT_LEARNING_STEPS.length;
+    return (
+      phaseResponses.filter((pr) => pr.journey_id === journey.id && pr.is_completed).length >=
+      CONSULTANT_LEARNING_STEPS.length
+    );
   };
 
   const shouldShowPendingBanner = (): boolean => isAllLearningStepsCompleted() || isJourneyPendingApproval();
 
-  const completedLearningCount = useMemo(() => CONSULTANT_LEARNING_STEPS.filter((s) => isLearningStepCompleted(s.step)).length, [learningCompletionStatus, journeys, phaseResponses]);
-  const completedScaleCount = useMemo(() => SCALE_NR_STEPS.filter((s) => scaleCompletionStatus[s.step]).length, [scaleCompletionStatus]);
+  const completedLearningCount = useMemo(
+    () => CONSULTANT_LEARNING_STEPS.filter((s) => isLearningStepCompleted(s.step)).length,
+    [learningCompletionStatus, journeys, phaseResponses],
+  );
+  const completedScaleCount = useMemo(
+    () => SCALE_NR_STEPS.filter((s) => scaleCompletionStatus[s.step]).length,
+    [scaleCompletionStatus],
+  );
 
   const currentLearningStep = useMemo(() => {
     for (const step of CONSULTANT_LEARNING_STEPS) {
@@ -268,7 +334,11 @@ const Advisory = () => {
   // Auto-select the current step for viewing
   useEffect(() => {
     if (!hasConsultantCert && viewingStep === null) {
-      setViewingStep(currentLearningStep <= CONSULTANT_LEARNING_STEPS.length ? currentLearningStep : CONSULTANT_LEARNING_STEPS.length);
+      setViewingStep(
+        currentLearningStep <= CONSULTANT_LEARNING_STEPS.length
+          ? currentLearningStep
+          : CONSULTANT_LEARNING_STEPS.length,
+      );
     }
   }, [currentLearningStep, hasConsultantCert, viewingStep]);
 
@@ -312,10 +382,14 @@ const Advisory = () => {
               <div className="max-w-3xl">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-2.5 rounded-xl bg-white/20 backdrop-blur-sm">
-                    {hasConsultantCert ? <Trophy className="w-7 h-7 text-primary-foreground" /> : <Award className="w-7 h-7 text-primary-foreground" />}
+                    {hasConsultantCert ? (
+                      <Trophy className="w-7 h-7 text-primary-foreground" />
+                    ) : (
+                      <Award className="w-7 h-7 text-primary-foreground" />
+                    )}
                   </div>
                   <h1 className="font-display text-3xl md:text-4xl font-bold text-primary-foreground">
-                    {hasConsultantCert ? "Scale Your Expertise" : "Advisory Journey"}
+                    {hasConsultantCert ? "Consulting" : "Advisory Journey"}
                   </h1>
                 </div>
                 <p className="text-primary-foreground/80 text-lg max-w-2xl leading-relaxed">
@@ -334,7 +408,10 @@ const Advisory = () => {
                     />
                   </div>
                   <span className="text-sm font-medium text-primary-foreground/90">
-                    {hasConsultantCert ? `${completedScaleCount}/${SCALE_NR_STEPS.length}` : `${completedLearningCount}/${CONSULTANT_LEARNING_STEPS.length}`} completed
+                    {hasConsultantCert
+                      ? `${completedScaleCount}/${SCALE_NR_STEPS.length}`
+                      : `${completedLearningCount}/${CONSULTANT_LEARNING_STEPS.length}`}{" "}
+                    completed
                   </span>
                 </div>
               </div>
@@ -349,7 +426,9 @@ const Advisory = () => {
                   {shouldShowPendingBanner() && (
                     <Alert className="border-amber-500/50 bg-amber-50 dark:bg-amber-950/30">
                       <Clock className="h-5 w-5 text-amber-600" />
-                      <AlertTitle className="text-amber-800 dark:text-amber-200 font-semibold">Journey Completed — Pending Review</AlertTitle>
+                      <AlertTitle className="text-amber-800 dark:text-amber-200 font-semibold">
+                        Journey Completed — Pending Review
+                      </AlertTitle>
                       <AlertDescription className="text-amber-700 dark:text-amber-300">
                         All steps done! An admin will review and approve your certification soon.
                       </AlertDescription>
@@ -380,10 +459,10 @@ const Advisory = () => {
                                 completed
                                   ? `bg-gradient-to-br ${step.color} shadow-lg`
                                   : isCurrent
-                                  ? "bg-background border-[3px] border-primary shadow-lg shadow-primary/20"
-                                  : isViewing
-                                  ? "bg-muted border-2 border-foreground/20"
-                                  : "bg-muted border-2 border-border"
+                                    ? "bg-background border-[3px] border-primary shadow-lg shadow-primary/20"
+                                    : isViewing
+                                      ? "bg-muted border-2 border-foreground/20"
+                                      : "bg-muted border-2 border-border"
                               }`}
                             >
                               {completed ? (
@@ -391,13 +470,21 @@ const Advisory = () => {
                               ) : isLocked ? (
                                 <Lock className="w-5 h-5 text-muted-foreground" />
                               ) : (
-                                <step.icon className={`w-5 h-5 ${isCurrent ? "text-primary" : "text-muted-foreground"}`} />
+                                <step.icon
+                                  className={`w-5 h-5 ${isCurrent ? "text-primary" : "text-muted-foreground"}`}
+                                />
                               )}
                             </div>
                             {/* Label */}
                             <span
                               className={`mt-2 text-xs font-semibold transition-colors ${
-                                isViewing ? "text-foreground" : completed ? "text-foreground" : isCurrent ? "text-primary" : "text-muted-foreground"
+                                isViewing
+                                  ? "text-foreground"
+                                  : completed
+                                    ? "text-foreground"
+                                    : isCurrent
+                                      ? "text-primary"
+                                      : "text-muted-foreground"
                               }`}
                             >
                               {step.title}
@@ -417,7 +504,10 @@ const Advisory = () => {
 
                   {/* Active Step Content */}
                   {activeViewStep && (
-                    <Card className="overflow-hidden border-border/50 shadow-md animate-fade-in" key={activeViewStep.step}>
+                    <Card
+                      className="overflow-hidden border-border/50 shadow-md animate-fade-in"
+                      key={activeViewStep.step}
+                    >
                       <div className={`h-1.5 bg-gradient-to-r ${activeViewStep.color}`} />
                       <CardContent className="p-6 md:p-8">
                         <div className="flex flex-col md:flex-row gap-6">
@@ -434,10 +524,14 @@ const Advisory = () => {
                             <h2 className="text-2xl font-display font-bold text-foreground">{activeViewStep.title}</h2>
                             <p className="text-muted-foreground leading-relaxed">{activeViewStep.description}</p>
                             <div className="space-y-2 pt-2">
-                              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">What you'll learn</p>
+                              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                What you'll learn
+                              </p>
                               {activeViewStep.details.map((detail, i) => (
                                 <div key={i} className="flex items-center gap-2.5">
-                                  <div className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${activeViewStep.color}`} />
+                                  <div
+                                    className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${activeViewStep.color}`}
+                                  />
                                   <span className="text-sm text-foreground">{detail}</span>
                                 </div>
                               ))}
@@ -454,7 +548,12 @@ const Advisory = () => {
                                 Completed
                               </div>
                             ) : activeViewStep.step === currentLearningStep ? (
-                              <Button variant="default" size="lg" onClick={() => handleOpenLearningStep(activeViewStep.step)} className="w-full gap-2">
+                              <Button
+                                variant="default"
+                                size="lg"
+                                onClick={() => handleOpenLearningStep(activeViewStep.step)}
+                                className="w-full gap-2"
+                              >
                                 <Play className="w-5 h-5" />
                                 Start Step
                                 <ArrowRight className="w-4 h-4" />
@@ -475,20 +574,30 @@ const Advisory = () => {
                   <div className="space-y-4 pt-4">
                     <div className="text-center">
                       <h2 className="text-xl font-display font-bold text-foreground mb-1">Your Complete Journey</h2>
-                      <p className="text-sm text-muted-foreground">From learning to scaling — here's the full roadmap</p>
+                      <p className="text-sm text-muted-foreground">
+                        From learning to scaling — here's the full roadmap
+                      </p>
                     </div>
 
                     <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                       {/* Phase 0 — Certification */}
-                      <Card className={`overflow-hidden border-border/50 ${isAllLearningStepsCompleted() ? "border-primary/30 shadow-md" : ""}`}>
+                      <Card
+                        className={`overflow-hidden border-border/50 ${isAllLearningStepsCompleted() ? "border-primary/30 shadow-md" : ""}`}
+                      >
                         <div className="h-1.5 bg-gradient-to-r from-purple-500 to-violet-500" />
                         <CardContent className="p-4 space-y-3">
                           <div className="flex items-center gap-2.5">
-                            <div className={`p-2 rounded-lg ${isAllLearningStepsCompleted() ? "bg-gradient-to-br from-purple-500 to-violet-500" : "bg-muted"}`}>
-                              <GraduationCap className={`w-4 h-4 ${isAllLearningStepsCompleted() ? "text-white" : "text-muted-foreground"}`} />
+                            <div
+                              className={`p-2 rounded-lg ${isAllLearningStepsCompleted() ? "bg-gradient-to-br from-purple-500 to-violet-500" : "bg-muted"}`}
+                            >
+                              <GraduationCap
+                                className={`w-4 h-4 ${isAllLearningStepsCompleted() ? "text-white" : "text-muted-foreground"}`}
+                              />
                             </div>
                             <div>
-                              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Phase 0</p>
+                              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
+                                Phase 0
+                              </p>
                               <h3 className="text-sm font-display font-bold text-foreground">Certification</h3>
                             </div>
                           </div>
@@ -499,10 +608,14 @@ const Advisory = () => {
                             <div className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
                               <div
                                 className="h-full rounded-full bg-gradient-to-r from-purple-500 to-violet-500 transition-all"
-                                style={{ width: `${(completedLearningCount / CONSULTANT_LEARNING_STEPS.length) * 100}%` }}
+                                style={{
+                                  width: `${(completedLearningCount / CONSULTANT_LEARNING_STEPS.length) * 100}%`,
+                                }}
                               />
                             </div>
-                            <span className="text-[10px] font-medium text-muted-foreground">{completedLearningCount}/5</span>
+                            <span className="text-[10px] font-medium text-muted-foreground">
+                              {completedLearningCount}/5
+                            </span>
                           </div>
                         </CardContent>
                       </Card>
@@ -517,11 +630,15 @@ const Advisory = () => {
                                 <step.icon className="w-4 h-4 text-muted-foreground" />
                               </div>
                               <div>
-                                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Phase {step.step}</p>
+                                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
+                                  Phase {step.step}
+                                </p>
                                 <h3 className="text-sm font-display font-bold text-foreground">{step.title}</h3>
                               </div>
                             </div>
-                            <Badge variant="outline" className="text-[10px]">{step.subtitle}</Badge>
+                            <Badge variant="outline" className="text-[10px]">
+                              {step.subtitle}
+                            </Badge>
                             <p className="text-xs text-muted-foreground leading-relaxed">{step.description}</p>
                             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                               <Lock className="w-3 h-3" />
@@ -542,7 +659,9 @@ const Advisory = () => {
                     <div className="flex items-start gap-3">
                       <Award className="h-5 w-5 text-b4-teal mt-0.5" />
                       <div>
-                        <AlertTitle className="text-teal-800 dark:text-teal-200 font-semibold">✅ Certified Consultant</AlertTitle>
+                        <AlertTitle className="text-teal-800 dark:text-teal-200 font-semibold">
+                          ✅ Certified Consultant
+                        </AlertTitle>
                         <AlertDescription className="text-teal-700 dark:text-teal-300">
                           You've earned your certification. Now scale your expertise.
                         </AlertDescription>
@@ -557,8 +676,15 @@ const Advisory = () => {
                           <Rocket className="w-10 h-10 text-primary" />
                         </div>
                         <h2 className="text-2xl font-display font-bold text-foreground">Ready to Scale?</h2>
-                        <p className="text-muted-foreground max-w-md">Build your brand, systemize your expertise, and scale.</p>
-                        <Button variant="default" size="lg" onClick={() => setShowScaleExperience(true)} className="gap-2 mt-2">
+                        <p className="text-muted-foreground max-w-md">
+                          Build your brand, systemize your expertise, and scale.
+                        </p>
+                        <Button
+                          variant="default"
+                          size="lg"
+                          onClick={() => setShowScaleExperience(true)}
+                          className="gap-2 mt-2"
+                        >
                           <Sparkles className="w-5 h-5" />
                           Start The Experience
                           <ArrowRight className="w-5 h-5" />
@@ -570,7 +696,9 @@ const Advisory = () => {
                   {showScaleExperience && (
                     <>
                       <div className="text-center">
-                        <h2 className="text-2xl font-display font-bold text-foreground mb-1">Scale Your Natural Role</h2>
+                        <h2 className="text-2xl font-display font-bold text-foreground mb-1">
+                          Scale Your Natural Role
+                        </h2>
                         <p className="text-muted-foreground">3 phases to build scalable impact</p>
                       </div>
 
@@ -588,21 +716,33 @@ const Advisory = () => {
                               <div className={`h-1.5 bg-gradient-to-r ${step.color}`} />
                               <CardContent className="p-5 flex flex-col h-full">
                                 <div className="flex items-center gap-3 mb-4">
-                                  <div className={`p-2.5 rounded-xl ${completed ? `bg-gradient-to-br ${step.color}` : "bg-muted"}`}>
+                                  <div
+                                    className={`p-2.5 rounded-xl ${completed ? `bg-gradient-to-br ${step.color}` : "bg-muted"}`}
+                                  >
                                     <step.icon className={`w-5 h-5 ${completed ? "text-white" : "text-foreground"}`} />
                                   </div>
                                   <div>
-                                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Phase {step.step}</p>
+                                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+                                      Phase {step.step}
+                                    </p>
                                     <h3 className="text-base font-display font-bold text-foreground">{step.title}</h3>
                                   </div>
                                 </div>
-                                <Badge variant="outline" className="w-fit text-xs mb-3">{step.subtitle}</Badge>
-                                <p className="text-sm text-muted-foreground leading-relaxed mb-4 flex-1">{step.description}</p>
+                                <Badge variant="outline" className="w-fit text-xs mb-3">
+                                  {step.subtitle}
+                                </Badge>
+                                <p className="text-sm text-muted-foreground leading-relaxed mb-4 flex-1">
+                                  {step.description}
+                                </p>
                                 <ul className="space-y-1.5 mb-5">
                                   {step.details.map((d, i) => (
                                     <li key={i} className="flex items-center gap-2 text-xs">
-                                      <ChevronRight className={`w-3 h-3 shrink-0 ${completed ? "text-primary" : "text-muted-foreground"}`} />
-                                      <span className={completed ? "text-foreground" : "text-muted-foreground"}>{d}</span>
+                                      <ChevronRight
+                                        className={`w-3 h-3 shrink-0 ${completed ? "text-primary" : "text-muted-foreground"}`}
+                                      />
+                                      <span className={completed ? "text-foreground" : "text-muted-foreground"}>
+                                        {d}
+                                      </span>
                                     </li>
                                   ))}
                                 </ul>
@@ -632,8 +772,12 @@ const Advisory = () => {
                       {/* Segmented Phase Tabs — Phase 0 to 5 */}
                       <div className="space-y-6 pt-4">
                         <div className="text-center">
-                          <h2 className="text-xl font-display font-bold text-foreground mb-1">Complete Journey Overview</h2>
-                          <p className="text-sm text-muted-foreground">From certification to scaling — your full roadmap</p>
+                          <h2 className="text-xl font-display font-bold text-foreground mb-1">
+                            Complete Journey Overview
+                          </h2>
+                          <p className="text-sm text-muted-foreground">
+                            From certification to scaling — your full roadmap
+                          </p>
                         </div>
 
                         {/* Tab bar */}
@@ -676,20 +820,30 @@ const Advisory = () => {
                               <CardContent className="p-6">
                                 <div className="space-y-4">
                                   <div className="flex items-center gap-3">
-                                    <div className={`p-3 rounded-xl ${isCompleted ? "bg-gradient-to-br from-b4-teal to-b4-teal-light" : "bg-muted"}`}>
-                                      <phase.icon className={`w-6 h-6 ${isCompleted ? "text-white" : "text-foreground"}`} />
+                                    <div
+                                      className={`p-3 rounded-xl ${isCompleted ? "bg-gradient-to-br from-b4-teal to-b4-teal-light" : "bg-muted"}`}
+                                    >
+                                      <phase.icon
+                                        className={`w-6 h-6 ${isCompleted ? "text-white" : "text-foreground"}`}
+                                      />
                                     </div>
                                     <div>
                                       <h3 className="text-lg font-display font-bold text-foreground">{phase.title}</h3>
-                                      <Badge variant="outline" className="text-xs">{phase.subtitle}</Badge>
+                                      <Badge variant="outline" className="text-xs">
+                                        {phase.subtitle}
+                                      </Badge>
                                     </div>
                                   </div>
                                   <p className="text-sm text-muted-foreground leading-relaxed">{phase.description}</p>
                                   <ul className="space-y-2">
                                     {phase.details.map((d, i) => (
                                       <li key={i} className="flex items-center gap-2.5 text-sm">
-                                        <ChevronRight className={`w-3.5 h-3.5 shrink-0 ${isCompleted ? "text-primary" : "text-muted-foreground"}`} />
-                                        <span className={isCompleted ? "text-foreground" : "text-muted-foreground"}>{d}</span>
+                                        <ChevronRight
+                                          className={`w-3.5 h-3.5 shrink-0 ${isCompleted ? "text-primary" : "text-muted-foreground"}`}
+                                        />
+                                        <span className={isCompleted ? "text-foreground" : "text-muted-foreground"}>
+                                          {d}
+                                        </span>
                                       </li>
                                     ))}
                                   </ul>
@@ -700,7 +854,10 @@ const Advisory = () => {
                                         Completed
                                       </div>
                                     ) : phase.phase > 0 ? (
-                                      <Button onClick={() => handleOpenScaleStepDialog(phaseToStep(phase.phase))} className="gap-2">
+                                      <Button
+                                        onClick={() => handleOpenScaleStepDialog(phaseToStep(phase.phase))}
+                                        className="gap-2"
+                                      >
                                         <Play className="w-4 h-4" />
                                         Start Phase
                                       </Button>
@@ -715,7 +872,11 @@ const Advisory = () => {
                         {/* Next Journey CTA */}
                         {scaleCompletionStatus[1] && scaleCompletionStatus[2] && scaleCompletionStatus[3] && (
                           <div className="text-center pt-2">
-                            <Button variant="hero" onClick={() => navigate("/entrepreneurial-onboarding")} className="gap-2">
+                            <Button
+                              variant="hero"
+                              onClick={() => navigate("/entrepreneurial-onboarding")}
+                              className="gap-2"
+                            >
                               <Rocket className="w-4 h-4" />
                               Explore the Entrepreneurial Journey
                             </Button>
