@@ -95,6 +95,7 @@ const Resume = () => {
   const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
   const [isGeneratingSkills, setIsGeneratingSkills] = useState(false);
   const [isGeneratingBio, setIsGeneratingBio] = useState(false);
+  const [isGeneratingServices, setIsGeneratingServices] = useState(false);
   const [profileEditData, setProfileEditData] = useState({
     professional_title: "",
     bio: "",
@@ -349,6 +350,47 @@ const Resume = () => {
       toast({ title: "Error", description: err.message || "Failed to generate skills.", variant: "destructive" });
     } finally {
       setIsGeneratingSkills(false);
+    }
+  };
+
+  const handleGenerateServices = async () => {
+    if (!user) return;
+    setIsGeneratingServices(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-services", {
+        body: {
+          profileData: {
+            full_name: profile?.full_name,
+            professional_title: profile?.professional_title || profileEditData.professional_title,
+            bio: profile?.bio || profileEditData.bio,
+            primary_skills: profile?.primary_skills || profileEditData.primary_skills,
+            years_of_experience: profile?.years_of_experience,
+            key_projects: profile?.key_projects,
+            education_certifications: profile?.education_certifications,
+          },
+          naturalRoleData: naturalRole ? {
+            description: naturalRole.description,
+            practice_entities: naturalRole.practice_entities,
+            training_contexts: naturalRole.training_contexts,
+            consulting_with_whom: naturalRole.consulting_with_whom,
+            consulting_case_studies: naturalRole.consulting_case_studies,
+            services_description: editData.services_description || (naturalRole as any).services_description,
+          } : null,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) {
+        toast({ title: "Cannot generate", description: data.error, variant: "destructive" });
+        return;
+      }
+      if (data?.services) {
+        setEditData(prev => ({ ...prev, services_description: data.services }));
+        toast({ title: "Services generated!", description: "Review and edit the generated services description." });
+      }
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message || "Failed to generate services.", variant: "destructive" });
+    } finally {
+      setIsGeneratingServices(false);
     }
   };
 
@@ -1437,12 +1479,24 @@ const Resume = () => {
                   </CardHeader>
                   <CardContent>
                     {isEditing ? (
-                      <Textarea
-                        value={editData.services_description}
-                        onChange={(e) => setEditData(prev => ({ ...prev, services_description: e.target.value }))}
-                        placeholder="Describe the services you can offer — consulting, training, practice expansion, etc."
-                        rows={4}
-                      />
+                      <div className="space-y-2">
+                        <Textarea
+                          value={editData.services_description}
+                          onChange={(e) => setEditData(prev => ({ ...prev, services_description: e.target.value }))}
+                          placeholder="Describe the services you can offer — consulting, training, practice expansion, etc."
+                          rows={4}
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleGenerateServices}
+                          disabled={isGeneratingServices}
+                          className="gap-2"
+                        >
+                          {isGeneratingServices ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                          {isGeneratingServices ? "Generating..." : "Generate with AI"}
+                        </Button>
+                      </div>
                     ) : (naturalRole as any)?.services_description ? (
                       <p className="text-foreground whitespace-pre-wrap bg-muted/30 rounded-lg p-4">
                         {(naturalRole as any).services_description}
