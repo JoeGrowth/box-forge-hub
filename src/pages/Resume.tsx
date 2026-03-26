@@ -96,7 +96,6 @@ const Resume = () => {
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
   const [profileEditData, setProfileEditData] = useState({
-  const [profileEditData, setProfileEditData] = useState({
     professional_title: "",
     bio: "",
     primary_skills: "",
