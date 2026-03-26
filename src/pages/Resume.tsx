@@ -1340,12 +1340,24 @@ const Resume = () => {
                   </CardHeader>
                   <CardContent>
                     {isEditing ? (
-                      <Textarea
-                        value={profileEditData.primary_skills}
-                        onChange={(e) => setProfileEditData(prev => ({ ...prev, primary_skills: e.target.value }))}
-                        placeholder="e.g., Product Strategy, UX Design, Full-Stack Development, Business Analysis..."
-                        rows={3}
-                      />
+                      <div className="space-y-2">
+                        <Textarea
+                          value={profileEditData.primary_skills}
+                          onChange={(e) => setProfileEditData(prev => ({ ...prev, primary_skills: e.target.value }))}
+                          placeholder="e.g., Product Strategy, UX Design, Full-Stack Development, Business Analysis..."
+                          rows={3}
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleGenerateSkills}
+                          disabled={isGeneratingSkills}
+                          className="gap-2"
+                        >
+                          {isGeneratingSkills ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                          Generate with AI
+                        </Button>
+                      </div>
                     ) : profile?.primary_skills ? (
                       <p className="text-foreground whitespace-pre-wrap bg-muted/30 rounded-lg p-4">{profile.primary_skills}</p>
                     ) : (
