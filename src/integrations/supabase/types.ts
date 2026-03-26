@@ -974,6 +974,53 @@ export type Database = {
           },
         ]
       }
+      startup_five_elements: {
+        Row: {
+          business_model: string
+          created_at: string
+          id: string
+          market: string
+          problem: string
+          product: string
+          solution: string
+          startup_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          business_model?: string
+          created_at?: string
+          id?: string
+          market?: string
+          problem?: string
+          product?: string
+          solution?: string
+          startup_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          business_model?: string
+          created_at?: string
+          id?: string
+          market?: string
+          problem?: string
+          product?: string
+          solution?: string
+          startup_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_five_elements_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: true
+            referencedRelation: "startup_ideas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       startup_ideas: {
         Row: {
           admin_notes: string | null
