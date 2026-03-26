@@ -10,14 +10,14 @@ import { BookOpen, Briefcase, FileText, Layers, TrendingUp, ArrowRight, ArrowLef
 const STORAGE_KEY = "b4-favorite-steps";
 
 const sellSteps = [
-  { id: "cons-sell-1", number: 1, icon: Layers, title: "Structure What You Do", description: "Turn your expertise into a structured consulting offer. Define your services, methodology, and value proposition in a clear framework.", link: "/startstructuring", cta: "Start Structuring" },
-  { id: "cons-sell-2", number: 2, icon: BookOpen, title: "Propose a Training", description: "Package your expertise into a training offer. Share your knowledge and earn revenue by teaching others.", link: "/resume", cta: "Create Training" },
-  { id: "cons-sell-3", number: 3, icon: Briefcase, title: "Propose a Service", description: "Offer your professional services on the platform. Define your expertise, set your terms, and attract clients.", link: "/resume", cta: "Create Service" },
-  { id: "cons-sell-4", number: 4, icon: FileText, title: "Apply for a Tender", description: "Find consulting and project tenders that match your Natural Role and apply with your track record.", link: "/opportunities?tab=tenders", cta: "View Tenders" },
+  { id: "cons-sell-1", number: 1, icon: BookOpen, title: "Propose a Training", description: "Package your expertise into a training offer. Share your knowledge and earn revenue by teaching others.", link: "/resume", cta: "Create Training" },
+  { id: "cons-sell-2", number: 2, icon: Briefcase, title: "Propose a Service", description: "Offer your professional services on the platform. Define your expertise, set your terms, and attract clients.", link: "/resume", cta: "Create Service" },
+  { id: "cons-sell-3", number: 3, icon: FileText, title: "Apply for a Tender", description: "Find consulting and project tenders that match your Natural Role and apply with your track record.", link: "/opportunities?tab=tenders", cta: "View Tenders" },
 ];
 
 const scaleSteps = [
-  { id: "cons-scale-1", number: 5, icon: TrendingUp, title: "Scale Your Structure", description: "Grow your consulting practice into a scalable entity. Build your brand, expand your reach, and create a decentralized business.", link: "/startscaling", cta: "Start Scaling" },
+  { id: "cons-scale-1", number: 4, icon: Layers, title: "Structure What You Do", description: "Turn your expertise into a structured consulting offer. Define your services, methodology, and value proposition in a clear framework.", link: "/startstructuring", cta: "Start Structuring" },
+  { id: "cons-scale-2", number: 5, icon: TrendingUp, title: "Scale Your Structure", description: "Grow your consulting practice into a scalable entity. Build your brand, expand your reach, and create a decentralized business.", link: "/startscaling", cta: "Start Scaling" },
 ];
 
 const Consulting = () => {
@@ -98,12 +98,17 @@ const Consulting = () => {
           </div>
 
           <div className="max-w-3xl mx-auto space-y-6">
+            {/* Sell section title */}
+            <div className="text-center py-4">
+              <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">Sell What You Do</h2>
+            </div>
+
             {sellSteps.map((step, idx) => renderStep(step, idx === sellSteps.length - 1))}
 
-            {/* Subtitle divider */}
+            {/* Next Level divider */}
             <div className="text-center py-6">
               <span className="inline-block text-secondary font-semibold text-sm uppercase tracking-wide mb-1">Next Level</span>
-              <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">Scale Your Structure</h2>
+              <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">Structure What You Do</h2>
             </div>
 
             {scaleSteps.map((step, idx) => renderStep(step, idx === scaleSteps.length - 1))}
