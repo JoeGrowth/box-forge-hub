@@ -240,59 +240,41 @@ const Resume = () => {
     fetchProfile();
   }, [user]);
 
-  // Load existing title icon from storage
-  useEffect(() => {
+  const handleGenerateTitle = async () => {
     if (!user) return;
-    const { data } = supabase.storage
-      .from("avatars")
-      .getPublicUrl(`title-icons/${user.id}.png`);
-    const img = new Image();
-    img.onload = () => setTitleIconUrl(`${data.publicUrl}?t=${Date.now()}`);
-    img.onerror = () => {
-      const { data: webpData } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(`title-icons/${user.id}.webp`);
-      const img2 = new Image();
-      img2.onload = () => setTitleIconUrl(`${webpData.publicUrl}?t=${Date.now()}`);
-      img2.onerror = () => setTitleIconUrl(null);
-      img2.src = webpData.publicUrl;
-    };
-    img.src = data.publicUrl;
-  }, [user]);
-
-  const handleGenerateTitleIcon = async () => {
-    if (!user) return;
-    setIsGeneratingIcon(true);
+    setIsGeneratingTitle(true);
     try {
-      const { data, error } = await supabase.functions.invoke("generate-title-icon", {
+      const { data, error } = await supabase.functions.invoke("generate-title", {
         body: {
           profileData: {
-            professional_title: profile?.professional_title,
-            bio: profile?.bio,
-            primary_skills: profile?.primary_skills,
+            full_name: profile?.full_name,
+            bio: profileEditData.bio || profile?.bio,
+            primary_skills: profileEditData.primary_skills || profile?.primary_skills,
+            years_of_experience: profileEditData.years_of_experience || profile?.years_of_experience,
+            key_projects: profileEditData.key_projects || profile?.key_projects,
+            education_certifications: profileEditData.education_certifications || profile?.education_certifications,
           },
-          naturalRoleData: {
-            description: naturalRole?.description,
-          },
+          naturalRoleData: naturalRole ? {
+            description: editData.description || naturalRole.description,
+            practice_entities: editData.practice_entities || naturalRole.practice_entities,
+            training_contexts: editData.training_contexts || naturalRole.training_contexts,
+            consulting_with_whom: editData.consulting_with_whom || naturalRole.consulting_with_whom,
+            services_description: editData.services_description || (naturalRole as any).services_description,
+          } : null,
         },
       });
 
       if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-
-      setTitleIconUrl(data.iconUrl);
-      toast({
-        title: "Icon Generated",
-        description: "Your professional title icon has been created.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Generation Failed",
-        description: error.message || "Failed to generate icon. Please try again.",
-        variant: "destructive",
-      });
+      if (data?.error) {
+        toast({ title: "Cannot generate", description: data.error, variant: "destructive" });
+      } else if (data?.title) {
+        setProfileEditData(prev => ({ ...prev, professional_title: data.title }));
+        toast({ title: "Title generated!", description: "Review and edit as needed, then save." });
+      }
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message || "Failed to generate title.", variant: "destructive" });
     } finally {
-      setIsGeneratingIcon(false);
+      setIsGeneratingTitle(false);
     }
   };
 
