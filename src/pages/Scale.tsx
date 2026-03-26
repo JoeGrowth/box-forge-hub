@@ -937,6 +937,7 @@ const Scale = () => {
                             )}
                           </div>
                         </div>
+                      </CardContent>
                     </Card>
                   ))}
                 </div>
