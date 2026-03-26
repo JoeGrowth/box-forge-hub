@@ -15,9 +15,12 @@ const sellSteps = [
   { id: "cons-sell-3", number: 3, icon: FileText, title: "Apply for a Tender", description: "Find consulting and project tenders that match your Natural Role and apply with your track record.", link: "/opportunities?tab=tenders", cta: "View Tenders" },
 ];
 
+const structureSteps = [
+  { id: "cons-struct-1", number: 4, icon: Layers, title: "Structure What You Do", description: "Turn your expertise into a structured consulting offer. Define your services, methodology, and value proposition in a clear framework.", link: "/startstructuring", cta: "Start Structuring" },
+];
+
 const scaleSteps = [
-  { id: "cons-scale-1", number: 4, icon: Layers, title: "Structure What You Do", description: "Turn your expertise into a structured consulting offer. Define your services, methodology, and value proposition in a clear framework.", link: "/startstructuring", cta: "Start Structuring" },
-  { id: "cons-scale-2", number: 5, icon: TrendingUp, title: "Scale Your Structure", description: "Grow your consulting practice into a scalable entity. Build your brand, expand your reach, and create a decentralized business.", link: "/startscaling", cta: "Start Scaling" },
+  { id: "cons-scale-1", number: 5, icon: TrendingUp, title: "Scale Your Structure", description: "Grow your consulting practice into a scalable entity. Build your brand, expand your reach, and create a decentralized business.", link: "/startscaling", cta: "Start Scaling" },
 ];
 
 const Consulting = () => {
@@ -105,10 +108,18 @@ const Consulting = () => {
 
             {sellSteps.map((step, idx) => renderStep(step, idx === sellSteps.length - 1))}
 
-            {/* Next Level divider */}
+            {/* Next Level - Structure divider */}
             <div className="text-center py-6">
               <span className="inline-block text-secondary font-semibold text-sm uppercase tracking-wide mb-1">Next Level</span>
               <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">Structure What You Do</h2>
+            </div>
+
+            {structureSteps.map((step, idx) => renderStep(step, idx === structureSteps.length - 1))}
+
+            {/* Next Level - Scale divider */}
+            <div className="text-center py-6">
+              <span className="inline-block text-secondary font-semibold text-sm uppercase tracking-wide mb-1">Next Level</span>
+              <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">Scale Your Structure</h2>
             </div>
 
             {scaleSteps.map((step, idx) => renderStep(step, idx === scaleSteps.length - 1))}
