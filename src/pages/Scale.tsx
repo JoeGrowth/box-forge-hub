@@ -844,18 +844,20 @@ const Scale = () => {
                                   Team
                                 </Button>
 
-                                {/* 5 Elements button */}
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => {
-                                    setFiveElementsIdea({ id: idea.id, title: idea.title, description: idea.description });
-                                    setFiveElementsDialogOpen(true);
-                                  }}
-                                >
-                                  <Layers className="w-4 h-4 mr-1" />
-                                  5 Elements
-                                </Button>
+                                {/* 5 Elements button - hide when Episodes is visible */}
+                                {!idea.development_completed_at && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      setFiveElementsIdea({ id: idea.id, title: idea.title, description: idea.description });
+                                      setFiveElementsDialogOpen(true);
+                                    }}
+                                  >
+                                    <Layers className="w-4 h-4 mr-1" />
+                                    5 Elements
+                                  </Button>
+                                )}
 
                                 {/* Episodes button - shows when development is completed */}
                                 {idea.development_completed_at && (
