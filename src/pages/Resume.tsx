@@ -93,6 +93,7 @@ const Resume = () => {
   } | null>(null);
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
+  const [isGeneratingSkills, setIsGeneratingSkills] = useState(false);
   const [isGeneratingBio, setIsGeneratingBio] = useState(false);
   const [profileEditData, setProfileEditData] = useState({
     professional_title: "",
@@ -313,7 +314,45 @@ const Resume = () => {
     }
   };
 
-  const handleExportPdf = async () => {
+  const handleGenerateSkills = async () => {
+    if (!user) return;
+    setIsGeneratingSkills(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-skills", {
+        body: {
+          profileData: {
+            full_name: profile?.full_name,
+            professional_title: profileEditData.professional_title || profile?.professional_title,
+            bio: profileEditData.bio || profile?.bio,
+            years_of_experience: profileEditData.years_of_experience || profile?.years_of_experience,
+            key_projects: profileEditData.key_projects || profile?.key_projects,
+            education_certifications: profileEditData.education_certifications || profile?.education_certifications,
+          },
+          naturalRoleData: naturalRole ? {
+            description: editData.description || naturalRole.description,
+            practice_entities: editData.practice_entities || naturalRole.practice_entities,
+            training_contexts: editData.training_contexts || naturalRole.training_contexts,
+            consulting_with_whom: editData.consulting_with_whom || naturalRole.consulting_with_whom,
+            services_description: editData.services_description || (naturalRole as any).services_description,
+          } : null,
+        },
+      });
+
+      if (error) throw error;
+      if (data?.error) {
+        toast({ title: "Cannot generate", description: data.error, variant: "destructive" });
+      } else if (data?.skills) {
+        setProfileEditData(prev => ({ ...prev, primary_skills: data.skills }));
+        toast({ title: "Skills generated!", description: "Review and edit as needed, then save." });
+      }
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message || "Failed to generate skills.", variant: "destructive" });
+    } finally {
+      setIsGeneratingSkills(false);
+    }
+  };
+
+
     if (!user) return;
     
     setIsExporting(true);
@@ -1301,12 +1340,24 @@ const Resume = () => {
                   </CardHeader>
                   <CardContent>
                     {isEditing ? (
-                      <Textarea
-                        value={profileEditData.primary_skills}
-                        onChange={(e) => setProfileEditData(prev => ({ ...prev, primary_skills: e.target.value }))}
-                        placeholder="e.g., Product Strategy, UX Design, Full-Stack Development, Business Analysis..."
-                        rows={3}
-                      />
+                      <div className="space-y-2">
+                        <Textarea
+                          value={profileEditData.primary_skills}
+                          onChange={(e) => setProfileEditData(prev => ({ ...prev, primary_skills: e.target.value }))}
+                          placeholder="e.g., Product Strategy, UX Design, Full-Stack Development, Business Analysis..."
+                          rows={3}
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleGenerateSkills}
+                          disabled={isGeneratingSkills}
+                          className="gap-2"
+                        >
+                          {isGeneratingSkills ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                          Generate with AI
+                        </Button>
+                      </div>
                     ) : profile?.primary_skills ? (
                       <p className="text-foreground whitespace-pre-wrap bg-muted/30 rounded-lg p-4">{profile.primary_skills}</p>
                     ) : (
