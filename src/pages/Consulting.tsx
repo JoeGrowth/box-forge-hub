@@ -16,8 +16,8 @@ const sellSteps = [
 ];
 
 const scaleSteps = [
-  { id: "cons-scale-1", number: 4, icon: Layers, title: "Structure What You Do", description: "Turn your expertise into a structured consulting offer. Define your services, methodology, and value proposition in a clear framework.", link: "/advisory", cta: "Start Structuring" },
-  { id: "cons-scale-2", number: 5, icon: TrendingUp, title: "Scale Your Structure", description: "Grow your consulting practice into a scalable entity. Build your brand, expand your reach, and create a decentralized business.", link: "/advisory", cta: "Start Scaling" },
+  { id: "cons-scale-1", number: 4, icon: Layers, title: "Structure What You Do", description: "Turn your expertise into a structured consulting offer. Define your services, methodology, and value proposition in a clear framework.", link: "/startstructuring", cta: "Start Structuring" },
+  { id: "cons-scale-2", number: 5, icon: TrendingUp, title: "Scale Your Structure", description: "Grow your consulting practice into a scalable entity. Build your brand, expand your reach, and create a decentralized business.", link: "/startscaling", cta: "Start Scaling" },
 ];
 
 const Consulting = () => {

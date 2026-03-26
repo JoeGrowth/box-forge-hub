@@ -54,6 +54,8 @@ import Paths from "./pages/Paths";
 import Career from "./pages/Career";
 import Entrepreneurship from "./pages/Entrepreneurship";
 import Consulting from "./pages/Consulting";
+import StartStructuring from "./pages/StartStructuring";
+import StartScaling from "./pages/StartScaling";
 
 const queryClient = new QueryClient();
 
@@ -117,6 +119,8 @@ const App = () => (
                   <Route path="/career" element={<Career />} />
                   <Route path="/entrepreneurship" element={<Entrepreneurship />} />
                   <Route path="/consulting" element={<Consulting />} />
+                  <Route path="/startstructuring" element={<StartStructuring />} />
+                  <Route path="/startscaling" element={<StartScaling />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
