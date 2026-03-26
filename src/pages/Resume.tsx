@@ -93,6 +93,7 @@ const Resume = () => {
   } | null>(null);
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
+  const [isGeneratingBio, setIsGeneratingBio] = useState(false);
   const [profileEditData, setProfileEditData] = useState({
     professional_title: "",
     bio: "",
@@ -272,6 +273,43 @@ const Resume = () => {
       toast({ title: "Error", description: err.message || "Failed to generate title.", variant: "destructive" });
     } finally {
       setIsGeneratingTitle(false);
+    }
+  };
+
+  const handleGenerateBio = async () => {
+    if (!user) return;
+    setIsGeneratingBio(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-bio", {
+        body: {
+          profileData: {
+            full_name: profile?.full_name,
+            professional_title: profileEditData.professional_title || profile?.professional_title,
+            primary_skills: profileEditData.primary_skills || profile?.primary_skills,
+            years_of_experience: profileEditData.years_of_experience || profile?.years_of_experience,
+            key_projects: profileEditData.key_projects || profile?.key_projects,
+            education_certifications: profileEditData.education_certifications || profile?.education_certifications,
+          },
+          naturalRoleData: naturalRole ? {
+            description: editData.description || naturalRole.description,
+            practice_entities: editData.practice_entities || naturalRole.practice_entities,
+            training_contexts: editData.training_contexts || naturalRole.training_contexts,
+            consulting_with_whom: editData.consulting_with_whom || naturalRole.consulting_with_whom,
+            services_description: editData.services_description || (naturalRole as any).services_description,
+          } : null,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) {
+        toast({ title: "Cannot generate", description: data.error, variant: "destructive" });
+      } else if (data?.bio) {
+        setProfileEditData(prev => ({ ...prev, bio: data.bio }));
+        toast({ title: "Bio generated!", description: "Review and edit as needed, then save." });
+      }
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message || "Failed to generate bio.", variant: "destructive" });
+    } finally {
+      setIsGeneratingBio(false);
     }
   };
 
@@ -974,6 +1012,16 @@ const Resume = () => {
                             rows={3}
                             className="mt-1"
                           />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={isGeneratingBio}
+                            onClick={handleGenerateBio}
+                            className="gap-2 mt-2"
+                          >
+                            {isGeneratingBio ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                            {isGeneratingBio ? "Generating..." : "Generate with AI"}
+                          </Button>
                         </div>
                         <div>
                           <Label className="text-sm font-medium text-foreground">Years of Experience</Label>
