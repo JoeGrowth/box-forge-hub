@@ -57,6 +57,7 @@ import { IdeaGrowthDialog } from "@/components/idea/IdeaGrowthDialog";
 import { IdeaEpisodesDialog } from "@/components/idea/IdeaEpisodesDialog";
 import { TeamManagementDialog } from "@/components/idea/TeamManagementDialog";
 import { CoBuilderApplicationsSection } from "@/components/scale/CoBuilderApplicationsSection";
+import { FiveElementsDialog } from "@/components/idea/FiveElementsDialog";
 
 import { format } from "date-fns";
 import { Film, Shield, Layers } from "lucide-react";
@@ -181,26 +182,8 @@ const Scale = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [hasConsultantCert, setHasConsultantCert] = useState(false);
   const [hasTeamMemberships, setHasTeamMemberships] = useState<boolean | null>(null);
-  const [fiveElementsData, setFiveElementsData] = useState<Record<string, { problem: string; solution: string; product: string; market: string; business_model: string }>>({});
-  const [fiveElementsLoading, setFiveElementsLoading] = useState<Record<string, boolean>>({});
-  const [fiveElementsOpen, setFiveElementsOpen] = useState<Record<string, boolean>>({});
-  const [fiveElementsEditing, setFiveElementsEditing] = useState<Record<string, boolean>>({});
-
-  const handleGenerateFiveElements = async (idea: StartupIdea) => {
-    setFiveElementsLoading(prev => ({ ...prev, [idea.id]: true }));
-    setFiveElementsOpen(prev => ({ ...prev, [idea.id]: true }));
-    try {
-      const { data, error } = await supabase.functions.invoke("generate-five-elements", {
-        body: { title: idea.title, description: idea.description },
-      });
-      if (error) throw error;
-      setFiveElementsData(prev => ({ ...prev, [idea.id]: data }));
-    } catch (err: any) {
-      toast({ title: "Generation failed", description: err.message || "Could not generate 5 elements", variant: "destructive" });
-    } finally {
-      setFiveElementsLoading(prev => ({ ...prev, [idea.id]: false }));
-    }
-  };
+  const [fiveElementsDialogOpen, setFiveElementsDialogOpen] = useState(false);
+  const [fiveElementsIdea, setFiveElementsIdea] = useState<{ id: string; title: string; description: string } | null>(null);
   const [showScaleExperience, setShowScaleExperience] = useState(() => {
     // Initialize from localStorage
     if (typeof window !== "undefined") {
@@ -865,20 +848,12 @@ const Scale = () => {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  disabled={fiveElementsLoading[idea.id]}
                                   onClick={() => {
-                                    if (fiveElementsData[idea.id]) {
-                                      setFiveElementsOpen(prev => ({ ...prev, [idea.id]: !prev[idea.id] }));
-                                    } else {
-                                      handleGenerateFiveElements(idea);
-                                    }
+                                    setFiveElementsIdea({ id: idea.id, title: idea.title, description: idea.description });
+                                    setFiveElementsDialogOpen(true);
                                   }}
                                 >
-                                  {fiveElementsLoading[idea.id] ? (
-                                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                                  ) : (
-                                    <Layers className="w-4 h-4 mr-1" />
-                                  )}
+                                  <Layers className="w-4 h-4 mr-1" />
                                   5 Elements
                                 </Button>
 
@@ -963,82 +938,6 @@ const Scale = () => {
                           </div>
                         </div>
                       </CardContent>
-                      {/* 5 Elements inline content */}
-                      {fiveElementsOpen[idea.id] && (
-                        <div className="border-t border-border/50 bg-muted/30 p-6">
-                          {fiveElementsLoading[idea.id] ? (
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                              <span className="text-sm">Generating 5 Elements...</span>
-                            </div>
-                          ) : fiveElementsData[idea.id] ? (
-                            <div className="space-y-3">
-                              <div className="flex items-center justify-between mb-2">
-                                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                                  <Layers className="w-4 h-4 text-b4-teal" />
-                                  5 Elements
-                                </h4>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-7 text-xs"
-                                  onClick={() => setFiveElementsEditing(prev => ({ ...prev, [idea.id]: !prev[idea.id] }))}
-                                >
-                                  {fiveElementsEditing[idea.id] ? (
-                                    <><CheckCircle className="w-3 h-3 mr-1" /> Done</>
-                                  ) : (
-                                    <><Edit2 className="w-3 h-3 mr-1" /> Edit</>
-                                  )}
-                                </Button>
-                              </div>
-                              {(["problem", "solution", "product", "market", "business_model"] as const).map((key) => {
-                                const labels: Record<string, string> = {
-                                  problem: "Problem",
-                                  solution: "Solution",
-                                  product: "Product",
-                                  market: "Market",
-                                  business_model: "Business Model",
-                                };
-                                return (
-                                  <div key={key} className="flex gap-3">
-                                    <span className="text-xs font-bold text-b4-teal uppercase tracking-wider min-w-[100px] pt-0.5">
-                                      {labels[key]}
-                                    </span>
-                                    {fiveElementsEditing[idea.id] ? (
-                                      <Textarea
-                                        className="flex-1 text-sm min-h-[40px] resize-none"
-                                        value={fiveElementsData[idea.id]?.[key] || ""}
-                                        onChange={(e) =>
-                                          setFiveElementsData(prev => ({
-                                            ...prev,
-                                            [idea.id]: { ...prev[idea.id], [key]: e.target.value },
-                                          }))
-                                        }
-                                      />
-                                    ) : (
-                                      <p className="flex-1 text-sm text-foreground leading-relaxed">
-                                        {fiveElementsData[idea.id]?.[key]}
-                                      </p>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                              <div className="pt-2">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="text-xs text-muted-foreground"
-                                  onClick={() => handleGenerateFiveElements(idea)}
-                                  disabled={fiveElementsLoading[idea.id]}
-                                >
-                                  <RotateCcw className="w-3 h-3 mr-1" />
-                                  Regenerate
-                                </Button>
-                              </div>
-                            </div>
-                          ) : null}
-                        </div>
-                      )}
                     </Card>
                   ))}
                 </div>
@@ -1346,6 +1245,13 @@ const Scale = () => {
           currentUserId={user?.id || ""}
         />
       )}
+
+      {/* Five Elements Dialog */}
+      <FiveElementsDialog
+        open={fiveElementsDialogOpen}
+        onOpenChange={setFiveElementsDialogOpen}
+        idea={fiveElementsIdea}
+      />
     </div>
   );
 };
