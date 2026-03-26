@@ -1245,6 +1245,13 @@ const Scale = () => {
           currentUserId={user?.id || ""}
         />
       )}
+
+      {/* Five Elements Dialog */}
+      <FiveElementsDialog
+        open={fiveElementsDialogOpen}
+        onOpenChange={setFiveElementsDialogOpen}
+        idea={fiveElementsIdea}
+      />
     </div>
   );
 };
