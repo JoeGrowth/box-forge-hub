@@ -912,19 +912,40 @@ const Resume = () => {
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${profile?.professional_title ? 'bg-b4-teal/10' : 'bg-muted'}`}>
-                          <Briefcase className={`w-4 h-4 ${profile?.professional_title ? 'text-b4-teal' : 'text-muted-foreground'}`} />
-                        </div>
+                        {titleIconUrl ? (
+                          <img src={titleIconUrl} alt="Professional icon" className="w-8 h-8 rounded-lg object-cover" />
+                        ) : (
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${profile?.professional_title ? 'bg-b4-teal/10' : 'bg-muted'}`}>
+                            <Briefcase className={`w-4 h-4 ${profile?.professional_title ? 'text-b4-teal' : 'text-muted-foreground'}`} />
+                          </div>
+                        )}
                         Professional Title
                       </CardTitle>
-                      <SectionActions
-                        hasContent={!!profile?.professional_title}
-                        isEditing={isEditing}
-                        showHistory={false}
-                        onEdit={() => startEditing('section-professional-title')}
-                        onToggleHistory={() => {}}
-                        onAdd={() => startEditing('section-professional-title')}
-                      />
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleGenerateTitleIcon}
+                          disabled={isGeneratingIcon}
+                          className="gap-1.5 text-xs"
+                          title="Generate an AI icon based on your profile"
+                        >
+                          {isGeneratingIcon ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Wand2 className="w-3.5 h-3.5" />
+                          )}
+                          {isGeneratingIcon ? "Generating..." : titleIconUrl ? "Regenerate Icon" : "AI Icon"}
+                        </Button>
+                        <SectionActions
+                          hasContent={!!profile?.professional_title}
+                          isEditing={isEditing}
+                          showHistory={false}
+                          onEdit={() => startEditing('section-professional-title')}
+                          onToggleHistory={() => {}}
+                          onAdd={() => startEditing('section-professional-title')}
+                        />
+                      </div>
                     </div>
                     <CardDescription>
                       Your current professional title or headline
@@ -938,7 +959,12 @@ const Resume = () => {
                         placeholder="e.g., Senior Product Strategist, Full-Stack Developer, Business Consultant..."
                       />
                     ) : profile?.professional_title ? (
-                      <p className="text-foreground font-medium text-lg bg-muted/30 rounded-lg p-4">{profile.professional_title}</p>
+                      <div className="flex items-center gap-4 bg-muted/30 rounded-lg p-4">
+                        {titleIconUrl && (
+                          <img src={titleIconUrl} alt="Professional icon" className="w-16 h-16 rounded-xl object-cover border border-border shadow-sm" />
+                        )}
+                        <p className="text-foreground font-medium text-lg">{profile.professional_title}</p>
+                      </div>
                     ) : (
                       <button onClick={() => startEditing('section-professional-title')} className="w-full text-center py-4 text-muted-foreground hover:bg-muted/30 rounded-lg transition-colors cursor-pointer">
                         <Briefcase className="w-8 h-8 mx-auto mb-2 opacity-40" />
