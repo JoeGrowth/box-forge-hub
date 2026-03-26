@@ -314,7 +314,45 @@ const Resume = () => {
     }
   };
 
-  const handleExportPdf = async () => {
+  const handleGenerateSkills = async () => {
+    if (!user) return;
+    setIsGeneratingSkills(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-skills", {
+        body: {
+          profileData: {
+            full_name: profile?.full_name,
+            professional_title: profileEditData.professional_title || profile?.professional_title,
+            bio: profileEditData.bio || profile?.bio,
+            years_of_experience: profileEditData.years_of_experience || profile?.years_of_experience,
+            key_projects: profileEditData.key_projects || profile?.key_projects,
+            education_certifications: profileEditData.education_certifications || profile?.education_certifications,
+          },
+          naturalRoleData: naturalRole ? {
+            description: editData.description || naturalRole.description,
+            practice_entities: editData.practice_entities || naturalRole.practice_entities,
+            training_contexts: editData.training_contexts || naturalRole.training_contexts,
+            consulting_with_whom: editData.consulting_with_whom || naturalRole.consulting_with_whom,
+            services_description: editData.services_description || (naturalRole as any).services_description,
+          } : null,
+        },
+      });
+
+      if (error) throw error;
+      if (data?.error) {
+        toast({ title: "Cannot generate", description: data.error, variant: "destructive" });
+      } else if (data?.skills) {
+        setProfileEditData(prev => ({ ...prev, primary_skills: data.skills }));
+        toast({ title: "Skills generated!", description: "Review and edit as needed, then save." });
+      }
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message || "Failed to generate skills.", variant: "destructive" });
+    } finally {
+      setIsGeneratingSkills(false);
+    }
+  };
+
+
     if (!user) return;
     
     setIsExporting(true);
