@@ -94,6 +94,8 @@ const Resume = () => {
     summary_statement: string | null;
   } | null>(null);
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+  const [titleIconUrl, setTitleIconUrl] = useState<string | null>(null);
+  const [isGeneratingIcon, setIsGeneratingIcon] = useState(false);
   const [profileEditData, setProfileEditData] = useState({
     professional_title: "",
     bio: "",
