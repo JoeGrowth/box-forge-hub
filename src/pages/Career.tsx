@@ -12,8 +12,8 @@ const STORAGE_KEY = "b4-favorite-steps";
 const steps = [
   { id: "career-1", number: 1, icon: Compass, title: "Know What You Do", description: "Discover your Natural Role based on your strengths, personality and LinkedIn profile. Understand what makes you unique.", link: "/decoder", cta: "Decode Your Role" },
   { id: "career-2", number: 2, icon: ShoppingBag, title: "Shape What You Do", description: "Build your professional resume and track record to showcase your expertise and attract opportunities.", link: "/resume", cta: "Build Your Resume" },
-  { id: "career-3", number: 3, icon: Users, title: "Join a Team", description: "Browse team environments looking for talent. Apply for roles that match your Natural Role and join an existing organization.", link: "/opportunities?tab=environments", cta: "Browse Environments" },
-  { id: "career-4", number: 4, icon: GraduationCap, title: "Strengthen What You Do", description: "Browse available trainings from other experts and level up your skills in areas that matter to you.", link: "/opportunities?tab=trainings", cta: "Browse Trainings" },
+  { id: "career-3", number: 3, icon: GraduationCap, title: "Strengthen What You Do", description: "Browse available trainings from other experts and level up your skills in areas that matter to you.", link: "/opportunities?tab=trainings", cta: "Browse Trainings" },
+  { id: "career-4", number: 4, icon: Users, title: "Join a Team", description: "Browse team environments looking for talent. Apply for roles that match your Natural Role and join an existing organization.", link: "/opportunities?tab=environments", cta: "Browse Environments" },
 ];
 
 const Career = () => {
