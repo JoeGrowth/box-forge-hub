@@ -1479,12 +1479,24 @@ const Resume = () => {
                   </CardHeader>
                   <CardContent>
                     {isEditing ? (
-                      <Textarea
-                        value={editData.services_description}
-                        onChange={(e) => setEditData(prev => ({ ...prev, services_description: e.target.value }))}
-                        placeholder="Describe the services you can offer — consulting, training, practice expansion, etc."
-                        rows={4}
-                      />
+                      <div className="space-y-2">
+                        <Textarea
+                          value={editData.services_description}
+                          onChange={(e) => setEditData(prev => ({ ...prev, services_description: e.target.value }))}
+                          placeholder="Describe the services you can offer — consulting, training, practice expansion, etc."
+                          rows={4}
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleGenerateServices}
+                          disabled={isGeneratingServices}
+                          className="gap-2"
+                        >
+                          {isGeneratingServices ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                          {isGeneratingServices ? "Generating..." : "Generate with AI"}
+                        </Button>
+                      </div>
                     ) : (naturalRole as any)?.services_description ? (
                       <p className="text-foreground whitespace-pre-wrap bg-muted/30 rounded-lg p-4">
                         {(naturalRole as any).services_description}
