@@ -59,7 +59,7 @@ import { TeamManagementDialog } from "@/components/idea/TeamManagementDialog";
 import { CoBuilderApplicationsSection } from "@/components/scale/CoBuilderApplicationsSection";
 
 import { format } from "date-fns";
-import { Film, Shield } from "lucide-react";
+import { Film, Shield, Layers } from "lucide-react";
 
 interface AnswerVersion {
   id: string;
