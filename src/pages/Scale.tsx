@@ -756,8 +756,8 @@ const Scale = () => {
             {/* Your Ideas Section */}
             <div className={`space-y-6 ${activeSection === "ideas" ? "block" : "hidden"}`}>
               <div className="px-6">
-                <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-                  <div className="min-w-0">
+                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                  <div className="min-w-0 md:max-w-xl">
                     <h2 className="text-2xl font-display font-bold text-foreground leading-tight">Your Joy</h2>
                     <p className="text-sm text-muted-foreground mt-1">Startup ideas you've created and their status</p>
                   </div>
