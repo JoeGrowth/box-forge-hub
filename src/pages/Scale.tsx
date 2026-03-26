@@ -755,12 +755,12 @@ const Scale = () => {
 
             {/* Your Ideas Section */}
             <div className={`space-y-6 ${activeSection === "ideas" ? "block" : "hidden"}`}>
-              <div className="flex items-center justify-between gap-4">
+              <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
                 <div className="min-w-0">
                   <h2 className="text-2xl font-display font-bold text-foreground leading-tight">Your Joy</h2>
                   <p className="text-sm text-muted-foreground mt-1">Startup ideas you've created and their status</p>
                 </div>
-                <Button variant="teal" asChild className="shrink-0">
+                <Button variant="teal" asChild className="w-full md:w-auto md:justify-self-end">
                   <Link to="/create-idea">
                     <Lightbulb className="w-4 h-4 mr-2" />
                     Create New Idea
