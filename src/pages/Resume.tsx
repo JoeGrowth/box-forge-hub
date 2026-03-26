@@ -38,9 +38,7 @@ import {
   FolderOpen,
   Award,
   Lightbulb,
-  BookOpen,
-  Wand2,
-  ImageIcon
+  BookOpen
 } from "lucide-react";
 import { ScrollToTopButton } from "@/components/layout/ScrollToTopButton";
 import { exportResumeToPdf } from "@/lib/resumePdfExport";
