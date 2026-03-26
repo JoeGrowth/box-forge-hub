@@ -10,9 +10,36 @@ import { Rocket, Users, ArrowRight, ArrowLeft, Settings, Star } from "lucide-rea
 const STORAGE_KEY = "b4-favorite-steps";
 
 const steps = [
-  { id: "ent-1", number: 1, icon: Rocket, title: "Create a Project", description: "Launch your startup idea on B4. Define your vision, set up equity-based roles, and recruit co-builders to bring it to life.", link: "/create-idea", cta: "Start Your Project" },
-  { id: "ent-2", number: 2, icon: Users, title: "Join a Project", description: "Browse existing startup projects looking for co-builders. Apply with your Natural Role and earn equity by contributing your skills.", link: "/opportunities", cta: "Browse Projects" },
-  { id: "ent-3", number: 3, icon: Settings, title: "Manage a Project", description: "Continue developing your startup ideas. Scale as an Initiator or as a Co-Builder — manage milestones, team, and growth.", link: "/start", cta: "Manage Your Project" },
+  {
+    id: "ent-1",
+    number: 1,
+    icon: Rocket,
+    title: "Create a Project",
+    description:
+      "Launch your startup idea on B4 and become an initiator. Define your vision, set up equity-based roles, and recruit co-builders to bring it to life.",
+    link: "/create-idea",
+    cta: "Start Your Project",
+  },
+  {
+    id: "ent-2",
+    number: 2,
+    icon: Users,
+    title: "Join a Project",
+    description:
+      "Browse existing startup projects looking for co-builders. Apply with your Natural Role and earn equity by contributing your skills.",
+    link: "/opportunities",
+    cta: "Browse Projects",
+  },
+  {
+    id: "ent-3",
+    number: 3,
+    icon: Settings,
+    title: "Manage a Project",
+    description:
+      "Continue developing your startup ideas. Operate and grow the venture. Scale as an Initiator or as a Co-Builder — manage milestones, team, and growth.",
+    link: "/start",
+    cta: "Manage Your Project",
+  },
 ];
 
 const Entrepreneurship = () => {
@@ -20,7 +47,9 @@ const Entrepreneurship = () => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       return stored ? JSON.parse(stored) : [];
-    } catch { return []; }
+    } catch {
+      return [];
+    }
   });
 
   useEffect(() => {
@@ -28,7 +57,7 @@ const Entrepreneurship = () => {
   }, [favorites]);
 
   const toggleFavorite = (id: string) => {
-    setFavorites((prev) => prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]);
+    setFavorites((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
   };
 
   return (
@@ -84,7 +113,9 @@ const Entrepreneurship = () => {
                     className="p-1.5 rounded-full hover:bg-muted transition-colors shrink-0"
                     aria-label={isFav ? "Remove from focus" : "Add to focus"}
                   >
-                    <Star className={`w-5 h-5 transition-colors ${isFav ? "fill-secondary text-secondary" : "text-muted-foreground hover:text-secondary"}`} />
+                    <Star
+                      className={`w-5 h-5 transition-colors ${isFav ? "fill-secondary text-secondary" : "text-muted-foreground hover:text-secondary"}`}
+                    />
                   </button>
                 </div>
               );

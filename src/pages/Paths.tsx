@@ -130,7 +130,7 @@ const entrepreneurshipSteps: PathStep[] = [
     icon: Settings,
     title: "Manage a Project",
     description:
-      "Continue developing your startup ideas. Scale as an Initiator or as a Co-Builder — manage milestones, team, and growth.",
+      "Continue developing your startup ideas. Operate and grow the venture. Scale as an Initiator or as a Co-Builder — manage milestones, team, and growth.",
     link: "/start",
     cta: "Manage Your Project",
   },
