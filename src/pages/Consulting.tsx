@@ -13,7 +13,7 @@ const STORAGE_KEY = "b4-favorite-steps";
 
 const sellSteps = [
   { id: "cons-sell-1", number: 1, icon: BookOpen, title: "Propose a Training", description: "Package your expertise into a training offer. Share your knowledge and earn revenue by teaching others.", link: "", cta: "Submit Training", isDialog: true },
-  { id: "cons-sell-2", number: 2, icon: Briefcase, title: "Propose a Service", description: "Offer your professional services on the platform. Define your expertise, set your terms, and attract clients.", link: "/resume", cta: "Create Service" },
+  { id: "cons-sell-2", number: 2, icon: Briefcase, title: "Propose a Service", description: "Offer your professional services on the platform. Define your expertise, set your terms, and attract clients.", link: "", cta: "Create Service", isServiceDialog: true },
   { id: "cons-sell-3", number: 3, icon: FileText, title: "Apply for a Tender", description: "Find consulting and project tenders that match your Natural Role and apply with your track record.", link: "/opportunities?tab=tenders", cta: "View Tenders" },
 ];
 
