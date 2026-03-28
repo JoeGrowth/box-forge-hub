@@ -66,6 +66,10 @@ const Consulting = () => {
             <Button variant="outline" size="sm" onClick={() => setShowTrainDialog(true)}>
               {step.cta} <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
+          ) : "isServiceDialog" in step && step.isServiceDialog ? (
+            <Button variant="outline" size="sm" onClick={() => setShowServiceDialog(true)}>
+              {step.cta} <ArrowRight className="w-4 h-4 ml-1" />
+            </Button>
           ) : (
             <Button variant="outline" size="sm" asChild>
               <Link to={step.link}>
