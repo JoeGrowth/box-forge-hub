@@ -44,6 +44,7 @@ import { ScrollToTopButton } from "@/components/layout/ScrollToTopButton";
 import { exportResumeToPdf } from "@/lib/resumePdfExport";
 import { Progress } from "@/components/ui/progress";
 import { TrainTeamDialog } from "@/components/resume/TrainTeamDialog";
+import { ConsultingServiceDialog } from "@/components/resume/ConsultingServiceDialog";
 import { format } from "date-fns";
 
 interface AnswerVersion {
@@ -81,6 +82,7 @@ const Resume = () => {
   const [isTogglingPromise, setIsTogglingPromise] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [showTrainDialog, setShowTrainDialog] = useState(false);
+  const [showServiceDialog, setShowServiceDialog] = useState(false);
   const [profile, setProfile] = useState<{
     full_name: string | null;
     bio: string | null;
@@ -1306,7 +1308,7 @@ const Resume = () => {
                           </button>
                         )}
                         {(naturalRole?.consulting_with_whom || naturalRole?.consulting_case_studies) && !isEditing && (
-                          <Button variant="outline" className="mt-3 gap-2" size="sm" onClick={() => navigate("/coming-soon")}>
+                          <Button variant="outline" className="mt-3 gap-2" size="sm" onClick={() => setShowServiceDialog(true)}>
                             <Users className="w-4 h-4" /> Offer Consulting <ArrowRight className="w-4 h-4" />
                           </Button>
                         )}
@@ -1652,6 +1654,7 @@ const Resume = () => {
       <Footer />
       <ScrollToTopButton />
       <TrainTeamDialog open={showTrainDialog} onOpenChange={setShowTrainDialog} />
+      <ConsultingServiceDialog open={showServiceDialog} onOpenChange={setShowServiceDialog} />
     </div>
   );
 };
