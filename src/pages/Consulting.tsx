@@ -6,11 +6,12 @@ import { PageTransition } from "@/components/layout/PageTransition";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Briefcase, FileText, Layers, TrendingUp, ArrowRight, ArrowLeft, Star } from "lucide-react";
+import { TrainTeamDialog } from "@/components/resume/TrainTeamDialog";
 
 const STORAGE_KEY = "b4-favorite-steps";
 
 const sellSteps = [
-  { id: "cons-sell-1", number: 1, icon: BookOpen, title: "Propose a Training", description: "Package your expertise into a training offer. Share your knowledge and earn revenue by teaching others.", link: "/resume", cta: "Create Training" },
+  { id: "cons-sell-1", number: 1, icon: BookOpen, title: "Propose a Training", description: "Package your expertise into a training offer. Share your knowledge and earn revenue by teaching others.", link: "", cta: "Submit Training", isDialog: true },
   { id: "cons-sell-2", number: 2, icon: Briefcase, title: "Propose a Service", description: "Offer your professional services on the platform. Define your expertise, set your terms, and attract clients.", link: "/resume", cta: "Create Service" },
   { id: "cons-sell-3", number: 3, icon: FileText, title: "Apply for a Tender", description: "Find consulting and project tenders that match your Natural Role and apply with your track record.", link: "/opportunities?tab=tenders", cta: "View Tenders" },
 ];
@@ -30,6 +31,7 @@ const Consulting = () => {
       return stored ? JSON.parse(stored) : [];
     } catch { return []; }
   });
+  const [showTrainDialog, setShowTrainDialog] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites));
@@ -58,11 +60,17 @@ const Consulting = () => {
             <h3 className="font-display text-xl font-bold text-foreground">{step.title}</h3>
           </div>
           <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{step.description}</p>
-          <Button variant="outline" size="sm" asChild>
-            <Link to={step.link}>
+          {"isDialog" in step && step.isDialog ? (
+            <Button variant="outline" size="sm" onClick={() => setShowTrainDialog(true)}>
               {step.cta} <ArrowRight className="w-4 h-4 ml-1" />
-            </Link>
-          </Button>
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" asChild>
+              <Link to={step.link}>
+                {step.cta} <ArrowRight className="w-4 h-4 ml-1" />
+              </Link>
+            </Button>
+          )}
         </div>
         <button
           onClick={() => toggleFavorite(step.id)}
@@ -127,6 +135,7 @@ const Consulting = () => {
       </PageTransition>
       <Footer />
       <ScrollToTopButton />
+      <TrainTeamDialog open={showTrainDialog} onOpenChange={setShowTrainDialog} />
     </div>
   );
 };
