@@ -142,6 +142,7 @@ const Consulting = () => {
       <Footer />
       <ScrollToTopButton />
       <TrainTeamDialog open={showTrainDialog} onOpenChange={setShowTrainDialog} />
+      <ConsultingServiceDialog open={showServiceDialog} onOpenChange={setShowServiceDialog} />
     </div>
   );
 };
