@@ -1308,7 +1308,7 @@ const Resume = () => {
                           </button>
                         )}
                         {(naturalRole?.consulting_with_whom || naturalRole?.consulting_case_studies) && !isEditing && (
-                          <Button variant="outline" className="mt-3 gap-2" size="sm" onClick={() => navigate("/coming-soon")}>
+                          <Button variant="outline" className="mt-3 gap-2" size="sm" onClick={() => setShowServiceDialog(true)}>
                             <Users className="w-4 h-4" /> Offer Consulting <ArrowRight className="w-4 h-4" />
                           </Button>
                         )}
