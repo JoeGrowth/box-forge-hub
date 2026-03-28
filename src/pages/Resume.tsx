@@ -44,6 +44,7 @@ import { ScrollToTopButton } from "@/components/layout/ScrollToTopButton";
 import { exportResumeToPdf } from "@/lib/resumePdfExport";
 import { Progress } from "@/components/ui/progress";
 import { TrainTeamDialog } from "@/components/resume/TrainTeamDialog";
+import { ConsultingServiceDialog } from "@/components/resume/ConsultingServiceDialog";
 import { format } from "date-fns";
 
 interface AnswerVersion {
