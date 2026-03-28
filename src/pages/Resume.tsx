@@ -82,6 +82,7 @@ const Resume = () => {
   const [isTogglingPromise, setIsTogglingPromise] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [showTrainDialog, setShowTrainDialog] = useState(false);
+  const [showServiceDialog, setShowServiceDialog] = useState(false);
   const [profile, setProfile] = useState<{
     full_name: string | null;
     bio: string | null;
