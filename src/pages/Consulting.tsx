@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Briefcase, FileText, Layers, TrendingUp, ArrowRight, ArrowLeft, Star } from "lucide-react";
 import { TrainTeamDialog } from "@/components/resume/TrainTeamDialog";
+import { ConsultingServiceDialog } from "@/components/resume/ConsultingServiceDialog";
 
 const STORAGE_KEY = "b4-favorite-steps";
 
