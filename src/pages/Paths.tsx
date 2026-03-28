@@ -106,23 +106,48 @@ const entrepreneurshipSteps: PathStep[] = [
 
 const consultingSteps: PathStep[] = [
   {
-    id: "cons-1",
+    id: "cons-sell-1",
     number: 1,
+    icon: BookOpen,
+    title: "Propose a Training",
+    description: "Package your expertise into a training offer. Share your knowledge and earn revenue by teaching others.",
+    link: "/resume",
+    cta: "Create Training",
+  },
+  {
+    id: "cons-sell-2",
+    number: 2,
+    icon: Briefcase,
+    title: "Propose a Service",
+    description: "Offer your professional services on the platform. Define your expertise, set your terms, and attract clients.",
+    link: "/resume",
+    cta: "Create Service",
+  },
+  {
+    id: "cons-sell-3",
+    number: 3,
+    icon: FileText,
+    title: "Apply for a Tender",
+    description: "Find consulting and project tenders that match your Natural Role and apply with your track record.",
+    link: "/opportunities?tab=tenders",
+    cta: "View Tenders",
+  },
+  {
+    id: "cons-struct-1",
+    number: 4,
     icon: Layers,
     title: "Structure What You Do",
-    description:
-      "Turn your expertise into a structured consulting offer. Define your services, methodology, and value proposition in a clear framework.",
-    link: "/advisory",
+    description: "Turn your expertise into a structured consulting offer. Define your services, methodology, and value proposition in a clear framework.",
+    link: "/startstructuring",
     cta: "Start Structuring",
   },
   {
-    id: "cons-2",
-    number: 2,
+    id: "cons-scale-1",
+    number: 5,
     icon: TrendingUp,
     title: "Scale Your Structure",
-    description:
-      "Grow your consulting practice into a scalable entity. Build your brand, expand your reach, and create a decentralized business.",
-    link: "/advisory",
+    description: "Grow your consulting practice into a scalable entity. Build your brand, expand your reach, and create a decentralized business.",
+    link: "/startscaling",
     cta: "Start Scaling",
   },
 ];
