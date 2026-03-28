@@ -33,6 +33,7 @@ const Consulting = () => {
     } catch { return []; }
   });
   const [showTrainDialog, setShowTrainDialog] = useState(false);
+  const [showServiceDialog, setShowServiceDialog] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites));
