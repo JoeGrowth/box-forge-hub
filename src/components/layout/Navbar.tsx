@@ -53,9 +53,7 @@ export function Navbar() {
 
   const navLinks = useMemo(() => {
     if (!user) return guestNavLinks;
-    if (canAccessScaling) return getBoostedLinks();
-    if (canAccessBoosting) return getApprovedLinks();
-    return getAppliedLinks();
+    return getAuthenticatedLinks();
   }, [user, canAccessScaling, canAccessBoosting]);
 
   return (
