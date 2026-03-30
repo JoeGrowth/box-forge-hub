@@ -84,10 +84,8 @@ const Entrepreneurship = () => {
                 Launch ventures or join exciting startup projects
               </p>
             </div>
-            <Button className="gap-2" asChild>
-              <Link to="/create-idea">
-                <Plus className="w-4 h-4" /> Start New Project
-              </Link>
+            <Button className="gap-2" onClick={() => setShowCreateDialog(true)}>
+              <Plus className="w-4 h-4" /> Start New Project
             </Button>
           </div>
 
