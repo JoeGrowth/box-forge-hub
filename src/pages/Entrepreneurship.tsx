@@ -6,6 +6,7 @@ import { PageTransition } from "@/components/layout/PageTransition";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Rocket, Users, ArrowRight, ArrowLeft, Settings, Star, Plus } from "lucide-react";
+import { CreateIdeaDialog } from "@/components/idea/CreateIdeaDialog";
 
 const STORAGE_KEY = "b4-favorite-steps";
 
@@ -43,6 +44,7 @@ const steps = [
 ];
 
 const Entrepreneurship = () => {
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [favorites, setFavorites] = useState<string[]>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -82,10 +84,8 @@ const Entrepreneurship = () => {
                 Launch ventures or join exciting startup projects
               </p>
             </div>
-            <Button className="gap-2" asChild>
-              <Link to="/create-idea">
-                <Plus className="w-4 h-4" /> Start New Project
-              </Link>
+            <Button className="gap-2" onClick={() => setShowCreateDialog(true)}>
+              <Plus className="w-4 h-4" /> Start New Project
             </Button>
           </div>
 
@@ -106,11 +106,17 @@ const Entrepreneurship = () => {
                       <h3 className="font-display text-xl font-bold text-foreground">{step.title}</h3>
                     </div>
                     <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{step.description}</p>
-                    <Button variant="outline" size="sm" asChild>
-                      <Link to={step.link}>
+                    {step.id === "ent-1" ? (
+                      <Button variant="outline" size="sm" onClick={() => setShowCreateDialog(true)}>
                         {step.cta} <ArrowRight className="w-4 h-4 ml-1" />
-                      </Link>
-                    </Button>
+                      </Button>
+                    ) : (
+                      <Button variant="outline" size="sm" asChild>
+                        <Link to={step.link}>
+                          {step.cta} <ArrowRight className="w-4 h-4 ml-1" />
+                        </Link>
+                      </Button>
+                    )}
                   </div>
                   <button
                     onClick={() => toggleFavorite(step.id)}
@@ -129,6 +135,7 @@ const Entrepreneurship = () => {
       </PageTransition>
       <Footer />
       <ScrollToTopButton />
+      <CreateIdeaDialog open={showCreateDialog} onOpenChange={setShowCreateDialog} />
     </div>
   );
 };
