@@ -6,6 +6,7 @@ import { PageTransition } from "@/components/layout/PageTransition";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Rocket, Users, ArrowRight, ArrowLeft, Settings, Star, Plus } from "lucide-react";
+import { CreateIdeaDialog } from "@/components/idea/CreateIdeaDialog";
 
 const STORAGE_KEY = "b4-favorite-steps";
 
