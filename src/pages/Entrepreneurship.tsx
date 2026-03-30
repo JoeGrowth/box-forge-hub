@@ -129,6 +129,7 @@ const Entrepreneurship = () => {
       </PageTransition>
       <Footer />
       <ScrollToTopButton />
+      <CreateIdeaDialog open={showCreateDialog} onOpenChange={setShowCreateDialog} />
     </div>
   );
 };
