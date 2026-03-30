@@ -5,7 +5,7 @@ import { ScrollToTopButton } from "@/components/layout/ScrollToTopButton";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Rocket, Users, ArrowRight, ArrowLeft, Settings, Star } from "lucide-react";
+import { Rocket, Users, ArrowRight, ArrowLeft, Settings, Star, Plus } from "lucide-react";
 
 const STORAGE_KEY = "b4-favorite-steps";
 
