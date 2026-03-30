@@ -44,6 +44,7 @@ const steps = [
 ];
 
 const Entrepreneurship = () => {
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [favorites, setFavorites] = useState<string[]>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
