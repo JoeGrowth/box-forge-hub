@@ -1404,7 +1404,12 @@ const Resume = () => {
                         </Button>
                       </div>
                     ) : profile?.primary_skills ? (
-                      <p className="text-foreground whitespace-pre-wrap bg-muted/30 rounded-lg p-4">{profile.primary_skills}</p>
+                      <div className="space-y-3">
+                        <p className="text-foreground whitespace-pre-wrap bg-muted/30 rounded-lg p-4">{profile.primary_skills}</p>
+                        <Button variant="outline" className="gap-2" size="sm" onClick={() => window.open("https://box4solutions.com/opportunities", "_blank")}>
+                          <GraduationCap className="w-4 h-4" /> Get Certified <ArrowRight className="w-4 h-4" />
+                        </Button>
+                      </div>
                     ) : (
                       <button onClick={() => startEditing('section-skills')} className="w-full text-center py-4 text-muted-foreground hover:bg-muted/30 rounded-lg transition-colors cursor-pointer">
                         <Sparkles className="w-8 h-8 mx-auto mb-2 opacity-40" />
