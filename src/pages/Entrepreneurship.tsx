@@ -106,11 +106,17 @@ const Entrepreneurship = () => {
                       <h3 className="font-display text-xl font-bold text-foreground">{step.title}</h3>
                     </div>
                     <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{step.description}</p>
-                    <Button variant="outline" size="sm" asChild>
-                      <Link to={step.link}>
+                    {step.id === "ent-1" ? (
+                      <Button variant="outline" size="sm" onClick={() => setShowCreateDialog(true)}>
                         {step.cta} <ArrowRight className="w-4 h-4 ml-1" />
-                      </Link>
-                    </Button>
+                      </Button>
+                    ) : (
+                      <Button variant="outline" size="sm" asChild>
+                        <Link to={step.link}>
+                          {step.cta} <ArrowRight className="w-4 h-4 ml-1" />
+                        </Link>
+                      </Button>
+                    )}
                   </div>
                   <button
                     onClick={() => toggleFavorite(step.id)}
