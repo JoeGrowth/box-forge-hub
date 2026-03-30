@@ -73,16 +73,20 @@ const Entrepreneurship = () => {
             </Button>
           </div>
 
-          <div className="text-center mb-16">
-            <span className="inline-block text-secondary font-semibold text-sm uppercase tracking-wide mb-3">
-              Entrepreneurship Path
-            </span>
-            <h1 className="font-display text-3xl md:text-5xl font-bold text-foreground mb-4">
-              Launch or Join a Venture
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Whether you have an idea or want to join one — start building with equity.
-            </p>
+          <div className="flex items-center justify-between mb-12 bg-muted/40 rounded-2xl p-6">
+            <div>
+              <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-1">
+                Entrepreneurship Engine
+              </h1>
+              <p className="text-muted-foreground">
+                Launch ventures or join exciting startup projects
+              </p>
+            </div>
+            <Button className="gap-2" asChild>
+              <Link to="/create-idea">
+                <Plus className="w-4 h-4" /> Start New Project
+              </Link>
+            </Button>
           </div>
 
           <div className="max-w-3xl mx-auto space-y-6">
