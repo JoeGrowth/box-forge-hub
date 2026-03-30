@@ -102,16 +102,23 @@ const Consulting = () => {
             </Button>
           </div>
 
-          <div className="text-center mb-16">
-            <span className="inline-block text-secondary font-semibold text-sm uppercase tracking-wide mb-3">
-              Consulting Path
-            </span>
-            <h1 className="font-display text-3xl md:text-5xl font-bold text-foreground mb-4">
-              Sell & Scale Your Practice
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Monetize your expertise, then structure and grow it into an independent consulting business.
-            </p>
+          <div className="flex items-center justify-between mb-12 bg-muted/40 rounded-2xl p-6">
+            <div>
+              <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-1">
+                Consulting Engine
+              </h1>
+              <p className="text-muted-foreground">
+                Monetize your expertise
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <Button variant="outline" className="gap-2" onClick={() => setShowTrainDialog(true)}>
+                <GraduationCap className="w-4 h-4" /> Create Training
+              </Button>
+              <Button className="gap-2" onClick={() => setShowServiceDialog(true)}>
+                <Plus className="w-4 h-4" /> Create Service
+              </Button>
+            </div>
           </div>
 
           <div className="max-w-3xl mx-auto space-y-6">
