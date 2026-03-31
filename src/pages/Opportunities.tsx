@@ -362,7 +362,7 @@ const Opportunities = () => {
           {/* Opportunities List */}
           <section className="py-12">
             <div className="container mx-auto px-4">
-              {categoryFilter === "trainings" ? (
+              {(categoryFilter === "trainings" || categoryFilter === "all") && (
                 <div className="space-y-12">
                   {/* B4 Platform Certifications */}
                   <div>
