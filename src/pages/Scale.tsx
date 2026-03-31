@@ -748,7 +748,7 @@ const Scale = () => {
                   }`}
                 >
                   <Users className="w-4 h-4 inline mr-2" />
-                  {isTeamMemberOnly ? "My Teams" : "Scale as Co-Builder"}
+                  {isTeamMemberOnly ? "My Teams" : "Collaborations"}
                 </button>
               </div>
             </div>
