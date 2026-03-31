@@ -268,42 +268,62 @@ const Opportunities = () => {
     <div className="min-h-screen bg-background">
       <PageTransition>
         <main className="pt-20">
+          {/* Header */}
+          <section className="py-12">
+            <div className="container mx-auto px-4">
+              <h1 className="font-display text-3xl font-bold text-foreground mb-2">Opportunity Marketplace</h1>
+              <p className="text-muted-foreground max-w-2xl">
+                Discover jobs, consulting missions, and startup roles tailored to you
+              </p>
+            </div>
+          </section>
+
+          {/* Stats Dashboard */}
+          <section className="pb-8">
+            <div className="container mx-auto px-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  { label: "Job Opportunities", value: "0", sub: "Matching your profile", icon: Briefcase },
+                  { label: "Consulting Tenders", value: "0", sub: "High match rate", icon: FileText },
+                  { label: "Training Programs", value: trainings.length.toString(), sub: `${certifications.length} your certifications`, icon: GraduationCap },
+                  { label: "Startup Projects", value: ideas.length.toString(), sub: "Seeking your role", icon: Rocket },
+                ].map((stat) => (
+                  <div key={stat.label} className="rounded-2xl border border-border bg-card p-6">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                      <stat.icon className="w-4 h-4" />
+                      {stat.label}
+                    </div>
+                    <p className="font-display text-3xl font-bold text-foreground">{stat.value}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{stat.sub}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
           {/* Category Tabs */}
-          <section className="py-4 border-b border-border bg-muted/30">
+          <section className="pb-6">
             <div className="container mx-auto px-4">
               <div className="flex items-center gap-2 overflow-x-auto">
                 {[
-                  { key: "ideas", label: "Ideas", icon: Rocket },
+                  { key: "all", label: "All Opportunities" },
+                  { key: "ideas", label: "Startups", icon: Rocket },
                   { key: "trainings", label: "Trainings", icon: GraduationCap },
                   { key: "tenders", label: "Tenders", icon: FileText },
                   { key: "environments", label: "Environments", icon: Globe },
                 ].map((cat) => (
                   <Button
                     key={cat.key}
-                    variant={categoryFilter === cat.key ? "default" : "outline"}
+                    variant={categoryFilter === cat.key ? "default" : "ghost"}
                     size="sm"
                     onClick={() => setCategoryFilter(cat.key)}
-                    className={categoryFilter === cat.key ? "bg-b4-teal hover:bg-b4-teal/90 text-white" : ""}
+                    className={categoryFilter === cat.key ? "bg-foreground text-background hover:bg-foreground/90" : ""}
                   >
-                    <cat.icon className="w-4 h-4 mr-1.5" />
+                    {cat.icon && <cat.icon className="w-4 h-4 mr-1.5" />}
                     {cat.label}
                   </Button>
                 ))}
               </div>
-            </div>
-          </section>
-
-          {/* Header */}
-          <section className="py-12 gradient-hero text-primary-foreground">
-            <div className="container mx-auto px-4">
-              <div className="flex items-center gap-3 mb-2">
-                <Users className="w-8 h-8" />
-                <h1 className="font-display text-3xl font-bold">Opportunities</h1>
-              </div>
-              <p className="text-primary-foreground/80 max-w-2xl">
-                Browse startup ideas looking for Talented People. Find opportunities that match your skills and natural
-                role.
-              </p>
             </div>
           </section>
 
