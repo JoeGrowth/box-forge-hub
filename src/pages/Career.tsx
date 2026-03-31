@@ -61,6 +61,22 @@ const Career = () => {
             </Button>
           </div>
 
+          {/* Stats Dashboard */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+            {[
+              { label: "Track Record", value: "0", sub: "Projects documented" },
+              { label: "Skills Validated", value: "0", sub: "Professional skills" },
+              { label: "Endorsements", value: "0", sub: "From colleagues" },
+              { label: "Job Matches", value: "0", sub: "Available now" },
+            ].map((stat) => (
+              <div key={stat.label} className="rounded-2xl border border-border bg-card p-6">
+                <p className="text-sm text-muted-foreground mb-4">{stat.label}</p>
+                <p className="font-display text-3xl font-bold text-foreground">{stat.value}</p>
+                <p className="text-xs text-muted-foreground mt-1">{stat.sub}</p>
+              </div>
+            ))}
+          </div>
+
           <div className="max-w-3xl mx-auto space-y-6">
             {steps.map((step, idx) => {
               const isFav = favorites.includes(step.id);
