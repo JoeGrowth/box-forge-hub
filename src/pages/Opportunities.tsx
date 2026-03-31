@@ -50,7 +50,7 @@ const Opportunities = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [sectorFilter, setSectorFilter] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState(searchParams.get("tab") || "ideas");
+  const [categoryFilter, setCategoryFilter] = useState(searchParams.get("tab") || "all");
   const [certifications, setCertifications] = useState<Certification[]>([]);
 
   // Derive approval status from cached onboarding state
