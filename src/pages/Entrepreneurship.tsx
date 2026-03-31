@@ -230,7 +230,7 @@ const Entrepreneurship = () => {
             </div>
             <div>
               <p className="text-muted-foreground">Equity Offer</p>
-              <p className="font-semibold text-green-600">5-15%</p>
+              <p className="font-semibold text-secondary">5-15%</p>
             </div>
           </div>
 
