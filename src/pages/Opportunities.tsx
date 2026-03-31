@@ -361,10 +361,25 @@ const Opportunities = () => {
 
           {/* Opportunities List */}
           <section className="py-12">
-            <div className="container mx-auto px-4">
+            <div className="container mx-auto px-4 space-y-12">
+              {/* Tenders / Environments Coming Soon */}
+              {(categoryFilter === "tenders" || categoryFilter === "environments") && (
+                <div className="text-center py-16">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+                    {categoryFilter === "tenders" && <FileText className="w-8 h-8 text-muted-foreground/50" />}
+                    {categoryFilter === "environments" && <Globe className="w-8 h-8 text-muted-foreground/50" />}
+                  </div>
+                  <h2 className="font-display text-2xl font-bold text-foreground mb-2">Coming Soon</h2>
+                  <p className="text-muted-foreground">
+                    {categoryFilter === "tenders" && "Tender opportunities will be available here soon."}
+                    {categoryFilter === "environments" && "Environment opportunities will be available here soon."}
+                  </p>
+                </div>
+              )}
+
+              {/* Trainings Section */}
               {(categoryFilter === "trainings" || categoryFilter === "all") && (
                 <div className="space-y-12">
-                  {/* B4 Platform Certifications */}
                   <div>
                     <div className="flex items-center gap-2 mb-6">
                       <Rocket className="w-5 h-5 text-b4-teal" />
@@ -393,29 +408,19 @@ const Opportunities = () => {
                                 B4 Program
                               </span>
                             </div>
-
                             <h3 className="font-display text-lg font-bold text-foreground mb-2">{training.title}</h3>
                             <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{training.description}</p>
-
                             <div className="flex flex-wrap gap-2 mb-4">
-                              <span className="px-2 py-1 rounded-full bg-b4-teal/10 text-b4-teal text-xs">
-                                {training.format}
-                              </span>
-                              <span className="px-2 py-1 rounded-full bg-muted text-xs text-muted-foreground">
-                                {training.duration}
-                              </span>
+                              <span className="px-2 py-1 rounded-full bg-b4-teal/10 text-b4-teal text-xs">{training.format}</span>
+                              <span className="px-2 py-1 rounded-full bg-muted text-xs text-muted-foreground">{training.duration}</span>
                               {training.sector && (
-                                <span className="px-2 py-1 rounded-full bg-muted text-xs text-muted-foreground">
-                                  {training.sector}
-                                </span>
+                                <span className="px-2 py-1 rounded-full bg-muted text-xs text-muted-foreground">{training.sector}</span>
                               )}
                             </div>
-
                             <div className="pt-4 border-t border-border flex items-center justify-between">
                               <span className="text-xs text-muted-foreground">By B4</span>
                               <Button variant="ghost" size="sm">
-                                Start Learning
-                                <ArrowRight className="ml-1 w-3 h-3" />
+                                Start Learning <ArrowRight className="ml-1 w-3 h-3" />
                               </Button>
                             </div>
                           </div>
@@ -423,10 +428,9 @@ const Opportunities = () => {
                     </div>
                   </div>
 
-                  {/* User-Submitted Trainings */}
                   <div>
                     <div className="flex items-center gap-2 mb-6">
-                      <Users className="w-5 h-5 text-amber-600" />
+                      <Users className="w-5 h-5 text-muted-foreground" />
                       <h2 className="font-display text-xl font-bold text-foreground">Community Trainings</h2>
                     </div>
                     {loading ? (
@@ -447,8 +451,8 @@ const Opportunities = () => {
                             className="bg-card rounded-2xl border border-border p-6 hover:border-b4-teal/50 transition-colors"
                           >
                             <div className="flex items-start justify-between mb-4">
-                              <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                                <GraduationCap className="w-6 h-6 text-amber-600" />
+                              <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center">
+                                <GraduationCap className="w-6 h-6 text-muted-foreground" />
                               </div>
                               {training.sector && (
                                 <span className="px-3 py-1 rounded-full bg-muted text-xs font-medium text-muted-foreground">
@@ -456,32 +460,21 @@ const Opportunities = () => {
                                 </span>
                               )}
                             </div>
-
                             <h3 className="font-display text-lg font-bold text-foreground mb-2">{training.title}</h3>
                             <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{training.description}</p>
-
                             <div className="flex flex-wrap gap-2 mb-4">
                               {training.format && (
-                                <span className="px-2 py-1 rounded-full bg-b4-teal/10 text-b4-teal text-xs">
-                                  {training.format}
-                                </span>
+                                <span className="px-2 py-1 rounded-full bg-b4-teal/10 text-b4-teal text-xs">{training.format}</span>
                               )}
                               {training.duration && (
-                                <span className="px-2 py-1 rounded-full bg-muted text-xs text-muted-foreground">
-                                  {training.duration}
-                                </span>
+                                <span className="px-2 py-1 rounded-full bg-muted text-xs text-muted-foreground">{training.duration}</span>
                               )}
                               {training.target_audience && (
-                                <span className="px-2 py-1 rounded-full bg-muted text-xs text-muted-foreground">
-                                  {training.target_audience}
-                                </span>
+                                <span className="px-2 py-1 rounded-full bg-muted text-xs text-muted-foreground">{training.target_audience}</span>
                               )}
                             </div>
-
                             <div className="pt-4 border-t border-border">
-                              <span className="text-xs text-muted-foreground">
-                                By {training.trainer_name || "Unknown"}
-                              </span>
+                              <span className="text-xs text-muted-foreground">By {training.trainer_name || "Unknown"}</span>
                             </div>
                           </div>
                         ))}
@@ -489,83 +482,76 @@ const Opportunities = () => {
                     )}
                   </div>
                 </div>
-              ) : categoryFilter !== "ideas" ? (
-                <div className="text-center py-16">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-                    {categoryFilter === "tenders" && <FileText className="w-8 h-8 text-muted-foreground/50" />}
-                    {categoryFilter === "environments" && <Globe className="w-8 h-8 text-muted-foreground/50" />}
-                  </div>
-                  <h2 className="font-display text-2xl font-bold text-foreground mb-2">Coming Soon</h2>
-                  <p className="text-muted-foreground">
-                    {categoryFilter === "tenders" && "Tender opportunities will be available here soon."}
-                    {categoryFilter === "environments" && "Environment opportunities will be available here soon."}
-                  </p>
-                </div>
-              ) : loading ? (
-                <DirectorySkeletonGrid count={6} type="opportunity" />
-              ) : filteredIdeas.length === 0 ? (
-                <div className="text-center py-16">
-                  <Rocket className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
-                  <h2 className="font-display text-2xl font-bold text-foreground mb-2">No opportunities yet</h2>
-                  <p className="text-muted-foreground mb-6">
-                    Be the first to create a startup idea and find co-builders!
-                  </p>
-                  <Button variant="teal" onClick={() => navigate("/create-idea")}>
-                    Create Your Startup Idea
-                    <ArrowRight className="ml-2 w-4 h-4" />
-                  </Button>
-                </div>
-              ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredIdeas.map((idea) => (
-                    <div
-                      key={idea.id}
-                      className="bg-card rounded-2xl border border-border p-6 hover:border-b4-teal/50 transition-colors"
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="w-12 h-12 rounded-xl bg-b4-teal/10 flex items-center justify-center">
-                          <Rocket className="w-6 h-6 text-b4-teal" />
-                        </div>
-                        {idea.sector && (
-                          <span className="px-3 py-1 rounded-full bg-muted text-xs font-medium text-muted-foreground">
-                            {idea.sector}
-                          </span>
-                        )}
-                      </div>
+              )}
 
-                      <h3 className="font-display text-lg font-bold text-foreground mb-2">{idea.title}</h3>
-                      <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{idea.description}</p>
-
-                      {idea.roles_needed && idea.roles_needed.length > 0 && (
-                        <div className="mb-4">
-                          <p className="text-xs text-muted-foreground mb-2">Looking for:</p>
-                          <div className="flex flex-wrap gap-1">
-                            {idea.roles_needed.slice(0, 3).map((role, i) => (
-                              <span key={i} className="px-2 py-1 rounded-full bg-b4-teal/10 text-b4-teal text-xs">
-                                {role}
-                              </span>
-                            ))}
-                            {idea.roles_needed.length > 3 && (
-                              <span className="px-2 py-1 text-xs text-muted-foreground">
-                                +{idea.roles_needed.length - 3} more
-                              </span>
-                            )}
-                          </div>
+              {/* Ideas / Startups Section */}
+              {(categoryFilter === "ideas" || categoryFilter === "all") && (
+                <>
+                  {loading ? (
+                    <DirectorySkeletonGrid count={6} type="opportunity" />
+                  ) : filteredIdeas.length === 0 ? (
+                    <div className="text-center py-16">
+                      <Rocket className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
+                      <h2 className="font-display text-2xl font-bold text-foreground mb-2">No opportunities yet</h2>
+                      <p className="text-muted-foreground mb-6">
+                        Be the first to create a startup idea and find co-builders!
+                      </p>
+                      <Button variant="teal" onClick={() => navigate("/create-idea")}>
+                        Create Your Startup Idea
+                        <ArrowRight className="ml-2 w-4 h-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div>
+                      {categoryFilter === "all" && (
+                        <div className="flex items-center gap-2 mb-6">
+                          <Rocket className="w-5 h-5 text-b4-teal" />
+                          <h2 className="font-display text-xl font-bold text-foreground">Startup Projects</h2>
                         </div>
                       )}
-
-                      <div className="flex items-center justify-between pt-4 border-t border-border">
-                        <span className="text-xs text-muted-foreground">
-                          By {idea.creator_profile?.full_name || "Unknown"}
-                        </span>
-                        <Button variant="ghost" size="sm" onClick={() => navigate(`/opportunities/${idea.id}`)}>
-                          View opportunity
-                          <ArrowRight className="ml-1 w-3 h-3" />
-                        </Button>
+                      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {filteredIdeas.map((idea) => (
+                          <div
+                            key={idea.id}
+                            className="bg-card rounded-2xl border border-border p-6 hover:border-b4-teal/50 transition-colors"
+                          >
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="w-12 h-12 rounded-xl bg-b4-teal/10 flex items-center justify-center">
+                                <Rocket className="w-6 h-6 text-b4-teal" />
+                              </div>
+                              {idea.sector && (
+                                <span className="px-3 py-1 rounded-full bg-muted text-xs font-medium text-muted-foreground">
+                                  {idea.sector}
+                                </span>
+                              )}
+                            </div>
+                            <h3 className="font-display text-lg font-bold text-foreground mb-2">{idea.title}</h3>
+                            <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{idea.description}</p>
+                            {idea.roles_needed && idea.roles_needed.length > 0 && (
+                              <div className="mb-4">
+                                <p className="text-xs text-muted-foreground mb-2">Looking for:</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {idea.roles_needed.slice(0, 3).map((role, i) => (
+                                    <span key={i} className="px-2 py-1 rounded-full bg-b4-teal/10 text-b4-teal text-xs">{role}</span>
+                                  ))}
+                                  {idea.roles_needed.length > 3 && (
+                                    <span className="px-2 py-1 text-xs text-muted-foreground">+{idea.roles_needed.length - 3} more</span>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                            <div className="flex items-center justify-between pt-4 border-t border-border">
+                              <span className="text-xs text-muted-foreground">By {idea.creator_profile?.full_name || "Unknown"}</span>
+                              <Button variant="ghost" size="sm" onClick={() => navigate(`/opportunities/${idea.id}`)}>
+                                View opportunity <ArrowRight className="ml-1 w-3 h-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  ))}
-                </div>
+                  )}
+                </>
               )}
             </div>
           </section>
