@@ -427,6 +427,14 @@ const Entrepreneurship = () => {
       <Footer />
       <ScrollToTopButton />
       <CreateIdeaDialog open={showCreateDialog} onOpenChange={setShowCreateDialog} />
+      {applyProject && (
+        <ApplyToJoinDialog
+          open={!!applyProject}
+          onOpenChange={(open) => { if (!open) setApplyProject(null); }}
+          idea={applyProject}
+          onApplicationSubmitted={() => fetchData()}
+        />
+      )}
     </div>
   );
 };
