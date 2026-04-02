@@ -252,8 +252,8 @@ const Entrepreneurship = () => {
 
         <div className="flex flex-col gap-2 shrink-0">
           <Rocket className="w-8 h-8 text-primary mx-auto mb-1" />
-          <Button size="sm" asChild>
-            <Link to={`/opportunities/${project.id}`}>Express Interest</Link>
+          <Button size="sm" onClick={() => setApplyProject(project)}>
+              Express Interest
           </Button>
           <Button variant="outline" size="sm" asChild>
             <Link to={`/opportunities/${project.id}`}>
