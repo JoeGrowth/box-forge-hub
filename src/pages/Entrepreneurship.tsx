@@ -49,6 +49,7 @@ const getEpisodeLabel = (episode: string) => {
 const Entrepreneurship = () => {
   const { user } = useAuth();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [applyProject, setApplyProject] = useState<StartupIdea | null>(null);
   const [activeTab, setActiveTab] = useState("browse");
   const [browseProjects, setBrowseProjects] = useState<StartupIdea[]>([]);
   const [myProjects, setMyProjects] = useState<StartupIdea[]>([]);
