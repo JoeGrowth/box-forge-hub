@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Plus, Rocket, Eye } from "lucide-react";
 import { CreateIdeaDialog } from "@/components/idea/CreateIdeaDialog";
+import { ApplyToJoinDialog } from "@/components/idea/ApplyToJoinDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -48,6 +49,7 @@ const getEpisodeLabel = (episode: string) => {
 const Entrepreneurship = () => {
   const { user } = useAuth();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [applyProject, setApplyProject] = useState<StartupIdea | null>(null);
   const [activeTab, setActiveTab] = useState("browse");
   const [browseProjects, setBrowseProjects] = useState<StartupIdea[]>([]);
   const [myProjects, setMyProjects] = useState<StartupIdea[]>([]);
@@ -250,8 +252,8 @@ const Entrepreneurship = () => {
 
         <div className="flex flex-col gap-2 shrink-0">
           <Rocket className="w-8 h-8 text-primary mx-auto mb-1" />
-          <Button size="sm" asChild>
-            <Link to={`/opportunities/${project.id}`}>Express Interest</Link>
+          <Button size="sm" onClick={() => setApplyProject(project)}>
+              Express Interest
           </Button>
           <Button variant="outline" size="sm" asChild>
             <Link to={`/opportunities/${project.id}`}>
@@ -425,6 +427,14 @@ const Entrepreneurship = () => {
       <Footer />
       <ScrollToTopButton />
       <CreateIdeaDialog open={showCreateDialog} onOpenChange={setShowCreateDialog} />
+      {applyProject && (
+        <ApplyToJoinDialog
+          open={!!applyProject}
+          onOpenChange={(open) => { if (!open) setApplyProject(null); }}
+          idea={applyProject}
+          onApplicationSubmitted={() => fetchData()}
+        />
+      )}
     </div>
   );
 };
