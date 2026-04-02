@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Plus, Rocket, Eye } from "lucide-react";
 import { CreateIdeaDialog } from "@/components/idea/CreateIdeaDialog";
+import { ApplyToJoinDialog } from "@/components/idea/ApplyToJoinDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
