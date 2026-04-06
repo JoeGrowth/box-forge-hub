@@ -792,7 +792,10 @@ const Scale = () => {
                 </Card>
               ) : (
                 <div className="grid gap-4">
-                  {userIdeas.map((idea) => (
+                  {[...userIdeas].sort((a, b) => {
+                    const episodeOrder: Record<string, number> = { growth: 0, validation: 1, development: 2 };
+                    return (episodeOrder[a.current_episode] ?? 3) - (episodeOrder[b.current_episode] ?? 3);
+                  }).map((idea) => (
                     <Card key={idea.id} className="border-border/50 hover:shadow-md transition-shadow">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between gap-4">
