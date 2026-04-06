@@ -210,7 +210,7 @@ export const IdeaEpisodesDialog = ({
 
     // Phases
     episode.phases.forEach((phase) => {
-      const phaseProgress = progress.find((p) => p.phase_number === phase.number);
+      const phaseProgress = progress.find((p) => p.phase_name === phase.name);
 
       if (yPosition > 250) {
         doc.addPage();
