@@ -426,7 +426,7 @@ export const IdeaEpisodesDialog = ({
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2">
                                       <span className="text-sm font-medium">
-                                        {phase.name}
+                                        {(phase as any).displayName || phase.name}
                                       </span>
                                       {phaseProgress?.is_completed ? (
                                         <CheckCircle className="w-4 h-4 text-b4-teal" />
