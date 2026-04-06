@@ -137,15 +137,27 @@ export const IdeaEpisodesDialog = ({
 
         data?.forEach((p) => {
           const episode = p.episode || "development";
+          // Normalize legacy phase names
+          let phaseName = p.phase_name;
+          if (phaseName === "1st Role") phaseName = "Role Definition";
+          
           if (grouped[episode]) {
-            grouped[episode].push({
-              phase_number: p.phase_number,
-              phase_name: p.phase_name,
-              responses: (p.responses as Record<string, string>) || {},
-              is_completed: p.is_completed || false,
-              completed_at: p.completed_at || undefined,
-              episode: episode,
-            });
+            // Merge responses if same phase_name already exists (handles duplicate phase numbers)
+            const existing = grouped[episode].find((x) => x.phase_name === phaseName);
+            if (existing) {
+              existing.responses = { ...existing.responses, ...((p.responses as Record<string, string>) || {}) };
+              if (p.is_completed) existing.is_completed = true;
+              if (p.completed_at) existing.completed_at = p.completed_at;
+            } else {
+              grouped[episode].push({
+                phase_number: p.phase_number,
+                phase_name: phaseName,
+                responses: (p.responses as Record<string, string>) || {},
+                is_completed: p.is_completed || false,
+                completed_at: p.completed_at || undefined,
+                episode: episode,
+              });
+            }
           }
         });
 
