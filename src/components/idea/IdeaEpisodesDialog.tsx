@@ -411,7 +411,7 @@ export const IdeaEpisodesDialog = ({
                             {episode.phases.map((phase) => {
                               const PhaseIcon = phase.icon;
                               const phaseProgress = progress.find(
-                                (p) => p.phase_number === phase.number
+                                (p) => p.phase_name === phase.name
                               );
                               const hasResponses =
                                 phaseProgress &&
@@ -419,7 +419,7 @@ export const IdeaEpisodesDialog = ({
 
                               return (
                                 <div
-                                  key={phase.number}
+                                  key={phase.name}
                                   className="flex items-start gap-3 p-3 rounded-lg bg-muted/30"
                                 >
                                   <PhaseIcon className="w-4 h-4 text-muted-foreground mt-0.5" />
