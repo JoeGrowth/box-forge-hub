@@ -226,6 +226,28 @@ export const IdeaEpisodesDialog = ({
         Object.entries(phaseProgress.responses).forEach(([key, value]) => {
           if (!value) return;
 
+          // Format structured JSON values for PDF
+          let displayValue = String(value);
+          if (typeof value === 'object' || (typeof value === 'string' && (value.startsWith('{') || value.startsWith('[')))) {
+            try {
+              const parsed = typeof value === 'object' ? value : JSON.parse(value);
+              if (parsed && typeof parsed === 'object') {
+                if (parsed.stages && Array.isArray(parsed.stages)) {
+                  displayValue = parsed.stages.map((stage: any) => {
+                    const roles = stage.rows?.map((r: any) =>
+                      `${r.role}: ${r.responsibility} (${r.equityRange})`
+                    ).join('\n    ') || '';
+                    return `${stage.label}:\n    ${roles}`;
+                  }).join('\n  ');
+                } else {
+                  displayValue = JSON.stringify(parsed, null, 2);
+                }
+              }
+            } catch {
+              // use as string
+            }
+          }
+
           if (yPosition > 270) {
             doc.addPage();
             yPosition = 20;
