@@ -262,7 +262,7 @@ export const IdeaEpisodesDialog = ({
 
           doc.setFont("helvetica", "normal");
           doc.setTextColor(60);
-          const lines = doc.splitTextToSize(String(value), contentWidth);
+          const lines = doc.splitTextToSize(displayValue, contentWidth);
           lines.forEach((line: string) => {
             if (yPosition > 280) {
               doc.addPage();
