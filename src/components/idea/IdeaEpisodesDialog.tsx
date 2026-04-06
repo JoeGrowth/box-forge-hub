@@ -226,6 +226,28 @@ export const IdeaEpisodesDialog = ({
         Object.entries(phaseProgress.responses).forEach(([key, value]) => {
           if (!value) return;
 
+          // Format structured JSON values for PDF
+          let displayValue = String(value);
+          if (typeof value === 'object' || (typeof value === 'string' && (value.startsWith('{') || value.startsWith('[')))) {
+            try {
+              const parsed = typeof value === 'object' ? value : JSON.parse(value);
+              if (parsed && typeof parsed === 'object') {
+                if (parsed.stages && Array.isArray(parsed.stages)) {
+                  displayValue = parsed.stages.map((stage: any) => {
+                    const roles = stage.rows?.map((r: any) =>
+                      `${r.role}: ${r.responsibility} (${r.equityRange})`
+                    ).join('\n    ') || '';
+                    return `${stage.label}:\n    ${roles}`;
+                  }).join('\n  ');
+                } else {
+                  displayValue = JSON.stringify(parsed, null, 2);
+                }
+              }
+            } catch {
+              // use as string
+            }
+          }
+
           if (yPosition > 270) {
             doc.addPage();
             yPosition = 20;
@@ -240,7 +262,7 @@ export const IdeaEpisodesDialog = ({
 
           doc.setFont("helvetica", "normal");
           doc.setTextColor(60);
-          const lines = doc.splitTextToSize(String(value), contentWidth);
+          const lines = doc.splitTextToSize(displayValue, contentWidth);
           lines.forEach((line: string) => {
             if (yPosition > 280) {
               doc.addPage();
@@ -416,8 +438,35 @@ export const IdeaEpisodesDialog = ({
                                     {hasResponses && (
                                       <div className="mt-2 space-y-2">
                                         {Object.entries(phaseProgress.responses).map(
-                                          ([key, value]) =>
-                                            value && (
+                                          ([key, value]) => {
+                                            if (!value) return null;
+                                            
+                                            // Check if value is a JSON object/array (like equity_responsibility)
+                                            let displayValue = String(value);
+                                            let isStructured = false;
+                                            if (typeof value === 'object' || (typeof value === 'string' && (value.startsWith('{') || value.startsWith('[')))) {
+                                              try {
+                                                const parsed = typeof value === 'object' ? value : JSON.parse(value);
+                                                if (parsed && typeof parsed === 'object') {
+                                                  isStructured = true;
+                                                  // Format equity_responsibility stages
+                                                  if (parsed.stages && Array.isArray(parsed.stages)) {
+                                                    displayValue = parsed.stages.map((stage: any) => {
+                                                      const roles = stage.rows?.map((r: any) => 
+                                                        `${r.role}: ${r.responsibility} (${r.equityRange})`
+                                                      ).join('; ') || '';
+                                                      return `${stage.label} — ${roles}`;
+                                                    }).join(' | ');
+                                                  } else {
+                                                    displayValue = JSON.stringify(parsed, null, 2);
+                                                  }
+                                                }
+                                              } catch {
+                                                // Not valid JSON, use as string
+                                              }
+                                            }
+
+                                            return (
                                               <div
                                                 key={key}
                                                 className="text-xs text-muted-foreground"
@@ -425,11 +474,12 @@ export const IdeaEpisodesDialog = ({
                                                 <span className="font-medium capitalize">
                                                   {key.replace(/_/g, " ")}:
                                                 </span>{" "}
-                                                <span className="line-clamp-2">
-                                                  {value}
+                                                <span className={isStructured ? "line-clamp-3" : "line-clamp-2"}>
+                                                  {displayValue}
                                                 </span>
                                               </div>
-                                            )
+                                            );
+                                          }
                                         )}
                                       </div>
                                     )}
