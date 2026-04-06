@@ -166,7 +166,7 @@ export const IdeaEpisodesDialog = ({
     
     const progress = episodeProgress[episodeId] || [];
     return episode.phases.every((phase) =>
-      progress.some((p) => p.phase_number === phase.number && p.is_completed)
+      progress.some((p) => p.phase_name === phase.name && p.is_completed)
     );
   };
 
