@@ -220,7 +220,7 @@ export const IdeaEpisodesDialog = ({
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(0, 128, 128);
-      doc.text(phase.name, margin, yPosition);
+      doc.text((phase as any).displayName || phase.name, margin, yPosition);
       yPosition += 8;
 
       if (phaseProgress && Object.keys(phaseProgress.responses).length > 0) {
