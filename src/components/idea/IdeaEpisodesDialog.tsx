@@ -62,15 +62,16 @@ const EPISODES = [
     id: "development",
     number: 1,
     name: "Part 1: Creation",
-    description: "Ideation, Structuring, Role Definition, Team Building, Launch",
+    description: "Ideation, Structuring, Role Definition, Equity & Responsibility, Team Building, Launch",
     color: "from-violet-500 to-purple-500",
     icon: Rocket,
     phases: [
-      { number: 0, name: "Ideation", icon: Lightbulb },
-      { number: 1, name: "Structuring", icon: Briefcase },
-      { number: 2, name: "Role Definition", icon: Target },
-      { number: 3, name: "Team Building", icon: Users },
-      { number: 4, name: "Launch", icon: Rocket },
+      { name: "Ideation", icon: Lightbulb },
+      { name: "Structuring", icon: Briefcase },
+      { name: "Role Definition", icon: Target },
+      { name: "E&R", displayName: "Equity & Responsibility", icon: Shield },
+      { name: "Team Building", icon: Users },
+      { name: "Launch", icon: Rocket },
     ],
   },
   {
@@ -81,9 +82,9 @@ const EPISODES = [
     color: "from-amber-500 to-orange-500",
     icon: Shield,
     phases: [
-      { number: 0, name: "Validation", icon: Shield },
-      { number: 1, name: "Execution & Operations", icon: Settings },
-      { number: 2, name: "Iteration & Improvement", icon: RefreshCw },
+      { name: "Validation", icon: Shield },
+      { name: "Execution & Operations", icon: Settings },
+      { name: "Iteration & Improvement", icon: RefreshCw },
     ],
   },
   {
@@ -94,10 +95,10 @@ const EPISODES = [
     color: "from-emerald-500 to-teal-500",
     icon: TrendingUp,
     phases: [
-      { number: 0, name: "Customer Acquisition", icon: UsersRound },
-      { number: 1, name: "Partnerships", icon: Handshake },
-      { number: 2, name: "Revenue Growth", icon: DollarSign },
-      { number: 3, name: "Team Scaling", icon: UsersRound },
+      { name: "Customer Acquisition", icon: UsersRound },
+      { name: "Partnerships", icon: Handshake },
+      { name: "Revenue Growth", icon: DollarSign },
+      { name: "Team Scaling", icon: UsersRound },
     ],
   },
 ];
@@ -136,15 +137,27 @@ export const IdeaEpisodesDialog = ({
 
         data?.forEach((p) => {
           const episode = p.episode || "development";
+          // Normalize legacy phase names
+          let phaseName = p.phase_name;
+          if (phaseName === "1st Role") phaseName = "Role Definition";
+          
           if (grouped[episode]) {
-            grouped[episode].push({
-              phase_number: p.phase_number,
-              phase_name: p.phase_name,
-              responses: (p.responses as Record<string, string>) || {},
-              is_completed: p.is_completed || false,
-              completed_at: p.completed_at || undefined,
-              episode: episode,
-            });
+            // Merge responses if same phase_name already exists (handles duplicate phase numbers)
+            const existing = grouped[episode].find((x) => x.phase_name === phaseName);
+            if (existing) {
+              existing.responses = { ...existing.responses, ...((p.responses as Record<string, string>) || {}) };
+              if (p.is_completed) existing.is_completed = true;
+              if (p.completed_at) existing.completed_at = p.completed_at;
+            } else {
+              grouped[episode].push({
+                phase_number: p.phase_number,
+                phase_name: phaseName,
+                responses: (p.responses as Record<string, string>) || {},
+                is_completed: p.is_completed || false,
+                completed_at: p.completed_at || undefined,
+                episode: episode,
+              });
+            }
           }
         });
 
@@ -165,7 +178,7 @@ export const IdeaEpisodesDialog = ({
     
     const progress = episodeProgress[episodeId] || [];
     return episode.phases.every((phase) =>
-      progress.some((p) => p.phase_number === phase.number && p.is_completed)
+      progress.some((p) => p.phase_name === phase.name && p.is_completed)
     );
   };
 
@@ -209,7 +222,7 @@ export const IdeaEpisodesDialog = ({
 
     // Phases
     episode.phases.forEach((phase) => {
-      const phaseProgress = progress.find((p) => p.phase_number === phase.number);
+      const phaseProgress = progress.find((p) => p.phase_name === phase.name);
 
       if (yPosition > 250) {
         doc.addPage();
@@ -219,7 +232,7 @@ export const IdeaEpisodesDialog = ({
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(0, 128, 128);
-      doc.text(phase.name, margin, yPosition);
+      doc.text((phase as any).displayName || phase.name, margin, yPosition);
       yPosition += 8;
 
       if (phaseProgress && Object.keys(phaseProgress.responses).length > 0) {
@@ -410,7 +423,7 @@ export const IdeaEpisodesDialog = ({
                             {episode.phases.map((phase) => {
                               const PhaseIcon = phase.icon;
                               const phaseProgress = progress.find(
-                                (p) => p.phase_number === phase.number
+                                (p) => p.phase_name === phase.name
                               );
                               const hasResponses =
                                 phaseProgress &&
@@ -418,14 +431,14 @@ export const IdeaEpisodesDialog = ({
 
                               return (
                                 <div
-                                  key={phase.number}
+                                  key={phase.name}
                                   className="flex items-start gap-3 p-3 rounded-lg bg-muted/30"
                                 >
                                   <PhaseIcon className="w-4 h-4 text-muted-foreground mt-0.5" />
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2">
                                       <span className="text-sm font-medium">
-                                        {phase.name}
+                                        {(phase as any).displayName || phase.name}
                                       </span>
                                       {phaseProgress?.is_completed ? (
                                         <CheckCircle className="w-4 h-4 text-b4-teal" />
