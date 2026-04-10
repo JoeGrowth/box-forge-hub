@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
@@ -7,216 +7,201 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Users, Briefcase, MapPin, ArrowRight, Filter, Rocket, Loader2, Plus, GraduationCap, FileText, Globe, Lightbulb, DollarSign, Shield } from "lucide-react";
-import { DirectorySkeletonGrid } from "@/components/ui/skeleton-card";
+import { Search, Loader2 } from "lucide-react";
+import { OpportunityCard, type Opportunity } from "@/components/opportunities/OpportunityCard";
 
-interface StartupIdea {
-  id: string;
-  title: string;
-  description: string;
-  sector: string | null;
-  roles_needed: string[] | null;
-  status: string;
-  created_at: string;
-  creator_profile?: {
-    full_name: string | null;
-  };
-}
+const CATEGORIES = [
+  { key: "all", label: "All" },
+  { key: "startup", label: "Startups" },
+  { key: "training", label: "Training" },
+  { key: "consulting", label: "Consulting" },
+  { key: "tender", label: "Tenders" },
+  { key: "job", label: "Jobs" },
+] as const;
 
-interface TrainingOpportunity {
-  id: string;
-  title: string;
-  description: string;
-  target_audience: string | null;
-  duration: string | null;
-  format: string | null;
-  sector: string | null;
-  created_at: string;
-  trainer_name?: string | null;
-}
-
-interface Certification {
-  id: string;
-  certification_type: string;
-}
+const B4_PROGRAMS: Opportunity[] = [
+  {
+    id: "b4-cobuilder",
+    title: "Learn to be a Co-Builder",
+    category: "training",
+    required_skills: ["Practice", "Training", "Consulting", "Teamwork"],
+    income_range: "Free",
+    effort_level: "Self-paced",
+    description: "Practice, Training, Consulting based on the B4 model. Learn the fundamentals, apply through case studies, and become a certified Co-Builder.",
+    primary_action: { type: "start", label: "Start", route: "/journey" },
+    source_id: "b4-cobuilder",
+    created_at: "2025-01-01",
+    author_name: "B4",
+    sector: "Professional Development",
+    rank: 0,
+  },
+  {
+    id: "b4-initiator",
+    title: "Learn to be an Initiator",
+    category: "training",
+    required_skills: ["Ideation", "Structuring", "Team Building", "Launch"],
+    income_range: "Free",
+    effort_level: "Self-paced",
+    description: "Ideation, Structuring, Team Building, and Launch. Transform your idea into a structured startup with the right team.",
+    primary_action: { type: "start", label: "Start", route: "/journey" },
+    source_id: "b4-initiator",
+    created_at: "2025-01-01",
+    author_name: "B4",
+    sector: "Entrepreneurship",
+    rank: 1,
+  },
+  {
+    id: "b4-finance",
+    title: "Learn Finance",
+    category: "training",
+    required_skills: ["Financial Statements", "Budgeting", "Forecasting", "KPI Reporting"],
+    income_range: "Free",
+    effort_level: "Self-paced",
+    description: "Master corporate finance fundamentals: financial statements, budgeting, forecasting, ROI analysis, and KPI reporting.",
+    primary_action: { type: "start", label: "Start", route: "/journey" },
+    source_id: "b4-finance",
+    created_at: "2025-01-01",
+    author_name: "B4",
+    sector: "Finance",
+    rank: 2,
+  },
+  {
+    id: "b4-security",
+    title: "Learn to Be Secure",
+    category: "training",
+    required_skills: ["Risk Awareness", "Security Practices", "Data Protection", "Compliance"],
+    income_range: "Free",
+    effort_level: "Self-paced",
+    description: "Practical security decisions, risk awareness, security best practices, and behavioral habits for professionals.",
+    primary_action: { type: "start", label: "Start", route: "/journey" },
+    source_id: "b4-security",
+    created_at: "2025-01-01",
+    author_name: "B4",
+    sector: "Cybersecurity",
+    rank: 3,
+  },
+];
 
 const Opportunities = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, loading: authLoading } = useAuth();
   const { onboardingState, loading: onboardingLoading } = useOnboarding();
-  const [ideas, setIdeas] = useState<StartupIdea[]>([]);
-  const [trainings, setTrainings] = useState<TrainingOpportunity[]>([]);
+  const [rawStartups, setRawStartups] = useState<any[]>([]);
+  const [rawTrainings, setRawTrainings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [sectorFilter, setSectorFilter] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState(searchParams.get("tab") || "all");
-  const [certifications, setCertifications] = useState<Certification[]>([]);
+  const [categoryFilter, setCategoryFilter] = useState<string>(searchParams.get("tab") || "all");
 
-  // Derive approval status from cached onboarding state
   const isApproved =
     onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved";
 
   useEffect(() => {
-    const fetchIdeas = async () => {
-      if (!isApproved) {
-        setLoading(false);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from("startup_ideas")
-        .select("*")
-        .eq("status", "active")
-        .eq("review_status", "approved")
-        .eq("is_looking_for_cobuilders", true)
-        .order("created_at", { ascending: false });
-
-      if (!error && data) {
-        // Fetch creator profiles
-        const creatorIds = data.map((idea) => idea.creator_id);
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("user_id, full_name")
-          .in("user_id", creatorIds);
-
-        const ideasWithProfiles = data.map((idea) => ({
-          ...idea,
-          creator_profile: profiles?.find((p) => p.user_id === idea.creator_id),
-        }));
-
-        setIdeas(ideasWithProfiles);
-      }
-      setLoading(false);
-    };
-
-    const fetchCertifications = async () => {
-      if (!user) return;
-
-      const { data } = await supabase
-        .from("user_certifications")
-        .select("id, certification_type")
-        .eq("user_id", user.id);
-
-      if (data) {
-        setCertifications(data);
-      }
-    };
-
-    const fetchTrainings = async () => {
-      if (!isApproved) return;
-
-      const { data, error } = await supabase
-        .from("training_opportunities" as any)
-        .select("*")
-        .eq("review_status", "approved")
-        .order("created_at", { ascending: false });
-
-      if (!error && data) {
-        // Fetch trainer profiles
-        const userIds = (data as any[]).map((t: any) => t.user_id);
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("user_id, full_name")
-          .in("user_id", userIds);
-
-        setTrainings(
-          (data as any[]).map((t: any) => ({
-            ...t,
-            trainer_name: profiles?.find((p) => p.user_id === t.user_id)?.full_name,
-          }))
-        );
-      }
-    };
-
-    if (user && isApproved) {
-      fetchIdeas();
-      fetchCertifications();
-      fetchTrainings();
-    } else if (!onboardingLoading) {
-      setLoading(false);
+    if (!user || !isApproved) {
+      if (!onboardingLoading) setLoading(false);
+      return;
     }
+
+    const fetchAll = async () => {
+      const [startupsRes, trainingsRes] = await Promise.all([
+        supabase
+          .from("startup_ideas")
+          .select("*")
+          .eq("status", "active")
+          .eq("review_status", "approved")
+          .eq("is_looking_for_cobuilders", true)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("training_opportunities" as any)
+          .select("*")
+          .eq("review_status", "approved")
+          .order("created_at", { ascending: false }),
+      ]);
+
+      const startupData = startupsRes.data || [];
+      const trainingData = (trainingsRes.data as any[]) || [];
+
+      // Fetch profiles for both
+      const allUserIds = [
+        ...startupData.map((s: any) => s.creator_id),
+        ...trainingData.map((t: any) => t.user_id),
+      ].filter(Boolean);
+
+      if (allUserIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, full_name")
+          .in("user_id", [...new Set(allUserIds)]);
+
+        const profileMap = new Map(profiles?.map((p) => [p.user_id, p.full_name]) || []);
+
+        setRawStartups(startupData.map((s: any) => ({ ...s, _author: profileMap.get(s.creator_id) || "Unknown" })));
+        setRawTrainings(trainingData.map((t: any) => ({ ...t, _author: profileMap.get(t.user_id) || "Unknown" })));
+      } else {
+        setRawStartups(startupData);
+        setRawTrainings(trainingData);
+      }
+
+      setLoading(false);
+    };
+
+    fetchAll();
   }, [user, isApproved, onboardingLoading]);
 
-  const b4Trainings = [
-    {
-      id: "b4-cobuilder",
-      title: "Learn to be a Co-Builder",
-      description: "Practice, Training, Consulting based on the B4 model. Learn the fundamentals, apply through case studies, and become a certified Co-Builder.",
-      format: "Interactive Journey",
-      duration: "3 Phases",
-      sector: "Professional Development",
-      icon: Users,
-      bgColor: "bg-b4-teal/10",
-      iconColor: "text-b4-teal",
-      link: "/journey",
-    },
-    {
-      id: "b4-initiator",
-      title: "Learn to be an Initiator",
-      description: "Ideation, Structuring, Team Building, and Launch. Transform your idea into a structured startup with the right team.",
-      format: "Interactive Journey",
-      duration: "4 Phases",
-      sector: "Entrepreneurship",
-      icon: Lightbulb,
-      bgColor: "bg-b4-coral/10",
-      iconColor: "text-b4-coral",
-      link: "/journey",
-    },
-    {
-      id: "b4-finance",
-      title: "Learn Finance",
-      description: "Master corporate finance fundamentals: financial statements, budgeting, forecasting, ROI analysis, and KPI reporting.",
-      format: "Interactive Journey",
-      duration: "4 Phases",
-      sector: "Finance",
-      icon: DollarSign,
-      bgColor: "bg-amber-500/10",
-      iconColor: "text-amber-600",
-      link: "/journey",
-    },
-    {
-      id: "b4-security",
-      title: "Learn to Be Secure",
-      description: "Practical security decisions, risk awareness, security best practices, and behavioral habits for professionals.",
-      format: "Interactive Journey",
-      duration: "4 Phases",
-      sector: "Cybersecurity",
-      icon: Shield,
-      bgColor: "bg-red-500/10",
-      iconColor: "text-red-600",
-      link: "/journey",
-    },
-  ];
+  // Normalize all sources into Opportunity[]
+  const allOpportunities = useMemo<Opportunity[]>(() => {
+    const startupOpps: Opportunity[] = rawStartups.map((s, i) => ({
+      id: s.id,
+      title: s.title,
+      category: "startup" as const,
+      required_skills: (s.roles_needed || []).slice(0, 5),
+      income_range: "Equity-based",
+      effort_level: "Part-time",
+      description: s.description,
+      primary_action: { type: "apply" as const, label: "View", route: `/opportunities/${s.id}` },
+      source_id: s.id,
+      created_at: s.created_at,
+      author_name: s._author || "Unknown",
+      sector: s.sector,
+      rank: 10 + i,
+    }));
 
-  const hasInitiatorCertification = certifications.some((cert) => cert.certification_type === "initiator_b4");
+    const trainingOpps: Opportunity[] = rawTrainings.map((t, i) => ({
+      id: t.id,
+      title: t.title,
+      category: "training" as const,
+      required_skills: [t.sector, t.target_audience, t.format, t.duration].filter(Boolean).slice(0, 5),
+      income_range: "Free",
+      effort_level: "Self-paced",
+      description: t.description,
+      primary_action: { type: "start" as const, label: "Details", route: "#" },
+      source_id: t.id,
+      created_at: t.created_at,
+      author_name: t._author || "Unknown",
+      sector: t.sector,
+      rank: 100 + i,
+    }));
 
-  const handleAddIdea = () => {
-    navigate("/create-idea");
-  };
+    return [...B4_PROGRAMS, ...startupOpps, ...trainingOpps].sort((a, b) => a.rank - b.rank);
+  }, [rawStartups, rawTrainings]);
 
-  const filteredIdeas = ideas.filter((idea) => {
-    const matchesSearch =
-      idea.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      idea.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesSector = !sectorFilter || idea.sector?.toLowerCase().includes(sectorFilter.toLowerCase());
-    return matchesSearch && matchesSector;
-  });
+  // Filter
+  const filtered = useMemo(() => {
+    return allOpportunities.filter((opp) => {
+      if (categoryFilter !== "all" && opp.category !== categoryFilter) return false;
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        return opp.title.toLowerCase().includes(q) || opp.description.toLowerCase().includes(q);
+      }
+      return true;
+    });
+  }, [allOpportunities, categoryFilter, searchQuery]);
 
-  const filteredTrainings = trainings.filter((t) => {
-    const matchesSearch =
-      t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesSector = !sectorFilter || t.sector?.toLowerCase().includes(sectorFilter.toLowerCase());
-    return matchesSearch && matchesSector;
-  });
-
-  // Show loading until auth AND onboarding state are both loaded
   if (authLoading || onboardingLoading) {
     return (
       <div className="min-h-screen bg-background">
         <div className="pt-20 flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="w-8 h-8 animate-spin text-b4-teal" />
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
         <Footer />
       </div>
@@ -269,7 +254,7 @@ const Opportunities = () => {
       <PageTransition>
         <main className="pt-20">
           {/* Header */}
-          <section className="py-12">
+          <section className="py-10">
             <div className="container mx-auto px-4">
               <h1 className="font-display text-3xl font-bold text-foreground mb-2">Opportunity Marketplace</h1>
               <p className="text-muted-foreground max-w-2xl">
@@ -278,280 +263,53 @@ const Opportunities = () => {
             </div>
           </section>
 
-          {/* Stats Dashboard */}
-          <section className="pb-8">
-            <div className="container mx-auto px-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {[
-                  { label: "Job Opportunities", value: "0", sub: "Matching your profile", icon: Briefcase },
-                  { label: "Consulting Tenders", value: "0", sub: "High match rate", icon: FileText },
-                  { label: "Training Programs", value: trainings.length.toString(), sub: `${certifications.length} your certifications`, icon: GraduationCap },
-                  { label: "Startup Projects", value: ideas.length.toString(), sub: "Seeking your role", icon: Rocket },
-                ].map((stat) => (
-                  <div key={stat.label} className="rounded-2xl border border-border bg-card p-6">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-                      <stat.icon className="w-4 h-4" />
-                      {stat.label}
-                    </div>
-                    <p className="font-display text-3xl font-bold text-foreground">{stat.value}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{stat.sub}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* Category Tabs */}
+          {/* Category pills + Search */}
           <section className="pb-6">
-            <div className="container mx-auto px-4">
-              <div className="flex items-center gap-2 overflow-x-auto">
-                {[
-                  { key: "all", label: "All Opportunities" },
-                  { key: "ideas", label: "Startups", icon: Rocket },
-                  { key: "trainings", label: "Trainings", icon: GraduationCap },
-                  { key: "tenders", label: "Tenders", icon: FileText },
-                  { key: "environments", label: "Environments", icon: Globe },
-                ].map((cat) => (
-                  <Button
+            <div className="container mx-auto px-4 space-y-4">
+              <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                {CATEGORIES.map((cat) => (
+                  <button
                     key={cat.key}
-                    variant={categoryFilter === cat.key ? "default" : "ghost"}
-                    size="sm"
                     onClick={() => setCategoryFilter(cat.key)}
-                    className={categoryFilter === cat.key ? "bg-foreground text-background hover:bg-foreground/90" : ""}
+                    className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                      categoryFilter === cat.key
+                        ? "bg-foreground text-background"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    }`}
                   >
-                    {cat.icon && <cat.icon className="w-4 h-4 mr-1.5" />}
                     {cat.label}
-                  </Button>
+                  </button>
                 ))}
               </div>
-            </div>
-          </section>
-
-          {/* Filters */}
-          <section className="py-6 border-b border-border">
-            <div className="container mx-auto px-4">
-              <div className="flex flex-wrap items-center gap-4">
-                <div className="relative flex-1 max-w-md">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search opportunities..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-                <div className="relative">
-                  <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Filter by sector..."
-                    value={sectorFilter}
-                    onChange={(e) => setSectorFilter(e.target.value)}
-                    className="pl-10 w-48"
-                  />
-                </div>
-                {categoryFilter === "ideas" && (
-                  <Button variant="teal" onClick={handleAddIdea}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Idea
-                  </Button>
-                )}
+              <div className="relative max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search opportunities..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
               </div>
             </div>
           </section>
 
-          {/* Opportunities List */}
-          <section className="py-12">
-            <div className="container mx-auto px-4 space-y-12">
-              {/* Tenders / Environments Coming Soon */}
-              {(categoryFilter === "tenders" || categoryFilter === "environments") && (
+          {/* Feed */}
+          <section className="pb-16">
+            <div className="container mx-auto px-4">
+              {loading ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                </div>
+              ) : filtered.length === 0 ? (
                 <div className="text-center py-16">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-                    {categoryFilter === "tenders" && <FileText className="w-8 h-8 text-muted-foreground/50" />}
-                    {categoryFilter === "environments" && <Globe className="w-8 h-8 text-muted-foreground/50" />}
-                  </div>
-                  <h2 className="font-display text-2xl font-bold text-foreground mb-2">Coming Soon</h2>
-                  <p className="text-muted-foreground">
-                    {categoryFilter === "tenders" && "Tender opportunities will be available here soon."}
-                    {categoryFilter === "environments" && "Environment opportunities will be available here soon."}
-                  </p>
+                  <p className="text-muted-foreground">No opportunities found.</p>
                 </div>
-              )}
-
-              {/* Trainings Section */}
-              {(categoryFilter === "trainings" || categoryFilter === "all") && (
-                <div className="space-y-12">
-                  <div>
-                    <div className="flex items-center gap-2 mb-6">
-                      <Rocket className="w-5 h-5 text-b4-teal" />
-                      <h2 className="font-display text-xl font-bold text-foreground">B4 Certification Programs</h2>
-                    </div>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {b4Trainings
-                        .filter((t) => {
-                          const matchesSearch =
-                            t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            t.description.toLowerCase().includes(searchQuery.toLowerCase());
-                          const matchesSector = !sectorFilter || t.sector?.toLowerCase().includes(sectorFilter.toLowerCase());
-                          return matchesSearch && matchesSector;
-                        })
-                        .map((training) => (
-                          <div
-                            key={training.id}
-                            onClick={() => navigate(training.link)}
-                            className="bg-card rounded-2xl border border-border p-6 hover:border-b4-teal/50 transition-colors cursor-pointer"
-                          >
-                            <div className="flex items-start justify-between mb-4">
-                              <div className={`w-12 h-12 rounded-xl ${training.bgColor} flex items-center justify-center`}>
-                                <training.icon className={`w-6 h-6 ${training.iconColor}`} />
-                              </div>
-                              <span className="px-3 py-1 rounded-full bg-b4-teal/10 text-xs font-medium text-b4-teal">
-                                B4 Program
-                              </span>
-                            </div>
-                            <h3 className="font-display text-lg font-bold text-foreground mb-2">{training.title}</h3>
-                            <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{training.description}</p>
-                            <div className="flex flex-wrap gap-2 mb-4">
-                              <span className="px-2 py-1 rounded-full bg-b4-teal/10 text-b4-teal text-xs">{training.format}</span>
-                              <span className="px-2 py-1 rounded-full bg-muted text-xs text-muted-foreground">{training.duration}</span>
-                              {training.sector && (
-                                <span className="px-2 py-1 rounded-full bg-muted text-xs text-muted-foreground">{training.sector}</span>
-                              )}
-                            </div>
-                            <div className="pt-4 border-t border-border flex items-center justify-between">
-                              <span className="text-xs text-muted-foreground">By B4</span>
-                              <Button variant="ghost" size="sm">
-                                Start Learning <ArrowRight className="ml-1 w-3 h-3" />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center gap-2 mb-6">
-                      <Users className="w-5 h-5 text-muted-foreground" />
-                      <h2 className="font-display text-xl font-bold text-foreground">Community Trainings</h2>
-                    </div>
-                    {loading ? (
-                      <DirectorySkeletonGrid count={6} type="opportunity" />
-                    ) : filteredTrainings.length === 0 ? (
-                      <div className="text-center py-12 bg-muted/20 rounded-2xl border border-border">
-                        <GraduationCap className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
-                        <h3 className="font-display text-lg font-bold text-foreground mb-1">No community trainings yet</h3>
-                        <p className="text-muted-foreground text-sm">
-                          Training opportunities proposed by members will appear here once approved.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredTrainings.map((training) => (
-                          <div
-                            key={training.id}
-                            className="bg-card rounded-2xl border border-border p-6 hover:border-b4-teal/50 transition-colors"
-                          >
-                            <div className="flex items-start justify-between mb-4">
-                              <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center">
-                                <GraduationCap className="w-6 h-6 text-muted-foreground" />
-                              </div>
-                              {training.sector && (
-                                <span className="px-3 py-1 rounded-full bg-muted text-xs font-medium text-muted-foreground">
-                                  {training.sector}
-                                </span>
-                              )}
-                            </div>
-                            <h3 className="font-display text-lg font-bold text-foreground mb-2">{training.title}</h3>
-                            <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{training.description}</p>
-                            <div className="flex flex-wrap gap-2 mb-4">
-                              {training.format && (
-                                <span className="px-2 py-1 rounded-full bg-b4-teal/10 text-b4-teal text-xs">{training.format}</span>
-                              )}
-                              {training.duration && (
-                                <span className="px-2 py-1 rounded-full bg-muted text-xs text-muted-foreground">{training.duration}</span>
-                              )}
-                              {training.target_audience && (
-                                <span className="px-2 py-1 rounded-full bg-muted text-xs text-muted-foreground">{training.target_audience}</span>
-                              )}
-                            </div>
-                            <div className="pt-4 border-t border-border">
-                              <span className="text-xs text-muted-foreground">By {training.trainer_name || "Unknown"}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+              ) : (
+                <div className="space-y-3">
+                  {filtered.map((opp) => (
+                    <OpportunityCard key={opp.id} opportunity={opp} />
+                  ))}
                 </div>
-              )}
-
-              {/* Ideas / Startups Section */}
-              {(categoryFilter === "ideas" || categoryFilter === "all") && (
-                <>
-                  {loading ? (
-                    <DirectorySkeletonGrid count={6} type="opportunity" />
-                  ) : filteredIdeas.length === 0 ? (
-                    <div className="text-center py-16">
-                      <Rocket className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
-                      <h2 className="font-display text-2xl font-bold text-foreground mb-2">No opportunities yet</h2>
-                      <p className="text-muted-foreground mb-6">
-                        Be the first to create a startup idea and find co-builders!
-                      </p>
-                      <Button variant="teal" onClick={() => navigate("/create-idea")}>
-                        Create Your Startup Idea
-                        <ArrowRight className="ml-2 w-4 h-4" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div>
-                      {categoryFilter === "all" && (
-                        <div className="flex items-center gap-2 mb-6">
-                          <Rocket className="w-5 h-5 text-b4-teal" />
-                          <h2 className="font-display text-xl font-bold text-foreground">Startup Projects</h2>
-                        </div>
-                      )}
-                      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredIdeas.map((idea) => (
-                          <div
-                            key={idea.id}
-                            className="bg-card rounded-2xl border border-border p-6 hover:border-b4-teal/50 transition-colors"
-                          >
-                            <div className="flex items-start justify-between mb-4">
-                              <div className="w-12 h-12 rounded-xl bg-b4-teal/10 flex items-center justify-center">
-                                <Rocket className="w-6 h-6 text-b4-teal" />
-                              </div>
-                              {idea.sector && (
-                                <span className="px-3 py-1 rounded-full bg-muted text-xs font-medium text-muted-foreground">
-                                  {idea.sector}
-                                </span>
-                              )}
-                            </div>
-                            <h3 className="font-display text-lg font-bold text-foreground mb-2">{idea.title}</h3>
-                            <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{idea.description}</p>
-                            {idea.roles_needed && idea.roles_needed.length > 0 && (
-                              <div className="mb-4">
-                                <p className="text-xs text-muted-foreground mb-2">Looking for:</p>
-                                <div className="flex flex-wrap gap-1">
-                                  {idea.roles_needed.slice(0, 3).map((role, i) => (
-                                    <span key={i} className="px-2 py-1 rounded-full bg-b4-teal/10 text-b4-teal text-xs">{role}</span>
-                                  ))}
-                                  {idea.roles_needed.length > 3 && (
-                                    <span className="px-2 py-1 text-xs text-muted-foreground">+{idea.roles_needed.length - 3} more</span>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                            <div className="flex items-center justify-between pt-4 border-t border-border">
-                              <span className="text-xs text-muted-foreground">By {idea.creator_profile?.full_name || "Unknown"}</span>
-                              <Button variant="ghost" size="sm" onClick={() => navigate(`/opportunities/${idea.id}`)}>
-                                View opportunity <ArrowRight className="ml-1 w-3 h-3" />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </>
               )}
             </div>
           </section>
