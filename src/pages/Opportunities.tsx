@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
@@ -24,7 +23,7 @@ const B4_PROGRAMS: Opportunity[] = [
     id: "b4-cobuilder",
     title: "Learn to be a Co-Builder",
     category: "training",
-    required_skills: ["Practice", "Training", "Consulting", "Teamwork"],
+    required_skills: ["Training & Facilitation", "Management Consulting", "Team Building"],
     income_range: "Free",
     effort_level: "Self-paced",
     description: "Practice, Training, Consulting based on the B4 model. Learn the fundamentals, apply through case studies, and become a certified Co-Builder.",
@@ -39,7 +38,7 @@ const B4_PROGRAMS: Opportunity[] = [
     id: "b4-initiator",
     title: "Learn to be an Initiator",
     category: "training",
-    required_skills: ["Ideation", "Structuring", "Team Building", "Launch"],
+    required_skills: ["Business Strategy", "Team Building", "Business Development"],
     income_range: "Free",
     effort_level: "Self-paced",
     description: "Ideation, Structuring, Team Building, and Launch. Transform your idea into a structured startup with the right team.",
@@ -54,7 +53,7 @@ const B4_PROGRAMS: Opportunity[] = [
     id: "b4-finance",
     title: "Learn Finance",
     category: "training",
-    required_skills: ["Financial Statements", "Budgeting", "Forecasting", "KPI Reporting"],
+    required_skills: ["Financial Analysis", "Budgeting", "Accounting"],
     income_range: "Free",
     effort_level: "Self-paced",
     description: "Master corporate finance fundamentals: financial statements, budgeting, forecasting, ROI analysis, and KPI reporting.",
@@ -69,7 +68,7 @@ const B4_PROGRAMS: Opportunity[] = [
     id: "b4-security",
     title: "Learn to Be Secure",
     category: "training",
-    required_skills: ["Risk Awareness", "Security Practices", "Data Protection", "Compliance"],
+    required_skills: ["Cybersecurity", "Risk Management", "Compliance"],
     income_range: "Free",
     effort_level: "Self-paced",
     description: "Practical security decisions, risk awareness, security best practices, and behavioral habits for professionals.",
@@ -82,6 +81,13 @@ const B4_PROGRAMS: Opportunity[] = [
   },
 ];
 
+function computeMatchScore(userSkillNames: string[], oppSkills: string[]): number {
+  if (oppSkills.length === 0 || userSkillNames.length === 0) return 0;
+  const userSet = new Set(userSkillNames.map((s) => s.toLowerCase()));
+  const matches = oppSkills.filter((s) => userSet.has(s.toLowerCase()));
+  return Math.round((matches.length / oppSkills.length) * 100);
+}
+
 const Opportunities = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -89,6 +95,7 @@ const Opportunities = () => {
   const { onboardingState, loading: onboardingLoading } = useOnboarding();
   const [rawStartups, setRawStartups] = useState<any[]>([]);
   const [rawTrainings, setRawTrainings] = useState<any[]>([]);
+  const [userSkillNames, setUserSkillNames] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>(searchParams.get("tab") || "all");
@@ -103,7 +110,7 @@ const Opportunities = () => {
     }
 
     const fetchAll = async () => {
-      const [startupsRes, trainingsRes] = await Promise.all([
+      const [startupsRes, trainingsRes, userSkillsRes] = await Promise.all([
         supabase
           .from("startup_ideas")
           .select("*")
@@ -116,10 +123,18 @@ const Opportunities = () => {
           .select("*")
           .eq("review_status", "approved")
           .order("created_at", { ascending: false }),
+        supabase
+          .from("user_skills")
+          .select("skill_tag_id, skill_tags(name)")
+          .eq("user_id", user.id),
       ]);
 
       const startupData = startupsRes.data || [];
       const trainingData = (trainingsRes.data as any[]) || [];
+
+      // Extract user skill names
+      const skillNames = (userSkillsRes.data || []).map((r: any) => r.skill_tags?.name).filter(Boolean);
+      setUserSkillNames(skillNames);
 
       // Fetch profiles for both
       const allUserIds = [
@@ -149,7 +164,7 @@ const Opportunities = () => {
   }, [user, isApproved, onboardingLoading]);
 
   // Normalize all sources into Opportunity[]
-  const allOpportunities = useMemo<Opportunity[]>(() => {
+  const allOpportunities = useMemo<(Opportunity & { match_score: number })[]>(() => {
     const startupOpps: Opportunity[] = rawStartups.map((s, i) => ({
       id: s.id,
       title: s.title,
@@ -182,8 +197,23 @@ const Opportunities = () => {
       rank: 100 + i,
     }));
 
-    return [...B4_PROGRAMS, ...startupOpps, ...trainingOpps].sort((a, b) => a.rank - b.rank);
-  }, [rawStartups, rawTrainings]);
+    const all = [...B4_PROGRAMS, ...startupOpps, ...trainingOpps];
+
+    // Compute match scores
+    const scored = all.map((opp) => ({
+      ...opp,
+      match_score: computeMatchScore(userSkillNames, opp.required_skills),
+    }));
+
+    // Sort: match_score descending first, then rank ascending as tiebreaker
+    if (userSkillNames.length > 0) {
+      scored.sort((a, b) => b.match_score - a.match_score || a.rank - b.rank);
+    } else {
+      scored.sort((a, b) => a.rank - b.rank);
+    }
+
+    return scored;
+  }, [rawStartups, rawTrainings, userSkillNames]);
 
   // Filter
   const filtered = useMemo(() => {
@@ -307,7 +337,7 @@ const Opportunities = () => {
               ) : (
                 <div className="space-y-3">
                   {filtered.map((opp) => (
-                    <OpportunityCard key={opp.id} opportunity={opp} />
+                    <OpportunityCard key={opp.id} opportunity={opp} matchScore={opp.match_score} />
                   ))}
                 </div>
               )}
