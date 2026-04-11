@@ -17,6 +17,7 @@ import { OnboardingAnswersCard } from "@/components/profile/OnboardingAnswersCar
 import { IdeaApplicationsViewer } from "@/components/profile/IdeaApplicationsViewer";
 import { ScalingJourneyProgress } from "@/components/profile/ScalingJourneyProgress";
 import { LearningJourneyDashboard } from "@/components/learning/LearningJourneyDashboard";
+import { SkillTagPicker } from "@/components/profile/SkillTagPicker";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   AlertDialog,
@@ -849,78 +850,8 @@ const Profile = () => {
               </div>
             )}
 
-            {/* Part 1.5: Skills Section (after Natural Role, before Approved Dashboard) */}
-            {onboardingState?.primary_role === "cobuilder" && (
-              <div className="bg-card rounded-3xl border border-border p-8 mb-8">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
-                      <Briefcase className="w-5 h-5 text-purple-500" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">Your Skills</h3>
-                      <p className="text-sm text-muted-foreground">
-                        These skills will be shown in the Co-Builders Directory
-                      </p>
-                    </div>
-                  </div>
-                  {!isEditingSkills && (
-                    <Button variant="outline" size="sm" onClick={() => setIsEditingSkills(true)}>
-                      <Settings className="w-4 h-4 mr-2" />
-                      Edit
-                    </Button>
-                  )}
-                </div>
-
-                {isEditingSkills ? (
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="skills">Skills (comma-separated)</Label>
-                      <Textarea
-                        id="skills"
-                        value={skills}
-                        onChange={(e) => setSkills(e.target.value)}
-                        placeholder="e.g., React, Node.js, Product Management, UI/UX Design, Marketing"
-                        className="mt-1"
-                        rows={3}
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">Enter your skills separated by commas</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button variant="teal" size="sm" onClick={handleSaveSkills} disabled={isSavingSkills}>
-                        {isSavingSkills ? "Saving..." : "Save Skills"}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setIsEditingSkills(false);
-                          setSkills(profile?.primary_skills || "");
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div>
-                    {skills ? (
-                      <div className="flex flex-wrap gap-2">
-                        {skills.split(",").map((skill, idx) => (
-                          <Badge key={idx} variant="secondary" className="bg-purple-500/10 text-purple-600 border-none">
-                            {skill.trim()}
-                          </Badge>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground italic">
-                        No skills added yet. Click "Edit" to add your skills.
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+            {/* Part 1.5: Skill Tags Section */}
+            {onboardingState?.primary_role === "cobuilder" && <SkillTagPicker />}
 
             {/* Part 2: Welcome section - temporarily deactivated */}
 
