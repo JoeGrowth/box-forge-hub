@@ -27,7 +27,7 @@ const categoryConfig: Record<Opportunity["category"], { label: string; className
   job: { label: "Job", className: "bg-muted text-muted-foreground border-border" },
 };
 
-export function OpportunityCard({ opportunity }: { opportunity: Opportunity }) {
+export function OpportunityCard({ opportunity, matchScore }: { opportunity: Opportunity; matchScore?: number }) {
   const navigate = useNavigate();
   const config = categoryConfig[opportunity.category];
 
@@ -51,6 +51,21 @@ export function OpportunityCard({ opportunity }: { opportunity: Opportunity }) {
           </div>
           <h3 className="font-display text-base font-semibold text-foreground leading-tight">{opportunity.title}</h3>
         </div>
+
+        {/* Match score badge */}
+        {matchScore != null && matchScore > 0 && (
+          <div
+            className={`shrink-0 flex items-center justify-center rounded-full w-11 h-11 text-xs font-bold border ${
+              matchScore >= 75
+                ? "bg-b4-teal/10 text-b4-teal border-b4-teal/30"
+                : matchScore >= 40
+                ? "bg-amber-500/10 text-amber-600 border-amber-500/30"
+                : "bg-muted text-muted-foreground border-border"
+            }`}
+          >
+            {matchScore}%
+          </div>
+        )}
       </div>
 
       <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{opportunity.description}</p>

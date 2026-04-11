@@ -963,6 +963,27 @@ export type Database = {
         }
         Relationships: []
       }
+      skill_tags: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       startup_applications: {
         Row: {
           applicant_id: string
@@ -1447,6 +1468,35 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_skills: {
+        Row: {
+          created_at: string
+          id: string
+          skill_tag_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          skill_tag_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          skill_tag_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_skills_skill_tag_id_fkey"
+            columns: ["skill_tag_id"]
+            isOneToOne: false
+            referencedRelation: "skill_tags"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
