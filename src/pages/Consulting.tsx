@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { Navbar } from "@/components/layout/Navbar";
+import { useState, useEffect, useCallback } from "react";
 import { Footer } from "@/components/layout/Footer";
 import { ScrollToTopButton } from "@/components/layout/ScrollToTopButton";
 import { PageTransition } from "@/components/layout/PageTransition";
@@ -7,7 +6,8 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Briefcase, FileText, Layers, TrendingUp, ArrowRight, ArrowLeft, Star, Plus, GraduationCap } from "lucide-react";
 import { TrainTeamDialog } from "@/components/resume/TrainTeamDialog";
-import { ConsultingServiceDialog } from "@/components/resume/ConsultingServiceDialog";
+import { CreateServiceDialog } from "@/components/consulting/CreateServiceDialog";
+import { ServiceListing } from "@/components/consulting/ServiceListing";
 
 const STORAGE_KEY = "b4-favorite-steps";
 
@@ -34,6 +34,7 @@ const Consulting = () => {
   });
   const [showTrainDialog, setShowTrainDialog] = useState(false);
   const [showServiceDialog, setShowServiceDialog] = useState(false);
+  const [serviceRefreshKey, setServiceRefreshKey] = useState(0);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites));
@@ -42,6 +43,10 @@ const Consulting = () => {
   const toggleFavorite = (id: string) => {
     setFavorites((prev) => prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]);
   };
+
+  const handleServiceCreated = useCallback(() => {
+    setServiceRefreshKey((k) => k + 1);
+  }, []);
 
   const renderStep = (step: typeof sellSteps[number], isLast: boolean) => {
     const isFav = favorites.includes(step.id);
@@ -91,7 +96,6 @@ const Consulting = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
       <PageTransition>
         <main className="container mx-auto px-4 py-16 md:py-24">
           <div className="mb-6">
@@ -121,43 +125,27 @@ const Consulting = () => {
             </div>
           </div>
 
-          {/* Stats Dashboard */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
-            {[
-              { label: "Active Services", value: "0", sub: "Submit to get started", icon: "📊" },
-              { label: "Monthly Income", value: "$0", sub: "Start earning", icon: "💰" },
-              { label: "Client Rating", value: "—", sub: "No reviews yet", icon: "⭐" },
-              { label: "Active Projects", value: "0", sub: "Apply for tenders", icon: "📁" },
-            ].map((stat) => (
-              <div key={stat.label} className="rounded-2xl border border-border bg-card p-6">
-                <p className="text-sm text-muted-foreground mb-4">{stat.label}</p>
-                <p className="font-display text-3xl font-bold text-foreground">{stat.value}</p>
-                <p className="text-xs text-muted-foreground mt-1">{stat.sub}</p>
-              </div>
-            ))}
+          {/* Service Marketplace */}
+          <div className="mb-12">
+            <h2 className="font-display text-xl font-bold text-foreground mb-4">Service Marketplace</h2>
+            <ServiceListing refreshKey={serviceRefreshKey} />
           </div>
 
           <div className="max-w-3xl mx-auto space-y-6">
-            {/* Sell What You Do */}
             <div className="text-center py-4">
               <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">Sell What You Do</h2>
             </div>
-
             {sellSteps.map((step, idx) => renderStep(step, idx === sellSteps.length - 1))}
 
-            {/* Structure What You Do */}
             <div className="text-center py-4">
               <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">Structure What You Do</h2>
             </div>
-
             {structureSteps.map((step, idx) => renderStep(step, idx === structureSteps.length - 1))}
 
-            {/* Scale Your Structure - separate section */}
             <div className="text-center py-6">
               <span className="inline-block text-secondary font-semibold text-sm uppercase tracking-wide mb-1">Next Level</span>
               <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">Scale Your Structure</h2>
             </div>
-
             {scaleSteps.map((step, idx) => renderStep(step, idx === scaleSteps.length - 1))}
           </div>
         </main>
@@ -165,7 +153,7 @@ const Consulting = () => {
       <Footer />
       <ScrollToTopButton />
       <TrainTeamDialog open={showTrainDialog} onOpenChange={setShowTrainDialog} />
-      <ConsultingServiceDialog open={showServiceDialog} onOpenChange={setShowServiceDialog} />
+      <CreateServiceDialog open={showServiceDialog} onOpenChange={setShowServiceDialog} onCreated={handleServiceCreated} />
     </div>
   );
 };
