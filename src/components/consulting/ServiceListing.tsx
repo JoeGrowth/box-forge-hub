@@ -51,8 +51,8 @@ export function ServiceListing({ refreshKey }: { refreshKey?: number }) {
     }
 
     // Fetch skill tag names and provider names
-    const skillTagIds = [...new Set(servicesData.map((s: any) => s.skill_tag_id).filter(Boolean))];
-    const userIds = [...new Set(servicesData.map((s: any) => s.user_id))];
+    const skillTagIds = [...new Set(servicesData.map((s: any) => s.skill_tag_id).filter(Boolean))] as string[];
+    const userIds = [...new Set(servicesData.map((s: any) => s.user_id))] as string[];
 
     const [skillRes, profileRes] = await Promise.all([
       skillTagIds.length > 0
