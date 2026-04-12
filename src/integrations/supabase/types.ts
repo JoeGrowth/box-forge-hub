@@ -286,6 +286,59 @@ export type Database = {
         }
         Relationships: []
       }
+      consulting_services: {
+        Row: {
+          availability: string | null
+          created_at: string
+          currency: string
+          delivery_type: string
+          description: string | null
+          id: string
+          is_active: boolean
+          price: number
+          service_title: string
+          skill_tag_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          availability?: string | null
+          created_at?: string
+          currency?: string
+          delivery_type?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          price?: number
+          service_title: string
+          skill_tag_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          availability?: string | null
+          created_at?: string
+          currency?: string
+          delivery_type?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          price?: number
+          service_title?: string
+          skill_tag_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consulting_services_skill_tag_id_fkey"
+            columns: ["skill_tag_id"]
+            isOneToOne: false
+            referencedRelation: "skill_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       direct_conversations: {
         Row: {
           created_at: string
@@ -992,6 +1045,41 @@ export type Database = {
           years_of_experience?: number | null
         }
         Relationships: []
+      }
+      service_requests: {
+        Row: {
+          created_at: string
+          id: string
+          message: string | null
+          requester_id: string
+          service_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          requester_id: string
+          service_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          requester_id?: string
+          service_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_requests_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "consulting_services"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       skill_tags: {
         Row: {
