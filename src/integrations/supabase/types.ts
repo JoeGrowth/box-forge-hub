@@ -897,6 +897,36 @@ export type Database = {
         }
         Relationships: []
       }
+      opportunity_interactions: {
+        Row: {
+          action_type: string
+          created_at: string
+          id: string
+          message: string | null
+          opportunity_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          opportunity_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          opportunity_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
