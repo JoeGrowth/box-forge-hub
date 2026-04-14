@@ -229,7 +229,13 @@ const Opportunities = () => {
                 </div>
               ) : filtered.length === 0 ? (
                 <div className="text-center py-16">
-                  <p className="text-muted-foreground">No opportunities found.</p>
+                  <p className="text-muted-foreground mb-4">No opportunities match your current filters.</p>
+                  <button
+                    onClick={() => { setCategoryFilter("all"); setSearchQuery(""); }}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    Clear filters
+                  </button>
                 </div>
               ) : (
                 <div className="space-y-3">
