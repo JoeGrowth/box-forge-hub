@@ -8,78 +8,16 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
 import { Search, Loader2 } from "lucide-react";
 import { OpportunityCard, type Opportunity } from "@/components/opportunities/OpportunityCard";
+import { SEEDED_OPPORTUNITIES } from "@/data/seededOpportunities";
 
 const CATEGORIES = [
   { key: "all", label: "All" },
+  { key: "job", label: "Jobs" },
+  { key: "consulting", label: "Consulting" },
   { key: "startup", label: "Startups" },
   { key: "training", label: "Training" },
-  { key: "consulting", label: "Consulting" },
   { key: "tender", label: "Tenders" },
-  { key: "job", label: "Jobs" },
 ] as const;
-
-const B4_PROGRAMS: Opportunity[] = [
-  {
-    id: "b4-cobuilder",
-    title: "Learn to be a Co-Builder",
-    category: "training",
-    required_skills: ["Training & Facilitation", "Management Consulting", "Team Building"],
-    income_range: "Free",
-    effort_level: "Self-paced",
-    description: "Practice, Training, Consulting based on the B4 model. Learn the fundamentals, apply through case studies, and become a certified Co-Builder.",
-    primary_action: { type: "start", label: "Start", route: "/journey" },
-    source_id: "b4-cobuilder",
-    created_at: "2025-01-01",
-    author_name: "B4",
-    sector: "Professional Development",
-    rank: 0,
-  },
-  {
-    id: "b4-initiator",
-    title: "Learn to be an Initiator",
-    category: "training",
-    required_skills: ["Business Strategy", "Team Building", "Business Development"],
-    income_range: "Free",
-    effort_level: "Self-paced",
-    description: "Ideation, Structuring, Team Building, and Launch. Transform your idea into a structured startup with the right team.",
-    primary_action: { type: "start", label: "Start", route: "/journey" },
-    source_id: "b4-initiator",
-    created_at: "2025-01-01",
-    author_name: "B4",
-    sector: "Entrepreneurship",
-    rank: 1,
-  },
-  {
-    id: "b4-finance",
-    title: "Learn Finance",
-    category: "training",
-    required_skills: ["Financial Analysis", "Budgeting", "Accounting"],
-    income_range: "Free",
-    effort_level: "Self-paced",
-    description: "Master corporate finance fundamentals: financial statements, budgeting, forecasting, ROI analysis, and KPI reporting.",
-    primary_action: { type: "start", label: "Start", route: "/journey" },
-    source_id: "b4-finance",
-    created_at: "2025-01-01",
-    author_name: "B4",
-    sector: "Finance",
-    rank: 2,
-  },
-  {
-    id: "b4-security",
-    title: "Learn to Be Secure",
-    category: "training",
-    required_skills: ["Cybersecurity", "Risk Management", "Compliance"],
-    income_range: "Free",
-    effort_level: "Self-paced",
-    description: "Practical security decisions, risk awareness, security best practices, and behavioral habits for professionals.",
-    primary_action: { type: "start", label: "Start", route: "/journey" },
-    source_id: "b4-security",
-    created_at: "2025-01-01",
-    author_name: "B4",
-    sector: "Cybersecurity",
-    rank: 3,
-  },
-];
 
 function computeMatchScore(userSkillNames: string[], oppSkills: string[]): number {
   if (oppSkills.length === 0 || userSkillNames.length === 0) return 0;
@@ -178,7 +116,7 @@ const Opportunities = () => {
       created_at: s.created_at,
       author_name: s._author || "Unknown",
       sector: s.sector,
-      rank: 10 + i,
+      rank: 50 + i,
     }));
 
     const trainingOpps: Opportunity[] = rawTrainings.map((t, i) => ({
@@ -194,10 +132,10 @@ const Opportunities = () => {
       created_at: t.created_at,
       author_name: t._author || "Unknown",
       sector: t.sector,
-      rank: 100 + i,
+      rank: 200 + i,
     }));
 
-    const all = [...B4_PROGRAMS, ...startupOpps, ...trainingOpps];
+    const all = [...SEEDED_OPPORTUNITIES, ...startupOpps, ...trainingOpps];
 
     // Compute match scores
     const scored = all.map((opp) => ({
@@ -233,47 +171,6 @@ const Opportunities = () => {
         <div className="pt-20 flex items-center justify-center min-h-[60vh]">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-background">
-        <PageTransition>
-          <main className="pt-20">
-            <section className="py-16">
-              <div className="container mx-auto px-4 text-center">
-                <h1 className="font-display text-3xl font-bold text-foreground mb-4">Opportunities</h1>
-                <p className="text-muted-foreground mb-8">Please log in to access opportunities.</p>
-              </div>
-            </section>
-          </main>
-        </PageTransition>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (!isApproved) {
-    return (
-      <div className="min-h-screen bg-background">
-        <PageTransition>
-          <main className="pt-20">
-            <section className="py-16">
-              <div className="container mx-auto px-4 text-center">
-                <h1 className="font-display text-3xl font-bold text-foreground mb-4">Opportunities</h1>
-                <p className="text-muted-foreground mb-8">
-                  This page is only available to approved co-builders and entrepreneurs.
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Complete your co-builder journey and get approved to access this feature.
-                </p>
-              </div>
-            </section>
-          </main>
-        </PageTransition>
         <Footer />
       </div>
     );
@@ -332,7 +229,13 @@ const Opportunities = () => {
                 </div>
               ) : filtered.length === 0 ? (
                 <div className="text-center py-16">
-                  <p className="text-muted-foreground">No opportunities found.</p>
+                  <p className="text-muted-foreground mb-4">No opportunities match your current filters.</p>
+                  <button
+                    onClick={() => { setCategoryFilter("all"); setSearchQuery(""); }}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    Clear filters
+                  </button>
                 </div>
               ) : (
                 <div className="space-y-3">
