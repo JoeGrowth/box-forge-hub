@@ -135,7 +135,7 @@ const Opportunities = () => {
       rank: 100 + i,
     }));
 
-    const all = [...B4_PROGRAMS, ...startupOpps, ...trainingOpps];
+    const all = [...SEEDED_OPPORTUNITIES, ...startupOpps, ...trainingOpps];
 
     // Compute match scores
     const scored = all.map((opp) => ({
