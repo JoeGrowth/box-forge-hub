@@ -114,7 +114,7 @@ export function OpportunityCard({ opportunity, matchScore }: { opportunity: Oppo
             <h3 className="font-display text-base font-semibold text-foreground leading-tight">{opportunity.title}</h3>
           </div>
 
-          {matchScore != null && matchScore > 0 && (
+          {matchScore != null && (
             <div
               className={`shrink-0 flex items-center justify-center rounded-full w-11 h-11 text-xs font-bold border ${
                 matchScore >= 75
