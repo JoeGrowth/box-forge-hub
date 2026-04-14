@@ -116,7 +116,7 @@ const Opportunities = () => {
       created_at: s.created_at,
       author_name: s._author || "Unknown",
       sector: s.sector,
-      rank: 10 + i,
+      rank: 50 + i,
     }));
 
     const trainingOpps: Opportunity[] = rawTrainings.map((t, i) => ({
@@ -132,7 +132,7 @@ const Opportunities = () => {
       created_at: t.created_at,
       author_name: t._author || "Unknown",
       sector: t.sector,
-      rank: 100 + i,
+      rank: 200 + i,
     }));
 
     const all = [...SEEDED_OPPORTUNITIES, ...startupOpps, ...trainingOpps];
