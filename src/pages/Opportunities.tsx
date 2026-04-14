@@ -176,47 +176,6 @@ const Opportunities = () => {
     );
   }
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-background">
-        <PageTransition>
-          <main className="pt-20">
-            <section className="py-16">
-              <div className="container mx-auto px-4 text-center">
-                <h1 className="font-display text-3xl font-bold text-foreground mb-4">Opportunities</h1>
-                <p className="text-muted-foreground mb-8">Please log in to access opportunities.</p>
-              </div>
-            </section>
-          </main>
-        </PageTransition>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (!isApproved) {
-    return (
-      <div className="min-h-screen bg-background">
-        <PageTransition>
-          <main className="pt-20">
-            <section className="py-16">
-              <div className="container mx-auto px-4 text-center">
-                <h1 className="font-display text-3xl font-bold text-foreground mb-4">Opportunities</h1>
-                <p className="text-muted-foreground mb-8">
-                  This page is only available to approved co-builders and entrepreneurs.
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Complete your co-builder journey and get approved to access this feature.
-                </p>
-              </div>
-            </section>
-          </main>
-        </PageTransition>
-        <Footer />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-background">
       <PageTransition>
