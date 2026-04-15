@@ -102,56 +102,58 @@ const Consulting = () => {
         <main className="pt-20">
           <section className="py-10">
             <div className="container mx-auto px-4">
-          <div className="mb-6">
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/paths">
-                <ArrowLeft className="w-4 h-4 mr-1" /> Back to Paths
-              </Link>
-            </Button>
-          </div>
+              <div className="mb-6">
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/paths">
+                    <ArrowLeft className="w-4 h-4 mr-1" /> Back to Paths
+                  </Link>
+                </Button>
+              </div>
 
-          <div className="flex items-center justify-between mb-12 bg-muted/40 rounded-2xl p-6">
-            <div>
-              <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-1">
-                Consulting Engine
-              </h1>
-              <p className="text-muted-foreground">
-                Monetize your expertise
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <Button variant="outline" className="gap-2" onClick={() => setShowTrainDialog(true)}>
-                <GraduationCap className="w-4 h-4" /> Create Training
-              </Button>
-              <Button className="gap-2" onClick={() => setShowServiceDialog(true)}>
-                <Plus className="w-4 h-4" /> Create Service
-              </Button>
-            </div>
-          </div>
+              <div className="flex items-center justify-between mb-12">
+                <div>
+                  <h1 className="font-display text-3xl font-bold text-foreground mb-2">
+                    Consulting Engine
+                  </h1>
+                  <p className="text-muted-foreground">
+                    Monetize your expertise
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <Button variant="outline" className="gap-2" onClick={() => setShowTrainDialog(true)}>
+                    <GraduationCap className="w-4 h-4" /> Create Training
+                  </Button>
+                  <Button className="gap-2" onClick={() => setShowServiceDialog(true)}>
+                    <Plus className="w-4 h-4" /> Create Service
+                  </Button>
+                </div>
+              </div>
 
-          {/* Service Marketplace */}
-          <div className="mb-12">
-            <h2 className="font-display text-xl font-bold text-foreground mb-4">Service Marketplace</h2>
-            <ServiceListing refreshKey={serviceRefreshKey} />
-          </div>
+              {/* Service Marketplace */}
+              <div className="mb-12">
+                <h2 className="font-display text-xl font-bold text-foreground mb-4">Service Marketplace</h2>
+                <ServiceListing refreshKey={serviceRefreshKey} />
+              </div>
 
-          <div className="max-w-3xl mx-auto space-y-6">
-            <div className="text-center py-4">
-              <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">Sell What You Do</h2>
-            </div>
-            {sellSteps.map((step, idx) => renderStep(step, idx === sellSteps.length - 1))}
+              <div className="max-w-3xl mx-auto space-y-6">
+                <div className="text-center py-4">
+                  <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">Sell What You Do</h2>
+                </div>
+                {sellSteps.map((step, idx) => renderStep(step, idx === sellSteps.length - 1))}
 
-            <div className="text-center py-4">
-              <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">Structure What You Do</h2>
-            </div>
-            {structureSteps.map((step, idx) => renderStep(step, idx === structureSteps.length - 1))}
+                <div className="text-center py-4">
+                  <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">Structure What You Do</h2>
+                </div>
+                {structureSteps.map((step, idx) => renderStep(step, idx === structureSteps.length - 1))}
 
-            <div className="text-center py-6">
-              <span className="inline-block text-secondary font-semibold text-sm uppercase tracking-wide mb-1">Next Level</span>
-              <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">Scale Your Structure</h2>
+                <div className="text-center py-6">
+                  <span className="inline-block text-secondary font-semibold text-sm uppercase tracking-wide mb-1">Next Level</span>
+                  <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">Scale Your Structure</h2>
+                </div>
+                {scaleSteps.map((step, idx) => renderStep(step, idx === scaleSteps.length - 1))}
+              </div>
             </div>
-            {scaleSteps.map((step, idx) => renderStep(step, idx === scaleSteps.length - 1))}
-          </div>
+          </section>
         </main>
       </PageTransition>
       <Footer />
