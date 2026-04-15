@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ScrollToTopButton } from "@/components/layout/ScrollToTopButton";
 import { PageTransition } from "@/components/layout/PageTransition";
@@ -96,8 +97,9 @@ const Consulting = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Navbar />
       <PageTransition>
-        <main className="container mx-auto px-4 py-16 md:py-24">
+        <main className="container mx-auto px-4 pt-20 pb-16 md:pb-24">
           <div className="mb-6">
             <Button variant="ghost" size="sm" asChild>
               <Link to="/paths">
