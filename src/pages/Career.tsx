@@ -36,7 +36,9 @@ const Career = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <PageTransition>
-        <main className="container mx-auto px-4 py-16 md:py-24">
+        <main className="pt-20">
+          <section className="py-10">
+            <div className="container mx-auto px-4">
           <div className="mb-6">
             <Button variant="ghost" size="sm" asChild>
               <Link to="/paths">
@@ -114,6 +116,8 @@ const Career = () => {
               );
             })}
           </div>
+            </div>
+          </section>
         </main>
       </PageTransition>
       <Footer />
