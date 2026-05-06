@@ -56,6 +56,7 @@ import Entrepreneurship from "./pages/Entrepreneurship";
 import Consulting from "./pages/Consulting";
 import StartStructuring from "./pages/StartStructuring";
 import StartScaling from "./pages/StartScaling";
+import TrainingManagement from "./pages/TrainingManagement";
 
 const queryClient = new QueryClient();
 
