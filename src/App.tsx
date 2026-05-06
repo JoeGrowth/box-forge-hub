@@ -122,6 +122,7 @@ const App = () => (
                   <Route path="/consulting" element={<Consulting />} />
                   <Route path="/startstructuring" element={<StartStructuring />} />
                   <Route path="/startscaling" element={<StartScaling />} />
+                  <Route path="/trainingmanagement" element={<TrainingManagement />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
