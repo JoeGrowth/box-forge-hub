@@ -1,10 +1,20 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import {
   Table,
   TableBody,
@@ -13,6 +23,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Check, ChevronDown, Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface DayRow {
   index: number;
@@ -22,9 +34,7 @@ interface DayRow {
   done2: boolean;
 }
 
-// Default actions per day index (0-25). Anchored to start date 07/04/2025 (Mon).
-// Dates 5,6,12,13,19,20 = weekends.
-const DEFAULT_ACTIONS: Record<number, [string, string]> = {
+const DEFAULT_ACTIONS_BY_INDEX: Record<number, [string, string]> = {
   0: ["Preparation", ""],
   1: ["Kick off Meeting", ""],
   2: ["Preparation", ""],
@@ -42,10 +52,30 @@ const DEFAULT_ACTIONS: Record<number, [string, string]> = {
   18: ["Send Facture", "Revise & Confirm"],
   21: ["Closing Meeting", ""],
   22: ["Closing Meeting", ""],
-  23: ["-", ""],
-  24: ["-", ""],
   25: ["Recieve Paiment", ""],
 };
+
+const DEFAULT_ACTION_LIBRARY = [
+  "Preparation",
+  "Kick off Meeting",
+  "Empathy (i1) (i2)",
+  "Empathy (i3) + M&D",
+  "Mapping & Discovery",
+  "Inspection",
+  "Prep Workshop",
+  "Animate Workshop (1)",
+  "Animate Workshop (2)",
+  "Document",
+  "Document & Centralize",
+  "Start Writing Policies",
+  "Start Writing Report",
+  "Write Policies",
+  "Revise & Confirm",
+  "Send Facture",
+  "Receive Paiement",
+  "Closing Meeting",
+  "-",
+];
 
 const DAY_LABELS_FR = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
 
@@ -55,29 +85,148 @@ const fmtDate = (d: Date) =>
 const fmt = (n: number) =>
   isNaN(n) ? "0" : n.toLocaleString(undefined, { maximumFractionDigits: 2 });
 
+function ActionPicker({
+  value,
+  options,
+  onChange,
+  onAddOption,
+  disabled,
+}: {
+  value: string;
+  options: string[];
+  onChange: (v: string) => void;
+  onAddOption: (v: string) => void;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+
+  const showCreate =
+    query.trim().length > 0 &&
+    !options.some((o) => o.toLowerCase() === query.trim().toLowerCase());
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          disabled={disabled}
+          className={cn(
+            "w-full justify-between h-8 px-2 font-normal text-sm",
+            !value && "text-muted-foreground"
+          )}
+        >
+          <span className="truncate">{value || "Select…"}</span>
+          <ChevronDown className="w-3.5 h-3.5 opacity-50 shrink-0" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[280px] p-0" align="start">
+        <Command>
+          <CommandInput
+            placeholder="Search or type…"
+            value={query}
+            onValueChange={setQuery}
+          />
+          <CommandList>
+            <CommandEmpty>No match.</CommandEmpty>
+            <CommandGroup>
+              {value && (
+                <CommandItem
+                  onSelect={() => {
+                    onChange("");
+                    setOpen(false);
+                    setQuery("");
+                  }}
+                  className="text-muted-foreground italic"
+                >
+                  Clear
+                </CommandItem>
+              )}
+              {options.map((opt) => (
+                <CommandItem
+                  key={opt}
+                  value={opt}
+                  onSelect={() => {
+                    onChange(opt);
+                    setOpen(false);
+                    setQuery("");
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-3.5 w-3.5",
+                      value === opt ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {opt}
+                </CommandItem>
+              ))}
+              {showCreate && (
+                <CommandItem
+                  onSelect={() => {
+                    const v = query.trim();
+                    onAddOption(v);
+                    onChange(v);
+                    setOpen(false);
+                    setQuery("");
+                  }}
+                  className="text-primary"
+                >
+                  <Plus className="mr-2 h-3.5 w-3.5" />
+                  Add "{query.trim()}"
+                </CommandItem>
+              )}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 export default function ConsultingManagement() {
   const [startDate, setStartDate] = useState("2025-04-07");
   const [normalRate, setNormalRate] = useState(170);
   const [weekendRate, setWeekendRate] = useState(100);
   const [persons, setPersons] = useState(4);
-  const [totalDays, setTotalDays] = useState(26); // indexes 0..25
+  const [totalDays, setTotalDays] = useState(26);
 
+  const [actionLibrary, setActionLibrary] = useState<string[]>(DEFAULT_ACTION_LIBRARY);
   const [rows, setRows] = useState<DayRow[]>(() =>
     Array.from({ length: 26 }, (_, i) => ({
       index: i,
-      action1: DEFAULT_ACTIONS[i]?.[0] ?? "",
-      action2: DEFAULT_ACTIONS[i]?.[1] ?? "",
+      action1: DEFAULT_ACTIONS_BY_INDEX[i]?.[0] ?? "",
+      action2: DEFAULT_ACTIONS_BY_INDEX[i]?.[1] ?? "",
       done1: false,
       done2: false,
     }))
   );
 
+  // Grow/shrink rows when totalDays changes — preserve existing edits.
+  useEffect(() => {
+    setRows((prev) => {
+      if (totalDays === prev.length) return prev;
+      if (totalDays < prev.length) return prev.slice(0, totalDays);
+      const extra = Array.from({ length: totalDays - prev.length }, (_, k) => {
+        const i = prev.length + k;
+        return {
+          index: i,
+          action1: DEFAULT_ACTIONS_BY_INDEX[i]?.[0] ?? "",
+          action2: DEFAULT_ACTIONS_BY_INDEX[i]?.[1] ?? "",
+          done1: false,
+          done2: false,
+        };
+      });
+      return [...prev, ...extra];
+    });
+  }, [totalDays]);
+
   const start = useMemo(() => new Date(startDate + "T00:00:00"), [startDate]);
 
-  const visibleRows = rows.slice(0, totalDays);
-
   const computed = useMemo(() => {
-    return visibleRows.map((r) => {
+    return rows.map((r) => {
       const d = new Date(start);
       d.setDate(start.getDate() + r.index);
       const dow = d.getDay();
@@ -85,7 +234,7 @@ export default function ConsultingManagement() {
       const rate = isWeekend ? weekendRate : normalRate;
       return { ...r, date: d, isWeekend, dayLabel: DAY_LABELS_FR[dow], rate };
     });
-  }, [visibleRows, start, normalRate, weekendRate]);
+  }, [rows, start, normalRate, weekendRate]);
 
   const total = useMemo(() => computed.reduce((s, r) => s + r.rate, 0), [computed]);
   const workingDays = computed.filter((r) => !r.isWeekend).length;
@@ -94,18 +243,21 @@ export default function ConsultingManagement() {
     setRows((rs) => rs.map((r) => (r.index === idx ? { ...r, [field]: value } : r)));
   };
 
-  // Group by week (every 7 days from start, broken at Sunday)
+  const addOption = (v: string) => {
+    setActionLibrary((lib) => (lib.includes(v) ? lib : [...lib, v]));
+  };
+
+  // Group by week — break on Monday
   const grouped = useMemo(() => {
     const groups: { weekNum: number; rows: typeof computed }[] = [];
-    let currentWeek = 0;
+    let weekNum = 0;
     let lastDow = -1;
     computed.forEach((r) => {
       const dow = r.date.getDay();
-      if (lastDow === -1 || (dow === 1 && lastDow !== 1)) {
-        currentWeek++;
-        groups.push({ weekNum: currentWeek, rows: [] });
-      } else if (groups.length === 0) {
-        groups.push({ weekNum: ++currentWeek, rows: [] });
+      const startNew = lastDow === -1 || (dow === 1 && lastDow !== 1);
+      if (startNew) {
+        weekNum++;
+        groups.push({ weekNum, rows: [] });
       }
       groups[groups.length - 1].rows.push(r);
       lastDow = dow;
@@ -123,11 +275,10 @@ export default function ConsultingManagement() {
               <div>
                 <h1 className="font-display text-3xl font-bold mb-2">Consulting Management</h1>
                 <p className="text-muted-foreground">
-                  Plan a consulting mission day by day. Edit start date, rates, and actions — totals recalculate live.
+                  Plan a consulting mission day by day. Set the number of days sold — weeks, dates, and weekends update automatically.
                 </p>
               </div>
 
-              {/* Setup */}
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base font-display">Daily Rate</CardTitle>
@@ -169,21 +320,24 @@ export default function ConsultingManagement() {
                     <Label>Days Sold</Label>
                     <Input
                       type="number"
+                      min={1}
                       value={totalDays}
-                      onChange={(e) => setTotalDays(Math.max(1, Math.min(60, parseInt(e.target.value) || 1)))}
+                      onChange={(e) =>
+                        setTotalDays(Math.max(1, parseInt(e.target.value) || 1))
+                      }
                     />
                     <p className="text-xs text-muted-foreground">{workingDays} working days</p>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Schedule */}
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                   <div>
                     <CardTitle className="text-base font-display">Mission Schedule</CardTitle>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Total: <span className="font-semibold text-foreground">{fmt(total)}</span> · {totalDays} days indexed 0–{totalDays - 1}
+                      Total: <span className="font-semibold text-foreground">{fmt(total)}</span>{" "}
+                      · {totalDays} days indexed 0–{totalDays - 1} · {grouped.length} weeks
                     </p>
                   </div>
                 </CardHeader>
@@ -208,20 +362,28 @@ export default function ConsultingManagement() {
                           g.rows.map((r, i) => (
                             <TableRow
                               key={r.index}
-                              className={r.isWeekend ? "bg-rose-50/60 dark:bg-rose-950/20" : "bg-emerald-50/40 dark:bg-emerald-950/10"}
+                              className={
+                                r.isWeekend
+                                  ? "bg-rose-50/60 dark:bg-rose-950/20"
+                                  : "bg-emerald-50/40 dark:bg-emerald-950/10"
+                              }
                             >
                               {i === 0 && (
-                                <TableCell rowSpan={g.rows.length} className="font-medium align-middle border-r">
+                                <TableCell
+                                  rowSpan={g.rows.length}
+                                  className="font-medium align-middle border-r"
+                                >
                                   Week {g.weekNum}
                                 </TableCell>
                               )}
                               <TableCell className="capitalize text-sm">{r.dayLabel}</TableCell>
                               <TableCell className="text-sm font-mono">{fmtDate(r.date)}</TableCell>
                               <TableCell className="p-1.5">
-                                <Input
+                                <ActionPicker
                                   value={r.action1}
-                                  onChange={(e) => updateRow(r.index, "action1", e.target.value)}
-                                  className="h-8 text-sm border-0 bg-transparent focus-visible:ring-1"
+                                  options={actionLibrary}
+                                  onChange={(v) => updateRow(r.index, "action1", v)}
+                                  onAddOption={addOption}
                                   disabled={r.isWeekend}
                                 />
                               </TableCell>
@@ -234,10 +396,11 @@ export default function ConsultingManagement() {
                                 )}
                               </TableCell>
                               <TableCell className="p-1.5">
-                                <Input
+                                <ActionPicker
                                   value={r.action2}
-                                  onChange={(e) => updateRow(r.index, "action2", e.target.value)}
-                                  className="h-8 text-sm border-0 bg-transparent focus-visible:ring-1"
+                                  options={actionLibrary}
+                                  onChange={(v) => updateRow(r.index, "action2", v)}
+                                  onAddOption={addOption}
                                   disabled={r.isWeekend}
                                 />
                               </TableCell>
@@ -249,7 +412,9 @@ export default function ConsultingManagement() {
                                   />
                                 )}
                               </TableCell>
-                              <TableCell className="text-right font-mono text-sm">{fmt(r.rate)}</TableCell>
+                              <TableCell className="text-right font-mono text-sm">
+                                {fmt(r.rate)}
+                              </TableCell>
                               <TableCell className="text-right font-mono text-sm text-muted-foreground">
                                 {r.index}
                               </TableCell>
