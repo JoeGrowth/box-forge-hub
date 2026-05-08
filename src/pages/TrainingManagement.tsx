@@ -145,14 +145,14 @@ export default function TrainingManagement() {
     if (!user) return;
     const { data, error } = await supabase
       .from("training_plans")
-      .insert({
+      .insert([{
         owner_id: user.id,
         name: "Untitled Training",
         mission_sold_at: 3450,
         broker_pct: 5,
         charge_mission: 0,
-        rows: DEFAULT_DELIVERY,
-      })
+        rows: DEFAULT_DELIVERY as any,
+      }])
       .select()
       .single();
     if (error) {
