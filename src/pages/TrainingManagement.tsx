@@ -175,7 +175,7 @@ export default function TrainingManagement() {
         mission_sold_at: current.mission_sold_at,
         broker_pct: current.broker_pct,
         charge_mission: current.charge_mission,
-        rows: current.rows,
+        rows: current.rows as any,
       })
       .eq("id", current.id);
     setSaving(false);
