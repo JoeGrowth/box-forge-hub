@@ -1503,6 +1503,74 @@ export type Database = {
         }
         Relationships: []
       }
+      training_plan_shares: {
+        Row: {
+          can_edit: boolean
+          created_at: string
+          id: string
+          plan_id: string
+          shared_with_email: string
+        }
+        Insert: {
+          can_edit?: boolean
+          created_at?: string
+          id?: string
+          plan_id: string
+          shared_with_email: string
+        }
+        Update: {
+          can_edit?: boolean
+          created_at?: string
+          id?: string
+          plan_id?: string
+          shared_with_email?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_plan_shares_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "training_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_plans: {
+        Row: {
+          broker_pct: number
+          charge_mission: number
+          created_at: string
+          id: string
+          mission_sold_at: number
+          name: string
+          owner_id: string
+          rows: Json
+          updated_at: string
+        }
+        Insert: {
+          broker_pct?: number
+          charge_mission?: number
+          created_at?: string
+          id?: string
+          mission_sold_at?: number
+          name?: string
+          owner_id: string
+          rows?: Json
+          updated_at?: string
+        }
+        Update: {
+          broker_pct?: number
+          charge_mission?: number
+          created_at?: string
+          id?: string
+          mission_sold_at?: number
+          name?: string
+          owner_id?: string
+          rows?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_certifications: {
         Row: {
           certification_type: string
@@ -1621,6 +1689,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      current_user_email: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1629,6 +1698,7 @@ export type Database = {
         Returns: boolean
       }
       is_approved_cobuilder: { Args: { _user_id: string }; Returns: boolean }
+      is_plan_shared_with_me: { Args: { _plan_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "entrepreneur" | "cobuilder" | "box_manager" | "admin"
