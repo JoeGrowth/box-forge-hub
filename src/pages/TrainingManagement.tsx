@@ -1,10 +1,12 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -24,8 +26,18 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Plus, Trash2, Save, FilePlus, FolderOpen } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Plus, Trash2, Save, FilePlus, FolderOpen, Share2, Loader2, Users } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface DeliveryRow {
   id: string;
@@ -35,12 +47,18 @@ interface DeliveryRow {
 
 interface TrainingPlan {
   id: string;
+  owner_id: string;
   name: string;
-  missionSoldAt: number;
-  brokerPct: number;
-  chargeMission: number;
+  mission_sold_at: number;
+  broker_pct: number;
+  charge_mission: number;
   rows: DeliveryRow[];
-  updatedAt: string;
+  updated_at: string;
+}
+
+interface ShareRow {
+  id: string;
+  shared_with_email: string;
 }
 
 const DEFAULT_DELIVERY: DeliveryRow[] = [
@@ -54,107 +72,188 @@ const DEFAULT_DELIVERY: DeliveryRow[] = [
   { id: "8", label: "Rest for the structure [Process Handler]", percent: 10 },
 ];
 
-const STORAGE_KEY = "training_management_plans_v1";
-
 const fmt = (n: number) =>
   isNaN(n) ? "0" : n.toLocaleString(undefined, { maximumFractionDigits: 2 });
 
 const newId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
-const blankPlan = (): TrainingPlan => ({
-  id: newId(),
-  name: "Untitled Training",
-  missionSoldAt: 3450,
-  brokerPct: 5,
-  chargeMission: 0,
-  rows: DEFAULT_DELIVERY.map((r) => ({ ...r })),
-  updatedAt: new Date().toISOString(),
-});
-
 export default function TrainingManagement() {
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+
   const [plans, setPlans] = useState<TrainingPlan[]>([]);
   const [currentId, setCurrentId] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  // Load from storage
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed: TrainingPlan[] = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length) {
-          setPlans(parsed);
-          setCurrentId(parsed[0].id);
-          return;
-        }
-      }
-    } catch {}
-    const p = blankPlan();
-    setPlans([p]);
-    setCurrentId(p.id);
-  }, []);
+  const [shares, setShares] = useState<ShareRow[]>([]);
+  const [shareEmail, setShareEmail] = useState("");
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   const current = plans.find((p) => p.id === currentId);
+  const isOwner = !!current && !!user && current.owner_id === user.id;
+
+  // Redirect if not logged in
+  useEffect(() => {
+    if (!authLoading && !user) navigate("/auth");
+  }, [authLoading, user, navigate]);
+
+  // Load plans
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("training_plans")
+        .select("*")
+        .order("updated_at", { ascending: false });
+      if (error) {
+        toast.error("Failed to load plans");
+      } else {
+        const normalized = (data || []).map((p: any) => ({
+          ...p,
+          rows: Array.isArray(p.rows) ? p.rows : [],
+        })) as TrainingPlan[];
+        setPlans(normalized);
+        if (normalized.length && !currentId) setCurrentId(normalized[0].id);
+      }
+      setLoading(false);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  // Load shares for current plan
+  useEffect(() => {
+    if (!current) {
+      setShares([]);
+      return;
+    }
+    (async () => {
+      const { data } = await supabase
+        .from("training_plan_shares")
+        .select("id, shared_with_email")
+        .eq("plan_id", current.id);
+      setShares(data || []);
+    })();
+  }, [current?.id]);
 
   const updateCurrent = (patch: Partial<TrainingPlan>) => {
-    setPlans((ps) =>
-      ps.map((p) => (p.id === currentId ? { ...p, ...patch } : p))
-    );
+    setPlans((ps) => ps.map((p) => (p.id === currentId ? { ...p, ...patch } : p)));
   };
 
-  const persist = () => {
-    setPlans((ps) => {
-      const updated = ps.map((p) =>
-        p.id === currentId ? { ...p, updatedAt: new Date().toISOString() } : p
-      );
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      toast.success("Plan saved");
-      return updated;
-    });
-  };
-
-  const createNew = () => {
-    const p = blankPlan();
-    setPlans((ps) => {
-      const next = [p, ...ps];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      return next;
-    });
+  const createNew = async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from("training_plans")
+      .insert([{
+        owner_id: user.id,
+        name: "Untitled Training",
+        mission_sold_at: 3450,
+        broker_pct: 5,
+        charge_mission: 0,
+        rows: DEFAULT_DELIVERY as any,
+      }])
+      .select()
+      .single();
+    if (error) {
+      toast.error("Could not create plan");
+      return;
+    }
+    const p = { ...data, rows: data.rows as unknown as DeliveryRow[] } as TrainingPlan;
+    setPlans((ps) => [p, ...ps]);
     setCurrentId(p.id);
     toast.success("New plan created");
   };
 
-  const deletePlan = (id: string) => {
+  const persist = async () => {
+    if (!current) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("training_plans")
+      .update({
+        name: current.name,
+        mission_sold_at: current.mission_sold_at,
+        broker_pct: current.broker_pct,
+        charge_mission: current.charge_mission,
+        rows: current.rows as any,
+      })
+      .eq("id", current.id);
+    setSaving(false);
+    if (error) toast.error("Save failed");
+    else toast.success("Plan saved");
+  };
+
+  const deletePlan = async (id: string) => {
+    const { error } = await supabase.from("training_plans").delete().eq("id", id);
+    if (error) {
+      toast.error("Delete failed");
+      return;
+    }
     setPlans((ps) => {
       const next = ps.filter((p) => p.id !== id);
-      const final = next.length ? next : [blankPlan()];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(final));
-      if (id === currentId) setCurrentId(final[0].id);
-      return final;
+      if (id === currentId) setCurrentId(next[0]?.id || "");
+      return next;
     });
     toast.success("Plan deleted");
   };
 
-  if (!current) return null;
+  const addShare = async () => {
+    if (!current || !shareEmail.trim()) return;
+    const email = shareEmail.trim().toLowerCase();
+    const { data, error } = await supabase
+      .from("training_plan_shares")
+      .insert({ plan_id: current.id, shared_with_email: email })
+      .select()
+      .single();
+    if (error) {
+      toast.error(error.message.includes("duplicate") ? "Already shared" : "Failed to share");
+      return;
+    }
+    setShares((s) => [...s, data]);
+    setShareEmail("");
+    toast.success(`Shared with ${email}`);
+  };
 
-  const broker = (current.missionSoldAt * current.brokerPct) / 100;
-  const missionBudget = current.missionSoldAt - broker - current.chargeMission;
-  const totalPct = current.rows.reduce((s, r) => s + (r.percent || 0), 0);
+  const removeShare = async (id: string) => {
+    const { error } = await supabase.from("training_plan_shares").delete().eq("id", id);
+    if (error) {
+      toast.error("Failed to remove");
+      return;
+    }
+    setShares((s) => s.filter((x) => x.id !== id));
+  };
 
   const updateRow = (id: string, field: keyof DeliveryRow, value: string | number) => {
+    if (!current) return;
     updateCurrent({
       rows: current.rows.map((r) => (r.id === id ? { ...r, [field]: value } : r)),
     });
   };
 
   const addRow = () => {
-    updateCurrent({
-      rows: [...current.rows, { id: newId(), label: "New task", percent: 0 }],
-    });
+    if (!current) return;
+    updateCurrent({ rows: [...current.rows, { id: newId(), label: "New task", percent: 0 }] });
   };
 
   const removeRow = (id: string) => {
+    if (!current) return;
     updateCurrent({ rows: current.rows.filter((r) => r.id !== id) });
   };
+
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="pt-32 flex justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    );
+  }
+
+  const broker = current ? (current.mission_sold_at * current.broker_pct) / 100 : 0;
+  const missionBudget = current ? current.mission_sold_at - broker - current.charge_mission : 0;
+  const totalPct = current ? current.rows.reduce((s, r) => s + (r.percent || 0), 0) : 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -167,211 +266,283 @@ export default function TrainingManagement() {
                 <div>
                   <h1 className="font-display text-3xl font-bold mb-2">Training Management</h1>
                   <p className="text-muted-foreground">
-                    Save multiple training plans. Each mission gets its own budget breakdown.
+                    Cloud-saved training plans. Share with collaborators by email.
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <Button onClick={persist} className="gap-1.5">
-                    <Save className="w-4 h-4" /> Save
-                  </Button>
+                  {current && (
+                    <Button onClick={persist} disabled={saving} className="gap-1.5">
+                      {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                      Save
+                    </Button>
+                  )}
                   <Button onClick={createNew} variant="outline" className="gap-1.5">
                     <FilePlus className="w-4 h-4" /> New Plan
                   </Button>
                 </div>
               </div>
 
-              {/* Saved plans list */}
+              {/* Plans list */}
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base font-display flex items-center gap-2">
-                    <FolderOpen className="w-4 h-4" /> Saved Plans ({plans.length})
+                    <FolderOpen className="w-4 h-4" /> Your Plans ({plans.length})
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {plans.map((p) => {
-                      const active = p.id === currentId;
-                      return (
-                        <div
-                          key={p.id}
-                          className={`flex items-center gap-1 rounded-md border px-2 py-1 text-sm transition-colors ${
-                            active
-                              ? "border-primary bg-primary/10"
-                              : "border-border hover:bg-muted/50"
-                          }`}
-                        >
-                          <button
-                            onClick={() => setCurrentId(p.id)}
-                            className="font-medium"
-                          >
-                            {p.name || "Untitled"}
-                          </button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-6 w-6 text-destructive/70 hover:text-destructive"
-                              >
-                                <Trash2 className="w-3 h-3" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Delete this plan?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  "{p.name}" will be permanently removed.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => deletePlan(p.id)}>
-                                  Delete
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Mission inputs */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base font-display">Mission Setup</CardTitle>
-                </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                  <div className="space-y-2 md:col-span-1">
-                    <Label>Plan Name</Label>
-                    <Input
-                      value={current.name}
-                      onChange={(e) => updateCurrent({ name: e.target.value })}
-                      placeholder="e.g. Acme Workshop"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Mission Sold At</Label>
-                    <Input
-                      type="number"
-                      value={current.missionSoldAt}
-                      onChange={(e) =>
-                        updateCurrent({ missionSoldAt: parseFloat(e.target.value) || 0 })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Broker (%)</Label>
-                    <Input
-                      type="number"
-                      value={current.brokerPct}
-                      onChange={(e) =>
-                        updateCurrent({ brokerPct: parseFloat(e.target.value) || 0 })
-                      }
-                    />
-                    <p className="text-xs text-muted-foreground">= {fmt(broker)}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Charge Mission</Label>
-                    <Input
-                      type="number"
-                      value={current.chargeMission}
-                      onChange={(e) =>
-                        updateCurrent({ chargeMission: parseFloat(e.target.value) || 0 })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Mission Budget</Label>
-                    <div className="h-10 flex items-center px-3 rounded-md border bg-muted/30 font-semibold">
-                      {fmt(missionBudget)}
-                    </div>
-                    <p className="text-xs text-muted-foreground">Sold − Broker − Charge</p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Delivery breakdown */}
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <div>
-                    <CardTitle className="text-base font-display">
-                      Delivery Budget (First Time)
-                    </CardTitle>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Total: {fmt(missionBudget)} · Allocated: {totalPct}%
-                      {totalPct !== 100 && (
-                        <span className="text-destructive ml-2">
-                          (should equal 100%)
-                        </span>
-                      )}
+                  {plans.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      No plans yet. Click "New Plan" to create your first one.
                     </p>
-                  </div>
-                  <Button size="sm" variant="outline" onClick={addRow} className="gap-1.5">
-                    <Plus className="w-3.5 h-3.5" /> Add Task
-                  </Button>
-                </CardHeader>
-                <CardContent>
-                  <div className="rounded-md border overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-[100px]">%</TableHead>
-                          <TableHead>Task</TableHead>
-                          <TableHead className="w-[140px] text-right">Amount</TableHead>
-                          <TableHead className="w-[50px]" />
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {current.rows.map((r) => (
-                          <TableRow key={r.id}>
-                            <TableCell className="p-1.5">
-                              <Input
-                                type="number"
-                                value={r.percent}
-                                onChange={(e) =>
-                                  updateRow(r.id, "percent", parseFloat(e.target.value) || 0)
-                                }
-                                className="h-8 text-sm"
-                              />
-                            </TableCell>
-                            <TableCell className="p-1.5">
-                              <Input
-                                value={r.label}
-                                onChange={(e) => updateRow(r.id, "label", e.target.value)}
-                                className="h-8 text-sm border-0 bg-transparent focus-visible:ring-1"
-                              />
-                            </TableCell>
-                            <TableCell className="p-1.5 text-right font-mono text-sm">
-                              {fmt((missionBudget * r.percent) / 100)}
-                            </TableCell>
-                            <TableCell className="p-1.5">
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-7 w-7 text-destructive/70 hover:text-destructive"
-                                onClick={() => removeRow(r.id)}
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                        <TableRow className="font-semibold bg-muted/30">
-                          <TableCell className="p-2">{totalPct}%</TableCell>
-                          <TableCell className="p-2">Total</TableCell>
-                          <TableCell className="p-2 text-right font-mono">
-                            {fmt((missionBudget * totalPct) / 100)}
-                          </TableCell>
-                          <TableCell />
-                        </TableRow>
-                      </TableBody>
-                    </Table>
-                  </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {plans.map((p) => {
+                        const active = p.id === currentId;
+                        const sharedWithMe = user && p.owner_id !== user.id;
+                        return (
+                          <div
+                            key={p.id}
+                            className={`flex items-center gap-1 rounded-md border px-2 py-1 text-sm transition-colors ${
+                              active ? "border-primary bg-primary/10" : "border-border hover:bg-muted/50"
+                            }`}
+                          >
+                            <button onClick={() => setCurrentId(p.id)} className="font-medium">
+                              {p.name || "Untitled"}
+                            </button>
+                            {sharedWithMe && (
+                              <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">
+                                shared
+                              </Badge>
+                            )}
+                            {p.owner_id === user?.id && (
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-6 w-6 text-destructive/70 hover:text-destructive"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete this plan?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      "{p.name}" will be permanently removed for you and everyone it's shared with.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => deletePlan(p.id)}>
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
+
+              {!current ? null : (
+                <>
+                  {/* Mission inputs */}
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                      <CardTitle className="text-base font-display">Mission Setup</CardTitle>
+                      {isOwner && (
+                        <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button size="sm" variant="outline" className="gap-1.5">
+                              <Share2 className="w-3.5 h-3.5" /> Share ({shares.length})
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Share "{current.name}"</DialogTitle>
+                              <DialogDescription>
+                                Add an email to give that account view & edit access to this plan.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div className="flex gap-2">
+                                <Input
+                                  type="email"
+                                  placeholder="email@example.com"
+                                  value={shareEmail}
+                                  onChange={(e) => setShareEmail(e.target.value)}
+                                  onKeyDown={(e) => e.key === "Enter" && addShare()}
+                                />
+                                <Button onClick={addShare} className="gap-1.5">
+                                  <Plus className="w-4 h-4" /> Add
+                                </Button>
+                              </div>
+                              <div className="space-y-2">
+                                <Label className="text-xs flex items-center gap-1.5">
+                                  <Users className="w-3.5 h-3.5" /> Shared with
+                                </Label>
+                                {shares.length === 0 ? (
+                                  <p className="text-sm text-muted-foreground">Not shared yet.</p>
+                                ) : (
+                                  <div className="space-y-1">
+                                    {shares.map((s) => (
+                                      <div
+                                        key={s.id}
+                                        className="flex items-center justify-between rounded-md border px-3 py-1.5 text-sm"
+                                      >
+                                        <span>{s.shared_with_email}</span>
+                                        <Button
+                                          size="icon"
+                                          variant="ghost"
+                                          className="h-7 w-7 text-destructive/70 hover:text-destructive"
+                                          onClick={() => removeShare(s.id)}
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </Button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      )}
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                      <div className="space-y-2 md:col-span-1">
+                        <Label>Plan Name</Label>
+                        <Input
+                          value={current.name}
+                          onChange={(e) => updateCurrent({ name: e.target.value })}
+                          placeholder="e.g. Acme Workshop"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Mission Sold At</Label>
+                        <Input
+                          type="number"
+                          value={current.mission_sold_at}
+                          onChange={(e) =>
+                            updateCurrent({ mission_sold_at: parseFloat(e.target.value) || 0 })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Broker (%)</Label>
+                        <Input
+                          type="number"
+                          value={current.broker_pct}
+                          onChange={(e) =>
+                            updateCurrent({ broker_pct: parseFloat(e.target.value) || 0 })
+                          }
+                        />
+                        <p className="text-xs text-muted-foreground">= {fmt(broker)}</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Charge Mission</Label>
+                        <Input
+                          type="number"
+                          value={current.charge_mission}
+                          onChange={(e) =>
+                            updateCurrent({ charge_mission: parseFloat(e.target.value) || 0 })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Mission Budget</Label>
+                        <div className="h-10 flex items-center px-3 rounded-md border bg-muted/30 font-semibold">
+                          {fmt(missionBudget)}
+                        </div>
+                        <p className="text-xs text-muted-foreground">Sold − Broker − Charge</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Delivery breakdown */}
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                      <div>
+                        <CardTitle className="text-base font-display">
+                          Delivery Budget (First Time)
+                        </CardTitle>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Total: {fmt(missionBudget)} · Allocated: {totalPct}%
+                          {totalPct !== 100 && (
+                            <span className="text-destructive ml-2">(should equal 100%)</span>
+                          )}
+                        </p>
+                      </div>
+                      <Button size="sm" variant="outline" onClick={addRow} className="gap-1.5">
+                        <Plus className="w-3.5 h-3.5" /> Add Task
+                      </Button>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="rounded-md border overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="w-[100px]">%</TableHead>
+                              <TableHead>Task</TableHead>
+                              <TableHead className="w-[140px] text-right">Amount</TableHead>
+                              <TableHead className="w-[50px]" />
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {current.rows.map((r) => (
+                              <TableRow key={r.id}>
+                                <TableCell className="p-1.5">
+                                  <Input
+                                    type="number"
+                                    value={r.percent}
+                                    onChange={(e) =>
+                                      updateRow(r.id, "percent", parseFloat(e.target.value) || 0)
+                                    }
+                                    className="h-8 text-sm"
+                                  />
+                                </TableCell>
+                                <TableCell className="p-1.5">
+                                  <Input
+                                    value={r.label}
+                                    onChange={(e) => updateRow(r.id, "label", e.target.value)}
+                                    className="h-8 text-sm border-0 bg-transparent focus-visible:ring-1"
+                                  />
+                                </TableCell>
+                                <TableCell className="p-1.5 text-right font-mono text-sm">
+                                  {fmt((missionBudget * r.percent) / 100)}
+                                </TableCell>
+                                <TableCell className="p-1.5">
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-7 w-7 text-destructive/70 hover:text-destructive"
+                                    onClick={() => removeRow(r.id)}
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                            <TableRow className="font-semibold bg-muted/30">
+                              <TableCell className="p-2">{totalPct}%</TableCell>
+                              <TableCell className="p-2">Total</TableCell>
+                              <TableCell className="p-2 text-right font-mono">
+                                {fmt((missionBudget * totalPct) / 100)}
+                              </TableCell>
+                              <TableCell />
+                            </TableRow>
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </>
+              )}
             </div>
           </section>
         </main>
