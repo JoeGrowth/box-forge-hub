@@ -159,7 +159,7 @@ export default function TrainingManagement() {
       toast.error("Could not create plan");
       return;
     }
-    const p = { ...data, rows: data.rows as DeliveryRow[] } as TrainingPlan;
+    const p = { ...data, rows: data.rows as unknown as DeliveryRow[] } as TrainingPlan;
     setPlans((ps) => [p, ...ps]);
     setCurrentId(p.id);
     toast.success("New plan created");
