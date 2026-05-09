@@ -168,13 +168,16 @@ export default function TrainingManagement() {
     setPlans((ps) => ps.map((p) => (p.id === currentId ? { ...p, ...patch } : p)));
   };
 
-  const createNew = async () => {
+  const createNew = async (serviceName?: string) => {
     if (!user) return;
+    const svc = serviceName || visibleService || "General";
     const { data, error } = await supabase
       .from("training_plans")
       .insert([{
         owner_id: user.id,
-        name: "Untitled Training",
+        name: "New Client",
+        service_name: svc,
+        client_name: "New Client",
         mission_sold_at: 3450,
         broker_pct: 5,
         charge_mission: 0,
@@ -183,13 +186,22 @@ export default function TrainingManagement() {
       .select()
       .single();
     if (error) {
-      toast.error("Could not create plan");
+      toast.error("Could not create client");
       return;
     }
     const p = { ...data, rows: data.rows as unknown as DeliveryRow[] } as TrainingPlan;
     setPlans((ps) => [p, ...ps]);
     setCurrentId(p.id);
-    toast.success("New plan created");
+    setActiveService(svc);
+    toast.success("New client added");
+  };
+
+  const createService = async () => {
+    const name = newServiceName.trim();
+    if (!name) return;
+    setNewServiceName("");
+    setServiceDialogOpen(false);
+    await createNew(name);
   };
 
   const persist = async () => {
@@ -198,7 +210,9 @@ export default function TrainingManagement() {
     const { error } = await supabase
       .from("training_plans")
       .update({
-        name: current.name,
+        name: current.client_name || current.name,
+        client_name: current.client_name,
+        service_name: current.service_name,
         mission_sold_at: current.mission_sold_at,
         broker_pct: current.broker_pct,
         charge_mission: current.charge_mission,
@@ -207,7 +221,7 @@ export default function TrainingManagement() {
       .eq("id", current.id);
     setSaving(false);
     if (error) toast.error("Save failed");
-    else toast.success("Plan saved");
+    else toast.success("Saved");
   };
 
   const deletePlan = async (id: string) => {
