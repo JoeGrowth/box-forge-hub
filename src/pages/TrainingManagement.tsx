@@ -224,6 +224,29 @@ export default function TrainingManagement() {
     else toast.success("Saved");
   };
 
+  const deleteService = async (serviceName: string) => {
+    if (!user) return;
+    const ids = plans
+      .filter((p) => (p.service_name || "General") === serviceName && p.owner_id === user.id)
+      .map((p) => p.id);
+    if (ids.length === 0) {
+      toast.error("Nothing to delete (you may not own these clients)");
+      return;
+    }
+    const { error } = await supabase.from("training_plans").delete().in("id", ids);
+    if (error) {
+      toast.error("Delete failed");
+      return;
+    }
+    setPlans((ps) => {
+      const next = ps.filter((p) => !ids.includes(p.id));
+      if (ids.includes(currentId)) setCurrentId(next[0]?.id || "");
+      return next;
+    });
+    if (activeService === serviceName) setActiveService(null);
+    toast.success(`Service "${serviceName}" deleted`);
+  };
+
   const deletePlan = async (id: string) => {
     const { error } = await supabase.from("training_plans").delete().eq("id", id);
     if (error) {
