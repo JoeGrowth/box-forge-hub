@@ -522,13 +522,21 @@ export default function TrainingManagement() {
                         </Dialog>
                       )}
                     </CardHeader>
-                    <CardContent className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <CardContent className="grid grid-cols-1 md:grid-cols-6 gap-4">
                       <div className="space-y-2 md:col-span-1">
-                        <Label>Plan Name</Label>
+                        <Label>Service</Label>
                         <Input
-                          value={current.name}
-                          onChange={(e) => updateCurrent({ name: e.target.value })}
-                          placeholder="e.g. Acme Workshop"
+                          value={current.service_name || ""}
+                          onChange={(e) => updateCurrent({ service_name: e.target.value })}
+                          placeholder="e.g. Cybersecurity Level 1"
+                        />
+                      </div>
+                      <div className="space-y-2 md:col-span-1">
+                        <Label>Client Name</Label>
+                        <Input
+                          value={current.client_name || ""}
+                          onChange={(e) => updateCurrent({ client_name: e.target.value, name: e.target.value })}
+                          placeholder="e.g. Acme Corp"
                         />
                       </div>
                       <div className="space-y-2">
