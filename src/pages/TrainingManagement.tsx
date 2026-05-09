@@ -34,7 +34,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Trash2, Save, FilePlus, FolderOpen, Share2, Loader2, Users } from "lucide-react";
+import { Plus, Trash2, Save, FilePlus, FolderOpen, Share2, Loader2, Users, Briefcase, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
