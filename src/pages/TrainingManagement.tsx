@@ -392,17 +392,46 @@ export default function TrainingManagement() {
                           const count = plans.filter((p) => (p.service_name || "General") === s).length;
                           const active = s === visibleService;
                           return (
-                            <button
+                            <div
                               key={s}
-                              onClick={() => setActiveService(s)}
-                              className={`flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm transition-colors ${
+                              className={`flex items-center gap-1 rounded-md border pl-3 pr-1 py-1 text-sm transition-colors ${
                                 active ? "border-primary bg-primary/10 font-semibold" : "border-border hover:bg-muted/50"
                               }`}
                             >
-                              <Briefcase className="w-3.5 h-3.5" />
-                              {s}
-                              <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">{count}</Badge>
-                            </button>
+                              <button
+                                onClick={() => setActiveService(s)}
+                                className="flex items-center gap-1.5"
+                              >
+                                <Briefcase className="w-3.5 h-3.5" />
+                                {s}
+                                <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">{count}</Badge>
+                              </button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                                    onClick={(e) => e.stopPropagation()}
+                                    title="Delete service"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete service "{s}"?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      This will permanently delete the service and all {count} client plan{count === 1 ? "" : "s"} you own under it. This action cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => deleteService(s)}>Delete</AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
                           );
                         })}
                       </div>
