@@ -88,13 +88,37 @@ export default function TrainingManagement() {
   const [currentId, setCurrentId] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [activeService, setActiveService] = useState<string>("");
 
   const [shares, setShares] = useState<ShareRow[]>([]);
   const [shareEmail, setShareEmail] = useState("");
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [serviceDialogOpen, setServiceDialogOpen] = useState(false);
+  const [newServiceName, setNewServiceName] = useState("");
 
   const current = plans.find((p) => p.id === currentId);
   const isOwner = !!current && !!user && current.owner_id === user.id;
+
+  // Unique services from plans
+  const services = Array.from(new Set(plans.map((p) => p.service_name || "General")));
+  const visibleService = activeService || services[0] || "";
+  const clientsForService = plans
+    .filter((p) => (p.service_name || "General") === visibleService)
+    .sort((a, b) => (a.created_at || "").localeCompare(b.created_at || ""));
+
+  // Delivery occurrence number for current plan within its service
+  const deliveryNumber = (() => {
+    if (!current) return 1;
+    const sameService = plans
+      .filter((p) => (p.service_name || "General") === (current.service_name || "General"))
+      .sort((a, b) => (a.created_at || "").localeCompare(b.created_at || ""));
+    return sameService.findIndex((p) => p.id === current.id) + 1;
+  })();
+  const ordinal = (n: number) => {
+    const s = ["th", "st", "nd", "rd"];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  };
 
   // Redirect if not logged in
   useEffect(() => {
