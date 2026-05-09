@@ -34,7 +34,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Trash2, Save, FilePlus, FolderOpen, Share2, Loader2, Users } from "lucide-react";
+import { Plus, Trash2, Save, FilePlus, FolderOpen, Share2, Loader2, Users, Briefcase, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -49,11 +49,14 @@ interface TrainingPlan {
   id: string;
   owner_id: string;
   name: string;
+  service_name: string;
+  client_name: string | null;
   mission_sold_at: number;
   broker_pct: number;
   charge_mission: number;
   rows: DeliveryRow[];
   updated_at: string;
+  created_at?: string;
 }
 
 interface ShareRow {
@@ -85,13 +88,37 @@ export default function TrainingManagement() {
   const [currentId, setCurrentId] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [activeService, setActiveService] = useState<string>("");
 
   const [shares, setShares] = useState<ShareRow[]>([]);
   const [shareEmail, setShareEmail] = useState("");
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [serviceDialogOpen, setServiceDialogOpen] = useState(false);
+  const [newServiceName, setNewServiceName] = useState("");
 
   const current = plans.find((p) => p.id === currentId);
   const isOwner = !!current && !!user && current.owner_id === user.id;
+
+  // Unique services from plans
+  const services = Array.from(new Set(plans.map((p) => p.service_name || "General")));
+  const visibleService = activeService || services[0] || "";
+  const clientsForService = plans
+    .filter((p) => (p.service_name || "General") === visibleService)
+    .sort((a, b) => (a.created_at || "").localeCompare(b.created_at || ""));
+
+  // Delivery occurrence number for current plan within its service
+  const deliveryNumber = (() => {
+    if (!current) return 1;
+    const sameService = plans
+      .filter((p) => (p.service_name || "General") === (current.service_name || "General"))
+      .sort((a, b) => (a.created_at || "").localeCompare(b.created_at || ""));
+    return sameService.findIndex((p) => p.id === current.id) + 1;
+  })();
+  const ordinal = (n: number) => {
+    const s = ["th", "st", "nd", "rd"];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  };
 
   // Redirect if not logged in
   useEffect(() => {
@@ -141,13 +168,16 @@ export default function TrainingManagement() {
     setPlans((ps) => ps.map((p) => (p.id === currentId ? { ...p, ...patch } : p)));
   };
 
-  const createNew = async () => {
+  const createNew = async (serviceName?: string) => {
     if (!user) return;
+    const svc = serviceName || visibleService || "General";
     const { data, error } = await supabase
       .from("training_plans")
       .insert([{
         owner_id: user.id,
-        name: "Untitled Training",
+        name: "New Client",
+        service_name: svc,
+        client_name: "New Client",
         mission_sold_at: 3450,
         broker_pct: 5,
         charge_mission: 0,
@@ -156,13 +186,22 @@ export default function TrainingManagement() {
       .select()
       .single();
     if (error) {
-      toast.error("Could not create plan");
+      toast.error("Could not create client");
       return;
     }
     const p = { ...data, rows: data.rows as unknown as DeliveryRow[] } as TrainingPlan;
     setPlans((ps) => [p, ...ps]);
     setCurrentId(p.id);
-    toast.success("New plan created");
+    setActiveService(svc);
+    toast.success("New client added");
+  };
+
+  const createService = async () => {
+    const name = newServiceName.trim();
+    if (!name) return;
+    setNewServiceName("");
+    setServiceDialogOpen(false);
+    await createNew(name);
   };
 
   const persist = async () => {
@@ -171,7 +210,9 @@ export default function TrainingManagement() {
     const { error } = await supabase
       .from("training_plans")
       .update({
-        name: current.name,
+        name: current.client_name || current.name,
+        client_name: current.client_name,
+        service_name: current.service_name,
         mission_sold_at: current.mission_sold_at,
         broker_pct: current.broker_pct,
         charge_mission: current.charge_mission,
@@ -180,7 +221,7 @@ export default function TrainingManagement() {
       .eq("id", current.id);
     setSaving(false);
     if (error) toast.error("Save failed");
-    else toast.success("Plan saved");
+    else toast.success("Saved");
   };
 
   const deletePlan = async (id: string) => {
@@ -276,75 +317,142 @@ export default function TrainingManagement() {
                       Save
                     </Button>
                   )}
-                  <Button onClick={createNew} variant="outline" className="gap-1.5">
-                    <FilePlus className="w-4 h-4" /> New Plan
-                  </Button>
+                  {visibleService && (
+                    <Button onClick={() => createNew()} variant="outline" className="gap-1.5">
+                      <UserPlus className="w-4 h-4" /> Add Client
+                    </Button>
+                  )}
                 </div>
               </div>
 
-              {/* Plans list */}
+              {/* Services list */}
               <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="text-base font-display flex items-center gap-2">
-                    <FolderOpen className="w-4 h-4" /> Your Plans ({plans.length})
+                    <Briefcase className="w-4 h-4" /> Your Services ({services.length})
                   </CardTitle>
+                  <Dialog open={serviceDialogOpen} onOpenChange={setServiceDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button size="sm" variant="outline" className="gap-1.5">
+                        <Plus className="w-3.5 h-3.5" /> New Service
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Create new service</DialogTitle>
+                        <DialogDescription>
+                          e.g. "Cybersecurity Level 1". A first client will be added under it.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="flex gap-2">
+                        <Input
+                          autoFocus
+                          placeholder="Service name"
+                          value={newServiceName}
+                          onChange={(e) => setNewServiceName(e.target.value)}
+                          onKeyDown={(e) => e.key === "Enter" && createService()}
+                        />
+                        <Button onClick={createService}>Create</Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </CardHeader>
-                <CardContent>
-                  {plans.length === 0 ? (
+                <CardContent className="space-y-4">
+                  {services.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
-                      No plans yet. Click "New Plan" to create your first one.
+                      No services yet. Click "New Service" to get started.
                     </p>
                   ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {plans.map((p) => {
-                        const active = p.id === currentId;
-                        const sharedWithMe = user && p.owner_id !== user.id;
-                        return (
-                          <div
-                            key={p.id}
-                            className={`flex items-center gap-1 rounded-md border px-2 py-1 text-sm transition-colors ${
-                              active ? "border-primary bg-primary/10" : "border-border hover:bg-muted/50"
-                            }`}
-                          >
-                            <button onClick={() => setCurrentId(p.id)} className="font-medium">
-                              {p.name || "Untitled"}
+                    <>
+                      <div className="flex flex-wrap gap-2">
+                        {services.map((s) => {
+                          const count = plans.filter((p) => (p.service_name || "General") === s).length;
+                          const active = s === visibleService;
+                          return (
+                            <button
+                              key={s}
+                              onClick={() => setActiveService(s)}
+                              className={`flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm transition-colors ${
+                                active ? "border-primary bg-primary/10 font-semibold" : "border-border hover:bg-muted/50"
+                              }`}
+                            >
+                              <Briefcase className="w-3.5 h-3.5" />
+                              {s}
+                              <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">{count}</Badge>
                             </button>
-                            {sharedWithMe && (
-                              <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">
-                                shared
-                              </Badge>
-                            )}
-                            {p.owner_id === user?.id && (
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-6 w-6 text-destructive/70 hover:text-destructive"
-                                  >
-                                    <Trash2 className="w-3 h-3" />
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Delete this plan?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      "{p.name}" will be permanently removed for you and everyone it's shared with.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => deletePlan(p.id)}>
-                                      Delete
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            )}
+                          );
+                        })}
+                      </div>
+
+                      {/* Clients under selected service */}
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <Label className="text-xs flex items-center gap-1.5">
+                            <Users className="w-3.5 h-3.5" /> Clients in "{visibleService}" ({clientsForService.length})
+                          </Label>
+                          <Button size="sm" variant="ghost" onClick={() => createNew()} className="gap-1 h-7 text-xs">
+                            <UserPlus className="w-3 h-3" /> Add Client
+                          </Button>
+                        </div>
+                        {clientsForService.length === 0 ? (
+                          <p className="text-sm text-muted-foreground">No clients yet for this service.</p>
+                        ) : (
+                          <div className="flex flex-wrap gap-2">
+                            {clientsForService.map((p, idx) => {
+                              const active = p.id === currentId;
+                              const sharedWithMe = user && p.owner_id !== user.id;
+                              return (
+                                <div
+                                  key={p.id}
+                                  className={`flex items-center gap-1 rounded-md border px-2 py-1 text-sm transition-colors ${
+                                    active ? "border-primary bg-primary/10" : "border-border hover:bg-muted/50"
+                                  }`}
+                                >
+                                  <button onClick={() => setCurrentId(p.id)} className="font-medium">
+                                    {p.client_name || p.name || "Unnamed client"}
+                                  </button>
+                                  <Badge variant="outline" className="text-[10px] px-1 py-0 h-4">
+                                    {ordinal(idx + 1)}
+                                  </Badge>
+                                  {sharedWithMe && (
+                                    <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">
+                                      shared
+                                    </Badge>
+                                  )}
+                                  {p.owner_id === user?.id && (
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <Button
+                                          size="icon"
+                                          variant="ghost"
+                                          className="h-6 w-6 text-destructive/70 hover:text-destructive"
+                                        >
+                                          <Trash2 className="w-3 h-3" />
+                                        </Button>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle>Delete this client?</AlertDialogTitle>
+                                          <AlertDialogDescription>
+                                            "{p.client_name || p.name}" will be permanently removed.
+                                          </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                          <AlertDialogAction onClick={() => deletePlan(p.id)}>
+                                            Delete
+                                          </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
-                        );
-                      })}
-                    </div>
+                        )}
+                      </div>
+                    </>
                   )}
                 </CardContent>
               </Card>
@@ -414,13 +522,21 @@ export default function TrainingManagement() {
                         </Dialog>
                       )}
                     </CardHeader>
-                    <CardContent className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <CardContent className="grid grid-cols-1 md:grid-cols-6 gap-4">
                       <div className="space-y-2 md:col-span-1">
-                        <Label>Plan Name</Label>
+                        <Label>Service</Label>
                         <Input
-                          value={current.name}
-                          onChange={(e) => updateCurrent({ name: e.target.value })}
-                          placeholder="e.g. Acme Workshop"
+                          value={current.service_name || ""}
+                          onChange={(e) => updateCurrent({ service_name: e.target.value })}
+                          placeholder="e.g. Cybersecurity Level 1"
+                        />
+                      </div>
+                      <div className="space-y-2 md:col-span-1">
+                        <Label>Client Name</Label>
+                        <Input
+                          value={current.client_name || ""}
+                          onChange={(e) => updateCurrent({ client_name: e.target.value, name: e.target.value })}
+                          placeholder="e.g. Acme Corp"
                         />
                       </div>
                       <div className="space-y-2">
@@ -469,7 +585,7 @@ export default function TrainingManagement() {
                     <CardHeader className="flex flex-row items-center justify-between">
                       <div>
                         <CardTitle className="text-base font-display">
-                          Delivery Budget (First Time)
+                          Delivery Budget ({ordinal(deliveryNumber)} Time) — {current.service_name}
                         </CardTitle>
                         <p className="text-xs text-muted-foreground mt-1">
                           Total: {fmt(missionBudget)} · Allocated: {totalPct}%

@@ -1539,34 +1539,40 @@ export type Database = {
         Row: {
           broker_pct: number
           charge_mission: number
+          client_name: string | null
           created_at: string
           id: string
           mission_sold_at: number
           name: string
           owner_id: string
           rows: Json
+          service_name: string
           updated_at: string
         }
         Insert: {
           broker_pct?: number
           charge_mission?: number
+          client_name?: string | null
           created_at?: string
           id?: string
           mission_sold_at?: number
           name?: string
           owner_id: string
           rows?: Json
+          service_name?: string
           updated_at?: string
         }
         Update: {
           broker_pct?: number
           charge_mission?: number
+          client_name?: string | null
           created_at?: string
           id?: string
           mission_sold_at?: number
           name?: string
           owner_id?: string
           rows?: Json
+          service_name?: string
           updated_at?: string
         }
         Relationships: []
