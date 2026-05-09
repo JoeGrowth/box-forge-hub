@@ -243,7 +243,7 @@ export default function TrainingManagement() {
       if (ids.includes(currentId)) setCurrentId(next[0]?.id || "");
       return next;
     });
-    if (activeService === serviceName) setActiveService(null);
+    if (activeService === serviceName) setActiveService("");
     toast.success(`Service "${serviceName}" deleted`);
   };
 
