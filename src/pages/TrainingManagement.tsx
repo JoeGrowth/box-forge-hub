@@ -585,7 +585,7 @@ export default function TrainingManagement() {
                     <CardHeader className="flex flex-row items-center justify-between">
                       <div>
                         <CardTitle className="text-base font-display">
-                          Delivery Budget (First Time)
+                          Delivery Budget ({ordinal(deliveryNumber)} Time) — {current.service_name}
                         </CardTitle>
                         <p className="text-xs text-muted-foreground mt-1">
                           Total: {fmt(missionBudget)} · Allocated: {totalPct}%
