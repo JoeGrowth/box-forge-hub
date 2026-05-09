@@ -49,11 +49,14 @@ interface TrainingPlan {
   id: string;
   owner_id: string;
   name: string;
+  service_name: string;
+  client_name: string | null;
   mission_sold_at: number;
   broker_pct: number;
   charge_mission: number;
   rows: DeliveryRow[];
   updated_at: string;
+  created_at?: string;
 }
 
 interface ShareRow {
