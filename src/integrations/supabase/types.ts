@@ -980,6 +980,114 @@ export type Database = {
         }
         Relationships: []
       }
+      ops_clients: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ops_companies: {
+        Row: {
+          created_at: string
+          id: string
+          legal_form: string
+          name: string
+          shareholders: Json | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          legal_form?: string
+          name: string
+          shareholders?: Json | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          legal_form?: string
+          name?: string
+          shareholders?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ops_consultants: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          pattern: string | null
+          skills: string[] | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          pattern?: string | null
+          skills?: string[] | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          pattern?: string | null
+          skills?: string[] | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ops_offers: {
+        Row: {
+          client_id: string
+          company_id: string
+          consultant_ids: string[] | null
+          created_at: string
+          description: string | null
+          id: string
+          price: string | null
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          company_id: string
+          consultant_ids?: string[] | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          price?: string | null
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          company_id?: string
+          consultant_ids?: string[] | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          price?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

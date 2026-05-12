@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,51 +22,32 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Trash2 } from "lucide-react";
+import { Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 type Consultant = { id: string; name: string; pattern: string; skills: string[] };
 type Shareholder = { name: string; share: string };
-type Company = {
-  id: string;
-  name: string;
-  legalForm: string;
-  shareholders: Shareholder[];
-};
+type Company = { id: string; name: string; legal_form: string; shareholders: Shareholder[] };
 type Client = { id: string; name: string };
 type Offer = {
   id: string;
-  clientId: string;
-  companyId: string;
-  consultantIds: string[];
+  client_id: string;
+  company_id: string;
+  consultant_ids: string[];
   description: string;
   price: string;
 };
 
 const LEGAL_FORMS = ["SUARL", "SARL", "SA", "SAS", "Auto-entrepreneur", "Other"];
 
-const uid = () => Math.random().toString(36).slice(2, 10);
-
-function useLS<T>(key: string, initial: T) {
-  const [val, setVal] = useState<T>(() => {
-    try {
-      const raw = localStorage.getItem(key);
-      return raw ? (JSON.parse(raw) as T) : initial;
-    } catch {
-      return initial;
-    }
-  });
-  useEffect(() => {
-    localStorage.setItem(key, JSON.stringify(val));
-  }, [key, val]);
-  return [val, setVal] as const;
-}
-
 export default function OpsManagement() {
-  const [consultants, setConsultants] = useLS<Consultant[]>("ops:consultants", []);
-  const [companies, setCompanies] = useLS<Company[]>("ops:companies", []);
-  const [clients, setClients] = useLS<Client[]>("ops:clients", []);
-  const [offers, setOffers] = useLS<Offer[]>("ops:offers", []);
+  const { user } = useAuth();
+
+  const [consultants, setConsultants] = useState<Consultant[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [offers, setOffers] = useState<Offer[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Consultant form
   const [cName, setCName] = useState("");
@@ -86,39 +69,123 @@ export default function OpsManagement() {
   const [oDesc, setODesc] = useState("");
   const [oPrice, setOPrice] = useState("");
 
-  const addConsultant = () => {
+  const fetchAll = async () => {
+    if (!user) return;
+    setLoading(true);
+    const [
+      { data: cData },
+      { data: coData },
+      { data: clData },
+      { data: oData },
+    ] = await Promise.all([
+      supabase.from("ops_consultants").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+      supabase.from("ops_companies").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+      supabase.from("ops_clients").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+      supabase.from("ops_offers").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+    ]);
+    setConsultants((cData as Consultant[]) || []);
+    setCompanies(
+      (coData || []).map((x: any) => ({
+        ...x,
+        shareholders: Array.isArray(x.shareholders) ? x.shareholders : [],
+      })) as Company[]
+    );
+    setClients((clData as Client[]) || []);
+    setOffers((oData as Offer[]) || []);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
+  const addConsultant = async () => {
+    if (!user) return toast.error("Not authenticated");
     if (!cName.trim()) return toast.error("Name required");
     const skills = cSkills.map((s) => s.trim()).filter(Boolean).slice(0, 3);
-    setConsultants([...consultants, { id: uid(), name: cName.trim(), pattern: cPattern.trim(), skills }]);
+    const { error } = await supabase.from("ops_consultants").insert({
+      user_id: user.id,
+      name: cName.trim(),
+      pattern: cPattern.trim(),
+      skills,
+    });
+    if (error) return toast.error("Failed to add consultant");
     setCName(""); setCPattern(""); setCSkills(["", "", ""]);
     toast.success("Consultant added");
+    fetchAll();
   };
 
-  const addCompany = () => {
+  const addCompany = async () => {
+    if (!user) return toast.error("Not authenticated");
     if (!coName.trim()) return toast.error("Company name required");
     const cleaned = shs.filter((s) => s.name.trim());
-    setCompanies([...companies, { id: uid(), name: coName.trim(), legalForm: coLegal, shareholders: cleaned }]);
+    const { error } = await supabase.from("ops_companies").insert({
+      user_id: user.id,
+      name: coName.trim(),
+      legal_form: coLegal,
+      shareholders: cleaned,
+    });
+    if (error) return toast.error("Failed to add company");
     setCoName(""); setCoLegal("SUARL"); setShs([{ name: "", share: "" }]);
     toast.success("Company added");
+    fetchAll();
   };
 
-  const addClient = () => {
+  const addClient = async () => {
+    if (!user) return toast.error("Not authenticated");
     if (!clName.trim()) return toast.error("Client name required");
-    setClients([...clients, { id: uid(), name: clName.trim() }]);
+    const { error } = await supabase.from("ops_clients").insert({
+      user_id: user.id,
+      name: clName.trim(),
+    });
+    if (error) return toast.error("Failed to add client");
     setClName("");
     toast.success("Client added");
+    fetchAll();
   };
 
-  const addOffer = () => {
+  const addOffer = async () => {
+    if (!user) return toast.error("Not authenticated");
     if (!oClient || !oCompany || oConsultants.length === 0) {
       return toast.error("Select client, company and at least one consultant");
     }
-    setOffers([
-      ...offers,
-      { id: uid(), clientId: oClient, companyId: oCompany, consultantIds: oConsultants, description: oDesc, price: oPrice },
-    ]);
+    const { error } = await supabase.from("ops_offers").insert({
+      user_id: user.id,
+      client_id: oClient,
+      company_id: oCompany,
+      consultant_ids: oConsultants,
+      description: oDesc,
+      price: oPrice,
+    });
+    if (error) return toast.error("Failed to add offer");
     setOClient(""); setOCompany(""); setOConsultants([]); setODesc(""); setOPrice("");
     toast.success("Offer added");
+    fetchAll();
+  };
+
+  const deleteConsultant = async (id: string) => {
+    const { error } = await supabase.from("ops_consultants").delete().eq("id", id);
+    if (error) return toast.error("Delete failed");
+    fetchAll();
+  };
+
+  const deleteCompany = async (id: string) => {
+    const { error } = await supabase.from("ops_companies").delete().eq("id", id);
+    if (error) return toast.error("Delete failed");
+    fetchAll();
+  };
+
+  const deleteClient = async (id: string) => {
+    const { error } = await supabase.from("ops_clients").delete().eq("id", id);
+    if (error) return toast.error("Delete failed");
+    fetchAll();
+  };
+
+  const deleteOffer = async (id: string) => {
+    const { error } = await supabase.from("ops_offers").delete().eq("id", id);
+    if (error) return toast.error("Delete failed");
+    fetchAll();
   };
 
   const toggleConsultantInOffer = (id: string) => {
@@ -127,6 +194,14 @@ export default function OpsManagement() {
 
   const nameOf = <T extends { id: string; name: string }>(arr: T[], id: string) =>
     arr.find((x) => x.id === id)?.name || "—";
+
+  if (loading) {
+    return (
+      <div className="container mx-auto max-w-6xl py-8 flex items-center justify-center min-h-[40vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto max-w-6xl py-8 space-y-8">
@@ -180,7 +255,7 @@ export default function OpsManagement() {
                         : "—"}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" onClick={() => setConsultants(consultants.filter((x) => x.id !== c.id))}>
+                      <Button variant="ghost" size="icon" onClick={() => deleteConsultant(c.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
@@ -245,14 +320,14 @@ export default function OpsManagement() {
                 {companies.map((c) => (
                   <TableRow key={c.id}>
                     <TableCell>{c.name}</TableCell>
-                    <TableCell><Badge variant="outline">{c.legalForm}</Badge></TableCell>
+                    <TableCell><Badge variant="outline">{c.legal_form}</Badge></TableCell>
                     <TableCell className="text-sm">
                       {c.shareholders.length > 0
                         ? c.shareholders.map((s) => `${s.name}${s.share ? ` (${s.share}%)` : ""}`).join(", ")
                         : "—"}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" onClick={() => setCompanies(companies.filter((x) => x.id !== c.id))}>
+                      <Button variant="ghost" size="icon" onClick={() => deleteCompany(c.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
@@ -280,7 +355,7 @@ export default function OpsManagement() {
                   <TableRow key={c.id}>
                     <TableCell>{c.name}</TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" onClick={() => setClients(clients.filter((x) => x.id !== c.id))}>
+                      <Button variant="ghost" size="icon" onClick={() => deleteClient(c.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
@@ -361,15 +436,15 @@ export default function OpsManagement() {
               <TableBody>
                 {offers.map((o) => (
                   <TableRow key={o.id}>
-                    <TableCell>{nameOf(clients, o.clientId)}</TableCell>
-                    <TableCell>{nameOf(companies, o.companyId)}</TableCell>
+                    <TableCell>{nameOf(clients, o.client_id)}</TableCell>
+                    <TableCell>{nameOf(companies, o.company_id)}</TableCell>
                     <TableCell className="text-sm">
-                      {o.consultantIds.map((id) => nameOf(consultants, id)).join(", ")}
+                      {o.consultant_ids.map((id) => nameOf(consultants, id)).join(", ")}
                     </TableCell>
                     <TableCell className="max-w-xs text-sm">{o.description || "—"}</TableCell>
                     <TableCell>{o.price || "—"}</TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" onClick={() => setOffers(offers.filter((x) => x.id !== o.id))}>
+                      <Button variant="ghost" size="icon" onClick={() => deleteOffer(o.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
