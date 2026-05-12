@@ -23,7 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-type Consultant = { id: string; name: string; pattern: string };
+type Consultant = { id: string; name: string; pattern: string; skills: string[] };
 type Shareholder = { name: string; share: string };
 type Company = {
   id: string;
@@ -69,6 +69,7 @@ export default function OpsManagement() {
   // Consultant form
   const [cName, setCName] = useState("");
   const [cPattern, setCPattern] = useState("");
+  const [cSkills, setCSkills] = useState<string[]>(["", "", ""]);
 
   // Company form
   const [coName, setCoName] = useState("");
@@ -87,8 +88,9 @@ export default function OpsManagement() {
 
   const addConsultant = () => {
     if (!cName.trim()) return toast.error("Name required");
-    setConsultants([...consultants, { id: uid(), name: cName.trim(), pattern: cPattern.trim() }]);
-    setCName(""); setCPattern("");
+    const skills = cSkills.map((s) => s.trim()).filter(Boolean).slice(0, 3);
+    setConsultants([...consultants, { id: uid(), name: cName.trim(), pattern: cPattern.trim(), skills }]);
+    setCName(""); setCPattern(""); setCSkills(["", "", ""]);
     toast.success("Consultant added");
   };
 
@@ -137,7 +139,7 @@ export default function OpsManagement() {
       <Card>
         <CardHeader><CardTitle>Add Consultant</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid md:grid-cols-3 gap-3">
+          <div className="grid md:grid-cols-2 gap-3">
             <div>
               <Label>Name</Label>
               <Input value={cName} onChange={(e) => setCName(e.target.value)} placeholder="Full name" />
@@ -146,18 +148,37 @@ export default function OpsManagement() {
               <Label>Cognitive Pattern / NR</Label>
               <Input value={cPattern} onChange={(e) => setCPattern(e.target.value)} placeholder="e.g. Strategist" />
             </div>
-            <div className="flex items-end">
-              <Button onClick={addConsultant}>Add Consultant</Button>
+          </div>
+          <div>
+            <Label>Main Skills (max 3 — skills, not techniques)</Label>
+            <p className="text-xs text-muted-foreground mb-2">
+              Enter skills (e.g. "Workshop Facilitation", "Process Analysis"). Avoid techniques like "Process Mapping".
+            </p>
+            <div className="grid md:grid-cols-3 gap-2">
+              {cSkills.map((s, i) => (
+                <Input
+                  key={i}
+                  value={s}
+                  onChange={(e) => setCSkills(cSkills.map((x, idx) => (idx === i ? e.target.value : x)))}
+                  placeholder={`Skill ${i + 1}`}
+                />
+              ))}
             </div>
           </div>
+          <Button onClick={addConsultant}>Add Consultant</Button>
           {consultants.length > 0 && (
             <Table>
-              <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Pattern / NR</TableHead><TableHead></TableHead></TableRow></TableHeader>
+              <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Pattern / NR</TableHead><TableHead>Main Skills</TableHead><TableHead></TableHead></TableRow></TableHeader>
               <TableBody>
                 {consultants.map((c) => (
                   <TableRow key={c.id}>
                     <TableCell>{c.name}</TableCell>
                     <TableCell>{c.pattern || "—"}</TableCell>
+                    <TableCell className="text-sm">
+                      {c.skills && c.skills.length > 0
+                        ? c.skills.map((s, i) => <Badge key={i} variant="secondary" className="mr-1">{s}</Badge>)
+                        : "—"}
+                    </TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="icon" onClick={() => setConsultants(consultants.filter((x) => x.id !== c.id))}>
                         <Trash2 className="h-4 w-4" />
