@@ -58,6 +58,7 @@ import StartStructuring from "./pages/StartStructuring";
 import StartScaling from "./pages/StartScaling";
 import TrainingManagement from "./pages/TrainingManagement";
 import ConsultingManagement from "./pages/ConsultingManagement";
+import OpsManagement from "./pages/OpsManagement";
 
 const queryClient = new QueryClient();
 
