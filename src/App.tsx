@@ -126,6 +126,7 @@ const App = () => (
                   <Route path="/startscaling" element={<StartScaling />} />
                   <Route path="/trainingmanagement" element={<TrainingManagement />} />
                   <Route path="/consultingmanagement" element={<ConsultingManagement />} />
+                  <Route path="/opsmanagement" element={<OpsManagement />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
