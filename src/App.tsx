@@ -58,6 +58,7 @@ import StartStructuring from "./pages/StartStructuring";
 import StartScaling from "./pages/StartScaling";
 import TrainingManagement from "./pages/TrainingManagement";
 import ConsultingManagement from "./pages/ConsultingManagement";
+import OpsManagement from "./pages/OpsManagement";
 
 const queryClient = new QueryClient();
 
@@ -125,6 +126,7 @@ const App = () => (
                   <Route path="/startscaling" element={<StartScaling />} />
                   <Route path="/trainingmanagement" element={<TrainingManagement />} />
                   <Route path="/consultingmanagement" element={<ConsultingManagement />} />
+                  <Route path="/opsmanagement" element={<OpsManagement />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
