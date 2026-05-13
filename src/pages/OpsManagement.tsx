@@ -216,6 +216,16 @@ export default function OpsManagement() {
     );
   }
 
+  if (!user) {
+    return (
+      <div className="container mx-auto max-w-6xl py-8 text-center min-h-[40vh] flex flex-col items-center justify-center">
+        <h2 className="text-xl font-semibold mb-2">Authentication Required</h2>
+        <p className="text-muted-foreground mb-4">Please log in to access Ops Management.</p>
+        <Button onClick={() => window.location.href = "/auth"}>Go to Login</Button>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto max-w-6xl py-8 space-y-8">
       <header>
