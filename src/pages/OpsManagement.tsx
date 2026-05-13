@@ -70,29 +70,42 @@ export default function OpsManagement() {
   const [oPrice, setOPrice] = useState("");
 
   const fetchAll = async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    const [
-      { data: cData },
-      { data: coData },
-      { data: clData },
-      { data: oData },
-    ] = await Promise.all([
-      supabase.from("ops_consultants").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
-      supabase.from("ops_companies").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
-      supabase.from("ops_clients").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
-      supabase.from("ops_offers").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
-    ]);
-    setConsultants((cData as Consultant[]) || []);
-    setCompanies(
-      (coData || []).map((x: any) => ({
-        ...x,
-        shareholders: Array.isArray(x.shareholders) ? x.shareholders : [],
-      })) as Company[]
-    );
-    setClients((clData as Client[]) || []);
-    setOffers((oData as Offer[]) || []);
-    setLoading(false);
+    try {
+      const [
+        { data: cData, error: cErr },
+        { data: coData, error: coErr },
+        { data: clData, error: clErr },
+        { data: oData, error: oErr },
+      ] = await Promise.all([
+        supabase.from("ops_consultants").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+        supabase.from("ops_companies").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+        supabase.from("ops_clients").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+        supabase.from("ops_offers").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+      ]);
+      if (cErr) console.error("Consultants fetch error:", cErr);
+      if (coErr) console.error("Companies fetch error:", coErr);
+      if (clErr) console.error("Clients fetch error:", clErr);
+      if (oErr) console.error("Offers fetch error:", oErr);
+      setConsultants((cData as Consultant[]) || []);
+      setCompanies(
+        (coData || []).map((x: any) => ({
+          ...x,
+          shareholders: Array.isArray(x.shareholders) ? x.shareholders : [],
+        })) as Company[]
+      );
+      setClients((clData as Client[]) || []);
+      setOffers((oData as Offer[]) || []);
+    } catch (err) {
+      console.error("fetchAll error:", err);
+      toast.error("Failed to load data");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
