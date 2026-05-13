@@ -28,7 +28,7 @@ import { toast } from "sonner";
 type Consultant = { id: string; name: string; pattern: string; skills: string[] };
 type Shareholder = { name: string; share: string };
 type Company = { id: string; name: string; legal_form: string; shareholders: Shareholder[] };
-type Client = { id: string; name: string };
+type Client = { id: string; name: string; client_type: string | null; shareholder_count: number | null };
 type Offer = {
   id: string;
   client_id: string;
@@ -39,6 +39,12 @@ type Offer = {
 };
 
 const LEGAL_FORMS = ["SUARL", "SARL", "SA", "SAS", "Auto-entrepreneur", "Other"];
+const CLIENT_TYPES = [
+  "Profit Organization",
+  "Non Profit Organization",
+  "Non Profit Public Institution",
+  "Profit Public Institution",
+];
 
 export default function OpsManagement() {
   const { user } = useAuth();
@@ -61,6 +67,8 @@ export default function OpsManagement() {
 
   // Client form
   const [clName, setClName] = useState("");
+  const [clType, setClType] = useState("");
+  const [clShareholders, setClShareholders] = useState<number | "">("");
 
   // Offer form
   const [oClient, setOClient] = useState("");
@@ -148,12 +156,17 @@ export default function OpsManagement() {
   const addClient = async () => {
     if (!user) return toast.error("Not authenticated");
     if (!clName.trim()) return toast.error("Client name required");
-    const { error } = await supabase.from("ops_clients").insert({
+    if (!clType) return toast.error("Client type required");
+    const payload = {
       user_id: user.id,
       name: clName.trim(),
-    });
+      client_type: clType,
+      shareholder_count: clType === "Profit Organization" && clShareholders !== "" ? Number(clShareholders) : null,
+    };
+    const { error } = await supabase.from("ops_clients").insert(payload as any);
     if (error) return toast.error("Failed to add client");
-    setClName("");
+    if (error) return toast.error("Failed to add client");
+    setClName(""); setClType(""); setClShareholders("");
     toast.success("Client added");
     fetchAll();
   };
@@ -366,17 +379,56 @@ export default function OpsManagement() {
       <Card>
         <CardHeader><CardTitle>Add Client</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-3">
-            <Input value={clName} onChange={(e) => setClName(e.target.value)} placeholder="Client name" />
-            <Button onClick={addClient}>Add Client</Button>
+          <div className="grid md:grid-cols-2 gap-3">
+            <div>
+              <Label>Client Name</Label>
+              <Input value={clName} onChange={(e) => setClName(e.target.value)} placeholder="Client name" />
+            </div>
+            <div>
+              <Label>Client Type</Label>
+              <Select value={clType} onValueChange={setClType}>
+                <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                <SelectContent>
+                  {CLIENT_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
+          {clType === "Profit Organization" && (
+            <div>
+              <Label>Number of Shareholders</Label>
+              <Input
+                type="number"
+                min={1}
+                value={clShareholders}
+                onChange={(e) => setClShareholders(e.target.value === "" ? "" : Number(e.target.value))}
+                placeholder="1 or more"
+              />
+            </div>
+          )}
+          <Button onClick={addClient}>Add Client</Button>
           {clients.length > 0 && (
             <Table>
-              <TableHeader><TableRow><TableHead>Name</TableHead><TableHead></TableHead></TableRow></TableHeader>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Shareholders</TableHead>
+                  <TableHead></TableHead>
+                </TableRow>
+              </TableHeader>
               <TableBody>
                 {clients.map((c) => (
                   <TableRow key={c.id}>
                     <TableCell>{c.name}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{c.client_type || "—"}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      {c.client_type === "Profit Organization" && c.shareholder_count != null
+                        ? c.shareholder_count
+                        : "—"}
+                    </TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="icon" onClick={() => deleteClient(c.id)}>
                         <Trash2 className="h-4 w-4" />

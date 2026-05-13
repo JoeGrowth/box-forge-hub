@@ -982,21 +982,27 @@ export type Database = {
       }
       ops_clients: {
         Row: {
+          client_type: string | null
           created_at: string
           id: string
           name: string
+          shareholder_count: number | null
           user_id: string
         }
         Insert: {
+          client_type?: string | null
           created_at?: string
           id?: string
           name: string
+          shareholder_count?: number | null
           user_id: string
         }
         Update: {
+          client_type?: string | null
           created_at?: string
           id?: string
           name?: string
+          shareholder_count?: number | null
           user_id?: string
         }
         Relationships: []
