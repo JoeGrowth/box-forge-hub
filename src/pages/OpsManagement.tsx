@@ -67,6 +67,8 @@ export default function OpsManagement() {
 
   // Client form
   const [clName, setClName] = useState("");
+  const [clType, setClType] = useState("");
+  const [clShareholders, setClShareholders] = useState<number | "">("");
 
   // Offer form
   const [oClient, setOClient] = useState("");
