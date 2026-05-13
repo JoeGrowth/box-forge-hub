@@ -157,15 +157,14 @@ export default function OpsManagement() {
     if (!user) return toast.error("Not authenticated");
     if (!clName.trim()) return toast.error("Client name required");
     if (!clType) return toast.error("Client type required");
-    const payload: Record<string, any> = {
+    const payload = {
       user_id: user.id,
       name: clName.trim(),
       client_type: clType,
+      shareholder_count: clType === "Profit Organization" && clShareholders !== "" ? Number(clShareholders) : null,
     };
-    if (clType === "Profit Organization" && clShareholders !== "") {
-      payload.shareholder_count = Number(clShareholders);
-    }
-    const { error } = await supabase.from("ops_clients").insert(payload);
+    const { error } = await supabase.from("ops_clients").insert(payload as any);
+    if (error) return toast.error("Failed to add client");
     if (error) return toast.error("Failed to add client");
     setClName(""); setClType(""); setClShareholders("");
     toast.success("Client added");
