@@ -39,6 +39,12 @@ type Offer = {
 };
 
 const LEGAL_FORMS = ["SUARL", "SARL", "SA", "SAS", "Auto-entrepreneur", "Other"];
+const CLIENT_TYPES = [
+  "Profit Organization",
+  "Non Profit Organization",
+  "Non Profit Public Institution",
+  "Profit Public Institution",
+];
 
 export default function OpsManagement() {
   const { user } = useAuth();
