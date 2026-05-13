@@ -28,7 +28,7 @@ import { toast } from "sonner";
 type Consultant = { id: string; name: string; pattern: string; skills: string[] };
 type Shareholder = { name: string; share: string };
 type Company = { id: string; name: string; legal_form: string; shareholders: Shareholder[] };
-type Client = { id: string; name: string };
+type Client = { id: string; name: string; client_type: string | null; shareholder_count: number | null };
 type Offer = {
   id: string;
   client_id: string;
