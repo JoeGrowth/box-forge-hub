@@ -1566,6 +1566,81 @@ export type Database = {
           },
         ]
       }
+      tracker_missions: {
+        Row: {
+          consultants: string | null
+          created_at: string
+          id: string
+          mission_name: string
+          pipeline: string | null
+          project_code: string
+          status: string | null
+          tjm: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          consultants?: string | null
+          created_at?: string
+          id?: string
+          mission_name: string
+          pipeline?: string | null
+          project_code: string
+          status?: string | null
+          tjm?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          consultants?: string | null
+          created_at?: string
+          id?: string
+          mission_name?: string
+          pipeline?: string | null
+          project_code?: string
+          status?: string | null
+          tjm?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tracker_projects: {
+        Row: {
+          created_at: string
+          id: string
+          lifecycle_stages: string[] | null
+          objectives: string[] | null
+          partners: string[] | null
+          product_name: string
+          team_roles: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lifecycle_stages?: string[] | null
+          objectives?: string[] | null
+          partners?: string[] | null
+          product_name: string
+          team_roles?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lifecycle_stages?: string[] | null
+          objectives?: string[] | null
+          partners?: string[] | null
+          product_name?: string
+          team_roles?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       training_opportunities: {
         Row: {
           admin_notes: string | null
