@@ -59,6 +59,7 @@ import StartScaling from "./pages/StartScaling";
 import TrainingManagement from "./pages/TrainingManagement";
 import ConsultingManagement from "./pages/ConsultingManagement";
 import OpsManagement from "./pages/OpsManagement";
+import ThreeS from "./pages/ThreeS";
 
 const queryClient = new QueryClient();
 
