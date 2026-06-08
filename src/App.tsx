@@ -60,6 +60,7 @@ import TrainingManagement from "./pages/TrainingManagement";
 import ConsultingManagement from "./pages/ConsultingManagement";
 import OpsManagement from "./pages/OpsManagement";
 import ThreeS from "./pages/ThreeS";
+import Procuring from "./pages/Procuring";
 
 const queryClient = new QueryClient();
 
