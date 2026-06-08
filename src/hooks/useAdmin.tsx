@@ -100,7 +100,7 @@ export function useAdmin() {
       learningJourneysResult
     ] = await Promise.all([
       supabase.from("profiles").select("*"),
-      supabase.from("onboarding_state").select("*, consultant_access"),
+      supabase.from("onboarding_state").select("*, consultant_access, procuring_access" as any),
       supabase.from("natural_roles").select("*"),
       supabase.from("user_certifications").select("user_id, certification_type"),
       supabase.from("startup_ideas").select("id, creator_id, status"),
