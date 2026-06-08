@@ -81,26 +81,25 @@ const Opportunities = () => {
       const skillNames = (userSkillsRes.data || []).map((r: any) => r.skill_tags?.name).filter(Boolean);
       setUserSkillNames(skillNames);
 
-      // Fetch profiles for both
+      // Fetch profiles for all
       const allUserIds = [
         ...startupData.map((s: any) => s.creator_id),
         ...trainingData.map((t: any) => t.user_id),
+        ...tenderData.map((t: any) => t.user_id),
       ].filter(Boolean);
 
+      let profileMap = new Map<string, string>();
       if (allUserIds.length > 0) {
         const { data: profiles } = await supabase
           .from("profiles")
           .select("user_id, full_name")
           .in("user_id", [...new Set(allUserIds)]);
-
-        const profileMap = new Map(profiles?.map((p) => [p.user_id, p.full_name]) || []);
-
-        setRawStartups(startupData.map((s: any) => ({ ...s, _author: profileMap.get(s.creator_id) || "Unknown" })));
-        setRawTrainings(trainingData.map((t: any) => ({ ...t, _author: profileMap.get(t.user_id) || "Unknown" })));
-      } else {
-        setRawStartups(startupData);
-        setRawTrainings(trainingData);
+        profileMap = new Map(profiles?.map((p) => [p.user_id, p.full_name]) || []);
       }
+
+      setRawStartups(startupData.map((s: any) => ({ ...s, _author: profileMap.get(s.creator_id) || "Unknown" })));
+      setRawTrainings(trainingData.map((t: any) => ({ ...t, _author: profileMap.get(t.user_id) || "Unknown" })));
+      setRawTenders(tenderData.map((t: any) => ({ ...t, _author: profileMap.get(t.user_id) || "Unknown" })));
 
       setLoading(false);
     };
