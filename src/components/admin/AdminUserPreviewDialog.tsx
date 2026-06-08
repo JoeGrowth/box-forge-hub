@@ -307,6 +307,48 @@ export function AdminUserPreviewDialog({
               </Button>
             </CardContent>
           </Card>
+
+          {/* Procuring Entity Access Control */}
+          <Card className="border-dashed">
+            <CardContent className="pt-4 space-y-3">
+              <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                {user.procuringAccess ? (
+                  <ShieldCheck className="w-4 h-4 text-green-500" />
+                ) : (
+                  <ShieldOff className="w-4 h-4 text-muted-foreground" />
+                )}
+                Procuring Entity Access
+              </h4>
+              <p className="text-xs text-muted-foreground">
+                {user.procuringAccess
+                  ? "This user can post tenders that appear in the Opportunities marketplace."
+                  : "This user cannot post tenders yet."}
+              </p>
+              <Button
+                size="sm"
+                variant={user.procuringAccess ? "outline" : "default"}
+                disabled={toggling}
+                className="w-full"
+                onClick={async () => {
+                  setToggling(true);
+                  const newValue = !user.procuringAccess;
+                  const { error } = await supabase
+                    .from("onboarding_state")
+                    .update({ procuring_access: newValue } as any)
+                    .eq("user_id", user.id);
+                  setToggling(false);
+                  if (error) {
+                    toast({ title: "Error", description: "Failed to update procuring access.", variant: "destructive" });
+                  } else {
+                    toast({ title: newValue ? "Access Granted" : "Access Revoked", description: `Procuring entity access has been ${newValue ? "enabled" : "disabled"}.` });
+                    onUserUpdated?.();
+                  }
+                }}
+              >
+                {toggling ? "Updating..." : user.procuringAccess ? "Revoke Procuring Access" : "Grant Procuring Access"}
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </DialogContent>
     </Dialog>
