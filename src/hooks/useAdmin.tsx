@@ -57,6 +57,7 @@ export function useAdmin() {
   }, [user]);
 
   const checkAdminStatus = async () => {
+    setLoading(true);
     if (!user) {
       setIsAdmin(false);
       setLoading(false);
