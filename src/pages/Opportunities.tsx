@@ -33,6 +33,7 @@ const Opportunities = () => {
   const { onboardingState, loading: onboardingLoading } = useOnboarding();
   const [rawStartups, setRawStartups] = useState<any[]>([]);
   const [rawTrainings, setRawTrainings] = useState<any[]>([]);
+  const [rawTenders, setRawTenders] = useState<any[]>([]);
   const [userSkillNames, setUserSkillNames] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
