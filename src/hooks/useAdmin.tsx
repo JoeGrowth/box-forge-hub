@@ -43,6 +43,7 @@ export interface UserWithDetails {
   ideasAsCoBuilder: number;
   hasConsultantScaling: boolean;
   consultantAccess: boolean;
+  procuringAccess: boolean;
 }
 
 export function useAdmin() {
