@@ -141,7 +141,23 @@ const Opportunities = () => {
       rank: 200 + i,
     }));
 
-    const all = [...SEEDED_OPPORTUNITIES, ...startupOpps, ...trainingOpps];
+    const tenderOpps: Opportunity[] = rawTenders.map((t, i) => ({
+      id: t.id,
+      title: t.title,
+      category: "tender" as const,
+      required_skills: [t.sector, t.location, t.budget_range].filter(Boolean).slice(0, 5),
+      income_range: t.budget_range || "Contract",
+      effort_level: t.deadline ? `Due ${t.deadline}` : "Open",
+      description: t.description,
+      primary_action: { type: "apply" as const, label: "Apply", route: "#" },
+      source_id: t.id,
+      created_at: t.created_at,
+      author_name: t._author || "Unknown",
+      sector: t.sector,
+      rank: 100 + i,
+    }));
+
+    const all = [...SEEDED_OPPORTUNITIES, ...startupOpps, ...trainingOpps, ...tenderOpps];
 
     // Compute match scores
     const scored = all.map((opp) => ({
