@@ -181,7 +181,8 @@ export function useAdmin() {
         ideasAsInitiator: ideasAsInitiatorByUser[profile.user_id] || 0,
         ideasAsCoBuilder: ideasAsCoBuilderByUser[profile.user_id] || 0,
         hasConsultantScaling: hasConsultantScalingByUser[profile.user_id] || false,
-        consultantAccess: onboarding?.consultant_access || false,
+        consultantAccess: (onboarding as any)?.consultant_access || false,
+        procuringAccess: (onboarding as any)?.procuring_access || false,
       };
     });
 
