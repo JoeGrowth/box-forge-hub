@@ -908,6 +908,7 @@ export type Database = {
           onboarding_completed: boolean | null
           potential_role: string | null
           primary_role: string | null
+          procuring_access: boolean
           retry_count: number | null
           scale_type: string | null
           updated_at: string | null
@@ -925,6 +926,7 @@ export type Database = {
           onboarding_completed?: boolean | null
           potential_role?: string | null
           primary_role?: string | null
+          procuring_access?: boolean
           retry_count?: number | null
           scale_type?: string | null
           updated_at?: string | null
@@ -942,6 +944,7 @@ export type Database = {
           onboarding_completed?: boolean | null
           potential_role?: string | null
           primary_role?: string | null
+          procuring_access?: boolean
           retry_count?: number | null
           scale_type?: string | null
           updated_at?: string | null
@@ -1565,6 +1568,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tenders: {
+        Row: {
+          budget_range: string | null
+          contact_info: string | null
+          created_at: string
+          deadline: string | null
+          description: string
+          id: string
+          location: string | null
+          requirements: string | null
+          sector: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          budget_range?: string | null
+          contact_info?: string | null
+          created_at?: string
+          deadline?: string | null
+          description: string
+          id?: string
+          location?: string | null
+          requirements?: string | null
+          sector?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          budget_range?: string | null
+          contact_info?: string | null
+          created_at?: string
+          deadline?: string | null
+          description?: string
+          id?: string
+          location?: string | null
+          requirements?: string | null
+          sector?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       tracker_missions: {
         Row: {

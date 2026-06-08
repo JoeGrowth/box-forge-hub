@@ -43,6 +43,7 @@ export interface UserWithDetails {
   ideasAsCoBuilder: number;
   hasConsultantScaling: boolean;
   consultantAccess: boolean;
+  procuringAccess: boolean;
 }
 
 export function useAdmin() {
@@ -99,7 +100,7 @@ export function useAdmin() {
       learningJourneysResult
     ] = await Promise.all([
       supabase.from("profiles").select("*"),
-      supabase.from("onboarding_state").select("*, consultant_access"),
+      supabase.from("onboarding_state").select("*, consultant_access, procuring_access"),
       supabase.from("natural_roles").select("*"),
       supabase.from("user_certifications").select("user_id, certification_type"),
       supabase.from("startup_ideas").select("id, creator_id, status"),
@@ -180,7 +181,8 @@ export function useAdmin() {
         ideasAsInitiator: ideasAsInitiatorByUser[profile.user_id] || 0,
         ideasAsCoBuilder: ideasAsCoBuilderByUser[profile.user_id] || 0,
         hasConsultantScaling: hasConsultantScalingByUser[profile.user_id] || false,
-        consultantAccess: onboarding?.consultant_access || false,
+        consultantAccess: (onboarding as any)?.consultant_access || false,
+        procuringAccess: (onboarding as any)?.procuring_access || false,
       };
     });
 
