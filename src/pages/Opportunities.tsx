@@ -49,7 +49,7 @@ const Opportunities = () => {
     }
 
     const fetchAll = async () => {
-      const [startupsRes, trainingsRes, userSkillsRes] = await Promise.all([
+      const [startupsRes, trainingsRes, tendersRes, userSkillsRes] = await Promise.all([
         supabase
           .from("startup_ideas")
           .select("*")
@@ -63,6 +63,11 @@ const Opportunities = () => {
           .eq("review_status", "approved")
           .order("created_at", { ascending: false }),
         supabase
+          .from("tenders" as any)
+          .select("*")
+          .eq("status", "published")
+          .order("created_at", { ascending: false }),
+        supabase
           .from("user_skills")
           .select("skill_tag_id, skill_tags(name)")
           .eq("user_id", user.id),
@@ -70,6 +75,7 @@ const Opportunities = () => {
 
       const startupData = startupsRes.data || [];
       const trainingData = (trainingsRes.data as any[]) || [];
+      const tenderData = (tendersRes.data as any[]) || [];
 
       // Extract user skill names
       const skillNames = (userSkillsRes.data || []).map((r: any) => r.skill_tags?.name).filter(Boolean);
