@@ -173,7 +173,7 @@ const Opportunities = () => {
     }
 
     return scored;
-  }, [rawStartups, rawTrainings, userSkillNames]);
+  }, [rawStartups, rawTrainings, rawTenders, userSkillNames]);
 
   // Filter
   const filtered = useMemo(() => {
