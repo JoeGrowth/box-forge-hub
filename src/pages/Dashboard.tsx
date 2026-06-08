@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
@@ -12,6 +12,10 @@ import { DashboardNextSteps } from "@/components/dashboard/DashboardNextSteps";
 import { DashboardOpportunities } from "@/components/dashboard/DashboardOpportunities";
 import { DashboardAchievements } from "@/components/dashboard/DashboardAchievements";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { FileText, ArrowRight } from "lucide-react";
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
