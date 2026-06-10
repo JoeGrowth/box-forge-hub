@@ -55,7 +55,7 @@ const Opportunities = () => {
     }
 
     const fetchAll = async () => {
-      const [startupsRes, trainingsRes, tendersRes, userSkillsRes] = await Promise.all([
+      const [startupsRes, trainingsRes, tendersRes, userSkillsRes, myProfileRes] = await Promise.all([
         supabase
           .from("startup_ideas")
           .select("*")
@@ -77,6 +77,11 @@ const Opportunities = () => {
           .from("user_skills")
           .select("skill_tag_id, skill_tags(name)")
           .eq("user_id", user.id),
+        supabase
+          .from("profiles")
+          .select("preferred_sector, primary_skills, years_of_experience, key_projects, summary_statement, professional_title")
+          .eq("user_id", user.id)
+          .maybeSingle(),
       ]);
 
       const startupData = startupsRes.data || [];
@@ -86,6 +91,26 @@ const Opportunities = () => {
       // Extract user skill names
       const skillNames = (userSkillsRes.data || []).map((r: any) => r.skill_tags?.name).filter(Boolean);
       setUserSkillNames(skillNames);
+
+      // Compute capacity from profile track record
+      const p = (myProfileRes.data as any) || {};
+      const sectors = [
+        p.preferred_sector,
+        ...(p.primary_skills ? String(p.primary_skills).split(",") : []),
+      ]
+        .map((s: string) => (s || "").trim().toLowerCase())
+        .filter(Boolean);
+      const hasTrackRecord = Boolean(
+        (p.key_projects && String(p.key_projects).trim().length > 20) ||
+          (p.summary_statement && String(p.summary_statement).trim().length > 20) ||
+          (p.years_of_experience && Number(p.years_of_experience) >= 1) ||
+          skillNames.length >= 3
+      );
+      setUserCapacity({
+        hasTrackRecord,
+        sectors: [...new Set([...sectors, ...skillNames.map((s) => s.toLowerCase())])],
+        experience: Number(p.years_of_experience) || 0,
+      });
 
       // Fetch profiles for all
       const allUserIds = [
@@ -112,6 +137,7 @@ const Opportunities = () => {
 
     fetchAll();
   }, [user, isApproved, onboardingLoading]);
+
 
   // Normalize all sources into Opportunity[]
   const allOpportunities = useMemo<(Opportunity & { match_score: number })[]>(() => {
