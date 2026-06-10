@@ -150,14 +150,6 @@ export default function ElSpace() {
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
-      <Helmet>
-        <title>EL Space — Tunisia's First Social Innovation Hub</title>
-        <meta name="description" content="EL Space is Tunisia's first social innovation hub — supporting entrepreneurs, youth and community builders through programs, events and grants." />
-        <link rel="canonical" href="/el-space" />
-        <meta property="og:title" content="EL Space — Social Innovation Hub" />
-        <meta property="og:description" content="Programs, events, opportunities and resources from Tunisia's leading social innovation hub." />
-        <meta property="og:type" content="website" />
-      </Helmet>
 
       {/* 1. HERO */}
       <section className="relative overflow-hidden">
