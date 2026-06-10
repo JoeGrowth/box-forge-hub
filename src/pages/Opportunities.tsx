@@ -35,9 +35,15 @@ const Opportunities = () => {
   const [rawTrainings, setRawTrainings] = useState<any[]>([]);
   const [rawTenders, setRawTenders] = useState<any[]>([]);
   const [userSkillNames, setUserSkillNames] = useState<string[]>([]);
+  const [userCapacity, setUserCapacity] = useState<{ hasTrackRecord: boolean; sectors: string[]; experience: number }>({
+    hasTrackRecord: false,
+    sectors: [],
+    experience: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>(searchParams.get("tab") || "all");
+
 
   const isApproved =
     onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved";
@@ -49,7 +55,7 @@ const Opportunities = () => {
     }
 
     const fetchAll = async () => {
-      const [startupsRes, trainingsRes, tendersRes, userSkillsRes] = await Promise.all([
+      const [startupsRes, trainingsRes, tendersRes, userSkillsRes, myProfileRes] = await Promise.all([
         supabase
           .from("startup_ideas")
           .select("*")
@@ -71,6 +77,11 @@ const Opportunities = () => {
           .from("user_skills")
           .select("skill_tag_id, skill_tags(name)")
           .eq("user_id", user.id),
+        supabase
+          .from("profiles")
+          .select("preferred_sector, primary_skills, years_of_experience, key_projects, summary_statement, professional_title")
+          .eq("user_id", user.id)
+          .maybeSingle(),
       ]);
 
       const startupData = startupsRes.data || [];
@@ -80,6 +91,26 @@ const Opportunities = () => {
       // Extract user skill names
       const skillNames = (userSkillsRes.data || []).map((r: any) => r.skill_tags?.name).filter(Boolean);
       setUserSkillNames(skillNames);
+
+      // Compute capacity from profile track record
+      const p = (myProfileRes.data as any) || {};
+      const sectors = [
+        p.preferred_sector,
+        ...(p.primary_skills ? String(p.primary_skills).split(",") : []),
+      ]
+        .map((s: string) => (s || "").trim().toLowerCase())
+        .filter(Boolean);
+      const hasTrackRecord = Boolean(
+        (p.key_projects && String(p.key_projects).trim().length > 20) ||
+          (p.summary_statement && String(p.summary_statement).trim().length > 20) ||
+          (p.years_of_experience && Number(p.years_of_experience) >= 1) ||
+          skillNames.length >= 3
+      );
+      setUserCapacity({
+        hasTrackRecord,
+        sectors: [...new Set([...sectors, ...skillNames.map((s) => s.toLowerCase())])],
+        experience: Number(p.years_of_experience) || 0,
+      });
 
       // Fetch profiles for all
       const allUserIds = [
@@ -106,6 +137,7 @@ const Opportunities = () => {
 
     fetchAll();
   }, [user, isApproved, onboardingLoading]);
+
 
   // Normalize all sources into Opportunity[]
   const allOpportunities = useMemo<(Opportunity & { match_score: number })[]>(() => {
@@ -175,9 +207,30 @@ const Opportunities = () => {
     return scored;
   }, [rawStartups, rawTrainings, rawTenders, userSkillNames]);
 
+  // Capacity-based tender filter helper
+  const passesTenderCapacity = (opp: Opportunity & { match_score: number }) => {
+    if (opp.category !== "tender") return true;
+    // Must have a track record to see any tender
+    if (!userCapacity.hasTrackRecord) return false;
+    // Sector / skill alignment: tender sector matches one of user's sectors OR user is senior (>=3y)
+    const tenderSector = (opp.sector || "").toLowerCase().trim();
+    if (!tenderSector) return userCapacity.experience >= 1;
+    const sectorMatch = userCapacity.sectors.some(
+      (s) => s && (tenderSector.includes(s) || s.includes(tenderSector))
+    );
+    return sectorMatch || userCapacity.experience >= 3 || opp.match_score > 0;
+  };
+
+  // Count hidden tenders for the banner
+  const hiddenTenderCount = useMemo(
+    () => allOpportunities.filter((o) => o.category === "tender" && !passesTenderCapacity(o)).length,
+    [allOpportunities, userCapacity]
+  );
+
   // Filter
   const filtered = useMemo(() => {
     return allOpportunities.filter((opp) => {
+      if (!passesTenderCapacity(opp)) return false;
       if (categoryFilter !== "all" && opp.category !== categoryFilter) return false;
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
@@ -185,7 +238,8 @@ const Opportunities = () => {
       }
       return true;
     });
-  }, [allOpportunities, categoryFilter, searchQuery]);
+  }, [allOpportunities, categoryFilter, searchQuery, userCapacity]);
+
 
   if (authLoading || onboardingLoading) {
     return (
@@ -242,9 +296,34 @@ const Opportunities = () => {
             </div>
           </section>
 
+          {/* Capacity banner for tenders */}
+          {categoryFilter === "tender" && !userCapacity.hasTrackRecord && (
+            <section className="pb-4">
+              <div className="container mx-auto px-4">
+                <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-sm">
+                  <p className="font-medium text-foreground mb-1">Build your track record to unlock tenders</p>
+                  <p className="text-muted-foreground">
+                    Tenders are filtered by capacity. Add key projects, experience, or skills to your{" "}
+                    <a href="/resume" className="text-primary hover:underline">profile</a> to qualify.
+                  </p>
+                </div>
+              </div>
+            </section>
+          )}
+          {categoryFilter === "tender" && userCapacity.hasTrackRecord && hiddenTenderCount > 0 && (
+            <section className="pb-4">
+              <div className="container mx-auto px-4">
+                <p className="text-xs text-muted-foreground">
+                  {hiddenTenderCount} tender{hiddenTenderCount > 1 ? "s" : ""} hidden — outside your current capacity (sector / experience mismatch).
+                </p>
+              </div>
+            </section>
+          )}
+
           {/* Feed */}
           <section className="pb-16">
             <div className="container mx-auto px-4">
+
               {loading ? (
                 <div className="flex justify-center py-12">
                   <Loader2 className="w-6 h-6 animate-spin text-primary" />
