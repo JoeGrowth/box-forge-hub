@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Helmet } from "react-helmet-async";
+
 import {
   Globe, Mail, Phone, MapPin, Linkedin, Facebook, Instagram, Twitter,
   ArrowRight, Calendar, Download, ExternalLink, Users, Rocket, Sprout,
