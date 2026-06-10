@@ -35,9 +35,15 @@ const Opportunities = () => {
   const [rawTrainings, setRawTrainings] = useState<any[]>([]);
   const [rawTenders, setRawTenders] = useState<any[]>([]);
   const [userSkillNames, setUserSkillNames] = useState<string[]>([]);
+  const [userCapacity, setUserCapacity] = useState<{ hasTrackRecord: boolean; sectors: string[]; experience: number }>({
+    hasTrackRecord: false,
+    sectors: [],
+    experience: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>(searchParams.get("tab") || "all");
+
 
   const isApproved =
     onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved";
