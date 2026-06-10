@@ -296,9 +296,34 @@ const Opportunities = () => {
             </div>
           </section>
 
+          {/* Capacity banner for tenders */}
+          {categoryFilter === "tender" && !userCapacity.hasTrackRecord && (
+            <section className="pb-4">
+              <div className="container mx-auto px-4">
+                <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-sm">
+                  <p className="font-medium text-foreground mb-1">Build your track record to unlock tenders</p>
+                  <p className="text-muted-foreground">
+                    Tenders are filtered by capacity. Add key projects, experience, or skills to your{" "}
+                    <a href="/resume" className="text-primary hover:underline">profile</a> to qualify.
+                  </p>
+                </div>
+              </div>
+            </section>
+          )}
+          {categoryFilter === "tender" && userCapacity.hasTrackRecord && hiddenTenderCount > 0 && (
+            <section className="pb-4">
+              <div className="container mx-auto px-4">
+                <p className="text-xs text-muted-foreground">
+                  {hiddenTenderCount} tender{hiddenTenderCount > 1 ? "s" : ""} hidden — outside your current capacity (sector / experience mismatch).
+                </p>
+              </div>
+            </section>
+          )}
+
           {/* Feed */}
           <section className="pb-16">
             <div className="container mx-auto px-4">
+
               {loading ? (
                 <div className="flex justify-center py-12">
                   <Loader2 className="w-6 h-6 animate-spin text-primary" />
