@@ -207,9 +207,30 @@ const Opportunities = () => {
     return scored;
   }, [rawStartups, rawTrainings, rawTenders, userSkillNames]);
 
+  // Capacity-based tender filter helper
+  const passesTenderCapacity = (opp: Opportunity & { match_score: number }) => {
+    if (opp.category !== "tender") return true;
+    // Must have a track record to see any tender
+    if (!userCapacity.hasTrackRecord) return false;
+    // Sector / skill alignment: tender sector matches one of user's sectors OR user is senior (>=3y)
+    const tenderSector = (opp.sector || "").toLowerCase().trim();
+    if (!tenderSector) return userCapacity.experience >= 1;
+    const sectorMatch = userCapacity.sectors.some(
+      (s) => s && (tenderSector.includes(s) || s.includes(tenderSector))
+    );
+    return sectorMatch || userCapacity.experience >= 3 || opp.match_score > 0;
+  };
+
+  // Count hidden tenders for the banner
+  const hiddenTenderCount = useMemo(
+    () => allOpportunities.filter((o) => o.category === "tender" && !passesTenderCapacity(o)).length,
+    [allOpportunities, userCapacity]
+  );
+
   // Filter
   const filtered = useMemo(() => {
     return allOpportunities.filter((opp) => {
+      if (!passesTenderCapacity(opp)) return false;
       if (categoryFilter !== "all" && opp.category !== categoryFilter) return false;
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
@@ -217,7 +238,8 @@ const Opportunities = () => {
       }
       return true;
     });
-  }, [allOpportunities, categoryFilter, searchQuery]);
+  }, [allOpportunities, categoryFilter, searchQuery, userCapacity]);
+
 
   if (authLoading || onboardingLoading) {
     return (
