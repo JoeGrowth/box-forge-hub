@@ -122,6 +122,13 @@ export default function ElSpace() {
   const [eventFilter, setEventFilter] = useState<"upcoming" | "past">("upcoming");
 
   useEffect(() => {
+    document.title = "EL Space — Tunisia's First Social Innovation Hub";
+    let m = document.querySelector('meta[name="description"]');
+    if (!m) { m = document.createElement("meta"); m.setAttribute("name", "description"); document.head.appendChild(m); }
+    m.setAttribute("content", "EL Space is Tunisia's first social innovation hub — programs, events, opportunities and resources for changemakers.");
+  }, []);
+
+  useEffect(() => {
     const el = statsRef.current;
     if (!el) return;
     const io = new IntersectionObserver(([e]) => e.isIntersecting && setStatsVisible(true), { threshold: 0.3 });
