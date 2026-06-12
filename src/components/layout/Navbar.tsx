@@ -146,6 +146,35 @@ export function Navbar() {
                 >
                   Opportunities
                 </Link>
+
+                <DropdownMenu open={publishOpen} onOpenChange={setPublishOpen}>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="teal" size="sm" className="gap-1">
+                      <Plus size={14} />
+                      Publish
+                      <ChevronDown
+                        size={14}
+                        className={`transition-transform duration-200 ${publishOpen ? "rotate-180" : ""}`}
+                      />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-72 mt-2">
+                    {publishLinks.map((link) => {
+                      const Icon = link.icon;
+                      return (
+                        <DropdownMenuItem key={link.path} asChild>
+                          <Link to={link.path} className="flex items-start gap-3 cursor-pointer py-2">
+                            <Icon size={18} className="mt-0.5 text-b4-teal shrink-0" />
+                            <div className="flex flex-col">
+                              <span className="text-sm font-medium text-foreground">{link.name}</span>
+                              <span className="text-xs text-muted-foreground">{link.desc}</span>
+                            </div>
+                          </Link>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             )}
           </div>
@@ -260,6 +289,24 @@ export function Navbar() {
                   >
                     Opportunities
                   </Link>
+
+                  <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Publish
+                  </div>
+                  {publishLinks.map((link) => {
+                    const Icon = link.icon;
+                    return (
+                      <Link
+                        key={link.path}
+                        to={link.path}
+                        className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors flex items-center gap-2"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <Icon size={16} />
+                        {link.name}
+                      </Link>
+                    );
+                  })}
                 </>
               )}
               <div className="flex flex-col gap-2 px-4 pt-2">
