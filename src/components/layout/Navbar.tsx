@@ -31,7 +31,8 @@ const engineLinks = [
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  
+  const [engineOpen, setEngineOpen] = useState(false);
+
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
   const { canAccessBoosting, canAccessScaling, potentialRole } = useUserStatus();
@@ -55,10 +56,10 @@ export function Navbar() {
     checkUserStatus();
   }, [user]);
 
-  const navLinks = useMemo(() => {
-    if (!user) return guestNavLinks;
-    return getAuthenticatedLinks();
-  }, [user, canAccessScaling, canAccessBoosting]);
+  const isEngineActive = useMemo(
+    () => engineLinks.some((l) => location.pathname === l.path),
+    [location.pathname]
+  );
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
@@ -74,19 +75,70 @@ export function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`text-sm font-medium transition-colors hover:text-b4-teal ${
-                  location.pathname === link.path
-                    ? "text-b4-teal"
-                    : "text-muted-foreground"
-                }`}
-              >
-                {link.name}
-              </Link>
-            ))}
+            {!user ? (
+              guestNavLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`text-sm font-medium transition-colors hover:text-b4-teal ${
+                    location.pathname === link.path
+                      ? "text-b4-teal"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              ))
+            ) : (
+              <>
+                <DropdownMenu open={engineOpen} onOpenChange={setEngineOpen}>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-b4-teal outline-none ${
+                        isEngineActive ? "text-b4-teal" : "text-muted-foreground"
+                      }`}
+                    >
+                      Engine
+                      <ChevronDown
+                        size={14}
+                        className={`transition-transform duration-200 ${engineOpen ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="center" className="w-48 mt-2">
+                    {engineLinks.map((link) => {
+                      const Icon = link.icon;
+                      return (
+                        <DropdownMenuItem key={link.path} asChild>
+                          <Link
+                            to={link.path}
+                            className={`flex items-center gap-2 cursor-pointer ${
+                              location.pathname === link.path
+                                ? "text-b4-teal"
+                                : "text-foreground"
+                            }`}
+                          >
+                            <Icon size={16} />
+                            {link.name}
+                          </Link>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <Link
+                  to="/opportunities"
+                  className={`text-sm font-medium transition-colors hover:text-b4-teal ${
+                    location.pathname === "/opportunities"
+                      ? "text-b4-teal"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  Opportunities
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Desktop CTA */}
@@ -150,20 +202,57 @@ export function Navbar() {
         {isOpen && (
           <div className="md:hidden py-4 border-t border-border animate-fade-in">
             <div className="flex flex-col gap-3">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    location.pathname === link.path
-                      ? "bg-muted text-b4-teal"
-                      : "text-muted-foreground hover:bg-muted"
-                  }`}
-                  onClick={() => setIsOpen(false)}
-                >
-                  {link.name}
-                </Link>
-              ))}
+              {!user ? (
+                guestNavLinks.map((link) => (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      location.pathname === link.path
+                        ? "bg-muted text-b4-teal"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {link.name}
+                  </Link>
+                ))
+              ) : (
+                <>
+                  <div className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Engine
+                  </div>
+                  {engineLinks.map((link) => {
+                    const Icon = link.icon;
+                    return (
+                      <Link
+                        key={link.path}
+                        to={link.path}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                          location.pathname === link.path
+                            ? "bg-muted text-b4-teal"
+                            : "text-muted-foreground hover:bg-muted"
+                        }`}
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <Icon size={16} />
+                        {link.name}
+                      </Link>
+                    );
+                  })}
+                  <Link
+                    to="/opportunities"
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      location.pathname === "/opportunities"
+                        ? "bg-muted text-b4-teal"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Opportunities
+                  </Link>
+                </>
+              )}
               <div className="flex flex-col gap-2 px-4 pt-2">
                 {!loading && (
                   user ? (
