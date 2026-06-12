@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, X, LogOut, User, Shield, ChevronDown, Briefcase, Lightbulb, Handshake } from "lucide-react";
+import { Menu, X, LogOut, User, Shield, ChevronDown, Briefcase, Lightbulb, Handshake, Plus, GraduationCap, FileText, Rocket } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,10 +28,19 @@ const engineLinks = [
   { name: "Entrepreneurship", path: "/entrepreneurship", icon: Lightbulb },
 ];
 
+const publishLinks = [
+  { name: "Job", path: "/start", icon: Briefcase, desc: "Recruit co-builders" },
+  { name: "Consulting Opportunity", path: "/consultingmanagement", icon: Handshake, desc: "Offer a consulting mission" },
+  { name: "Startup Idea", path: "/create-idea", icon: Lightbulb, desc: "Launch a new venture" },
+  { name: "Training", path: "/trainingmanagement", icon: GraduationCap, desc: "Propose a training" },
+  { name: "Tender", path: "/procuring", icon: FileText, desc: "Post a procurement tender" },
+];
+
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [engineOpen, setEngineOpen] = useState(false);
+  const [publishOpen, setPublishOpen] = useState(false);
 
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
