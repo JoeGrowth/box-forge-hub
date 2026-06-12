@@ -1,7 +1,13 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogOut, User, Shield } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Menu, X, LogOut, User, Shield, ChevronDown, Briefcase, Lightbulb, Handshake } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,12 +22,10 @@ const guestNavLinks = [
   { name: "Boxes", path: "/boxes" },
 ];
 
-// Helper to build links based on role and access
-const getAuthenticatedLinks = () => [
-  { name: "Career", path: "/career" },
-  { name: "Consulting", path: "/consulting" },
-  { name: "Entrepreneurship", path: "/entrepreneurship" },
-  { name: "Opportunities", path: "/opportunities" },
+const engineLinks = [
+  { name: "Career", path: "/career", icon: Briefcase },
+  { name: "Consulting", path: "/consulting", icon: Handshake },
+  { name: "Entrepreneurship", path: "/entrepreneurship", icon: Lightbulb },
 ];
 
 export function Navbar() {
