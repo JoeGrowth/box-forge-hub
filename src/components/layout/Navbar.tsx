@@ -52,6 +52,7 @@ export function Navbar() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [engineOpen, setEngineOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
 
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
