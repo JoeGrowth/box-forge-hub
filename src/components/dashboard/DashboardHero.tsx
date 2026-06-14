@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sparkles, ArrowRight, Calendar } from "lucide-react";
+import { Sparkles, ArrowRight, Lightbulb, Search } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
@@ -9,13 +9,17 @@ import { format } from "date-fns";
 export function DashboardHero() {
   const { user } = useAuth();
   const [profile, setProfile] = useState<{ full_name: string | null } | null>(null);
-  const [streak, setStreak] = useState(0);
+  const [primaryRole, setPrimaryRole] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user) return;
-      const { data } = await supabase.from("profiles").select("full_name").eq("user_id", user.id).single();
-      setProfile(data);
+      const [{ data: prof }, { data: state }] = await Promise.all([
+        supabase.from("profiles").select("full_name").eq("user_id", user.id).single(),
+        supabase.from("onboarding_state").select("primary_role").eq("user_id", user.id).maybeSingle(),
+      ]);
+      setProfile(prof);
+      setPrimaryRole((state as any)?.primary_role ?? null);
     };
     fetchProfile();
   }, [user]);
@@ -52,11 +56,19 @@ export function DashboardHero() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
-          <Button className="bg-b4-teal hover:bg-b4-teal/90 text-white" asChild>
-            <Link to="/opportunities">
-              Explore Opportunities <ArrowRight className="ml-2 w-4 h-4" />
-            </Link>
-          </Button>
+          {primaryRole === "entrepreneur" ? (
+            <Button className="bg-b4-teal hover:bg-b4-teal/90 text-white" asChild>
+              <Link to="/create-idea">
+                <Lightbulb className="mr-2 w-4 h-4" /> Post an Idea
+              </Link>
+            </Button>
+          ) : (
+            <Button className="bg-b4-teal hover:bg-b4-teal/90 text-white" asChild>
+              <Link to="/opportunities?category=startup">
+                <Search className="mr-2 w-4 h-4" /> Browse Ideas
+              </Link>
+            </Button>
+          )}
           <Button variant="outline" className="border-white/20 text-white hover:bg-white/10" asChild>
             <Link to="/cobuilders">
               Connect Co-Builders <ArrowRight className="ml-2 w-4 h-4" />

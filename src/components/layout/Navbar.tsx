@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, X, LogOut, User, Shield, ChevronDown, Briefcase, Lightbulb, Handshake, Plus, GraduationCap, FileText, Rocket } from "lucide-react";
+import { Menu, X, LogOut, User, Shield, ChevronDown, Briefcase, Lightbulb, Handshake, Plus, GraduationCap, FileText, Rocket, MoreHorizontal, Package, BookOpen, Compass, Building2, Sparkles, ListChecks, Activity } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,11 +36,23 @@ const publishLinks = [
   { name: "Tender", path: "/procuring", icon: FileText, desc: "Post a procurement tender" },
 ];
 
+const moreLinks = [
+  { name: "Boxes", path: "/boxes", icon: Package },
+  { name: "Programs", path: "/programs", icon: BookOpen },
+  { name: "Advisory", path: "/advisory", icon: Compass },
+  { name: "Ops", path: "/opsmanagement", icon: Building2 },
+  { name: "Brand Identity", path: "/brand-identity", icon: Sparkles },
+  { name: "Structuring", path: "/structuring", icon: ListChecks },
+  { name: "Track", path: "/track", icon: Activity },
+  { name: "Checklist", path: "/checklist", icon: ListChecks },
+];
+
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [engineOpen, setEngineOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
 
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
@@ -175,6 +187,35 @@ export function Navbar() {
                     })}
                   </DropdownMenuContent>
                 </DropdownMenu>
+
+                <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className="flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-b4-teal outline-none"
+                      aria-label="More"
+                    >
+                      <MoreHorizontal size={18} />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 mt-2">
+                    {moreLinks.map((link) => {
+                      const Icon = link.icon;
+                      return (
+                        <DropdownMenuItem key={link.path} asChild>
+                          <Link
+                            to={link.path}
+                            className={`flex items-center gap-2 cursor-pointer ${
+                              location.pathname === link.path ? "text-b4-teal" : "text-foreground"
+                            }`}
+                          >
+                            <Icon size={16} />
+                            {link.name}
+                          </Link>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             )}
           </div>
@@ -294,6 +335,24 @@ export function Navbar() {
                     Publish
                   </div>
                   {publishLinks.map((link) => {
+                    const Icon = link.icon;
+                    return (
+                      <Link
+                        key={link.path}
+                        to={link.path}
+                        className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors flex items-center gap-2"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <Icon size={16} />
+                        {link.name}
+                      </Link>
+                    );
+                  })}
+
+                  <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    More
+                  </div>
+                  {moreLinks.map((link) => {
                     const Icon = link.icon;
                     return (
                       <Link
