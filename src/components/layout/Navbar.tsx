@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, X, LogOut, User, Shield, ChevronDown, Briefcase, Lightbulb, Handshake, Plus, GraduationCap, FileText, Rocket } from "lucide-react";
+import { Menu, X, LogOut, User, Shield, ChevronDown, Briefcase, Lightbulb, Handshake, Plus, GraduationCap, FileText, Rocket, MoreHorizontal, Package, BookOpen, Compass, Building2, Sparkles, ListChecks, Activity } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,6 +34,17 @@ const publishLinks = [
   { name: "Startup Idea", path: "/create-idea", icon: Lightbulb, desc: "Launch a new venture" },
   { name: "Training", path: "/trainingmanagement", icon: GraduationCap, desc: "Propose a training" },
   { name: "Tender", path: "/procuring", icon: FileText, desc: "Post a procurement tender" },
+];
+
+const moreLinks = [
+  { name: "Boxes", path: "/boxes", icon: Package },
+  { name: "Programs", path: "/programs", icon: BookOpen },
+  { name: "Advisory", path: "/advisory", icon: Compass },
+  { name: "Ops", path: "/opsmanagement", icon: Building2 },
+  { name: "Brand Identity", path: "/brand-identity", icon: Sparkles },
+  { name: "Structuring", path: "/structuring", icon: ListChecks },
+  { name: "Track", path: "/track", icon: Activity },
+  { name: "Checklist", path: "/checklist", icon: ListChecks },
 ];
 
 export function Navbar() {
