@@ -187,6 +187,35 @@ export function Navbar() {
                     })}
                   </DropdownMenuContent>
                 </DropdownMenu>
+
+                <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className="flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-b4-teal outline-none"
+                      aria-label="More"
+                    >
+                      <MoreHorizontal size={18} />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 mt-2">
+                    {moreLinks.map((link) => {
+                      const Icon = link.icon;
+                      return (
+                        <DropdownMenuItem key={link.path} asChild>
+                          <Link
+                            to={link.path}
+                            className={`flex items-center gap-2 cursor-pointer ${
+                              location.pathname === link.path ? "text-b4-teal" : "text-foreground"
+                            }`}
+                          >
+                            <Icon size={16} />
+                            {link.name}
+                          </Link>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             )}
           </div>
