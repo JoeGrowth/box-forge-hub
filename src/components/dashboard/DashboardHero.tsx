@@ -56,11 +56,19 @@ export function DashboardHero() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
-          <Button className="bg-b4-teal hover:bg-b4-teal/90 text-white" asChild>
-            <Link to="/opportunities">
-              Explore Opportunities <ArrowRight className="ml-2 w-4 h-4" />
-            </Link>
-          </Button>
+          {primaryRole === "entrepreneur" ? (
+            <Button className="bg-b4-teal hover:bg-b4-teal/90 text-white" asChild>
+              <Link to="/create-idea">
+                <Lightbulb className="mr-2 w-4 h-4" /> Post an Idea
+              </Link>
+            </Button>
+          ) : (
+            <Button className="bg-b4-teal hover:bg-b4-teal/90 text-white" asChild>
+              <Link to="/opportunities?category=startup">
+                <Search className="mr-2 w-4 h-4" /> Browse Ideas
+              </Link>
+            </Button>
+          )}
           <Button variant="outline" className="border-white/20 text-white hover:bg-white/10" asChild>
             <Link to="/cobuilders">
               Connect Co-Builders <ArrowRight className="ml-2 w-4 h-4" />
