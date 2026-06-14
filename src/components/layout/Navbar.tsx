@@ -348,6 +348,24 @@ export function Navbar() {
                       </Link>
                     );
                   })}
+
+                  <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    More
+                  </div>
+                  {moreLinks.map((link) => {
+                    const Icon = link.icon;
+                    return (
+                      <Link
+                        key={link.path}
+                        to={link.path}
+                        className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors flex items-center gap-2"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <Icon size={16} />
+                        {link.name}
+                      </Link>
+                    );
+                  })}
                 </>
               )}
               <div className="flex flex-col gap-2 px-4 pt-2">
