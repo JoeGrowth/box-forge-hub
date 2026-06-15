@@ -114,6 +114,21 @@ export default function Declaration() {
     localStorage.setItem(ROSTER_KEY, JSON.stringify(roster));
   }, [roster]);
 
+  // Load delivery types from localStorage
+  useEffect(() => {
+    try {
+      const r = localStorage.getItem(DELIVERY_TYPES_KEY);
+      if (r) {
+        const arr = JSON.parse(r);
+        if (Array.isArray(arr) && arr.length) setDeliveryTypes(arr);
+      }
+    } catch {}
+  }, []);
+  useEffect(() => {
+    localStorage.setItem(DELIVERY_TYPES_KEY, JSON.stringify(deliveryTypes));
+  }, [deliveryTypes]);
+
+
   // Load entities
   const loadEntities = useCallback(async () => {
     if (!user) return;
