@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Wallet, Users, Building2, FlaskConical, CheckCircle2, Clock, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,75 +8,93 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { Navbar } from "@/components/layout/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 
-type Person = { id: string; name: string; amount: number };
+type Payee = { id: string; name: string; role?: string; amount: number; paid: boolean };
+type DeliveryType = "consulting" | "training" | "fact-check";
 type Mission = {
   id: string;
-  name: string;
-  priceHT: number;
-  external: Person[];
-  internal: Person[];
+  client: string;
+  type: DeliveryType;
+  budget: number;
+  internal: Payee[];
+  external: Payee[];
+  createdAt: number;
 };
 
-const EXTERNALS = ["Aziz", "Bader", "Hamza", "Mehdi"];
-const INTERNALS = ["Houssem (Structure Handler)", "Youssef (Process Handler)"];
-const STORAGE_KEY = "declaration_missions_v1";
+const DEFAULT_INTERNALS = ["Structure Handler", "Process Handler"];
+const STORAGE_KEY = "declaration_missions_v2";
+const ROSTER_KEY = "declaration_internal_roster_v1";
+const THRESHOLD = 1000; // TND
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 const fmt = (n: number) =>
   new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n || 0);
 
-const emptyMission = (): Mission => ({
+const newMission = (): Mission => ({
   id: uid(),
-  name: "Nouvelle mission",
-  priceHT: 0,
-  external: [],
+  client: "",
+  type: "consulting",
+  budget: 0,
   internal: [],
+  external: [],
+  createdAt: Date.now(),
 });
+
+const TYPE_META: Record<DeliveryType, { label: string; tone: string }> = {
+  consulting: { label: "Consulting", tone: "bg-blue-500/10 text-blue-700 border-blue-200" },
+  training: { label: "Training", tone: "bg-purple-500/10 text-purple-700 border-purple-200" },
+  "fact-check": { label: "Fact Check", tone: "bg-amber-500/10 text-amber-700 border-amber-200" },
+};
 
 export default function Declaration() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [missions, setMissions] = useState<Mission[]>([]);
+  const [roster, setRoster] = useState<string[]>(DEFAULT_INTERNALS);
+  const [newRosterName, setNewRosterName] = useState("");
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate("/auth");
-    }
+    if (!authLoading && !user) navigate("/auth");
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setMissions(JSON.parse(raw));
-      else setMissions([emptyMission()]);
+      setMissions(raw ? JSON.parse(raw) : [newMission()]);
     } catch {
-      setMissions([emptyMission()]);
+      setMissions([newMission()]);
     }
+    try {
+      const r = localStorage.getItem(ROSTER_KEY);
+      if (r) setRoster(JSON.parse(r));
+    } catch {}
   }, []);
 
   useEffect(() => {
     if (missions.length) localStorage.setItem(STORAGE_KEY, JSON.stringify(missions));
   }, [missions]);
+  useEffect(() => {
+    localStorage.setItem(ROSTER_KEY, JSON.stringify(roster));
+  }, [roster]);
 
   const update = (id: string, patch: Partial<Mission>) =>
     setMissions((ms) => ms.map((m) => (m.id === id ? { ...m, ...patch } : m)));
 
-  const addPerson = (id: string, kind: "external" | "internal") =>
+  const addPayee = (id: string, kind: "internal" | "external") =>
     setMissions((ms) =>
       ms.map((m) =>
-        m.id === id ? { ...m, [kind]: [...m[kind], { id: uid(), name: "", amount: 0 }] } : m,
+        m.id === id
+          ? { ...m, [kind]: [...m[kind], { id: uid(), name: "", amount: 0, paid: false }] }
+          : m,
       ),
     );
 
-  const updatePerson = (
-    id: string,
-    kind: "external" | "internal",
-    pid: string,
-    patch: Partial<Person>,
-  ) =>
+  const updatePayee = (id: string, kind: "internal" | "external", pid: string, patch: Partial<Payee>) =>
     setMissions((ms) =>
       ms.map((m) =>
         m.id === id
@@ -85,12 +103,44 @@ export default function Declaration() {
       ),
     );
 
-  const removePerson = (id: string, kind: "external" | "internal", pid: string) =>
+  const removePayee = (id: string, kind: "internal" | "external", pid: string) =>
     setMissions((ms) =>
       ms.map((m) => (m.id === id ? { ...m, [kind]: m[kind].filter((p) => p.id !== pid) } : m)),
     );
 
   const removeMission = (id: string) => setMissions((ms) => ms.filter((m) => m.id !== id));
+
+  const totals = useMemo(
+    () =>
+      missions.map((m) => {
+        const intT = m.internal.reduce((s, p) => s + (+p.amount || 0), 0);
+        const intPaid = m.internal.filter((p) => p.paid).reduce((s, p) => s + (+p.amount || 0), 0);
+        const extT = m.external.reduce((s, p) => s + (+p.amount || 0), 0);
+        const extPaid = m.external.filter((p) => p.paid).reduce((s, p) => s + (+p.amount || 0), 0);
+        const rest = (+m.budget || 0) - intT - extT;
+        return { intT, intPaid, intDue: intT - intPaid, extT, extPaid, extDue: extT - extPaid, rest };
+      }),
+    [missions],
+  );
+
+  const pool = useMemo(() => {
+    const totalRest = totals.reduce((s, t) => s + Math.max(0, t.rest), 0);
+    const distributable = totalRest >= THRESHOLD ? totalRest : 0;
+    const recognition = distributable * 0.3;
+    const investment = distributable * 0.7;
+    return {
+      totalRest,
+      distributable,
+      pending: totalRest < THRESHOLD ? THRESHOLD - totalRest : 0,
+      recognition,
+      investment,
+      associe1: recognition * 0.7,
+      associe2: recognition * 0.3,
+      infra: investment * 0.4,
+      lab: investment * 0.6,
+      reached: totalRest >= THRESHOLD,
+    };
+  }, [totals]);
 
   if (authLoading) {
     return (
@@ -103,238 +153,378 @@ export default function Declaration() {
       </div>
     );
   }
-
   if (!user) return null;
 
-  const totals = useMemo(() => {
-    return missions.map((m) => {
-      const ext = m.external.reduce((s, p) => s + (+p.amount || 0), 0);
-      const int = m.internal.reduce((s, p) => s + (+p.amount || 0), 0);
-      const reste = (+m.priceHT || 0) - ext - int;
-      const recognition = reste * 0.3;
-      const investment = reste * 0.7;
-      return {
-        ext,
-        int,
-        reste,
-        recognition,
-        investment,
-        associe1: recognition * 0.7,
-        associe2: recognition * 0.3,
-        infra: investment * 0.4,
-        lab: investment * 0.6,
-      };
-    });
-  }, [missions]);
-
-  const grand = useMemo(() => {
-    const sum = (k: keyof (typeof totals)[number]) =>
-      totals.reduce((s, t) => s + (t[k] as number), 0);
-    return {
-      priceHT: missions.reduce((s, m) => s + (+m.priceHT || 0), 0),
-      ext: sum("ext"),
-      int: sum("int"),
-      reste: sum("reste"),
-      recognition: sum("recognition"),
-      investment: sum("investment"),
-      associe1: sum("associe1"),
-      associe2: sum("associe2"),
-      infra: sum("infra"),
-      lab: sum("lab"),
-    };
-  }, [totals, missions]);
+  const addRoster = () => {
+    const n = newRosterName.trim();
+    if (!n || roster.includes(n)) return;
+    setRoster((r) => [...r, n]);
+    setNewRosterName("");
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="container mx-auto px-4 py-8 max-w-6xl">
+      <main className="container mx-auto px-4 py-8 pt-24 max-w-6xl">
+        {/* Header */}
         <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Déclaration des Missions</h1>
             <p className="text-muted-foreground mt-1">
-              Répartition automatique : Reste → Recognition 30% / Investment 70%.
+              Suivi des livraisons par compte ouvert · Répartition automatique au-delà de {fmt(THRESHOLD)} TND.
             </p>
           </div>
-          <Button onClick={() => setMissions((m) => [...m, emptyMission()])}>
-            <Plus className="h-4 w-4 mr-2" /> Ajouter une mission
+          <Button onClick={() => setMissions((m) => [newMission(), ...m])} size="lg">
+            <Plus className="h-4 w-4 mr-2" /> Nouvelle mission
           </Button>
         </div>
 
+        {/* Pool dashboard */}
+        <Card className="mb-8 border-primary/30 bg-gradient-to-br from-primary/5 via-background to-background">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" /> Pool Structure
+              </CardTitle>
+              <Badge variant={pool.reached ? "default" : "secondary"} className="text-xs">
+                {pool.reached ? "Seuil atteint · répartition active" : `Seuil : ${fmt(THRESHOLD)} TND`}
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-muted-foreground">Cumul Reste Structure</span>
+                <span className="font-semibold">
+                  {fmt(pool.totalRest)} / {fmt(THRESHOLD)} TND
+                </span>
+              </div>
+              <Progress value={Math.min(100, (pool.totalRest / THRESHOLD) * 100)} className="h-2" />
+              {!pool.reached && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Il manque <strong>{fmt(pool.pending)} TND</strong> avant déclenchement de la répartition.
+                </p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="rounded-lg border bg-background p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2 font-medium">
+                    <Users className="h-4 w-4 text-primary" /> Recognition · 30%
+                  </div>
+                  <span className="font-bold">{fmt(pool.recognition)} TND</span>
+                </div>
+                <div className="space-y-1.5 text-sm pl-2 border-l-2 border-primary/40">
+                  <Row label="Associé 1 (70%)" value={pool.associe1} />
+                  <Row label="Associé 2 (30%)" value={pool.associe2} />
+                </div>
+              </div>
+              <div className="rounded-lg border bg-background p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2 font-medium">
+                    <Building2 className="h-4 w-4 text-primary" /> Investment · 70%
+                  </div>
+                  <span className="font-bold">{fmt(pool.investment)} TND</span>
+                </div>
+                <div className="space-y-1.5 text-sm pl-2 border-l-2 border-primary/40">
+                  <Row label="Infra (40%)" value={pool.infra} icon={<Building2 className="h-3 w-3" />} />
+                  <Row label="Lab (60%)" value={pool.lab} icon={<FlaskConical className="h-3 w-3" />} />
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Internal roster manager */}
+        <Card className="mb-8">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Users className="h-4 w-4" /> Équipe interne (réutilisée sur toutes les missions)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {roster.map((n, i) => (
+                <Badge key={n} variant="secondary" className="gap-1 py-1.5 px-3">
+                  <span className="text-xs text-muted-foreground">Internal {i + 1} —</span> {n}
+                  {!DEFAULT_INTERNALS.includes(n) && (
+                    <button
+                      onClick={() => setRoster((r) => r.filter((x) => x !== n))}
+                      className="ml-1 hover:text-destructive"
+                      aria-label="remove"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  )}
+                </Badge>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Ajouter un membre interne…"
+                value={newRosterName}
+                onChange={(e) => setNewRosterName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addRoster()}
+                className="max-w-sm"
+              />
+              <Button variant="outline" onClick={addRoster}>
+                <Plus className="h-4 w-4 mr-1" /> Ajouter
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Missions list */}
         <div className="space-y-6">
           {missions.map((m, idx) => {
             const t = totals[idx];
+            const restPositive = t.rest >= 0;
             return (
               <Card key={m.id} className="overflow-hidden">
-                <CardHeader className="bg-muted/30 flex flex-row items-center justify-between gap-4 space-y-0">
-                  <Input
-                    value={m.name}
-                    onChange={(e) => update(m.id, { name: e.target.value })}
-                    className="text-lg font-semibold max-w-md bg-background"
-                  />
-                  <Button variant="ghost" size="icon" onClick={() => removeMission(m.id)}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
-                </CardHeader>
-                <CardContent className="pt-6 space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <Label>Prix HT (€)</Label>
-                      <Input
-                        type="number"
-                        value={m.priceHT || ""}
-                        onChange={(e) => update(m.id, { priceHT: +e.target.value })}
-                        placeholder="0.00"
-                      />
+                <CardHeader className="bg-muted/30 space-y-0 pb-4">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div className="flex-1 min-w-[260px] grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div>
+                        <Label className="text-xs">Client</Label>
+                        <Input
+                          placeholder="Nom du client"
+                          value={m.client}
+                          onChange={(e) => update(m.id, { client: e.target.value })}
+                          className="bg-background"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Type de livraison</Label>
+                        <Select value={m.type} onValueChange={(v) => update(m.id, { type: v as DeliveryType })}>
+                          <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="consulting">Consulting</SelectItem>
+                            <SelectItem value="training">Training</SelectItem>
+                            <SelectItem value="fact-check">Fact Check</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label className="text-xs flex items-center gap-1">
+                          <Wallet className="h-3 w-3" /> Budget livraison (TND)
+                        </Label>
+                        <Input
+                          type="number"
+                          placeholder="0.00"
+                          value={m.budget || ""}
+                          onChange={(e) => update(m.id, { budget: +e.target.value })}
+                          className="bg-background"
+                        />
+                      </div>
                     </div>
+                    <Button variant="ghost" size="icon" onClick={() => removeMission(m.id)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
                   </div>
+                  <div className="flex items-center gap-2 pt-2">
+                    <Badge variant="outline" className={TYPE_META[m.type].tone}>
+                      {TYPE_META[m.type].label}
+                    </Badge>
+                    {m.client && <Badge variant="secondary">{m.client}</Badge>}
+                  </div>
+                </CardHeader>
+
+                <CardContent className="pt-6 space-y-6">
+                  {/* Internal */}
+                  <PayeeSection
+                    title="Internes"
+                    subtitle="Membres de la structure"
+                    accent="primary"
+                    payees={m.internal}
+                    total={t.intT}
+                    paid={t.intPaid}
+                    due={t.intDue}
+                    nameOptions={roster}
+                    onAdd={() => addPayee(m.id, "internal")}
+                    onUpdate={(pid, patch) => updatePayee(m.id, "internal", pid, patch)}
+                    onRemove={(pid) => removePayee(m.id, "internal", pid)}
+                  />
 
                   {/* External */}
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-semibold">Externes</h3>
-                      <Button size="sm" variant="outline" onClick={() => addPerson(m.id, "external")}>
-                        <Plus className="h-3 w-3 mr-1" /> Ajouter
-                      </Button>
-                    </div>
-                    <div className="space-y-2">
-                      {m.external.map((p) => (
-                        <div key={p.id} className="flex gap-2 items-center">
-                          <Select
-                            value={p.name}
-                            onValueChange={(v) => updatePerson(m.id, "external", p.id, { name: v })}
-                          >
-                            <SelectTrigger className="flex-1"><SelectValue placeholder="Personne" /></SelectTrigger>
-                            <SelectContent>
-                              {EXTERNALS.map((n) => (
-                                <SelectItem key={n} value={n}>{n}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <Input
-                            type="number"
-                            className="w-40"
-                            placeholder="Montant"
-                            value={p.amount || ""}
-                            onChange={(e) =>
-                              updatePerson(m.id, "external", p.id, { amount: +e.target.value })
-                            }
-                          />
-                          <Button variant="ghost" size="icon" onClick={() => removePerson(m.id, "external", p.id)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                      <div className="text-sm text-muted-foreground">Total externes : <strong>{fmt(t?.ext || 0)} €</strong></div>
-                    </div>
-                  </div>
-
-                  {/* Internal */}
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-semibold">Internes</h3>
-                      <Button size="sm" variant="outline" onClick={() => addPerson(m.id, "internal")}>
-                        <Plus className="h-3 w-3 mr-1" /> Ajouter
-                      </Button>
-                    </div>
-                    <div className="space-y-2">
-                      {m.internal.map((p) => (
-                        <div key={p.id} className="flex gap-2 items-center">
-                          <Select
-                            value={p.name}
-                            onValueChange={(v) => updatePerson(m.id, "internal", p.id, { name: v })}
-                          >
-                            <SelectTrigger className="flex-1"><SelectValue placeholder="Personne" /></SelectTrigger>
-                            <SelectContent>
-                              {INTERNALS.map((n) => (
-                                <SelectItem key={n} value={n}>{n}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <Input
-                            type="number"
-                            className="w-40"
-                            placeholder="Montant"
-                            value={p.amount || ""}
-                            onChange={(e) =>
-                              updatePerson(m.id, "internal", p.id, { amount: +e.target.value })
-                            }
-                          />
-                          <Button variant="ghost" size="icon" onClick={() => removePerson(m.id, "internal", p.id)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                      <div className="text-sm text-muted-foreground">Total internes : <strong>{fmt(t?.int || 0)} €</strong></div>
-                    </div>
-                  </div>
+                  <PayeeSection
+                    title="Externes"
+                    subtitle="Prestataires hors structure"
+                    accent="muted"
+                    payees={m.external}
+                    total={t.extT}
+                    paid={t.extPaid}
+                    due={t.extDue}
+                    onAdd={() => addPayee(m.id, "external")}
+                    onUpdate={(pid, patch) => updatePayee(m.id, "external", pid, patch)}
+                    onRemove={(pid) => removePayee(m.id, "external", pid)}
+                  />
 
                   <Separator />
 
-                  {/* Distribution */}
-                  <div className="rounded-lg border bg-muted/20 p-4 space-y-3">
-                    <div className="flex justify-between text-base">
-                      <span className="font-semibold">Reste Structure</span>
-                      <span className="font-bold">{fmt(t?.reste || 0)} €</span>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="rounded-md bg-background p-3 border">
-                        <div className="flex justify-between mb-2">
-                          <span className="font-medium">Recognition (30%)</span>
-                          <span className="font-semibold">{fmt(t?.recognition || 0)} €</span>
-                        </div>
-                        <div className="text-sm space-y-1 pl-2 border-l-2 border-primary/30">
-                          <div className="flex justify-between"><span>Associé 1 (70%)</span><span>{fmt(t?.associe1 || 0)} €</span></div>
-                          <div className="flex justify-between"><span>Associé 2 (30%)</span><span>{fmt(t?.associe2 || 0)} €</span></div>
-                        </div>
-                      </div>
-                      <div className="rounded-md bg-background p-3 border">
-                        <div className="flex justify-between mb-2">
-                          <span className="font-medium">Investment (70%)</span>
-                          <span className="font-semibold">{fmt(t?.investment || 0)} €</span>
-                        </div>
-                        <div className="text-sm space-y-1 pl-2 border-l-2 border-primary/30">
-                          <div className="flex justify-between"><span>Infra (40%)</span><span>{fmt(t?.infra || 0)} €</span></div>
-                          <div className="flex justify-between"><span>Lab (60%)</span><span>{fmt(t?.lab || 0)} €</span></div>
-                        </div>
-                      </div>
-                    </div>
+                  {/* Mission summary */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <Stat label="Budget" value={m.budget} />
+                    <Stat label="Internes" value={t.intT} />
+                    <Stat label="Externes" value={t.extT} />
+                    <Stat
+                      label="Reste Structure"
+                      value={t.rest}
+                      highlight={restPositive ? "positive" : "negative"}
+                    />
                   </div>
                 </CardContent>
               </Card>
             );
           })}
         </div>
-
-        {/* Grand totals */}
-        {missions.length > 1 && (
-          <Card className="mt-8 border-primary/40">
-            <CardHeader>
-              <CardTitle>Totaux globaux</CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
-              <Stat label="Prix HT" value={grand.priceHT} />
-              <Stat label="Externes" value={grand.ext} />
-              <Stat label="Internes" value={grand.int} />
-              <Stat label="Reste" value={grand.reste} />
-              <Stat label="Recognition" value={grand.recognition} />
-              <Stat label="Associé 1" value={grand.associe1} />
-              <Stat label="Associé 2" value={grand.associe2} />
-              <Stat label="Investment" value={grand.investment} />
-              <Stat label="Infra" value={grand.infra} />
-              <Stat label="Lab" value={grand.lab} />
-            </CardContent>
-          </Card>
-        )}
       </main>
     </div>
   );
 }
 
-function Stat({ label, value }: { label: string; value: number }) {
+function Row({ label, value, icon }: { label: string; value: number; icon?: React.ReactNode }) {
   return (
-    <div className="rounded-md border p-3 bg-muted/20">
+    <div className="flex justify-between items-center">
+      <span className="text-muted-foreground flex items-center gap-1">{icon}{label}</span>
+      <span className="font-medium">{fmt(value)} TND</span>
+    </div>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  highlight,
+}: {
+  label: string;
+  value: number;
+  highlight?: "positive" | "negative";
+}) {
+  const tone =
+    highlight === "positive"
+      ? "border-emerald-500/40 bg-emerald-500/5"
+      : highlight === "negative"
+      ? "border-destructive/40 bg-destructive/5"
+      : "bg-muted/20";
+  return (
+    <div className={`rounded-md border p-3 ${tone}`}>
       <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="font-semibold">{fmt(value)} €</div>
+      <div className="font-semibold text-lg">{fmt(value)} <span className="text-xs font-normal text-muted-foreground">TND</span></div>
+    </div>
+  );
+}
+
+function PayeeSection({
+  title,
+  subtitle,
+  accent,
+  payees,
+  total,
+  paid,
+  due,
+  nameOptions,
+  onAdd,
+  onUpdate,
+  onRemove,
+}: {
+  title: string;
+  subtitle: string;
+  accent: "primary" | "muted";
+  payees: Payee[];
+  total: number;
+  paid: number;
+  due: number;
+  nameOptions?: string[];
+  onAdd: () => void;
+  onUpdate: (pid: string, patch: Partial<Payee>) => void;
+  onRemove: (pid: string) => void;
+}) {
+  return (
+    <div className={`rounded-lg border p-4 ${accent === "primary" ? "border-primary/20 bg-primary/[0.02]" : ""}`}>
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <h3 className="font-semibold">{title}</h3>
+          <p className="text-xs text-muted-foreground">{subtitle}</p>
+        </div>
+        <Button size="sm" variant="outline" onClick={onAdd}>
+          <Plus className="h-3 w-3 mr-1" /> Ajouter
+        </Button>
+      </div>
+
+      {payees.length === 0 ? (
+        <p className="text-sm text-muted-foreground italic py-2">Aucune personne ajoutée.</p>
+      ) : (
+        <div className="space-y-2">
+          {payees.map((p) => (
+            <div
+              key={p.id}
+              className="grid grid-cols-12 gap-2 items-center bg-background rounded-md p-2 border"
+            >
+              <div className="col-span-12 md:col-span-5">
+                {nameOptions ? (
+                  <Select value={p.name} onValueChange={(v) => onUpdate(p.id, { name: v })}>
+                    <SelectTrigger><SelectValue placeholder="Membre interne" /></SelectTrigger>
+                    <SelectContent>
+                      {nameOptions.map((n) => (
+                        <SelectItem key={n} value={n}>{n}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    placeholder="Nom"
+                    value={p.name}
+                    onChange={(e) => onUpdate(p.id, { name: e.target.value })}
+                  />
+                )}
+              </div>
+              <div className="col-span-7 md:col-span-3">
+                <Input
+                  type="number"
+                  placeholder="Montant"
+                  value={p.amount || ""}
+                  onChange={(e) => onUpdate(p.id, { amount: +e.target.value })}
+                />
+              </div>
+              <div className="col-span-4 md:col-span-3 flex items-center gap-2">
+                <Switch
+                  checked={p.paid}
+                  onCheckedChange={(v) => onUpdate(p.id, { paid: v })}
+                  id={`paid-${p.id}`}
+                />
+                <Label htmlFor={`paid-${p.id}`} className="text-xs cursor-pointer flex items-center gap-1">
+                  {p.paid ? (
+                    <><CheckCircle2 className="h-3 w-3 text-emerald-600" /> Payé</>
+                  ) : (
+                    <><Clock className="h-3 w-3 text-amber-600" /> En attente</>
+                  )}
+                </Label>
+              </div>
+              <div className="col-span-1 flex justify-end">
+                <Button variant="ghost" size="icon" onClick={() => onRemove(p.id)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="grid grid-cols-3 gap-2 mt-3 text-xs">
+        <div className="rounded bg-muted/40 px-2 py-1.5">
+          <div className="text-muted-foreground">Total</div>
+          <div className="font-semibold">{fmt(total)} TND</div>
+        </div>
+        <div className="rounded bg-emerald-500/10 px-2 py-1.5">
+          <div className="text-muted-foreground">Payé</div>
+          <div className="font-semibold text-emerald-700">{fmt(paid)} TND</div>
+        </div>
+        <div className="rounded bg-amber-500/10 px-2 py-1.5">
+          <div className="text-muted-foreground">À payer</div>
+          <div className="font-semibold text-amber-700">{fmt(due)} TND</div>
+        </div>
+      </div>
     </div>
   );
 }
