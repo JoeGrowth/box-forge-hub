@@ -766,8 +766,8 @@ export default function Declaration() {
                       <div>Reste {fmt(t?.rest ?? 0)} TND</div>
                       <div className="flex items-center gap-1">
                         {m.client_paid
-                          ? <><CheckCircle2 className="h-3 w-3 text-emerald-600" /> Client payé</>
-                          : <><Clock className="h-3 w-3 text-amber-600" /> Non payé</>}
+                          ? <><CheckCircle2 className="h-3 w-3 text-emerald-600" /> Paid by the client (entrée money box)</>
+                          : <><Clock className="h-3 w-3 text-amber-600" /> Client Didn't Pay</>}
                       </div>
                     </div>
                   </div>
