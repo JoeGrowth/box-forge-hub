@@ -581,7 +581,7 @@ export default function Declaration() {
               </div>
               <div className="rounded-lg border bg-background p-4">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <ArrowUpCircle className="h-4 w-4 text-rose-600" /> Sorties (personnes payées)
+                  <ArrowUpCircle className="h-4 w-4 text-rose-600" /> Outflow (Team paid)
                 </div>
                 <div className="text-2xl font-bold text-rose-700 mt-1">{fmt(moneyBox.outflow)} <span className="text-xs font-normal text-muted-foreground">TND</span></div>
               </div>
