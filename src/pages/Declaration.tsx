@@ -429,6 +429,13 @@ export default function Declaration() {
     setNewRosterName("");
   };
 
+  const addDeliveryType = () => {
+    const raw = newDeliveryType.trim().toLowerCase().replace(/\s+/g, "-");
+    if (!raw || deliveryTypes.includes(raw)) return;
+    setDeliveryTypes((d) => [...d, raw]);
+    setNewDeliveryType("");
+  };
+
   // ----- Empty state: no entities -----
   if (entities.length === 0) {
     return (
