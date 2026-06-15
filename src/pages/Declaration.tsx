@@ -304,9 +304,9 @@ export default function Declaration() {
           <h2 className="text-sm font-medium text-muted-foreground mb-3">Missions · cliquez pour éditer</h2>
           <div className="flex gap-3 overflow-x-auto pb-2">
             {missions
-              .filter((m) => m.client.trim() !== "" || m.budget > 0 || m.internal.length > 0 || m.external.length > 0)
-              .map((m, idx) => {
-                const t = totals[idx];
+              .map((m, idx) => ({ m, t: totals[idx], idx }))
+              .filter(({ m }) => m.client.trim() !== "" || m.budget > 0 || m.internal.length > 0 || m.external.length > 0)
+              .map(({ m, t }) => {
                 const isActive = m.id === activeId;
                 return (
                   <button
