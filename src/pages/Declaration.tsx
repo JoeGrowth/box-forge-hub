@@ -991,11 +991,11 @@ export default function Declaration() {
   );
 }
 
-function Row({ label, value, icon }: { label: string; value: number; icon?: React.ReactNode }) {
+function Row({ label, value, currency = "TND", icon }: { label: string; value: number; currency?: Currency; icon?: React.ReactNode }) {
   return (
     <div className="flex justify-between items-center">
       <span className="text-muted-foreground flex items-center gap-1">{icon}{label}</span>
-      <span className="font-medium">{fmt(value)} TND</span>
+      <span className="font-medium">{fmt(value)} {currency}</span>
     </div>
   );
 }
