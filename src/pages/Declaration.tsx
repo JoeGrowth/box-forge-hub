@@ -44,6 +44,8 @@ type Collaborator = { id: string; entity_id: string; collaborator_email: string;
 const DEFAULT_INTERNALS = ["Structure Handler", "Process Handler"];
 const ROSTER_KEY = "declaration_internal_roster_v1";
 const ACTIVE_ENTITY_KEY = "declaration_active_entity_v1";
+const DELIVERY_TYPES_KEY = "declaration_delivery_types_v1";
+const DEFAULT_DELIVERY_TYPES = ["consulting", "training", "fact-check"];
 const THRESHOLD = 1000;
 const CURRENCIES: Currency[] = ["TND", "EUR", "USD"];
 
@@ -51,11 +53,24 @@ const uid = () => Math.random().toString(36).slice(2, 10);
 const fmt = (n: number) =>
   new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n || 0);
 
-const TYPE_META: Record<DeliveryType, { label: string; tone: string }> = {
-  consulting: { label: "Consulting", tone: "bg-blue-500/10 text-blue-700 border-blue-200" },
-  training: { label: "Training", tone: "bg-purple-500/10 text-purple-700 border-purple-200" },
-  "fact-check": { label: "Fact Check", tone: "bg-amber-500/10 text-amber-700 border-amber-200" },
+const TYPE_TONES = [
+  "bg-blue-500/10 text-blue-700 border-blue-200",
+  "bg-purple-500/10 text-purple-700 border-purple-200",
+  "bg-amber-500/10 text-amber-700 border-amber-200",
+  "bg-emerald-500/10 text-emerald-700 border-emerald-200",
+  "bg-rose-500/10 text-rose-700 border-rose-200",
+  "bg-cyan-500/10 text-cyan-700 border-cyan-200",
+  "bg-indigo-500/10 text-indigo-700 border-indigo-200",
+  "bg-orange-500/10 text-orange-700 border-orange-200",
+];
+const typeLabel = (t: string) =>
+  (t || "").split(/[-_\s]+/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join(" ") || "—";
+const typeTone = (t: string) => {
+  let h = 0;
+  for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) >>> 0;
+  return TYPE_TONES[h % TYPE_TONES.length];
 };
+const getTypeMeta = (t: string) => ({ label: typeLabel(t), tone: typeTone(t) });
 
 export default function Declaration() {
   const { user, loading: authLoading } = useAuth();
