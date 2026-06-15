@@ -913,6 +913,7 @@ export default function Declaration() {
                 title="Internes"
                 subtitle="Membres de la structure"
                 accent="primary"
+                currency={activeMission.currency || "TND"}
                 payees={activeMission.internal}
                 total={activeTotal.intT}
                 paid={activeTotal.intPaid}
@@ -927,6 +928,7 @@ export default function Declaration() {
                 title="Externes"
                 subtitle="Prestataires hors structure"
                 accent="muted"
+                currency={activeMission.currency || "TND"}
                 payees={activeMission.external}
                 total={activeTotal.extT}
                 paid={activeTotal.extPaid}
@@ -939,12 +941,13 @@ export default function Declaration() {
               <Separator />
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <Stat label="Budget" value={activeMission.budget} />
-                <Stat label="Internes" value={activeTotal.intT} />
-                <Stat label="Externes" value={activeTotal.extT} />
+                <Stat label="Budget" value={activeMission.budget} currency={activeMission.currency || "TND"} />
+                <Stat label="Internes" value={activeTotal.intT} currency={activeMission.currency || "TND"} />
+                <Stat label="Externes" value={activeTotal.extT} currency={activeMission.currency || "TND"} />
                 <Stat
                   label="Reste Structure"
                   value={activeTotal.rest}
+                  currency={activeMission.currency || "TND"}
                   highlight={activeTotal.rest >= 0 ? "positive" : "negative"}
                 />
               </div>
