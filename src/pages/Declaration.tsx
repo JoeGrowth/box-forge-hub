@@ -25,12 +25,14 @@ import { toast } from "@/hooks/use-toast";
 
 type Payee = { id: string; name: string; role?: string; amount: number; paid: boolean };
 type DeliveryType = "consulting" | "training" | "fact-check";
+type Currency = "TND" | "EUR" | "USD";
 type Mission = {
   id: string;
   entity_id: string;
   client: string;
   type: DeliveryType;
   budget: number;
+  currency: Currency;
   client_paid: boolean;
   internal: Payee[];
   external: Payee[];
@@ -43,6 +45,7 @@ const DEFAULT_INTERNALS = ["Structure Handler", "Process Handler"];
 const ROSTER_KEY = "declaration_internal_roster_v1";
 const ACTIVE_ENTITY_KEY = "declaration_active_entity_v1";
 const THRESHOLD = 1000;
+const CURRENCIES: Currency[] = ["TND", "EUR", "USD"];
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 const fmt = (n: number) =>
