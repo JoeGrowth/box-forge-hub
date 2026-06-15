@@ -860,15 +860,28 @@ export default function Declaration() {
                   </div>
                   <div>
                     <Label className="text-xs h-4 flex items-center gap-1 mb-1">
-                      <Wallet className="h-3 w-3" /> Budget livraison (TND)
+                      <Wallet className="h-3 w-3" /> Budget livraison ({activeMission.currency || "TND"})
                     </Label>
-                    <Input
-                      type="number"
-                      placeholder="0.00"
-                      value={activeMission.budget || ""}
-                      onChange={(e) => update(activeMission.id, { budget: +e.target.value })}
-                      className="bg-background"
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        type="number"
+                        placeholder="0.00"
+                        value={activeMission.budget || ""}
+                        onChange={(e) => update(activeMission.id, { budget: +e.target.value })}
+                        className="bg-background flex-1"
+                      />
+                      <Select
+                        value={activeMission.currency || "TND"}
+                        onValueChange={(v) => update(activeMission.id, { currency: v as Currency })}
+                      >
+                        <SelectTrigger className="bg-background w-[90px]"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {CURRENCIES.map((c) => (
+                            <SelectItem key={c} value={c}>{c}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </div>
                 <Button variant="ghost" size="icon" onClick={() => removeMission(activeMission.id)}>
