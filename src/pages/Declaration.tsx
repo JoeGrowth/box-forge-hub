@@ -87,6 +87,9 @@ export default function Declaration() {
   const [roster, setRoster] = useState<string[]>(DEFAULT_INTERNALS);
   const [newRosterName, setNewRosterName] = useState("");
 
+  const [deliveryTypes, setDeliveryTypes] = useState<string[]>(DEFAULT_DELIVERY_TYPES);
+  const [newDeliveryType, setNewDeliveryType] = useState("");
+
   const [entityDialogOpen, setEntityDialogOpen] = useState(false);
   const [newEntityName, setNewEntityName] = useState("");
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
