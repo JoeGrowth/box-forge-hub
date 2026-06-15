@@ -384,19 +384,30 @@ export default function Declaration() {
   );
 
   const pool = useMemo(() => {
-    const totalRest = totals.reduce((s, t) => s + Math.max(0, t.rest), 0);
-    const distributable = totalRest >= THRESHOLD ? totalRest : 0;
-    const recognition = distributable * 0.3;
-    const investment = distributable * 0.7;
-    return {
-      totalRest, distributable,
-      pending: totalRest < THRESHOLD ? THRESHOLD - totalRest : 0,
-      recognition, investment,
-      associe1: recognition * 0.7, associe2: recognition * 0.3,
-      infra: investment * 0.4, lab: investment * 0.6,
-      reached: totalRest >= THRESHOLD,
-    };
-  }, [totals]);
+    const blank = () => ({ TND: 0, EUR: 0, USD: 0 } as Record<Currency, number>);
+    const totalRest = blank();
+    missions.forEach((m, i) => {
+      const cur = (m.currency || "TND") as Currency;
+      totalRest[cur] += Math.max(0, totals[i]?.rest ?? 0);
+    });
+    const byCurrency = CURRENCIES.map((cur) => {
+      const rest = totalRest[cur];
+      const distributable = rest >= THRESHOLD ? rest : 0;
+      const recognition = distributable * 0.3;
+      const investment = distributable * 0.7;
+      return {
+        currency: cur,
+        totalRest: rest,
+        distributable,
+        pending: rest < THRESHOLD ? THRESHOLD - rest : 0,
+        recognition, investment,
+        associe1: recognition * 0.7, associe2: recognition * 0.3,
+        infra: investment * 0.4, lab: investment * 0.6,
+        reached: rest >= THRESHOLD,
+      };
+    });
+    return { byCurrency, anyReached: byCurrency.some((p) => p.reached) };
+  }, [missions, totals]);
 
   // Money Box per currency (TND/EUR/USD)
   const moneyBox = useMemo(() => {
@@ -648,66 +659,75 @@ export default function Declaration() {
           </CardContent>
         </Card>
 
-        {/* Pool dashboard */}
-        {pool.reached ? (
-          <Card className="mb-8 border-primary/40 bg-gradient-to-br from-primary/5 via-background to-background">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-primary" /> Pool Structure
-                </CardTitle>
-                <Badge className="text-xs">Seuil atteint · répartition active</Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="text-sm text-muted-foreground">
-                Cumul Reste Structure : <strong className="text-foreground">{fmt(pool.totalRest)} TND</strong>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="rounded-lg border bg-background p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2 font-medium">
-                      <Users className="h-4 w-4 text-primary" /> Recognition · 30%
+        {/* Pool dashboard – per currency */}
+        <Card className="mb-8 border-primary/40 bg-gradient-to-br from-primary/5 via-background to-background">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" /> Pool Structure
+              </CardTitle>
+              {pool.anyReached
+                ? <Badge className="text-xs">Seuil atteint sur au moins une devise</Badge>
+                : <Badge variant="secondary" className="text-xs">Pool masqué · seuil {fmt(THRESHOLD)} par devise</Badge>}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {pool.byCurrency.map((p) => (
+              <div key={p.currency} className="rounded-xl border bg-background/60 p-4">
+                <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="font-semibold">{p.currency}</Badge>
+                    <span className="text-sm text-muted-foreground">
+                      Cumul Reste Structure : <strong className="text-foreground">{fmt(p.totalRest)} {p.currency}</strong>
+                    </span>
+                  </div>
+                  {!p.reached && (
+                    <div className="flex items-center gap-2 min-w-[200px]">
+                      <Progress value={Math.min(100, (p.totalRest / THRESHOLD) * 100)} className="h-2 flex-1" />
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        reste {fmt(p.pending)} {p.currency}
+                      </span>
                     </div>
-                    <span className="font-bold">{fmt(pool.recognition)} TND</span>
-                  </div>
-                  <div className="space-y-1.5 text-sm pl-2 border-l-2 border-primary/40">
-                    <Row label="Associé 1 (70%)" value={pool.associe1} />
-                    <Row label="Associé 2 (30%)" value={pool.associe2} />
-                  </div>
+                  )}
                 </div>
-                <div className="rounded-lg border bg-background p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2 font-medium">
-                      <Building2 className="h-4 w-4 text-primary" /> Investment · 70%
+
+                {p.reached ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="rounded-lg border bg-background p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2 font-medium">
+                          <Users className="h-4 w-4 text-primary" /> Recognition · 30%
+                        </div>
+                        <span className="font-bold">{fmt(p.recognition)} {p.currency}</span>
+                      </div>
+                      <div className="space-y-1.5 text-sm pl-2 border-l-2 border-primary/40">
+                        <Row label="Associé 1 (70%)" value={p.associe1} currency={p.currency} />
+                        <Row label="Associé 2 (30%)" value={p.associe2} currency={p.currency} />
+                      </div>
                     </div>
-                    <span className="font-bold">{fmt(pool.investment)} TND</span>
+                    <div className="rounded-lg border bg-background p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2 font-medium">
+                          <Building2 className="h-4 w-4 text-primary" /> Investment · 70%
+                        </div>
+                        <span className="font-bold">{fmt(p.investment)} {p.currency}</span>
+                      </div>
+                      <div className="space-y-1.5 text-sm pl-2 border-l-2 border-primary/40">
+                        <Row label="Infra (40%)" value={p.infra} currency={p.currency} icon={<Building2 className="h-3 w-3" />} />
+                        <Row label="Lab (60%)" value={p.lab} currency={p.currency} icon={<FlaskConical className="h-3 w-3" />} />
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-1.5 text-sm pl-2 border-l-2 border-primary/40">
-                    <Row label="Infra (40%)" value={pool.infra} icon={<Building2 className="h-3 w-3" />} />
-                    <Row label="Lab (60%)" value={pool.lab} icon={<FlaskConical className="h-3 w-3" />} />
-                  </div>
-                </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground italic">
+                    Répartition activée dès que le cumul atteint {fmt(THRESHOLD)} {p.currency}.
+                  </p>
+                )}
               </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="mb-8 border-dashed">
-            <CardContent className="py-4 flex items-center justify-between gap-4 flex-wrap">
-              <div className="text-sm">
-                <span className="text-muted-foreground">Cumul Reste Structure : </span>
-                <strong>{fmt(pool.totalRest)} TND</strong>
-                <span className="text-muted-foreground"> / {fmt(THRESHOLD)} TND</span>
-              </div>
-              <div className="flex-1 min-w-[180px] max-w-md">
-                <Progress value={Math.min(100, (pool.totalRest / THRESHOLD) * 100)} className="h-2" />
-              </div>
-              <Badge variant="secondary" className="text-xs">
-                Pool masqué · reste {fmt(pool.pending)} TND
-              </Badge>
-            </CardContent>
-          </Card>
-        )}
+            ))}
+          </CardContent>
+        </Card>
+
 
         {/* Internal roster manager */}
         <Card className="mb-8">
@@ -971,11 +991,11 @@ export default function Declaration() {
   );
 }
 
-function Row({ label, value, icon }: { label: string; value: number; icon?: React.ReactNode }) {
+function Row({ label, value, currency = "TND", icon }: { label: string; value: number; currency?: Currency; icon?: React.ReactNode }) {
   return (
     <div className="flex justify-between items-center">
       <span className="text-muted-foreground flex items-center gap-1">{icon}{label}</span>
-      <span className="font-medium">{fmt(value)} TND</span>
+      <span className="font-medium">{fmt(value)} {currency}</span>
     </div>
   );
 }
