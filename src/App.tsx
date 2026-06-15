@@ -136,6 +136,7 @@ const App = () => (
                   <Route path="/brand-identity" element={<Mask />} />
                   <Route path="/procuring" element={<Procuring />} />
                   <Route path="/el-space" element={<ElSpace />} />
+                  <Route path="/declaration" element={<Declaration />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
