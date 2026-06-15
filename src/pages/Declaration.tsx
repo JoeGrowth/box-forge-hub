@@ -844,8 +844,8 @@ export default function Declaration() {
                   />
                   <Label htmlFor={`paid-client-${activeMission.id}`} className="cursor-pointer flex items-center gap-1">
                     {activeMission.client_paid
-                      ? <><CheckCircle2 className="h-3 w-3 text-emerald-600" /> Client payé (entrée Money Box)</>
-                      : <><Clock className="h-3 w-3 text-amber-600" /> Client non payé</>}
+                      ? <><CheckCircle2 className="h-3 w-3 text-emerald-600" /> Paid by the client (entrée Money Box)</>
+                      : <><Clock className="h-3 w-3 text-amber-600" /> Client Didn't Pay</>}
                   </Label>
                 </div>
               </div>
