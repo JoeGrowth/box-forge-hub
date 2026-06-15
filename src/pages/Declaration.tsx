@@ -805,8 +805,8 @@ export default function Declaration() {
                     } ${isDragging ? "opacity-40" : ""} ${isOver ? "ring-2 ring-primary/50" : ""}`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <Badge variant="outline" className={TYPE_META[m.type].tone}>
-                        {TYPE_META[m.type].label}
+                      <Badge variant="outline" className={getTypeMeta(m.type).tone}>
+                        {getTypeMeta(m.type).label}
                       </Badge>
                       {isActive && <span className="h-2 w-2 rounded-full bg-primary" />}
                     </div>
@@ -895,8 +895,8 @@ export default function Declaration() {
                 </Button>
               </div>
               <div className="flex items-center gap-2 pt-2 flex-wrap">
-                <Badge variant="outline" className={TYPE_META[activeMission.type].tone}>
-                  {TYPE_META[activeMission.type].label}
+                <Badge variant="outline" className={getTypeMeta(activeMission.type).tone}>
+                  {getTypeMeta(activeMission.type).label}
                 </Badge>
                 {activeMission.client && <Badge variant="secondary">{activeMission.client}</Badge>}
                 <div className="ml-auto flex items-center gap-2 text-xs">
