@@ -62,6 +62,7 @@ import OpsManagement from "./pages/OpsManagement";
 import ThreeS from "./pages/ThreeS";
 import Procuring from "./pages/Procuring";
 import ElSpace from "./pages/ElSpace";
+import Declaration from "./pages/Declaration";
 
 const queryClient = new QueryClient();
 
