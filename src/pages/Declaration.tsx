@@ -806,8 +806,8 @@ export default function Declaration() {
                     </div>
                     <div className="font-semibold truncate">{m.client || "Mission sans nom"}</div>
                     <div className="text-xs text-muted-foreground mt-2 space-y-1">
-                      <div>Budget {fmt(m.budget)} TND</div>
-                      <div>Reste {fmt(t?.rest ?? 0)} TND</div>
+                      <div>Budget {fmt(m.budget)} {m.currency || "TND"}</div>
+                      <div>Reste {fmt(t?.rest ?? 0)} {m.currency || "TND"}</div>
                       <div className="flex items-center gap-1">
                         {m.client_paid
                           ? <><CheckCircle2 className="h-3 w-3 text-emerald-600" /> Paid by the client</>
