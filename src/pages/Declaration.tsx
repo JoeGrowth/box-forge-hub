@@ -24,7 +24,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 type Payee = { id: string; name: string; role?: string; amount: number; paid: boolean };
-type DeliveryType = "consulting" | "training" | "fact-check";
+type DeliveryType = string;
 type Currency = "TND" | "EUR" | "USD";
 type Mission = {
   id: string;
@@ -44,6 +44,8 @@ type Collaborator = { id: string; entity_id: string; collaborator_email: string;
 const DEFAULT_INTERNALS = ["Structure Handler", "Process Handler"];
 const ROSTER_KEY = "declaration_internal_roster_v1";
 const ACTIVE_ENTITY_KEY = "declaration_active_entity_v1";
+const DELIVERY_TYPES_KEY = "declaration_delivery_types_v1";
+const DEFAULT_DELIVERY_TYPES = ["consulting", "training", "fact-check"];
 const THRESHOLD = 1000;
 const CURRENCIES: Currency[] = ["TND", "EUR", "USD"];
 
@@ -51,11 +53,24 @@ const uid = () => Math.random().toString(36).slice(2, 10);
 const fmt = (n: number) =>
   new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n || 0);
 
-const TYPE_META: Record<DeliveryType, { label: string; tone: string }> = {
-  consulting: { label: "Consulting", tone: "bg-blue-500/10 text-blue-700 border-blue-200" },
-  training: { label: "Training", tone: "bg-purple-500/10 text-purple-700 border-purple-200" },
-  "fact-check": { label: "Fact Check", tone: "bg-amber-500/10 text-amber-700 border-amber-200" },
+const TYPE_TONES = [
+  "bg-blue-500/10 text-blue-700 border-blue-200",
+  "bg-purple-500/10 text-purple-700 border-purple-200",
+  "bg-amber-500/10 text-amber-700 border-amber-200",
+  "bg-emerald-500/10 text-emerald-700 border-emerald-200",
+  "bg-rose-500/10 text-rose-700 border-rose-200",
+  "bg-cyan-500/10 text-cyan-700 border-cyan-200",
+  "bg-indigo-500/10 text-indigo-700 border-indigo-200",
+  "bg-orange-500/10 text-orange-700 border-orange-200",
+];
+const typeLabel = (t: string) =>
+  (t || "").split(/[-_\s]+/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join(" ") || "—";
+const typeTone = (t: string) => {
+  let h = 0;
+  for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) >>> 0;
+  return TYPE_TONES[h % TYPE_TONES.length];
 };
+const getTypeMeta = (t: string) => ({ label: typeLabel(t), tone: typeTone(t) });
 
 export default function Declaration() {
   const { user, loading: authLoading } = useAuth();
@@ -71,6 +86,9 @@ export default function Declaration() {
 
   const [roster, setRoster] = useState<string[]>(DEFAULT_INTERNALS);
   const [newRosterName, setNewRosterName] = useState("");
+
+  const [deliveryTypes, setDeliveryTypes] = useState<string[]>(DEFAULT_DELIVERY_TYPES);
+  const [newDeliveryType, setNewDeliveryType] = useState("");
 
   const [entityDialogOpen, setEntityDialogOpen] = useState(false);
   const [newEntityName, setNewEntityName] = useState("");
@@ -95,6 +113,21 @@ export default function Declaration() {
   useEffect(() => {
     localStorage.setItem(ROSTER_KEY, JSON.stringify(roster));
   }, [roster]);
+
+  // Load delivery types from localStorage
+  useEffect(() => {
+    try {
+      const r = localStorage.getItem(DELIVERY_TYPES_KEY);
+      if (r) {
+        const arr = JSON.parse(r);
+        if (Array.isArray(arr) && arr.length) setDeliveryTypes(arr);
+      }
+    } catch {}
+  }, []);
+  useEffect(() => {
+    localStorage.setItem(DELIVERY_TYPES_KEY, JSON.stringify(deliveryTypes));
+  }, [deliveryTypes]);
+
 
   // Load entities
   const loadEntities = useCallback(async () => {
@@ -394,6 +427,13 @@ export default function Declaration() {
     if (!n || roster.includes(n)) return;
     setRoster((r) => [...r, n]);
     setNewRosterName("");
+  };
+
+  const addDeliveryType = () => {
+    const raw = newDeliveryType.trim().toLowerCase().replace(/\s+/g, "-");
+    if (!raw || deliveryTypes.includes(raw)) return;
+    setDeliveryTypes((d) => [...d, raw]);
+    setNewDeliveryType("");
   };
 
   // ----- Empty state: no entities -----
@@ -707,6 +747,44 @@ export default function Declaration() {
           </CardContent>
         </Card>
 
+        {/* Delivery types manager */}
+        <Card className="mb-8">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Briefcase className="h-4 w-4" /> Types de livraison (réutilisés sur toutes les missions)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {deliveryTypes.map((t) => {
+                const meta = getTypeMeta(t);
+                const inUse = missions.some((m) => m.type === t);
+                return (
+                  <Badge key={t} variant="outline" className={`gap-1 py-1.5 px-3 ${meta.tone}`}>
+                    {meta.label}
+                    {!DEFAULT_DELIVERY_TYPES.includes(t) && !inUse && (
+                      <button onClick={() => setDeliveryTypes((d) => d.filter((x) => x !== t))} className="ml-1 hover:text-destructive" aria-label="remove">
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    )}
+                  </Badge>
+                );
+              })}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Ajouter un type de livraison…"
+                value={newDeliveryType}
+                onChange={(e) => setNewDeliveryType(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addDeliveryType()}
+                className="max-w-sm"
+              />
+              <Button variant="outline" onClick={addDeliveryType}><Plus className="h-4 w-4 mr-1" /> Ajouter</Button>
+            </div>
+          </CardContent>
+        </Card>
+
+
         {/* Mission selector */}
         <div className="mb-6">
           <h2 className="text-sm font-medium text-muted-foreground mb-3">
@@ -772,8 +850,8 @@ export default function Declaration() {
                     } ${isDragging ? "opacity-40" : ""} ${isOver ? "ring-2 ring-primary/50" : ""}`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <Badge variant="outline" className={TYPE_META[m.type].tone}>
-                        {TYPE_META[m.type].label}
+                      <Badge variant="outline" className={getTypeMeta(m.type).tone}>
+                        {getTypeMeta(m.type).label}
                       </Badge>
                       {isActive && <span className="h-2 w-2 rounded-full bg-primary" />}
                     </div>
@@ -825,9 +903,9 @@ export default function Declaration() {
                     >
                       <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="consulting">Consulting</SelectItem>
-                        <SelectItem value="training">Training</SelectItem>
-                        <SelectItem value="fact-check">Fact Check</SelectItem>
+                        {[...new Set([...deliveryTypes, activeMission.type].filter(Boolean))].map((t) => (
+                          <SelectItem key={t} value={t}>{getTypeMeta(t).label}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -862,8 +940,8 @@ export default function Declaration() {
                 </Button>
               </div>
               <div className="flex items-center gap-2 pt-2 flex-wrap">
-                <Badge variant="outline" className={TYPE_META[activeMission.type].tone}>
-                  {TYPE_META[activeMission.type].label}
+                <Badge variant="outline" className={getTypeMeta(activeMission.type).tone}>
+                  {getTypeMeta(activeMission.type).label}
                 </Badge>
                 {activeMission.client && <Badge variant="secondary">{activeMission.client}</Badge>}
                 <div className="ml-auto flex items-center gap-2 text-xs">
