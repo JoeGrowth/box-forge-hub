@@ -62,6 +62,7 @@ import OpsManagement from "./pages/OpsManagement";
 import ThreeS from "./pages/ThreeS";
 import Procuring from "./pages/Procuring";
 import ElSpace from "./pages/ElSpace";
+import Declaration from "./pages/Declaration";
 
 const queryClient = new QueryClient();
 
@@ -135,6 +136,7 @@ const App = () => (
                   <Route path="/brand-identity" element={<Mask />} />
                   <Route path="/procuring" element={<Procuring />} />
                   <Route path="/el-space" element={<ElSpace />} />
+                  <Route path="/declaration" element={<Declaration />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
