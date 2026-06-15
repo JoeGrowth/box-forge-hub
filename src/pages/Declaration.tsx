@@ -597,23 +597,44 @@ export default function Declaration() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="rounded-lg border bg-background p-4">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
                   <ArrowDownCircle className="h-4 w-4 text-emerald-600" /> Inflow (Paid by the client)
                 </div>
-                <div className="text-2xl font-bold text-emerald-700 mt-1">{fmt(moneyBox.inflow)} <span className="text-xs font-normal text-muted-foreground">TND</span></div>
+                <div className="space-y-1">
+                  {CURRENCIES.map((c) => (
+                    <div key={c} className="flex items-baseline justify-between">
+                      <span className="text-xs text-muted-foreground">{c}</span>
+                      <span className="text-lg font-bold text-emerald-700">{fmt(moneyBox.inflow[c])}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
               <div className="rounded-lg border bg-background p-4">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
                   <ArrowUpCircle className="h-4 w-4 text-rose-600" /> Outflow (Team paid)
                 </div>
-                <div className="text-2xl font-bold text-rose-700 mt-1">{fmt(moneyBox.outflow)} <span className="text-xs font-normal text-muted-foreground">TND</span></div>
+                <div className="space-y-1">
+                  {CURRENCIES.map((c) => (
+                    <div key={c} className="flex items-baseline justify-between">
+                      <span className="text-xs text-muted-foreground">{c}</span>
+                      <span className="text-lg font-bold text-rose-700">{fmt(moneyBox.outflow[c])}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
               <div className="rounded-lg border-2 border-emerald-500/40 bg-emerald-500/5 p-4">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
                   <Wallet className="h-4 w-4 text-emerald-700" /> Caisse actuelle
                 </div>
-                <div className={`text-2xl font-bold mt-1 ${moneyBox.cash >= 0 ? "text-emerald-700" : "text-destructive"}`}>
-                  {fmt(moneyBox.cash)} <span className="text-xs font-normal text-muted-foreground">TND</span>
+                <div className="space-y-1">
+                  {CURRENCIES.map((c) => (
+                    <div key={c} className="flex items-baseline justify-between">
+                      <span className="text-xs text-muted-foreground">{c}</span>
+                      <span className={`text-lg font-bold ${moneyBox.cash[c] >= 0 ? "text-emerald-700" : "text-destructive"}`}>
+                        {fmt(moneyBox.cash[c])}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
