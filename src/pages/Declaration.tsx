@@ -92,6 +92,20 @@ export default function Declaration() {
 
   const removeMission = (id: string) => setMissions((ms) => ms.filter((m) => m.id !== id));
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main className="container mx-auto px-4 py-8 pt-24">
+          <Skeleton className="h-12 w-72 rounded-lg mb-8" />
+          <Skeleton className="h-64 w-full rounded-2xl" />
+        </main>
+      </div>
+    );
+  }
+
+  if (!user) return null;
+
   const totals = useMemo(() => {
     return missions.map((m) => {
       const ext = m.external.reduce((s, p) => s + (+p.amount || 0), 0);
