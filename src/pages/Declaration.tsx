@@ -391,9 +391,9 @@ export default function Declaration() {
           <Card className="overflow-hidden">
             <CardHeader className="bg-muted/30 space-y-0 pb-4">
               <div className="flex items-start justify-between gap-3 flex-wrap">
-                <div className="flex-1 min-w-[260px] grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="flex-1 min-w-[260px] grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
                   <div>
-                    <Label className="text-xs">Client</Label>
+                    <Label className="text-xs h-4 flex items-center mb-1">Client</Label>
                     <Input
                       placeholder="Nom du client"
                       value={activeMission.client}
@@ -402,7 +402,7 @@ export default function Declaration() {
                     />
                   </div>
                   <div>
-                    <Label className="text-xs">Type de livraison</Label>
+                    <Label className="text-xs h-4 flex items-center mb-1">Type de livraison</Label>
                     <Select
                       value={activeMission.type}
                       onValueChange={(v) => update(activeMission.id, { type: v as DeliveryType })}
@@ -416,7 +416,7 @@ export default function Declaration() {
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-xs flex items-center gap-1">
+                    <Label className="text-xs h-4 flex items-center gap-1 mb-1">
                       <Wallet className="h-3 w-3" /> Budget livraison (TND)
                     </Label>
                     <Input
