@@ -37,7 +37,15 @@ const emptyMission = (): Mission => ({
 });
 
 export default function Declaration() {
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [missions, setMissions] = useState<Mission[]>([]);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/auth");
+    }
+  }, [user, authLoading, navigate]);
 
   useEffect(() => {
     try {
