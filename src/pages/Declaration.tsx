@@ -972,7 +972,7 @@ function Row({ label, value, icon }: { label: string; value: number; icon?: Reac
   );
 }
 
-function Stat({ label, value, highlight }: { label: string; value: number; highlight?: "positive" | "negative" }) {
+function Stat({ label, value, currency = "TND", highlight }: { label: string; value: number; currency?: Currency; highlight?: "positive" | "negative" }) {
   const tone =
     highlight === "positive" ? "border-emerald-500/40 bg-emerald-500/5"
     : highlight === "negative" ? "border-destructive/40 bg-destructive/5"
@@ -980,15 +980,16 @@ function Stat({ label, value, highlight }: { label: string; value: number; highl
   return (
     <div className={`rounded-md border p-3 ${tone}`}>
       <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="font-semibold text-lg">{fmt(value)} <span className="text-xs font-normal text-muted-foreground">TND</span></div>
+      <div className="font-semibold text-lg">{fmt(value)} <span className="text-xs font-normal text-muted-foreground">{currency}</span></div>
     </div>
   );
 }
 
 function PayeeSection({
-  title, subtitle, accent, payees, total, paid, due, nameOptions, onAdd, onUpdate, onRemove,
+  title, subtitle, accent, currency = "TND", payees, total, paid, due, nameOptions, onAdd, onUpdate, onRemove,
 }: {
   title: string; subtitle: string; accent: "primary" | "muted";
+  currency?: Currency;
   payees: Payee[]; total: number; paid: number; due: number;
   nameOptions?: string[];
   onAdd: () => void;
