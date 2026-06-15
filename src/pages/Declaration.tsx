@@ -303,32 +303,43 @@ export default function Declaration() {
         <div className="mb-6">
           <h2 className="text-sm font-medium text-muted-foreground mb-3">Missions · cliquez pour éditer</h2>
           <div className="flex gap-3 overflow-x-auto pb-2">
-            {missions.map((m, idx) => {
-              const t = totals[idx];
-              const isActive = m.id === activeId;
-              return (
-                <button
-                  key={m.id}
-                  onClick={() => setActiveId(m.id)}
-                  className={`flex-shrink-0 text-left rounded-xl border p-4 min-w-[220px] max-w-[260px] transition-all hover:shadow-sm ${
-                    isActive
-                      ? "border-primary/60 bg-primary/[0.04] ring-1 ring-primary/20"
-                      : "border-muted bg-card hover:border-primary/30"
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <Badge variant="outline" className={TYPE_META[m.type].tone}>
-                      {TYPE_META[m.type].label}
-                    </Badge>
-                    {isActive && <span className="h-2 w-2 rounded-full bg-primary" />}
-                  </div>
-                  <div className="font-semibold truncate">{m.client || "Nouvelle mission"}</div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    Budget {fmt(m.budget)} TND · Reste {fmt(t?.rest ?? 0)} TND
-                  </div>
-                </button>
-              );
-            })}
+            {missions
+              .filter((m) => m.client.trim() !== "" || m.budget > 0 || m.internal.length > 0 || m.external.length > 0)
+              .map((m, idx) => {
+                const t = totals[idx];
+                const isActive = m.id === activeId;
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => setActiveId(m.id)}
+                    className={`flex-shrink-0 text-left rounded-xl border p-4 min-w-[220px] max-w-[260px] transition-all hover:shadow-sm ${
+                      isActive
+                        ? "border-primary/60 bg-primary/[0.04] ring-1 ring-primary/20"
+                        : "border-muted bg-card hover:border-primary/30"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <Badge variant="outline" className={TYPE_META[m.type].tone}>
+                        {TYPE_META[m.type].label}
+                      </Badge>
+                      {isActive && <span className="h-2 w-2 rounded-full bg-primary" />}
+                    </div>
+                    <div className="font-semibold truncate">{m.client || "Mission sans nom"}</div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Budget {fmt(m.budget)} TND · Reste {fmt(t?.rest ?? 0)} TND
+                    </div>
+                  </button>
+                );
+              })}
+
+            {/* Add new mission */}
+            <button
+              onClick={addMission}
+              className="flex-shrink-0 flex items-center justify-center rounded-xl border border-dashed border-muted-foreground/30 p-4 min-w-[80px] max-w-[80px] transition-all hover:border-primary/50 hover:bg-primary/[0.03]"
+              title="Nouvelle mission"
+            >
+              <Plus className="h-6 w-6 text-muted-foreground hover:text-primary transition-colors" />
+            </button>
           </div>
         </div>
 
