@@ -786,8 +786,9 @@ export default function Declaration() {
                         const [moved] = next.splice(from, 1);
                         next.splice(to, 0, moved);
                         // Persist new sort_order to DB
-                        next.forEach((item, i) => {
-                          supabase.from("declaration_missions").update({ sort_order: i }).eq("id", item.id);
+                        next.forEach(async (item, i) => {
+                          const { error } = await supabase.from("declaration_missions").update({ sort_order: i }).eq("id", item.id);
+                          if (error) console.error("sort_order persist error", error);
                         });
                         return next;
                       });
