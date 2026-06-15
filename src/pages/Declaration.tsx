@@ -139,6 +139,7 @@ export default function Declaration() {
       client: m.client,
       type: m.type as DeliveryType,
       budget: Number(m.budget),
+      currency: (m.currency as Currency) || "TND",
       client_paid: m.client_paid,
       internal: Array.isArray(m.internal) ? m.internal : [],
       external: Array.isArray(m.external) ? m.external : [],
