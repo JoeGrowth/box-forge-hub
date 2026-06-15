@@ -990,7 +990,7 @@ function PayeeSection({
           <div className="font-semibold">{fmt(total)} TND</div>
         </div>
         <div className="rounded bg-emerald-500/10 px-2 py-1.5">
-          <div className="text-muted-foreground">Payé</div>
+          <div className="text-muted-foreground">Paid</div>
           <div className="font-semibold text-emerald-700">{fmt(paid)} TND</div>
         </div>
         <div className="rounded bg-amber-500/10 px-2 py-1.5">
