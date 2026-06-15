@@ -142,6 +142,60 @@ export default function Declaration() {
     }));
     setMissions(parsed);
     setActiveId(parsed[0]?.id ?? null);
+
+    // One-time migration: if entity is empty and legacy localStorage missions exist, import them
+    const MIGRATED_KEY = `declaration_migrated_${entityId}`;
+    if (parsed.length === 0 && !localStorage.getItem(MIGRATED_KEY)) {
+      try {
+        const legacy = localStorage.getItem("declaration_missions_v2");
+        if (legacy) {
+          const arr = JSON.parse(legacy);
+          const valid = Array.isArray(arr)
+            ? arr.filter((m: any) => m && (m.client || m.budget || m.internal?.length || m.external?.length))
+            : [];
+          if (valid.length > 0) {
+            const rows = valid.map((m: any, i: number) => ({
+              entity_id: entityId,
+              client: m.client || "",
+              type: m.type || "consulting",
+              budget: Number(m.budget) || 0,
+              client_paid: !!m.client_paid,
+              internal: Array.isArray(m.internal) ? m.internal : [],
+              external: Array.isArray(m.external) ? m.external : [],
+              sort_order: i,
+            }));
+            const { data: inserted, error: insErr } = await supabase
+              .from("declaration_missions")
+              .insert(rows)
+              .select();
+            if (!insErr && inserted) {
+              const imported: Mission[] = inserted.map((m: any) => ({
+                id: m.id,
+                entity_id: m.entity_id,
+                client: m.client,
+                type: m.type as DeliveryType,
+                budget: Number(m.budget),
+                client_paid: m.client_paid,
+                internal: Array.isArray(m.internal) ? m.internal : [],
+                external: Array.isArray(m.external) ? m.external : [],
+                sort_order: m.sort_order,
+              }));
+              setMissions(imported);
+              setActiveId(imported[0]?.id ?? null);
+              localStorage.setItem(MIGRATED_KEY, "1");
+              toast({
+                title: "Missions importées",
+                description: `${imported.length} mission(s) importée(s) dans cette entité.`,
+              });
+            }
+          } else {
+            localStorage.setItem(MIGRATED_KEY, "1");
+          }
+        }
+      } catch (e) {
+        console.warn("Legacy mission import failed", e);
+      }
+    }
   }, []);
 
   useEffect(() => {
