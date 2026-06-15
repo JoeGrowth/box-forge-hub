@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Trash2, Download } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Navbar } from "@/components/layout/Navbar";
+import { useAuth } from "@/hooks/useAuth";
 
 type Person = { id: string; name: string; amount: number };
 type Mission = {
@@ -34,7 +37,15 @@ const emptyMission = (): Mission => ({
 });
 
 export default function Declaration() {
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [missions, setMissions] = useState<Mission[]>([]);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/auth");
+    }
+  }, [user, authLoading, navigate]);
 
   useEffect(() => {
     try {
@@ -80,6 +91,20 @@ export default function Declaration() {
     );
 
   const removeMission = (id: string) => setMissions((ms) => ms.filter((m) => m.id !== id));
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main className="container mx-auto px-4 py-8 pt-24">
+          <Skeleton className="h-12 w-72 rounded-lg mb-8" />
+          <Skeleton className="h-64 w-full rounded-2xl" />
+        </main>
+      </div>
+    );
+  }
+
+  if (!user) return null;
 
   const totals = useMemo(() => {
     return missions.map((m) => {

@@ -45,6 +45,7 @@ const moreLinks = [
   { name: "Structuring", path: "/structuring", icon: ListChecks },
   { name: "Track", path: "/track", icon: Activity },
   { name: "Checklist", path: "/checklist", icon: ListChecks },
+  { name: "Declaration", path: "/declaration", icon: FileText },
 ];
 
 export function Navbar() {
