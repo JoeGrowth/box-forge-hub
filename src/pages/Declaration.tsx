@@ -385,27 +385,6 @@ export default function Declaration() {
     return { inflow, outflow, cash: inflow - outflow, inflowItems, outflowItems };
   }, [missions]);
 
-  // Group missions by client
-  const grouped = useMemo(() => {
-    const filtered = missions
-      .map((m, idx) => ({ m, t: totals[idx], idx }))
-      .filter(({ m }) => m.client.trim() !== "" || m.budget > 0 || m.internal.length > 0 || m.external.length > 0);
-    const map = new Map<string, typeof filtered>();
-    filtered.forEach((row) => {
-      const key = row.m.client.trim() || "Sans client";
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(row);
-    });
-    return Array.from(map.entries()); // [clientName, rows]
-  }, [missions, totals]);
-
-  const toggleClient = (c: string) => {
-    setCollapsedClients((s) => {
-      const n = new Set(s);
-      n.has(c) ? n.delete(c) : n.add(c);
-      return n;
-    });
-  };
 
   const activeMission = missions.find((m) => m.id === activeId);
   const activeIndex = missions.findIndex((m) => m.id === activeId);
