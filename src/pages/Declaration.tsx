@@ -858,9 +858,9 @@ export default function Declaration() {
                     >
                       <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="consulting">Consulting</SelectItem>
-                        <SelectItem value="training">Training</SelectItem>
-                        <SelectItem value="fact-check">Fact Check</SelectItem>
+                        {[...new Set([...deliveryTypes, activeMission.type].filter(Boolean))].map((t) => (
+                          <SelectItem key={t} value={t}>{getTypeMeta(t).label}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
