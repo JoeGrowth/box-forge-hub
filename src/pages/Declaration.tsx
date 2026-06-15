@@ -301,22 +301,62 @@ export default function Declaration() {
 
         {/* Mission selector */}
         <div className="mb-6">
-          <h2 className="text-sm font-medium text-muted-foreground mb-3">Missions · cliquez pour éditer</h2>
+          <h2 className="text-sm font-medium text-muted-foreground mb-3">
+            Missions · cliquez pour éditer · glissez pour réordonner
+          </h2>
           <div className="flex gap-3 overflow-x-auto pb-2">
             {missions
               .map((m, idx) => ({ m, t: totals[idx], idx }))
               .filter(({ m }) => m.client.trim() !== "" || m.budget > 0 || m.internal.length > 0 || m.external.length > 0)
               .map(({ m, t }) => {
                 const isActive = m.id === activeId;
+                const isDragging = dragId === m.id;
+                const isOver = dragOverId === m.id && dragId !== m.id;
                 return (
-                  <button
+                  <div
                     key={m.id}
+                    draggable
+                    onDragStart={(e) => {
+                      setDragId(m.id);
+                      e.dataTransfer.effectAllowed = "move";
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = "move";
+                      if (dragOverId !== m.id) setDragOverId(m.id);
+                    }}
+                    onDragLeave={() => {
+                      if (dragOverId === m.id) setDragOverId(null);
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      if (!dragId || dragId === m.id) {
+                        setDragId(null);
+                        setDragOverId(null);
+                        return;
+                      }
+                      setMissions((ms) => {
+                        const from = ms.findIndex((x) => x.id === dragId);
+                        const to = ms.findIndex((x) => x.id === m.id);
+                        if (from < 0 || to < 0) return ms;
+                        const next = [...ms];
+                        const [moved] = next.splice(from, 1);
+                        next.splice(to, 0, moved);
+                        return next;
+                      });
+                      setDragId(null);
+                      setDragOverId(null);
+                    }}
+                    onDragEnd={() => {
+                      setDragId(null);
+                      setDragOverId(null);
+                    }}
                     onClick={() => setActiveId(m.id)}
-                    className={`flex-shrink-0 text-left rounded-xl border p-4 min-w-[220px] max-w-[260px] transition-all hover:shadow-sm ${
+                    className={`flex-shrink-0 text-left rounded-xl border p-4 min-w-[220px] max-w-[260px] transition-all hover:shadow-sm cursor-grab active:cursor-grabbing ${
                       isActive
                         ? "border-primary/60 bg-primary/[0.04] ring-1 ring-primary/20"
                         : "border-muted bg-card hover:border-primary/30"
-                    }`}
+                    } ${isDragging ? "opacity-40" : ""} ${isOver ? "ring-2 ring-primary/50" : ""}`}
                   >
                     <div className="flex items-center justify-between mb-2">
                       <Badge variant="outline" className={TYPE_META[m.type].tone}>
@@ -328,7 +368,7 @@ export default function Declaration() {
                     <div className="text-xs text-muted-foreground mt-1">
                       Budget {fmt(m.budget)} TND · Reste {fmt(t?.rest ?? 0)} TND
                     </div>
-                  </button>
+                  </div>
                 );
               })}
 
