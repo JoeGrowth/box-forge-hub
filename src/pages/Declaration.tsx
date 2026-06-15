@@ -179,62 +179,66 @@ export default function Declaration() {
           </Button>
         </div>
 
-        {/* Pool dashboard */}
-        <Card className="mb-8 border-primary/30 bg-gradient-to-br from-primary/5 via-background to-background">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-primary" /> Pool Structure
-              </CardTitle>
-              <Badge variant={pool.reached ? "default" : "secondary"} className="text-xs">
-                {pool.reached ? "Seuil atteint · répartition active" : `Seuil : ${fmt(THRESHOLD)} TND`}
+        {/* Pool dashboard — visible only once cumulative Rest reaches threshold */}
+        {pool.reached ? (
+          <Card className="mb-8 border-primary/40 bg-gradient-to-br from-primary/5 via-background to-background">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-primary" /> Pool Structure
+                </CardTitle>
+                <Badge className="text-xs">Seuil atteint · répartition active</Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-sm text-muted-foreground">
+                Cumul Reste Structure : <strong className="text-foreground">{fmt(pool.totalRest)} TND</strong>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="rounded-lg border bg-background p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2 font-medium">
+                      <Users className="h-4 w-4 text-primary" /> Recognition · 30%
+                    </div>
+                    <span className="font-bold">{fmt(pool.recognition)} TND</span>
+                  </div>
+                  <div className="space-y-1.5 text-sm pl-2 border-l-2 border-primary/40">
+                    <Row label="Associé 1 (70%)" value={pool.associe1} />
+                    <Row label="Associé 2 (30%)" value={pool.associe2} />
+                  </div>
+                </div>
+                <div className="rounded-lg border bg-background p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2 font-medium">
+                      <Building2 className="h-4 w-4 text-primary" /> Investment · 70%
+                    </div>
+                    <span className="font-bold">{fmt(pool.investment)} TND</span>
+                  </div>
+                  <div className="space-y-1.5 text-sm pl-2 border-l-2 border-primary/40">
+                    <Row label="Infra (40%)" value={pool.infra} icon={<Building2 className="h-3 w-3" />} />
+                    <Row label="Lab (60%)" value={pool.lab} icon={<FlaskConical className="h-3 w-3" />} />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="mb-8 border-dashed">
+            <CardContent className="py-4 flex items-center justify-between gap-4 flex-wrap">
+              <div className="text-sm">
+                <span className="text-muted-foreground">Cumul Reste Structure : </span>
+                <strong>{fmt(pool.totalRest)} TND</strong>
+                <span className="text-muted-foreground"> / {fmt(THRESHOLD)} TND</span>
+              </div>
+              <div className="flex-1 min-w-[180px] max-w-md">
+                <Progress value={Math.min(100, (pool.totalRest / THRESHOLD) * 100)} className="h-2" />
+              </div>
+              <Badge variant="secondary" className="text-xs">
+                Pool masqué · reste {fmt(pool.pending)} TND
               </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-muted-foreground">Cumul Reste Structure</span>
-                <span className="font-semibold">
-                  {fmt(pool.totalRest)} / {fmt(THRESHOLD)} TND
-                </span>
-              </div>
-              <Progress value={Math.min(100, (pool.totalRest / THRESHOLD) * 100)} className="h-2" />
-              {!pool.reached && (
-                <p className="text-xs text-muted-foreground mt-2">
-                  Il manque <strong>{fmt(pool.pending)} TND</strong> avant déclenchement de la répartition.
-                </p>
-              )}
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="rounded-lg border bg-background p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2 font-medium">
-                    <Users className="h-4 w-4 text-primary" /> Recognition · 30%
-                  </div>
-                  <span className="font-bold">{fmt(pool.recognition)} TND</span>
-                </div>
-                <div className="space-y-1.5 text-sm pl-2 border-l-2 border-primary/40">
-                  <Row label="Associé 1 (70%)" value={pool.associe1} />
-                  <Row label="Associé 2 (30%)" value={pool.associe2} />
-                </div>
-              </div>
-              <div className="rounded-lg border bg-background p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2 font-medium">
-                    <Building2 className="h-4 w-4 text-primary" /> Investment · 70%
-                  </div>
-                  <span className="font-bold">{fmt(pool.investment)} TND</span>
-                </div>
-                <div className="space-y-1.5 text-sm pl-2 border-l-2 border-primary/40">
-                  <Row label="Infra (40%)" value={pool.infra} icon={<Building2 className="h-3 w-3" />} />
-                  <Row label="Lab (60%)" value={pool.lab} icon={<FlaskConical className="h-3 w-3" />} />
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Internal roster manager */}
         <Card className="mb-8">
