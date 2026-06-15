@@ -259,6 +259,27 @@ export default function Declaration() {
     setCollaborators((cs) => [...cs, data as Collaborator]);
     setCollabEmail("");
     toast({ title: "Collaborateur ajouté", description: email });
+
+    // Send invitation email
+    try {
+      const { data: invRes, error: invErr } = await supabase.functions.invoke(
+        "send-collaborator-invite",
+        { body: { email, entityName: activeEntity?.name || "", access: collabAccess } }
+      );
+      if (invErr) throw invErr;
+      toast({
+        title: "Invitation envoyée",
+        description: invRes?.isRegistered
+          ? `${email} a accès à « ${activeEntity?.name || ""} »`
+          : `${email} a été invité à créer un compte`,
+      });
+    } catch (e: any) {
+      toast({
+        title: "Email non envoyé",
+        description: e?.message || "L'invitation par email a échoué.",
+        variant: "destructive",
+      });
+    }
   };
 
   const removeCollaborator = async (id: string) => {
