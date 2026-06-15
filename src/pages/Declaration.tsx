@@ -62,6 +62,8 @@ export default function Declaration() {
   const [activeEntityId, setActiveEntityId] = useState<string | null>(null);
   const [missions, setMissions] = useState<Mission[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
   const [collapsedClients, setCollapsedClients] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
