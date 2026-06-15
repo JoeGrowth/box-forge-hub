@@ -391,24 +391,21 @@ export default function Declaration() {
     };
   }, [totals]);
 
-  // Money Box: inflow = budget of missions where client_paid, outflow = paid payees
+  // Money Box per currency (TND/EUR/USD)
   const moneyBox = useMemo(() => {
-    let inflow = 0, outflow = 0;
-    const inflowItems: { label: string; amount: number }[] = [];
-    const outflowItems: { label: string; amount: number }[] = [];
+    const blank = () => ({ TND: 0, EUR: 0, USD: 0 } as Record<Currency, number>);
+    const inflow = blank();
+    const outflow = blank();
     missions.forEach((m) => {
-      if (m.client_paid && m.budget > 0) {
-        inflow += m.budget;
-        inflowItems.push({ label: m.client || "Client", amount: m.budget });
-      }
+      const cur = (m.currency || "TND") as Currency;
+      if (m.client_paid && m.budget > 0) inflow[cur] += m.budget;
       [...m.internal, ...m.external].forEach((p) => {
-        if (p.paid && p.amount > 0) {
-          outflow += p.amount;
-          outflowItems.push({ label: `${p.name || "—"} (${m.client || "mission"})`, amount: p.amount });
-        }
+        if (p.paid && p.amount > 0) outflow[cur] += p.amount;
       });
     });
-    return { inflow, outflow, cash: inflow - outflow, inflowItems, outflowItems };
+    const cash = blank();
+    CURRENCIES.forEach((c) => { cash[c] = inflow[c] - outflow[c]; });
+    return { inflow, outflow, cash };
   }, [missions]);
 
 
