@@ -1048,15 +1048,15 @@ function PayeeSection({
       <div className="grid grid-cols-3 gap-2 mt-3 text-xs">
         <div className="rounded bg-muted/40 px-2 py-1.5">
           <div className="text-muted-foreground">Total</div>
-          <div className="font-semibold">{fmt(total)} TND</div>
+          <div className="font-semibold">{fmt(total)} {currency}</div>
         </div>
         <div className="rounded bg-emerald-500/10 px-2 py-1.5">
           <div className="text-muted-foreground">Paid</div>
-          <div className="font-semibold text-emerald-700">{fmt(paid)} TND</div>
+          <div className="font-semibold text-emerald-700">{fmt(paid)} {currency}</div>
         </div>
         <div className="rounded bg-amber-500/10 px-2 py-1.5">
           <div className="text-muted-foreground">À payer</div>
-          <div className="font-semibold text-amber-700">{fmt(due)} TND</div>
+          <div className="font-semibold text-amber-700">{fmt(due)} {currency}</div>
         </div>
       </div>
     </div>
