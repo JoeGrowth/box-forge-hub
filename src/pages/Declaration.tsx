@@ -713,79 +713,96 @@ export default function Declaration() {
           </CardContent>
         </Card>
 
-        {/* Missions grouped by client */}
+        {/* Mission selector */}
         <div className="mb-6">
           <h2 className="text-sm font-medium text-muted-foreground mb-3">
-            Missions par client · cliquez pour éditer
+            Missions · cliquez pour éditer · glissez pour réordonner
           </h2>
-          <div className="space-y-3">
-            {grouped.map(([client, rows]) => {
-              const collapsed = collapsedClients.has(client);
-              const clientBudget = rows.reduce((s, r) => s + r.m.budget, 0);
-              const clientRest = rows.reduce((s, r) => s + Math.max(0, r.t?.rest ?? 0), 0);
-              return (
-                <div key={client} className="border rounded-xl bg-card">
-                  <button
-                    onClick={() => toggleClient(client)}
-                    className="w-full flex items-center justify-between gap-3 p-3 hover:bg-muted/30 transition-colors rounded-t-xl"
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {missions
+              .map((m, idx) => ({ m, t: totals[idx], idx }))
+              .filter(({ m }) => m.client.trim() !== "" || m.budget > 0 || m.internal.length > 0 || m.external.length > 0)
+              .map(({ m, t }) => {
+                const isActive = m.id === activeId;
+                const isDragging = dragId === m.id;
+                const isOver = dragOverId === m.id && dragId !== m.id;
+                return (
+                  <div
+                    key={m.id}
+                    draggable
+                    onDragStart={(e) => {
+                      setDragId(m.id);
+                      e.dataTransfer.effectAllowed = "move";
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = "move";
+                      if (dragOverId !== m.id) setDragOverId(m.id);
+                    }}
+                    onDragLeave={() => {
+                      if (dragOverId === m.id) setDragOverId(null);
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      if (!dragId || dragId === m.id) {
+                        setDragId(null);
+                        setDragOverId(null);
+                        return;
+                      }
+                      setMissions((ms) => {
+                        const from = ms.findIndex((x) => x.id === dragId);
+                        const to = ms.findIndex((x) => x.id === m.id);
+                        if (from < 0 || to < 0) return ms;
+                        const next = [...ms];
+                        const [moved] = next.splice(from, 1);
+                        next.splice(to, 0, moved);
+                        // Persist new sort_order to DB
+                        next.forEach((item, i) => {
+                          supabase.from("declaration_missions").update({ sort_order: i }).eq("id", item.id);
+                        });
+                        return next;
+                      });
+                      setDragId(null);
+                      setDragOverId(null);
+                    }}
+                    onDragEnd={() => {
+                      setDragId(null);
+                      setDragOverId(null);
+                    }}
+                    onClick={() => setActiveId(m.id)}
+                    className={`flex-shrink-0 text-left rounded-xl border p-4 min-w-[220px] max-w-[260px] transition-all hover:shadow-sm cursor-grab active:cursor-grabbing ${
+                      isActive
+                        ? "border-primary/60 bg-primary/[0.04] ring-1 ring-primary/20"
+                        : "border-muted bg-card hover:border-primary/30"
+                    } ${isDragging ? "opacity-40" : ""} ${isOver ? "ring-2 ring-primary/50" : ""}`}
                   >
-                    <div className="flex items-center gap-2">
-                      {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                      <span className="font-semibold">{client}</span>
-                      <Badge variant="secondary" className="text-xs">{rows.length} mission{rows.length > 1 ? "s" : ""}</Badge>
+                    <div className="flex items-center justify-between mb-2">
+                      <Badge variant="outline" className={TYPE_META[m.type].tone}>
+                        {TYPE_META[m.type].label}
+                      </Badge>
+                      {isActive && <span className="h-2 w-2 rounded-full bg-primary" />}
                     </div>
-                    <div className="text-xs text-muted-foreground flex gap-3">
-                      <span>Budget {fmt(clientBudget)} TND</span>
-                      <span>Reste {fmt(clientRest)} TND</span>
+                    <div className="font-semibold truncate">{m.client || "Mission sans nom"}</div>
+                    <div className="text-xs text-muted-foreground mt-2 space-y-1">
+                      <div>Budget {fmt(m.budget)} TND</div>
+                      <div>Reste {fmt(t?.rest ?? 0)} TND</div>
+                      <div className="flex items-center gap-1">
+                        {m.client_paid
+                          ? <><CheckCircle2 className="h-3 w-3 text-emerald-600" /> Client payé</>
+                          : <><Clock className="h-3 w-3 text-amber-600" /> Non payé</>}
+                      </div>
                     </div>
-                  </button>
-                  {!collapsed && (
-                    <div className="flex gap-3 overflow-x-auto p-3 pt-0">
-                      {rows.map(({ m, t }, idxInClient) => {
-                        const isActive = m.id === activeId;
-                        return (
-                          <div
-                            key={m.id}
-                            onClick={() => setActiveId(m.id)}
-                            className={`flex-shrink-0 cursor-pointer rounded-xl border p-4 min-w-[220px] max-w-[260px] transition-all hover:shadow-sm ${
-                              isActive
-                                ? "border-primary/60 bg-primary/[0.04] ring-1 ring-primary/20"
-                                : "border-muted bg-background hover:border-primary/30"
-                            }`}
-                          >
-                            <div className="flex items-center justify-between mb-2">
-                              <Badge variant="outline" className={TYPE_META[m.type].tone}>
-                                {TYPE_META[m.type].label}
-                              </Badge>
-                              {isActive && <span className="h-2 w-2 rounded-full bg-primary" />}
-                            </div>
-                            <div className="font-semibold truncate">
-                              {client} <span className="text-muted-foreground font-normal">({idxInClient + 1})</span>
-                            </div>
-                            <div className="text-xs text-muted-foreground mt-2 space-y-1">
-                              <div>Budget {fmt(m.budget)} TND</div>
-                              <div>Reste {fmt(t?.rest ?? 0)} TND</div>
-                              <div className="flex items-center gap-1">
-                                {m.client_paid
-                                  ? <><CheckCircle2 className="h-3 w-3 text-emerald-600" /> Client payé</>
-                                  : <><Clock className="h-3 w-3 text-amber-600" /> Non payé</>}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                  </div>
+                );
+              })}
 
             {/* Add new mission */}
             <button
               onClick={addMission}
-              className="w-full flex items-center justify-center gap-2 rounded-xl border border-dashed border-muted-foreground/30 p-4 transition-all hover:border-primary/50 hover:bg-primary/[0.03] text-muted-foreground hover:text-primary"
+              className="flex-shrink-0 flex items-center justify-center rounded-xl border border-dashed border-muted-foreground/30 p-4 min-w-[80px] max-w-[80px] transition-all hover:border-primary/50 hover:bg-primary/[0.03]"
+              title="Nouvelle mission"
             >
-              <Plus className="h-5 w-5" /> Nouvelle mission
+              <Plus className="h-6 w-6 text-muted-foreground hover:text-primary transition-colors" />
             </button>
           </div>
         </div>
