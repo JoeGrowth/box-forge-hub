@@ -24,7 +24,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 type Payee = { id: string; name: string; role?: string; amount: number; paid: boolean };
-type DeliveryType = "consulting" | "training" | "fact-check";
+type DeliveryType = string;
 type Currency = "TND" | "EUR" | "USD";
 type Mission = {
   id: string;
