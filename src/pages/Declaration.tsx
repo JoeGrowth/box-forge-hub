@@ -55,6 +55,7 @@ export default function Declaration() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [missions, setMissions] = useState<Mission[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [roster, setRoster] = useState<string[]>(DEFAULT_INTERNALS);
   const [newRosterName, setNewRosterName] = useState("");
 
@@ -65,9 +66,13 @@ export default function Declaration() {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      setMissions(raw ? JSON.parse(raw) : [newMission()]);
+      const parsed = raw ? JSON.parse(raw) : [newMission()];
+      setMissions(parsed);
+      setActiveId(parsed[0]?.id ?? null);
     } catch {
-      setMissions([newMission()]);
+      const first = newMission();
+      setMissions([first]);
+      setActiveId(first.id);
     }
     try {
       const r = localStorage.getItem(ROSTER_KEY);
@@ -108,7 +113,12 @@ export default function Declaration() {
       ms.map((m) => (m.id === id ? { ...m, [kind]: m[kind].filter((p) => p.id !== pid) } : m)),
     );
 
-  const removeMission = (id: string) => setMissions((ms) => ms.filter((m) => m.id !== id));
+  const removeMission = (id: string) =>
+    setMissions((ms) => {
+      const filtered = ms.filter((m) => m.id !== id);
+      if (activeId === id) setActiveId(filtered[0]?.id ?? null);
+      return filtered;
+    });
 
   const totals = useMemo(
     () =>
@@ -142,6 +152,16 @@ export default function Declaration() {
     };
   }, [totals]);
 
+  const addMission = () => {
+    const m = newMission();
+    setMissions((ms) => [m, ...ms]);
+    setActiveId(m.id);
+  };
+
+  const activeMission = missions.find((m) => m.id === activeId);
+  const activeIndex = missions.findIndex((m) => m.id === activeId);
+  const activeTotal = totals[activeIndex];
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -174,12 +194,12 @@ export default function Declaration() {
               Suivi des livraisons par compte ouvert · Répartition automatique au-delà de {fmt(THRESHOLD)} TND.
             </p>
           </div>
-          <Button onClick={() => setMissions((m) => [newMission(), ...m])} size="lg">
+          <Button onClick={addMission} size="lg">
             <Plus className="h-4 w-4 mr-2" /> Nouvelle mission
           </Button>
         </div>
 
-        {/* Pool dashboard — visible only once cumulative Rest reaches threshold */}
+        {/* Pool dashboard */}
         {pool.reached ? (
           <Card className="mb-8 border-primary/40 bg-gradient-to-br from-primary/5 via-background to-background">
             <CardHeader className="pb-3">
@@ -279,109 +299,140 @@ export default function Declaration() {
           </CardContent>
         </Card>
 
-        {/* Missions list */}
-        <div className="space-y-6">
-          {missions.map((m, idx) => {
-            const t = totals[idx];
-            const restPositive = t.rest >= 0;
-            return (
-              <Card key={m.id} className="overflow-hidden">
-                <CardHeader className="bg-muted/30 space-y-0 pb-4">
-                  <div className="flex items-start justify-between gap-3 flex-wrap">
-                    <div className="flex-1 min-w-[260px] grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <div>
-                        <Label className="text-xs">Client</Label>
-                        <Input
-                          placeholder="Nom du client"
-                          value={m.client}
-                          onChange={(e) => update(m.id, { client: e.target.value })}
-                          className="bg-background"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-xs">Type de livraison</Label>
-                        <Select value={m.type} onValueChange={(v) => update(m.id, { type: v as DeliveryType })}>
-                          <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="consulting">Consulting</SelectItem>
-                            <SelectItem value="training">Training</SelectItem>
-                            <SelectItem value="fact-check">Fact Check</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label className="text-xs flex items-center gap-1">
-                          <Wallet className="h-3 w-3" /> Budget livraison (TND)
-                        </Label>
-                        <Input
-                          type="number"
-                          placeholder="0.00"
-                          value={m.budget || ""}
-                          onChange={(e) => update(m.id, { budget: +e.target.value })}
-                          className="bg-background"
-                        />
-                      </div>
-                    </div>
-                    <Button variant="ghost" size="icon" onClick={() => removeMission(m.id)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                  <div className="flex items-center gap-2 pt-2">
+        {/* Mission selector */}
+        <div className="mb-6">
+          <h2 className="text-sm font-medium text-muted-foreground mb-3">Missions · cliquez pour éditer</h2>
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {missions.map((m, idx) => {
+              const t = totals[idx];
+              const isActive = m.id === activeId;
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => setActiveId(m.id)}
+                  className={`flex-shrink-0 text-left rounded-xl border p-4 min-w-[220px] max-w-[260px] transition-all hover:shadow-sm ${
+                    isActive
+                      ? "border-primary/60 bg-primary/[0.04] ring-1 ring-primary/20"
+                      : "border-muted bg-card hover:border-primary/30"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
                     <Badge variant="outline" className={TYPE_META[m.type].tone}>
                       {TYPE_META[m.type].label}
                     </Badge>
-                    {m.client && <Badge variant="secondary">{m.client}</Badge>}
+                    {isActive && <span className="h-2 w-2 rounded-full bg-primary" />}
                   </div>
-                </CardHeader>
+                  <div className="font-semibold truncate">{m.client || "Nouvelle mission"}</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Budget {fmt(m.budget)} TND · Reste {fmt(t?.rest ?? 0)} TND
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
-                <CardContent className="pt-6 space-y-6">
-                  {/* Internal */}
-                  <PayeeSection
-                    title="Internes"
-                    subtitle="Membres de la structure"
-                    accent="primary"
-                    payees={m.internal}
-                    total={t.intT}
-                    paid={t.intPaid}
-                    due={t.intDue}
-                    nameOptions={roster}
-                    onAdd={() => addPayee(m.id, "internal")}
-                    onUpdate={(pid, patch) => updatePayee(m.id, "internal", pid, patch)}
-                    onRemove={(pid) => removePayee(m.id, "internal", pid)}
-                  />
-
-                  {/* External */}
-                  <PayeeSection
-                    title="Externes"
-                    subtitle="Prestataires hors structure"
-                    accent="muted"
-                    payees={m.external}
-                    total={t.extT}
-                    paid={t.extPaid}
-                    due={t.extDue}
-                    onAdd={() => addPayee(m.id, "external")}
-                    onUpdate={(pid, patch) => updatePayee(m.id, "external", pid, patch)}
-                    onRemove={(pid) => removePayee(m.id, "external", pid)}
-                  />
-
-                  <Separator />
-
-                  {/* Mission summary */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <Stat label="Budget" value={m.budget} />
-                    <Stat label="Internes" value={t.intT} />
-                    <Stat label="Externes" value={t.extT} />
-                    <Stat
-                      label="Reste Structure"
-                      value={t.rest}
-                      highlight={restPositive ? "positive" : "negative"}
+        {/* Active mission detail */}
+        {activeMission && activeTotal ? (
+          <Card className="overflow-hidden">
+            <CardHeader className="bg-muted/30 space-y-0 pb-4">
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div className="flex-1 min-w-[260px] grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div>
+                    <Label className="text-xs">Client</Label>
+                    <Input
+                      placeholder="Nom du client"
+                      value={activeMission.client}
+                      onChange={(e) => update(activeMission.id, { client: e.target.value })}
+                      className="bg-background"
                     />
                   </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                  <div>
+                    <Label className="text-xs">Type de livraison</Label>
+                    <Select
+                      value={activeMission.type}
+                      onValueChange={(v) => update(activeMission.id, { type: v as DeliveryType })}
+                    >
+                      <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="consulting">Consulting</SelectItem>
+                        <SelectItem value="training">Training</SelectItem>
+                        <SelectItem value="fact-check">Fact Check</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-xs flex items-center gap-1">
+                      <Wallet className="h-3 w-3" /> Budget livraison (TND)
+                    </Label>
+                    <Input
+                      type="number"
+                      placeholder="0.00"
+                      value={activeMission.budget || ""}
+                      onChange={(e) => update(activeMission.id, { budget: +e.target.value })}
+                      className="bg-background"
+                    />
+                  </div>
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => removeMission(activeMission.id)}>
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
+              </div>
+              <div className="flex items-center gap-2 pt-2">
+                <Badge variant="outline" className={TYPE_META[activeMission.type].tone}>
+                  {TYPE_META[activeMission.type].label}
+                </Badge>
+                {activeMission.client && <Badge variant="secondary">{activeMission.client}</Badge>}
+              </div>
+            </CardHeader>
+
+            <CardContent className="pt-6 space-y-6">
+              <PayeeSection
+                title="Internes"
+                subtitle="Membres de la structure"
+                accent="primary"
+                payees={activeMission.internal}
+                total={activeTotal.intT}
+                paid={activeTotal.intPaid}
+                due={activeTotal.intDue}
+                nameOptions={roster}
+                onAdd={() => addPayee(activeMission.id, "internal")}
+                onUpdate={(pid, patch) => updatePayee(activeMission.id, "internal", pid, patch)}
+                onRemove={(pid) => removePayee(activeMission.id, "internal", pid)}
+              />
+
+              <PayeeSection
+                title="Externes"
+                subtitle="Prestataires hors structure"
+                accent="muted"
+                payees={activeMission.external}
+                total={activeTotal.extT}
+                paid={activeTotal.extPaid}
+                due={activeTotal.extDue}
+                onAdd={() => addPayee(activeMission.id, "external")}
+                onUpdate={(pid, patch) => updatePayee(activeMission.id, "external", pid, patch)}
+                onRemove={(pid) => removePayee(activeMission.id, "external", pid)}
+              />
+
+              <Separator />
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <Stat label="Budget" value={activeMission.budget} />
+                <Stat label="Internes" value={activeTotal.intT} />
+                <Stat label="Externes" value={activeTotal.extT} />
+                <Stat
+                  label="Reste Structure"
+                  value={activeTotal.rest}
+                  highlight={activeTotal.rest >= 0 ? "positive" : "negative"}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="border-dashed p-8 text-center text-muted-foreground">
+            Aucune mission sélectionnée. Cliquez sur une mission ci-dessus ou ajoutez-en une nouvelle.
+          </Card>
+        )}
       </main>
     </div>
   );
