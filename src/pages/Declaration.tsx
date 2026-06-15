@@ -25,12 +25,14 @@ import { toast } from "@/hooks/use-toast";
 
 type Payee = { id: string; name: string; role?: string; amount: number; paid: boolean };
 type DeliveryType = "consulting" | "training" | "fact-check";
+type Currency = "TND" | "EUR" | "USD";
 type Mission = {
   id: string;
   entity_id: string;
   client: string;
   type: DeliveryType;
   budget: number;
+  currency: Currency;
   client_paid: boolean;
   internal: Payee[];
   external: Payee[];
@@ -43,6 +45,7 @@ const DEFAULT_INTERNALS = ["Structure Handler", "Process Handler"];
 const ROSTER_KEY = "declaration_internal_roster_v1";
 const ACTIVE_ENTITY_KEY = "declaration_active_entity_v1";
 const THRESHOLD = 1000;
+const CURRENCIES: Currency[] = ["TND", "EUR", "USD"];
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 const fmt = (n: number) =>
@@ -136,6 +139,7 @@ export default function Declaration() {
       client: m.client,
       type: m.type as DeliveryType,
       budget: Number(m.budget),
+      currency: (m.currency as Currency) || "TND",
       client_paid: m.client_paid,
       internal: Array.isArray(m.internal) ? m.internal : [],
       external: Array.isArray(m.external) ? m.external : [],
@@ -176,6 +180,7 @@ export default function Declaration() {
                 client: m.client,
                 type: m.type as DeliveryType,
                 budget: Number(m.budget),
+                currency: (m.currency as Currency) || "TND",
                 client_paid: m.client_paid,
                 internal: Array.isArray(m.internal) ? m.internal : [],
                 external: Array.isArray(m.external) ? m.external : [],
@@ -309,7 +314,7 @@ export default function Declaration() {
     if (error) return toast({ title: "Erreur", description: error.message, variant: "destructive" });
     const m: Mission = {
       id: data.id, entity_id: data.entity_id, client: "", type: "consulting",
-      budget: 0, client_paid: false, internal: [], external: [], sort_order,
+      budget: 0, currency: "TND", client_paid: false, internal: [], external: [], sort_order,
     };
     setMissions((ms) => [m, ...ms]);
     setActiveId(m.id);
@@ -386,24 +391,21 @@ export default function Declaration() {
     };
   }, [totals]);
 
-  // Money Box: inflow = budget of missions where client_paid, outflow = paid payees
+  // Money Box per currency (TND/EUR/USD)
   const moneyBox = useMemo(() => {
-    let inflow = 0, outflow = 0;
-    const inflowItems: { label: string; amount: number }[] = [];
-    const outflowItems: { label: string; amount: number }[] = [];
+    const blank = () => ({ TND: 0, EUR: 0, USD: 0 } as Record<Currency, number>);
+    const inflow = blank();
+    const outflow = blank();
     missions.forEach((m) => {
-      if (m.client_paid && m.budget > 0) {
-        inflow += m.budget;
-        inflowItems.push({ label: m.client || "Client", amount: m.budget });
-      }
+      const cur = (m.currency || "TND") as Currency;
+      if (m.client_paid && m.budget > 0) inflow[cur] += m.budget;
       [...m.internal, ...m.external].forEach((p) => {
-        if (p.paid && p.amount > 0) {
-          outflow += p.amount;
-          outflowItems.push({ label: `${p.name || "—"} (${m.client || "mission"})`, amount: p.amount });
-        }
+        if (p.paid && p.amount > 0) outflow[cur] += p.amount;
       });
     });
-    return { inflow, outflow, cash: inflow - outflow, inflowItems, outflowItems };
+    const cash = blank();
+    CURRENCIES.forEach((c) => { cash[c] = inflow[c] - outflow[c]; });
+    return { inflow, outflow, cash };
   }, [missions]);
 
 
@@ -595,23 +597,44 @@ export default function Declaration() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="rounded-lg border bg-background p-4">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
                   <ArrowDownCircle className="h-4 w-4 text-emerald-600" /> Inflow (Paid by the client)
                 </div>
-                <div className="text-2xl font-bold text-emerald-700 mt-1">{fmt(moneyBox.inflow)} <span className="text-xs font-normal text-muted-foreground">TND</span></div>
+                <div className="space-y-1">
+                  {CURRENCIES.map((c) => (
+                    <div key={c} className="flex items-baseline justify-between">
+                      <span className="text-xs text-muted-foreground">{c}</span>
+                      <span className="text-lg font-bold text-emerald-700">{fmt(moneyBox.inflow[c])}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
               <div className="rounded-lg border bg-background p-4">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
                   <ArrowUpCircle className="h-4 w-4 text-rose-600" /> Outflow (Team paid)
                 </div>
-                <div className="text-2xl font-bold text-rose-700 mt-1">{fmt(moneyBox.outflow)} <span className="text-xs font-normal text-muted-foreground">TND</span></div>
+                <div className="space-y-1">
+                  {CURRENCIES.map((c) => (
+                    <div key={c} className="flex items-baseline justify-between">
+                      <span className="text-xs text-muted-foreground">{c}</span>
+                      <span className="text-lg font-bold text-rose-700">{fmt(moneyBox.outflow[c])}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
               <div className="rounded-lg border-2 border-emerald-500/40 bg-emerald-500/5 p-4">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
                   <Wallet className="h-4 w-4 text-emerald-700" /> Caisse actuelle
                 </div>
-                <div className={`text-2xl font-bold mt-1 ${moneyBox.cash >= 0 ? "text-emerald-700" : "text-destructive"}`}>
-                  {fmt(moneyBox.cash)} <span className="text-xs font-normal text-muted-foreground">TND</span>
+                <div className="space-y-1">
+                  {CURRENCIES.map((c) => (
+                    <div key={c} className="flex items-baseline justify-between">
+                      <span className="text-xs text-muted-foreground">{c}</span>
+                      <span className={`text-lg font-bold ${moneyBox.cash[c] >= 0 ? "text-emerald-700" : "text-destructive"}`}>
+                        {fmt(moneyBox.cash[c])}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -783,8 +806,8 @@ export default function Declaration() {
                     </div>
                     <div className="font-semibold truncate">{m.client || "Mission sans nom"}</div>
                     <div className="text-xs text-muted-foreground mt-2 space-y-1">
-                      <div>Budget {fmt(m.budget)} TND</div>
-                      <div>Reste {fmt(t?.rest ?? 0)} TND</div>
+                      <div>Budget {fmt(m.budget)} {m.currency || "TND"}</div>
+                      <div>Reste {fmt(t?.rest ?? 0)} {m.currency || "TND"}</div>
                       <div className="flex items-center gap-1">
                         {m.client_paid
                           ? <><CheckCircle2 className="h-3 w-3 text-emerald-600" /> Paid by the client</>
@@ -837,15 +860,28 @@ export default function Declaration() {
                   </div>
                   <div>
                     <Label className="text-xs h-4 flex items-center gap-1 mb-1">
-                      <Wallet className="h-3 w-3" /> Budget livraison (TND)
+                      <Wallet className="h-3 w-3" /> Budget livraison ({activeMission.currency || "TND"})
                     </Label>
-                    <Input
-                      type="number"
-                      placeholder="0.00"
-                      value={activeMission.budget || ""}
-                      onChange={(e) => update(activeMission.id, { budget: +e.target.value })}
-                      className="bg-background"
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        type="number"
+                        placeholder="0.00"
+                        value={activeMission.budget || ""}
+                        onChange={(e) => update(activeMission.id, { budget: +e.target.value })}
+                        className="bg-background flex-1"
+                      />
+                      <Select
+                        value={activeMission.currency || "TND"}
+                        onValueChange={(v) => update(activeMission.id, { currency: v as Currency })}
+                      >
+                        <SelectTrigger className="bg-background w-[90px]"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {CURRENCIES.map((c) => (
+                            <SelectItem key={c} value={c}>{c}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </div>
                 <Button variant="ghost" size="icon" onClick={() => removeMission(activeMission.id)}>
@@ -877,6 +913,7 @@ export default function Declaration() {
                 title="Internes"
                 subtitle="Membres de la structure"
                 accent="primary"
+                currency={activeMission.currency || "TND"}
                 payees={activeMission.internal}
                 total={activeTotal.intT}
                 paid={activeTotal.intPaid}
@@ -891,6 +928,7 @@ export default function Declaration() {
                 title="Externes"
                 subtitle="Prestataires hors structure"
                 accent="muted"
+                currency={activeMission.currency || "TND"}
                 payees={activeMission.external}
                 total={activeTotal.extT}
                 paid={activeTotal.extPaid}
@@ -903,12 +941,13 @@ export default function Declaration() {
               <Separator />
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <Stat label="Budget" value={activeMission.budget} />
-                <Stat label="Internes" value={activeTotal.intT} />
-                <Stat label="Externes" value={activeTotal.extT} />
+                <Stat label="Budget" value={activeMission.budget} currency={activeMission.currency || "TND"} />
+                <Stat label="Internes" value={activeTotal.intT} currency={activeMission.currency || "TND"} />
+                <Stat label="Externes" value={activeTotal.extT} currency={activeMission.currency || "TND"} />
                 <Stat
                   label="Reste Structure"
                   value={activeTotal.rest}
+                  currency={activeMission.currency || "TND"}
                   highlight={activeTotal.rest >= 0 ? "positive" : "negative"}
                 />
               </div>
@@ -933,7 +972,7 @@ function Row({ label, value, icon }: { label: string; value: number; icon?: Reac
   );
 }
 
-function Stat({ label, value, highlight }: { label: string; value: number; highlight?: "positive" | "negative" }) {
+function Stat({ label, value, currency = "TND", highlight }: { label: string; value: number; currency?: Currency; highlight?: "positive" | "negative" }) {
   const tone =
     highlight === "positive" ? "border-emerald-500/40 bg-emerald-500/5"
     : highlight === "negative" ? "border-destructive/40 bg-destructive/5"
@@ -941,15 +980,16 @@ function Stat({ label, value, highlight }: { label: string; value: number; highl
   return (
     <div className={`rounded-md border p-3 ${tone}`}>
       <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="font-semibold text-lg">{fmt(value)} <span className="text-xs font-normal text-muted-foreground">TND</span></div>
+      <div className="font-semibold text-lg">{fmt(value)} <span className="text-xs font-normal text-muted-foreground">{currency}</span></div>
     </div>
   );
 }
 
 function PayeeSection({
-  title, subtitle, accent, payees, total, paid, due, nameOptions, onAdd, onUpdate, onRemove,
+  title, subtitle, accent, currency = "TND", payees, total, paid, due, nameOptions, onAdd, onUpdate, onRemove,
 }: {
   title: string; subtitle: string; accent: "primary" | "muted";
+  currency?: Currency;
   payees: Payee[]; total: number; paid: number; due: number;
   nameOptions?: string[];
   onAdd: () => void;
@@ -1008,15 +1048,15 @@ function PayeeSection({
       <div className="grid grid-cols-3 gap-2 mt-3 text-xs">
         <div className="rounded bg-muted/40 px-2 py-1.5">
           <div className="text-muted-foreground">Total</div>
-          <div className="font-semibold">{fmt(total)} TND</div>
+          <div className="font-semibold">{fmt(total)} {currency}</div>
         </div>
         <div className="rounded bg-emerald-500/10 px-2 py-1.5">
           <div className="text-muted-foreground">Paid</div>
-          <div className="font-semibold text-emerald-700">{fmt(paid)} TND</div>
+          <div className="font-semibold text-emerald-700">{fmt(paid)} {currency}</div>
         </div>
         <div className="rounded bg-amber-500/10 px-2 py-1.5">
           <div className="text-muted-foreground">À payer</div>
-          <div className="font-semibold text-amber-700">{fmt(due)} TND</div>
+          <div className="font-semibold text-amber-700">{fmt(due)} {currency}</div>
         </div>
       </div>
     </div>

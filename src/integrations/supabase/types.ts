@@ -401,6 +401,7 @@ export type Database = {
           client: string
           client_paid: boolean
           created_at: string
+          currency: string
           entity_id: string
           external: Json
           id: string
@@ -414,6 +415,7 @@ export type Database = {
           client?: string
           client_paid?: boolean
           created_at?: string
+          currency?: string
           entity_id: string
           external?: Json
           id?: string
@@ -427,6 +429,7 @@ export type Database = {
           client?: string
           client_paid?: boolean
           created_at?: string
+          currency?: string
           entity_id?: string
           external?: Json
           id?: string
