@@ -367,8 +367,9 @@ export default function Declaration() {
                       {isActive && <span className="h-2 w-2 rounded-full bg-primary" />}
                     </div>
                     <div className="font-semibold truncate">{m.client || "Mission sans nom"}</div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      Budget {fmt(m.budget)} TND · Reste {fmt(t?.rest ?? 0)} TND
+                    <div className="text-xs text-muted-foreground mt-2 space-y-1">
+                      <div>Budget {fmt(m.budget)} TND</div>
+                      <div>Reste {fmt(t?.rest ?? 0)} TND</div>
                     </div>
                   </div>
                 );
