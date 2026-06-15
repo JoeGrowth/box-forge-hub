@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Trash2, Download } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Navbar } from "@/components/layout/Navbar";
+import { useAuth } from "@/hooks/useAuth";
 
 type Person = { id: string; name: string; amount: number };
 type Mission = {
