@@ -1,6 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Trash2, Wallet, Users, Building2, FlaskConical, CheckCircle2, Clock, TrendingUp } from "lucide-react";
+import {
+  Plus, Trash2, Wallet, Users, Building2, FlaskConical, CheckCircle2, Clock,
+  TrendingUp, ChevronDown, ChevronRight, Settings, Briefcase, ArrowDownCircle,
+  ArrowUpCircle, PiggyBank, UserPlus,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,39 +15,38 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
+} from "@/components/ui/dialog";
 import { Navbar } from "@/components/layout/Navbar";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 type Payee = { id: string; name: string; role?: string; amount: number; paid: boolean };
 type DeliveryType = "consulting" | "training" | "fact-check";
 type Mission = {
   id: string;
+  entity_id: string;
   client: string;
   type: DeliveryType;
   budget: number;
+  client_paid: boolean;
   internal: Payee[];
   external: Payee[];
-  createdAt: number;
+  sort_order: number;
 };
+type Entity = { id: string; owner_id: string; name: string };
+type Collaborator = { id: string; entity_id: string; collaborator_email: string; access: "view" | "edit" };
 
 const DEFAULT_INTERNALS = ["Structure Handler", "Process Handler"];
-const STORAGE_KEY = "declaration_missions_v2";
 const ROSTER_KEY = "declaration_internal_roster_v1";
-const THRESHOLD = 1000; // TND
+const ACTIVE_ENTITY_KEY = "declaration_active_entity_v1";
+const THRESHOLD = 1000;
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 const fmt = (n: number) =>
   new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n || 0);
-
-const newMission = (): Mission => ({
-  id: uid(),
-  client: "",
-  type: "consulting",
-  budget: 0,
-  internal: [],
-  external: [],
-  createdAt: Date.now(),
-});
 
 const TYPE_META: Record<DeliveryType, { label: string; tone: string }> = {
   consulting: { label: "Consulting", tone: "bg-blue-500/10 text-blue-700 border-blue-200" },
@@ -54,74 +57,231 @@ const TYPE_META: Record<DeliveryType, { label: string; tone: string }> = {
 export default function Declaration() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  const [entities, setEntities] = useState<Entity[]>([]);
+  const [activeEntityId, setActiveEntityId] = useState<string | null>(null);
   const [missions, setMissions] = useState<Mission[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [dragId, setDragId] = useState<string | null>(null);
-  const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const [collapsedClients, setCollapsedClients] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
+
   const [roster, setRoster] = useState<string[]>(DEFAULT_INTERNALS);
   const [newRosterName, setNewRosterName] = useState("");
+
+  const [entityDialogOpen, setEntityDialogOpen] = useState(false);
+  const [newEntityName, setNewEntityName] = useState("");
+  const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
+  const [collabEmail, setCollabEmail] = useState("");
+  const [collabAccess, setCollabAccess] = useState<"view" | "edit">("edit");
+
+  const activeEntity = entities.find((e) => e.id === activeEntityId);
+  const isOwner = !!activeEntity && activeEntity.owner_id === user?.id;
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth");
   }, [user, authLoading, navigate]);
 
+  // Load roster from localStorage
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const parsed = raw ? JSON.parse(raw) : [newMission()];
-      setMissions(parsed);
-      setActiveId(parsed[0]?.id ?? null);
-    } catch {
-      const first = newMission();
-      setMissions([first]);
-      setActiveId(first.id);
-    }
     try {
       const r = localStorage.getItem(ROSTER_KEY);
       if (r) setRoster(JSON.parse(r));
     } catch {}
   }, []);
-
-  useEffect(() => {
-    if (missions.length) localStorage.setItem(STORAGE_KEY, JSON.stringify(missions));
-  }, [missions]);
   useEffect(() => {
     localStorage.setItem(ROSTER_KEY, JSON.stringify(roster));
   }, [roster]);
 
-  const update = (id: string, patch: Partial<Mission>) =>
+  // Load entities
+  const loadEntities = useCallback(async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from("declaration_entities")
+      .select("*")
+      .order("created_at", { ascending: true });
+    if (error) {
+      toast({ title: "Erreur chargement entités", description: error.message, variant: "destructive" });
+      return;
+    }
+    setEntities((data || []) as Entity[]);
+    const saved = localStorage.getItem(ACTIVE_ENTITY_KEY);
+    const found = data?.find((e) => e.id === saved);
+    setActiveEntityId(found?.id ?? data?.[0]?.id ?? null);
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    loadEntities().finally(() => setLoading(false));
+  }, [user, loadEntities]);
+
+  useEffect(() => {
+    if (activeEntityId) localStorage.setItem(ACTIVE_ENTITY_KEY, activeEntityId);
+  }, [activeEntityId]);
+
+  // Load missions for active entity
+  const loadMissions = useCallback(async (entityId: string) => {
+    const { data, error } = await supabase
+      .from("declaration_missions")
+      .select("*")
+      .eq("entity_id", entityId)
+      .order("sort_order", { ascending: true });
+    if (error) {
+      toast({ title: "Erreur chargement missions", description: error.message, variant: "destructive" });
+      return;
+    }
+    const parsed: Mission[] = (data || []).map((m: any) => ({
+      id: m.id,
+      entity_id: m.entity_id,
+      client: m.client,
+      type: m.type as DeliveryType,
+      budget: Number(m.budget),
+      client_paid: m.client_paid,
+      internal: Array.isArray(m.internal) ? m.internal : [],
+      external: Array.isArray(m.external) ? m.external : [],
+      sort_order: m.sort_order,
+    }));
+    setMissions(parsed);
+    setActiveId(parsed[0]?.id ?? null);
+  }, []);
+
+  useEffect(() => {
+    if (activeEntityId) loadMissions(activeEntityId);
+    else setMissions([]);
+  }, [activeEntityId, loadMissions]);
+
+  // Load collaborators when dialog opens
+  useEffect(() => {
+    if (!entityDialogOpen || !activeEntityId) return;
+    supabase
+      .from("declaration_entity_collaborators")
+      .select("*")
+      .eq("entity_id", activeEntityId)
+      .then(({ data }) => setCollaborators((data || []) as Collaborator[]));
+  }, [entityDialogOpen, activeEntityId]);
+
+  // ---------- Entity actions ----------
+  const createEntity = async () => {
+    const name = newEntityName.trim();
+    if (!name || !user) return;
+    const { data, error } = await supabase
+      .from("declaration_entities")
+      .insert({ name, owner_id: user.id })
+      .select()
+      .single();
+    if (error) {
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      return;
+    }
+    setEntities((es) => [...es, data as Entity]);
+    setActiveEntityId(data.id);
+    setNewEntityName("");
+    toast({ title: "Entité créée", description: name });
+  };
+
+  const deleteEntity = async (id: string) => {
+    if (!confirm("Supprimer cette entité et toutes ses missions ?")) return;
+    const { error } = await supabase.from("declaration_entities").delete().eq("id", id);
+    if (error) return toast({ title: "Erreur", description: error.message, variant: "destructive" });
+    setEntities((es) => es.filter((e) => e.id !== id));
+    if (activeEntityId === id) setActiveEntityId(null);
+  };
+
+  const renameEntity = async (id: string, name: string) => {
+    const { error } = await supabase.from("declaration_entities").update({ name }).eq("id", id);
+    if (error) return toast({ title: "Erreur", description: error.message, variant: "destructive" });
+    setEntities((es) => es.map((e) => (e.id === id ? { ...e, name } : e)));
+  };
+
+  const addCollaborator = async () => {
+    const email = collabEmail.trim().toLowerCase();
+    if (!email || !activeEntityId) return;
+    const { data, error } = await supabase
+      .from("declaration_entity_collaborators")
+      .insert({ entity_id: activeEntityId, collaborator_email: email, access: collabAccess })
+      .select()
+      .single();
+    if (error) return toast({ title: "Erreur", description: error.message, variant: "destructive" });
+    setCollaborators((cs) => [...cs, data as Collaborator]);
+    setCollabEmail("");
+    toast({ title: "Collaborateur ajouté", description: email });
+  };
+
+  const removeCollaborator = async (id: string) => {
+    const { error } = await supabase.from("declaration_entity_collaborators").delete().eq("id", id);
+    if (error) return toast({ title: "Erreur", description: error.message, variant: "destructive" });
+    setCollaborators((cs) => cs.filter((c) => c.id !== id));
+  };
+
+  // ---------- Mission actions ----------
+  const addMission = async () => {
+    if (!activeEntityId) return;
+    const sort_order = (missions[0]?.sort_order ?? 0) - 1;
+    const { data, error } = await supabase
+      .from("declaration_missions")
+      .insert({
+        entity_id: activeEntityId,
+        client: "",
+        type: "consulting",
+        budget: 0,
+        client_paid: false,
+        internal: [],
+        external: [],
+        sort_order,
+      })
+      .select()
+      .single();
+    if (error) return toast({ title: "Erreur", description: error.message, variant: "destructive" });
+    const m: Mission = {
+      id: data.id, entity_id: data.entity_id, client: "", type: "consulting",
+      budget: 0, client_paid: false, internal: [], external: [], sort_order,
+    };
+    setMissions((ms) => [m, ...ms]);
+    setActiveId(m.id);
+  };
+
+  const persistMission = async (id: string, patch: Partial<Mission>) => {
+    const payload: any = { ...patch };
+    if (payload.internal) payload.internal = payload.internal;
+    await supabase.from("declaration_missions").update(payload).eq("id", id);
+  };
+
+  const update = (id: string, patch: Partial<Mission>) => {
     setMissions((ms) => ms.map((m) => (m.id === id ? { ...m, ...patch } : m)));
+    persistMission(id, patch);
+  };
 
-  const addPayee = (id: string, kind: "internal" | "external") =>
-    setMissions((ms) =>
-      ms.map((m) =>
-        m.id === id
-          ? { ...m, [kind]: [...m[kind], { id: uid(), name: "", amount: 0, paid: false }] }
-          : m,
-      ),
-    );
+  const updatePayees = (id: string, kind: "internal" | "external", payees: Payee[]) => {
+    setMissions((ms) => ms.map((m) => (m.id === id ? { ...m, [kind]: payees } : m)));
+    supabase.from("declaration_missions").update({ [kind]: payees }).eq("id", id);
+  };
 
-  const updatePayee = (id: string, kind: "internal" | "external", pid: string, patch: Partial<Payee>) =>
-    setMissions((ms) =>
-      ms.map((m) =>
-        m.id === id
-          ? { ...m, [kind]: m[kind].map((p) => (p.id === pid ? { ...p, ...patch } : p)) }
-          : m,
-      ),
-    );
+  const addPayee = (id: string, kind: "internal" | "external") => {
+    const m = missions.find((x) => x.id === id);
+    if (!m) return;
+    updatePayees(id, kind, [...m[kind], { id: uid(), name: "", amount: 0, paid: false }]);
+  };
+  const updatePayee = (id: string, kind: "internal" | "external", pid: string, patch: Partial<Payee>) => {
+    const m = missions.find((x) => x.id === id);
+    if (!m) return;
+    updatePayees(id, kind, m[kind].map((p) => (p.id === pid ? { ...p, ...patch } : p)));
+  };
+  const removePayee = (id: string, kind: "internal" | "external", pid: string) => {
+    const m = missions.find((x) => x.id === id);
+    if (!m) return;
+    updatePayees(id, kind, m[kind].filter((p) => p.id !== pid));
+  };
 
-  const removePayee = (id: string, kind: "internal" | "external", pid: string) =>
-    setMissions((ms) =>
-      ms.map((m) => (m.id === id ? { ...m, [kind]: m[kind].filter((p) => p.id !== pid) } : m)),
-    );
-
-  const removeMission = (id: string) =>
+  const removeMission = async (id: string) => {
+    const { error } = await supabase.from("declaration_missions").delete().eq("id", id);
+    if (error) return toast({ title: "Erreur", description: error.message, variant: "destructive" });
     setMissions((ms) => {
-      const filtered = ms.filter((m) => m.id !== id);
-      if (activeId === id) setActiveId(filtered[0]?.id ?? null);
-      return filtered;
+      const next = ms.filter((m) => m.id !== id);
+      if (activeId === id) setActiveId(next[0]?.id ?? null);
+      return next;
     });
+  };
 
+  // ---------- Derivations ----------
   const totals = useMemo(
     () =>
       missions.map((m) => {
@@ -141,30 +301,62 @@ export default function Declaration() {
     const recognition = distributable * 0.3;
     const investment = distributable * 0.7;
     return {
-      totalRest,
-      distributable,
+      totalRest, distributable,
       pending: totalRest < THRESHOLD ? THRESHOLD - totalRest : 0,
-      recognition,
-      investment,
-      associe1: recognition * 0.7,
-      associe2: recognition * 0.3,
-      infra: investment * 0.4,
-      lab: investment * 0.6,
+      recognition, investment,
+      associe1: recognition * 0.7, associe2: recognition * 0.3,
+      infra: investment * 0.4, lab: investment * 0.6,
       reached: totalRest >= THRESHOLD,
     };
   }, [totals]);
 
-  const addMission = () => {
-    const m = newMission();
-    setMissions((ms) => [m, ...ms]);
-    setActiveId(m.id);
+  // Money Box: inflow = budget of missions where client_paid, outflow = paid payees
+  const moneyBox = useMemo(() => {
+    let inflow = 0, outflow = 0;
+    const inflowItems: { label: string; amount: number }[] = [];
+    const outflowItems: { label: string; amount: number }[] = [];
+    missions.forEach((m) => {
+      if (m.client_paid && m.budget > 0) {
+        inflow += m.budget;
+        inflowItems.push({ label: m.client || "Client", amount: m.budget });
+      }
+      [...m.internal, ...m.external].forEach((p) => {
+        if (p.paid && p.amount > 0) {
+          outflow += p.amount;
+          outflowItems.push({ label: `${p.name || "—"} (${m.client || "mission"})`, amount: p.amount });
+        }
+      });
+    });
+    return { inflow, outflow, cash: inflow - outflow, inflowItems, outflowItems };
+  }, [missions]);
+
+  // Group missions by client
+  const grouped = useMemo(() => {
+    const filtered = missions
+      .map((m, idx) => ({ m, t: totals[idx], idx }))
+      .filter(({ m }) => m.client.trim() !== "" || m.budget > 0 || m.internal.length > 0 || m.external.length > 0);
+    const map = new Map<string, typeof filtered>();
+    filtered.forEach((row) => {
+      const key = row.m.client.trim() || "Sans client";
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(row);
+    });
+    return Array.from(map.entries()); // [clientName, rows]
+  }, [missions, totals]);
+
+  const toggleClient = (c: string) => {
+    setCollapsedClients((s) => {
+      const n = new Set(s);
+      n.has(c) ? n.delete(c) : n.add(c);
+      return n;
+    });
   };
 
   const activeMission = missions.find((m) => m.id === activeId);
   const activeIndex = missions.findIndex((m) => m.id === activeId);
   const activeTotal = totals[activeIndex];
 
-  if (authLoading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
@@ -184,22 +376,192 @@ export default function Declaration() {
     setNewRosterName("");
   };
 
+  // ----- Empty state: no entities -----
+  if (entities.length === 0) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main className="container mx-auto px-4 py-8 pt-24 max-w-2xl">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Briefcase className="h-5 w-5" /> Créez votre première entité
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Chaque entité (ex : Pengry, Weimprove) regroupe ses propres missions, sa Money Box et ses collaborateurs.
+              </p>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Nom de l'entité"
+                  value={newEntityName}
+                  onChange={(e) => setNewEntityName(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && createEntity()}
+                />
+                <Button onClick={createEntity}><Plus className="h-4 w-4 mr-1" /> Créer</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <main className="container mx-auto px-4 py-8 pt-24 max-w-6xl">
-        {/* Header */}
+        {/* Header with entity selector */}
         <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
-          <div>
+          <div className="flex-1 min-w-[260px]">
             <h1 className="text-3xl font-bold tracking-tight">Déclaration des Missions</h1>
             <p className="text-muted-foreground mt-1">
-              Suivi des livraisons par compte ouvert · Répartition automatique au-delà de {fmt(THRESHOLD)} TND.
+              Entité active · suivi des livraisons et de la trésorerie.
             </p>
           </div>
-          <Button onClick={addMission} size="lg">
-            <Plus className="h-4 w-4 mr-2" /> Nouvelle mission
-          </Button>
+          <div className="flex items-center gap-2">
+            <Select value={activeEntityId ?? ""} onValueChange={setActiveEntityId}>
+              <SelectTrigger className="w-[220px]">
+                <Building2 className="h-4 w-4 mr-2 text-muted-foreground" />
+                <SelectValue placeholder="Choisir une entité" />
+              </SelectTrigger>
+              <SelectContent>
+                {entities.map((e) => (
+                  <SelectItem key={e.id} value={e.id}>
+                    {e.name}{e.owner_id !== user.id ? " (partagée)" : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Dialog open={entityDialogOpen} onOpenChange={setEntityDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="icon" title="Gérer les entités">
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Gérer les entités</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-6">
+                  {/* Create */}
+                  <div>
+                    <Label className="text-sm">Créer une entité</Label>
+                    <div className="flex gap-2 mt-1.5">
+                      <Input
+                        placeholder="Nom de l'entité (ex : Pengry)"
+                        value={newEntityName}
+                        onChange={(e) => setNewEntityName(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && createEntity()}
+                      />
+                      <Button onClick={createEntity}><Plus className="h-4 w-4 mr-1" /> Ajouter</Button>
+                    </div>
+                  </div>
+
+                  {/* My entities */}
+                  <div>
+                    <Label className="text-sm">Mes entités</Label>
+                    <div className="space-y-2 mt-1.5">
+                      {entities.filter((e) => e.owner_id === user.id).map((e) => (
+                        <div key={e.id} className="flex items-center gap-2 border rounded-md p-2">
+                          <Input
+                            value={e.name}
+                            onChange={(ev) => setEntities((es) => es.map((x) => x.id === e.id ? { ...x, name: ev.target.value } : x))}
+                            onBlur={(ev) => renameEntity(e.id, ev.target.value)}
+                            className="flex-1"
+                          />
+                          <Button variant="ghost" size="icon" onClick={() => deleteEntity(e.id)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Collaborators of active entity */}
+                  {isOwner && activeEntity && (
+                    <div>
+                      <Label className="text-sm flex items-center gap-1">
+                        <UserPlus className="h-4 w-4" /> Collaborateurs de « {activeEntity.name} »
+                      </Label>
+                      <div className="flex gap-2 mt-1.5">
+                        <Input
+                          placeholder="email@exemple.com"
+                          value={collabEmail}
+                          onChange={(e) => setCollabEmail(e.target.value)}
+                        />
+                        <Select value={collabAccess} onValueChange={(v) => setCollabAccess(v as any)}>
+                          <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="view">Voir</SelectItem>
+                            <SelectItem value="edit">Éditer</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button onClick={addCollaborator}>Inviter</Button>
+                      </div>
+                      <div className="space-y-1.5 mt-3">
+                        {collaborators.map((c) => (
+                          <div key={c.id} className="flex items-center justify-between border rounded-md px-3 py-1.5 text-sm">
+                            <span>{c.collaborator_email}</span>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline">{c.access === "edit" ? "Éditeur" : "Lecteur"}</Badge>
+                              <Button variant="ghost" size="icon" onClick={() => removeCollaborator(c.id)}>
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                        {collaborators.length === 0 && (
+                          <p className="text-xs text-muted-foreground italic">Aucun collaborateur.</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setEntityDialogOpen(false)}>Fermer</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+            <Button onClick={addMission} size="lg" disabled={!activeEntityId}>
+              <Plus className="h-4 w-4 mr-2" /> Nouvelle mission
+            </Button>
+          </div>
         </div>
+
+        {/* Money Box */}
+        <Card className="mb-6 border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 via-background to-background">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <PiggyBank className="h-5 w-5 text-emerald-600" /> Money Box · {activeEntity?.name}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="rounded-lg border bg-background p-4">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <ArrowDownCircle className="h-4 w-4 text-emerald-600" /> Entrées (clients payés)
+                </div>
+                <div className="text-2xl font-bold text-emerald-700 mt-1">{fmt(moneyBox.inflow)} <span className="text-xs font-normal text-muted-foreground">TND</span></div>
+              </div>
+              <div className="rounded-lg border bg-background p-4">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <ArrowUpCircle className="h-4 w-4 text-rose-600" /> Sorties (personnes payées)
+                </div>
+                <div className="text-2xl font-bold text-rose-700 mt-1">{fmt(moneyBox.outflow)} <span className="text-xs font-normal text-muted-foreground">TND</span></div>
+              </div>
+              <div className="rounded-lg border-2 border-emerald-500/40 bg-emerald-500/5 p-4">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Wallet className="h-4 w-4 text-emerald-700" /> Caisse actuelle
+                </div>
+                <div className={`text-2xl font-bold mt-1 ${moneyBox.cash >= 0 ? "text-emerald-700" : "text-destructive"}`}>
+                  {fmt(moneyBox.cash)} <span className="text-xs font-normal text-muted-foreground">TND</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Pool dashboard */}
         {pool.reached ? (
@@ -275,11 +637,7 @@ export default function Declaration() {
                 <Badge key={n} variant="secondary" className="gap-1 py-1.5 px-3">
                   <span className="text-xs text-muted-foreground">Internal {i + 1} —</span> {n}
                   {!DEFAULT_INTERNALS.includes(n) && (
-                    <button
-                      onClick={() => setRoster((r) => r.filter((x) => x !== n))}
-                      className="ml-1 hover:text-destructive"
-                      aria-label="remove"
-                    >
+                    <button onClick={() => setRoster((r) => r.filter((x) => x !== n))} className="ml-1 hover:text-destructive" aria-label="remove">
                       <Trash2 className="h-3 w-3" />
                     </button>
                   )}
@@ -294,94 +652,84 @@ export default function Declaration() {
                 onKeyDown={(e) => e.key === "Enter" && addRoster()}
                 className="max-w-sm"
               />
-              <Button variant="outline" onClick={addRoster}>
-                <Plus className="h-4 w-4 mr-1" /> Ajouter
-              </Button>
+              <Button variant="outline" onClick={addRoster}><Plus className="h-4 w-4 mr-1" /> Ajouter</Button>
             </div>
           </CardContent>
         </Card>
 
-        {/* Mission selector */}
+        {/* Missions grouped by client */}
         <div className="mb-6">
           <h2 className="text-sm font-medium text-muted-foreground mb-3">
-            Missions · cliquez pour éditer · glissez pour réordonner
+            Missions par client · cliquez pour éditer
           </h2>
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            {missions
-              .map((m, idx) => ({ m, t: totals[idx], idx }))
-              .filter(({ m }) => m.client.trim() !== "" || m.budget > 0 || m.internal.length > 0 || m.external.length > 0)
-              .map(({ m, t }) => {
-                const isActive = m.id === activeId;
-                const isDragging = dragId === m.id;
-                const isOver = dragOverId === m.id && dragId !== m.id;
-                return (
-                  <div
-                    key={m.id}
-                    draggable
-                    onDragStart={(e) => {
-                      setDragId(m.id);
-                      e.dataTransfer.effectAllowed = "move";
-                    }}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      e.dataTransfer.dropEffect = "move";
-                      if (dragOverId !== m.id) setDragOverId(m.id);
-                    }}
-                    onDragLeave={() => {
-                      if (dragOverId === m.id) setDragOverId(null);
-                    }}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      if (!dragId || dragId === m.id) {
-                        setDragId(null);
-                        setDragOverId(null);
-                        return;
-                      }
-                      setMissions((ms) => {
-                        const from = ms.findIndex((x) => x.id === dragId);
-                        const to = ms.findIndex((x) => x.id === m.id);
-                        if (from < 0 || to < 0) return ms;
-                        const next = [...ms];
-                        const [moved] = next.splice(from, 1);
-                        next.splice(to, 0, moved);
-                        return next;
-                      });
-                      setDragId(null);
-                      setDragOverId(null);
-                    }}
-                    onDragEnd={() => {
-                      setDragId(null);
-                      setDragOverId(null);
-                    }}
-                    onClick={() => setActiveId(m.id)}
-                    className={`flex-shrink-0 text-left rounded-xl border p-4 min-w-[220px] max-w-[260px] transition-all hover:shadow-sm cursor-grab active:cursor-grabbing ${
-                      isActive
-                        ? "border-primary/60 bg-primary/[0.04] ring-1 ring-primary/20"
-                        : "border-muted bg-card hover:border-primary/30"
-                    } ${isDragging ? "opacity-40" : ""} ${isOver ? "ring-2 ring-primary/50" : ""}`}
+          <div className="space-y-3">
+            {grouped.map(([client, rows]) => {
+              const collapsed = collapsedClients.has(client);
+              const clientBudget = rows.reduce((s, r) => s + r.m.budget, 0);
+              const clientRest = rows.reduce((s, r) => s + Math.max(0, r.t?.rest ?? 0), 0);
+              return (
+                <div key={client} className="border rounded-xl bg-card">
+                  <button
+                    onClick={() => toggleClient(client)}
+                    className="w-full flex items-center justify-between gap-3 p-3 hover:bg-muted/30 transition-colors rounded-t-xl"
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <Badge variant="outline" className={TYPE_META[m.type].tone}>
-                        {TYPE_META[m.type].label}
-                      </Badge>
-                      {isActive && <span className="h-2 w-2 rounded-full bg-primary" />}
+                    <div className="flex items-center gap-2">
+                      {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                      <span className="font-semibold">{client}</span>
+                      <Badge variant="secondary" className="text-xs">{rows.length} mission{rows.length > 1 ? "s" : ""}</Badge>
                     </div>
-                    <div className="font-semibold truncate">{m.client || "Mission sans nom"}</div>
-                    <div className="text-xs text-muted-foreground mt-2 space-y-1">
-                      <div>Budget {fmt(m.budget)} TND</div>
-                      <div>Reste {fmt(t?.rest ?? 0)} TND</div>
+                    <div className="text-xs text-muted-foreground flex gap-3">
+                      <span>Budget {fmt(clientBudget)} TND</span>
+                      <span>Reste {fmt(clientRest)} TND</span>
                     </div>
-                  </div>
-                );
-              })}
+                  </button>
+                  {!collapsed && (
+                    <div className="flex gap-3 overflow-x-auto p-3 pt-0">
+                      {rows.map(({ m, t }, idxInClient) => {
+                        const isActive = m.id === activeId;
+                        return (
+                          <div
+                            key={m.id}
+                            onClick={() => setActiveId(m.id)}
+                            className={`flex-shrink-0 cursor-pointer rounded-xl border p-4 min-w-[220px] max-w-[260px] transition-all hover:shadow-sm ${
+                              isActive
+                                ? "border-primary/60 bg-primary/[0.04] ring-1 ring-primary/20"
+                                : "border-muted bg-background hover:border-primary/30"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <Badge variant="outline" className={TYPE_META[m.type].tone}>
+                                {TYPE_META[m.type].label}
+                              </Badge>
+                              {isActive && <span className="h-2 w-2 rounded-full bg-primary" />}
+                            </div>
+                            <div className="font-semibold truncate">
+                              {client} <span className="text-muted-foreground font-normal">({idxInClient + 1})</span>
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-2 space-y-1">
+                              <div>Budget {fmt(m.budget)} TND</div>
+                              <div>Reste {fmt(t?.rest ?? 0)} TND</div>
+                              <div className="flex items-center gap-1">
+                                {m.client_paid
+                                  ? <><CheckCircle2 className="h-3 w-3 text-emerald-600" /> Client payé</>
+                                  : <><Clock className="h-3 w-3 text-amber-600" /> Non payé</>}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
 
             {/* Add new mission */}
             <button
               onClick={addMission}
-              className="flex-shrink-0 flex items-center justify-center rounded-xl border border-dashed border-muted-foreground/30 p-4 min-w-[80px] max-w-[80px] transition-all hover:border-primary/50 hover:bg-primary/[0.03]"
-              title="Nouvelle mission"
+              className="w-full flex items-center justify-center gap-2 rounded-xl border border-dashed border-muted-foreground/30 p-4 transition-all hover:border-primary/50 hover:bg-primary/[0.03] text-muted-foreground hover:text-primary"
             >
-              <Plus className="h-6 w-6 text-muted-foreground hover:text-primary transition-colors" />
+              <Plus className="h-5 w-5" /> Nouvelle mission
             </button>
           </div>
         </div>
@@ -432,11 +780,23 @@ export default function Declaration() {
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>
               </div>
-              <div className="flex items-center gap-2 pt-2">
+              <div className="flex items-center gap-2 pt-2 flex-wrap">
                 <Badge variant="outline" className={TYPE_META[activeMission.type].tone}>
                   {TYPE_META[activeMission.type].label}
                 </Badge>
                 {activeMission.client && <Badge variant="secondary">{activeMission.client}</Badge>}
+                <div className="ml-auto flex items-center gap-2 text-xs">
+                  <Switch
+                    id={`paid-client-${activeMission.id}`}
+                    checked={activeMission.client_paid}
+                    onCheckedChange={(v) => update(activeMission.id, { client_paid: v })}
+                  />
+                  <Label htmlFor={`paid-client-${activeMission.id}`} className="cursor-pointer flex items-center gap-1">
+                    {activeMission.client_paid
+                      ? <><CheckCircle2 className="h-3 w-3 text-emerald-600" /> Client payé (entrée Money Box)</>
+                      : <><Clock className="h-3 w-3 text-amber-600" /> Client non payé</>}
+                  </Label>
+                </div>
               </div>
             </CardHeader>
 
@@ -501,21 +861,11 @@ function Row({ label, value, icon }: { label: string; value: number; icon?: Reac
   );
 }
 
-function Stat({
-  label,
-  value,
-  highlight,
-}: {
-  label: string;
-  value: number;
-  highlight?: "positive" | "negative";
-}) {
+function Stat({ label, value, highlight }: { label: string; value: number; highlight?: "positive" | "negative" }) {
   const tone =
-    highlight === "positive"
-      ? "border-emerald-500/40 bg-emerald-500/5"
-      : highlight === "negative"
-      ? "border-destructive/40 bg-destructive/5"
-      : "bg-muted/20";
+    highlight === "positive" ? "border-emerald-500/40 bg-emerald-500/5"
+    : highlight === "negative" ? "border-destructive/40 bg-destructive/5"
+    : "bg-muted/20";
   return (
     <div className={`rounded-md border p-3 ${tone}`}>
       <div className="text-xs text-muted-foreground">{label}</div>
@@ -525,25 +875,10 @@ function Stat({
 }
 
 function PayeeSection({
-  title,
-  subtitle,
-  accent,
-  payees,
-  total,
-  paid,
-  due,
-  nameOptions,
-  onAdd,
-  onUpdate,
-  onRemove,
+  title, subtitle, accent, payees, total, paid, due, nameOptions, onAdd, onUpdate, onRemove,
 }: {
-  title: string;
-  subtitle: string;
-  accent: "primary" | "muted";
-  payees: Payee[];
-  total: number;
-  paid: number;
-  due: number;
+  title: string; subtitle: string; accent: "primary" | "muted";
+  payees: Payee[]; total: number; paid: number; due: number;
   nameOptions?: string[];
   onAdd: () => void;
   onUpdate: (pid: string, patch: Partial<Payee>) => void;
@@ -556,9 +891,7 @@ function PayeeSection({
           <h3 className="font-semibold">{title}</h3>
           <p className="text-xs text-muted-foreground">{subtitle}</p>
         </div>
-        <Button size="sm" variant="outline" onClick={onAdd}>
-          <Plus className="h-3 w-3 mr-1" /> Ajouter
-        </Button>
+        <Button size="sm" variant="outline" onClick={onAdd}><Plus className="h-3 w-3 mr-1" /> Ajouter</Button>
       </div>
 
       {payees.length === 0 ? (
@@ -566,10 +899,7 @@ function PayeeSection({
       ) : (
         <div className="space-y-2">
           {payees.map((p) => (
-            <div
-              key={p.id}
-              className="grid grid-cols-12 gap-2 items-center bg-background rounded-md p-2 border"
-            >
+            <div key={p.id} className="grid grid-cols-12 gap-2 items-center bg-background rounded-md p-2 border">
               <div className="col-span-12 md:col-span-5">
                 {nameOptions ? (
                   <Select value={p.name} onValueChange={(v) => onUpdate(p.id, { name: v })}>
@@ -581,33 +911,16 @@ function PayeeSection({
                     </SelectContent>
                   </Select>
                 ) : (
-                  <Input
-                    placeholder="Nom"
-                    value={p.name}
-                    onChange={(e) => onUpdate(p.id, { name: e.target.value })}
-                  />
+                  <Input placeholder="Nom" value={p.name} onChange={(e) => onUpdate(p.id, { name: e.target.value })} />
                 )}
               </div>
               <div className="col-span-7 md:col-span-3">
-                <Input
-                  type="number"
-                  placeholder="Montant"
-                  value={p.amount || ""}
-                  onChange={(e) => onUpdate(p.id, { amount: +e.target.value })}
-                />
+                <Input type="number" placeholder="Montant" value={p.amount || ""} onChange={(e) => onUpdate(p.id, { amount: +e.target.value })} />
               </div>
               <div className="col-span-4 md:col-span-3 flex items-center gap-2">
-                <Switch
-                  checked={p.paid}
-                  onCheckedChange={(v) => onUpdate(p.id, { paid: v })}
-                  id={`paid-${p.id}`}
-                />
+                <Switch checked={p.paid} onCheckedChange={(v) => onUpdate(p.id, { paid: v })} id={`paid-${p.id}`} />
                 <Label htmlFor={`paid-${p.id}`} className="text-xs cursor-pointer flex items-center gap-1">
-                  {p.paid ? (
-                    <><CheckCircle2 className="h-3 w-3 text-emerald-600" /> Payé</>
-                  ) : (
-                    <><Clock className="h-3 w-3 text-amber-600" /> En attente</>
-                  )}
+                  {p.paid ? <><CheckCircle2 className="h-3 w-3 text-emerald-600" /> Payé</> : <><Clock className="h-3 w-3 text-amber-600" /> En attente</>}
                 </Label>
               </div>
               <div className="col-span-1 flex justify-end">
