@@ -971,7 +971,7 @@ function PayeeSection({
               <div className="col-span-4 md:col-span-3 flex items-center gap-2">
                 <Switch checked={p.paid} onCheckedChange={(v) => onUpdate(p.id, { paid: v })} id={`paid-${p.id}`} />
                 <Label htmlFor={`paid-${p.id}`} className="text-xs cursor-pointer flex items-center gap-1">
-                  {p.paid ? <><CheckCircle2 className="h-3 w-3 text-emerald-600" /> Payé</> : <><Clock className="h-3 w-3 text-amber-600" /> En attente</>}
+                  {p.paid ? <><CheckCircle2 className="h-3 w-3 text-emerald-600" /> Paid</> : <><Clock className="h-3 w-3 text-amber-600" /> Pending</>}
                 </Label>
               </div>
               <div className="col-span-1 flex justify-end">
