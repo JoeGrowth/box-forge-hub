@@ -575,7 +575,7 @@ export default function Declaration() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="rounded-lg border bg-background p-4">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <ArrowDownCircle className="h-4 w-4 text-emerald-600" /> Entrées (clients payés)
+                  <ArrowDownCircle className="h-4 w-4 text-emerald-600" /> Inflow (Paid by the client)
                 </div>
                 <div className="text-2xl font-bold text-emerald-700 mt-1">{fmt(moneyBox.inflow)} <span className="text-xs font-normal text-muted-foreground">TND</span></div>
               </div>
