@@ -314,7 +314,7 @@ export default function Declaration() {
     if (error) return toast({ title: "Erreur", description: error.message, variant: "destructive" });
     const m: Mission = {
       id: data.id, entity_id: data.entity_id, client: "", type: "consulting",
-      budget: 0, client_paid: false, internal: [], external: [], sort_order,
+      budget: 0, currency: "TND", client_paid: false, internal: [], external: [], sort_order,
     };
     setMissions((ms) => [m, ...ms]);
     setActiveId(m.id);
