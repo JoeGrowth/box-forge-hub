@@ -339,6 +339,112 @@ export type Database = {
           },
         ]
       }
+      declaration_entities: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      declaration_entity_collaborators: {
+        Row: {
+          access: string
+          collaborator_email: string
+          created_at: string
+          entity_id: string
+          id: string
+        }
+        Insert: {
+          access: string
+          collaborator_email: string
+          created_at?: string
+          entity_id: string
+          id?: string
+        }
+        Update: {
+          access?: string
+          collaborator_email?: string
+          created_at?: string
+          entity_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "declaration_entity_collaborators_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "declaration_entities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      declaration_missions: {
+        Row: {
+          budget: number
+          client: string
+          client_paid: boolean
+          created_at: string
+          entity_id: string
+          external: Json
+          id: string
+          internal: Json
+          sort_order: number
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          budget?: number
+          client?: string
+          client_paid?: boolean
+          created_at?: string
+          entity_id: string
+          external?: Json
+          id?: string
+          internal?: Json
+          sort_order?: number
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          budget?: number
+          client?: string
+          client_paid?: boolean
+          created_at?: string
+          entity_id?: string
+          external?: Json
+          id?: string
+          internal?: Json
+          sort_order?: number
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "declaration_missions_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "declaration_entities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       direct_conversations: {
         Row: {
           created_at: string
@@ -1936,6 +2042,10 @@ export type Database = {
     }
     Functions: {
       current_user_email: { Args: never; Returns: string }
+      declaration_entity_access: {
+        Args: { _entity_id: string; _user_id: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
