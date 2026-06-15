@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Plus, Trash2, Wallet, Users, Building2, FlaskConical, CheckCircle2, Clock,
-  TrendingUp, ChevronDown, ChevronRight, Settings, Briefcase, ArrowDownCircle,
+  TrendingUp, Settings, Briefcase, ArrowDownCircle,
   ArrowUpCircle, PiggyBank, UserPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
