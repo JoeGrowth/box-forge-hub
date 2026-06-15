@@ -56,6 +56,8 @@ export default function Declaration() {
   const navigate = useNavigate();
   const [missions, setMissions] = useState<Mission[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
   const [roster, setRoster] = useState<string[]>(DEFAULT_INTERNALS);
   const [newRosterName, setNewRosterName] = useState("");
 
