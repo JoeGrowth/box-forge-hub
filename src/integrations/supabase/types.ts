@@ -2054,6 +2054,10 @@ export type Database = {
         Returns: boolean
       }
       is_approved_cobuilder: { Args: { _user_id: string }; Returns: boolean }
+      is_declaration_entity_collaborator: {
+        Args: { _entity_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_plan_shared_with_me: { Args: { _plan_id: string }; Returns: boolean }
     }
     Enums: {
