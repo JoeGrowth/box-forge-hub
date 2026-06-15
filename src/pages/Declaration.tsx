@@ -322,8 +322,11 @@ export default function Declaration() {
 
   const persistMission = async (id: string, patch: Partial<Mission>) => {
     const payload: any = { ...patch };
-    if (payload.internal) payload.internal = payload.internal;
-    await supabase.from("declaration_missions").update(payload).eq("id", id);
+    const { error } = await supabase.from("declaration_missions").update(payload).eq("id", id);
+    if (error) {
+      console.error("persistMission error", error, patch);
+      toast({ title: "Sauvegarde échouée", description: error.message, variant: "destructive" });
+    }
   };
 
   const update = (id: string, patch: Partial<Mission>) => {
@@ -331,9 +334,13 @@ export default function Declaration() {
     persistMission(id, patch);
   };
 
-  const updatePayees = (id: string, kind: "internal" | "external", payees: Payee[]) => {
+  const updatePayees = async (id: string, kind: "internal" | "external", payees: Payee[]) => {
     setMissions((ms) => ms.map((m) => (m.id === id ? { ...m, [kind]: payees } : m)));
-    supabase.from("declaration_missions").update({ [kind]: payees }).eq("id", id);
+    const { error } = await supabase.from("declaration_missions").update({ [kind]: payees }).eq("id", id);
+    if (error) {
+      console.error("updatePayees error", error);
+      toast({ title: "Sauvegarde échouée", description: error.message, variant: "destructive" });
+    }
   };
 
   const addPayee = (id: string, kind: "internal" | "external") => {
