@@ -575,13 +575,13 @@ export default function Declaration() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="rounded-lg border bg-background p-4">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <ArrowDownCircle className="h-4 w-4 text-emerald-600" /> Entrées (clients payés)
+                  <ArrowDownCircle className="h-4 w-4 text-emerald-600" /> Inflow (Paid by the client)
                 </div>
                 <div className="text-2xl font-bold text-emerald-700 mt-1">{fmt(moneyBox.inflow)} <span className="text-xs font-normal text-muted-foreground">TND</span></div>
               </div>
               <div className="rounded-lg border bg-background p-4">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <ArrowUpCircle className="h-4 w-4 text-rose-600" /> Sorties (personnes payées)
+                  <ArrowUpCircle className="h-4 w-4 text-rose-600" /> Outflow (Team paid)
                 </div>
                 <div className="text-2xl font-bold text-rose-700 mt-1">{fmt(moneyBox.outflow)} <span className="text-xs font-normal text-muted-foreground">TND</span></div>
               </div>
@@ -971,7 +971,7 @@ function PayeeSection({
               <div className="col-span-4 md:col-span-3 flex items-center gap-2">
                 <Switch checked={p.paid} onCheckedChange={(v) => onUpdate(p.id, { paid: v })} id={`paid-${p.id}`} />
                 <Label htmlFor={`paid-${p.id}`} className="text-xs cursor-pointer flex items-center gap-1">
-                  {p.paid ? <><CheckCircle2 className="h-3 w-3 text-emerald-600" /> Payé</> : <><Clock className="h-3 w-3 text-amber-600" /> En attente</>}
+                  {p.paid ? <><CheckCircle2 className="h-3 w-3 text-emerald-600" /> Paid</> : <><Clock className="h-3 w-3 text-amber-600" /> Pending</>}
                 </Label>
               </div>
               <div className="col-span-1 flex justify-end">
@@ -990,7 +990,7 @@ function PayeeSection({
           <div className="font-semibold">{fmt(total)} TND</div>
         </div>
         <div className="rounded bg-emerald-500/10 px-2 py-1.5">
-          <div className="text-muted-foreground">Payé</div>
+          <div className="text-muted-foreground">Paid</div>
           <div className="font-semibold text-emerald-700">{fmt(paid)} TND</div>
         </div>
         <div className="rounded bg-amber-500/10 px-2 py-1.5">
