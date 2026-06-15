@@ -384,19 +384,30 @@ export default function Declaration() {
   );
 
   const pool = useMemo(() => {
-    const totalRest = totals.reduce((s, t) => s + Math.max(0, t.rest), 0);
-    const distributable = totalRest >= THRESHOLD ? totalRest : 0;
-    const recognition = distributable * 0.3;
-    const investment = distributable * 0.7;
-    return {
-      totalRest, distributable,
-      pending: totalRest < THRESHOLD ? THRESHOLD - totalRest : 0,
-      recognition, investment,
-      associe1: recognition * 0.7, associe2: recognition * 0.3,
-      infra: investment * 0.4, lab: investment * 0.6,
-      reached: totalRest >= THRESHOLD,
-    };
-  }, [totals]);
+    const blank = () => ({ TND: 0, EUR: 0, USD: 0 } as Record<Currency, number>);
+    const totalRest = blank();
+    missions.forEach((m, i) => {
+      const cur = (m.currency || "TND") as Currency;
+      totalRest[cur] += Math.max(0, totals[i]?.rest ?? 0);
+    });
+    const byCurrency = CURRENCIES.map((cur) => {
+      const rest = totalRest[cur];
+      const distributable = rest >= THRESHOLD ? rest : 0;
+      const recognition = distributable * 0.3;
+      const investment = distributable * 0.7;
+      return {
+        currency: cur,
+        totalRest: rest,
+        distributable,
+        pending: rest < THRESHOLD ? THRESHOLD - rest : 0,
+        recognition, investment,
+        associe1: recognition * 0.7, associe2: recognition * 0.3,
+        infra: investment * 0.4, lab: investment * 0.6,
+        reached: rest >= THRESHOLD,
+      };
+    });
+    return { byCurrency, anyReached: byCurrency.some((p) => p.reached) };
+  }, [missions, totals]);
 
   // Money Box per currency (TND/EUR/USD)
   const moneyBox = useMemo(() => {
