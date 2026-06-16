@@ -29,7 +29,7 @@ export function LandingHeroV2() {
           {/* Main headline */}
           <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.1] mb-6 animate-fade-in" style={{ animationDelay: "0.1s" }}>
             From Opportunity to Growth.
-            <span className="block mt-2 bg-gradient-to-r from-b4-teal via-b4-teal to-emerald-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-b4-teal via-b4-teal to-emerald-400 bg-clip-text text-transparent">
               One Operating System.
             </span>
           </h1>
@@ -43,7 +43,7 @@ export function LandingHeroV2() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 animate-fade-in" style={{ animationDelay: "0.3s" }}>
             <Button size="xl" className="bg-b4-teal hover:bg-b4-teal/90 text-white font-semibold px-8 py-6 text-lg rounded-xl shadow-lg shadow-b4-teal/25 transition-all hover:shadow-xl hover:shadow-b4-teal/30 hover:-translate-y-0.5" asChild>
               <Link to="/auth?mode=signup">
-                Start Building Today <ArrowRight className="ml-2 w-5 h-5" />
+                Start Today <ArrowRight className="ml-2 w-5 h-5" />
               </Link>
             </Button>
             <Button size="xl" variant="outline" className="border-white/20 text-white hover:bg-white/10 font-semibold px-8 py-6 text-lg rounded-xl" asChild>
