@@ -29,11 +29,11 @@ const engineLinks = [
 ];
 
 const publishLinks = [
-  { name: "Job", path: "/start", icon: Briefcase, desc: "Form for recruiting — appears in Marketplace > Jobs" },
-  { name: "Consulting Opportunity", path: "/publish-consulting", icon: Handshake, desc: "Create a service — appears in Marketplace > Consulting" },
-  { name: "Startup Idea", path: "/create-idea", icon: Lightbulb, desc: "Launch a venture — appears in Marketplace > Startups" },
-  { name: "Training", path: "/publish-training", icon: GraduationCap, desc: "Submit a training — appears in Marketplace > Training" },
-  { name: "Tender", path: "/procuring", icon: FileText, desc: "Post a tender — appears in Marketplace > Tenders" },
+  { name: "Job", path: "/start", icon: Briefcase, desc: "Form for recruiting" },
+  { name: "Consulting Opportunity", path: "/publish-consulting", icon: Handshake, desc: "Create a service" },
+  { name: "Startup Idea", path: "/create-idea", icon: Lightbulb, desc: "Launch a venture" },
+  { name: "Training", path: "/publish-training", icon: GraduationCap, desc: "Submit a training" },
+  { name: "Tender", path: "/procuring", icon: FileText, desc: "Post a tender" },
 ];
 
 const moreLinks = [
