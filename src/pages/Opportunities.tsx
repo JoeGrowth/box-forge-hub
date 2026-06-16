@@ -34,6 +34,7 @@ const Opportunities = () => {
   const [rawStartups, setRawStartups] = useState<any[]>([]);
   const [rawTrainings, setRawTrainings] = useState<any[]>([]);
   const [rawTenders, setRawTenders] = useState<any[]>([]);
+  const [rawJobs, setRawJobs] = useState<any[]>([]);
   const [userSkillNames, setUserSkillNames] = useState<string[]>([]);
   const [userCapacity, setUserCapacity] = useState<{ hasTrackRecord: boolean; sectors: string[]; experience: number }>({
     hasTrackRecord: false,
@@ -55,7 +56,7 @@ const Opportunities = () => {
     }
 
     const fetchAll = async () => {
-      const [startupsRes, trainingsRes, tendersRes, userSkillsRes, myProfileRes] = await Promise.all([
+    const [startupsRes, trainingsRes, tendersRes, jobsRes, userSkillsRes, myProfileRes] = await Promise.all([
         supabase
           .from("startup_ideas")
           .select("*")
@@ -74,6 +75,11 @@ const Opportunities = () => {
           .eq("status", "published")
           .order("created_at", { ascending: false }),
         supabase
+          .from("job_opportunities" as any)
+          .select("*")
+          .eq("status", "published")
+          .order("created_at", { ascending: false }),
+        supabase
           .from("user_skills")
           .select("skill_tag_id, skill_tags(name)")
           .eq("user_id", user.id),
@@ -87,6 +93,7 @@ const Opportunities = () => {
       const startupData = startupsRes.data || [];
       const trainingData = (trainingsRes.data as any[]) || [];
       const tenderData = (tendersRes.data as any[]) || [];
+      const jobData = (jobsRes.data as any[]) || [];
 
       // Extract user skill names
       const skillNames = (userSkillsRes.data || []).map((r: any) => r.skill_tags?.name).filter(Boolean);
@@ -117,6 +124,7 @@ const Opportunities = () => {
         ...startupData.map((s: any) => s.creator_id),
         ...trainingData.map((t: any) => t.user_id),
         ...tenderData.map((t: any) => t.user_id),
+        ...jobData.map((j: any) => j.user_id),
       ].filter(Boolean);
 
       let profileMap = new Map<string, string>();
@@ -131,6 +139,7 @@ const Opportunities = () => {
       setRawStartups(startupData.map((s: any) => ({ ...s, _author: profileMap.get(s.creator_id) || "Unknown" })));
       setRawTrainings(trainingData.map((t: any) => ({ ...t, _author: profileMap.get(t.user_id) || "Unknown" })));
       setRawTenders(tenderData.map((t: any) => ({ ...t, _author: profileMap.get(t.user_id) || "Unknown" })));
+      setRawJobs(jobData.map((j: any) => ({ ...j, _author: profileMap.get(j.user_id) || "Unknown" })));
 
       setLoading(false);
     };
@@ -189,7 +198,23 @@ const Opportunities = () => {
       rank: 100 + i,
     }));
 
-    const all = [...SEEDED_OPPORTUNITIES, ...startupOpps, ...trainingOpps, ...tenderOpps];
+    const jobOpps: Opportunity[] = rawJobs.map((j, i) => ({
+      id: j.id,
+      title: j.title,
+      category: "job" as const,
+      required_skills: [j.sector, j.employment_type, j.location].filter(Boolean).slice(0, 5),
+      income_range: j.salary_range || "Not specified",
+      effort_level: j.employment_type || "Full-time",
+      description: j.description,
+      primary_action: { type: "apply" as const, label: "Apply", route: "#" },
+      source_id: j.id,
+      created_at: j.created_at,
+      author_name: j._author || "Unknown",
+      sector: j.sector,
+      rank: 75 + i,
+    }));
+
+    const all = [...SEEDED_OPPORTUNITIES, ...startupOpps, ...trainingOpps, ...tenderOpps, ...jobOpps];
 
     // Compute match scores
     const scored = all.map((opp) => ({
@@ -205,7 +230,7 @@ const Opportunities = () => {
     }
 
     return scored;
-  }, [rawStartups, rawTrainings, rawTenders, userSkillNames]);
+  }, [rawStartups, rawTrainings, rawTenders, rawJobs, userSkillNames]);
 
   // Capacity-based tender filter helper
   const passesTenderCapacity = (opp: Opportunity & { match_score: number }) => {

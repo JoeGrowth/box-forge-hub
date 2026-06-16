@@ -64,6 +64,7 @@ import Procuring from "./pages/Procuring";
 import ElSpace from "./pages/ElSpace";
 import PublishConsulting from "./pages/PublishConsulting";
 import PublishTraining from "./pages/PublishTraining";
+import PublishJob from "./pages/PublishJob";
 import Declaration from "./pages/Declaration";
 
 const queryClient = new QueryClient();
@@ -113,6 +114,7 @@ const App = () => (
                   <Route path="/trainingmanagement" element={<TrainingManagement />} />
                   <Route path="/publish-consulting" element={<PublishConsulting />} />
                   <Route path="/publish-training" element={<PublishTraining />} />
+                  <Route path="/publish-job" element={<PublishJob />} />
                   </Route>
                   <Route path="/opportunities/:id" element={<OpportunityDetail />} />
                   <Route path="/mask" element={<Mask />} />
