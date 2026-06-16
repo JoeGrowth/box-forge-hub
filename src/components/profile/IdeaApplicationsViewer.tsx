@@ -127,6 +127,35 @@ export function IdeaApplicationsViewer({ ideaId, ideaTitle }: IdeaApplicationsVi
           console.error("Error creating team member:", tmError);
         }
 
+        // Emit graph events for the accepted contribution + team membership.
+        {
+          const { emitGraphEvent, idemKey } = await import("@/lib/graph");
+          emitGraphEvent({
+            userId: applicantId,
+            eventType: "startup_contribution_accepted",
+            eventVersion: 1,
+            aggregateType: "startup",
+            aggregateId: ideaId,
+            sourceModule: "idea.team",
+            idempotencyKey: idemKey("startup_contribution_accepted", 1, applicantId, ideaId),
+            payload: {
+              startup_id: ideaId,
+              role: application?.role_applied ?? null,
+              applicant_name: applicantName,
+            },
+          });
+          emitGraphEvent({
+            userId: applicantId,
+            eventType: "startup_member_added",
+            eventVersion: 1,
+            aggregateType: "startup",
+            aggregateId: ideaId,
+            sourceModule: "idea.team",
+            idempotencyKey: idemKey("startup_member_added", 1, applicantId, ideaId),
+            payload: { startup_id: ideaId },
+          });
+        }
+
         // Create compensation offer from applicant's proposal
         if (teamMember && application) {
           const timeEq = application.proposed_time_equity_percentage || 0;

@@ -36,38 +36,47 @@ becomes another silo because all of them derive from the same primitives.
 
 ## Phase 1 — Expertise Graph (current)
 
-### Shipped this turn
-- Migration: `graph_events`, `graph_nodes`, `graph_edges`, `expertise_graph`,
-  helper RPCs (`graph_upsert_node`, `graph_upsert_edge`, `recompute_expertise`).
-- Edge function: `project-graph-events` — async worker, idempotent, with
-  per-event `processed_at` / `processing_error` for replay and DLQ.
-- Client helper: `src/lib/graph.ts` — `emitGraphEvent()` fire-and-forget.
-- React hook: `src/hooks/useExpertise.tsx` — only allowed read path.
+### Phase 1 completion criteria (Gates 1 + 2 enforced)
+- [x] Versioned event catalog (`event_catalog` table, seeded v1 contracts)
+- [x] Idempotent event processing (`graph_events.idempotency_key` unique)
+- [x] `graph_events` populated
+- [x] `graph_nodes` populated (via async worker)
+- [x] `graph_edges` populated (via async worker)
+- [x] `expertise_graph` projection populated (with `score_breakdown` explainability)
+- [ ] Wave 1 emitters live (skills, certifications, startup acceptance — **shipped**; verify in prod)
+- [x] Projection explainability available (`score_breakdown` jsonb)
+- [ ] UI consuming `expertise_graph` (blocked on parity)
+- [ ] Parity tests passing (edge fn `expertise-parity-check`, criterion: `fail === 0`)
+
+### Shipped
+- Migration 1: `graph_events`, `graph_nodes`, `graph_edges`, `expertise_graph`, helper RPCs.
+- Migration 2 (safeguards): `event_catalog` + seed, `event_version`, unique `idempotency_key`, validation trigger, `score_breakdown`, `legacy_expertise_calc` parity helper.
+- Edge fn `project-graph-events` — async worker, DLQ-safe.
+- Edge fn `expertise-parity-check` — gates UI migration.
+- `src/lib/graph.ts` — `emitGraphEvent()` + `idemKey()` (version + key REQUIRED).
+- `src/hooks/useExpertise.tsx` — only allowed read path.
+- **Wave 1 emitters wired** (highest expertise signal first):
+  - `SkillTagPicker.tsx` → `skill_added` / `skill_removed`
+  - `AdminLearningJourneysTab.tsx` → `certification_verified` + `journey_completed`
+  - `IdeaApplicationsViewer.tsx` (acceptance) → `startup_contribution_accepted` + `startup_member_added`
 
 ### Remaining in Phase 1
-1. **Wire emitters into the 8 source modules** at their existing write sites:
-   - `src/components/profile/SkillTagPicker.tsx` → `skill_added` / `skill_removed`
-   - `src/components/admin/AdminApprovalsTab.tsx` → `certification_verified`
-   - Learning journey completion paths → `certification_earned` / `journey_completed`
-   - `src/components/idea/TeamManagementDialog.tsx` (accept applicant) → `startup_contribution_accepted` / `startup_member_added`
-   - `src/components/consulting/CreateServiceDialog.tsx` → `consulting_service_published`
-   - `src/components/resume/TrainTeamDialog.tsx` / `PublishTraining.tsx` → `training_published`
-   - `src/pages/PublishJob.tsx` → `job_published`
-   - `src/pages/Procuring.tsx` (tender publish/win) → `tender_published` / `tender_won`
-2. **Schedule the worker** via `pg_cron` every minute hitting
-   `project-graph-events`.
-3. **Backfill** synthetic events from existing rows (one migration), so
-   day-one users land with a non-zero `expertise_graph`.
-4. **Swap UI read sites** to `useExpertise()`:
-   - `src/components/dashboard/DashboardStats.tsx`
-   - `src/pages/Profile.tsx` skills/expertise sections
-   - `src/pages/CoBuilders.tsx` ranking badge
-   - `src/components/opportunities/OpportunityCard.tsx` match preview
-5. **Acceptance audit (architectural, not numerical):**
-   - `rg "from\\(['\"]user_skills['\"]\\)" src/` returns only the
-     `emitGraphEvent` adapters and the Skill picker write path.
-   - `rg "from\\(['\"]user_certifications['\"]\\)" src/` same constraint.
-   - Every wired module shows a `graph_events` row within 5s of action.
+1. Schedule the worker via `pg_cron` (every minute) hitting `project-graph-events`.
+2. Backfill: synthesize idempotent v1 events from existing `user_skills`, `user_certifications`, `startup_team_members`.
+3. Run `expertise-parity-check` against ≥25 users; require `ready_for_ui_migration: true`.
+4. Only then swap UI read sites to `useExpertise()`:
+   - `DashboardStats.tsx`, `Profile.tsx`, `CoBuilders.tsx`, `OpportunityCard.tsx`.
+
+### Wave 2 (after Phase 1 closes)
+- `consulting_services` published/completed
+- `training_opportunities` published/delivered
+- `tenders` published/won
+
+### Wave 3
+- `job_opportunities` published/applied
+- Career achievements
+- Future transaction events (deferred to Phase 4)
+
 
 ## Out of scope until Phase 1 is closed
 - Stripe / billing / subscriptions

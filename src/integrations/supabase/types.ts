@@ -680,6 +680,39 @@ export type Database = {
         }
         Relationships: []
       }
+      event_catalog: {
+        Row: {
+          created_at: string
+          deprecated: boolean
+          description: string | null
+          event_type: Database["public"]["Enums"]["graph_event_type"]
+          event_version: number
+          id: string
+          payload_schema: Json
+          source_module: string
+        }
+        Insert: {
+          created_at?: string
+          deprecated?: boolean
+          description?: string | null
+          event_type: Database["public"]["Enums"]["graph_event_type"]
+          event_version?: number
+          id?: string
+          payload_schema?: Json
+          source_module: string
+        }
+        Update: {
+          created_at?: string
+          deprecated?: boolean
+          description?: string | null
+          event_type?: Database["public"]["Enums"]["graph_event_type"]
+          event_version?: number
+          id?: string
+          payload_schema?: Json
+          source_module?: string
+        }
+        Relationships: []
+      }
       expertise_graph: {
         Row: {
           computed_at: string
@@ -688,6 +721,7 @@ export type Database = {
           expertise_score: number
           expertise_tags: string[]
           monetizable_expertise: Json
+          score_breakdown: Json
           source_event_version: number
           updated_at: string
           user_id: string
@@ -700,6 +734,7 @@ export type Database = {
           expertise_score?: number
           expertise_tags?: string[]
           monetizable_expertise?: Json
+          score_breakdown?: Json
           source_event_version?: number
           updated_at?: string
           user_id: string
@@ -712,6 +747,7 @@ export type Database = {
           expertise_score?: number
           expertise_tags?: string[]
           monetizable_expertise?: Json
+          score_breakdown?: Json
           source_event_version?: number
           updated_at?: string
           user_id?: string
@@ -783,7 +819,9 @@ export type Database = {
           aggregate_type: string
           created_at: string
           event_type: Database["public"]["Enums"]["graph_event_type"]
+          event_version: number
           id: string
+          idempotency_key: string | null
           occurred_at: string
           payload: Json
           processed_at: string | null
@@ -798,7 +836,9 @@ export type Database = {
           aggregate_type: string
           created_at?: string
           event_type: Database["public"]["Enums"]["graph_event_type"]
+          event_version?: number
           id?: string
+          idempotency_key?: string | null
           occurred_at?: string
           payload?: Json
           processed_at?: string | null
@@ -813,7 +853,9 @@ export type Database = {
           aggregate_type?: string
           created_at?: string
           event_type?: Database["public"]["Enums"]["graph_event_type"]
+          event_version?: number
           id?: string
+          idempotency_key?: string | null
           occurred_at?: string
           payload?: Json
           processed_at?: string | null
@@ -2309,6 +2351,7 @@ export type Database = {
         Returns: boolean
       }
       is_plan_shared_with_me: { Args: { _plan_id: string }; Returns: boolean }
+      legacy_expertise_calc: { Args: { _user_id: string }; Returns: Json }
       recompute_expertise: { Args: { _user_id: string }; Returns: undefined }
     }
     Enums: {
