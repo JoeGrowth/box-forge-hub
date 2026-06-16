@@ -29,7 +29,7 @@ export function LandingHeroV2() {
           {/* Main headline */}
           <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.1] mb-6 animate-fade-in" style={{ animationDelay: "0.1s" }}>
             From Opportunity to Growth.
-            <span className="block mt-2 bg-gradient-to-r from-b4-teal via-b4-teal to-emerald-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-b4-teal via-b4-teal to-emerald-400 bg-clip-text text-transparent">
               One Operating System.
             </span>
           </h1>
