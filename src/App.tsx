@@ -99,12 +99,13 @@ const App = () => (
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/admin/opportunity/:id" element={<AdminOpportunityDetail />} />
                   <Route element={<PersistentNavbarLayout />}>
-                    <Route path="/opportunities" element={<Opportunities />} />
-                    <Route path="/cobuilders" element={<CoBuilders />} />
-                    <Route path="/journey" element={<Journey />} />
-                    <Route path="/start" element={<Scale />} />
-                    <Route path="/track" element={<Track />} />
-                    <Route path="/advisory" element={<Advisory />} />
+                  <Route path="/opportunities" element={<Opportunities />} />
+                  <Route path="/cobuilders" element={<CoBuilders />} />
+                  <Route path="/journey" element={<Journey />} />
+                  <Route path="/start" element={<Scale />} />
+                  <Route path="/track" element={<Track />} />
+                  <Route path="/advisory" element={<Advisory />} />
+                  <Route path="/3S" element={<ThreeS />} />
                   </Route>
                   <Route path="/opportunities/:id" element={<OpportunityDetail />} />
                   <Route path="/mask" element={<Mask />} />
