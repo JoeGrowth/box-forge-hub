@@ -151,10 +151,28 @@ Deno.serve(async (req) => {
       processed++;
     } catch (e) {
       failed++;
+      const msg = String((e as Error).message ?? e);
+      const nextAttempt = (((ev as unknown) as { attempt_count?: number }).attempt_count ?? 0) + 1;
       await supabase
         .from("graph_events")
-        .update({ processing_error: String((e as Error).message ?? e) })
+        .update({ processing_error: msg, attempt_count: nextAttempt })
         .eq("id", ev.id);
+      // Escalate to dead-letter queue after 3 failed attempts. Mark
+      // processed_at so the worker stops retrying; ops can resolve from DLQ.
+      if (nextAttempt >= 3) {
+        await supabase.from("graph_dead_letters").upsert({
+          event_id: ev.id,
+          event_type: ev.event_type,
+          user_id: ev.user_id,
+          error: msg,
+          attempt_count: nextAttempt,
+          payload_snapshot: ev.payload as never,
+        }, { onConflict: "event_id" });
+        await supabase
+          .from("graph_events")
+          .update({ processed_at: new Date().toISOString() })
+          .eq("id", ev.id);
+      }
     }
   }
 

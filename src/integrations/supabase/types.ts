@@ -755,6 +755,50 @@ export type Database = {
         }
         Relationships: []
       }
+      graph_dead_letters: {
+        Row: {
+          attempt_count: number
+          error: string
+          event_id: string
+          event_type: Database["public"]["Enums"]["graph_event_type"]
+          failed_at: string
+          id: string
+          payload_snapshot: Json
+          resolved_at: string | null
+          user_id: string
+        }
+        Insert: {
+          attempt_count: number
+          error: string
+          event_id: string
+          event_type: Database["public"]["Enums"]["graph_event_type"]
+          failed_at?: string
+          id?: string
+          payload_snapshot: Json
+          resolved_at?: string | null
+          user_id: string
+        }
+        Update: {
+          attempt_count?: number
+          error?: string
+          event_id?: string
+          event_type?: Database["public"]["Enums"]["graph_event_type"]
+          failed_at?: string
+          id?: string
+          payload_snapshot?: Json
+          resolved_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "graph_dead_letters_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
+            referencedRelation: "graph_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       graph_edges: {
         Row: {
           attributes: Json
@@ -817,6 +861,7 @@ export type Database = {
         Row: {
           aggregate_id: string
           aggregate_type: string
+          attempt_count: number
           created_at: string
           event_type: Database["public"]["Enums"]["graph_event_type"]
           event_version: number
@@ -834,6 +879,7 @@ export type Database = {
         Insert: {
           aggregate_id: string
           aggregate_type: string
+          attempt_count?: number
           created_at?: string
           event_type: Database["public"]["Enums"]["graph_event_type"]
           event_version?: number
@@ -851,6 +897,7 @@ export type Database = {
         Update: {
           aggregate_id?: string
           aggregate_type?: string
+          attempt_count?: number
           created_at?: string
           event_type?: Database["public"]["Enums"]["graph_event_type"]
           event_version?: number
@@ -2312,6 +2359,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      audit_graph_integrity: {
+        Args: never
+        Returns: {
+          delta: number
+          graph_count: number
+          signal: string
+          source_count: number
+          user_id: string
+        }[]
+      }
+      backfill_graph_events_v1: {
+        Args: never
+        Returns: {
+          attempted: number
+          newly_emitted: number
+          source: string
+        }[]
+      }
       current_user_email: { Args: never; Returns: string }
       declaration_entity_access: {
         Args: { _entity_id: string; _user_id: string }
