@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, X, LogOut, User, Shield, ChevronDown, Briefcase, Lightbulb, Handshake, Plus, GraduationCap, FileText, Rocket, MoreHorizontal, Package, BookOpen, Compass, Building2, Sparkles, ListChecks, Activity } from "lucide-react";
+import { Menu, X, LogOut, User, Shield, ChevronDown, Briefcase, Lightbulb, Handshake, Plus, GraduationCap, FileText, Rocket, MoreHorizontal, Package, BookOpen, Compass, Building2, Sparkles, ListChecks, Activity, BarChart3 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,6 +43,7 @@ const moreLinks = [
   { name: "Ops", path: "/opsmanagement", icon: Building2 },
   { name: "Brand Identity", path: "/brand-identity", icon: Sparkles },
   { name: "Structuring", path: "/structuring", icon: ListChecks },
+  { name: "3S", path: "/3S", icon: BarChart3 },
   { name: "Track", path: "/track", icon: Activity },
   { name: "Checklist", path: "/checklist", icon: ListChecks },
   { name: "Declaration", path: "/declaration", icon: FileText },
