@@ -155,6 +155,7 @@ const Auth = () => {
             });
           }
         } else {
+          setJustSignedUp(true);
           toast({
             title: "Account Created!",
             description: "Welcome to B4 Platform. You're now logged in.",
