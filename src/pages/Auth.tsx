@@ -33,6 +33,7 @@ const Auth = () => {
   const [mode, setMode] = useState<"login" | "signup">(routeMode);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [justSignedUp, setJustSignedUp] = useState(false);
   const [joinType, setJoinType] = useState<JoinType>("person");
 
   // Person fields
@@ -60,6 +61,12 @@ const Auth = () => {
 
   useEffect(() => {
     if (user && !onboardingLoading) {
+      // If user just signed up, send them to home to start their experience
+      if (justSignedUp) {
+        navigate("/home", { replace: true });
+        return;
+      }
+
       const isCoBuilderComplete =
         onboardingState?.primary_role === "cobuilder" &&
         onboardingState?.current_step >= 8 &&
@@ -75,7 +82,7 @@ const Auth = () => {
         navigate("/choose-path", { replace: true });
       }
     }
-  }, [user, onboardingState, onboardingLoading, navigate]);
+  }, [user, onboardingState, onboardingLoading, navigate, justSignedUp]);
 
   const validateForm = () => {
     const newErrors: typeof errors = {};
@@ -148,6 +155,7 @@ const Auth = () => {
             });
           }
         } else {
+          setJustSignedUp(true);
           toast({
             title: "Account Created!",
             description: "Welcome to B4 Platform. You're now logged in.",
