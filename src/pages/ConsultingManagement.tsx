@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Navbar } from "@/components/layout/Navbar";
+
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -267,17 +267,16 @@ export default function ConsultingManagement() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
       <PageTransition>
-        <main className="pt-20">
-          <section className="py-10">
-            <div className="container mx-auto px-4 space-y-8">
-              <div>
-                <h1 className="font-display text-3xl font-bold mb-2">Consulting Management</h1>
-                <p className="text-muted-foreground">
-                  Plan a consulting mission day by day. Set the number of days sold — weeks, dates, and weekends update automatically.
-                </p>
-              </div>
+        <main className="pt-24 max-w-6xl container mx-auto px-4">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold tracking-tight">Distribution per Consulting Mission</h1>
+            <p className="text-muted-foreground mt-1">
+              Plan a consulting mission day by day. Set the number of days sold — weeks, dates, and weekends update automatically.
+            </p>
+          </div>
+          <section className="pb-10">
+            <div className="space-y-8">
 
               <Card>
                 <CardHeader>
