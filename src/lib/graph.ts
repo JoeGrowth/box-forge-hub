@@ -52,7 +52,7 @@ export async function emitGraphEvent(input: EmitGraphEventInput): Promise<void> 
       aggregate_type: input.aggregateType,
       aggregate_id: input.aggregateId,
       source_module: input.sourceModule,
-      payload: input.payload ?? {},
+      payload: (input.payload ?? {}) as never,
       weight: input.weight ?? 1,
       occurred_at: input.occurredAt ?? new Date().toISOString(),
     }]);
