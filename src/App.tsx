@@ -62,6 +62,8 @@ import OpsManagement from "./pages/OpsManagement";
 import ThreeS from "./pages/ThreeS";
 import Procuring from "./pages/Procuring";
 import ElSpace from "./pages/ElSpace";
+import PublishConsulting from "./pages/PublishConsulting";
+import PublishTraining from "./pages/PublishTraining";
 import Declaration from "./pages/Declaration";
 
 const queryClient = new QueryClient();
@@ -107,6 +109,10 @@ const App = () => (
                   <Route path="/advisory" element={<Advisory />} />
                   <Route path="/3S" element={<ThreeS />} />
                   <Route path="/opsmanagement" element={<OpsManagement />} />
+                  <Route path="/consultingmanagement" element={<ConsultingManagement />} />
+                  <Route path="/trainingmanagement" element={<TrainingManagement />} />
+                  <Route path="/publish-consulting" element={<PublishConsulting />} />
+                  <Route path="/publish-training" element={<PublishTraining />} />
                   </Route>
                   <Route path="/opportunities/:id" element={<OpportunityDetail />} />
                   <Route path="/mask" element={<Mask />} />

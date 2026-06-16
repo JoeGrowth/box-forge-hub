@@ -29,11 +29,11 @@ const engineLinks = [
 ];
 
 const publishLinks = [
-  { name: "Job", path: "/start", icon: Briefcase, desc: "Recruit co-builders" },
-  { name: "Consulting Opportunity", path: "/consultingmanagement", icon: Handshake, desc: "Offer a consulting mission" },
-  { name: "Startup Idea", path: "/create-idea", icon: Lightbulb, desc: "Launch a new venture" },
-  { name: "Training", path: "/trainingmanagement", icon: GraduationCap, desc: "Propose a training" },
-  { name: "Tender", path: "/procuring", icon: FileText, desc: "Post a procurement tender" },
+  { name: "Job", path: "/start", icon: Briefcase, desc: "Form for recruiting — appears in Marketplace > Jobs" },
+  { name: "Consulting Opportunity", path: "/publish-consulting", icon: Handshake, desc: "Create a service — appears in Marketplace > Consulting" },
+  { name: "Startup Idea", path: "/create-idea", icon: Lightbulb, desc: "Launch a venture — appears in Marketplace > Startups" },
+  { name: "Training", path: "/publish-training", icon: GraduationCap, desc: "Submit a training — appears in Marketplace > Training" },
+  { name: "Tender", path: "/procuring", icon: FileText, desc: "Post a tender — appears in Marketplace > Tenders" },
 ];
 
 const moreLinks = [
@@ -46,6 +46,8 @@ const moreLinks = [
   { name: "Ops", path: "/opsmanagement", icon: Building2 },
   { name: "Structuring", path: "/3S", icon: BarChart3 },
   { name: "Declaration", path: "/declaration", icon: FileText },
+  { name: "Distribution per Consulting Mission", path: "/consultingmanagement", icon: Handshake },
+  { name: "Distribution per Training Mission", path: "/trainingmanagement", icon: GraduationCap },
 ];
 
 export function Navbar() {
