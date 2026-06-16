@@ -106,6 +106,7 @@ const App = () => (
                   <Route path="/track" element={<Track />} />
                   <Route path="/advisory" element={<Advisory />} />
                   <Route path="/3S" element={<ThreeS />} />
+                  <Route path="/opsmanagement" element={<OpsManagement />} />
                   </Route>
                   <Route path="/opportunities/:id" element={<OpportunityDetail />} />
                   <Route path="/mask" element={<Mask />} />
@@ -131,7 +132,6 @@ const App = () => (
                   <Route path="/startscaling" element={<StartScaling />} />
                   <Route path="/trainingmanagement" element={<TrainingManagement />} />
                   <Route path="/consultingmanagement" element={<ConsultingManagement />} />
-                  <Route path="/opsmanagement" element={<OpsManagement />} />
                   <Route path="/structuring" element={<ThreeS />} />
                   <Route path="/brand-identity" element={<Mask />} />
                   <Route path="/procuring" element={<Procuring />} />
