@@ -33,6 +33,7 @@ const Auth = () => {
   const [mode, setMode] = useState<"login" | "signup">(routeMode);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [justSignedUp, setJustSignedUp] = useState(false);
   const [joinType, setJoinType] = useState<JoinType>("person");
 
   // Person fields
