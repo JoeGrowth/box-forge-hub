@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, X, LogOut, User, Shield, ChevronDown, Briefcase, Lightbulb, Handshake, Plus, GraduationCap, FileText, Rocket, MoreHorizontal, Package, BookOpen, Compass, Building2, Sparkles, ListChecks, Activity } from "lucide-react";
+import { Menu, X, LogOut, User, Shield, ChevronDown, Briefcase, Lightbulb, Handshake, Plus, GraduationCap, FileText, Rocket, MoreHorizontal, Package, BookOpen, Compass, Building2, Sparkles, ListChecks, Activity, BarChart3 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { supabase } from "@/integrations/supabase/client";
