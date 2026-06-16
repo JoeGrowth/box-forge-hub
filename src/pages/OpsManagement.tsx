@@ -533,6 +533,7 @@ export default function OpsManagement() {
           )}
         </CardContent>
       </Card>
+      </main>
     </div>
   );
 }
