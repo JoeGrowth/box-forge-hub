@@ -358,6 +358,7 @@ export default function ThreeS() {
           </Card>
         </TabsContent>
       </Tabs>
+      </main>
     </div>
   );
 }
