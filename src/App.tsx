@@ -132,7 +132,7 @@ const App = () => (
                   <Route path="/startscaling" element={<StartScaling />} />
                   <Route path="/trainingmanagement" element={<TrainingManagement />} />
                   <Route path="/consultingmanagement" element={<ConsultingManagement />} />
-                  <Route path="/structuring" element={<ThreeS />} />
+                  
                   <Route path="/brand-identity" element={<Mask />} />
                   <Route path="/procuring" element={<Procuring />} />
                   <Route path="/el-space" element={<ElSpace />} />
