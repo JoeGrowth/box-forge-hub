@@ -62,6 +62,17 @@ export function SkillTagPicker() {
     if (!user) return;
     setSaving(true);
 
+    // Compute diff before mutation so we can emit precise graph events.
+    const previousIds = new Set<string>();
+    const { data: existing } = await supabase
+      .from("user_skills")
+      .select("skill_tag_id")
+      .eq("user_id", user.id);
+    (existing || []).forEach((r: { skill_tag_id: string }) => previousIds.add(r.skill_tag_id));
+
+    const added = Array.from(selectedIds).filter((id) => !previousIds.has(id));
+    const removed = Array.from(previousIds).filter((id) => !selectedIds.has(id));
+
     // Delete all existing, insert new
     await supabase.from("user_skills").delete().eq("user_id", user.id);
 
@@ -71,6 +82,37 @@ export function SkillTagPicker() {
         skill_tag_id,
       }));
       await supabase.from("user_skills").insert(rows);
+    }
+
+    // Emit graph events (fire-and-forget, idempotent).
+    const { emitGraphEvent, idemKey } = await import("@/lib/graph");
+    const tagById = new Map(allTags.map((t) => [t.id, t]));
+    for (const id of added) {
+      const tag = tagById.get(id);
+      emitGraphEvent({
+        userId: user.id,
+        eventType: "skill_added",
+        eventVersion: 1,
+        aggregateType: "skill",
+        aggregateId: id,
+        sourceModule: "profile.skills",
+        idempotencyKey: idemKey("skill_added", 1, user.id, id),
+        payload: { skill_id: id, skill_name: tag?.name ?? id },
+      });
+    }
+    for (const id of removed) {
+      const tag = tagById.get(id);
+      emitGraphEvent({
+        userId: user.id,
+        eventType: "skill_removed",
+        eventVersion: 1,
+        aggregateType: "skill",
+        aggregateId: id,
+        sourceModule: "profile.skills",
+        // include timestamp so a removal followed by a re-add is not deduped
+        idempotencyKey: idemKey("skill_removed", 1, user.id, id, String(Date.now())),
+        payload: { skill_id: id, skill_name: tag?.name ?? id },
+      });
     }
 
     setSaving(false);

@@ -143,6 +143,31 @@ export const AdminLearningJourneysTab = () => {
         verified: true,
       });
 
+      // Emit graph events: certification verified + journey completed.
+      {
+        const { emitGraphEvent, idemKey } = await import("@/lib/graph");
+        emitGraphEvent({
+          userId: journey.user_id,
+          eventType: "certification_verified",
+          eventVersion: 1,
+          aggregateType: "certification",
+          aggregateId: certType,
+          sourceModule: "admin.approvals",
+          idempotencyKey: idemKey("certification_verified", 1, journey.user_id, certType),
+          payload: { certification_type: certType, certification_label: certLabel },
+        });
+        emitGraphEvent({
+          userId: journey.user_id,
+          eventType: "journey_completed",
+          eventVersion: 1,
+          aggregateType: "journey",
+          aggregateId: journey.id,
+          sourceModule: "learning.journey",
+          idempotencyKey: idemKey("journey_completed", 1, journey.user_id, journey.id),
+          payload: { journey_id: journey.id, journey_label: certLabel },
+        });
+      }
+
       // Determine boost_type based on journey
       const boostType =
         journey.journey_type === "skill_ptc"
