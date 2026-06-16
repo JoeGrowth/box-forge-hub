@@ -1,7 +1,7 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
-import { LandingHeroV2 } from "@/components/landing/LandingHeroV2";
+import { LandingHero } from "@/components/landing/LandingHero";
 import { LandingProblem } from "@/components/landing/LandingProblem";
 import { LandingHowItWorks } from "@/components/landing/LandingHowItWorks";
 import { LandingPaths } from "@/components/landing/LandingPaths";
@@ -10,13 +10,13 @@ import { LandingTestimonials } from "@/components/landing/LandingTestimonials";
 import { LandingFAQ } from "@/components/landing/LandingFAQ";
 import { LandingCTA } from "@/components/landing/LandingCTA";
 
-const Landing = () => {
+const LandingV1 = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <PageTransition>
         <main>
-          <LandingHeroV2 />
+          <LandingHero />
           <LandingProblem />
           <LandingHowItWorks />
           <LandingPaths />
@@ -31,4 +31,4 @@ const Landing = () => {
   );
 };
 
-export default Landing;
+export default LandingV1;
