@@ -93,6 +93,7 @@ const Opportunities = () => {
       const startupData = startupsRes.data || [];
       const trainingData = (trainingsRes.data as any[]) || [];
       const tenderData = (tendersRes.data as any[]) || [];
+      const jobData = (jobsRes.data as any[]) || [];
 
       // Extract user skill names
       const skillNames = (userSkillsRes.data || []).map((r: any) => r.skill_tags?.name).filter(Boolean);
@@ -123,6 +124,7 @@ const Opportunities = () => {
         ...startupData.map((s: any) => s.creator_id),
         ...trainingData.map((t: any) => t.user_id),
         ...tenderData.map((t: any) => t.user_id),
+        ...jobData.map((j: any) => j.user_id),
       ].filter(Boolean);
 
       let profileMap = new Map<string, string>();
@@ -137,6 +139,7 @@ const Opportunities = () => {
       setRawStartups(startupData.map((s: any) => ({ ...s, _author: profileMap.get(s.creator_id) || "Unknown" })));
       setRawTrainings(trainingData.map((t: any) => ({ ...t, _author: profileMap.get(t.user_id) || "Unknown" })));
       setRawTenders(tenderData.map((t: any) => ({ ...t, _author: profileMap.get(t.user_id) || "Unknown" })));
+      setRawJobs(jobData.map((j: any) => ({ ...j, _author: profileMap.get(j.user_id) || "Unknown" })));
 
       setLoading(false);
     };
