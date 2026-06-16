@@ -307,7 +307,6 @@ export default function TrainingManagement() {
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
         <div className="pt-32 flex justify-center">
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
@@ -321,32 +320,31 @@ export default function TrainingManagement() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
       <PageTransition>
-        <main className="pt-20">
-          <section className="py-10">
-            <div className="container mx-auto px-4 space-y-8">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <h1 className="font-display text-3xl font-bold mb-2">Training Management</h1>
-                  <p className="text-muted-foreground">
-                    Cloud-saved training plans. Share with collaborators by email.
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  {current && (
-                    <Button onClick={persist} disabled={saving} className="gap-1.5">
-                      {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                      Save
-                    </Button>
-                  )}
-                  {visibleService && (
-                    <Button onClick={() => createNew()} variant="outline" className="gap-1.5">
-                      <UserPlus className="w-4 h-4" /> Add Client
-                    </Button>
-                  )}
-                </div>
-              </div>
+        <main className="pt-24 max-w-6xl container mx-auto px-4">
+          <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Distribution per Training Mission</h1>
+              <p className="text-muted-foreground mt-1">
+                Cloud-saved training plans. Share with collaborators by email.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              {current && (
+                <Button onClick={persist} disabled={saving} className="gap-1.5">
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  Save
+                </Button>
+              )}
+              {visibleService && (
+                <Button onClick={() => createNew()} variant="outline" className="gap-1.5">
+                  <UserPlus className="w-4 h-4" /> Add Client
+                </Button>
+              )}
+            </div>
+          </div>
+          <section className="pb-10">
+            <div className="space-y-8">
 
               {/* Services list */}
               <Card>
