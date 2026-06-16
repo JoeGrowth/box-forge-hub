@@ -46,7 +46,7 @@ export interface EmitGraphEventInput {
  */
 export async function emitGraphEvent(input: EmitGraphEventInput): Promise<void> {
   try {
-    const { error } = await supabase.from("graph_events").insert({
+    const { error } = await supabase.from("graph_events").insert([{
       user_id: input.userId,
       event_type: input.eventType,
       aggregate_type: input.aggregateType,
@@ -55,7 +55,7 @@ export async function emitGraphEvent(input: EmitGraphEventInput): Promise<void> 
       payload: input.payload ?? {},
       weight: input.weight ?? 1,
       occurred_at: input.occurredAt ?? new Date().toISOString(),
-    });
+    }]);
     if (error) {
       // eslint-disable-next-line no-console
       console.warn("[graph] emit failed:", error.message, input);
