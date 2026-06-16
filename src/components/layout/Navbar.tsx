@@ -29,7 +29,7 @@ const engineLinks = [
 ];
 
 const publishLinks = [
-  { name: "Recruiting", path: "/start", icon: Briefcase, desc: "Offer a job" },
+  { name: "Recruiting", path: "/publish-job", icon: Briefcase, desc: "Offer a job" },
   { name: "Consulting Opportunity", path: "/publish-consulting", icon: Handshake, desc: "Create a service" },
   { name: "Startup Idea", path: "/create-idea", icon: Lightbulb, desc: "Launch a venture" },
   { name: "Training", path: "/publish-training", icon: GraduationCap, desc: "Submit a training" },

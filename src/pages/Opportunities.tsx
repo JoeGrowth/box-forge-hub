@@ -34,6 +34,7 @@ const Opportunities = () => {
   const [rawStartups, setRawStartups] = useState<any[]>([]);
   const [rawTrainings, setRawTrainings] = useState<any[]>([]);
   const [rawTenders, setRawTenders] = useState<any[]>([]);
+  const [rawJobs, setRawJobs] = useState<any[]>([]);
   const [userSkillNames, setUserSkillNames] = useState<string[]>([]);
   const [userCapacity, setUserCapacity] = useState<{ hasTrackRecord: boolean; sectors: string[]; experience: number }>({
     hasTrackRecord: false,
@@ -55,7 +56,7 @@ const Opportunities = () => {
     }
 
     const fetchAll = async () => {
-      const [startupsRes, trainingsRes, tendersRes, userSkillsRes, myProfileRes] = await Promise.all([
+    const [startupsRes, trainingsRes, tendersRes, jobsRes, userSkillsRes, myProfileRes] = await Promise.all([
         supabase
           .from("startup_ideas")
           .select("*")
@@ -70,6 +71,11 @@ const Opportunities = () => {
           .order("created_at", { ascending: false }),
         supabase
           .from("tenders" as any)
+          .select("*")
+          .eq("status", "published")
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("job_opportunities" as any)
           .select("*")
           .eq("status", "published")
           .order("created_at", { ascending: false }),
