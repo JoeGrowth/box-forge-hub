@@ -157,11 +157,16 @@ export default function ThreeS() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">3S Tracker</h1>
-        <p className="text-muted-foreground">Suivi des projets d'innovation et des missions de consulting.</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <main className="container mx-auto px-4 py-8 pt-24 max-w-6xl">
+        <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
+          <div className="flex-1 min-w-[260px]">
+            <h1 className="text-3xl font-bold tracking-tight">3S Tracker</h1>
+            <p className="text-muted-foreground mt-1">
+              Suivi des projets d'innovation et des missions de consulting.
+            </p>
+          </div>
+        </div>
 
       <Tabs defaultValue="projects">
         <TabsList>
@@ -353,6 +358,7 @@ export default function ThreeS() {
           </Card>
         </TabsContent>
       </Tabs>
+      </main>
     </div>
   );
 }
