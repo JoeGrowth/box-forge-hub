@@ -733,6 +733,57 @@ export type Database = {
           },
         ]
       }
+      job_opportunities: {
+        Row: {
+          company: string | null
+          contact_info: string | null
+          created_at: string
+          description: string
+          employment_type: string | null
+          id: string
+          location: string | null
+          requirements: string | null
+          salary_range: string | null
+          sector: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company?: string | null
+          contact_info?: string | null
+          created_at?: string
+          description: string
+          employment_type?: string | null
+          id?: string
+          location?: string | null
+          requirements?: string | null
+          salary_range?: string | null
+          sector?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company?: string | null
+          contact_info?: string | null
+          created_at?: string
+          description?: string
+          employment_type?: string | null
+          id?: string
+          location?: string | null
+          requirements?: string | null
+          salary_range?: string | null
+          sector?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       journey_phase_responses: {
         Row: {
           completed_at: string | null
