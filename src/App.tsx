@@ -63,6 +63,7 @@ import ThreeS from "./pages/ThreeS";
 import Procuring from "./pages/Procuring";
 import ElSpace from "./pages/ElSpace";
 import PublishConsulting from "./pages/PublishConsulting";
+import PublishTraining from "./pages/PublishTraining";
 import PublishJob from "./pages/PublishJob";
 import Declaration from "./pages/Declaration";
 
