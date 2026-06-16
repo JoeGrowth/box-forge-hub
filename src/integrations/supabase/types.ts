@@ -680,6 +680,181 @@ export type Database = {
         }
         Relationships: []
       }
+      expertise_graph: {
+        Row: {
+          computed_at: string
+          created_at: string
+          expertise_level: string
+          expertise_score: number
+          expertise_tags: string[]
+          monetizable_expertise: Json
+          source_event_version: number
+          updated_at: string
+          user_id: string
+          verified_expertise_count: number
+        }
+        Insert: {
+          computed_at?: string
+          created_at?: string
+          expertise_level?: string
+          expertise_score?: number
+          expertise_tags?: string[]
+          monetizable_expertise?: Json
+          source_event_version?: number
+          updated_at?: string
+          user_id: string
+          verified_expertise_count?: number
+        }
+        Update: {
+          computed_at?: string
+          created_at?: string
+          expertise_level?: string
+          expertise_score?: number
+          expertise_tags?: string[]
+          monetizable_expertise?: Json
+          source_event_version?: number
+          updated_at?: string
+          user_id?: string
+          verified_expertise_count?: number
+        }
+        Relationships: []
+      }
+      graph_edges: {
+        Row: {
+          attributes: Json
+          created_at: string
+          edge_type: Database["public"]["Enums"]["graph_edge_type"]
+          from_node_id: string
+          id: string
+          occurred_at: string
+          source_event_id: string | null
+          to_node_id: string
+          weight: number
+        }
+        Insert: {
+          attributes?: Json
+          created_at?: string
+          edge_type: Database["public"]["Enums"]["graph_edge_type"]
+          from_node_id: string
+          id?: string
+          occurred_at?: string
+          source_event_id?: string | null
+          to_node_id: string
+          weight?: number
+        }
+        Update: {
+          attributes?: Json
+          created_at?: string
+          edge_type?: Database["public"]["Enums"]["graph_edge_type"]
+          from_node_id?: string
+          id?: string
+          occurred_at?: string
+          source_event_id?: string | null
+          to_node_id?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "graph_edges_from_node_id_fkey"
+            columns: ["from_node_id"]
+            isOneToOne: false
+            referencedRelation: "graph_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "graph_edges_source_event_id_fkey"
+            columns: ["source_event_id"]
+            isOneToOne: false
+            referencedRelation: "graph_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "graph_edges_to_node_id_fkey"
+            columns: ["to_node_id"]
+            isOneToOne: false
+            referencedRelation: "graph_nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      graph_events: {
+        Row: {
+          aggregate_id: string
+          aggregate_type: string
+          created_at: string
+          event_type: Database["public"]["Enums"]["graph_event_type"]
+          id: string
+          occurred_at: string
+          payload: Json
+          processed_at: string | null
+          processing_error: string | null
+          source_module: string
+          user_id: string
+          version: number
+          weight: number
+        }
+        Insert: {
+          aggregate_id: string
+          aggregate_type: string
+          created_at?: string
+          event_type: Database["public"]["Enums"]["graph_event_type"]
+          id?: string
+          occurred_at?: string
+          payload?: Json
+          processed_at?: string | null
+          processing_error?: string | null
+          source_module: string
+          user_id: string
+          version?: number
+          weight?: number
+        }
+        Update: {
+          aggregate_id?: string
+          aggregate_type?: string
+          created_at?: string
+          event_type?: Database["public"]["Enums"]["graph_event_type"]
+          id?: string
+          occurred_at?: string
+          payload?: Json
+          processed_at?: string | null
+          processing_error?: string | null
+          source_module?: string
+          user_id?: string
+          version?: number
+          weight?: number
+        }
+        Relationships: []
+      }
+      graph_nodes: {
+        Row: {
+          attributes: Json
+          created_at: string
+          external_id: string
+          id: string
+          label: string | null
+          node_type: Database["public"]["Enums"]["graph_node_type"]
+          updated_at: string
+        }
+        Insert: {
+          attributes?: Json
+          created_at?: string
+          external_id: string
+          id?: string
+          label?: string | null
+          node_type: Database["public"]["Enums"]["graph_node_type"]
+          updated_at?: string
+        }
+        Update: {
+          attributes?: Json
+          created_at?: string
+          external_id?: string
+          id?: string
+          label?: string | null
+          node_type?: Database["public"]["Enums"]["graph_node_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       idea_journey_progress: {
         Row: {
           completed_at: string | null
@@ -2100,6 +2275,27 @@ export type Database = {
         Args: { _entity_id: string; _user_id: string }
         Returns: string
       }
+      graph_upsert_edge: {
+        Args: {
+          _attributes: Json
+          _edge_type: Database["public"]["Enums"]["graph_edge_type"]
+          _from: string
+          _occurred_at: string
+          _source_event_id: string
+          _to: string
+          _weight: number
+        }
+        Returns: string
+      }
+      graph_upsert_node: {
+        Args: {
+          _attributes: Json
+          _external_id: string
+          _label: string
+          _node_type: Database["public"]["Enums"]["graph_node_type"]
+        }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2113,9 +2309,51 @@ export type Database = {
         Returns: boolean
       }
       is_plan_shared_with_me: { Args: { _plan_id: string }; Returns: boolean }
+      recompute_expertise: { Args: { _user_id: string }; Returns: undefined }
     }
     Enums: {
       app_role: "entrepreneur" | "cobuilder" | "box_manager" | "admin"
+      graph_edge_type:
+        | "HAS_SKILL"
+        | "HAS_CERTIFICATION"
+        | "CONTRIBUTED_TO"
+        | "DELIVERED"
+        | "ENGAGED_IN"
+        | "APPLIED_TO"
+        | "OWNS_EQUITY_IN"
+        | "CREATED"
+        | "COMPLETED"
+        | "MEMBER_OF"
+        | "PUBLISHED"
+      graph_event_type:
+        | "skill_added"
+        | "skill_removed"
+        | "certification_earned"
+        | "certification_verified"
+        | "startup_contribution_accepted"
+        | "startup_member_added"
+        | "training_delivered"
+        | "training_published"
+        | "consulting_engagement_completed"
+        | "consulting_service_published"
+        | "tender_won"
+        | "tender_published"
+        | "venture_created"
+        | "equity_vested"
+        | "journey_completed"
+        | "job_published"
+        | "job_applied"
+      graph_node_type:
+        | "user"
+        | "skill"
+        | "certification"
+        | "training"
+        | "consulting_service"
+        | "startup"
+        | "tender"
+        | "venture"
+        | "job"
+        | "box"
       journey_status:
         | "not_started"
         | "in_progress"
@@ -2256,6 +2494,50 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["entrepreneur", "cobuilder", "box_manager", "admin"],
+      graph_edge_type: [
+        "HAS_SKILL",
+        "HAS_CERTIFICATION",
+        "CONTRIBUTED_TO",
+        "DELIVERED",
+        "ENGAGED_IN",
+        "APPLIED_TO",
+        "OWNS_EQUITY_IN",
+        "CREATED",
+        "COMPLETED",
+        "MEMBER_OF",
+        "PUBLISHED",
+      ],
+      graph_event_type: [
+        "skill_added",
+        "skill_removed",
+        "certification_earned",
+        "certification_verified",
+        "startup_contribution_accepted",
+        "startup_member_added",
+        "training_delivered",
+        "training_published",
+        "consulting_engagement_completed",
+        "consulting_service_published",
+        "tender_won",
+        "tender_published",
+        "venture_created",
+        "equity_vested",
+        "journey_completed",
+        "job_published",
+        "job_applied",
+      ],
+      graph_node_type: [
+        "user",
+        "skill",
+        "certification",
+        "training",
+        "consulting_service",
+        "startup",
+        "tender",
+        "venture",
+        "job",
+        "box",
+      ],
       journey_status: [
         "not_started",
         "in_progress",
