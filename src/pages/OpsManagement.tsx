@@ -240,11 +240,14 @@ export default function OpsManagement() {
   }
 
   return (
-    <div className="container mx-auto max-w-6xl py-8 space-y-8">
-      <header>
-        <h1 className="text-3xl font-bold">Ops Management</h1>
-        <p className="text-muted-foreground">Consultants, companies, clients, and offers.</p>
-      </header>
+    <div className="min-h-screen bg-background">
+      <main className="container mx-auto px-4 py-8 pt-24 max-w-6xl">
+        <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
+          <div className="flex-1 min-w-[260px]">
+            <h1 className="text-3xl font-bold tracking-tight">Ops Management</h1>
+            <p className="text-muted-foreground mt-1">Consultants, companies, clients, and offers.</p>
+          </div>
+        </div>
 
       {/* Consultants */}
       <Card>
