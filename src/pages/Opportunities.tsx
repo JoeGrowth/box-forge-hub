@@ -198,7 +198,23 @@ const Opportunities = () => {
       rank: 100 + i,
     }));
 
-    const all = [...SEEDED_OPPORTUNITIES, ...startupOpps, ...trainingOpps, ...tenderOpps];
+    const jobOpps: Opportunity[] = rawJobs.map((j, i) => ({
+      id: j.id,
+      title: j.title,
+      category: "job" as const,
+      required_skills: [j.sector, j.employment_type, j.location].filter(Boolean).slice(0, 5),
+      income_range: j.salary_range || "Not specified",
+      effort_level: j.employment_type || "Full-time",
+      description: j.description,
+      primary_action: { type: "apply" as const, label: "Apply", route: "#" },
+      source_id: j.id,
+      created_at: j.created_at,
+      author_name: j._author || "Unknown",
+      sector: j.sector,
+      rank: 75 + i,
+    }));
+
+    const all = [...SEEDED_OPPORTUNITIES, ...startupOpps, ...trainingOpps, ...tenderOpps, ...jobOpps];
 
     // Compute match scores
     const scored = all.map((opp) => ({
@@ -214,7 +230,7 @@ const Opportunities = () => {
     }
 
     return scored;
-  }, [rawStartups, rawTrainings, rawTenders, userSkillNames]);
+  }, [rawStartups, rawTrainings, rawTenders, rawJobs, userSkillNames]);
 
   // Capacity-based tender filter helper
   const passesTenderCapacity = (opp: Opportunity & { match_score: number }) => {
