@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Navbar } from "@/components/layout/Navbar";
+
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
