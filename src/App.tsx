@@ -136,8 +136,6 @@ const App = () => (
                   <Route path="/consulting" element={<Consulting />} />
                   <Route path="/startstructuring" element={<StartStructuring />} />
                   <Route path="/startscaling" element={<StartScaling />} />
-                  <Route path="/trainingmanagement" element={<TrainingManagement />} />
-                  <Route path="/consultingmanagement" element={<ConsultingManagement />} />
                   
                   <Route path="/brand-identity" element={<Mask />} />
                   <Route path="/procuring" element={<Procuring />} />
