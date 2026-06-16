@@ -173,7 +173,7 @@ export function Navbar() {
                       />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-72 mt-2">
+                  <DropdownMenuContent align="end" className="w-56 mt-2">
                     {publishLinks.map((link) => {
                       const Icon = link.icon;
                       return (
