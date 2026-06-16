@@ -12,6 +12,7 @@ import { PersistentNavbarLayout } from "@/components/layout/PersistentNavbarLayo
 import Index from "./pages/Index";
 import Home from "./pages/Home";
 import Landing from "./pages/Landing";
+import LandingV1 from "./pages/LandingV1";
 import About from "./pages/About";
 import Boxes from "./pages/Boxes";
 import BoxDetail from "./pages/BoxDetail";
@@ -84,6 +85,7 @@ const App = () => (
                   <Route path="/" element={<Index />} />
                   <Route path="/home" element={<Home />} />
                   <Route path="/landing" element={<Landing />} />
+                  <Route path="/LPV1" element={<LandingV1 />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/boxes" element={<Boxes />} />
                   <Route path="/boxes/:boxId" element={<BoxDetail />} />
