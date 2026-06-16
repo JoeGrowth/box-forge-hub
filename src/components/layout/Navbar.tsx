@@ -43,6 +43,7 @@ const moreLinks = [
   { name: "Ops", path: "/opsmanagement", icon: Building2 },
   { name: "Brand Identity", path: "/brand-identity", icon: Sparkles },
   { name: "Structuring", path: "/structuring", icon: ListChecks },
+  { name: "3S", path: "/3S", icon: BarChart3 },
   { name: "Track", path: "/track", icon: Activity },
   { name: "Checklist", path: "/checklist", icon: ListChecks },
   { name: "Declaration", path: "/declaration", icon: FileText },
