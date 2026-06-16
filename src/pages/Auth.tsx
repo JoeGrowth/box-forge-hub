@@ -61,6 +61,12 @@ const Auth = () => {
 
   useEffect(() => {
     if (user && !onboardingLoading) {
+      // If user just signed up, send them to home to start their experience
+      if (justSignedUp) {
+        navigate("/home", { replace: true });
+        return;
+      }
+
       const isCoBuilderComplete =
         onboardingState?.primary_role === "cobuilder" &&
         onboardingState?.current_step >= 8 &&
@@ -76,7 +82,7 @@ const Auth = () => {
         navigate("/choose-path", { replace: true });
       }
     }
-  }, [user, onboardingState, onboardingLoading, navigate]);
+  }, [user, onboardingState, onboardingLoading, navigate, justSignedUp]);
 
   const validateForm = () => {
     const newErrors: typeof errors = {};
