@@ -33,7 +33,7 @@ const publishLinks = [
   { name: "Consulting Opportunity", path: "/publish-consulting", icon: Handshake, desc: "Create a service" },
   { name: "Startup Idea", path: "/create-idea", icon: Lightbulb, desc: "Launch a venture" },
   { name: "Training", path: "/publish-training", icon: GraduationCap, desc: "Submit a training" },
-  { name: "Tender", path: "/procuring", icon: FileText, desc: "Post a tender" },
+  { name: "Procuring", path: "/procuring", icon: FileText, desc: "Post a tender" },
 ];
 
 const moreLinks = [
