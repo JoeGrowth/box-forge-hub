@@ -63,7 +63,7 @@ const Auth = () => {
     if (user && !onboardingLoading) {
       // If user just signed up, send them to home to start their experience
       if (justSignedUp) {
-        navigate("/home", { replace: true });
+        window.location.href = "https://box4solutions.com";
         return;
       }
 
