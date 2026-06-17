@@ -109,6 +109,7 @@ const App = () => (
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/admin/opportunity/:id" element={<AdminOpportunityDetail />} />
                   <Route path="/admin/beta" element={<BetaConsole />} />
+                  <Route path="/admin/lifecycle-integrity" element={<LifecycleIntegrity />} />
                   <Route path="/onboarding" element={<CompressedOnboarding />} />
                   <Route path="/onboarding/map" element={<ProfessionalMap />} />
                   <Route element={<PersistentNavbarLayout />}>
