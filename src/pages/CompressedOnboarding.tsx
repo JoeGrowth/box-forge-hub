@@ -19,12 +19,12 @@ import { Loader2, ArrowRight } from "lucide-react";
 // P0.6 — Compressed onboarding. Five steps, <5 min, graph seed > profile completion.
 
 const INTENT_OPTIONS = [
-  "Explorer",
-  "Builder",
-  "Validated Expert",
-  "Professional Operator",
-  "Co-Builder",
-  "Venture Creator",
+  { value: "Explorer", description: "Just browsing — no specific plan yet" },
+  { value: "Builder", description: "I build products, code, or designs and want real projects" },
+  { value: "Validated Expert", description: "I have proven expertise and want to monetize or advise" },
+  { value: "Professional Operator", description: "I run teams, processes, or operations in established settings" },
+  { value: "Co-Builder", description: "I want to join a startup as a core team member" },
+  { value: "Venture Creator", description: "I have an idea and want to build a company" },
 ] as const;
 
 const GOAL_OPTIONS = [
