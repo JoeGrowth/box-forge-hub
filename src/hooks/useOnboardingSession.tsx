@@ -107,14 +107,15 @@ export function useCompleteStep() {
       );
       const isFinal = input.step >= 5;
 
+      const update: Record<string, unknown> = {
+        current_step: Math.min(6, input.step + 1),
+        completed_steps: Array.from(completed),
+        completed_at: isFinal ? new Date().toISOString() : null,
+        ...(input.patch ?? {}),
+      };
       const { error } = await supabase
         .from("onboarding_sessions")
-        .update({
-          current_step: Math.min(6, input.step + 1),
-          completed_steps: Array.from(completed) as never,
-          completed_at: isFinal ? new Date().toISOString() : null,
-          ...(input.patch ?? {}),
-        })
+        .update(update as never)
         .eq("user_id", uid);
       if (error) throw error;
 
