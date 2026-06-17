@@ -81,14 +81,14 @@ export function useSubmitApplication() {
       if (!uid) throw new Error("Not authenticated");
       const { data, error } = await supabase
         .from("applications")
-        .insert({
+        .insert([{
           applicant_id: uid,
           opportunity_id: input.opportunity_id,
           opportunity_type: input.opportunity_type,
           owner_id: input.owner_id,
           message: input.message ?? null,
           metadata: input.metadata ?? {},
-        })
+        }])
         .select()
         .single();
       if (error) throw error;
