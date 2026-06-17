@@ -99,7 +99,12 @@ export default function CompressedOnboarding() {
     try {
       const { data: u } = await supabase.auth.getUser();
       const uid = u.user?.id;
-      if (!uid) throw new Error("Not authenticated");
+      if (!uid) {
+        toast.error("Your session expired — please sign in again");
+        navigate("/auth", { replace: true });
+        return;
+      }
+
 
       if (step === 1) {
         if (!fullName.trim()) throw new Error("Name is required");
