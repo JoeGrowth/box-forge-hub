@@ -156,7 +156,9 @@ const Opportunities = () => {
 
 
   // Normalize all sources into Opportunity[]
-  const allOpportunities = useMemo<(Opportunity & { match_score: number })[]>(() => {
+  const allOpportunities = useMemo<
+    (Opportunity & { match_score: number; recommendation?: OpportunityRecommendation })[]
+  >(() => {
     const startupOpps: Opportunity[] = rawStartups.map((s, i) => ({
       id: s.id,
       title: s.title,
@@ -227,21 +229,28 @@ const Opportunities = () => {
 
     const all = [...SEEDED_OPPORTUNITIES, ...startupOpps, ...trainingOpps, ...tenderOpps, ...jobOpps];
 
-    // Compute match scores
-    const scored = all.map((opp) => ({
-      ...opp,
-      match_score: computeMatchScore(userSkillNames, opp.required_skills),
-    }));
+    // Phase 3: prefer opportunity_graph projection. Falls back to legacy tag
+    // overlap for rows not yet in the projection (e.g. SEEDED_OPPORTUNITIES).
+    const scored = all.map((opp) => {
+      const rec = USE_OPPORTUNITY_GRAPH ? scoreById.get(opp.source_id ?? opp.id) : undefined;
+      const legacy = computeMatchScore(userSkillNames, opp.required_skills);
+      // Normalize projection match_score (0..100 cap) for the badge.
+      const projected = rec ? Math.min(100, Math.round(rec.matchScore)) : null;
+      return {
+        ...opp,
+        recommendation: rec,
+        match_score: projected ?? legacy,
+      };
+    });
 
-    // Sort: match_score descending first, then rank ascending as tiebreaker
-    if (userSkillNames.length > 0) {
+    if (USE_OPPORTUNITY_GRAPH || userSkillNames.length > 0) {
       scored.sort((a, b) => b.match_score - a.match_score || a.rank - b.rank);
     } else {
       scored.sort((a, b) => a.rank - b.rank);
     }
 
     return scored;
-  }, [rawStartups, rawTrainings, rawTenders, rawJobs, userSkillNames]);
+  }, [rawStartups, rawTrainings, rawTenders, rawJobs, userSkillNames, scoreById]);
 
   // Capacity-based tender filter helper
   const passesTenderCapacity = (opp: Opportunity & { match_score: number }) => {
