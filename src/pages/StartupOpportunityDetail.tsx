@@ -12,6 +12,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { emitOpportunityEvent } from "@/lib/opportunityEvents";
+import { OpportunityStatusPanel } from "@/components/opportunities/OpportunityStatusPanel";
 import {
   Dialog,
   DialogContent,
