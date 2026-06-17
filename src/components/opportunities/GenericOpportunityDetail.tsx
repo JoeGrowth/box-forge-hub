@@ -303,6 +303,7 @@ export default function GenericOpportunityDetail({ category, id }: { category: C
                   <OpportunityStatusPanel
                     userId={user.id}
                     opportunityId={model.id}
+                    category={model.category}
                     source="opportunity_interactions"
                   />
                 )}
