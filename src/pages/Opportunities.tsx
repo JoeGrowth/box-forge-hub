@@ -143,7 +143,7 @@ const Opportunities = () => {
     };
 
     fetchAll();
-  }, [user, isApproved, onboardingLoading]);
+  }, [user, isApproved, onboardingLoading, expertise?.tags.length]);
 
 
   // Normalize all sources into Opportunity[]
