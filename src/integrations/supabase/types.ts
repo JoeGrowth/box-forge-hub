@@ -2195,6 +2195,48 @@ export type Database = {
         }
         Relationships: []
       }
+      professional_state_weights: {
+        Row: {
+          created_at: string
+          min_ownership: number
+          min_ventures: number
+          sort_order: number
+          state: string
+          updated_at: string
+          weight_activity: number
+          weight_expertise: number
+          weight_ownership: number
+          weight_revenue: number
+          weight_trust: number
+        }
+        Insert: {
+          created_at?: string
+          min_ownership?: number
+          min_ventures?: number
+          sort_order?: number
+          state: string
+          updated_at?: string
+          weight_activity?: number
+          weight_expertise?: number
+          weight_ownership?: number
+          weight_revenue?: number
+          weight_trust?: number
+        }
+        Update: {
+          created_at?: string
+          min_ownership?: number
+          min_ventures?: number
+          sort_order?: number
+          state?: string
+          updated_at?: string
+          weight_activity?: number
+          weight_expertise?: number
+          weight_ownership?: number
+          weight_revenue?: number
+          weight_trust?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -3485,6 +3527,21 @@ export type Database = {
         }
         Relationships: []
       }
+      beta_state_classification_audit: {
+        Row: {
+          derived_state: string | null
+          full_name: string | null
+          missing: Json | null
+          next_state: string | null
+          qualifying_states: Json | null
+          reasons: Json | null
+          runner_up: string | null
+          scores: Json | null
+          signals: Json | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       audit_graph_integrity: {
@@ -3530,6 +3587,7 @@ export type Database = {
         }[]
       }
       compute_user_state: { Args: { _user_id: string }; Returns: Json }
+      compute_user_state_scores: { Args: { _user_id: string }; Returns: Json }
       current_user_email: { Args: never; Returns: string }
       declaration_entity_access: {
         Args: { _entity_id: string; _user_id: string }

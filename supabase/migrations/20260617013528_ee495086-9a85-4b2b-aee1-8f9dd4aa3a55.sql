@@ -1,0 +1,1 @@
+ALTER VIEW public.beta_state_classification_audit SET (security_invoker = true);
