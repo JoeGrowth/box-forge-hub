@@ -29,6 +29,8 @@ import Admin from "./pages/Admin";
 import AdminOpportunityDetail from "./pages/AdminOpportunityDetail";
 import BetaConsole from "./pages/BetaConsole";
 import LifecycleIntegrity from "./pages/admin/LifecycleIntegrity";
+import Organizations from "./pages/Organizations";
+import OrganizationPage from "./pages/Organization";
 import CompressedOnboarding from "./pages/CompressedOnboarding";
 import ProfessionalMap from "./pages/ProfessionalMap";
 import Opportunities from "./pages/Opportunities";
@@ -114,6 +116,8 @@ const App = () => (
                   <Route path="/onboarding/map" element={<ProfessionalMap />} />
                   <Route element={<PersistentNavbarLayout />}>
                   <Route path="/opportunities" element={<Opportunities />} />
+                  <Route path="/organizations" element={<Organizations />} />
+                  <Route path="/org/:slug" element={<OrganizationPage />} />
                   <Route path="/cobuilders" element={<CoBuilders />} />
                   <Route path="/journey" element={<Journey />} />
                   <Route path="/start" element={<Scale />} />

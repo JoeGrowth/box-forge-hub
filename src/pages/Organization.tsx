@@ -1,0 +1,479 @@
+// Organization detail page — /org/:slug
+// Tabs: Overview / Jobs / Tenders / Members
+// Editor+ can publish jobs and tenders on behalf of the organization.
+// Viewer can browse but not edit.
+
+import { useEffect, useState, useCallback } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  useOrganizationBySlug,
+  useMyOrgRole,
+  useOrgMembers,
+  roleAtLeast,
+  type OrgRole,
+} from "@/hooks/useOrganizations";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Building2,
+  Plus,
+  Briefcase,
+  FileText,
+  Users,
+  Shield,
+  Pencil,
+  Eye,
+  Globe,
+  Lock,
+  ExternalLink,
+  Trash2,
+  ArrowLeft,
+} from "lucide-react";
+
+type JobRow = {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  visibility_scope: string;
+  location: string | null;
+  employment_type: string | null;
+  created_at: string;
+};
+type TenderRow = {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  visibility_scope: string;
+  budget_range: string | null;
+  deadline: string | null;
+  created_at: string;
+};
+
+const ROLE_ICON = { admin: Shield, editor: Pencil, viewer: Eye } as const;
+const ROLE_COLOR = {
+  admin: "bg-primary/10 text-primary",
+  editor: "bg-amber-500/10 text-amber-600",
+  viewer: "bg-muted text-muted-foreground",
+} as const;
+
+const SCOPE_ICON = { global: Globe, organization: Building2, private: Lock } as const;
+
+export default function OrganizationPage() {
+  const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const { org, loading } = useOrganizationBySlug(slug);
+  const role = useMyOrgRole(user?.id, org?.id);
+  const canEdit = roleAtLeast(role, "editor");
+  const canAdmin = roleAtLeast(role, "admin");
+
+  const [jobs, setJobs] = useState<JobRow[]>([]);
+  const [tenders, setTenders] = useState<TenderRow[]>([]);
+  const { members, reload: reloadMembers } = useOrgMembers(org?.id);
+
+  const loadOpps = useCallback(async () => {
+    if (!org) return;
+    const [{ data: js }, { data: ts }] = await Promise.all([
+      supabase.from("job_opportunities").select("*").eq("organization_id", org.id).order("created_at", { ascending: false }),
+      supabase.from("tenders").select("*").eq("organization_id", org.id).order("created_at", { ascending: false }),
+    ]);
+    setJobs((js as JobRow[]) ?? []);
+    setTenders((ts as TenderRow[]) ?? []);
+  }, [org]);
+
+  useEffect(() => { loadOpps(); }, [loadOpps]);
+
+  if (loading) return <div className="container mx-auto p-8 text-sm text-muted-foreground">Loading…</div>;
+  if (!org) return (
+    <div className="container mx-auto p-8">
+      <p className="text-sm text-muted-foreground">Organization not found.</p>
+      <Link to="/organizations" className="text-primary text-sm">Back to organizations</Link>
+    </div>
+  );
+
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-6xl space-y-6">
+      <Link to="/organizations" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
+        <ArrowLeft className="w-3 h-3 mr-1" /> All organizations
+      </Link>
+
+      {/* Header */}
+      <div className="rounded-2xl border border-border bg-card p-6">
+        <div className="flex items-start gap-4 flex-wrap">
+          <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Building2 className="w-7 h-7 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl font-bold">{org.name}</h1>
+              <Badge variant="outline" className="capitalize">{org.type}</Badge>
+              {role && (
+                <Badge className={ROLE_COLOR[role]}>
+                  {(() => { const I = ROLE_ICON[role]; return <I className="w-3 h-3 mr-1" />; })()}
+                  Your role: {role}
+                </Badge>
+              )}
+            </div>
+            {org.description && <p className="text-sm text-muted-foreground mt-2">{org.description}</p>}
+            {org.website && (
+              <a href={org.website} target="_blank" rel="noreferrer"
+                 className="inline-flex items-center text-xs text-primary mt-2 hover:underline">
+                {org.website} <ExternalLink className="w-3 h-3 ml-1" />
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <Tabs defaultValue="jobs" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="jobs"><Briefcase className="w-3 h-3 mr-1" /> Jobs ({jobs.length})</TabsTrigger>
+          <TabsTrigger value="tenders"><FileText className="w-3 h-3 mr-1" /> Tenders ({tenders.length})</TabsTrigger>
+          <TabsTrigger value="members"><Users className="w-3 h-3 mr-1" /> Members ({members.length})</TabsTrigger>
+        </TabsList>
+
+        {/* JOBS */}
+        <TabsContent value="jobs" className="space-y-3">
+          <div className="flex justify-end">
+            {canEdit && (
+              <CreateOpportunityDialog
+                kind="job"
+                orgId={org.id}
+                userId={user!.id}
+                onCreated={loadOpps}
+              />
+            )}
+          </div>
+          {jobs.length === 0 ? (
+            <EmptyState
+              icon={Briefcase}
+              title="No jobs yet"
+              hint={canEdit ? "Use the button above to publish the first one." : "An editor needs to publish one."}
+            />
+          ) : (
+            jobs.map((j) => (
+              <OppCard
+                key={j.id}
+                title={j.title}
+                description={j.description}
+                status={j.status}
+                scope={j.visibility_scope}
+                meta={[j.employment_type, j.location].filter(Boolean) as string[]}
+                href={`/opportunities/job/${j.id}`}
+                canManage={canEdit}
+                canDelete={canAdmin}
+                onDelete={async () => {
+                  if (!confirm("Delete this job?")) return;
+                  const { error } = await supabase.from("job_opportunities").delete().eq("id", j.id);
+                  if (error) toast({ title: "Delete failed", description: error.message, variant: "destructive" });
+                  else { toast({ title: "Job deleted" }); loadOpps(); }
+                }}
+              />
+            ))
+          )}
+        </TabsContent>
+
+        {/* TENDERS */}
+        <TabsContent value="tenders" className="space-y-3">
+          <div className="flex justify-end">
+            {canEdit && (
+              <CreateOpportunityDialog
+                kind="tender"
+                orgId={org.id}
+                userId={user!.id}
+                onCreated={loadOpps}
+              />
+            )}
+          </div>
+          {tenders.length === 0 ? (
+            <EmptyState
+              icon={FileText}
+              title="No tenders yet"
+              hint={canEdit ? "Publish a tender to source proposals." : "Only editors and admins can publish."}
+            />
+          ) : (
+            tenders.map((t) => (
+              <OppCard
+                key={t.id}
+                title={t.title}
+                description={t.description}
+                status={t.status}
+                scope={t.visibility_scope}
+                meta={[t.budget_range, t.deadline ? `Deadline ${new Date(t.deadline).toLocaleDateString()}` : null].filter(Boolean) as string[]}
+                href={`/opportunities/tender/${t.id}`}
+                canManage={canEdit}
+                canDelete={canAdmin}
+                onDelete={async () => {
+                  if (!confirm("Delete this tender?")) return;
+                  const { error } = await supabase.from("tenders").delete().eq("id", t.id);
+                  if (error) toast({ title: "Delete failed", description: error.message, variant: "destructive" });
+                  else { toast({ title: "Tender deleted" }); loadOpps(); }
+                }}
+              />
+            ))
+          )}
+        </TabsContent>
+
+        {/* MEMBERS */}
+        <TabsContent value="members" className="space-y-3">
+          {canAdmin && <InviteMemberRow orgId={org.id} onAdded={reloadMembers} />}
+          <div className="rounded-xl border border-border bg-card divide-y divide-border">
+            {members.map((m) => {
+              const RoleIcon = ROLE_ICON[m.role];
+              return (
+                <div key={m.id} className="flex items-center justify-between p-4">
+                  <div className="min-w-0">
+                    <p className="font-medium text-foreground truncate">
+                      {m.profile?.full_name || m.user_id.slice(0, 8)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Joined {new Date(m.created_at).toLocaleDateString()}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {canAdmin && m.user_id !== user?.id ? (
+                      <Select
+                        value={m.role}
+                        onValueChange={async (newRole) => {
+                          const { error } = await supabase
+                            .from("organization_members")
+                            .update({ role: newRole as OrgRole })
+                            .eq("id", m.id);
+                          if (error) toast({ title: "Update failed", description: error.message, variant: "destructive" });
+                          else { toast({ title: "Role updated" }); reloadMembers(); }
+                        }}
+                      >
+                        <SelectTrigger className="h-8 w-28"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="viewer">Viewer</SelectItem>
+                          <SelectItem value="editor">Editor</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Badge className={ROLE_COLOR[m.role]}>
+                        <RoleIcon className="w-3 h-3 mr-1" /> {m.role}
+                      </Badge>
+                    )}
+                    {canAdmin && m.user_id !== user?.id && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={async () => {
+                          if (!confirm("Remove this member?")) return;
+                          const { error } = await supabase.from("organization_members").delete().eq("id", m.id);
+                          if (error) toast({ title: "Remove failed", description: error.message, variant: "destructive" });
+                          else { toast({ title: "Member removed" }); reloadMembers(); }
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+function EmptyState({ icon: Icon, title, hint }: { icon: typeof Briefcase; title: string; hint: string }) {
+  return (
+    <div className="rounded-xl border border-dashed border-border p-10 text-center">
+      <Icon className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+      <p className="font-medium text-foreground">{title}</p>
+      <p className="text-xs text-muted-foreground mt-1">{hint}</p>
+    </div>
+  );
+}
+
+function OppCard({
+  title, description, status, scope, meta, href, canManage, canDelete, onDelete,
+}: {
+  title: string; description: string; status: string; scope: string;
+  meta: string[]; href: string; canManage: boolean; canDelete: boolean; onDelete: () => void;
+}) {
+  const ScopeIcon = (SCOPE_ICON as any)[scope] ?? Globe;
+  return (
+    <div className="rounded-xl border border-border bg-card p-4 hover:border-primary/30 transition">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <Link to={href} className="font-semibold text-foreground hover:text-primary">{title}</Link>
+          <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{description}</p>
+          <div className="flex items-center flex-wrap gap-2 mt-2 text-xs">
+            <Badge variant={status === "published" ? "default" : "outline"} className="capitalize">{status}</Badge>
+            <Badge variant="outline" className="capitalize"><ScopeIcon className="w-3 h-3 mr-1" />{scope}</Badge>
+            {meta.map((m) => <span key={m} className="text-muted-foreground">· {m}</span>)}
+          </div>
+        </div>
+        {canDelete && (
+          <Button size="sm" variant="ghost" onClick={onDelete}><Trash2 className="w-4 h-4" /></Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CreateOpportunityDialog({
+  kind, orgId, userId, onCreated,
+}: { kind: "job" | "tender"; orgId: string; userId: string; onCreated: () => void }) {
+  const { toast } = useToast();
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [scope, setScope] = useState<"global" | "organization" | "private">("global");
+  const [extra, setExtra] = useState<{ employment_type?: string; location?: string; budget_range?: string; deadline?: string }>({});
+  const [saving, setSaving] = useState(false);
+
+  const submit = async () => {
+    if (!title.trim() || !description.trim()) return;
+    setSaving(true);
+    const base = {
+      user_id: userId,
+      created_by_user_id: userId,
+      organization_id: orgId,
+      visibility_scope: scope,
+      title: title.trim(),
+      description: description.trim(),
+      status: "published",
+    } as any;
+    const payload = kind === "job"
+      ? { ...base, employment_type: extra.employment_type || null, location: extra.location || null }
+      : { ...base, budget_range: extra.budget_range || null, deadline: extra.deadline || null };
+    const { error } = await supabase.from(kind === "job" ? "job_opportunities" : "tenders").insert(payload);
+    setSaving(false);
+    if (error) {
+      toast({ title: "Publish failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: `${kind === "job" ? "Job" : "Tender"} published on behalf of organization` });
+    setOpen(false);
+    setTitle(""); setDescription(""); setExtra({}); setScope("global");
+    onCreated();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm"><Plus className="w-3 h-3 mr-1" /> New {kind}</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Publish a {kind} for this organization</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div><Label>Title</Label><Input value={title} onChange={(e) => setTitle(e.target.value)} /></div>
+          <div><Label>Description</Label><Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} /></div>
+          {kind === "job" ? (
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Employment type</Label><Input value={extra.employment_type ?? ""} onChange={(e) => setExtra({ ...extra, employment_type: e.target.value })} placeholder="Full-time" /></div>
+              <div><Label>Location</Label><Input value={extra.location ?? ""} onChange={(e) => setExtra({ ...extra, location: e.target.value })} placeholder="Tunis / Remote" /></div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Budget range</Label><Input value={extra.budget_range ?? ""} onChange={(e) => setExtra({ ...extra, budget_range: e.target.value })} placeholder="$10k–$25k" /></div>
+              <div><Label>Deadline</Label><Input type="date" value={extra.deadline ?? ""} onChange={(e) => setExtra({ ...extra, deadline: e.target.value })} /></div>
+            </div>
+          )}
+          <div>
+            <Label>Visibility</Label>
+            <Select value={scope} onValueChange={(v) => setScope(v as any)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="global">Global · marketplace + org page</SelectItem>
+                <SelectItem value="organization">Organization · only members can see</SelectItem>
+                <SelectItem value="private">Private · draft, not listed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button onClick={submit} disabled={saving || !title.trim() || !description.trim()}>
+            {saving ? "Publishing…" : "Publish"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function InviteMemberRow({ orgId, onAdded }: { orgId: string; onAdded: () => void }) {
+  const { toast } = useToast();
+  const [userId, setUserId] = useState("");
+  const [role, setRole] = useState<OrgRole>("viewer");
+  const [saving, setSaving] = useState(false);
+
+  const add = async () => {
+    if (!userId.trim()) return;
+    setSaving(true);
+    const { error } = await supabase.from("organization_members").insert({
+      organization_id: orgId,
+      user_id: userId.trim(),
+      role,
+    });
+    setSaving(false);
+    if (error) {
+      toast({ title: "Could not add member", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Member added" });
+    setUserId("");
+    onAdded();
+  };
+
+  return (
+    <div className="rounded-xl border border-dashed border-border bg-card p-4 space-y-2">
+      <p className="text-xs uppercase tracking-wide text-muted-foreground">Add member by user id</p>
+      <div className="flex gap-2 flex-wrap">
+        <Input
+          value={userId}
+          onChange={(e) => setUserId(e.target.value)}
+          placeholder="User UUID"
+          className="flex-1 min-w-[220px]"
+        />
+        <Select value={role} onValueChange={(v) => setRole(v as OrgRole)}>
+          <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="viewer">Viewer</SelectItem>
+            <SelectItem value="editor">Editor</SelectItem>
+            <SelectItem value="admin">Admin</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button onClick={add} disabled={saving || !userId.trim()}>Add</Button>
+      </div>
+      <p className="text-xs text-muted-foreground">Tip: find user IDs from the People directory or your members can share their profile.</p>
+    </div>
+  );
+}

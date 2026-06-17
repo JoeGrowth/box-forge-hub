@@ -1412,10 +1412,12 @@ export type Database = {
           company: string | null
           contact_info: string | null
           created_at: string
+          created_by_user_id: string | null
           description: string
           employment_type: string | null
           id: string
           location: string | null
+          organization_id: string | null
           requirements: string | null
           salary_range: string | null
           sector: string | null
@@ -1423,15 +1425,18 @@ export type Database = {
           title: string
           updated_at: string
           user_id: string
+          visibility_scope: string
         }
         Insert: {
           company?: string | null
           contact_info?: string | null
           created_at?: string
+          created_by_user_id?: string | null
           description: string
           employment_type?: string | null
           id?: string
           location?: string | null
+          organization_id?: string | null
           requirements?: string | null
           salary_range?: string | null
           sector?: string | null
@@ -1439,15 +1444,18 @@ export type Database = {
           title: string
           updated_at?: string
           user_id: string
+          visibility_scope?: string
         }
         Update: {
           company?: string | null
           contact_info?: string | null
           created_at?: string
+          created_by_user_id?: string | null
           description?: string
           employment_type?: string | null
           id?: string
           location?: string | null
+          organization_id?: string | null
           requirements?: string | null
           salary_range?: string | null
           sector?: string | null
@@ -1455,8 +1463,17 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+          visibility_scope?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "job_opportunities_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       journey_phase_responses: {
         Row: {
@@ -2294,6 +2311,80 @@ export type Database = {
           id?: string
           price?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      organization_members: {
+        Row: {
+          created_at: string
+          id: string
+          invited_by: string | null
+          organization_id: string
+          role: Database["public"]["Enums"]["app_org_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          organization_id: string
+          role?: Database["public"]["Enums"]["app_org_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          organization_id?: string
+          role?: Database["public"]["Enums"]["app_org_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          logo_url: string | null
+          name: string
+          slug: string
+          type: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name: string
+          slug: string
+          type?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          slug?: string
+          type?: string
+          updated_at?: string
+          website?: string | null
         }
         Relationships: []
       }
@@ -3148,48 +3239,65 @@ export type Database = {
           budget_range: string | null
           contact_info: string | null
           created_at: string
+          created_by_user_id: string | null
           deadline: string | null
           description: string
           id: string
           location: string | null
+          organization_id: string | null
           requirements: string | null
           sector: string | null
           status: string
           title: string
           updated_at: string
           user_id: string
+          visibility_scope: string
         }
         Insert: {
           budget_range?: string | null
           contact_info?: string | null
           created_at?: string
+          created_by_user_id?: string | null
           deadline?: string | null
           description: string
           id?: string
           location?: string | null
+          organization_id?: string | null
           requirements?: string | null
           sector?: string | null
           status?: string
           title: string
           updated_at?: string
           user_id: string
+          visibility_scope?: string
         }
         Update: {
           budget_range?: string | null
           contact_info?: string | null
           created_at?: string
+          created_by_user_id?: string | null
           deadline?: string | null
           description?: string
           id?: string
           location?: string | null
+          organization_id?: string | null
           requirements?: string | null
           sector?: string | null
           status?: string
           title?: string
           updated_at?: string
           user_id?: string
+          visibility_scope?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tenders_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tracker_missions: {
         Row: {
@@ -3827,6 +3935,14 @@ export type Database = {
         }
         Returns: string
       }
+      has_org_role: {
+        Args: {
+          _min_role: Database["public"]["Enums"]["app_org_role"]
+          _org: string
+          _user: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -3839,6 +3955,7 @@ export type Database = {
         Args: { _entity_id: string; _user_id: string }
         Returns: boolean
       }
+      is_org_member: { Args: { _org: string; _user: string }; Returns: boolean }
       is_plan_shared_with_me: { Args: { _plan_id: string }; Returns: boolean }
       legacy_expertise_calc: { Args: { _user_id: string }; Returns: Json }
       opportunity_lifecycle_rank: { Args: { _state: string }; Returns: number }
@@ -3881,6 +3998,7 @@ export type Database = {
       test_growth_loop_dispatch: { Args: { _user_id: string }; Returns: Json }
     }
     Enums: {
+      app_org_role: "viewer" | "editor" | "admin"
       app_role: "entrepreneur" | "cobuilder" | "box_manager" | "admin"
       application_opportunity_kind:
         | "job"
@@ -4211,6 +4329,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_org_role: ["viewer", "editor", "admin"],
       app_role: ["entrepreneur", "cobuilder", "box_manager", "admin"],
       application_opportunity_kind: [
         "job",
