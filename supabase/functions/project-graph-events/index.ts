@@ -219,6 +219,7 @@ Deno.serve(async (req) => {
         if (sellerId) affectedUsers.add(sellerId);
         if (buyerId) affectedUsers.add(buyerId);
       }
+    } catch (e) {
       failed++;
       const msg = String((e as Error).message ?? e);
       const nextAttempt = (((ev as unknown) as { attempt_count?: number }).attempt_count ?? 0) + 1;
