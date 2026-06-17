@@ -13,3 +13,8 @@ export const USE_OPPORTUNITY_GRAPH = true;
 // Phase 4 — Revenue Graph. When true, revenue/transaction UI sources from
 // the revenue_graph projection and the canonical transactions table.
 export const USE_REVENUE_GRAPH = true;
+
+// Phase 5 — Reputation Graph. Synthesis layer over Expertise + Trust + Revenue.
+// When true, Profile renders a unified Professional Reputation Snapshot and
+// opportunity cards expose a candidate reputation indicator.
+export const USE_REPUTATION_GRAPH = true;
