@@ -127,6 +127,7 @@ export function useAdmin() {
     const startupIdeas = startupIdeasResult.data || [];
     const teamMembers = teamMembersResult.data || [];
     const learningJourneys = learningJourneysResult.data || [];
+    const progressionGraphs = progressionGraphResult.data || [];
 
     // Count certifications per user
     const certCountByUser: Record<string, number> = {};
