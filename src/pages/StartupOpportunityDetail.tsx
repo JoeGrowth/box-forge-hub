@@ -72,7 +72,7 @@ interface Application {
   created_at: string;
 }
 
-const OpportunityDetail = () => {
+const StartupOpportunityDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
@@ -697,4 +697,4 @@ const OpportunityDetail = () => {
   );
 };
 
-export default OpportunityDetail;
+export default StartupOpportunityDetail;
