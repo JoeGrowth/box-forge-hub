@@ -27,63 +27,57 @@ import { toast } from "sonner";
 import { useSavedOpportunities } from "@/hooks/useSavedOpportunities";
 import { useTrust, trustLevelStyle } from "@/hooks/useTrust";
 import { useReputation, reputationLevelStyle } from "@/hooks/useReputation";
+import {
+  modelFromJob,
+  modelFromTraining,
+  modelFromTender,
+  modelFromConsulting,
+  type OpportunityDetailModel,
+} from "@/lib/opportunityModel";
+import { emitOpportunityEvent } from "@/lib/opportunityEvents";
+import { OpportunityStatusPanel } from "./OpportunityStatusPanel";
 
 type Category = "job" | "training" | "consulting" | "tender";
 
 const META: Record<Category, {
   table: string;
-  titleField: string;
   icon: typeof Briefcase;
   label: string;
-  actionLabel: string;
-  actionType: "apply" | "join" | "request_contact";
+  actionType: "apply" | "request_contact";
   filter?: (q: any) => any;
-  rewardField?: string;
-  rewardLabel: string;
+  adapter: (raw: any, actorName: string) => OpportunityDetailModel;
 }> = {
   job: {
     table: "job_opportunities",
-    titleField: "title",
     icon: Briefcase,
     label: "Job",
-    actionLabel: "Apply for this role",
     actionType: "apply",
     filter: (q) => q.eq("status", "published"),
-    rewardField: "salary_range",
-    rewardLabel: "Salary",
+    adapter: modelFromJob,
   },
   training: {
     table: "training_opportunities",
-    titleField: "title",
     icon: GraduationCap,
     label: "Training",
-    actionLabel: "Request enrollment",
     actionType: "request_contact",
     filter: (q) => q.eq("review_status", "approved"),
-    rewardField: undefined,
-    rewardLabel: "Cost",
+    adapter: modelFromTraining,
   },
   tender: {
     table: "tenders",
-    titleField: "title",
     icon: FileText,
     label: "Tender",
-    actionLabel: "Submit proposal",
     actionType: "apply",
     filter: (q) => q.eq("status", "published"),
-    rewardField: "budget_range",
-    rewardLabel: "Budget",
+    adapter: modelFromTender,
   },
   consulting: {
     table: "consulting_services",
-    titleField: "service_title",
     icon: Lightbulb,
     label: "Consulting Service",
-    actionLabel: "Request service",
     actionType: "request_contact",
     filter: (q) => q.eq("is_active", true),
-    rewardField: "price",
-    rewardLabel: "Price",
+    adapter: modelFromConsulting,
   },
 };
 
@@ -91,21 +85,20 @@ export default function GenericOpportunityDetail({ category, id }: { category: C
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { onboardingState } = useOnboarding();
-  const [record, setRecord] = useState<any | null>(null);
-  const [author, setAuthor] = useState<{ full_name: string | null; bio?: string | null; user_id: string } | null>(null);
+  const [model, setModel] = useState<OpportunityDetailModel | null>(null);
+  const [actorBio, setActorBio] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const { isSaved, toggle } = useSavedOpportunities();
+  const { isSaved, toggle } = useSavedOpportunities(user?.id);
   const meta = META[category];
   const Icon = meta.icon;
 
-  // Trust + reputation badges for the author.
-  const { trust } = useTrust(author?.user_id ?? null);
+  const { trust } = useTrust(model?.actor.user_id ?? null);
   const trustStyle = trust && trust.level !== "unverified" ? trustLevelStyle(trust.level) : null;
-  const { reputation } = useReputation(author?.user_id ?? null);
+  const { reputation } = useReputation(model?.actor.user_id ?? null);
   const repStyle = reputation ? reputationLevelStyle(reputation.reputation_level) : null;
 
   useEffect(() => {
@@ -131,16 +124,22 @@ export default function GenericOpportunityDetail({ category, id }: { category: C
         navigate("/opportunities", { replace: true });
         return;
       }
-      setRecord(data);
 
+      let actorName = "Unknown";
       if (data.user_id) {
         const { data: profile } = await supabase
           .from("profiles")
-          .select("full_name, bio, user_id")
+          .select("full_name, bio")
           .eq("user_id", data.user_id)
           .maybeSingle();
-        if (profile) setAuthor(profile as any);
+        if (profile) {
+          actorName = profile.full_name || "Unknown";
+          setActorBio(profile.bio ?? null);
+        }
       }
+
+      const built = meta.adapter(data, actorName);
+      setModel(built);
 
       const { data: prior } = await (supabase.from("opportunity_interactions" as any) as any)
         .select("id")
@@ -149,17 +148,24 @@ export default function GenericOpportunityDetail({ category, id }: { category: C
         .maybeSingle();
       if (prior) setSubmitted(true);
 
+      // Fix 2: viewed event (day-bucketed, idempotent).
+      void emitOpportunityEvent("user_viewed_opportunity", {
+        userId: user.id,
+        opportunityId: id,
+        category,
+      });
+
       setLoading(false);
     };
     load();
   }, [id, user, category]);
 
   const handleSubmit = async () => {
-    if (!user || !record) return;
+    if (!user || !model) return;
     setSubmitting(true);
     const { error } = await (supabase.from("opportunity_interactions" as any) as any).insert({
       user_id: user.id,
-      opportunity_id: record.id,
+      opportunity_id: model.id,
       action_type: meta.actionType,
       message: message.trim() || null,
     });
@@ -173,6 +179,12 @@ export default function GenericOpportunityDetail({ category, id }: { category: C
     } else {
       setSubmitted(true);
       toast.success("Submitted. The author will be notified.");
+      void emitOpportunityEvent("user_applied_opportunity", {
+        userId: user.id,
+        opportunityId: model.id,
+        category,
+        extra: { action_type: meta.actionType },
+      });
     }
     setSubmitting(false);
   };
@@ -184,24 +196,10 @@ export default function GenericOpportunityDetail({ category, id }: { category: C
       </div>
     );
   }
+  if (!model) return null;
 
-  if (!record) return null;
-
-  const title = record[meta.titleField] ?? "Untitled";
-  const sector = record.sector;
-  const location = record.location;
-  const deadline = record.deadline;
-  const requirements = record.requirements;
-  const description = record.description;
-  const reward = meta.rewardField
-    ? category === "consulting"
-      ? record.price > 0
-        ? `${record.price} ${record.currency || ""}`.trim()
-        : "Free"
-      : record[meta.rewardField]
-    : null;
-  const isOwn = user?.id === record.user_id;
-  const saved = isSaved(record.id);
+  const isOwn = user?.id === model.actor.user_id;
+  const saved = isSaved(model.id);
 
   return (
     <div className="min-h-screen bg-background">
@@ -228,44 +226,39 @@ export default function GenericOpportunityDetail({ category, id }: { category: C
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
                   <Badge variant="secondary">{meta.label}</Badge>
-                  {sector && <Badge variant="outline">{sector}</Badge>}
-                  {record.employment_type && <Badge variant="outline">{record.employment_type}</Badge>}
-                  {record.format && <Badge variant="outline">{record.format}</Badge>}
+                  {model.context.sector && <Badge variant="outline">{model.context.sector}</Badge>}
+                  {model.context.timeline && <Badge variant="outline">{model.context.timeline}</Badge>}
                 </div>
-                <h1 className="font-display text-3xl font-bold text-foreground mb-3">{title}</h1>
+                <h1 className="font-display text-3xl font-bold text-foreground mb-3">{model.title}</h1>
                 <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                  {author && (
+                  <span className="flex items-center gap-1.5">
+                    <User className="w-4 h-4" />
+                    {model.actor.label}: {model.actor.name}
+                    {trustStyle && (
+                      <span className={`ml-1 px-1.5 py-0 rounded-full border text-[10px] font-medium ${trustStyle.className}`}>
+                        {trustStyle.label}
+                      </span>
+                    )}
+                    {repStyle && (
+                      <span className={`ml-1 px-1.5 py-0 rounded-full border text-[10px] font-medium ${repStyle.className}`}>
+                        {repStyle.label}
+                      </span>
+                    )}
+                  </span>
+                  {model.context.location && (
                     <span className="flex items-center gap-1.5">
-                      <User className="w-4 h-4" />
-                      By {author.full_name || "Unknown"}
-                      {trustStyle && (
-                        <span className={`ml-1 px-1.5 py-0 rounded-full border text-[10px] font-medium ${trustStyle.className}`}>
-                          {trustStyle.label}
-                        </span>
-                      )}
-                      {repStyle && (
-                        <span className={`ml-1 px-1.5 py-0 rounded-full border text-[10px] font-medium ${repStyle.className}`}>
-                          {repStyle.label}
-                        </span>
-                      )}
+                      <MapPin className="w-4 h-4" /> {model.context.location}
                     </span>
                   )}
-                  {location && (
-                    <span className="flex items-center gap-1.5">
-                      <MapPin className="w-4 h-4" /> {location}
-                    </span>
-                  )}
-                  {deadline && (
-                    <span className="flex items-center gap-1.5">
-                      <Calendar className="w-4 h-4" /> Deadline {deadline}
-                    </span>
-                  )}
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4" /> Posted {new Date(model.created_at).toLocaleDateString()}
+                  </span>
                 </div>
               </div>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => toggle(record.id, category)}
+                onClick={() => toggle(model.id, category)}
                 className="shrink-0"
               >
                 {saved ? <BookmarkCheck className="w-4 h-4 mr-1" /> : <Bookmark className="w-4 h-4 mr-1" />}
@@ -281,57 +274,52 @@ export default function GenericOpportunityDetail({ category, id }: { category: C
               <div className="lg:col-span-2 space-y-8">
                 <div className="bg-card rounded-2xl border border-border p-8">
                   <h2 className="font-display text-xl font-bold text-foreground mb-4">About this opportunity</h2>
-                  <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">{description}</p>
+                  <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">{model.description}</p>
                 </div>
 
-                {requirements && (
+                {model.requirements.requirements_text && (
                   <div className="bg-card rounded-2xl border border-border p-8">
                     <h2 className="font-display text-xl font-bold text-foreground mb-4">Requirements</h2>
-                    <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">{requirements}</p>
+                    <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                      {model.requirements.requirements_text}
+                    </p>
                   </div>
                 )}
 
-                {category === "training" && (record.target_audience || record.duration) && (
-                  <div className="bg-card rounded-2xl border border-border p-8 grid sm:grid-cols-2 gap-4">
-                    {record.target_audience && (
-                      <div>
-                        <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Audience</p>
-                        <p className="font-medium text-foreground">{record.target_audience}</p>
-                      </div>
-                    )}
-                    {record.duration && (
-                      <div>
-                        <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Duration</p>
-                        <p className="font-medium text-foreground">{record.duration}</p>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {category === "job" && record.company && (
+                {model.requirements.skills.length > 0 && (
                   <div className="bg-card rounded-2xl border border-border p-8">
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Company</p>
-                    <p className="font-medium text-foreground">{record.company}</p>
+                    <h2 className="font-display text-xl font-bold text-foreground mb-4">Skills & attributes</h2>
+                    <div className="flex flex-wrap gap-2">
+                      {model.requirements.skills.map((s) => (
+                        <Badge key={s} variant="secondary">{s}</Badge>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
 
               <div className="space-y-6">
+                {submitted && user && (
+                  <OpportunityStatusPanel
+                    userId={user.id}
+                    opportunityId={model.id}
+                    source="opportunity_interactions"
+                  />
+                )}
+
                 <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl border border-primary/20 p-6">
-                  <h3 className="font-display text-lg font-bold text-foreground mb-3">{meta.actionLabel}</h3>
-                  {reward && (
-                    <div className="mb-4 text-sm">
-                      <span className="text-muted-foreground">{meta.rewardLabel}: </span>
-                      <span className="font-semibold text-foreground">{reward}</span>
-                    </div>
-                  )}
+                  <h3 className="font-display text-lg font-bold text-foreground mb-3">{model.actions.primary.label}</h3>
+                  <div className="mb-4 text-sm">
+                    <span className="text-muted-foreground capitalize">{model.reward.type}: </span>
+                    <span className="font-semibold text-foreground">{model.reward.display}</span>
+                  </div>
 
                   {isOwn ? (
                     <p className="text-sm text-muted-foreground italic">You posted this opportunity.</p>
                   ) : submitted ? (
                     <div className="flex items-center gap-2 text-primary">
                       <Check className="w-5 h-5" />
-                      <span className="font-medium">Submitted — awaiting reply</span>
+                      <span className="font-medium">Submitted — see status above</span>
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -344,7 +332,7 @@ export default function GenericOpportunityDetail({ category, id }: { category: C
                       />
                       <Button onClick={handleSubmit} disabled={submitting} className="w-full">
                         {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                        {meta.actionLabel}
+                        {model.actions.primary.label}
                       </Button>
                       <p className="text-xs text-muted-foreground">
                         Your profile will be shared with the author.
@@ -353,21 +341,21 @@ export default function GenericOpportunityDetail({ category, id }: { category: C
                   )}
                 </div>
 
-                {author && (
+                {model.actor.user_id && (
                   <div className="bg-card rounded-2xl border border-border p-6">
-                    <h3 className="font-display text-lg font-bold text-foreground mb-4">About the author</h3>
+                    <h3 className="font-display text-lg font-bold text-foreground mb-4">About the {model.actor.label.toLowerCase()}</h3>
                     <div className="flex items-center gap-3 mb-3">
                       <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                         <User className="w-6 h-6 text-primary" />
                       </div>
                       <div>
-                        <p className="font-medium text-foreground">{author.full_name || "Unknown"}</p>
-                        <p className="text-xs text-muted-foreground">Author</p>
+                        <p className="font-medium text-foreground">{model.actor.name}</p>
+                        <p className="text-xs text-muted-foreground">{model.actor.label}</p>
                       </div>
                     </div>
-                    {author.bio && <p className="text-sm text-muted-foreground">{author.bio}</p>}
+                    {actorBio && <p className="text-sm text-muted-foreground">{actorBio}</p>}
                     <Separator className="my-3" />
-                    <Button variant="ghost" size="sm" className="w-full" onClick={() => navigate(`/co-builders?user=${author.user_id}`)}>
+                    <Button variant="ghost" size="sm" className="w-full" onClick={() => navigate(`/co-builders?user=${model.actor.user_id}`)}>
                       View profile
                     </Button>
                   </div>

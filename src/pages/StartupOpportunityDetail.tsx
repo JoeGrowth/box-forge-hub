@@ -12,6 +12,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { emitOpportunityEvent } from "@/lib/opportunityEvents";
+import { OpportunityStatusPanel } from "@/components/opportunities/OpportunityStatusPanel";
 import {
   Dialog,
   DialogContent,
@@ -164,6 +166,13 @@ const StartupOpportunityDetail = () => {
 
       setHasCoBuilderCert(!!certData);
 
+      // Fix 2: behavioral telemetry — viewed event (day-bucketed, idempotent).
+      void emitOpportunityEvent("user_viewed_opportunity", {
+        userId: user.id,
+        opportunityId: id,
+        category: "startup",
+      });
+
       setLoading(false);
     };
 
@@ -248,6 +257,14 @@ const StartupOpportunityDetail = () => {
         created_at: new Date().toISOString(),
       });
       setDialogOpen(false);
+
+      // Fix 2: behavioral telemetry — applied event (single-shot, idempotent).
+      void emitOpportunityEvent("user_applied_opportunity", {
+        userId: user.id,
+        opportunityId: idea.id,
+        category: "startup",
+        extra: { role: selectedRole || null, total_equity: timeEq + perfEq },
+      });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -456,6 +473,15 @@ const StartupOpportunityDetail = () => {
 
               {/* Sidebar */}
               <div className="space-y-6">
+                {/* Fix 3: post-apply state surface — owns truth about lifecycle. */}
+                {existingApplication && user && (
+                  <OpportunityStatusPanel
+                    userId={user.id}
+                    opportunityId={idea.id}
+                    source="startup_applications"
+                    onChatRoute={`/chat/${existingApplication.id}`}
+                  />
+                )}
                 {/* Apply Card */}
                 <div className="bg-gradient-to-br from-b4-teal/10 to-b4-navy/10 rounded-2xl border border-b4-teal/20 p-6">
                   <h3 className="font-display text-lg font-bold text-foreground mb-2">

@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
+import { emitOpportunityEvent } from "@/lib/opportunityEvents";
 
-// Saved = user intent only. LocalStorage-backed; never written to the graph.
-// Applied (canonical) lives in opportunity_interactions.
+// Saved = user intent only. LocalStorage-backed; never written to the graph
+// as a row. We DO emit a graph event on save (Fix 2: behavioral telemetry)
+// so Growth Loops and Reputation get the signal.
 const KEY = "b4.savedOpportunities.v1";
 
 type Entry = { id: string; category: string; savedAt: string };
@@ -26,7 +28,7 @@ function write(entries: Entry[]) {
   }
 }
 
-export function useSavedOpportunities() {
+export function useSavedOpportunities(userId?: string | null) {
   const [entries, setEntries] = useState<Entry[]>(() => read());
 
   useEffect(() => {
@@ -53,9 +55,17 @@ export function useSavedOpportunities() {
         : [...current, { id, category, savedAt: new Date().toISOString() }];
       write(next);
       setEntries(next);
+      // Emit only the positive direction. Unsave is not a behavioral signal.
+      if (!exists && userId) {
+        void emitOpportunityEvent("user_saved_opportunity", {
+          userId,
+          opportunityId: id,
+          category,
+        });
+      }
       return !exists;
     },
-    []
+    [userId]
   );
 
   const remove = useCallback((id: string) => {
