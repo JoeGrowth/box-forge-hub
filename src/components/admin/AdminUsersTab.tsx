@@ -571,6 +571,17 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
                       </TableCell>
 
                       <TableCell>
+                        <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border ${
+                          user.progressionScore >= 60 ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" :
+                          user.progressionScore >= 30 ? "bg-blue-500/10 text-blue-600 border-blue-500/20" :
+                          user.progressionScore > 0 ? "bg-amber-500/10 text-amber-600 border-amber-500/20" :
+                          "bg-muted text-muted-foreground border-border"
+                        }`}>
+                          {user.progressionScore > 0 ? `PR ${user.progressionScore}` : "—"}
+                        </span>
+                      </TableCell>
+
+                      <TableCell>
                         <span className="text-sm text-muted-foreground">
                           {formatDate(user.created_at)}
                         </span>
