@@ -21,6 +21,8 @@ import { SkillTagPicker } from "@/components/profile/SkillTagPicker";
 import { NextStepsCard } from "@/components/profile/NextStepsCard";
 import { useExpertise } from "@/hooks/useExpertise";
 import { useTrust, trustLevelStyle } from "@/hooks/useTrust";
+import { useRevenue } from "@/hooks/useRevenue";
+import { Wallet } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   AlertDialog,
