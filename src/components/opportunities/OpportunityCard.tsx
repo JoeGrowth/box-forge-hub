@@ -70,6 +70,10 @@ export function OpportunityCard({
   // Phase 2: do not factor trust into ranking — that belongs to Opportunity Graph.
   const { trust } = useTrust(opportunity.author_user_id ?? null);
   const trustStyle = trust && trust.level !== "unverified" ? trustLevelStyle(trust.level) : null;
+  // Phase 5: candidate reputation indicator. Display-only synthesis surface.
+  const { reputation } = useReputation(opportunity.author_user_id ?? null);
+  const repStyle = reputation ? reputationLevelStyle(reputation.reputation_level) : null;
+
 
   useEffect(() => {
     if (!user) return;
