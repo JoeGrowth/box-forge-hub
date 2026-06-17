@@ -104,6 +104,7 @@ const App = () => (
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/admin/opportunity/:id" element={<AdminOpportunityDetail />} />
+                  <Route path="/admin/beta" element={<BetaConsole />} />
                   <Route element={<PersistentNavbarLayout />}>
                   <Route path="/opportunities" element={<Opportunities />} />
                   <Route path="/cobuilders" element={<CoBuilders />} />
