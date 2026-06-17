@@ -43,7 +43,9 @@ type EventType =
   | "cold_start_seeded" | "cold_start_confirmed"
   // P0.3 — Notification spine
   | "notification_dispatched" | "notification_delivered" | "notification_failed"
-  | "recommendation_available";
+  | "recommendation_available"
+  // Phase B — Experience layer validation (convergent graph)
+  | "practice_verified" | "training_verified" | "consulting_verified";
 
 interface GraphEvent {
   id: string;
