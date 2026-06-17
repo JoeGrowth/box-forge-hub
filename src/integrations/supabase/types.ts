@@ -3456,6 +3456,18 @@ export type Database = {
         | "recommendation_outcome_recorded"
         | "experiment_assigned"
         | "experiment_converted"
+        | "application_submitted"
+        | "application_reviewing"
+        | "application_shortlisted"
+        | "application_accepted"
+        | "application_rejected"
+        | "application_withdrawn"
+        | "application_completed"
+        | "cold_start_seeded"
+        | "cold_start_confirmed"
+        | "notification_dispatched"
+        | "notification_delivered"
+        | "notification_failed"
       graph_node_type:
         | "user"
         | "skill"
@@ -3739,6 +3751,18 @@ export const Constants = {
         "recommendation_outcome_recorded",
         "experiment_assigned",
         "experiment_converted",
+        "application_submitted",
+        "application_reviewing",
+        "application_shortlisted",
+        "application_accepted",
+        "application_rejected",
+        "application_withdrawn",
+        "application_completed",
+        "cold_start_seeded",
+        "cold_start_confirmed",
+        "notification_dispatched",
+        "notification_delivered",
+        "notification_failed",
       ],
       graph_node_type: [
         "user",
