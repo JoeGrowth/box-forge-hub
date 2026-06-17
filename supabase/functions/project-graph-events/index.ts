@@ -269,6 +269,8 @@ Deno.serve(async (req) => {
     await supabase.rpc("recompute_trust",     { _user_id: uid });
     await supabase.rpc("recompute_opportunity_matches", { _user_id: uid });
     await supabase.rpc("recompute_revenue",   { _user_id: uid });
+    // Phase 6: ownership before reputation so vested equity flows in as evidence.
+    await supabase.rpc("recompute_ownership", { _user_id: uid });
     // Phase 5: synthesis layer consumes the above projections.
     await supabase.rpc("recompute_reputation",{ _user_id: uid });
   }
