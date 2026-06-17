@@ -144,6 +144,11 @@ const EVENT_RULES: Record<EventType, {
   notification_delivered:   null,
   notification_failed:      null,
   recommendation_available: null,
+  // Phase B — Experience validation events are handled inline (apply_experience_validation RPC),
+  // not via the generic edge-rule path. Listed here to satisfy the type.
+  practice_verified:   null,
+  training_verified:   null,
+  consulting_verified: null,
 };
 
 Deno.serve(async (req) => {
