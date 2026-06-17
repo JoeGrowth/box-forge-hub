@@ -10,6 +10,11 @@ import { Search, Loader2 } from "lucide-react";
 import { OpportunityCard, type Opportunity } from "@/components/opportunities/OpportunityCard";
 import { SEEDED_OPPORTUNITIES } from "@/data/seededOpportunities";
 import { useExpertise } from "@/hooks/useExpertise";
+import {
+  useOpportunityScoreMap,
+  type OpportunityRecommendation,
+} from "@/hooks/useOpportunityRecommendations";
+import { USE_OPPORTUNITY_GRAPH } from "@/lib/featureFlags";
 
 const CATEGORIES = [
   { key: "all", label: "All" },
