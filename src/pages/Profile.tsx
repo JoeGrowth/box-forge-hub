@@ -22,7 +22,8 @@ import { NextStepsCard } from "@/components/profile/NextStepsCard";
 import { useExpertise } from "@/hooks/useExpertise";
 import { useTrust, trustLevelStyle } from "@/hooks/useTrust";
 import { useRevenue } from "@/hooks/useRevenue";
-import { Wallet } from "lucide-react";
+import { useReputation, reputationLevelStyle } from "@/hooks/useReputation";
+import { Wallet, Award } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   AlertDialog,
