@@ -191,8 +191,17 @@ export function OpportunityCard({
                   {trustStyle.label}
                 </span>
               )}
+              {repStyle && reputation && (
+                <span
+                  className={`inline-flex items-center gap-0.5 ml-1 px-1.5 py-0 rounded-full border text-[10px] font-medium ${repStyle.className}`}
+                  title={`Reputation: ${repStyle.label} (${Math.round(reputation.reputation_score)}). ${reputation.achievement_count} validated achievements.`}
+                >
+                  {repStyle.label}
+                </span>
+              )}
             </span>
           </div>
+
           <Button
             size="sm"
             variant={submitted ? "outline" : "default"}
