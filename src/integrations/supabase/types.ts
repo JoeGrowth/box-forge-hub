@@ -1837,6 +1837,78 @@ export type Database = {
         }
         Relationships: []
       }
+      progression_graph: {
+        Row: {
+          completed_actions_count: number
+          computed_at: string
+          current_state: string
+          progression_score: number
+          recommended_actions: Json
+          source_event_version: number
+          user_id: string
+        }
+        Insert: {
+          completed_actions_count?: number
+          computed_at?: string
+          current_state?: string
+          progression_score?: number
+          recommended_actions?: Json
+          source_event_version?: number
+          user_id: string
+        }
+        Update: {
+          completed_actions_count?: number
+          computed_at?: string
+          current_state?: string
+          progression_score?: number
+          recommended_actions?: Json
+          source_event_version?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      progression_rules: {
+        Row: {
+          action_payload: Json
+          action_type: string
+          condition: Json
+          created_at: string
+          enabled: boolean
+          id: string
+          name: string
+          priority: number
+          source_stage: string | null
+          target_stage: string | null
+          updated_at: string
+        }
+        Insert: {
+          action_payload?: Json
+          action_type: string
+          condition?: Json
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          name: string
+          priority?: number
+          source_stage?: string | null
+          target_stage?: string | null
+          updated_at?: string
+        }
+        Update: {
+          action_payload?: Json
+          action_type?: string
+          condition?: Json
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          name?: string
+          priority?: number
+          source_stage?: string | null
+          target_stage?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       reputation_graph: {
         Row: {
           achievement_count: number
@@ -2958,6 +3030,7 @@ export type Database = {
         Returns: number
       }
       recompute_ownership: { Args: { _user_id: string }; Returns: undefined }
+      recompute_progression: { Args: { _user_id: string }; Returns: undefined }
       recompute_reputation: { Args: { _user_id: string }; Returns: undefined }
       recompute_revenue: { Args: { _user_id: string }; Returns: undefined }
       recompute_trust: { Args: { _user_id: string }; Returns: undefined }
@@ -3062,6 +3135,12 @@ export type Database = {
         | "equity_transferred"
         | "equity_revoked"
         | "ownership_exit_requested"
+        | "stage_transition_evaluated"
+        | "recommendation_generated"
+        | "action_completed"
+        | "milestone_reached"
+        | "goal_created"
+        | "goal_completed"
       graph_node_type:
         | "user"
         | "skill"
@@ -3328,6 +3407,12 @@ export const Constants = {
         "equity_transferred",
         "equity_revoked",
         "ownership_exit_requested",
+        "stage_transition_evaluated",
+        "recommendation_generated",
+        "action_completed",
+        "milestone_reached",
+        "goal_created",
+        "goal_completed",
       ],
       graph_node_type: [
         "user",

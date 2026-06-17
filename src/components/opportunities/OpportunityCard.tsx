@@ -166,6 +166,20 @@ export function OpportunityCard({
 
         <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{opportunity.description}</p>
 
+        {/* Phase 7 — "Why this opportunity now" — derived from opportunity_graph
+            explanation. No local computation. */}
+        {recommendation && (matchScore ?? 0) >= 40 && (
+          <div className="text-[11px] text-muted-foreground bg-muted/40 border border-border rounded-md px-2.5 py-1.5 mb-3">
+            <span className="font-semibold text-foreground">Recommended because: </span>
+            Expertise match {Math.round(recommendation.expertisePoints)}
+            {recommendation.explanation.skills_match?.matched?.length
+              ? ` (${recommendation.explanation.skills_match.matched.slice(0, 3).join(", ")})`
+              : ""}
+            {trustStyle ? ` · Trust: ${trustStyle.label}` : ""}
+            {recommendation.nextAction ? ` · Builds toward: ${recommendation.nextAction}` : ""}
+          </div>
+        )}
+
         <div className="flex flex-wrap gap-1.5 mb-4">
           {opportunity.required_skills.slice(0, 5).map((skill) => (
             <Badge key={skill} variant="secondary" className="text-xs font-normal px-2 py-0.5">
