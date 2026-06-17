@@ -90,8 +90,9 @@ const Admin = () => {
 
   useEffect(() => {
     // Only redirect if both auth and admin checks are fully loaded
-    if (!adminLoading && !authLoading && !isAdmin && user) {
-      navigate("/dashboard", { replace: true });
+    if (!adminLoading && !authLoading && user && !isAdmin) {
+      const t = setTimeout(() => navigate("/dashboard", { replace: true }), 0);
+      return () => clearTimeout(t);
     }
   }, [isAdmin, adminLoading, authLoading, user, navigate]);
 

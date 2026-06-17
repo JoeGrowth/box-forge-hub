@@ -47,15 +47,19 @@ export interface UserWithDetails {
 }
 
 export function useAdmin() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
   const [users, setUsers] = useState<UserWithDetails[]>([]);
 
   useEffect(() => {
+    if (authLoading) {
+      setLoading(true);
+      return;
+    }
     checkAdminStatus();
-  }, [user]);
+  }, [user, authLoading]);
 
   const checkAdminStatus = async () => {
     setLoading(true);
