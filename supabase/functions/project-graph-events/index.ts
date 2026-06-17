@@ -394,6 +394,30 @@ Deno.serve(async (req) => {
     await supabase.rpc("dispatch_growth_loops", { _user_id: uid });
   }
 
+  // P0.2 — After projections, emit recommendation_available for cold-start users
+  // who now have at least one row in opportunity_graph. Idempotent per user/day.
+  for (const uid of coldStartUsers) {
+    const { count } = await supabase
+      .from("opportunity_graph")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", uid);
+    if ((count ?? 0) >= 1) {
+      const today = new Date().toISOString().slice(0, 10);
+      await supabase.from("graph_events").insert({
+        user_id: uid,
+        event_type: "recommendation_available",
+        event_version: 1,
+        aggregate_type: "user",
+        aggregate_id: uid,
+        source_module: "recommendations",
+        idempotency_key: `recommendation_available:v1:${uid}:${today}`,
+        payload: { count, source: "cold_start" },
+        weight: 1,
+        occurred_at: new Date().toISOString(),
+      });
+    }
+  }
+
   return new Response(
     JSON.stringify({ processed, failed, recomputed_users: affectedUsers.size }),
     { headers: { ...corsHeaders, "Content-Type": "application/json" } },
