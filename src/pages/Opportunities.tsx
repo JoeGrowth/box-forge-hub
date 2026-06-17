@@ -254,7 +254,24 @@ const Opportunities = () => {
       rank: 75 + i,
     }));
 
-    const all = [...SEEDED_OPPORTUNITIES, ...startupOpps, ...trainingOpps, ...tenderOpps, ...jobOpps];
+    const consultingOpps: Opportunity[] = rawConsulting.map((c, i) => ({
+      id: c.id,
+      title: c.service_title,
+      category: "consulting" as const,
+      required_skills: [c._skill_name, c.delivery_type, c.availability].filter(Boolean).slice(0, 5),
+      income_range: c.price > 0 ? `${c.price} ${c.currency}` : "Free",
+      effort_level: c.delivery_type === "remote" ? "Remote" : c.delivery_type === "on-site" ? "On-site" : "Remote / On-site",
+      description: c.description || `Consulting service offered by ${c._author || "a co-builder"}.`,
+      primary_action: { type: "apply" as const, label: "Request Service", route: "/consulting" },
+      source_id: c.id,
+      created_at: c.created_at,
+      author_name: c._author || "Unknown",
+      author_user_id: c.user_id ?? null,
+      sector: c._skill_name || null,
+      rank: 60 + i,
+    }));
+
+    const all = [...SEEDED_OPPORTUNITIES, ...startupOpps, ...trainingOpps, ...tenderOpps, ...jobOpps, ...consultingOpps];
 
     // Phase 3: prefer opportunity_graph projection. Falls back to legacy tag
     // overlap for rows not yet in the projection (e.g. SEEDED_OPPORTUNITIES).
