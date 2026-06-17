@@ -1065,6 +1065,101 @@ export type Database = {
         }
         Relationships: []
       }
+      growth_loop_runs: {
+        Row: {
+          context: Json
+          converted_at: string | null
+          created_at: string
+          dismissed_at: string | null
+          engaged_at: string | null
+          id: string
+          loop_key: string
+          notified_at: string | null
+          scheduled_for: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          context?: Json
+          converted_at?: string | null
+          created_at?: string
+          dismissed_at?: string | null
+          engaged_at?: string | null
+          id?: string
+          loop_key: string
+          notified_at?: string | null
+          scheduled_for?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          context?: Json
+          converted_at?: string | null
+          created_at?: string
+          dismissed_at?: string | null
+          engaged_at?: string | null
+          id?: string
+          loop_key?: string
+          notified_at?: string | null
+          scheduled_for?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "growth_loop_runs_loop_key_fkey"
+            columns: ["loop_key"]
+            isOneToOne: false
+            referencedRelation: "growth_loops"
+            referencedColumns: ["loop_key"]
+          },
+        ]
+      }
+      growth_loops: {
+        Row: {
+          action_kind: string
+          action_payload: Json
+          condition: Json
+          cooldown_hours: number
+          created_at: string
+          description: string
+          enabled: boolean
+          id: string
+          loop_key: string
+          priority: number
+          trigger_source: string
+          updated_at: string
+        }
+        Insert: {
+          action_kind: string
+          action_payload?: Json
+          condition?: Json
+          cooldown_hours?: number
+          created_at?: string
+          description: string
+          enabled?: boolean
+          id?: string
+          loop_key: string
+          priority?: number
+          trigger_source?: string
+          updated_at?: string
+        }
+        Update: {
+          action_kind?: string
+          action_payload?: Json
+          condition?: Json
+          cooldown_hours?: number
+          created_at?: string
+          description?: string
+          enabled?: boolean
+          id?: string
+          loop_key?: string
+          priority?: number
+          trigger_source?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       idea_journey_progress: {
         Row: {
           completed_at: string | null
@@ -1906,6 +2001,36 @@ export type Database = {
           source_stage?: string | null
           target_stage?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      recommendation_feedback: {
+        Row: {
+          context: Json
+          created_at: string
+          id: string
+          rule: string
+          source: string
+          user_id: string
+          verdict: string
+        }
+        Insert: {
+          context?: Json
+          created_at?: string
+          id?: string
+          rule: string
+          source?: string
+          user_id: string
+          verdict: string
+        }
+        Update: {
+          context?: Json
+          created_at?: string
+          id?: string
+          rule?: string
+          source?: string
+          user_id?: string
+          verdict?: string
         }
         Relationships: []
       }
@@ -2989,6 +3114,7 @@ export type Database = {
         Returns: string
       }
       derived_equity_role: { Args: { _percentage: number }; Returns: string }
+      dispatch_growth_loops: { Args: { _user_id: string }; Returns: number }
       graph_upsert_edge: {
         Args: {
           _attributes: Json
