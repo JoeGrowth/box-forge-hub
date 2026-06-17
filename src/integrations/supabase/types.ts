@@ -3678,6 +3678,7 @@ export type Database = {
         | "notification_dispatched"
         | "notification_delivered"
         | "notification_failed"
+        | "recommendation_available"
       graph_node_type:
         | "user"
         | "skill"
@@ -3995,6 +3996,7 @@ export const Constants = {
         "notification_dispatched",
         "notification_delivered",
         "notification_failed",
+        "recommendation_available",
       ],
       graph_node_type: [
         "user",
