@@ -17,12 +17,11 @@ import {
 import { USE_OPPORTUNITY_GRAPH } from "@/lib/featureFlags";
 
 const CATEGORIES = [
-  { key: "all", label: "All" },
   { key: "job", label: "Jobs" },
-  { key: "consulting", label: "Consulting" },
-  { key: "startup", label: "Startups" },
   { key: "training", label: "Training" },
+  { key: "consulting", label: "Consulting" },
   { key: "tender", label: "Tenders" },
+  { key: "startup", label: "Startups" },
 ] as const;
 
 function computeMatchScore(userSkillNames: string[], oppSkills: string[]): number {
