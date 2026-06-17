@@ -160,6 +160,7 @@ const Opportunities = () => {
       source_id: s.id,
       created_at: s.created_at,
       author_name: s._author || "Unknown",
+      author_user_id: s.creator_id ?? null,
       sector: s.sector,
       rank: 50 + i,
     }));
@@ -176,6 +177,7 @@ const Opportunities = () => {
       source_id: t.id,
       created_at: t.created_at,
       author_name: t._author || "Unknown",
+      author_user_id: t.user_id ?? null,
       sector: t.sector,
       rank: 200 + i,
     }));
@@ -192,6 +194,7 @@ const Opportunities = () => {
       source_id: t.id,
       created_at: t.created_at,
       author_name: t._author || "Unknown",
+      author_user_id: t.user_id ?? null,
       sector: t.sector,
       rank: 100 + i,
     }));
@@ -208,6 +211,7 @@ const Opportunities = () => {
       source_id: j.id,
       created_at: j.created_at,
       author_name: j._author || "Unknown",
+      author_user_id: j.user_id ?? null,
       sector: j.sector,
       rank: 75 + i,
     }));
