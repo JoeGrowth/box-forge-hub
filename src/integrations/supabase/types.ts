@@ -2481,6 +2481,12 @@ export type Database = {
         | "USER_RECEIVED_REVIEW"
         | "USER_COMPLETED_PROJECT"
         | "USER_DELIVERED_OUTCOME"
+        | "USER_MATCHES_OPPORTUNITY"
+        | "OPPORTUNITY_REQUIRES_SKILL"
+        | "USER_TRUSTED_FOR_DOMAIN"
+        | "USER_INTERACTED_WITH_OPPORTUNITY"
+        | "OPPORTUNITY_IN_CATEGORY"
+        | "OPPORTUNITY_IN_DOMAIN"
       graph_event_type:
         | "skill_added"
         | "skill_removed"
@@ -2506,6 +2512,15 @@ export type Database = {
         | "job_completed"
         | "startup_contribution_completed"
         | "milestone_completed"
+        | "opportunity_created"
+        | "opportunity_updated"
+        | "opportunity_published"
+        | "opportunity_closed"
+        | "user_viewed_opportunity"
+        | "user_saved_opportunity"
+        | "user_applied_opportunity"
+        | "user_rejected_opportunity"
+        | "user_accepted_opportunity"
       graph_node_type:
         | "user"
         | "skill"
@@ -2522,6 +2537,10 @@ export type Database = {
         | "achievement"
         | "organization"
         | "project"
+        | "opportunity"
+        | "category"
+        | "domain"
+        | "location"
       journey_status:
         | "not_started"
         | "in_progress"
@@ -2679,6 +2698,12 @@ export const Constants = {
         "USER_RECEIVED_REVIEW",
         "USER_COMPLETED_PROJECT",
         "USER_DELIVERED_OUTCOME",
+        "USER_MATCHES_OPPORTUNITY",
+        "OPPORTUNITY_REQUIRES_SKILL",
+        "USER_TRUSTED_FOR_DOMAIN",
+        "USER_INTERACTED_WITH_OPPORTUNITY",
+        "OPPORTUNITY_IN_CATEGORY",
+        "OPPORTUNITY_IN_DOMAIN",
       ],
       graph_event_type: [
         "skill_added",
@@ -2705,6 +2730,15 @@ export const Constants = {
         "job_completed",
         "startup_contribution_completed",
         "milestone_completed",
+        "opportunity_created",
+        "opportunity_updated",
+        "opportunity_published",
+        "opportunity_closed",
+        "user_viewed_opportunity",
+        "user_saved_opportunity",
+        "user_applied_opportunity",
+        "user_rejected_opportunity",
+        "user_accepted_opportunity",
       ],
       graph_node_type: [
         "user",
@@ -2722,6 +2756,10 @@ export const Constants = {
         "achievement",
         "organization",
         "project",
+        "opportunity",
+        "category",
+        "domain",
+        "location",
       ],
       journey_status: [
         "not_started",
