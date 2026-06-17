@@ -41,6 +41,7 @@ const Opportunities = () => {
   const [rawTrainings, setRawTrainings] = useState<any[]>([]);
   const [rawTenders, setRawTenders] = useState<any[]>([]);
   const [rawJobs, setRawJobs] = useState<any[]>([]);
+  const [rawConsulting, setRawConsulting] = useState<any[]>([]);
   // Expertise tags (skill/certification labels) come exclusively from the
   // expertise_graph projection. Match score is derived from these tags.
   const { expertise } = useExpertise(user?.id);
