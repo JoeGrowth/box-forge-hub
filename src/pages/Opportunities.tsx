@@ -117,8 +117,9 @@ const Opportunities = () => {
     onboardingState?.journey_status === "entrepreneur_approved";
 
   useEffect(() => {
-    if (!user || !isApproved) {
-      if (!onboardingLoading) setLoading(false);
+    if (authLoading) return;
+    if (!user) {
+      setLoading(false);
       return;
     }
 
@@ -239,7 +240,7 @@ const Opportunities = () => {
     };
 
     fetchAll();
-  }, [user, isApproved, onboardingLoading, expertise?.tags.length]);
+  }, [user, authLoading, expertise?.tags.length]);
 
   // Normalize → unified Opportunity[] with correct per-category detail routes.
   const allOpportunities = useMemo<
