@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Loader2, ArrowRight, Sparkles, Plus, Bookmark, ListChecks } from "lucide-react";
+import { Search, Loader2, ArrowRight, Sparkles, Bookmark, ListChecks } from "lucide-react";
 import { OpportunityCard, type Opportunity } from "@/components/opportunities/OpportunityCard";
 import { SEEDED_OPPORTUNITIES } from "@/data/seededOpportunities";
 import { useExpertise } from "@/hooks/useExpertise";
