@@ -483,6 +483,7 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
                 <TableHead>Status</TableHead>
                 <TableHead>Boost</TableHead>
                 <TableHead>Scaling</TableHead>
+                <TableHead>PR</TableHead>
                 <TableHead>Joined</TableHead>
                 <TableHead className="w-[80px]">Actions</TableHead>
               </TableRow>
