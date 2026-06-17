@@ -35,7 +35,15 @@ type EventType =
   // Phase 6 — Ownership Graph
   | "equity_offer_created" | "equity_offer_accepted" | "equity_offer_rejected"
   | "equity_allocation_created" | "vesting_started" | "vesting_milestone_completed"
-  | "equity_transferred" | "equity_revoked" | "ownership_exit_requested";
+  | "equity_transferred" | "equity_revoked" | "ownership_exit_requested"
+  // P0.1 — Application lifecycle (no graph edge; consumed for notifications + downstream effects)
+  | "application_submitted" | "application_reviewing" | "application_shortlisted"
+  | "application_accepted" | "application_rejected" | "application_withdrawn" | "application_completed"
+  // P0.2 — Cold start
+  | "cold_start_seeded" | "cold_start_confirmed"
+  // P0.3 — Notification spine
+  | "notification_dispatched" | "notification_delivered" | "notification_failed"
+  | "recommendation_available";
 
 interface GraphEvent {
   id: string;
