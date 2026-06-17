@@ -2241,6 +2241,48 @@ export type Database = {
         }
         Relationships: []
       }
+      trust_graph: {
+        Row: {
+          completion_score: number
+          computed_at: string
+          created_at: string
+          review_score: number
+          source_event_version: number
+          trust_breakdown: Json
+          trust_score: number
+          updated_at: string
+          user_id: string
+          verification_level: string
+          verified_count: number
+        }
+        Insert: {
+          completion_score?: number
+          computed_at?: string
+          created_at?: string
+          review_score?: number
+          source_event_version?: number
+          trust_breakdown?: Json
+          trust_score?: number
+          updated_at?: string
+          user_id: string
+          verification_level?: string
+          verified_count?: number
+        }
+        Update: {
+          completion_score?: number
+          computed_at?: string
+          created_at?: string
+          review_score?: number
+          source_event_version?: number
+          trust_breakdown?: Json
+          trust_score?: number
+          updated_at?: string
+          user_id?: string
+          verification_level?: string
+          verified_count?: number
+        }
+        Relationships: []
+      }
       user_certifications: {
         Row: {
           certification_type: string
@@ -2418,6 +2460,7 @@ export type Database = {
       is_plan_shared_with_me: { Args: { _plan_id: string }; Returns: boolean }
       legacy_expertise_calc: { Args: { _user_id: string }; Returns: Json }
       recompute_expertise: { Args: { _user_id: string }; Returns: undefined }
+      recompute_trust: { Args: { _user_id: string }; Returns: undefined }
     }
     Enums: {
       app_role: "entrepreneur" | "cobuilder" | "box_manager" | "admin"
@@ -2433,6 +2476,11 @@ export type Database = {
         | "COMPLETED"
         | "MEMBER_OF"
         | "PUBLISHED"
+        | "USER_RECEIVED_CERTIFICATION"
+        | "USER_COMPLETED_TRANSACTION"
+        | "USER_RECEIVED_REVIEW"
+        | "USER_COMPLETED_PROJECT"
+        | "USER_DELIVERED_OUTCOME"
       graph_event_type:
         | "skill_added"
         | "skill_removed"
@@ -2451,6 +2499,13 @@ export type Database = {
         | "journey_completed"
         | "job_published"
         | "job_applied"
+        | "review_created"
+        | "transaction_completed"
+        | "training_completed"
+        | "consulting_completed"
+        | "job_completed"
+        | "startup_contribution_completed"
+        | "milestone_completed"
       graph_node_type:
         | "user"
         | "skill"
@@ -2462,6 +2517,11 @@ export type Database = {
         | "venture"
         | "job"
         | "box"
+        | "transaction"
+        | "review"
+        | "achievement"
+        | "organization"
+        | "project"
       journey_status:
         | "not_started"
         | "in_progress"
@@ -2614,6 +2674,11 @@ export const Constants = {
         "COMPLETED",
         "MEMBER_OF",
         "PUBLISHED",
+        "USER_RECEIVED_CERTIFICATION",
+        "USER_COMPLETED_TRANSACTION",
+        "USER_RECEIVED_REVIEW",
+        "USER_COMPLETED_PROJECT",
+        "USER_DELIVERED_OUTCOME",
       ],
       graph_event_type: [
         "skill_added",
@@ -2633,6 +2698,13 @@ export const Constants = {
         "journey_completed",
         "job_published",
         "job_applied",
+        "review_created",
+        "transaction_completed",
+        "training_completed",
+        "consulting_completed",
+        "job_completed",
+        "startup_contribution_completed",
+        "milestone_completed",
       ],
       graph_node_type: [
         "user",
@@ -2645,6 +2717,11 @@ export const Constants = {
         "venture",
         "job",
         "box",
+        "transaction",
+        "review",
+        "achievement",
+        "organization",
+        "project",
       ],
       journey_status: [
         "not_started",
