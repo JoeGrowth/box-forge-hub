@@ -76,14 +76,11 @@ export default function Organizations() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-5xl space-y-6">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Building2 className="w-6 h-6 text-primary" />
-            Organizations
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+    <div className="container mx-auto px-4 pt-24 pb-8 max-w-5xl space-y-6">
+      <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
+        <div className="flex-1 min-w-[260px]">
+          <h1 className="text-3xl font-bold tracking-tight">Organizations</h1>
+          <p className="text-muted-foreground mt-1">
             Organizations own opportunities and group team members with roles (admin · editor · viewer).
           </p>
         </div>
