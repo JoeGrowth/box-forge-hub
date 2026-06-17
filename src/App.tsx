@@ -125,6 +125,8 @@ const App = () => (
                   <Route path="/publish-training" element={<PublishTraining />} />
                   <Route path="/publish-job" element={<PublishJob />} />
                   </Route>
+                  <Route path="/opportunities/:category/:id" element={<OpportunityDetail />} />
+                  {/* Legacy: old links pointed at startup ideas only. */}
                   <Route path="/opportunities/:id" element={<OpportunityDetail />} />
                   <Route path="/mask" element={<Mask />} />
                   <Route path="/checklist" element={<Checklist />} />
