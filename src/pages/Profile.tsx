@@ -18,6 +18,7 @@ import { IdeaApplicationsViewer } from "@/components/profile/IdeaApplicationsVie
 import { ScalingJourneyProgress } from "@/components/profile/ScalingJourneyProgress";
 import { LearningJourneyDashboard } from "@/components/learning/LearningJourneyDashboard";
 import { SkillTagPicker } from "@/components/profile/SkillTagPicker";
+import { useExpertise } from "@/hooks/useExpertise";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   AlertDialog,
@@ -77,6 +78,8 @@ const Profile = () => {
   const navigate = useNavigate();
   const { user, signOut, loading: authLoading } = useAuth();
   const { onboardingState, naturalRole, needsOnboarding, refetch } = useOnboarding();
+  // Expertise sourced exclusively from the expertise_graph projection.
+  const { expertise } = useExpertise(user?.id);
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
