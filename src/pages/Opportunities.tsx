@@ -56,7 +56,7 @@ const Opportunities = () => {
   });
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>(searchParams.get("tab") || "all");
+  const [categoryFilter, setCategoryFilter] = useState<string>(searchParams.get("tab") || "job");
 
 
   const isApproved =
@@ -319,7 +319,7 @@ const Opportunities = () => {
   const filtered = useMemo(() => {
     return allOpportunities.filter((opp) => {
       if (!passesTenderCapacity(opp)) return false;
-      if (categoryFilter !== "all" && opp.category !== categoryFilter) return false;
+      if (opp.category !== categoryFilter) return false;
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         return opp.title.toLowerCase().includes(q) || opp.description.toLowerCase().includes(q);
