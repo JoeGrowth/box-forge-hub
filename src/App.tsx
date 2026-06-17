@@ -27,6 +27,7 @@ import EntrepreneurialOnboarding from "./pages/EntrepreneurialOnboarding";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import AdminOpportunityDetail from "./pages/AdminOpportunityDetail";
+import BetaConsole from "./pages/BetaConsole";
 import Opportunities from "./pages/Opportunities";
 import OpportunityDetail from "./pages/OpportunityDetail";
 import CoBuilders from "./pages/CoBuilders";
