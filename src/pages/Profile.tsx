@@ -1124,6 +1124,10 @@ const Profile = () => {
             {/* Phase 7 — Progression Engine: current state + unlocked actions */}
             <ProgressionPathCard userId={user?.id} />
 
+            {/* Phase 8 — Autonomous Growth Loops: dispatched runs + feedback */}
+            <GrowthLoopsCard />
+
+
             {/* Phase 3 — Opportunity Graph: where to go next */}
             <NextStepsCard userId={user?.id} />
 
