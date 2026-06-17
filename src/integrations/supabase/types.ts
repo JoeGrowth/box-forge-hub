@@ -1065,6 +1065,53 @@ export type Database = {
         }
         Relationships: []
       }
+      growth_loop_experiments: {
+        Row: {
+          action_payload_override: Json
+          allocation_percentage: number
+          created_at: string
+          description: string | null
+          enabled: boolean
+          id: string
+          loop_key: string
+          success_metric: string
+          updated_at: string
+          variant_key: string
+        }
+        Insert: {
+          action_payload_override?: Json
+          allocation_percentage?: number
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          loop_key: string
+          success_metric?: string
+          updated_at?: string
+          variant_key: string
+        }
+        Update: {
+          action_payload_override?: Json
+          allocation_percentage?: number
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          loop_key?: string
+          success_metric?: string
+          updated_at?: string
+          variant_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "growth_loop_experiments_loop_key_fkey"
+            columns: ["loop_key"]
+            isOneToOne: false
+            referencedRelation: "growth_loops"
+            referencedColumns: ["loop_key"]
+          },
+        ]
+      }
       growth_loop_runs: {
         Row: {
           context: Json
@@ -1078,6 +1125,7 @@ export type Database = {
           scheduled_for: string
           status: string
           user_id: string
+          variant_key: string | null
         }
         Insert: {
           context?: Json
@@ -1091,6 +1139,7 @@ export type Database = {
           scheduled_for?: string
           status?: string
           user_id: string
+          variant_key?: string | null
         }
         Update: {
           context?: Json
@@ -1104,6 +1153,7 @@ export type Database = {
           scheduled_for?: string
           status?: string
           user_id?: string
+          variant_key?: string | null
         }
         Relationships: [
           {
@@ -1212,6 +1262,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      intent_graph: {
+        Row: {
+          availability: string | null
+          computed_at: string
+          declared_intents: string[]
+          intent_score: number
+          signal_breakdown: Json
+          source_event_version: number
+          suppressed_loops: string[]
+          top_categories: string[]
+          user_id: string
+        }
+        Insert: {
+          availability?: string | null
+          computed_at?: string
+          declared_intents?: string[]
+          intent_score?: number
+          signal_breakdown?: Json
+          source_event_version?: number
+          suppressed_loops?: string[]
+          top_categories?: string[]
+          user_id: string
+        }
+        Update: {
+          availability?: string | null
+          computed_at?: string
+          declared_intents?: string[]
+          intent_score?: number
+          signal_breakdown?: Json
+          source_event_version?: number
+          suppressed_loops?: string[]
+          top_categories?: string[]
+          user_id?: string
+        }
+        Relationships: []
       }
       job_opportunities: {
         Row: {
@@ -2033,6 +2119,47 @@ export type Database = {
           verdict?: string
         }
         Relationships: []
+      }
+      recommendation_outcomes: {
+        Row: {
+          context: Json
+          created_at: string
+          id: string
+          loop_key: string
+          outcome: string
+          run_id: string | null
+          user_id: string
+          value: number
+        }
+        Insert: {
+          context?: Json
+          created_at?: string
+          id?: string
+          loop_key: string
+          outcome: string
+          run_id?: string | null
+          user_id: string
+          value?: number
+        }
+        Update: {
+          context?: Json
+          created_at?: string
+          id?: string
+          loop_key?: string
+          outcome?: string
+          run_id?: string | null
+          user_id?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recommendation_outcomes_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "growth_loop_runs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reputation_graph: {
         Row: {
@@ -2931,6 +3058,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_intents: {
+        Row: {
+          context: Json
+          created_at: string
+          id: string
+          intent_key: string
+          signal: string
+          source: string
+          user_id: string
+          weight: number
+        }
+        Insert: {
+          context?: Json
+          created_at?: string
+          id?: string
+          intent_key: string
+          signal: string
+          source?: string
+          user_id: string
+          weight?: number
+        }
+        Update: {
+          context?: Json
+          created_at?: string
+          id?: string
+          intent_key?: string
+          signal?: string
+          source?: string
+          user_id?: string
+          weight?: number
+        }
+        Relationships: []
+      }
       user_notifications: {
         Row: {
           created_at: string
@@ -3113,6 +3273,7 @@ export type Database = {
         Args: { _entity_id: string; _user_id: string }
         Returns: string
       }
+      derive_professional_state: { Args: { _user_id: string }; Returns: string }
       derived_equity_role: { Args: { _percentage: number }; Returns: string }
       dispatch_growth_loops: { Args: { _user_id: string }; Returns: number }
       graph_upsert_edge: {
@@ -3150,7 +3311,15 @@ export type Database = {
       }
       is_plan_shared_with_me: { Args: { _plan_id: string }; Returns: boolean }
       legacy_expertise_calc: { Args: { _user_id: string }; Returns: Json }
+      pick_growth_loop_variant: {
+        Args: { _loop_key: string; _user_id: string }
+        Returns: {
+          action_payload: Json
+          variant_key: string
+        }[]
+      }
       recompute_expertise: { Args: { _user_id: string }; Returns: undefined }
+      recompute_intent: { Args: { _user_id: string }; Returns: undefined }
       recompute_opportunity_matches: {
         Args: { _user_id: string }
         Returns: number
@@ -3160,6 +3329,15 @@ export type Database = {
       recompute_reputation: { Args: { _user_id: string }; Returns: undefined }
       recompute_revenue: { Args: { _user_id: string }; Returns: undefined }
       recompute_trust: { Args: { _user_id: string }; Returns: undefined }
+      record_recommendation_outcome: {
+        Args: {
+          _context: Json
+          _outcome: string
+          _user_id: string
+          _value: number
+        }
+        Returns: number
+      }
     }
     Enums: {
       app_role: "entrepreneur" | "cobuilder" | "box_manager" | "admin"
