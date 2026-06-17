@@ -2592,6 +2592,12 @@ export type Database = {
         | "USER_INTERACTED_WITH_OPPORTUNITY"
         | "OPPORTUNITY_IN_CATEGORY"
         | "OPPORTUNITY_IN_DOMAIN"
+        | "USER_CREATED_TRANSACTION"
+        | "USER_PAID_USER"
+        | "USER_DELIVERED_VALUE"
+        | "USER_RECEIVED_VALUE"
+        | "TRANSACTION_FOR_OPPORTUNITY"
+        | "CONTRACT_BETWEEN_PARTIES"
       graph_event_type:
         | "skill_added"
         | "skill_removed"
@@ -2626,6 +2632,17 @@ export type Database = {
         | "user_applied_opportunity"
         | "user_rejected_opportunity"
         | "user_accepted_opportunity"
+        | "transaction_created"
+        | "offer_sent"
+        | "offer_accepted"
+        | "contract_created"
+        | "payment_initiated"
+        | "payment_completed"
+        | "payment_failed"
+        | "refund_created"
+        | "delivery_started"
+        | "delivery_completed"
+        | "invoice_created"
       graph_node_type:
         | "user"
         | "skill"
@@ -2646,6 +2663,9 @@ export type Database = {
         | "category"
         | "domain"
         | "location"
+        | "contract"
+        | "payment"
+        | "invoice"
       journey_status:
         | "not_started"
         | "in_progress"
@@ -2809,6 +2829,12 @@ export const Constants = {
         "USER_INTERACTED_WITH_OPPORTUNITY",
         "OPPORTUNITY_IN_CATEGORY",
         "OPPORTUNITY_IN_DOMAIN",
+        "USER_CREATED_TRANSACTION",
+        "USER_PAID_USER",
+        "USER_DELIVERED_VALUE",
+        "USER_RECEIVED_VALUE",
+        "TRANSACTION_FOR_OPPORTUNITY",
+        "CONTRACT_BETWEEN_PARTIES",
       ],
       graph_event_type: [
         "skill_added",
@@ -2844,6 +2870,17 @@ export const Constants = {
         "user_applied_opportunity",
         "user_rejected_opportunity",
         "user_accepted_opportunity",
+        "transaction_created",
+        "offer_sent",
+        "offer_accepted",
+        "contract_created",
+        "payment_initiated",
+        "payment_completed",
+        "payment_failed",
+        "refund_created",
+        "delivery_started",
+        "delivery_completed",
+        "invoice_created",
       ],
       graph_node_type: [
         "user",
@@ -2865,6 +2902,9 @@ export const Constants = {
         "category",
         "domain",
         "location",
+        "contract",
+        "payment",
+        "invoice",
       ],
       journey_status: [
         "not_started",
