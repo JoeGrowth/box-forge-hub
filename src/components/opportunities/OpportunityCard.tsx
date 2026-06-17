@@ -152,7 +152,18 @@ export function OpportunityCard({ opportunity, matchScore }: { opportunity: Oppo
             <span className="w-1 h-1 rounded-full bg-muted-foreground/40" />
             <span>{opportunity.effort_level}</span>
             <span className="w-1 h-1 rounded-full bg-muted-foreground/40" />
-            <span>{opportunity.author_name}</span>
+            <span className="flex items-center gap-1">
+              {opportunity.author_name}
+              {trustStyle && (
+                <span
+                  className={`inline-flex items-center gap-0.5 ml-1 px-1.5 py-0 rounded-full border text-[10px] font-medium ${trustStyle.className}`}
+                  title={`Author trust: ${trustStyle.label}${trust ? ` (${Math.round(trust.score)})` : ""}`}
+                >
+                  <ShieldCheck className="w-2.5 h-2.5" />
+                  {trustStyle.label}
+                </span>
+              )}
+            </span>
           </div>
           <Button
             size="sm"
