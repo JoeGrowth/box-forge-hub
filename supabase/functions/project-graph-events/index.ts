@@ -27,7 +27,11 @@ type EventType =
   // Phase 3 — Opportunity Graph
   | "opportunity_created" | "opportunity_updated" | "opportunity_published" | "opportunity_closed"
   | "user_viewed_opportunity" | "user_saved_opportunity" | "user_applied_opportunity"
-  | "user_rejected_opportunity" | "user_accepted_opportunity";
+  | "user_rejected_opportunity" | "user_accepted_opportunity"
+  // Phase 4 — Revenue Graph
+  | "transaction_created" | "offer_sent" | "offer_accepted" | "contract_created"
+  | "payment_initiated" | "payment_completed" | "payment_failed" | "refund_created"
+  | "delivery_started" | "delivery_completed" | "invoice_created";
 
 interface GraphEvent {
   id: string;
@@ -86,6 +90,20 @@ const EVENT_RULES: Record<EventType, {
   user_applied_opportunity:        { toNodeType: "opportunity",        edgeType: "APPLIED_TO",                 labelFrom: p => (p.title as string) ?? null, attrsFrom: p => ({ kind: p.opportunity_kind ?? "apply" }) },
   user_rejected_opportunity:       { toNodeType: "opportunity",        edgeType: "USER_INTERACTED_WITH_OPPORTUNITY", labelFrom: p => (p.title as string) ?? null, attrsFrom: () => ({ kind: "reject" }) },
   user_accepted_opportunity:       { toNodeType: "opportunity",        edgeType: "USER_INTERACTED_WITH_OPPORTUNITY", labelFrom: p => (p.title as string) ?? null, attrsFrom: () => ({ kind: "accept" }) },
+  // ---------- Revenue Graph events (Phase 4) ----------
+  // Economic memory: transactions, contracts, payments, deliveries, invoices.
+  // Edges flow user -> transaction/contract/payment/invoice nodes.
+  transaction_created:             { toNodeType: "transaction", edgeType: "USER_CREATED_TRANSACTION", labelFrom: p => (p.type as string) ?? (p.transaction_id as string) ?? null, attrsFrom: p => ({ amount: p.amount, currency: p.currency, type: p.type, buyer_id: p.buyer_id, seller_id: p.seller_id, opportunity_id: p.opportunity_id }) },
+  offer_sent:                      { toNodeType: "transaction", edgeType: "USER_CREATED_TRANSACTION", labelFrom: p => (p.offer_id as string) ?? null, attrsFrom: p => ({ kind: "offer_sent", amount: p.amount, to_user_id: p.to_user_id }) },
+  offer_accepted:                  { toNodeType: "transaction", edgeType: "USER_CREATED_TRANSACTION", labelFrom: p => (p.offer_id as string) ?? null, attrsFrom: p => ({ kind: "offer_accepted", accepted_by: p.accepted_by }) },
+  contract_created:                { toNodeType: "contract",    edgeType: "CONTRACT_BETWEEN_PARTIES", labelFrom: p => (p.contract_id as string) ?? null, attrsFrom: p => ({ transaction_id: p.transaction_id, parties: p.parties }) },
+  payment_initiated:               { toNodeType: "payment",     edgeType: "USER_PAID_USER", labelFrom: p => (p.payment_id as string) ?? null, attrsFrom: p => ({ status: "initiated", amount: p.amount, transaction_id: p.transaction_id }) },
+  payment_completed:               { toNodeType: "payment",     edgeType: "USER_PAID_USER", labelFrom: p => (p.payment_id as string) ?? null, attrsFrom: p => ({ status: "completed", amount: p.amount, transaction_id: p.transaction_id, counterparty: p.counterparty }) },
+  payment_failed:                  { toNodeType: "payment",     edgeType: "USER_PAID_USER", labelFrom: p => (p.payment_id as string) ?? null, attrsFrom: p => ({ status: "failed", reason: p.reason }) },
+  refund_created:                  { toNodeType: "payment",     edgeType: "USER_PAID_USER", labelFrom: p => (p.refund_id as string) ?? null, attrsFrom: p => ({ status: "refunded", amount: p.amount }) },
+  delivery_started:                { toNodeType: "transaction", edgeType: "USER_DELIVERED_VALUE", labelFrom: p => (p.transaction_id as string) ?? null, attrsFrom: () => ({ status: "started" }) },
+  delivery_completed:              { toNodeType: "transaction", edgeType: "USER_DELIVERED_VALUE", labelFrom: p => (p.transaction_id as string) ?? null, attrsFrom: p => ({ status: "completed", completed_at: p.completed_at }) },
+  invoice_created:                 { toNodeType: "invoice",     edgeType: "USER_RECEIVED_VALUE", labelFrom: p => (p.invoice_id as string) ?? null, attrsFrom: p => ({ amount: p.amount, transaction_id: p.transaction_id }) },
 };
 
 Deno.serve(async (req) => {
@@ -176,6 +194,31 @@ Deno.serve(async (req) => {
 
       affectedUsers.add(ev.user_id);
       processed++;
+
+      // Phase 4 — Revenue → Trust feedback loop.
+      // Completion-of-economic-activity emits a trust-grade event consumed
+      // by the Trust Graph on the next recompute.
+      if (ev.event_type === "payment_completed" || ev.event_type === "delivery_completed") {
+        const txId = (ev.payload.transaction_id as string) ?? ev.aggregate_id;
+        const buyerId = ev.payload.buyer_id as string | undefined;
+        const sellerId = ev.payload.seller_id as string | undefined;
+        const amount = ev.payload.amount ?? 0;
+        const idem = `transaction_completed:v1:${txId}:${ev.event_type}`;
+        await supabase.from("graph_events").insert({
+          user_id: sellerId ?? ev.user_id,
+          event_type: "transaction_completed",
+          event_version: 1,
+          aggregate_type: "transaction",
+          aggregate_id: txId,
+          source_module: "revenue",
+          idempotency_key: idem,
+          payload: { transaction_id: txId, buyer_id: buyerId, seller_id: sellerId, amount, counterparty: buyerId },
+          weight: 1,
+          occurred_at: ev.occurred_at,
+        });
+        if (sellerId) affectedUsers.add(sellerId);
+        if (buyerId) affectedUsers.add(buyerId);
+      }
     } catch (e) {
       failed++;
       const msg = String((e as Error).message ?? e);
@@ -210,6 +253,7 @@ Deno.serve(async (req) => {
     await supabase.rpc("recompute_expertise", { _user_id: uid });
     await supabase.rpc("recompute_trust",     { _user_id: uid });
     await supabase.rpc("recompute_opportunity_matches", { _user_id: uid });
+    await supabase.rpc("recompute_revenue",   { _user_id: uid });
   }
 
   return new Response(

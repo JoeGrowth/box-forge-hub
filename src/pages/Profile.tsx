@@ -21,6 +21,8 @@ import { SkillTagPicker } from "@/components/profile/SkillTagPicker";
 import { NextStepsCard } from "@/components/profile/NextStepsCard";
 import { useExpertise } from "@/hooks/useExpertise";
 import { useTrust, trustLevelStyle } from "@/hooks/useTrust";
+import { useRevenue } from "@/hooks/useRevenue";
+import { Wallet } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   AlertDialog,
@@ -84,6 +86,7 @@ const Profile = () => {
   const { expertise } = useExpertise(user?.id);
   // Trust sourced exclusively from the trust_graph projection.
   const { trust } = useTrust(user?.id);
+  const { revenue } = useRevenue(user?.id);
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -953,8 +956,59 @@ const Profile = () => {
               </div>
             )}
 
+            {/* Phase 4 — Revenue Snapshot: economic memory layer. */}
+            {revenue && revenue.transaction_count > 0 && (
+              <div className="bg-card rounded-3xl border border-border p-8 mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="font-display text-xl font-bold text-foreground flex items-center gap-2">
+                      <Wallet className="w-5 h-5 text-b4-coral" />
+                      Revenue
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      Economic value created through completed engagements.
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-3xl font-bold text-b4-coral">
+                      {Math.round(revenue.total_revenue).toLocaleString()} EUR
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {revenue.completed_value_count} completed · {revenue.buyer_count} organizations served
+                    </div>
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-3 gap-3 text-sm">
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <div className="text-muted-foreground text-xs">Transactions</div>
+                    <div className="text-foreground font-semibold">{revenue.transaction_count}</div>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <div className="text-muted-foreground text-xs">Completed</div>
+                    <div className="text-foreground font-semibold">{revenue.completed_value_count}</div>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <div className="text-muted-foreground text-xs">Counterparties</div>
+                    <div className="text-foreground font-semibold">
+                      {revenue.buyer_count + revenue.seller_count}
+                    </div>
+                  </div>
+                </div>
+                {Object.keys(revenue.revenue_breakdown ?? {}).length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {Object.entries(revenue.revenue_breakdown).map(([type, row]) => (
+                      <span key={type} className="text-xs px-2 py-1 rounded-full bg-muted text-foreground">
+                        {type}: {Math.round(row.revenue).toLocaleString()} EUR · {row.completed}/{row.transactions}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Phase 3 — Opportunity Graph: where to go next */}
             <NextStepsCard userId={user?.id} />
+
 
             {/* Part 1.5: Skill Tags Section */}
             {onboardingState?.primary_role === "cobuilder" && <SkillTagPicker />}

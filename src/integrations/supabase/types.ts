@@ -339,6 +339,50 @@ export type Database = {
           },
         ]
       }
+      contracts: {
+        Row: {
+          created_at: string
+          document_url: string | null
+          id: string
+          parties: Json
+          signed_at: string | null
+          status: string
+          terms: Json
+          transaction_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          document_url?: string | null
+          id?: string
+          parties?: Json
+          signed_at?: string | null
+          status?: string
+          terms?: Json
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          document_url?: string | null
+          id?: string
+          parties?: Json
+          signed_at?: string | null
+          status?: string
+          terms?: Json
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contracts_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       declaration_entities: {
         Row: {
           created_at: string
@@ -1680,6 +1724,45 @@ export type Database = {
         }
         Relationships: []
       }
+      revenue_graph: {
+        Row: {
+          buyer_count: number
+          completed_value_count: number
+          computed_at: string
+          revenue_breakdown: Json
+          seller_count: number
+          source_event_version: number
+          total_revenue: number
+          total_spent: number
+          transaction_count: number
+          user_id: string
+        }
+        Insert: {
+          buyer_count?: number
+          completed_value_count?: number
+          computed_at?: string
+          revenue_breakdown?: Json
+          seller_count?: number
+          source_event_version?: number
+          total_revenue?: number
+          total_spent?: number
+          transaction_count?: number
+          user_id: string
+        }
+        Update: {
+          buyer_count?: number
+          completed_value_count?: number
+          computed_at?: string
+          revenue_breakdown?: Json
+          seller_count?: number
+          source_event_version?: number
+          total_revenue?: number
+          total_spent?: number
+          transaction_count?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       service_requests: {
         Row: {
           created_at: string
@@ -2334,6 +2417,54 @@ export type Database = {
         }
         Relationships: []
       }
+      transactions: {
+        Row: {
+          amount: number
+          buyer_id: string
+          completed_at: string | null
+          created_at: string
+          currency: string
+          id: string
+          metadata: Json
+          opportunity_id: string | null
+          opportunity_kind: string | null
+          seller_id: string
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          buyer_id: string
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          metadata?: Json
+          opportunity_id?: string | null
+          opportunity_kind?: string | null
+          seller_id: string
+          status?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          buyer_id?: string
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          metadata?: Json
+          opportunity_id?: string | null
+          opportunity_kind?: string | null
+          seller_id?: string
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       trust_graph: {
         Row: {
           completion_score: number
@@ -2520,6 +2651,14 @@ export type Database = {
           source: string
         }[]
       }
+      backfill_revenue_events_v1: {
+        Args: never
+        Returns: {
+          attempted: number
+          newly_emitted: number
+          source: string
+        }[]
+      }
       current_user_email: { Args: never; Returns: string }
       declaration_entity_access: {
         Args: { _entity_id: string; _user_id: string }
@@ -2565,6 +2704,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: number
       }
+      recompute_revenue: { Args: { _user_id: string }; Returns: undefined }
       recompute_trust: { Args: { _user_id: string }; Returns: undefined }
     }
     Enums: {
@@ -2592,6 +2732,12 @@ export type Database = {
         | "USER_INTERACTED_WITH_OPPORTUNITY"
         | "OPPORTUNITY_IN_CATEGORY"
         | "OPPORTUNITY_IN_DOMAIN"
+        | "USER_CREATED_TRANSACTION"
+        | "USER_PAID_USER"
+        | "USER_DELIVERED_VALUE"
+        | "USER_RECEIVED_VALUE"
+        | "TRANSACTION_FOR_OPPORTUNITY"
+        | "CONTRACT_BETWEEN_PARTIES"
       graph_event_type:
         | "skill_added"
         | "skill_removed"
@@ -2626,6 +2772,17 @@ export type Database = {
         | "user_applied_opportunity"
         | "user_rejected_opportunity"
         | "user_accepted_opportunity"
+        | "transaction_created"
+        | "offer_sent"
+        | "offer_accepted"
+        | "contract_created"
+        | "payment_initiated"
+        | "payment_completed"
+        | "payment_failed"
+        | "refund_created"
+        | "delivery_started"
+        | "delivery_completed"
+        | "invoice_created"
       graph_node_type:
         | "user"
         | "skill"
@@ -2646,6 +2803,9 @@ export type Database = {
         | "category"
         | "domain"
         | "location"
+        | "contract"
+        | "payment"
+        | "invoice"
       journey_status:
         | "not_started"
         | "in_progress"
@@ -2809,6 +2969,12 @@ export const Constants = {
         "USER_INTERACTED_WITH_OPPORTUNITY",
         "OPPORTUNITY_IN_CATEGORY",
         "OPPORTUNITY_IN_DOMAIN",
+        "USER_CREATED_TRANSACTION",
+        "USER_PAID_USER",
+        "USER_DELIVERED_VALUE",
+        "USER_RECEIVED_VALUE",
+        "TRANSACTION_FOR_OPPORTUNITY",
+        "CONTRACT_BETWEEN_PARTIES",
       ],
       graph_event_type: [
         "skill_added",
@@ -2844,6 +3010,17 @@ export const Constants = {
         "user_applied_opportunity",
         "user_rejected_opportunity",
         "user_accepted_opportunity",
+        "transaction_created",
+        "offer_sent",
+        "offer_accepted",
+        "contract_created",
+        "payment_initiated",
+        "payment_completed",
+        "payment_failed",
+        "refund_created",
+        "delivery_started",
+        "delivery_completed",
+        "invoice_created",
       ],
       graph_node_type: [
         "user",
@@ -2865,6 +3042,9 @@ export const Constants = {
         "category",
         "domain",
         "location",
+        "contract",
+        "payment",
+        "invoice",
       ],
       journey_status: [
         "not_started",
