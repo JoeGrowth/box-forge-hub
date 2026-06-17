@@ -473,6 +473,15 @@ const StartupOpportunityDetail = () => {
 
               {/* Sidebar */}
               <div className="space-y-6">
+                {/* Fix 3: post-apply state surface — owns truth about lifecycle. */}
+                {existingApplication && user && (
+                  <OpportunityStatusPanel
+                    userId={user.id}
+                    opportunityId={idea.id}
+                    source="startup_applications"
+                    onChatRoute={`/chat/${existingApplication.id}`}
+                  />
+                )}
                 {/* Apply Card */}
                 <div className="bg-gradient-to-br from-b4-teal/10 to-b4-navy/10 rounded-2xl border border-b4-teal/20 p-6">
                   <h3 className="font-display text-lg font-bold text-foreground mb-2">
