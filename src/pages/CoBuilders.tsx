@@ -362,7 +362,7 @@ const CoBuilders = () => {
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredCobuilders.map((cobuilder) => {
                     const isCurrentUser = cobuilder.user_id === user?.id;
-                    const certCount = cobuilder.certifications.length;
+                    const certCount = cobuilder.certCount;
 
                     // Visual differentiation based on certification count
                     const getCardStyle = () => {
@@ -462,15 +462,16 @@ const CoBuilders = () => {
                               <span className={`text-sm ${certCount >= 2 ? "text-b4-purple font-medium" : certCount === 1 ? "text-b4-teal font-medium" : "text-muted-foreground"}`}>
                                 {getStatusLabel()}
                               </span>
-                              {cobuilder.certifications.map((cert) => (
+                              {certCount > 0 && (
                                 <Badge
-                                  key={cert.id}
                                   className="bg-gradient-to-r from-b4-teal to-b4-purple text-white text-xs py-0 px-2"
+                                  title={`Expertise level: ${cobuilder.expertiseLevel}`}
                                 >
                                   <Award className="w-3 h-3 mr-1" />
-                                  {cert.display_label}
+                                  {certCount} cert{certCount > 1 ? "s" : ""}
+                                  {cobuilder.verifiedCount > 0 && ` · ${cobuilder.verifiedCount} verified`}
                                 </Badge>
-                              ))}
+                              )}
                             </div>
                           </div>
                         </div>
@@ -569,7 +570,7 @@ const CoBuilders = () => {
                         )}
 
                         {/* Get Vaccinated Button - shown on current user's card if no cobuilder certification */}
-                        {isCurrentUser && !cobuilder.certifications.some(c => c.certification_type === "cobuilder_b4") && (
+                        {isCurrentUser && cobuilder.certCount === 0 && (
                           <div className="mt-4 pt-4 border-t border-border">
                             <Button
                               variant="teal"
