@@ -20,6 +20,7 @@ import { LearningJourneyDashboard } from "@/components/learning/LearningJourneyD
 import { SkillTagPicker } from "@/components/profile/SkillTagPicker";
 import { NextStepsCard } from "@/components/profile/NextStepsCard";
 import { ProgressionPathCard } from "@/components/profile/ProgressionPathCard";
+import { GrowthLoopsCard } from "@/components/profile/GrowthLoopsCard";
 import { useExpertise } from "@/hooks/useExpertise";
 import { useTrust, trustLevelStyle } from "@/hooks/useTrust";
 import { useRevenue } from "@/hooks/useRevenue";
