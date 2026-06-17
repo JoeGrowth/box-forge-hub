@@ -35,7 +35,15 @@ type EventType =
   // Phase 6 — Ownership Graph
   | "equity_offer_created" | "equity_offer_accepted" | "equity_offer_rejected"
   | "equity_allocation_created" | "vesting_started" | "vesting_milestone_completed"
-  | "equity_transferred" | "equity_revoked" | "ownership_exit_requested";
+  | "equity_transferred" | "equity_revoked" | "ownership_exit_requested"
+  // P0.1 — Application lifecycle (no graph edge; consumed for notifications + downstream effects)
+  | "application_submitted" | "application_reviewing" | "application_shortlisted"
+  | "application_accepted" | "application_rejected" | "application_withdrawn" | "application_completed"
+  // P0.2 — Cold start
+  | "cold_start_seeded" | "cold_start_confirmed"
+  // P0.3 — Notification spine
+  | "notification_dispatched" | "notification_delivered" | "notification_failed"
+  | "recommendation_available";
 
 interface GraphEvent {
   id: string;
@@ -119,6 +127,21 @@ const EVENT_RULES: Record<EventType, {
   equity_transferred:              { toNodeType: "equity_allocation", edgeType: "USER_OWNS_EQUITY", labelFrom: p => (p.allocation_id as string) ?? null, attrsFrom: p => ({ status: "transferred", to_user_id: p.to_user_id, percentage: p.percentage }) },
   equity_revoked:                  { toNodeType: "equity_allocation", edgeType: "USER_OWNS_EQUITY", labelFrom: p => (p.allocation_id as string) ?? null, attrsFrom: p => ({ status: "revoked", percentage: p.percentage }) },
   ownership_exit_requested:        { toNodeType: "equity_allocation", edgeType: "USER_OWNS_EQUITY", labelFrom: p => (p.allocation_id as string) ?? null, attrsFrom: () => ({ status: "exit_requested" }) },
+  // ---------- Application lifecycle (P0.1) — no graph edge, handled below ----------
+  application_submitted:    null,
+  application_reviewing:    null,
+  application_shortlisted:  null,
+  application_accepted:     null,
+  application_rejected:     null,
+  application_withdrawn:    null,
+  application_completed:    null,
+  // ---------- Cold start + notifications (P0.2/P0.3) — no graph edge ----------
+  cold_start_seeded:        null,
+  cold_start_confirmed:     null,
+  notification_dispatched:  null,
+  notification_delivered:   null,
+  notification_failed:      null,
+  recommendation_available: null,
 };
 
 Deno.serve(async (req) => {
@@ -143,6 +166,8 @@ Deno.serve(async (req) => {
   }
 
   const affectedUsers = new Set<string>();
+  const coldStartUsers = new Set<string>();
+  const applicationCompletedTx: Array<{ user_id: string; application_id: string; opportunity_type: string }> = [];
   let processed = 0;
   let failed = 0;
 
@@ -209,6 +234,56 @@ Deno.serve(async (req) => {
 
       affectedUsers.add(ev.user_id);
       processed++;
+
+      // P0.2 — Cold start seeding. Materialise estimated expertise into the
+      // graph as low-weight HAS_SKILL edges (estimated:true). Recompute happens
+      // below in the projection loop; recommendation_available is emitted after.
+      if (ev.event_type === "cold_start_seeded") {
+        await supabase.rpc("seed_cold_start_expertise", { _user_id: ev.user_id });
+        coldStartUsers.add(ev.user_id);
+      }
+
+      // P0.1 bridge — application_completed → transaction_completed (trust signal).
+      // Emits an idempotent transaction_completed event so Trust/Reputation update.
+      if (ev.event_type === "application_completed") {
+        applicationCompletedTx.push({
+          user_id: ev.user_id,
+          application_id: ev.aggregate_id,
+          opportunity_type: String(ev.payload?.opportunity_type ?? "engagement"),
+        });
+        const ownerId = ev.payload?.owner_id as string | undefined;
+        if (ownerId) affectedUsers.add(ownerId);
+        const idem = `transaction_completed:v1:app:${ev.aggregate_id}`;
+        await supabase.from("graph_events").insert({
+          user_id: ev.user_id,
+          event_type: "transaction_completed",
+          event_version: 1,
+          aggregate_type: "application",
+          aggregate_id: ev.aggregate_id,
+          source_module: "applications",
+          idempotency_key: idem,
+          payload: {
+            transaction_id: ev.aggregate_id,
+            buyer_id: ownerId,
+            seller_id: ev.user_id,
+            amount: 0,
+            counterparty: ownerId,
+            source: "application_completed",
+          },
+          weight: 1,
+          occurred_at: ev.occurred_at,
+        });
+      }
+
+      // P0.3 — Notification fan-out. Idempotent per (event, recipient, channel).
+      // Fires for any event_type that has rows in notification_rules.
+      try {
+        await supabase.rpc("dispatch_notifications_for_event", { _event_id: ev.id });
+      } catch (notifErr) {
+        // Notification failure must not block projection — log via processing_error
+        // on a per-event basis is heavy; rely on notif_failed metric instead.
+        console.warn("notif dispatch failed", ev.id, (notifErr as Error).message);
+      }
 
       // Phase 4 — Revenue → Trust feedback loop.
       // Completion-of-economic-activity emits a trust-grade event consumed
@@ -317,6 +392,30 @@ Deno.serve(async (req) => {
     await supabase.rpc("recompute_intent", { _user_id: uid });
     // Phase 8: autonomous growth loops dispatch over progression + intent.
     await supabase.rpc("dispatch_growth_loops", { _user_id: uid });
+  }
+
+  // P0.2 — After projections, emit recommendation_available for cold-start users
+  // who now have at least one row in opportunity_graph. Idempotent per user/day.
+  for (const uid of coldStartUsers) {
+    const { count } = await supabase
+      .from("opportunity_graph")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", uid);
+    if ((count ?? 0) >= 1) {
+      const today = new Date().toISOString().slice(0, 10);
+      await supabase.from("graph_events").insert({
+        user_id: uid,
+        event_type: "recommendation_available",
+        event_version: 1,
+        aggregate_type: "user",
+        aggregate_id: uid,
+        source_module: "recommendations",
+        idempotency_key: `recommendation_available:v1:${uid}:${today}`,
+        payload: { count, source: "cold_start" },
+        weight: 1,
+        occurred_at: new Date().toISOString(),
+      });
+    }
   }
 
   return new Response(
