@@ -254,7 +254,7 @@ const Opportunities = () => {
       income_range: "Equity-based",
       effort_level: "Part-time",
       description: s.description,
-      primary_action: { type: "apply", label: "View role", route: `/opportunities/startup/${s.id}` },
+      primary_action: { type: "apply", label: "Check venture", route: `/opportunities/startup/${s.id}` },
       source_id: s.id,
       created_at: s.created_at,
       author_name: s._author || "Unknown",
