@@ -338,9 +338,16 @@ export default function CompressedOnboarding() {
           )}
 
           <div className="flex items-center justify-between pt-2">
-            <Badge variant="outline" className="text-xs">
-              Graph-first onboarding
-            </Badge>
+            <div className="flex items-center gap-2">
+              {step > 1 && (
+                <Button type="button" variant="ghost" size="sm" onClick={back} disabled={submitting}>
+                  <ArrowLeft className="h-4 w-4 mr-1" /> Back
+                </Button>
+              )}
+              <Badge variant="outline" className="text-xs">
+                Graph-first onboarding
+              </Badge>
+            </div>
             <Button onClick={next} disabled={submitting}>
               {submitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
