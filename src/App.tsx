@@ -27,6 +27,7 @@ import EntrepreneurialOnboarding from "./pages/EntrepreneurialOnboarding";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import AdminOpportunityDetail from "./pages/AdminOpportunityDetail";
+import BetaConsole from "./pages/BetaConsole";
 import Opportunities from "./pages/Opportunities";
 import OpportunityDetail from "./pages/OpportunityDetail";
 import CoBuilders from "./pages/CoBuilders";
@@ -103,6 +104,7 @@ const App = () => (
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/admin/opportunity/:id" element={<AdminOpportunityDetail />} />
+                  <Route path="/admin/beta" element={<BetaConsole />} />
                   <Route element={<PersistentNavbarLayout />}>
                   <Route path="/opportunities" element={<Opportunities />} />
                   <Route path="/cobuilders" element={<CoBuilders />} />

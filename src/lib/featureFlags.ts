@@ -35,3 +35,26 @@ export const USE_PROGRESSION_ENGINE = true;
 // dispatches loops after every projection cycle and the UI surfaces the
 // triggered runs + feedback controls.
 export const USE_GROWTH_LOOPS = true;
+
+// P0.1 — Unified application lifecycle spine. When true, all five opportunity
+// kinds (job, startup, tender, consulting, training) read/write through the
+// `applications` table and emit application_<status>:v1 events.
+export const USE_APPLICATION_LIFECYCLE = true;
+
+// P0.2 — Cold start intelligence. When true, new users without expertise are
+// seeded from NR Decoder results into `cold_start_profiles` and surfaced first
+// recommendations within 60 seconds of signup.
+export const USE_COLD_START = true;
+
+// P0.3 — Notification reliability layer. Tracks per-event delivery state
+// (created/queued/sent/opened/failed) in `notification_deliveries`.
+export const USE_NOTIFICATION_DELIVERIES = true;
+
+// P0.4 — Recommendation explanation surfaces shown on Dashboard + Profile.
+export const USE_RECOMMENDATION_EXPLANATIONS = true;
+
+// P0.5 — Beta operations console (admin-only).
+export const USE_BETA_CONSOLE = true;
+
+// P0.6 — Compressed onboarding (5 fields, <5 min first value).
+export const USE_COMPRESSED_ONBOARDING = true;
