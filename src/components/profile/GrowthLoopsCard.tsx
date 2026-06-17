@@ -50,9 +50,23 @@ function LoopRow({
   onConvert: () => void;
   onDismiss: () => void;
 }) {
+  const navigate = useNavigate();
+  const location = useLocation();
   const title = (run.loop?.action_payload?.title as string) ?? run.loop?.description ?? run.loop_key;
   const link = (run.loop?.action_payload?.link as string) ?? "/profile";
   const category = (run.loop?.action_payload?.category as string) ?? "growth";
+
+  const handleOpen = async () => {
+    await onEngage();
+    if (link && link !== location.pathname) {
+      navigate(link);
+    } else {
+      toast({
+        title: "Already here",
+        description: `${title} — continue on this page.`,
+      });
+    }
+  };
 
   return (
     <div className="flex flex-col gap-2 rounded-md border p-3 sm:flex-row sm:items-center sm:justify-between">
@@ -67,9 +81,7 @@ function LoopRow({
         )}
       </div>
       <div className="flex flex-wrap gap-2">
-        <Button asChild size="sm" onClick={onEngage}>
-          <Link to={link}>Open</Link>
-        </Button>
+        <Button size="sm" onClick={handleOpen}>Open</Button>
         <Button size="sm" variant="outline" onClick={onConvert}>Done</Button>
         <Button size="sm" variant="ghost" onClick={onDismiss}>Dismiss</Button>
       </div>
