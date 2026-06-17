@@ -18,6 +18,7 @@ import { IdeaApplicationsViewer } from "@/components/profile/IdeaApplicationsVie
 import { ScalingJourneyProgress } from "@/components/profile/ScalingJourneyProgress";
 import { LearningJourneyDashboard } from "@/components/learning/LearningJourneyDashboard";
 import { SkillTagPicker } from "@/components/profile/SkillTagPicker";
+import { useExpertise } from "@/hooks/useExpertise";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   AlertDialog,
@@ -77,6 +78,8 @@ const Profile = () => {
   const navigate = useNavigate();
   const { user, signOut, loading: authLoading } = useAuth();
   const { onboardingState, naturalRole, needsOnboarding, refetch } = useOnboarding();
+  // Expertise sourced exclusively from the expertise_graph projection.
+  const { expertise } = useExpertise(user?.id);
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -847,6 +850,52 @@ const Profile = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Expertise Snapshot — read-only projection from the Expertise Graph */}
+            {expertise && (
+              <div className="bg-card rounded-3xl border border-border p-8 mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="font-display text-xl font-bold text-foreground">Expertise</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Aggregated from your verified skills, certifications, and contributions.
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-3xl font-bold text-b4-teal">{Math.round(expertise.score)}</div>
+                    <div className="text-xs uppercase tracking-wider text-muted-foreground">{expertise.level}</div>
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-3 gap-3 text-sm">
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <div className="text-muted-foreground text-xs">Certifications</div>
+                    <div className="text-foreground font-semibold">
+                      {expertise.monetizable.certifications ?? 0}
+                      {expertise.verifiedCount > 0 && (
+                        <span className="text-xs text-muted-foreground ml-2">{expertise.verifiedCount} verified</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <div className="text-muted-foreground text-xs">Skills</div>
+                    <div className="text-foreground font-semibold">{expertise.monetizable.skills ?? 0}</div>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <div className="text-muted-foreground text-xs">Contributions</div>
+                    <div className="text-foreground font-semibold">{expertise.monetizable.contributions ?? 0}</div>
+                  </div>
+                </div>
+                {expertise.tags.length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {expertise.tags.slice(0, 12).map((tag) => (
+                      <Badge key={tag} variant="secondary" className="bg-b4-teal/10 text-b4-teal border-none">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
