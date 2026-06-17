@@ -31,7 +31,11 @@ type EventType =
   // Phase 4 — Revenue Graph
   | "transaction_created" | "offer_sent" | "offer_accepted" | "contract_created"
   | "payment_initiated" | "payment_completed" | "payment_failed" | "refund_created"
-  | "delivery_started" | "delivery_completed" | "invoice_created";
+  | "delivery_started" | "delivery_completed" | "invoice_created"
+  // Phase 6 — Ownership Graph
+  | "equity_offer_created" | "equity_offer_accepted" | "equity_offer_rejected"
+  | "equity_allocation_created" | "vesting_started" | "vesting_milestone_completed"
+  | "equity_transferred" | "equity_revoked" | "ownership_exit_requested";
 
 interface GraphEvent {
   id: string;
