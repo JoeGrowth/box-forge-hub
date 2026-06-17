@@ -31,7 +31,11 @@ type EventType =
   // Phase 4 — Revenue Graph
   | "transaction_created" | "offer_sent" | "offer_accepted" | "contract_created"
   | "payment_initiated" | "payment_completed" | "payment_failed" | "refund_created"
-  | "delivery_started" | "delivery_completed" | "invoice_created";
+  | "delivery_started" | "delivery_completed" | "invoice_created"
+  // Phase 6 — Ownership Graph
+  | "equity_offer_created" | "equity_offer_accepted" | "equity_offer_rejected"
+  | "equity_allocation_created" | "vesting_started" | "vesting_milestone_completed"
+  | "equity_transferred" | "equity_revoked" | "ownership_exit_requested";
 
 interface GraphEvent {
   id: string;
@@ -104,6 +108,17 @@ const EVENT_RULES: Record<EventType, {
   delivery_started:                { toNodeType: "transaction", edgeType: "USER_DELIVERED_VALUE", labelFrom: p => (p.transaction_id as string) ?? null, attrsFrom: () => ({ status: "started" }) },
   delivery_completed:              { toNodeType: "transaction", edgeType: "USER_DELIVERED_VALUE", labelFrom: p => (p.transaction_id as string) ?? null, attrsFrom: p => ({ status: "completed", completed_at: p.completed_at }) },
   invoice_created:                 { toNodeType: "invoice",     edgeType: "USER_RECEIVED_VALUE", labelFrom: p => (p.invoice_id as string) ?? null, attrsFrom: p => ({ amount: p.amount, transaction_id: p.transaction_id }) },
+  // ---------- Ownership Graph events (Phase 6) ----------
+  // Ownership is a first-class graph. Edges flow user -> allocation/venture.
+  equity_offer_created:            { toNodeType: "equity_allocation", edgeType: "USER_OWNS_EQUITY", labelFrom: p => (p.allocation_id as string) ?? null, attrsFrom: p => ({ status: "proposed", percentage: p.percentage, venture_id: p.venture_id }) },
+  equity_offer_accepted:           { toNodeType: "equity_allocation", edgeType: "USER_OWNS_EQUITY", labelFrom: p => (p.allocation_id as string) ?? null, attrsFrom: () => ({ status: "accepted" }) },
+  equity_offer_rejected:           { toNodeType: "equity_allocation", edgeType: "USER_OWNS_EQUITY", labelFrom: p => (p.allocation_id as string) ?? null, attrsFrom: () => ({ status: "rejected" }) },
+  equity_allocation_created:       { toNodeType: "equity_allocation", edgeType: "EQUITY_ALLOCATED_FOR_CONTRIBUTION", labelFrom: p => (p.allocation_id as string) ?? null, attrsFrom: p => ({ percentage: p.percentage, venture_id: p.venture_id }) },
+  vesting_started:                 { toNodeType: "vesting_schedule",  edgeType: "EQUITY_VESTED_FROM_ALLOCATION", labelFrom: p => (p.schedule_id as string) ?? null, attrsFrom: p => ({ allocation_id: p.allocation_id, started_at: p.started_at }) },
+  vesting_milestone_completed:     { toNodeType: "equity_allocation", edgeType: "EQUITY_VESTED_FROM_ALLOCATION", labelFrom: p => (p.allocation_id as string) ?? null, attrsFrom: p => ({ vested_percentage: p.percentage, milestone: p.milestone }) },
+  equity_transferred:              { toNodeType: "equity_allocation", edgeType: "USER_OWNS_EQUITY", labelFrom: p => (p.allocation_id as string) ?? null, attrsFrom: p => ({ status: "transferred", to_user_id: p.to_user_id, percentage: p.percentage }) },
+  equity_revoked:                  { toNodeType: "equity_allocation", edgeType: "USER_OWNS_EQUITY", labelFrom: p => (p.allocation_id as string) ?? null, attrsFrom: p => ({ status: "revoked", percentage: p.percentage }) },
+  ownership_exit_requested:        { toNodeType: "equity_allocation", edgeType: "USER_OWNS_EQUITY", labelFrom: p => (p.allocation_id as string) ?? null, attrsFrom: () => ({ status: "exit_requested" }) },
 };
 
 Deno.serve(async (req) => {
@@ -254,6 +269,8 @@ Deno.serve(async (req) => {
     await supabase.rpc("recompute_trust",     { _user_id: uid });
     await supabase.rpc("recompute_opportunity_matches", { _user_id: uid });
     await supabase.rpc("recompute_revenue",   { _user_id: uid });
+    // Phase 6: ownership before reputation so vested equity flows in as evidence.
+    await supabase.rpc("recompute_ownership", { _user_id: uid });
     // Phase 5: synthesis layer consumes the above projections.
     await supabase.rpc("recompute_reputation",{ _user_id: uid });
   }

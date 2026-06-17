@@ -23,7 +23,8 @@ import { useExpertise } from "@/hooks/useExpertise";
 import { useTrust, trustLevelStyle } from "@/hooks/useTrust";
 import { useRevenue } from "@/hooks/useRevenue";
 import { useReputation, reputationLevelStyle } from "@/hooks/useReputation";
-import { Wallet, Award } from "lucide-react";
+import { useOwnership, ownershipLevelStyle } from "@/hooks/useOwnership";
+import { Wallet, Award, PieChart } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   AlertDialog,
@@ -89,6 +90,7 @@ const Profile = () => {
   const { trust } = useTrust(user?.id);
   const { revenue } = useRevenue(user?.id);
   const { reputation } = useReputation(user?.id);
+  const { ownership } = useOwnership(user?.id);
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -1055,8 +1057,71 @@ const Profile = () => {
               </div>
             )}
 
+            {/* Phase 6 — Ownership Snapshot: long-term economic participation. */}
+            {ownership && ownership.venture_count > 0 && (
+              <div className="bg-card rounded-3xl border border-border p-8 mb-8">
+                <div className="flex items-start justify-between mb-4 gap-4">
+                  <div>
+                    <h2 className="font-display text-xl font-bold text-foreground flex items-center gap-2">
+                      <PieChart className="w-5 h-5 text-primary" />
+                      Ownership
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      Equity earned through contribution to ventures.
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div className="text-3xl font-bold text-primary">
+                      {Number(ownership.total_allocated_equity).toFixed(2)}%
+                    </div>
+                    {(() => {
+                      const s = ownershipLevelStyle(ownership.ownership_level);
+                      return (
+                        <span className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full border ${s.className}`}>
+                          {s.label}
+                        </span>
+                      );
+                    })()}
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-3 gap-3 text-sm mb-4">
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <div className="text-muted-foreground text-xs">Ventures</div>
+                    <div className="text-foreground font-semibold">{ownership.venture_count}</div>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <div className="text-muted-foreground text-xs">Allocated</div>
+                    <div className="text-foreground font-semibold">{Number(ownership.total_allocated_equity).toFixed(2)}%</div>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <div className="text-muted-foreground text-xs">Vested</div>
+                    <div className="text-foreground font-semibold">{Number(ownership.total_vested_equity).toFixed(2)}%</div>
+                  </div>
+                </div>
+                {ownership.ownership_breakdown?.contributions && ownership.ownership_breakdown.contributions.length > 0 && (
+                  <div className="border-t border-border pt-4">
+                    <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Contributions</div>
+                    <div className="space-y-2">
+                      {ownership.ownership_breakdown.contributions.map((c, i) => (
+                        <div key={i} className="flex items-center justify-between text-sm">
+                          <div className="flex-1 truncate">
+                            <span className="font-medium text-foreground">{c.venture}</span>
+                            <span className="ml-2 text-xs text-muted-foreground">{c.role} · {c.status}</span>
+                          </div>
+                          <div className="text-xs text-muted-foreground shrink-0">
+                            {c.vested} vested / {c.allocated} allocated
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Phase 3 — Opportunity Graph: where to go next */}
             <NextStepsCard userId={user?.id} />
+
 
 
             {/* Part 1.5: Skill Tags Section */}
