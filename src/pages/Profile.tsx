@@ -19,6 +19,7 @@ import { ScalingJourneyProgress } from "@/components/profile/ScalingJourneyProgr
 import { LearningJourneyDashboard } from "@/components/learning/LearningJourneyDashboard";
 import { SkillTagPicker } from "@/components/profile/SkillTagPicker";
 import { NextStepsCard } from "@/components/profile/NextStepsCard";
+import { ProgressionPathCard } from "@/components/profile/ProgressionPathCard";
 import { useExpertise } from "@/hooks/useExpertise";
 import { useTrust, trustLevelStyle } from "@/hooks/useTrust";
 import { useRevenue } from "@/hooks/useRevenue";
