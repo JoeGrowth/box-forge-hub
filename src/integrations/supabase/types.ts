@@ -2828,6 +2828,11 @@ export type Database = {
         | "USER_CREATED_VALUE"
         | "USER_RECEIVED_VALIDATION"
         | "USER_IMPROVED_EXPERTISE"
+        | "USER_OWNS_EQUITY"
+        | "USER_CONTRIBUTED_TO_VENTURE"
+        | "EQUITY_ALLOCATED_FOR_CONTRIBUTION"
+        | "USER_HAS_ROLE_IN_VENTURE"
+        | "EQUITY_VESTED_FROM_ALLOCATION"
       graph_event_type:
         | "skill_added"
         | "skill_removed"
@@ -2878,6 +2883,15 @@ export type Database = {
         | "opportunity_completed"
         | "review_received"
         | "startup_milestone_completed"
+        | "equity_offer_created"
+        | "equity_offer_accepted"
+        | "equity_offer_rejected"
+        | "equity_allocation_created"
+        | "vesting_started"
+        | "vesting_milestone_completed"
+        | "equity_transferred"
+        | "equity_revoked"
+        | "ownership_exit_requested"
       graph_node_type:
         | "user"
         | "skill"
@@ -2901,6 +2915,10 @@ export type Database = {
         | "contract"
         | "payment"
         | "invoice"
+        | "role"
+        | "equity_allocation"
+        | "vesting_schedule"
+        | "contribution"
       journey_status:
         | "not_started"
         | "in_progress"
@@ -3075,6 +3093,11 @@ export const Constants = {
         "USER_CREATED_VALUE",
         "USER_RECEIVED_VALIDATION",
         "USER_IMPROVED_EXPERTISE",
+        "USER_OWNS_EQUITY",
+        "USER_CONTRIBUTED_TO_VENTURE",
+        "EQUITY_ALLOCATED_FOR_CONTRIBUTION",
+        "USER_HAS_ROLE_IN_VENTURE",
+        "EQUITY_VESTED_FROM_ALLOCATION",
       ],
       graph_event_type: [
         "skill_added",
@@ -3126,6 +3149,15 @@ export const Constants = {
         "opportunity_completed",
         "review_received",
         "startup_milestone_completed",
+        "equity_offer_created",
+        "equity_offer_accepted",
+        "equity_offer_rejected",
+        "equity_allocation_created",
+        "vesting_started",
+        "vesting_milestone_completed",
+        "equity_transferred",
+        "equity_revoked",
+        "ownership_exit_requested",
       ],
       graph_node_type: [
         "user",
@@ -3150,6 +3182,10 @@ export const Constants = {
         "contract",
         "payment",
         "invoice",
+        "role",
+        "equity_allocation",
+        "vesting_schedule",
+        "contribution",
       ],
       journey_status: [
         "not_started",
