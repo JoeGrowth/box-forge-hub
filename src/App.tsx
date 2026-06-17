@@ -28,6 +28,7 @@ import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import AdminOpportunityDetail from "./pages/AdminOpportunityDetail";
 import BetaConsole from "./pages/BetaConsole";
+import LifecycleIntegrity from "./pages/admin/LifecycleIntegrity";
 import CompressedOnboarding from "./pages/CompressedOnboarding";
 import ProfessionalMap from "./pages/ProfessionalMap";
 import Opportunities from "./pages/Opportunities";
