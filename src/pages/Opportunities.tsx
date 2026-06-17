@@ -117,8 +117,9 @@ const Opportunities = () => {
     onboardingState?.journey_status === "entrepreneur_approved";
 
   useEffect(() => {
-    if (!user || !isApproved) {
-      if (!onboardingLoading) setLoading(false);
+    if (authLoading) return;
+    if (!user) {
+      setLoading(false);
       return;
     }
 
