@@ -22,3 +22,9 @@ export const USE_REPUTATION_GRAPH = true;
 // Phase 6 — Ownership Graph. Equity is a first-class entity (allocations,
 // vesting schedules, immutable ledger). UI reads ownership_graph projection.
 export const USE_OWNERSHIP_GRAPH = true;
+
+// Phase 7 — Progression Engine. Control layer that synthesizes all six
+// graphs into next-best-action recommendations. When true, DashboardNextSteps
+// and the Profile growth path consume progression_graph instead of any
+// component-local heuristic.
+export const USE_PROGRESSION_ENGINE = true;
