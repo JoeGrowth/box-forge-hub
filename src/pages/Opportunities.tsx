@@ -85,10 +85,23 @@ const Opportunities = () => {
   const sectorFilter = searchParams.get("sector") || "";
 
   const setParam = (key: string, value: string | null) => {
-    const next = new URLSearchParams(searchParams);
-    if (value == null || value === "") next.delete(key);
-    else next.set(key, value);
-    setSearchParams(next, { replace: true });
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (value == null || value === "") next.delete(key);
+      else next.set(key, value);
+      return next;
+    }, { replace: true });
+  };
+
+  const setParams = (updates: Record<string, string | null>) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      for (const [k, v] of Object.entries(updates)) {
+        if (v == null || v === "") next.delete(k);
+        else next.set(k, v);
+      }
+      return next;
+    }, { replace: true });
   };
 
   // Apply persona default tab once on initial load if no ?tab param.
