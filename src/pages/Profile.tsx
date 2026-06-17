@@ -953,6 +953,9 @@ const Profile = () => {
               </div>
             )}
 
+            {/* Phase 3 — Opportunity Graph: where to go next */}
+            <NextStepsCard userId={user?.id} />
+
             {/* Part 1.5: Skill Tags Section */}
             {onboardingState?.primary_role === "cobuilder" && <SkillTagPicker />}
 
