@@ -90,6 +90,20 @@ const EVENT_RULES: Record<EventType, {
   user_applied_opportunity:        { toNodeType: "opportunity",        edgeType: "APPLIED_TO",                 labelFrom: p => (p.title as string) ?? null, attrsFrom: p => ({ kind: p.opportunity_kind ?? "apply" }) },
   user_rejected_opportunity:       { toNodeType: "opportunity",        edgeType: "USER_INTERACTED_WITH_OPPORTUNITY", labelFrom: p => (p.title as string) ?? null, attrsFrom: () => ({ kind: "reject" }) },
   user_accepted_opportunity:       { toNodeType: "opportunity",        edgeType: "USER_INTERACTED_WITH_OPPORTUNITY", labelFrom: p => (p.title as string) ?? null, attrsFrom: () => ({ kind: "accept" }) },
+  // ---------- Revenue Graph events (Phase 4) ----------
+  // Economic memory: transactions, contracts, payments, deliveries, invoices.
+  // Edges flow user -> transaction/contract/payment/invoice nodes.
+  transaction_created:             { toNodeType: "transaction", edgeType: "USER_CREATED_TRANSACTION", labelFrom: p => (p.type as string) ?? (p.transaction_id as string) ?? null, attrsFrom: p => ({ amount: p.amount, currency: p.currency, type: p.type, buyer_id: p.buyer_id, seller_id: p.seller_id, opportunity_id: p.opportunity_id }) },
+  offer_sent:                      { toNodeType: "transaction", edgeType: "USER_CREATED_TRANSACTION", labelFrom: p => (p.offer_id as string) ?? null, attrsFrom: p => ({ kind: "offer_sent", amount: p.amount, to_user_id: p.to_user_id }) },
+  offer_accepted:                  { toNodeType: "transaction", edgeType: "USER_CREATED_TRANSACTION", labelFrom: p => (p.offer_id as string) ?? null, attrsFrom: p => ({ kind: "offer_accepted", accepted_by: p.accepted_by }) },
+  contract_created:                { toNodeType: "contract",    edgeType: "CONTRACT_BETWEEN_PARTIES", labelFrom: p => (p.contract_id as string) ?? null, attrsFrom: p => ({ transaction_id: p.transaction_id, parties: p.parties }) },
+  payment_initiated:               { toNodeType: "payment",     edgeType: "USER_PAID_USER", labelFrom: p => (p.payment_id as string) ?? null, attrsFrom: p => ({ status: "initiated", amount: p.amount, transaction_id: p.transaction_id }) },
+  payment_completed:               { toNodeType: "payment",     edgeType: "USER_PAID_USER", labelFrom: p => (p.payment_id as string) ?? null, attrsFrom: p => ({ status: "completed", amount: p.amount, transaction_id: p.transaction_id, counterparty: p.counterparty }) },
+  payment_failed:                  { toNodeType: "payment",     edgeType: "USER_PAID_USER", labelFrom: p => (p.payment_id as string) ?? null, attrsFrom: p => ({ status: "failed", reason: p.reason }) },
+  refund_created:                  { toNodeType: "payment",     edgeType: "USER_PAID_USER", labelFrom: p => (p.refund_id as string) ?? null, attrsFrom: p => ({ status: "refunded", amount: p.amount }) },
+  delivery_started:                { toNodeType: "transaction", edgeType: "USER_DELIVERED_VALUE", labelFrom: p => (p.transaction_id as string) ?? null, attrsFrom: () => ({ status: "started" }) },
+  delivery_completed:              { toNodeType: "transaction", edgeType: "USER_DELIVERED_VALUE", labelFrom: p => (p.transaction_id as string) ?? null, attrsFrom: p => ({ status: "completed", completed_at: p.completed_at }) },
+  invoice_created:                 { toNodeType: "invoice",     edgeType: "USER_RECEIVED_VALUE", labelFrom: p => (p.invoice_id as string) ?? null, attrsFrom: p => ({ amount: p.amount, transaction_id: p.transaction_id }) },
 };
 
 Deno.serve(async (req) => {
