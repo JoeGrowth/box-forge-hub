@@ -234,6 +234,43 @@ Deno.serve(async (req) => {
         if (sellerId) affectedUsers.add(sellerId);
         if (buyerId) affectedUsers.add(buyerId);
       }
+
+      // Phase 8 hardening — outcome attribution. When measurable graph
+      // transitions occur, attribute them back to any active growth loop
+      // run so recommendations are measured by downstream impact, not by
+      // notification clicks alone.
+      if (
+        ev.event_type === "transaction_completed" ||
+        ev.event_type === "opportunity_completed" ||
+        ev.event_type === "venture_created" ||
+        ev.event_type === "equity_allocation_created"
+      ) {
+        await supabase.rpc("record_recommendation_outcome", {
+          _user_id: ev.user_id,
+          _outcome: ev.event_type,
+          _value: Number(ev.payload?.amount ?? ev.payload?.value ?? 0),
+          _context: { event_id: ev.id } as never,
+        });
+      }
+
+      // Phase 8 hardening — implicit intent signals. Saves, applies and
+      // dismissals feed the intent_graph.
+      const intentSignal =
+        ev.event_type === "user_saved_opportunity" ? "saved" :
+        ev.event_type === "user_applied_opportunity" ? "applied" :
+        ev.event_type === "user_viewed_opportunity" ? "viewed" :
+        ev.event_type === "user_rejected_opportunity" ? "dismissed" :
+        null;
+      if (intentSignal && ev.payload?.opportunity_kind) {
+        await supabase.from("user_intents").insert({
+          user_id: ev.user_id,
+          intent_key: `category:${ev.payload.opportunity_kind}`,
+          signal: intentSignal,
+          source: "graph_events",
+          context: { event_id: ev.id, opportunity_id: ev.aggregate_id } as never,
+        });
+      }
+
     } catch (e) {
       failed++;
       const msg = String((e as Error).message ?? e);
