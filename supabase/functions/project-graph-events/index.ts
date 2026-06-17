@@ -17,11 +17,13 @@ type EventType =
   | "skill_added" | "skill_removed"
   | "certification_earned" | "certification_verified"
   | "startup_contribution_accepted" | "startup_member_added"
-  | "training_delivered" | "training_published"
-  | "consulting_engagement_completed" | "consulting_service_published"
+  | "startup_contribution_completed"
+  | "training_delivered" | "training_published" | "training_completed"
+  | "consulting_engagement_completed" | "consulting_service_published" | "consulting_completed"
   | "tender_won" | "tender_published"
   | "venture_created" | "equity_vested"
-  | "journey_completed" | "job_published" | "job_applied";
+  | "journey_completed" | "job_published" | "job_applied" | "job_completed"
+  | "review_created" | "transaction_completed" | "milestone_completed";
 
 interface GraphEvent {
   id: string;
@@ -59,6 +61,15 @@ const EVENT_RULES: Record<EventType, {
   journey_completed:               { toNodeType: "certification",      edgeType: "COMPLETED",          labelFrom: p => (p.journey_label as string) ?? null },
   job_published:                   { toNodeType: "job",                edgeType: "PUBLISHED",          labelFrom: p => (p.job_title as string) ?? null },
   job_applied:                     { toNodeType: "job",                edgeType: "APPLIED_TO",         labelFrom: p => (p.job_title as string) ?? null },
+  // ---------- Trust Graph events (Phase 2) ----------
+  // Completion-of-work signals — these prove delivery, not intent.
+  startup_contribution_completed:  { toNodeType: "startup",            edgeType: "CONTRIBUTED_TO",     labelFrom: p => (p.startup_title as string) ?? null, attrsFrom: p => ({ completed: true, role: p.role, completed_at: p.completed_at }) },
+  training_completed:              { toNodeType: "training",           edgeType: "USER_COMPLETED_PROJECT", labelFrom: p => (p.training_title as string) ?? null, attrsFrom: p => ({ completed_at: p.completed_at }) },
+  consulting_completed:            { toNodeType: "consulting_service", edgeType: "USER_DELIVERED_OUTCOME", labelFrom: p => (p.service_title as string) ?? null, attrsFrom: p => ({ completed_at: p.completed_at }) },
+  job_completed:                   { toNodeType: "job",                edgeType: "USER_COMPLETED_PROJECT", labelFrom: p => (p.job_title as string) ?? null, attrsFrom: p => ({ completed_at: p.completed_at }) },
+  milestone_completed:             { toNodeType: "project",            edgeType: "USER_COMPLETED_PROJECT", labelFrom: p => (p.milestone_title as string) ?? null, attrsFrom: p => ({ completed_at: p.completed_at }) },
+  transaction_completed:           { toNodeType: "transaction",        edgeType: "USER_COMPLETED_TRANSACTION", labelFrom: p => (p.transaction_label as string) ?? null, attrsFrom: p => ({ amount: p.amount, counterparty: p.counterparty }) },
+  review_created:                  { toNodeType: "review",             edgeType: "USER_RECEIVED_REVIEW", labelFrom: p => (p.review_subject as string) ?? null, attrsFrom: p => ({ rating: p.rating, reviewer_id: p.reviewer_id, context_id: p.context_id }) },
 };
 
 Deno.serve(async (req) => {
@@ -177,8 +188,12 @@ Deno.serve(async (req) => {
   }
 
   // recompute expertise projection for every affected user
+  // Recompute every projection that may depend on the affected user.
+  // Currently: Expertise Graph (Phase 1) and Trust Graph (Phase 2).
+  // Future projections plug in here with no change to the event spine.
   for (const uid of affectedUsers) {
     await supabase.rpc("recompute_expertise", { _user_id: uid });
+    await supabase.rpc("recompute_trust",     { _user_id: uid });
   }
 
   return new Response(

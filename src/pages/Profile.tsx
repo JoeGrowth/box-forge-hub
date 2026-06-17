@@ -19,6 +19,7 @@ import { ScalingJourneyProgress } from "@/components/profile/ScalingJourneyProgr
 import { LearningJourneyDashboard } from "@/components/learning/LearningJourneyDashboard";
 import { SkillTagPicker } from "@/components/profile/SkillTagPicker";
 import { useExpertise } from "@/hooks/useExpertise";
+import { useTrust, trustLevelStyle } from "@/hooks/useTrust";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   AlertDialog,
@@ -80,6 +81,8 @@ const Profile = () => {
   const { onboardingState, naturalRole, needsOnboarding, refetch } = useOnboarding();
   // Expertise sourced exclusively from the expertise_graph projection.
   const { expertise } = useExpertise(user?.id);
+  // Trust sourced exclusively from the trust_graph projection.
+  const { trust } = useTrust(user?.id);
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -895,6 +898,56 @@ const Profile = () => {
                       </Badge>
                     ))}
                   </div>
+                )}
+              </div>
+            )}
+
+            {/* Trust Snapshot — read-only projection from the Trust Graph */}
+            {trust && (
+              <div className="bg-card rounded-3xl border border-border p-8 mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="font-display text-xl font-bold text-foreground flex items-center gap-2">
+                      <ShieldCheck className="w-5 h-5 text-b4-teal" />
+                      Trust
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      Evidence of who validated you, in what context, and how recently.
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-3xl font-bold text-b4-teal">{Math.round(trust.score)}</div>
+                    {(() => {
+                      const s = trustLevelStyle(trust.level);
+                      return (
+                        <span className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full border ${s.className}`}>
+                          {s.label}
+                        </span>
+                      );
+                    })()}
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-3 gap-3 text-sm">
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <div className="text-muted-foreground text-xs">Verified Credentials</div>
+                    <div className="text-foreground font-semibold">{trust.verifiedCount}</div>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <div className="text-muted-foreground text-xs">Completion Score</div>
+                    <div className="text-foreground font-semibold">{Math.round(trust.completionScore)}</div>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <div className="text-muted-foreground text-xs">Review Score</div>
+                    <div className="text-foreground font-semibold">
+                      {trust.reviewScore > 0 ? trust.reviewScore.toFixed(1) : "—"}
+                    </div>
+                  </div>
+                </div>
+                {trust.level === "unverified" && (
+                  <p className="text-xs text-muted-foreground mt-4">
+                    Trust grows from verified certifications, completed contributions, and reviews from
+                    counterparties you have actually worked with.
+                  </p>
                 )}
               </div>
             )}

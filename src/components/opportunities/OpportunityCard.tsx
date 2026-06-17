@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRight, Check, Loader2 } from "lucide-react";
+import { ArrowRight, Check, Loader2, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useTrust, trustLevelStyle } from "@/hooks/useTrust";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -26,6 +27,8 @@ export interface Opportunity {
   source_id: string;
   created_at: string;
   author_name: string;
+  /** Author user_id — used to surface a Trust indicator on the card. Optional. */
+  author_user_id?: string | null;
   sector: string | null;
   rank: number;
 }
@@ -51,6 +54,10 @@ export function OpportunityCard({ opportunity, matchScore }: { opportunity: Oppo
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  // Display-only trust signal sourced from the trust_graph projection.
+  // Phase 2: do not factor trust into ranking — that belongs to Opportunity Graph.
+  const { trust } = useTrust(opportunity.author_user_id ?? null);
+  const trustStyle = trust && trust.level !== "unverified" ? trustLevelStyle(trust.level) : null;
 
   useEffect(() => {
     if (!user) return;
@@ -145,7 +152,18 @@ export function OpportunityCard({ opportunity, matchScore }: { opportunity: Oppo
             <span className="w-1 h-1 rounded-full bg-muted-foreground/40" />
             <span>{opportunity.effort_level}</span>
             <span className="w-1 h-1 rounded-full bg-muted-foreground/40" />
-            <span>{opportunity.author_name}</span>
+            <span className="flex items-center gap-1">
+              {opportunity.author_name}
+              {trustStyle && (
+                <span
+                  className={`inline-flex items-center gap-0.5 ml-1 px-1.5 py-0 rounded-full border text-[10px] font-medium ${trustStyle.className}`}
+                  title={`Author trust: ${trustStyle.label}${trust ? ` (${Math.round(trust.score)})` : ""}`}
+                >
+                  <ShieldCheck className="w-2.5 h-2.5" />
+                  {trustStyle.label}
+                </span>
+              )}
+            </span>
           </div>
           <Button
             size="sm"
