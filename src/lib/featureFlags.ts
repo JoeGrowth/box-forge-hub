@@ -18,3 +18,7 @@ export const USE_REVENUE_GRAPH = true;
 // When true, Profile renders a unified Professional Reputation Snapshot and
 // opportunity cards expose a candidate reputation indicator.
 export const USE_REPUTATION_GRAPH = true;
+
+// Phase 6 — Ownership Graph. Equity is a first-class entity (allocations,
+// vesting schedules, immutable ledger). UI reads ownership_graph projection.
+export const USE_OWNERSHIP_GRAPH = true;
