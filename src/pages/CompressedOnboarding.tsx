@@ -94,6 +94,10 @@ export default function CompressedOnboarding() {
     setTagInput("");
   }
 
+  function back() {
+    if (step > 1) setStep((s) => s - 1);
+  }
+
   async function next() {
     setSubmitting(true);
     try {
