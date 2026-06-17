@@ -478,6 +478,7 @@ const StartupOpportunityDetail = () => {
                   <OpportunityStatusPanel
                     userId={user.id}
                     opportunityId={idea.id}
+                    category="startup"
                     source="startup_applications"
                     onChatRoute={`/chat/${existingApplication.id}`}
                   />

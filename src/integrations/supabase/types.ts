@@ -2021,6 +2021,87 @@ export type Database = {
         }
         Relationships: []
       }
+      opportunity_lifecycle_graph: {
+        Row: {
+          accepted_at: string | null
+          application_id: string | null
+          applied_at: string | null
+          category: string
+          completed_at: string | null
+          created_at: string
+          first_viewed_at: string | null
+          id: string
+          last_event_at: string | null
+          last_event_id: string | null
+          last_event_type: string | null
+          last_viewed_at: string | null
+          metadata: Json
+          opportunity_id: string
+          rejected_at: string | null
+          reviewing_at: string | null
+          saved_at: string | null
+          shortlisted_at: string | null
+          state: string
+          state_rank: number
+          updated_at: string
+          user_id: string
+          view_count: number
+          withdrawn_at: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          application_id?: string | null
+          applied_at?: string | null
+          category: string
+          completed_at?: string | null
+          created_at?: string
+          first_viewed_at?: string | null
+          id?: string
+          last_event_at?: string | null
+          last_event_id?: string | null
+          last_event_type?: string | null
+          last_viewed_at?: string | null
+          metadata?: Json
+          opportunity_id: string
+          rejected_at?: string | null
+          reviewing_at?: string | null
+          saved_at?: string | null
+          shortlisted_at?: string | null
+          state?: string
+          state_rank?: number
+          updated_at?: string
+          user_id: string
+          view_count?: number
+          withdrawn_at?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          application_id?: string | null
+          applied_at?: string | null
+          category?: string
+          completed_at?: string | null
+          created_at?: string
+          first_viewed_at?: string | null
+          id?: string
+          last_event_at?: string | null
+          last_event_id?: string | null
+          last_event_type?: string | null
+          last_viewed_at?: string | null
+          metadata?: Json
+          opportunity_id?: string
+          rejected_at?: string | null
+          reviewing_at?: string | null
+          saved_at?: string | null
+          shortlisted_at?: string | null
+          state?: string
+          state_rank?: number
+          updated_at?: string
+          user_id?: string
+          view_count?: number
+          withdrawn_at?: string | null
+        }
+        Relationships: []
+      }
       opportunity_weights: {
         Row: {
           created_at: string
@@ -3718,6 +3799,7 @@ export type Database = {
       }
       is_plan_shared_with_me: { Args: { _plan_id: string }; Returns: boolean }
       legacy_expertise_calc: { Args: { _user_id: string }; Returns: Json }
+      opportunity_lifecycle_rank: { Args: { _state: string }; Returns: number }
       pick_growth_loop_variant: {
         Args: { _loop_key: string; _user_id: string }
         Returns: {
