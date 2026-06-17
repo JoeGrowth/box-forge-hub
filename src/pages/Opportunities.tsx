@@ -138,6 +138,7 @@ const Opportunities = () => {
         ...trainingData.map((t: any) => t.user_id),
         ...tenderData.map((t: any) => t.user_id),
         ...jobData.map((j: any) => j.user_id),
+        ...consultingData.map((c: any) => c.user_id),
       ].filter(Boolean);
 
       let profileMap = new Map<string, string>();
@@ -149,10 +150,30 @@ const Opportunities = () => {
         profileMap = new Map(profiles?.map((p) => [p.user_id, p.full_name]) || []);
       }
 
+      // Resolve consulting skill tag names
+      const skillTagIds = [
+        ...new Set(consultingData.map((c: any) => c.skill_tag_id).filter(Boolean)),
+      ] as string[];
+      let skillTagMap = new Map<string, string>();
+      if (skillTagIds.length > 0) {
+        const { data: tags } = await supabase
+          .from("skill_tags")
+          .select("id, name")
+          .in("id", skillTagIds);
+        skillTagMap = new Map((tags || []).map((t: any) => [t.id, t.name]));
+      }
+
       setRawStartups(startupData.map((s: any) => ({ ...s, _author: profileMap.get(s.creator_id) || "Unknown" })));
       setRawTrainings(trainingData.map((t: any) => ({ ...t, _author: profileMap.get(t.user_id) || "Unknown" })));
       setRawTenders(tenderData.map((t: any) => ({ ...t, _author: profileMap.get(t.user_id) || "Unknown" })));
       setRawJobs(jobData.map((j: any) => ({ ...j, _author: profileMap.get(j.user_id) || "Unknown" })));
+      setRawConsulting(
+        consultingData.map((c: any) => ({
+          ...c,
+          _author: profileMap.get(c.user_id) || "Unknown",
+          _skill_name: c.skill_tag_id ? skillTagMap.get(c.skill_tag_id) || null : null,
+        }))
+      );
 
       setLoading(false);
     };
