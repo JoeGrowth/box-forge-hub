@@ -210,6 +210,29 @@ Deno.serve(async (req) => {
               .eq("edge_type", "HAS_SKILL");
           }
         }
+      } else if (
+        ev.event_type === "practice_verified" ||
+        ev.event_type === "training_verified" ||
+        ev.event_type === "consulting_verified"
+      ) {
+        // Phase B — Experience validation. Bumps existing skill edge confidence,
+        // creates a typed USER_*_EXPERIENCE edge, NEVER creates new skill nodes
+        // (DB function asserts this invariant and raises if violated).
+        const edgeType =
+          ev.event_type === "practice_verified"   ? "USER_PRACTICE_EXPERIENCE"   :
+          ev.event_type === "training_verified"   ? "USER_TRAINING_EXPERIENCE"   :
+                                                    "USER_CONSULTING_EXPERIENCE";
+        const label =
+          (ev.payload.label as string) ??
+          (ev.payload.title as string) ??
+          edgeType;
+        const { error: expErr } = await supabase.rpc("apply_experience_validation", {
+          _user_id: ev.user_id,
+          _edge_type: edgeType,
+          _aggregate_external_id: ev.aggregate_id,
+          _aggregate_label: label,
+        });
+        if (expErr) throw expErr;
       } else if (rule) {
         const externalId = (ev.aggregate_id || ev.payload.external_id || rule.labelFrom(ev.payload)) as string;
         if (!externalId) throw new Error("missing external_id for to-node");
