@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Search, Loader2 } from "lucide-react";
 import { OpportunityCard, type Opportunity } from "@/components/opportunities/OpportunityCard";
 import { SEEDED_OPPORTUNITIES } from "@/data/seededOpportunities";
+import { useExpertise } from "@/hooks/useExpertise";
 
 const CATEGORIES = [
   { key: "all", label: "All" },
@@ -35,7 +36,10 @@ const Opportunities = () => {
   const [rawTrainings, setRawTrainings] = useState<any[]>([]);
   const [rawTenders, setRawTenders] = useState<any[]>([]);
   const [rawJobs, setRawJobs] = useState<any[]>([]);
-  const [userSkillNames, setUserSkillNames] = useState<string[]>([]);
+  // Expertise tags (skill/certification labels) come exclusively from the
+  // expertise_graph projection. Match score is derived from these tags.
+  const { expertise } = useExpertise(user?.id);
+  const userSkillNames = expertise?.tags ?? [];
   const [userCapacity, setUserCapacity] = useState<{ hasTrackRecord: boolean; sectors: string[]; experience: number }>({
     hasTrackRecord: false,
     sectors: [],
@@ -56,7 +60,7 @@ const Opportunities = () => {
     }
 
     const fetchAll = async () => {
-    const [startupsRes, trainingsRes, tendersRes, jobsRes, userSkillsRes, myProfileRes] = await Promise.all([
+    const [startupsRes, trainingsRes, tendersRes, jobsRes, myProfileRes] = await Promise.all([
         supabase
           .from("startup_ideas")
           .select("*")
@@ -80,10 +84,6 @@ const Opportunities = () => {
           .eq("status", "published")
           .order("created_at", { ascending: false }),
         supabase
-          .from("user_skills")
-          .select("skill_tag_id, skill_tags(name)")
-          .eq("user_id", user.id),
-        supabase
           .from("profiles")
           .select("preferred_sector, primary_skills, years_of_experience, key_projects, summary_statement, professional_title")
           .eq("user_id", user.id)
@@ -95,11 +95,8 @@ const Opportunities = () => {
       const tenderData = (tendersRes.data as any[]) || [];
       const jobData = (jobsRes.data as any[]) || [];
 
-      // Extract user skill names
-      const skillNames = (userSkillsRes.data || []).map((r: any) => r.skill_tags?.name).filter(Boolean);
-      setUserSkillNames(skillNames);
-
-      // Compute capacity from profile track record
+      // Capacity derives from profile narrative fields + expertise tag count
+      // (which already encodes both skills and certifications via the graph).
       const p = (myProfileRes.data as any) || {};
       const sectors = [
         p.preferred_sector,
@@ -107,15 +104,16 @@ const Opportunities = () => {
       ]
         .map((s: string) => (s || "").trim().toLowerCase())
         .filter(Boolean);
+      const tagCount = userSkillNames.length;
       const hasTrackRecord = Boolean(
         (p.key_projects && String(p.key_projects).trim().length > 20) ||
           (p.summary_statement && String(p.summary_statement).trim().length > 20) ||
           (p.years_of_experience && Number(p.years_of_experience) >= 1) ||
-          skillNames.length >= 3
+          tagCount >= 3
       );
       setUserCapacity({
         hasTrackRecord,
-        sectors: [...new Set([...sectors, ...skillNames.map((s) => s.toLowerCase())])],
+        sectors: [...new Set([...sectors, ...userSkillNames.map((s) => s.toLowerCase())])],
         experience: Number(p.years_of_experience) || 0,
       });
 
