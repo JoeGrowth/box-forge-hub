@@ -2,69 +2,58 @@ import { useEffect, useState } from "react";
 import { TrendingUp, Users, Award, Briefcase, Target, Zap } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { useExpertise } from "@/hooks/useExpertise";
 
-interface Stats {
-  certifications: number;
+interface ActivityStats {
   applications: number;
-  teamMemberships: number;
   ideas: number;
   journeysCompleted: number;
-  potentialEquity: string;
 }
 
 export function DashboardStats() {
   const { user } = useAuth();
-  const [stats, setStats] = useState<Stats>({
-    certifications: 0,
-    applications: 0,
-    teamMemberships: 0,
-    ideas: 0,
-    journeysCompleted: 0,
-    potentialEquity: "0%",
-  });
-  const [loading, setLoading] = useState(true);
+  // Expertise (certifications, contributions, equity) — sourced exclusively
+  // from the expertise_graph projection via useExpertise(). No direct reads
+  // from user_certifications / user_skills / startup_team_members.
+  const { expertise, loading: expertiseLoading } = useExpertise(user?.id);
+  // Activity counters that are NOT expertise (applications submitted, ideas
+  // authored, learning journeys completed) remain as direct module reads —
+  // they belong to forthcoming Opportunity / Progression projections, not
+  // the Expertise Graph.
+  const [activity, setActivity] = useState<ActivityStats>({ applications: 0, ideas: 0, journeysCompleted: 0 });
+  const [activityLoading, setActivityLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      if (!user) return;
-
-      const [
-        { count: certCount },
-        { count: appCount },
-        { count: teamCount },
-        { count: ideaCount },
-        { data: journeys },
-      ] = await Promise.all([
-        supabase.from("user_certifications").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+    if (!user) return;
+    (async () => {
+      const [{ count: appCount }, { count: ideaCount }, { data: journeys }] = await Promise.all([
         supabase.from("startup_applications").select("*", { count: "exact", head: true }).eq("applicant_id", user.id),
-        supabase.from("startup_team_members").select("*", { count: "exact", head: true }).eq("member_user_id", user.id),
         supabase.from("startup_ideas").select("*", { count: "exact", head: true }).eq("creator_id", user.id),
         supabase.from("learning_journeys").select("status").eq("user_id", user.id).eq("status", "approved"),
       ]);
-
-      // Calculate potential equity based on team memberships and certifications
-      const baseEquity = (teamCount || 0) * 5 + (certCount || 0) * 2;
-      const potentialEquity = baseEquity > 0 ? `${Math.min(baseEquity, 25)}%` : "0%";
-
-      setStats({
-        certifications: certCount || 0,
+      setActivity({
         applications: appCount || 0,
-        teamMemberships: teamCount || 0,
         ideas: ideaCount || 0,
         journeysCompleted: journeys?.length || 0,
-        potentialEquity,
       });
-      setLoading(false);
-    };
-
-    fetchStats();
+      setActivityLoading(false);
+    })();
   }, [user]);
+
+  const loading = expertiseLoading || activityLoading;
+
+  const certifications = expertise?.monetizable.certifications ?? 0;
+  const teamMemberships = expertise?.monetizable.contributions ?? 0;
+  // Same formula as before — equity weighting is unchanged; only the inputs
+  // now come from the graph projection instead of two parallel COUNT(*)s.
+  const baseEquity = teamMemberships * 5 + certifications * 2;
+  const potentialEquity = baseEquity > 0 ? `${Math.min(baseEquity, 25)}%` : "0%";
 
   const statCards = [
     {
       icon: TrendingUp,
       label: "Potential Equity",
-      value: stats.potentialEquity,
+      value: potentialEquity,
       description: "Across active startups",
       color: "from-emerald-500 to-teal-500",
       bgColor: "bg-emerald-500/10",
@@ -72,7 +61,7 @@ export function DashboardStats() {
     {
       icon: Award,
       label: "Certifications",
-      value: stats.certifications.toString(),
+      value: certifications.toString(),
       description: "Verified skills",
       color: "from-purple-500 to-pink-500",
       bgColor: "bg-purple-500/10",
@@ -80,7 +69,7 @@ export function DashboardStats() {
     {
       icon: Users,
       label: "Team Roles",
-      value: stats.teamMemberships.toString(),
+      value: teamMemberships.toString(),
       description: "Active memberships",
       color: "from-blue-500 to-cyan-500",
       bgColor: "bg-blue-500/10",
@@ -88,7 +77,7 @@ export function DashboardStats() {
     {
       icon: Briefcase,
       label: "Applications",
-      value: stats.applications.toString(),
+      value: activity.applications.toString(),
       description: "Submitted",
       color: "from-orange-500 to-amber-500",
       bgColor: "bg-orange-500/10",
@@ -96,7 +85,7 @@ export function DashboardStats() {
     {
       icon: Target,
       label: "Ideas Created",
-      value: stats.ideas.toString(),
+      value: activity.ideas.toString(),
       description: "Your initiatives",
       color: "from-rose-500 to-pink-500",
       bgColor: "bg-rose-500/10",
@@ -104,7 +93,7 @@ export function DashboardStats() {
     {
       icon: Zap,
       label: "Journeys",
-      value: stats.journeysCompleted.toString(),
+      value: activity.journeysCompleted.toString(),
       description: "Completed",
       color: "from-b4-teal to-emerald-400",
       bgColor: "bg-b4-teal/10",
