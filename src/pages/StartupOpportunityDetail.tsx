@@ -257,6 +257,14 @@ const StartupOpportunityDetail = () => {
         created_at: new Date().toISOString(),
       });
       setDialogOpen(false);
+
+      // Fix 2: behavioral telemetry — applied event (single-shot, idempotent).
+      void emitOpportunityEvent("user_applied_opportunity", {
+        userId: user.id,
+        opportunityId: idea.id,
+        category: "startup",
+        extra: { role: selectedRole || null, total_equity: timeEq + perfEq },
+      });
     } catch (error: any) {
       toast({
         title: "Error",
