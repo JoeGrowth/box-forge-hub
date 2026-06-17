@@ -235,6 +235,56 @@ Deno.serve(async (req) => {
       affectedUsers.add(ev.user_id);
       processed++;
 
+      // P0.2 — Cold start seeding. Materialise estimated expertise into the
+      // graph as low-weight HAS_SKILL edges (estimated:true). Recompute happens
+      // below in the projection loop; recommendation_available is emitted after.
+      if (ev.event_type === "cold_start_seeded") {
+        await supabase.rpc("seed_cold_start_expertise", { _user_id: ev.user_id });
+        coldStartUsers.add(ev.user_id);
+      }
+
+      // P0.1 bridge — application_completed → transaction_completed (trust signal).
+      // Emits an idempotent transaction_completed event so Trust/Reputation update.
+      if (ev.event_type === "application_completed") {
+        applicationCompletedTx.push({
+          user_id: ev.user_id,
+          application_id: ev.aggregate_id,
+          opportunity_type: String(ev.payload?.opportunity_type ?? "engagement"),
+        });
+        const ownerId = ev.payload?.owner_id as string | undefined;
+        if (ownerId) affectedUsers.add(ownerId);
+        const idem = `transaction_completed:v1:app:${ev.aggregate_id}`;
+        await supabase.from("graph_events").insert({
+          user_id: ev.user_id,
+          event_type: "transaction_completed",
+          event_version: 1,
+          aggregate_type: "application",
+          aggregate_id: ev.aggregate_id,
+          source_module: "applications",
+          idempotency_key: idem,
+          payload: {
+            transaction_id: ev.aggregate_id,
+            buyer_id: ownerId,
+            seller_id: ev.user_id,
+            amount: 0,
+            counterparty: ownerId,
+            source: "application_completed",
+          },
+          weight: 1,
+          occurred_at: ev.occurred_at,
+        });
+      }
+
+      // P0.3 — Notification fan-out. Idempotent per (event, recipient, channel).
+      // Fires for any event_type that has rows in notification_rules.
+      try {
+        await supabase.rpc("dispatch_notifications_for_event", { _event_id: ev.id });
+      } catch (notifErr) {
+        // Notification failure must not block projection — log via processing_error
+        // on a per-event basis is heavy; rely on notif_failed metric instead.
+        console.warn("notif dispatch failed", ev.id, (notifErr as Error).message);
+      }
+
       // Phase 4 — Revenue → Trust feedback loop.
       // Completion-of-economic-activity emits a trust-grade event consumed
       // by the Trust Graph on the next recompute.
