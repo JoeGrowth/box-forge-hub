@@ -164,6 +164,13 @@ const StartupOpportunityDetail = () => {
 
       setHasCoBuilderCert(!!certData);
 
+      // Fix 2: behavioral telemetry — viewed event (day-bucketed, idempotent).
+      void emitOpportunityEvent("user_viewed_opportunity", {
+        userId: user.id,
+        opportunityId: id,
+        category: "startup",
+      });
+
       setLoading(false);
     };
 
