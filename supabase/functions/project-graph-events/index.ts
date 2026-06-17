@@ -27,7 +27,11 @@ type EventType =
   // Phase 3 — Opportunity Graph
   | "opportunity_created" | "opportunity_updated" | "opportunity_published" | "opportunity_closed"
   | "user_viewed_opportunity" | "user_saved_opportunity" | "user_applied_opportunity"
-  | "user_rejected_opportunity" | "user_accepted_opportunity";
+  | "user_rejected_opportunity" | "user_accepted_opportunity"
+  // Phase 4 — Revenue Graph
+  | "transaction_created" | "offer_sent" | "offer_accepted" | "contract_created"
+  | "payment_initiated" | "payment_completed" | "payment_failed" | "refund_created"
+  | "delivery_started" | "delivery_completed" | "invoice_created";
 
 interface GraphEvent {
   id: string;
