@@ -47,7 +47,18 @@ const actionTypeMap: Record<string, string> = {
   start: "request_contact",
 };
 
-export function OpportunityCard({ opportunity, matchScore }: { opportunity: Opportunity; matchScore?: number }) {
+import type { OpportunityRecommendation } from "@/hooks/useOpportunityRecommendations";
+
+export function OpportunityCard({
+  opportunity,
+  matchScore,
+  recommendation,
+}: {
+  opportunity: Opportunity;
+  matchScore?: number;
+  /** Optional projection row from opportunity_graph providing explanation + next action. */
+  recommendation?: OpportunityRecommendation;
+}) {
   const { user } = useAuth();
   const config = categoryConfig[opportunity.category];
   const [dialogOpen, setDialogOpen] = useState(false);
