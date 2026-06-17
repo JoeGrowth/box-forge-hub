@@ -6,6 +6,7 @@ import { ArrowRight, Check, Loader2, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTrust, trustLevelStyle } from "@/hooks/useTrust";
+import { useReputation, reputationLevelStyle } from "@/hooks/useReputation";
 import { toast } from "sonner";
 import {
   Dialog,
