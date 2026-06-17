@@ -54,6 +54,10 @@ export function OpportunityCard({ opportunity, matchScore }: { opportunity: Oppo
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  // Display-only trust signal sourced from the trust_graph projection.
+  // Phase 2: do not factor trust into ranking — that belongs to Opportunity Graph.
+  const { trust } = useTrust(opportunity.author_user_id ?? null);
+  const trustStyle = trust && trust.level !== "unverified" ? trustLevelStyle(trust.level) : null;
 
   useEffect(() => {
     if (!user) return;
