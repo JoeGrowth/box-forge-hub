@@ -194,7 +194,31 @@ Deno.serve(async (req) => {
 
       affectedUsers.add(ev.user_id);
       processed++;
-    } catch (e) {
+
+      // Phase 4 — Revenue → Trust feedback loop.
+      // Completion-of-economic-activity emits a trust-grade event consumed
+      // by the Trust Graph on the next recompute.
+      if (ev.event_type === "payment_completed" || ev.event_type === "delivery_completed") {
+        const txId = (ev.payload.transaction_id as string) ?? ev.aggregate_id;
+        const buyerId = ev.payload.buyer_id as string | undefined;
+        const sellerId = ev.payload.seller_id as string | undefined;
+        const amount = ev.payload.amount ?? 0;
+        const idem = `transaction_completed:v1:${txId}:${ev.event_type}`;
+        await supabase.from("graph_events").insert({
+          user_id: sellerId ?? ev.user_id,
+          event_type: "transaction_completed",
+          event_version: 1,
+          aggregate_type: "transaction",
+          aggregate_id: txId,
+          source_module: "revenue",
+          idempotency_key: idem,
+          payload: { transaction_id: txId, buyer_id: buyerId, seller_id: sellerId, amount, counterparty: buyerId },
+          weight: 1,
+          occurred_at: ev.occurred_at,
+        });
+        if (sellerId) affectedUsers.add(sellerId);
+        if (buyerId) affectedUsers.add(buyerId);
+      }
       failed++;
       const msg = String((e as Error).message ?? e);
       const nextAttempt = (((ev as unknown) as { attempt_count?: number }).attempt_count ?? 0) + 1;
