@@ -19,6 +19,7 @@ import { ScalingJourneyProgress } from "@/components/profile/ScalingJourneyProgr
 import { LearningJourneyDashboard } from "@/components/learning/LearningJourneyDashboard";
 import { SkillTagPicker } from "@/components/profile/SkillTagPicker";
 import { useExpertise } from "@/hooks/useExpertise";
+import { useTrust, trustLevelStyle } from "@/hooks/useTrust";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   AlertDialog,
@@ -80,6 +81,8 @@ const Profile = () => {
   const { onboardingState, naturalRole, needsOnboarding, refetch } = useOnboarding();
   // Expertise sourced exclusively from the expertise_graph projection.
   const { expertise } = useExpertise(user?.id);
+  // Trust sourced exclusively from the trust_graph projection.
+  const { trust } = useTrust(user?.id);
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
