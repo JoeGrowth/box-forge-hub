@@ -157,6 +157,12 @@ export function useAdmin() {
       }
     });
 
+    // Progression score lookup
+    const progressionScoreByUser: Record<string, number> = {};
+    progressionGraphs.forEach((pg: any) => {
+      progressionScoreByUser[pg.user_id] = pg.progression_score || 0;
+    });
+
     // Combine the data
     const usersWithDetails: UserWithDetails[] = profiles.map((profile: any) => {
       const onboarding = onboardingStates.find((o: any) => o.user_id === profile.user_id);
@@ -191,6 +197,7 @@ export function useAdmin() {
         hasConsultantScaling: hasConsultantScalingByUser[profile.user_id] || false,
         consultantAccess: (onboarding as any)?.consultant_access || false,
         procuringAccess: (onboarding as any)?.procuring_access || false,
+        progressionScore: progressionScoreByUser[profile.user_id] || 0,
       };
     });
 
