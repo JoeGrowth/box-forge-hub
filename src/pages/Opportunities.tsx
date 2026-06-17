@@ -489,10 +489,7 @@ const Opportunities = () => {
                   {CATEGORIES.map((cat) => (
                     <button
                       key={cat.key}
-                      onClick={() => {
-                        setParam("tab", cat.key);
-                        setParam("sector", null);
-                      }}
+                      onClick={() => setParams({ tab: cat.key, sector: null })}
                       className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                         categoryFilter === cat.key
                           ? "bg-foreground text-background"
