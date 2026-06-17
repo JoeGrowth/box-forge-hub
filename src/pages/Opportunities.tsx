@@ -386,7 +386,12 @@ const Opportunities = () => {
               ) : (
                 <div className="space-y-3">
                   {filtered.map((opp) => (
-                    <OpportunityCard key={opp.id} opportunity={opp} matchScore={opp.match_score} />
+                    <OpportunityCard
+                      key={opp.id}
+                      opportunity={opp}
+                      matchScore={opp.match_score}
+                      recommendation={opp.recommendation}
+                    />
                   ))}
                 </div>
               )}
