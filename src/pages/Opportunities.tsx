@@ -85,10 +85,23 @@ const Opportunities = () => {
   const sectorFilter = searchParams.get("sector") || "";
 
   const setParam = (key: string, value: string | null) => {
-    const next = new URLSearchParams(searchParams);
-    if (value == null || value === "") next.delete(key);
-    else next.set(key, value);
-    setSearchParams(next, { replace: true });
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (value == null || value === "") next.delete(key);
+      else next.set(key, value);
+      return next;
+    }, { replace: true });
+  };
+
+  const setParams = (updates: Record<string, string | null>) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      for (const [k, v] of Object.entries(updates)) {
+        if (v == null || v === "") next.delete(k);
+        else next.set(k, v);
+      }
+      return next;
+    }, { replace: true });
   };
 
   // Apply persona default tab once on initial load if no ?tab param.
@@ -476,10 +489,7 @@ const Opportunities = () => {
                   {CATEGORIES.map((cat) => (
                     <button
                       key={cat.key}
-                      onClick={() => {
-                        setParam("tab", cat.key);
-                        setParam("sector", null);
-                      }}
+                      onClick={() => setParams({ tab: cat.key, sector: null })}
                       className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                         categoryFilter === cat.key
                           ? "bg-foreground text-background"
@@ -609,11 +619,7 @@ const Opportunities = () => {
                       : "No opportunities match your current filters."}
                   </p>
                   <button
-                    onClick={() => {
-                      setParam("q", null);
-                      setParam("sector", null);
-                      setParam("view", null);
-                    }}
+                    onClick={() => setParams({ q: null, sector: null, view: null })}
                     className="text-sm text-primary hover:underline"
                   >
                     Clear filters
