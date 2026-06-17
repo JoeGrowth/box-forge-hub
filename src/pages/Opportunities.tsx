@@ -619,11 +619,7 @@ const Opportunities = () => {
                       : "No opportunities match your current filters."}
                   </p>
                   <button
-                    onClick={() => {
-                      setParam("q", null);
-                      setParam("sector", null);
-                      setParam("view", null);
-                    }}
+                    onClick={() => setParams({ q: null, sector: null, view: null })}
                     className="text-sm text-primary hover:underline"
                   >
                     Clear filters
