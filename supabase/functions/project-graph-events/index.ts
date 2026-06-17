@@ -166,6 +166,8 @@ Deno.serve(async (req) => {
   }
 
   const affectedUsers = new Set<string>();
+  const coldStartUsers = new Set<string>();
+  const applicationCompletedTx: Array<{ user_id: string; application_id: string; opportunity_type: string }> = [];
   let processed = 0;
   let failed = 0;
 
