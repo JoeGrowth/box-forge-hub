@@ -55,7 +55,7 @@ export function useRevenue(userId?: string | null) {
         .eq("user_id", userId)
         .maybeSingle();
       if (alive) {
-        setData((row as RevenueProjection | null) ?? null);
+        setData((row as unknown as RevenueProjection | null) ?? null);
         setLoading(false);
       }
     })();
