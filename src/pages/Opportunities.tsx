@@ -41,6 +41,7 @@ const Opportunities = () => {
   const [rawTrainings, setRawTrainings] = useState<any[]>([]);
   const [rawTenders, setRawTenders] = useState<any[]>([]);
   const [rawJobs, setRawJobs] = useState<any[]>([]);
+  const [rawConsulting, setRawConsulting] = useState<any[]>([]);
   // Expertise tags (skill/certification labels) come exclusively from the
   // expertise_graph projection. Match score is derived from these tags.
   const { expertise } = useExpertise(user?.id);
@@ -69,7 +70,7 @@ const Opportunities = () => {
     }
 
     const fetchAll = async () => {
-    const [startupsRes, trainingsRes, tendersRes, jobsRes, myProfileRes] = await Promise.all([
+    const [startupsRes, trainingsRes, tendersRes, jobsRes, consultingRes, myProfileRes] = await Promise.all([
         supabase
           .from("startup_ideas")
           .select("*")
@@ -92,6 +93,10 @@ const Opportunities = () => {
           .select("*")
           .eq("status", "published")
           .order("created_at", { ascending: false }),
+        (supabase.from("consulting_services" as any) as any)
+          .select("*")
+          .eq("is_active", true)
+          .order("created_at", { ascending: false }),
         supabase
           .from("profiles")
           .select("preferred_sector, primary_skills, years_of_experience, key_projects, summary_statement, professional_title")
@@ -103,6 +108,7 @@ const Opportunities = () => {
       const trainingData = (trainingsRes.data as any[]) || [];
       const tenderData = (tendersRes.data as any[]) || [];
       const jobData = (jobsRes.data as any[]) || [];
+      const consultingData = (consultingRes?.data as any[]) || [];
 
       // Capacity derives from profile narrative fields + expertise tag count
       // (which already encodes both skills and certifications via the graph).
@@ -132,6 +138,7 @@ const Opportunities = () => {
         ...trainingData.map((t: any) => t.user_id),
         ...tenderData.map((t: any) => t.user_id),
         ...jobData.map((j: any) => j.user_id),
+        ...consultingData.map((c: any) => c.user_id),
       ].filter(Boolean);
 
       let profileMap = new Map<string, string>();
@@ -143,10 +150,30 @@ const Opportunities = () => {
         profileMap = new Map(profiles?.map((p) => [p.user_id, p.full_name]) || []);
       }
 
+      // Resolve consulting skill tag names
+      const skillTagIds = [
+        ...new Set(consultingData.map((c: any) => c.skill_tag_id).filter(Boolean)),
+      ] as string[];
+      let skillTagMap = new Map<string, string>();
+      if (skillTagIds.length > 0) {
+        const { data: tags } = await supabase
+          .from("skill_tags")
+          .select("id, name")
+          .in("id", skillTagIds);
+        skillTagMap = new Map((tags || []).map((t: any) => [t.id, t.name]));
+      }
+
       setRawStartups(startupData.map((s: any) => ({ ...s, _author: profileMap.get(s.creator_id) || "Unknown" })));
       setRawTrainings(trainingData.map((t: any) => ({ ...t, _author: profileMap.get(t.user_id) || "Unknown" })));
       setRawTenders(tenderData.map((t: any) => ({ ...t, _author: profileMap.get(t.user_id) || "Unknown" })));
       setRawJobs(jobData.map((j: any) => ({ ...j, _author: profileMap.get(j.user_id) || "Unknown" })));
+      setRawConsulting(
+        consultingData.map((c: any) => ({
+          ...c,
+          _author: profileMap.get(c.user_id) || "Unknown",
+          _skill_name: c.skill_tag_id ? skillTagMap.get(c.skill_tag_id) || null : null,
+        }))
+      );
 
       setLoading(false);
     };
@@ -227,7 +254,24 @@ const Opportunities = () => {
       rank: 75 + i,
     }));
 
-    const all = [...SEEDED_OPPORTUNITIES, ...startupOpps, ...trainingOpps, ...tenderOpps, ...jobOpps];
+    const consultingOpps: Opportunity[] = rawConsulting.map((c, i) => ({
+      id: c.id,
+      title: c.service_title,
+      category: "consulting" as const,
+      required_skills: [c._skill_name, c.delivery_type, c.availability].filter(Boolean).slice(0, 5),
+      income_range: c.price > 0 ? `${c.price} ${c.currency}` : "Free",
+      effort_level: c.delivery_type === "remote" ? "Remote" : c.delivery_type === "on-site" ? "On-site" : "Remote / On-site",
+      description: c.description || `Consulting service offered by ${c._author || "a co-builder"}.`,
+      primary_action: { type: "apply" as const, label: "Request Service", route: "/consulting" },
+      source_id: c.id,
+      created_at: c.created_at,
+      author_name: c._author || "Unknown",
+      author_user_id: c.user_id ?? null,
+      sector: c._skill_name || null,
+      rank: 60 + i,
+    }));
+
+    const all = [...SEEDED_OPPORTUNITIES, ...startupOpps, ...trainingOpps, ...tenderOpps, ...jobOpps, ...consultingOpps];
 
     // Phase 3: prefer opportunity_graph projection. Falls back to legacy tag
     // overlap for rows not yet in the projection (e.g. SEEDED_OPPORTUNITIES).
@@ -250,7 +294,7 @@ const Opportunities = () => {
     }
 
     return scored;
-  }, [rawStartups, rawTrainings, rawTenders, rawJobs, userSkillNames, scoreById]);
+  }, [rawStartups, rawTrainings, rawTenders, rawJobs, rawConsulting, userSkillNames, scoreById]);
 
   // Capacity-based tender filter helper
   const passesTenderCapacity = (opp: Opportunity & { match_score: number }) => {
