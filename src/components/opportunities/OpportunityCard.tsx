@@ -58,7 +58,7 @@ export function OpportunityCard({
   const trustStyle = trust && trust.level !== "unverified" ? trustLevelStyle(trust.level) : null;
   const { reputation } = useReputation(opportunity.author_user_id ?? null);
   const repStyle = reputation ? reputationLevelStyle(reputation.reputation_level) : null;
-  const { isSaved, toggle } = useSavedOpportunities();
+  const { isSaved, toggle } = useSavedOpportunities(user?.id);
   const saved = isSaved(opportunity.id);
 
   useEffect(() => {

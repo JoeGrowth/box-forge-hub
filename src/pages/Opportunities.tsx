@@ -58,7 +58,7 @@ const Opportunities = () => {
   const { user, loading: authLoading } = useAuth();
   const { onboardingState, loading: onboardingLoading } = useOnboarding();
   const persona = useOpportunityPersona();
-  const { savedIds } = useSavedOpportunities();
+  const { savedIds } = useSavedOpportunities(user?.id);
 
   const [rawStartups, setRawStartups] = useState<any[]>([]);
   const [rawTrainings, setRawTrainings] = useState<any[]>([]);
