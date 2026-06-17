@@ -14,7 +14,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, ArrowRight } from "lucide-react";
+import { Loader2, ArrowRight, ArrowLeft } from "lucide-react";
 
 // P0.6 — Compressed onboarding. Five steps, <5 min, graph seed > profile completion.
 
@@ -92,6 +92,10 @@ export default function CompressedOnboarding() {
     if (!t || tags.includes(t) || tags.length >= 3) return;
     setTags([...tags, t]);
     setTagInput("");
+  }
+
+  function back() {
+    if (step > 1) setStep((s) => s - 1);
   }
 
   async function next() {
@@ -334,9 +338,16 @@ export default function CompressedOnboarding() {
           )}
 
           <div className="flex items-center justify-between pt-2">
-            <Badge variant="outline" className="text-xs">
-              Graph-first onboarding
-            </Badge>
+            <div className="flex items-center gap-2">
+              {step > 1 && (
+                <Button type="button" variant="ghost" size="sm" onClick={back} disabled={submitting}>
+                  <ArrowLeft className="h-4 w-4 mr-1" /> Back
+                </Button>
+              )}
+              <Badge variant="outline" className="text-xs">
+                Graph-first onboarding
+              </Badge>
+            </div>
             <Button onClick={next} disabled={submitting}>
               {submitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
