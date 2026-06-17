@@ -3141,6 +3141,12 @@ export type Database = {
         | "milestone_reached"
         | "goal_created"
         | "goal_completed"
+        | "growth_loop_triggered"
+        | "growth_loop_notified"
+        | "growth_loop_engaged"
+        | "growth_loop_converted"
+        | "growth_loop_dismissed"
+        | "recommendation_feedback_recorded"
       graph_node_type:
         | "user"
         | "skill"
@@ -3413,6 +3419,12 @@ export const Constants = {
         "milestone_reached",
         "goal_created",
         "goal_completed",
+        "growth_loop_triggered",
+        "growth_loop_notified",
+        "growth_loop_engaged",
+        "growth_loop_converted",
+        "growth_loop_dismissed",
+        "recommendation_feedback_recorded",
       ],
       graph_node_type: [
         "user",
