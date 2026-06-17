@@ -580,27 +580,6 @@ const Opportunities = () => {
             </div>
           </section>
 
-          {/* Venture Creator sticky CTA row */}
-          {isVentureCreator && view === "feed" && (
-            <section className="pb-4">
-              <div className="container mx-auto px-4">
-                <div className="flex flex-wrap gap-2">
-                  <Button size="sm" variant="default" onClick={() => navigate("/create-idea")}>
-                    <Plus className="w-3.5 h-3.5 mr-1" /> Post a startup role
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => navigate("/publish-job")}>
-                    <Plus className="w-3.5 h-3.5 mr-1" /> Post a job
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => navigate("/publish-training")}>
-                    <Plus className="w-3.5 h-3.5 mr-1" /> Post a training
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => navigate("/publish-consulting")}>
-                    <Plus className="w-3.5 h-3.5 mr-1" /> Post a consulting service
-                  </Button>
-                </div>
-              </div>
-            </section>
-          )}
 
           {/* Capacity banner for tenders */}
           {view === "feed" && categoryFilter === "tender" && !userCapacity.hasTrackRecord && (
