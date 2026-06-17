@@ -253,6 +253,7 @@ Deno.serve(async (req) => {
     await supabase.rpc("recompute_expertise", { _user_id: uid });
     await supabase.rpc("recompute_trust",     { _user_id: uid });
     await supabase.rpc("recompute_opportunity_matches", { _user_id: uid });
+    await supabase.rpc("recompute_revenue",   { _user_id: uid });
   }
 
   return new Response(
