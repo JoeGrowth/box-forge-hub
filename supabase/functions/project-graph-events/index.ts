@@ -127,6 +127,21 @@ const EVENT_RULES: Record<EventType, {
   equity_transferred:              { toNodeType: "equity_allocation", edgeType: "USER_OWNS_EQUITY", labelFrom: p => (p.allocation_id as string) ?? null, attrsFrom: p => ({ status: "transferred", to_user_id: p.to_user_id, percentage: p.percentage }) },
   equity_revoked:                  { toNodeType: "equity_allocation", edgeType: "USER_OWNS_EQUITY", labelFrom: p => (p.allocation_id as string) ?? null, attrsFrom: p => ({ status: "revoked", percentage: p.percentage }) },
   ownership_exit_requested:        { toNodeType: "equity_allocation", edgeType: "USER_OWNS_EQUITY", labelFrom: p => (p.allocation_id as string) ?? null, attrsFrom: () => ({ status: "exit_requested" }) },
+  // ---------- Application lifecycle (P0.1) — no graph edge, handled below ----------
+  application_submitted:    null,
+  application_reviewing:    null,
+  application_shortlisted:  null,
+  application_accepted:     null,
+  application_rejected:     null,
+  application_withdrawn:    null,
+  application_completed:    null,
+  // ---------- Cold start + notifications (P0.2/P0.3) — no graph edge ----------
+  cold_start_seeded:        null,
+  cold_start_confirmed:     null,
+  notification_dispatched:  null,
+  notification_delivered:   null,
+  notification_failed:      null,
+  recommendation_available: null,
 };
 
 Deno.serve(async (req) => {
