@@ -43,7 +43,9 @@ type EventType =
   | "cold_start_seeded" | "cold_start_confirmed"
   // P0.3 — Notification spine
   | "notification_dispatched" | "notification_delivered" | "notification_failed"
-  | "recommendation_available";
+  | "recommendation_available"
+  // Phase B — Experience layer validation (convergent graph)
+  | "practice_verified" | "training_verified" | "consulting_verified";
 
 interface GraphEvent {
   id: string;
@@ -142,6 +144,11 @@ const EVENT_RULES: Record<EventType, {
   notification_delivered:   null,
   notification_failed:      null,
   recommendation_available: null,
+  // Phase B — Experience validation events are handled inline (apply_experience_validation RPC),
+  // not via the generic edge-rule path. Listed here to satisfy the type.
+  practice_verified:   null,
+  training_verified:   null,
+  consulting_verified: null,
 };
 
 Deno.serve(async (req) => {
@@ -203,6 +210,29 @@ Deno.serve(async (req) => {
               .eq("edge_type", "HAS_SKILL");
           }
         }
+      } else if (
+        ev.event_type === "practice_verified" ||
+        ev.event_type === "training_verified" ||
+        ev.event_type === "consulting_verified"
+      ) {
+        // Phase B — Experience validation. Bumps existing skill edge confidence,
+        // creates a typed USER_*_EXPERIENCE edge, NEVER creates new skill nodes
+        // (DB function asserts this invariant and raises if violated).
+        const edgeType =
+          ev.event_type === "practice_verified"   ? "USER_PRACTICE_EXPERIENCE"   :
+          ev.event_type === "training_verified"   ? "USER_TRAINING_EXPERIENCE"   :
+                                                    "USER_CONSULTING_EXPERIENCE";
+        const label =
+          (ev.payload.label as string) ??
+          (ev.payload.title as string) ??
+          edgeType;
+        const { error: expErr } = await supabase.rpc("apply_experience_validation", {
+          _user_id: ev.user_id,
+          _edge_type: edgeType,
+          _aggregate_external_id: ev.aggregate_id,
+          _aggregate_label: label,
+        });
+        if (expErr) throw expErr;
       } else if (rule) {
         const externalId = (ev.aggregate_id || ev.payload.external_id || rule.labelFrom(ev.payload)) as string;
         if (!externalId) throw new Error("missing external_id for to-node");
@@ -377,20 +407,46 @@ Deno.serve(async (req) => {
   // Phase 1: Expertise. Phase 2: Trust. Phase 3: Opportunity matches.
   // Future projections plug in here with no change to the event spine.
   for (const uid of affectedUsers) {
+    // Phase 1: Expertise (Base graph projection)
     await supabase.rpc("recompute_expertise", { _user_id: uid });
+
+    // Phase B — Convergent hierarchy. Strict execution order:
+    //   1. experience validation already applied per-event above (edges)
+    //   2. confidence recomputation (monotonic, DB-enforced)
+    //   3. NRD inference projection (from validated edges only)
+    //   4. entrepreneurial unlock RPC (single source of truth) is invoked
+    //      inside recompute_expertise_confidence and persisted to
+    //      expertise_graph.score_breakdown.entrepreneurial_unlocked.
+    const { data: prevExp } = await supabase
+      .from("expertise_graph").select("confidence, score_breakdown").eq("user_id", uid).maybeSingle();
+    const prevConfidence = Number(prevExp?.confidence ?? 0);
+
+    await supabase.rpc("recompute_expertise_confidence", { _user_id: uid });
+    await supabase.rpc("recompute_role_affinity",        { _user_id: uid });
+
+    // Assertions — invariants required by Phase B.
+    const { data: nextExp } = await supabase
+      .from("expertise_graph").select("confidence, score_breakdown").eq("user_id", uid).maybeSingle();
+    const nextConfidence = Number(nextExp?.confidence ?? 0);
+    if (nextConfidence < prevConfidence - 1e-9) {
+      console.error("[phase-b] INVARIANT: confidence decreased", { uid, prevConfidence, nextConfidence });
+    }
+    const { data: unlockRpc } = await supabase.rpc("can_access_entrepreneurial_layer", { _user_id: uid });
+    const breakdown = (nextExp?.score_breakdown ?? {}) as Record<string, unknown>;
+    if (Boolean(breakdown.entrepreneurial_unlocked) !== Boolean(unlockRpc)) {
+      console.error("[phase-b] INVARIANT: unlock state != RPC output", {
+        uid, persisted: breakdown.entrepreneurial_unlocked, rpc: unlockRpc,
+      });
+    }
+
+    // Downstream projections (unchanged ordering).
     await supabase.rpc("recompute_trust",     { _user_id: uid });
     await supabase.rpc("recompute_opportunity_matches", { _user_id: uid });
     await supabase.rpc("recompute_revenue",   { _user_id: uid });
-    // Phase 6: ownership before reputation so vested equity flows in as evidence.
     await supabase.rpc("recompute_ownership", { _user_id: uid });
-    // Phase 5: synthesis layer consumes the above projections.
     await supabase.rpc("recompute_reputation",{ _user_id: uid });
-    // Phase 7: progression engine consumes all six projections.
     await supabase.rpc("recompute_progression",{ _user_id: uid });
-    // Phase 8 hardening: intent graph before dispatcher so suppressed loops
-    // are honoured and recent intent signals shape the next cycle.
     await supabase.rpc("recompute_intent", { _user_id: uid });
-    // Phase 8: autonomous growth loops dispatch over progression + intent.
     await supabase.rpc("dispatch_growth_loops", { _user_id: uid });
   }
 

@@ -3589,6 +3589,15 @@ export type Database = {
       }
     }
     Functions: {
+      apply_experience_validation: {
+        Args: {
+          _aggregate_external_id: string
+          _aggregate_label: string
+          _edge_type: Database["public"]["Enums"]["graph_edge_type"]
+          _user_id: string
+        }
+        Returns: undefined
+      }
       audit_graph_integrity: {
         Args: never
         Returns: {
@@ -3717,6 +3726,10 @@ export type Database = {
         }[]
       }
       recompute_expertise: { Args: { _user_id: string }; Returns: undefined }
+      recompute_expertise_confidence: {
+        Args: { _user_id: string }
+        Returns: number
+      }
       recompute_intent: { Args: { _user_id: string }; Returns: undefined }
       recompute_opportunity_matches: {
         Args: { _user_id: string }
@@ -3726,6 +3739,7 @@ export type Database = {
       recompute_progression: { Args: { _user_id: string }; Returns: undefined }
       recompute_reputation: { Args: { _user_id: string }; Returns: undefined }
       recompute_revenue: { Args: { _user_id: string }; Returns: undefined }
+      recompute_role_affinity: { Args: { _user_id: string }; Returns: number }
       recompute_trust: { Args: { _user_id: string }; Returns: undefined }
       record_recommendation_outcome: {
         Args: {
@@ -3896,6 +3910,9 @@ export type Database = {
         | "first_recommendation_clicked"
         | "cold_start_updated"
         | "route_not_found"
+        | "practice_verified"
+        | "training_verified"
+        | "consulting_verified"
       graph_node_type:
         | "user"
         | "skill"
@@ -4226,6 +4243,9 @@ export const Constants = {
         "first_recommendation_clicked",
         "cold_start_updated",
         "route_not_found",
+        "practice_verified",
+        "training_verified",
+        "consulting_verified",
       ],
       graph_node_type: [
         "user",
