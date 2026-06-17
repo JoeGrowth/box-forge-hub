@@ -1,6 +1,7 @@
 // Phase 7 — Professional Growth Path card.
-// Renders the user's current stage and the next-best-action set sourced
-// exclusively from the progression_graph projection via useNextBestActions().
+// P0.4 — Uses the shared RecommendationExplanationView so the reasons,
+// missing signals and target stage are formatted identically across the
+// Dashboard, Profile and OpportunityCard surfaces.
 
 import { ArrowRight, Sparkles, Target, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -11,6 +12,10 @@ import {
   progressionStageLabel,
   type NextBestAction,
 } from "@/hooks/useNextBestActions";
+import {
+  RecommendationExplanationView,
+  fromNextBestAction,
+} from "@/components/shared/RecommendationExplanation";
 
 const stageOrder = ["novice", "emerging", "capable", "monetizing", "building", "founder"];
 
@@ -19,23 +24,6 @@ function actionLabel(a: NextBestAction) {
 }
 function actionLink(a: NextBestAction) {
   return (a.payload?.link as string) || "/opportunities";
-}
-
-function missingSignals(a: NextBestAction): string[] {
-  const cond = a.required_signals as Record<string, unknown>;
-  const reason = a.reason as Record<string, unknown>;
-  const items: string[] = [];
-  const v = (k: string) => cond[k] as number;
-  if (cond.verified_expertise_min && (reason.verified_expertise as number) < v("verified_expertise_min")) {
-    items.push(`Verify ${v("verified_expertise_min") - (reason.verified_expertise as number)} more credential(s)`);
-  }
-  if (cond.trust_score_min && (reason.trust_score as number) < v("trust_score_min")) {
-    items.push(`Reach trust score ${v("trust_score_min")}`);
-  }
-  if (cond.completed_transactions_min && (reason.completed_transactions as number) < v("completed_transactions_min")) {
-    items.push(`Complete ${v("completed_transactions_min")} transaction(s)`);
-  }
-  return items;
 }
 
 export function ProgressionPathCard({ userId }: { userId: string | undefined | null }) {
@@ -61,7 +49,6 @@ export function ProgressionPathCard({ userId }: { userId: string | undefined | n
         Derived from your six graphs — Expertise, Trust, Opportunity, Revenue, Reputation, Ownership.
       </p>
 
-      {/* Stage timeline */}
       <div className="flex items-center gap-1 mb-6 overflow-x-auto">
         {stageOrder.map((s, i) => {
           const reached = i <= stageIndex;
@@ -87,7 +74,6 @@ export function ProgressionPathCard({ userId }: { userId: string | undefined | n
         })}
       </div>
 
-      {/* Unlocked actions */}
       <div className="space-y-3">
         <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
           Unlocked opportunities
@@ -99,26 +85,18 @@ export function ProgressionPathCard({ userId }: { userId: string | undefined | n
           </div>
         )}
         {unlocked.map((a) => {
-          const missing = missingSignals(a);
+          const explanation = fromNextBestAction(a);
           return (
             <div
               key={a.rule}
-              className="flex items-center gap-4 bg-card border border-border rounded-xl p-4"
+              className="flex items-start gap-4 bg-card border border-border rounded-xl p-4"
             >
-              <Sparkles className="w-5 h-5 text-b4-teal shrink-0" />
-              <div className="flex-1 min-w-0">
+              <Sparkles className="w-5 h-5 text-b4-teal shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0 space-y-2">
                 <div className="text-sm font-semibold text-foreground capitalize">
                   {actionLabel(a)}
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  Targets <span className="capitalize">{a.target_graph}</span> graph · advances to{" "}
-                  <span className="capitalize">{a.target_stage}</span>
-                </div>
-                {missing.length > 0 && (
-                  <div className="text-[11px] text-b4-coral mt-1">
-                    Missing: {missing.join(" · ")}
-                  </div>
-                )}
+                <RecommendationExplanationView data={explanation} />
               </div>
               <div className="flex flex-col gap-1 shrink-0">
                 <Button asChild size="sm" variant="outline" className="h-7 text-xs">
