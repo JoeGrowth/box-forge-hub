@@ -203,13 +203,13 @@ Deno.serve(async (req) => {
     }
   }
 
-  // recompute expertise projection for every affected user
-  // Recompute every projection that may depend on the affected user.
-  // Currently: Expertise Graph (Phase 1) and Trust Graph (Phase 2).
+  // recompute every projection that may depend on the affected user.
+  // Phase 1: Expertise. Phase 2: Trust. Phase 3: Opportunity matches.
   // Future projections plug in here with no change to the event spine.
   for (const uid of affectedUsers) {
     await supabase.rpc("recompute_expertise", { _user_id: uid });
     await supabase.rpc("recompute_trust",     { _user_id: uid });
+    await supabase.rpc("recompute_opportunity_matches", { _user_id: uid });
   }
 
   return new Response(
