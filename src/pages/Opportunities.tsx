@@ -17,12 +17,11 @@ import {
 import { USE_OPPORTUNITY_GRAPH } from "@/lib/featureFlags";
 
 const CATEGORIES = [
-  { key: "all", label: "All" },
   { key: "job", label: "Jobs" },
-  { key: "consulting", label: "Consulting" },
-  { key: "startup", label: "Startups" },
   { key: "training", label: "Training" },
+  { key: "consulting", label: "Consulting" },
   { key: "tender", label: "Tenders" },
+  { key: "startup", label: "Startups" },
 ] as const;
 
 function computeMatchScore(userSkillNames: string[], oppSkills: string[]): number {
@@ -57,7 +56,7 @@ const Opportunities = () => {
   });
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>(searchParams.get("tab") || "all");
+  const [categoryFilter, setCategoryFilter] = useState<string>(searchParams.get("tab") || "job");
 
 
   const isApproved =
@@ -320,7 +319,7 @@ const Opportunities = () => {
   const filtered = useMemo(() => {
     return allOpportunities.filter((opp) => {
       if (!passesTenderCapacity(opp)) return false;
-      if (categoryFilter !== "all" && opp.category !== categoryFilter) return false;
+      if (opp.category !== categoryFilter) return false;
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         return opp.title.toLowerCase().includes(q) || opp.description.toLowerCase().includes(q);
