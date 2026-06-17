@@ -275,6 +275,8 @@ Deno.serve(async (req) => {
     await supabase.rpc("recompute_reputation",{ _user_id: uid });
     // Phase 7: progression engine consumes all six projections.
     await supabase.rpc("recompute_progression",{ _user_id: uid });
+    // Phase 8: autonomous growth loops dispatch over progression state.
+    await supabase.rpc("dispatch_growth_loops", { _user_id: uid });
   }
 
   return new Response(

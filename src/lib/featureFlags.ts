@@ -28,3 +28,10 @@ export const USE_OWNERSHIP_GRAPH = true;
 // and the Profile growth path consume progression_graph instead of any
 // component-local heuristic.
 export const USE_PROGRESSION_ENGINE = true;
+
+// Phase 8 — Autonomous Growth Loops. Execution layer over the Progression
+// Engine: rule-driven dispatch turns recommendations into notifications,
+// scheduled engagement, and conversion-tracked runs. When true, the worker
+// dispatches loops after every projection cycle and the UI surfaces the
+// triggered runs + feedback controls.
+export const USE_GROWTH_LOOPS = true;

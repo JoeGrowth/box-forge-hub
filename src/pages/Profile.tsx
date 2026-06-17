@@ -20,6 +20,7 @@ import { LearningJourneyDashboard } from "@/components/learning/LearningJourneyD
 import { SkillTagPicker } from "@/components/profile/SkillTagPicker";
 import { NextStepsCard } from "@/components/profile/NextStepsCard";
 import { ProgressionPathCard } from "@/components/profile/ProgressionPathCard";
+import { GrowthLoopsCard } from "@/components/profile/GrowthLoopsCard";
 import { useExpertise } from "@/hooks/useExpertise";
 import { useTrust, trustLevelStyle } from "@/hooks/useTrust";
 import { useRevenue } from "@/hooks/useRevenue";
@@ -1122,6 +1123,10 @@ const Profile = () => {
 
             {/* Phase 7 — Progression Engine: current state + unlocked actions */}
             <ProgressionPathCard userId={user?.id} />
+
+            {/* Phase 8 — Autonomous Growth Loops: dispatched runs + feedback */}
+            <GrowthLoopsCard />
+
 
             {/* Phase 3 — Opportunity Graph: where to go next */}
             <NextStepsCard userId={user?.id} />
