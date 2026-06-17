@@ -1559,6 +1559,48 @@ export type Database = {
         }
         Relationships: []
       }
+      lifecycle_integrity_findings: {
+        Row: {
+          category: string | null
+          check_name: string
+          created_at: string
+          details: Json
+          id: string
+          lifecycle_id: string | null
+          message: string
+          opportunity_id: string | null
+          run_id: string
+          severity: string
+          user_id: string | null
+        }
+        Insert: {
+          category?: string | null
+          check_name: string
+          created_at?: string
+          details?: Json
+          id?: string
+          lifecycle_id?: string | null
+          message: string
+          opportunity_id?: string | null
+          run_id: string
+          severity: string
+          user_id?: string | null
+        }
+        Update: {
+          category?: string | null
+          check_name?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          lifecycle_id?: string | null
+          message?: string
+          opportunity_id?: string | null
+          run_id?: string
+          severity?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       natural_roles: {
         Row: {
           consulting_case_studies: string | null
@@ -3834,6 +3876,7 @@ export type Database = {
       }
       render_template: { Args: { _ctx: Json; _tpl: string }; Returns: string }
       run_beta_simulation: { Args: never; Returns: Json }
+      run_lifecycle_integrity_checks: { Args: never; Returns: string }
       seed_cold_start_expertise: { Args: { _user_id: string }; Returns: number }
       test_growth_loop_dispatch: { Args: { _user_id: string }; Returns: Json }
     }
