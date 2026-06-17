@@ -2738,6 +2738,11 @@ export type Database = {
         | "USER_RECEIVED_VALUE"
         | "TRANSACTION_FOR_OPPORTUNITY"
         | "CONTRACT_BETWEEN_PARTIES"
+        | "USER_EARNED_ACHIEVEMENT"
+        | "USER_COMPLETED_OPPORTUNITY"
+        | "USER_CREATED_VALUE"
+        | "USER_RECEIVED_VALIDATION"
+        | "USER_IMPROVED_EXPERTISE"
       graph_event_type:
         | "skill_added"
         | "skill_removed"
@@ -2783,6 +2788,11 @@ export type Database = {
         | "delivery_started"
         | "delivery_completed"
         | "invoice_created"
+        | "expertise_score_updated"
+        | "trust_score_updated"
+        | "opportunity_completed"
+        | "review_received"
+        | "startup_milestone_completed"
       graph_node_type:
         | "user"
         | "skill"
@@ -2975,6 +2985,11 @@ export const Constants = {
         "USER_RECEIVED_VALUE",
         "TRANSACTION_FOR_OPPORTUNITY",
         "CONTRACT_BETWEEN_PARTIES",
+        "USER_EARNED_ACHIEVEMENT",
+        "USER_COMPLETED_OPPORTUNITY",
+        "USER_CREATED_VALUE",
+        "USER_RECEIVED_VALIDATION",
+        "USER_IMPROVED_EXPERTISE",
       ],
       graph_event_type: [
         "skill_added",
@@ -3021,6 +3036,11 @@ export const Constants = {
         "delivery_started",
         "delivery_completed",
         "invoice_created",
+        "expertise_score_updated",
+        "trust_score_updated",
+        "opportunity_completed",
+        "review_received",
+        "startup_milestone_completed",
       ],
       graph_node_type: [
         "user",
