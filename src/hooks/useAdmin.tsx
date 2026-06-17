@@ -44,6 +44,7 @@ export interface UserWithDetails {
   hasConsultantScaling: boolean;
   consultantAccess: boolean;
   procuringAccess: boolean;
+  progressionScore: number;
 }
 
 export function useAdmin() {
