@@ -119,10 +119,22 @@ export function useOrgMembers(orgId: string | undefined) {
     setLoading(true);
     const { data } = await supabase
       .from("organization_members")
-      .select("id, user_id, role, created_at, profile:profiles(id, full_name, avatar_url)")
+      .select("id, user_id, role, created_at")
       .eq("organization_id", orgId)
       .order("role", { ascending: true });
-    setMembers(((data as any) ?? []) as OrgMember[]);
+    const rows = ((data as any[]) ?? []) as OrgMember[];
+    // Hydrate profiles separately (profiles.user_id is the FK key)
+    const ids = rows.map((r) => r.user_id);
+    if (ids.length) {
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, user_id, full_name, avatar_url")
+        .in("user_id", ids);
+      const byId = new Map<string, any>();
+      (profs ?? []).forEach((p: any) => byId.set(p.user_id, p));
+      rows.forEach((r) => { r.profile = byId.get(r.user_id) ?? null; });
+    }
+    setMembers(rows);
     setLoading(false);
   }, [orgId]);
 
