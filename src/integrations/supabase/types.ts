@@ -3062,6 +3062,12 @@ export type Database = {
         | "equity_transferred"
         | "equity_revoked"
         | "ownership_exit_requested"
+        | "stage_transition_evaluated"
+        | "recommendation_generated"
+        | "action_completed"
+        | "milestone_reached"
+        | "goal_created"
+        | "goal_completed"
       graph_node_type:
         | "user"
         | "skill"
@@ -3328,6 +3334,12 @@ export const Constants = {
         "equity_transferred",
         "equity_revoked",
         "ownership_exit_requested",
+        "stage_transition_evaluated",
+        "recommendation_generated",
+        "action_completed",
+        "milestone_reached",
+        "goal_created",
+        "goal_completed",
       ],
       graph_node_type: [
         "user",
