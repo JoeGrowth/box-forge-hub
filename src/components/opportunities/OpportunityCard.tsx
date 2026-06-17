@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRight, Check, Loader2 } from "lucide-react";
+import { ArrowRight, Check, Loader2, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useTrust, trustLevelStyle } from "@/hooks/useTrust";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -26,6 +27,8 @@ export interface Opportunity {
   source_id: string;
   created_at: string;
   author_name: string;
+  /** Author user_id — used to surface a Trust indicator on the card. Optional. */
+  author_user_id?: string | null;
   sector: string | null;
   rank: number;
 }
