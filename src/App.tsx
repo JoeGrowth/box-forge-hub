@@ -28,6 +28,8 @@ import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import AdminOpportunityDetail from "./pages/AdminOpportunityDetail";
 import BetaConsole from "./pages/BetaConsole";
+import CompressedOnboarding from "./pages/CompressedOnboarding";
+import ProfessionalMap from "./pages/ProfessionalMap";
 import Opportunities from "./pages/Opportunities";
 import OpportunityDetail from "./pages/OpportunityDetail";
 import CoBuilders from "./pages/CoBuilders";
@@ -105,6 +107,8 @@ const App = () => (
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/admin/opportunity/:id" element={<AdminOpportunityDetail />} />
                   <Route path="/admin/beta" element={<BetaConsole />} />
+                  <Route path="/onboarding" element={<CompressedOnboarding />} />
+                  <Route path="/onboarding/map" element={<ProfessionalMap />} />
                   <Route element={<PersistentNavbarLayout />}>
                   <Route path="/opportunities" element={<Opportunities />} />
                   <Route path="/cobuilders" element={<CoBuilders />} />
