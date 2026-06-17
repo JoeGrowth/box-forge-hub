@@ -1820,6 +1820,51 @@ export type Database = {
         }
         Relationships: []
       }
+      onboarding_sessions: {
+        Row: {
+          abandoned_at: string | null
+          availability: Json | null
+          completed_at: string | null
+          completed_steps: Json
+          created_at: string
+          current_step: number
+          goal: string | null
+          id: string
+          onboarding_intent: string | null
+          started_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          abandoned_at?: string | null
+          availability?: Json | null
+          completed_at?: string | null
+          completed_steps?: Json
+          created_at?: string
+          current_step?: number
+          goal?: string | null
+          id?: string
+          onboarding_intent?: string | null
+          started_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          abandoned_at?: string | null
+          availability?: Json | null
+          completed_at?: string | null
+          completed_steps?: Json
+          created_at?: string
+          current_step?: number
+          goal?: string | null
+          id?: string
+          onboarding_intent?: string | null
+          started_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       onboarding_state: {
         Row: {
           boost_type: string | null
@@ -3484,6 +3529,7 @@ export type Database = {
           source: string
         }[]
       }
+      compute_user_state: { Args: { _user_id: string }; Returns: Json }
       current_user_email: { Args: never; Returns: string }
       declaration_entity_access: {
         Args: { _entity_id: string; _user_id: string }
@@ -3730,6 +3776,12 @@ export type Database = {
         | "notification_delivered"
         | "notification_failed"
         | "recommendation_available"
+        | "onboarding_started"
+        | "onboarding_step_completed"
+        | "onboarding_completed"
+        | "first_recommendations_viewed"
+        | "first_recommendation_clicked"
+        | "cold_start_updated"
       graph_node_type:
         | "user"
         | "skill"
@@ -4048,6 +4100,12 @@ export const Constants = {
         "notification_delivered",
         "notification_failed",
         "recommendation_available",
+        "onboarding_started",
+        "onboarding_step_completed",
+        "onboarding_completed",
+        "first_recommendations_viewed",
+        "first_recommendation_clicked",
+        "cold_start_updated",
       ],
       graph_node_type: [
         "user",
