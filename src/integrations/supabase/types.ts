@@ -1724,6 +1724,90 @@ export type Database = {
         }
         Relationships: []
       }
+      reputation_graph: {
+        Row: {
+          achievement_count: number
+          community_score: number
+          computed_at: string
+          expertise_score: number
+          impact_score: number
+          reliability_score: number
+          reputation_breakdown: Json
+          reputation_level: string
+          reputation_score: number
+          revenue_score: number
+          source_event_version: number
+          trust_score: number
+          user_id: string
+        }
+        Insert: {
+          achievement_count?: number
+          community_score?: number
+          computed_at?: string
+          expertise_score?: number
+          impact_score?: number
+          reliability_score?: number
+          reputation_breakdown?: Json
+          reputation_level?: string
+          reputation_score?: number
+          revenue_score?: number
+          source_event_version?: number
+          trust_score?: number
+          user_id: string
+        }
+        Update: {
+          achievement_count?: number
+          community_score?: number
+          computed_at?: string
+          expertise_score?: number
+          impact_score?: number
+          reliability_score?: number
+          reputation_breakdown?: Json
+          reputation_level?: string
+          reputation_score?: number
+          revenue_score?: number
+          source_event_version?: number
+          trust_score?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reputation_weights: {
+        Row: {
+          community_weight: number
+          created_at: string
+          expertise_weight: number
+          id: string
+          impact_weight: number
+          is_active: boolean
+          notes: string | null
+          trust_weight: number
+          updated_at: string
+        }
+        Insert: {
+          community_weight?: number
+          created_at?: string
+          expertise_weight?: number
+          id?: string
+          impact_weight?: number
+          is_active?: boolean
+          notes?: string | null
+          trust_weight?: number
+          updated_at?: string
+        }
+        Update: {
+          community_weight?: number
+          created_at?: string
+          expertise_weight?: number
+          id?: string
+          impact_weight?: number
+          is_active?: boolean
+          notes?: string | null
+          trust_weight?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       revenue_graph: {
         Row: {
           buyer_count: number
@@ -2704,6 +2788,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: number
       }
+      recompute_reputation: { Args: { _user_id: string }; Returns: undefined }
       recompute_revenue: { Args: { _user_id: string }; Returns: undefined }
       recompute_trust: { Args: { _user_id: string }; Returns: undefined }
     }
