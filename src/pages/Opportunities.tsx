@@ -294,7 +294,7 @@ const Opportunities = () => {
     }
 
     return scored;
-  }, [rawStartups, rawTrainings, rawTenders, rawJobs, userSkillNames, scoreById]);
+  }, [rawStartups, rawTrainings, rawTenders, rawJobs, rawConsulting, userSkillNames, scoreById]);
 
   // Capacity-based tender filter helper
   const passesTenderCapacity = (opp: Opportunity & { match_score: number }) => {
