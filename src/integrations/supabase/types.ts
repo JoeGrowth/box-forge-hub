@@ -3531,8 +3531,9 @@ export type Database = {
         Row: {
           derived_state: string | null
           full_name: string | null
-          gap: number | null
           missing: Json | null
+          next_state: string | null
+          qualifying_states: Json | null
           reasons: Json | null
           runner_up: string | null
           scores: Json | null
