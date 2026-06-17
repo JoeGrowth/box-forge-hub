@@ -273,6 +273,8 @@ Deno.serve(async (req) => {
     await supabase.rpc("recompute_ownership", { _user_id: uid });
     // Phase 5: synthesis layer consumes the above projections.
     await supabase.rpc("recompute_reputation",{ _user_id: uid });
+    // Phase 7: progression engine consumes all six projections.
+    await supabase.rpc("recompute_progression",{ _user_id: uid });
   }
 
   return new Response(
