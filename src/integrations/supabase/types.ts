@@ -936,6 +936,7 @@ export type Database = {
       expertise_graph: {
         Row: {
           computed_at: string
+          confidence: number
           created_at: string
           expertise_level: string
           expertise_score: number
@@ -949,6 +950,7 @@ export type Database = {
         }
         Insert: {
           computed_at?: string
+          confidence?: number
           created_at?: string
           expertise_level?: string
           expertise_score?: number
@@ -962,6 +964,7 @@ export type Database = {
         }
         Update: {
           computed_at?: string
+          confidence?: number
           created_at?: string
           expertise_level?: string
           expertise_score?: number
@@ -1022,6 +1025,7 @@ export type Database = {
       graph_edges: {
         Row: {
           attributes: Json
+          confidence: number
           created_at: string
           edge_type: Database["public"]["Enums"]["graph_edge_type"]
           from_node_id: string
@@ -1029,10 +1033,12 @@ export type Database = {
           occurred_at: string
           source_event_id: string | null
           to_node_id: string
+          validated: boolean
           weight: number
         }
         Insert: {
           attributes?: Json
+          confidence?: number
           created_at?: string
           edge_type: Database["public"]["Enums"]["graph_edge_type"]
           from_node_id: string
@@ -1040,10 +1046,12 @@ export type Database = {
           occurred_at?: string
           source_event_id?: string | null
           to_node_id: string
+          validated?: boolean
           weight?: number
         }
         Update: {
           attributes?: Json
+          confidence?: number
           created_at?: string
           edge_type?: Database["public"]["Enums"]["graph_edge_type"]
           from_node_id?: string
@@ -1051,6 +1059,7 @@ export type Database = {
           occurred_at?: string
           source_event_id?: string | null
           to_node_id?: string
+          validated?: boolean
           weight?: number
         }
         Relationships: [
@@ -1559,6 +1568,7 @@ export type Database = {
           description: string | null
           id: string
           is_ready: boolean | null
+          is_self_declared: boolean
           practice_case_studies: number | null
           practice_check: boolean | null
           practice_entities: string | null
@@ -1573,6 +1583,7 @@ export type Database = {
           updated_at: string | null
           user_id: string
           wants_to_scale: boolean | null
+          weak_prior_weight: number
         }
         Insert: {
           consulting_case_studies?: string | null
@@ -1582,6 +1593,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_ready?: boolean | null
+          is_self_declared?: boolean
           practice_case_studies?: number | null
           practice_check?: boolean | null
           practice_entities?: string | null
@@ -1596,6 +1608,7 @@ export type Database = {
           updated_at?: string | null
           user_id: string
           wants_to_scale?: boolean | null
+          weak_prior_weight?: number
         }
         Update: {
           consulting_case_studies?: string | null
@@ -1605,6 +1618,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_ready?: boolean | null
+          is_self_declared?: boolean
           practice_case_studies?: number | null
           practice_check?: boolean | null
           practice_entities?: string | null
@@ -1619,6 +1633,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           wants_to_scale?: boolean | null
+          weak_prior_weight?: number
         }
         Relationships: []
       }
@@ -2565,6 +2580,36 @@ export type Database = {
           total_revenue?: number
           total_spent?: number
           transaction_count?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      role_affinity_projection: {
+        Row: {
+          computed_at: string
+          evidence_edges: Json
+          id: string
+          role: Database["public"]["Enums"]["role_affinity_kind"]
+          score: number
+          source_event_version: number | null
+          user_id: string
+        }
+        Insert: {
+          computed_at?: string
+          evidence_edges?: Json
+          id?: string
+          role: Database["public"]["Enums"]["role_affinity_kind"]
+          score?: number
+          source_event_version?: number | null
+          user_id: string
+        }
+        Update: {
+          computed_at?: string
+          evidence_edges?: Json
+          id?: string
+          role?: Database["public"]["Enums"]["role_affinity_kind"]
+          score?: number
+          source_event_version?: number | null
           user_id?: string
         }
         Relationships: []
@@ -3586,6 +3631,10 @@ export type Database = {
           source: string
         }[]
       }
+      can_access_entrepreneurial_layer: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       compute_user_state: { Args: { _user_id: string }; Returns: Json }
       compute_user_state_scores: { Args: { _user_id: string }; Returns: Json }
       current_user_email: { Args: never; Returns: string }
@@ -3747,6 +3796,10 @@ export type Database = {
         | "EQUITY_ALLOCATED_FOR_CONTRIBUTION"
         | "USER_HAS_ROLE_IN_VENTURE"
         | "EQUITY_VESTED_FROM_ALLOCATION"
+        | "USER_PRACTICE_EXPERIENCE"
+        | "USER_TRAINING_EXPERIENCE"
+        | "USER_CONSULTING_EXPERIENCE"
+        | "ROLE_AFFINITY"
       graph_event_type:
         | "skill_added"
         | "skill_removed"
@@ -3888,6 +3941,7 @@ export type Database = {
         | "sent"
         | "opened"
         | "failed"
+      role_affinity_kind: "builder" | "strategist" | "operator" | "connector"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -4071,6 +4125,10 @@ export const Constants = {
         "EQUITY_ALLOCATED_FOR_CONTRIBUTION",
         "USER_HAS_ROLE_IN_VENTURE",
         "EQUITY_VESTED_FROM_ALLOCATION",
+        "USER_PRACTICE_EXPERIENCE",
+        "USER_TRAINING_EXPERIENCE",
+        "USER_CONSULTING_EXPERIENCE",
+        "ROLE_AFFINITY",
       ],
       graph_event_type: [
         "skill_added",
@@ -4218,6 +4276,7 @@ export const Constants = {
         "opened",
         "failed",
       ],
+      role_affinity_kind: ["builder", "strategist", "operator", "connector"],
     },
   },
 } as const
