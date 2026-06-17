@@ -17,17 +17,6 @@ const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const { onboardingState, loading: onboardingLoading } = useOnboarding();
   const navigate = useNavigate();
-  const [procuringAccess, setProcuringAccess] = useState(false);
-
-  useEffect(() => {
-    if (!user) return;
-    supabase
-      .from("onboarding_state")
-      .select("procuring_access" as any)
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => setProcuringAccess(!!(data as any)?.procuring_access));
-  }, [user]);
 
   useEffect(() => {
     if (!authLoading && !user) {
