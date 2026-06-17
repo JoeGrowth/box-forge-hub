@@ -638,7 +638,7 @@ const Opportunities = () => {
                       recommendation={opp.recommendation}
                       ctaOverride={
                         isVentureCreator && opp.category === "startup"
-                          ? { label: "Compare to my venture" }
+                          ? { label: "Check venture" }
                           : undefined
                       }
                     />
