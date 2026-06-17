@@ -1676,6 +1676,51 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_rules: {
+        Row: {
+          channel: string
+          created_at: string
+          enabled: boolean
+          event_type: string
+          id: string
+          link_template: string | null
+          message_template: string
+          notification_type: string
+          priority: number
+          recipient_type: string
+          title_template: string
+          updated_at: string
+        }
+        Insert: {
+          channel?: string
+          created_at?: string
+          enabled?: boolean
+          event_type: string
+          id?: string
+          link_template?: string | null
+          message_template: string
+          notification_type?: string
+          priority?: number
+          recipient_type: string
+          title_template: string
+          updated_at?: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          enabled?: boolean
+          event_type?: string
+          id?: string
+          link_template?: string | null
+          message_template?: string
+          notification_type?: string
+          priority?: number
+          recipient_type?: string
+          title_template?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       nr_decoder_submissions: {
         Row: {
           admin_notes: string | null
@@ -3447,6 +3492,10 @@ export type Database = {
       derive_professional_state: { Args: { _user_id: string }; Returns: string }
       derived_equity_role: { Args: { _percentage: number }; Returns: string }
       dispatch_growth_loops: { Args: { _user_id: string }; Returns: number }
+      dispatch_notifications_for_event: {
+        Args: { _event_id: string }
+        Returns: number
+      }
       get_admin_beta_health: {
         Args: never
         Returns: {
@@ -3534,6 +3583,8 @@ export type Database = {
         }
         Returns: number
       }
+      render_template: { Args: { _ctx: Json; _tpl: string }; Returns: string }
+      seed_cold_start_expertise: { Args: { _user_id: string }; Returns: number }
     }
     Enums: {
       app_role: "entrepreneur" | "cobuilder" | "box_manager" | "admin"
