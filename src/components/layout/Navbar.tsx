@@ -40,6 +40,7 @@ const moreLinks = [
   { name: "Boxes", path: "/boxes", icon: Package },
   { name: "Programs", path: "/programs", icon: BookOpen },
   { name: "Advisory", path: "/advisory", icon: Compass },
+  { name: "Organizations", path: "/organizations", icon: Building2 },
   { name: "Brand Identity", path: "/brand-identity", icon: Sparkles },
   { name: "Track", path: "/track", icon: Activity },
   { name: "Checklist", path: "/checklist", icon: ListChecks },

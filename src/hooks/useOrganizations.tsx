@@ -42,7 +42,7 @@ export const roleAtLeast = (have: OrgRole | null | undefined, need: OrgRole) =>
 
 export function useMyOrganizations(userId: string | undefined) {
   const [memberships, setMemberships] = useState<OrgMembership[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     if (!userId) {
