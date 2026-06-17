@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { DirectorySkeletonGrid } from "@/components/ui/skeleton-card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useExpertiseBatch, type Expertise } from "@/hooks/useExpertise";
+import { useTrustBatch, trustLevelStyle } from "@/hooks/useTrust";
 
 interface CoBuilder {
   id: string;
@@ -70,6 +71,7 @@ const CoBuilders = () => {
   const [approvedUserIds, setApprovedUserIds] = useState<string[]>([]);
   const [baseRows, setBaseRows] = useState<Omit<CoBuilder, "certCount" | "verifiedCount" | "expertiseLevel">[]>([]);
   const { byUser: expertiseByUser } = useExpertiseBatch(approvedUserIds);
+  const { byUser: trustByUser } = useTrustBatch(approvedUserIds);
 
   useEffect(() => {
     const fetchBase = async () => {
@@ -472,6 +474,21 @@ const CoBuilders = () => {
                                   {cobuilder.verifiedCount > 0 && ` · ${cobuilder.verifiedCount} verified`}
                                 </Badge>
                               )}
+                              {(() => {
+                                const t = trustByUser.get(cobuilder.user_id);
+                                if (!t || t.level === "unverified") return null;
+                                const style = trustLevelStyle(t.level);
+                                return (
+                                  <Badge
+                                    variant="outline"
+                                    className={`text-xs py-0 px-2 ${style.className}`}
+                                    title={`Trust score: ${Math.round(t.score)}`}
+                                  >
+                                    <ShieldCheck className="w-3 h-3 mr-1" />
+                                    {style.label}
+                                  </Badge>
+                                );
+                              })()}
                             </div>
                           </div>
                         </div>
