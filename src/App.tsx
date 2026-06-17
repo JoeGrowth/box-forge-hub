@@ -28,6 +28,7 @@ import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import AdminOpportunityDetail from "./pages/AdminOpportunityDetail";
 import BetaConsole from "./pages/BetaConsole";
+import LifecycleIntegrity from "./pages/admin/LifecycleIntegrity";
 import CompressedOnboarding from "./pages/CompressedOnboarding";
 import ProfessionalMap from "./pages/ProfessionalMap";
 import Opportunities from "./pages/Opportunities";
@@ -108,6 +109,7 @@ const App = () => (
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/admin/opportunity/:id" element={<AdminOpportunityDetail />} />
                   <Route path="/admin/beta" element={<BetaConsole />} />
+                  <Route path="/admin/lifecycle-integrity" element={<LifecycleIntegrity />} />
                   <Route path="/onboarding" element={<CompressedOnboarding />} />
                   <Route path="/onboarding/map" element={<ProfessionalMap />} />
                   <Route element={<PersistentNavbarLayout />}>
