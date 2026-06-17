@@ -23,7 +23,11 @@ type EventType =
   | "tender_won" | "tender_published"
   | "venture_created" | "equity_vested"
   | "journey_completed" | "job_published" | "job_applied" | "job_completed"
-  | "review_created" | "transaction_completed" | "milestone_completed";
+  | "review_created" | "transaction_completed" | "milestone_completed"
+  // Phase 3 — Opportunity Graph
+  | "opportunity_created" | "opportunity_updated" | "opportunity_published" | "opportunity_closed"
+  | "user_viewed_opportunity" | "user_saved_opportunity" | "user_applied_opportunity"
+  | "user_rejected_opportunity" | "user_accepted_opportunity";
 
 interface GraphEvent {
   id: string;
