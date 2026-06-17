@@ -151,6 +151,46 @@ const App = () => (
                   <Route path="/procuring" element={<Procuring />} />
                   <Route path="/el-space" element={<ElSpace />} />
                   <Route path="/declaration" element={<Declaration />} />
+
+                  {/* Intuitive aliases — keep growth loop intact for guessed URLs */}
+                  <Route path="/consulting/new" element={<Navigate to="/publish-consulting" replace />} />
+                  <Route path="/consulting/publish" element={<Navigate to="/publish-consulting" replace />} />
+                  <Route path="/services" element={<Navigate to="/opportunities?tab=consulting" replace />} />
+                  <Route path="/services/new" element={<Navigate to="/publish-consulting" replace />} />
+                  <Route path="/jobs" element={<Navigate to="/opportunities?tab=job" replace />} />
+                  <Route path="/jobs/new" element={<Navigate to="/publish-job" replace />} />
+                  <Route path="/job/new" element={<Navigate to="/publish-job" replace />} />
+                  <Route path="/training" element={<Navigate to="/opportunities?tab=training" replace />} />
+                  <Route path="/trainings" element={<Navigate to="/opportunities?tab=training" replace />} />
+                  <Route path="/training/new" element={<Navigate to="/publish-training" replace />} />
+                  <Route path="/idea/new" element={<Navigate to="/create-idea" replace />} />
+                  <Route path="/ideas/new" element={<Navigate to="/create-idea" replace />} />
+                  <Route path="/startup/new" element={<Navigate to="/create-idea" replace />} />
+                  <Route path="/startups" element={<Navigate to="/opportunities?tab=startup" replace />} />
+                  <Route path="/onboarding/professional" element={<Navigate to="/professional-onboarding" replace />} />
+                  <Route path="/onboarding/entrepreneur" element={<Navigate to="/entrepreneurial-onboarding" replace />} />
+                  <Route path="/admin/dashboard" element={<Navigate to="/admin" replace />} />
+                  <Route path="/me" element={<Navigate to="/profile" replace />} />
+                  <Route path="/account" element={<Navigate to="/profile" replace />} />
+                  <Route path="/settings" element={<Navigate to="/profile" replace />} />
+                  <Route path="/inbox" element={<Navigate to="/messages" replace />} />
+                  <Route path="/chat" element={<Navigate to="/messages" replace />} />
+                  <Route path="/people" element={<Navigate to="/cobuilders" replace />} />
+                  <Route path="/network" element={<Navigate to="/cobuilders" replace />} />
+                  <Route path="/match" element={<Navigate to="/opportunities" replace />} />
+                  <Route path="/matches" element={<Navigate to="/opportunities" replace />} />
+                  <Route path="/discover" element={<Navigate to="/opportunities" replace />} />
+                  <Route path="/feed" element={<Navigate to="/opportunities" replace />} />
+                  <Route path="/scale" element={<Navigate to="/start" replace />} />
+                  <Route path="/projects" element={<Navigate to="/start" replace />} />
+                  <Route path="/projects/new" element={<Navigate to="/create-idea" replace />} />
+                  <Route path="/track-record/new" element={<Navigate to="/track-record" replace />} />
+                  <Route path="/cv" element={<Navigate to="/resume" replace />} />
+                  <Route path="/explore" element={<Navigate to="/paths" replace />} />
+                  <Route path="/growth" element={<Navigate to="/paths" replace />} />
+                  <Route path="/map" element={<Navigate to="/onboarding/map" replace />} />
+                  <Route path="/beta" element={<Navigate to="/admin/beta" replace />} />
+
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
