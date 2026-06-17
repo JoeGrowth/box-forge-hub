@@ -250,8 +250,9 @@ export default function CompressedOnboarding() {
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
-                {SUGGESTED_TAGS.map((t) => {
+                {[...SUGGESTED_TAGS, ...tags.filter((t) => !SUGGESTED_TAGS.includes(t))].map((t) => {
                   const active = tags.includes(t);
+                  const isCustom = !SUGGESTED_TAGS.includes(t);
                   return (
                     <button
                       key={t}
@@ -261,7 +262,7 @@ export default function CompressedOnboarding() {
                         active ? "bg-primary text-primary-foreground border-primary" : "border-border hover:border-primary/40"
                       }`}
                     >
-                      {t}
+                      {t}{isCustom && active ? " ×" : ""}
                     </button>
                   );
                 })}
