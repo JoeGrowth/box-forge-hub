@@ -8,19 +8,19 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export type OpportunityEventType =
-  | "opportunity_viewed"
-  | "opportunity_saved"
-  | "opportunity_applied";
+  | "user_viewed_opportunity"
+  | "user_saved_opportunity"
+  | "user_applied_opportunity";
 
 const dayBucket = (d = new Date()) => d.toISOString().slice(0, 10);
 
 function buildKey(type: OpportunityEventType, userId: string, opportunityId: string) {
   switch (type) {
-    case "opportunity_applied":
+    case "user_applied_opportunity":
       // Single-shot: one application per opportunity per user.
-      return `opportunity_applied:v1:${userId}:${opportunityId}`;
-    case "opportunity_saved":
-    case "opportunity_viewed":
+      return `${type}:v1:${userId}:${opportunityId}`;
+    case "user_saved_opportunity":
+    case "user_viewed_opportunity":
       // Day-bucketed: one signal per user/opp/day. Prevents spam, keeps repeat-day signal.
       return `${type}:v1:${userId}:${opportunityId}:${dayBucket()}`;
   }
@@ -47,7 +47,7 @@ export async function emitOpportunityEvent(
       source_module: "opportunities_ui",
       idempotency_key: buildKey(type, userId, opportunityId),
       payload: { category, ...(extra ?? {}) } as never,
-      weight: type === "opportunity_applied" ? 3 : type === "opportunity_saved" ? 1 : 0.2,
+      weight: type === "user_applied_opportunity" ? 3 : type === "user_saved_opportunity" ? 1 : 0.2,
       occurred_at: new Date().toISOString(),
     });
   } catch {
@@ -55,3 +55,4 @@ export async function emitOpportunityEvent(
     // non-fatal — UI must never block on telemetry.
   }
 }
+
