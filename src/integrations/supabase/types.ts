@@ -3273,6 +3273,11 @@ export type Database = {
         | "growth_loop_converted"
         | "growth_loop_dismissed"
         | "recommendation_feedback_recorded"
+        | "intent_declared"
+        | "intent_signal_recorded"
+        | "recommendation_outcome_recorded"
+        | "experiment_assigned"
+        | "experiment_converted"
       graph_node_type:
         | "user"
         | "skill"
@@ -3551,6 +3556,11 @@ export const Constants = {
         "growth_loop_converted",
         "growth_loop_dismissed",
         "recommendation_feedback_recorded",
+        "intent_declared",
+        "intent_signal_recorded",
+        "recommendation_outcome_recorded",
+        "experiment_assigned",
+        "experiment_converted",
       ],
       graph_node_type: [
         "user",
