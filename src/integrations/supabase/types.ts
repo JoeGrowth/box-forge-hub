@@ -724,6 +724,83 @@ export type Database = {
         }
         Relationships: []
       }
+      equity_allocations: {
+        Row: {
+          created_at: string
+          id: string
+          metadata: Json
+          percentage: number
+          role: string | null
+          source: string
+          status: string
+          updated_at: string
+          user_id: string
+          venture_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metadata?: Json
+          percentage?: number
+          role?: string | null
+          source?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          venture_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metadata?: Json
+          percentage?: number
+          role?: string | null
+          source?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          venture_id?: string
+        }
+        Relationships: []
+      }
+      equity_events: {
+        Row: {
+          actor_id: string | null
+          equity_allocation_id: string
+          event_type: string
+          id: string
+          metadata: Json
+          occurred_at: string
+          percentage: number
+        }
+        Insert: {
+          actor_id?: string | null
+          equity_allocation_id: string
+          event_type: string
+          id?: string
+          metadata?: Json
+          occurred_at?: string
+          percentage?: number
+        }
+        Update: {
+          actor_id?: string | null
+          equity_allocation_id?: string
+          event_type?: string
+          id?: string
+          metadata?: Json
+          occurred_at?: string
+          percentage?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equity_events_equity_allocation_id_fkey"
+            columns: ["equity_allocation_id"]
+            isOneToOne: false
+            referencedRelation: "equity_allocations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_catalog: {
         Row: {
           created_at: string
@@ -1655,6 +1732,42 @@ export type Database = {
           id?: string
           price?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      ownership_graph: {
+        Row: {
+          active_allocations: number
+          computed_at: string
+          ownership_breakdown: Json
+          ownership_level: string
+          source_event_version: number
+          total_allocated_equity: number
+          total_vested_equity: number
+          user_id: string
+          venture_count: number
+        }
+        Insert: {
+          active_allocations?: number
+          computed_at?: string
+          ownership_breakdown?: Json
+          ownership_level?: string
+          source_event_version?: number
+          total_allocated_equity?: number
+          total_vested_equity?: number
+          user_id: string
+          venture_count?: number
+        }
+        Update: {
+          active_allocations?: number
+          computed_at?: string
+          ownership_breakdown?: Json
+          ownership_level?: string
+          source_event_version?: number
+          total_allocated_equity?: number
+          total_vested_equity?: number
+          user_id?: string
+          venture_count?: number
         }
         Relationships: []
       }
@@ -2704,6 +2817,53 @@ export type Database = {
           },
         ]
       }
+      vesting_schedules: {
+        Row: {
+          cliff_months: number
+          created_at: string
+          equity_allocation_id: string
+          frequency: string
+          id: string
+          start_date: string
+          total_percentage: number
+          updated_at: string
+          vested_percentage: number
+          vesting_months: number
+        }
+        Insert: {
+          cliff_months?: number
+          created_at?: string
+          equity_allocation_id: string
+          frequency?: string
+          id?: string
+          start_date?: string
+          total_percentage?: number
+          updated_at?: string
+          vested_percentage?: number
+          vesting_months?: number
+        }
+        Update: {
+          cliff_months?: number
+          created_at?: string
+          equity_allocation_id?: string
+          frequency?: string
+          id?: string
+          start_date?: string
+          total_percentage?: number
+          updated_at?: string
+          vested_percentage?: number
+          vesting_months?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vesting_schedules_equity_allocation_id_fkey"
+            columns: ["equity_allocation_id"]
+            isOneToOne: false
+            referencedRelation: "equity_allocations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -2735,6 +2895,14 @@ export type Database = {
           source: string
         }[]
       }
+      backfill_ownership_v1: {
+        Args: never
+        Returns: {
+          attempted: number
+          newly_emitted: number
+          source: string
+        }[]
+      }
       backfill_revenue_events_v1: {
         Args: never
         Returns: {
@@ -2748,6 +2916,7 @@ export type Database = {
         Args: { _entity_id: string; _user_id: string }
         Returns: string
       }
+      derived_equity_role: { Args: { _percentage: number }; Returns: string }
       graph_upsert_edge: {
         Args: {
           _attributes: Json
@@ -2788,6 +2957,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: number
       }
+      recompute_ownership: { Args: { _user_id: string }; Returns: undefined }
       recompute_reputation: { Args: { _user_id: string }; Returns: undefined }
       recompute_revenue: { Args: { _user_id: string }; Returns: undefined }
       recompute_trust: { Args: { _user_id: string }; Returns: undefined }
