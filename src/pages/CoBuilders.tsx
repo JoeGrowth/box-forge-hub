@@ -13,14 +13,7 @@ import { Search, User, Briefcase, Loader2, Pencil, Check, X, ShieldCheck, Award,
 import { toast } from "sonner";
 import { DirectorySkeletonGrid } from "@/components/ui/skeleton-card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-
-interface Certification {
-  id: string;
-  user_id: string;
-  certification_type: string;
-  display_label: string;
-  verified: boolean;
-}
+import { useExpertiseBatch, type Expertise } from "@/hooks/useExpertise";
 
 interface CoBuilder {
   id: string;
@@ -29,7 +22,9 @@ interface CoBuilder {
   avatar_url: string | null;
   primary_skills: string | null;
   natural_role_description: string | null;
-  certifications: Certification[];
+  certCount: number;        // derived from expertise_graph (monetizable.certifications)
+  verifiedCount: number;    // expertise_graph.verified_expertise_count
+  expertiseLevel: Expertise["level"];
   has_opportunity: boolean;
   opportunity_id: string | null;
   opportunity_title: string | null;
@@ -68,9 +63,16 @@ const CoBuilders = () => {
   const isApproved =
     onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved";
 
-  // Fetch approved co-builders
+  // Two-stage load: (1) fetch profile/role/idea rows for approved users,
+  // (2) hydrate per-user expertise via the batch graph hook below.
+  // Expertise (certification count, level) is sourced ONLY from
+  // expertise_graph — never from user_certifications.
+  const [approvedUserIds, setApprovedUserIds] = useState<string[]>([]);
+  const [baseRows, setBaseRows] = useState<Omit<CoBuilder, "certCount" | "verifiedCount" | "expertiseLevel">[]>([]);
+  const { byUser: expertiseByUser } = useExpertiseBatch(approvedUserIds);
+
   useEffect(() => {
-    const fetchCoBuilders = async () => {
+    const fetchBase = async () => {
       if (!isApproved) {
         setLoading(false);
         return;
@@ -78,89 +80,40 @@ const CoBuilders = () => {
 
       setLoading(true);
       try {
-        // Get approved co-builders
         const { data: onboardingData, error: onboardingError } = await supabase
           .from("onboarding_state")
           .select("user_id")
           .in("journey_status", ["approved", "entrepreneur_approved"]);
-
         if (onboardingError) throw onboardingError;
 
-        const approvedUserIds = onboardingData?.map((o) => o.user_id) || [];
+        const ids = onboardingData?.map((o) => o.user_id) || [];
+        setApprovedUserIds(ids);
+        if (ids.length === 0) { setBaseRows([]); setLoading(false); return; }
 
-        if (approvedUserIds.length === 0) {
-          setCobuilders([]);
-          setLoading(false);
-          return;
-        }
-
-        // Get profiles for approved users
-        const { data: profiles, error: profilesError } = await supabase
-          .from("profiles")
-          .select("id, user_id, full_name, avatar_url, primary_skills")
-          .in("user_id", approvedUserIds);
-
+        const [{ data: profiles, error: profilesError }, { data: naturalRoles, error: rolesError }, { data: startupIdeas, error: ideasError }] = await Promise.all([
+          supabase.from("profiles").select("id, user_id, full_name, avatar_url, primary_skills").in("user_id", ids),
+          supabase.from("natural_roles").select("user_id, description").in("user_id", ids),
+          supabase.from("startup_ideas").select("id, creator_id, title").eq("status", "active").eq("is_looking_for_cobuilders", true).in("creator_id", ids),
+        ]);
         if (profilesError) throw profilesError;
-
-        // Get natural roles for these users
-        const { data: naturalRoles, error: rolesError } = await supabase
-          .from("natural_roles")
-          .select("user_id, description")
-          .in("user_id", approvedUserIds);
-
         if (rolesError) throw rolesError;
-
-        // Get certifications for these users
-        const { data: certifications, error: certsError } = await supabase
-          .from("user_certifications")
-          .select("id, user_id, certification_type, display_label, verified")
-          .in("user_id", approvedUserIds);
-
-        if (certsError) throw certsError;
-
-        // Get active startup ideas (opportunities) for these users
-        const { data: startupIdeas, error: ideasError } = await supabase
-          .from("startup_ideas")
-          .select("id, creator_id, title")
-          .eq("status", "active")
-          .eq("is_looking_for_cobuilders", true)
-          .in("creator_id", approvedUserIds);
-
         if (ideasError) throw ideasError;
 
-        // Combine data
-        const combinedData: CoBuilder[] = (profiles || []).map((profile) => {
-          const naturalRole = naturalRoles?.find((nr) => nr.user_id === profile.user_id);
-          const userCerts = certifications?.filter((c) => c.user_id === profile.user_id) || [];
-          const userIdea = startupIdeas?.find((idea) => idea.creator_id === profile.user_id);
+        const rows = (profiles || []).map((profile) => {
+          const nr = naturalRoles?.find((n) => n.user_id === profile.user_id);
+          const idea = startupIdeas?.find((i) => i.creator_id === profile.user_id);
           return {
             ...profile,
-            natural_role_description: naturalRole?.description || null,
-            certifications: userCerts,
-            has_opportunity: !!userIdea,
-            opportunity_id: userIdea?.id || null,
-            opportunity_title: userIdea?.title || null,
+            natural_role_description: nr?.description || null,
+            has_opportunity: !!idea,
+            opportunity_id: idea?.id || null,
+            opportunity_title: idea?.title || null,
           };
         });
+        setBaseRows(rows);
 
-        // Sort: current user first, then by certification count, then by filled skills
-        combinedData.sort((a, b) => {
-          if (a.user_id === user?.id) return -1;
-          if (b.user_id === user?.id) return 1;
-          const certDiff = b.certifications.length - a.certifications.length;
-          if (certDiff !== 0) return certDiff;
-          const aHasSkills = a.primary_skills && a.primary_skills.trim().length > 0 ? 1 : 0;
-          const bHasSkills = b.primary_skills && b.primary_skills.trim().length > 0 ? 1 : 0;
-          return bHasSkills - aHasSkills;
-        });
-
-        setCobuilders(combinedData);
-
-        // Set initial skills input for current user
-        const currentUserProfile = combinedData.find((cb) => cb.user_id === user?.id);
-        if (currentUserProfile) {
-          setSkillsInput(currentUserProfile.primary_skills || "");
-        }
+        const me = rows.find((r) => r.user_id === user?.id);
+        if (me) setSkillsInput(me.primary_skills || "");
       } catch (error) {
         console.error("Error fetching co-builders:", error);
       } finally {
@@ -168,8 +121,32 @@ const CoBuilders = () => {
       }
     };
 
-    fetchCoBuilders();
+    fetchBase();
   }, [isApproved, user?.id]);
+
+  // Merge base rows with batch expertise + apply directory sort.
+  useEffect(() => {
+    if (baseRows.length === 0) { setCobuilders([]); return; }
+    const merged: CoBuilder[] = baseRows.map((r) => {
+      const exp = expertiseByUser.get(r.user_id);
+      return {
+        ...r,
+        certCount: exp?.monetizable.certifications ?? 0,
+        verifiedCount: exp?.verifiedCount ?? 0,
+        expertiseLevel: exp?.level ?? "novice",
+      };
+    });
+    merged.sort((a, b) => {
+      if (a.user_id === user?.id) return -1;
+      if (b.user_id === user?.id) return 1;
+      const certDiff = b.certCount - a.certCount;
+      if (certDiff !== 0) return certDiff;
+      const aHasSkills = a.primary_skills && a.primary_skills.trim().length > 0 ? 1 : 0;
+      const bHasSkills = b.primary_skills && b.primary_skills.trim().length > 0 ? 1 : 0;
+      return bHasSkills - aHasSkills;
+    });
+    setCobuilders(merged);
+  }, [baseRows, expertiseByUser, user?.id]);
 
   const handleSaveSkills = async () => {
     if (!user) return;
