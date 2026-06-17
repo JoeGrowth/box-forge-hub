@@ -3632,6 +3632,7 @@ export type Database = {
       render_template: { Args: { _ctx: Json; _tpl: string }; Returns: string }
       run_beta_simulation: { Args: never; Returns: Json }
       seed_cold_start_expertise: { Args: { _user_id: string }; Returns: number }
+      test_growth_loop_dispatch: { Args: { _user_id: string }; Returns: Json }
     }
     Enums: {
       app_role: "entrepreneur" | "cobuilder" | "box_manager" | "admin"
