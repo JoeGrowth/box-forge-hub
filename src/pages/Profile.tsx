@@ -88,6 +88,7 @@ const Profile = () => {
   // Trust sourced exclusively from the trust_graph projection.
   const { trust } = useTrust(user?.id);
   const { revenue } = useRevenue(user?.id);
+  const { reputation } = useReputation(user?.id);
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
