@@ -102,7 +102,8 @@ export function useAdmin() {
       certificationsResult,
       startupIdeasResult,
       teamMembersResult,
-      learningJourneysResult
+      learningJourneysResult,
+      progressionGraphResult
     ] = await Promise.all([
       supabase.from("profiles").select("*"),
       supabase.from("onboarding_state").select("*, consultant_access, procuring_access"),
@@ -110,7 +111,8 @@ export function useAdmin() {
       supabase.from("user_certifications").select("user_id, certification_type"),
       supabase.from("startup_ideas").select("id, creator_id, status"),
       supabase.from("startup_team_members").select("member_user_id, startup_id"),
-      supabase.from("learning_journeys").select("user_id, journey_type, status")
+      supabase.from("learning_journeys").select("user_id, journey_type, status"),
+      supabase.from("progression_graph").select("user_id, progression_score")
     ]);
 
     if (profilesResult.error) {
