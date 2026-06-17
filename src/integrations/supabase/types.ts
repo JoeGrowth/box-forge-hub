@@ -1724,6 +1724,90 @@ export type Database = {
         }
         Relationships: []
       }
+      reputation_graph: {
+        Row: {
+          achievement_count: number
+          community_score: number
+          computed_at: string
+          expertise_score: number
+          impact_score: number
+          reliability_score: number
+          reputation_breakdown: Json
+          reputation_level: string
+          reputation_score: number
+          revenue_score: number
+          source_event_version: number
+          trust_score: number
+          user_id: string
+        }
+        Insert: {
+          achievement_count?: number
+          community_score?: number
+          computed_at?: string
+          expertise_score?: number
+          impact_score?: number
+          reliability_score?: number
+          reputation_breakdown?: Json
+          reputation_level?: string
+          reputation_score?: number
+          revenue_score?: number
+          source_event_version?: number
+          trust_score?: number
+          user_id: string
+        }
+        Update: {
+          achievement_count?: number
+          community_score?: number
+          computed_at?: string
+          expertise_score?: number
+          impact_score?: number
+          reliability_score?: number
+          reputation_breakdown?: Json
+          reputation_level?: string
+          reputation_score?: number
+          revenue_score?: number
+          source_event_version?: number
+          trust_score?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reputation_weights: {
+        Row: {
+          community_weight: number
+          created_at: string
+          expertise_weight: number
+          id: string
+          impact_weight: number
+          is_active: boolean
+          notes: string | null
+          trust_weight: number
+          updated_at: string
+        }
+        Insert: {
+          community_weight?: number
+          created_at?: string
+          expertise_weight?: number
+          id?: string
+          impact_weight?: number
+          is_active?: boolean
+          notes?: string | null
+          trust_weight?: number
+          updated_at?: string
+        }
+        Update: {
+          community_weight?: number
+          created_at?: string
+          expertise_weight?: number
+          id?: string
+          impact_weight?: number
+          is_active?: boolean
+          notes?: string | null
+          trust_weight?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       revenue_graph: {
         Row: {
           buyer_count: number
@@ -2704,6 +2788,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: number
       }
+      recompute_reputation: { Args: { _user_id: string }; Returns: undefined }
       recompute_revenue: { Args: { _user_id: string }; Returns: undefined }
       recompute_trust: { Args: { _user_id: string }; Returns: undefined }
     }
@@ -2738,6 +2823,11 @@ export type Database = {
         | "USER_RECEIVED_VALUE"
         | "TRANSACTION_FOR_OPPORTUNITY"
         | "CONTRACT_BETWEEN_PARTIES"
+        | "USER_EARNED_ACHIEVEMENT"
+        | "USER_COMPLETED_OPPORTUNITY"
+        | "USER_CREATED_VALUE"
+        | "USER_RECEIVED_VALIDATION"
+        | "USER_IMPROVED_EXPERTISE"
       graph_event_type:
         | "skill_added"
         | "skill_removed"
@@ -2783,6 +2873,11 @@ export type Database = {
         | "delivery_started"
         | "delivery_completed"
         | "invoice_created"
+        | "expertise_score_updated"
+        | "trust_score_updated"
+        | "opportunity_completed"
+        | "review_received"
+        | "startup_milestone_completed"
       graph_node_type:
         | "user"
         | "skill"
@@ -2975,6 +3070,11 @@ export const Constants = {
         "USER_RECEIVED_VALUE",
         "TRANSACTION_FOR_OPPORTUNITY",
         "CONTRACT_BETWEEN_PARTIES",
+        "USER_EARNED_ACHIEVEMENT",
+        "USER_COMPLETED_OPPORTUNITY",
+        "USER_CREATED_VALUE",
+        "USER_RECEIVED_VALIDATION",
+        "USER_IMPROVED_EXPERTISE",
       ],
       graph_event_type: [
         "skill_added",
@@ -3021,6 +3121,11 @@ export const Constants = {
         "delivery_started",
         "delivery_completed",
         "invoice_created",
+        "expertise_score_updated",
+        "trust_score_updated",
+        "opportunity_completed",
+        "review_received",
+        "startup_milestone_completed",
       ],
       graph_node_type: [
         "user",

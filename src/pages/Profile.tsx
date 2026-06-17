@@ -22,7 +22,8 @@ import { NextStepsCard } from "@/components/profile/NextStepsCard";
 import { useExpertise } from "@/hooks/useExpertise";
 import { useTrust, trustLevelStyle } from "@/hooks/useTrust";
 import { useRevenue } from "@/hooks/useRevenue";
-import { Wallet } from "lucide-react";
+import { useReputation, reputationLevelStyle } from "@/hooks/useReputation";
+import { Wallet, Award } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   AlertDialog,
@@ -87,6 +88,7 @@ const Profile = () => {
   // Trust sourced exclusively from the trust_graph projection.
   const { trust } = useTrust(user?.id);
   const { revenue } = useRevenue(user?.id);
+  const { reputation } = useReputation(user?.id);
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -856,6 +858,53 @@ const Profile = () => {
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Phase 5 — Professional Reputation Snapshot.
+                Synthesis of Expertise + Trust + Revenue + Community.
+                Reads exclusively from the reputation_graph projection. */}
+            {reputation && (
+              <div className="bg-gradient-to-br from-primary/5 via-card to-b4-teal/5 rounded-3xl border border-primary/20 p-8 mb-8">
+                <div className="flex items-start justify-between mb-4 gap-4">
+                  <div>
+                    <h2 className="font-display text-xl font-bold text-foreground flex items-center gap-2">
+                      <Award className="w-5 h-5 text-primary" />
+                      Professional Reputation
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      Why a counterparty should select you over another candidate.
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div className="text-3xl font-bold text-primary">{Math.round(reputation.reputation_score)}</div>
+                    {(() => {
+                      const s = reputationLevelStyle(reputation.reputation_level);
+                      return (
+                        <span className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full border ${s.className}`}>
+                          {s.label}
+                        </span>
+                      );
+                    })()}
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-4 gap-3 text-sm mb-4">
+                  {(["expertise","trust","impact","community"] as const).map((k) => {
+                    const row = reputation.reputation_breakdown?.[k];
+                    if (!row) return null;
+                    return (
+                      <div key={k} className="bg-card/60 rounded-lg p-3 border border-border">
+                        <div className="text-muted-foreground text-xs uppercase tracking-wider">{k}</div>
+                        <div className="text-foreground font-semibold">{row.points}</div>
+                        <div className="text-xs text-muted-foreground mt-1">{row.reason}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {reputation.achievement_count} validated achievement{reputation.achievement_count === 1 ? "" : "s"} on record.
+                  Reputation increases when verified credentials, completed engagements, economic outcomes, or peer reviews are added.
                 </div>
               </div>
             )}

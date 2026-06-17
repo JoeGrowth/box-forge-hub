@@ -6,6 +6,7 @@ import { ArrowRight, Check, Loader2, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTrust, trustLevelStyle } from "@/hooks/useTrust";
+import { useReputation, reputationLevelStyle } from "@/hooks/useReputation";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -69,6 +70,10 @@ export function OpportunityCard({
   // Phase 2: do not factor trust into ranking — that belongs to Opportunity Graph.
   const { trust } = useTrust(opportunity.author_user_id ?? null);
   const trustStyle = trust && trust.level !== "unverified" ? trustLevelStyle(trust.level) : null;
+  // Phase 5: candidate reputation indicator. Display-only synthesis surface.
+  const { reputation } = useReputation(opportunity.author_user_id ?? null);
+  const repStyle = reputation ? reputationLevelStyle(reputation.reputation_level) : null;
+
 
   useEffect(() => {
     if (!user) return;
@@ -186,8 +191,17 @@ export function OpportunityCard({
                   {trustStyle.label}
                 </span>
               )}
+              {repStyle && reputation && (
+                <span
+                  className={`inline-flex items-center gap-0.5 ml-1 px-1.5 py-0 rounded-full border text-[10px] font-medium ${repStyle.className}`}
+                  title={`Reputation: ${repStyle.label} (${Math.round(reputation.reputation_score)}). ${reputation.achievement_count} validated achievements.`}
+                >
+                  {repStyle.label}
+                </span>
+              )}
             </span>
           </div>
+
           <Button
             size="sm"
             variant={submitted ? "outline" : "default"}
