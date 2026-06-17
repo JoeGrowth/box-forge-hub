@@ -188,6 +188,18 @@ const Opportunities = () => {
         profileMap = new Map(profiles?.map((p) => [p.user_id, p.full_name]) || []);
       }
 
+      const orgIds = [
+        ...tenderData.map((t: any) => t.organization_id),
+        ...jobData.map((j: any) => j.organization_id),
+      ].filter(Boolean) as string[];
+      let orgMap = new Map<string, { name: string; slug: string }>();
+      if (orgIds.length > 0) {
+        const { data: orgs } = await (supabase.from("organizations" as any) as any)
+          .select("id, name, slug")
+          .in("id", [...new Set(orgIds)]);
+        orgMap = new Map((orgs || []).map((o: any) => [o.id, { name: o.name, slug: o.slug }]));
+      }
+
       const skillTagIds = [...new Set(consultingData.map((c: any) => c.skill_tag_id).filter(Boolean))] as string[];
       let skillTagMap = new Map<string, string>();
       if (skillTagIds.length > 0) {
@@ -195,10 +207,21 @@ const Opportunities = () => {
         skillTagMap = new Map((tags || []).map((t: any) => [t.id, t.name]));
       }
 
+      const orgLabel = (orgId: string | null, fallback: string) =>
+        orgId && orgMap.get(orgId) ? orgMap.get(orgId)!.name : fallback;
+
       setRawStartups(startupData.map((s: any) => ({ ...s, _author: profileMap.get(s.creator_id) || "Unknown" })));
       setRawTrainings(trainingData.map((t: any) => ({ ...t, _author: profileMap.get(t.user_id) || "Unknown" })));
-      setRawTenders(tenderData.map((t: any) => ({ ...t, _author: profileMap.get(t.user_id) || "Unknown" })));
-      setRawJobs(jobData.map((j: any) => ({ ...j, _author: profileMap.get(j.user_id) || "Unknown" })));
+      setRawTenders(tenderData.map((t: any) => ({
+        ...t,
+        _author: orgLabel(t.organization_id, profileMap.get(t.user_id) || "Unknown"),
+        _org_slug: t.organization_id ? orgMap.get(t.organization_id)?.slug ?? null : null,
+      })));
+      setRawJobs(jobData.map((j: any) => ({
+        ...j,
+        _author: orgLabel(j.organization_id, profileMap.get(j.user_id) || "Unknown"),
+        _org_slug: j.organization_id ? orgMap.get(j.organization_id)?.slug ?? null : null,
+      })));
       setRawConsulting(
         consultingData.map((c: any) => ({
           ...c,
