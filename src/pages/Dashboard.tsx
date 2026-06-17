@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
@@ -12,26 +12,11 @@ import { DashboardNextSteps } from "@/components/dashboard/DashboardNextSteps";
 import { DashboardOpportunities } from "@/components/dashboard/DashboardOpportunities";
 import { DashboardAchievements } from "@/components/dashboard/DashboardAchievements";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
-import { FileText, ArrowRight } from "lucide-react";
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const { onboardingState, loading: onboardingLoading } = useOnboarding();
   const navigate = useNavigate();
-  const [procuringAccess, setProcuringAccess] = useState(false);
-
-  useEffect(() => {
-    if (!user) return;
-    supabase
-      .from("onboarding_state")
-      .select("procuring_access" as any)
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => setProcuringAccess(!!(data as any)?.procuring_access));
-  }, [user]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -68,26 +53,6 @@ const Dashboard = () => {
           <div className="max-w-7xl mx-auto space-y-8">
             <DashboardHero />
             <DashboardStats />
-            {procuringAccess && (
-              <Card className="border-primary/30 bg-primary/5">
-                <CardContent className="py-4 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <FileText className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-foreground">Procuring Entity</p>
-                      <p className="text-xs text-muted-foreground">Publish tenders to the marketplace.</p>
-                    </div>
-                  </div>
-                  <Button asChild size="sm">
-                    <Link to="/procuring">
-                      Procuring <ArrowRight className="w-4 h-4 ml-1" />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
             <div className="grid lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 space-y-8">
                 <DashboardProgress />
