@@ -18,6 +18,7 @@ import { IdeaApplicationsViewer } from "@/components/profile/IdeaApplicationsVie
 import { ScalingJourneyProgress } from "@/components/profile/ScalingJourneyProgress";
 import { LearningJourneyDashboard } from "@/components/learning/LearningJourneyDashboard";
 import { SkillTagPicker } from "@/components/profile/SkillTagPicker";
+import { NextStepsCard } from "@/components/profile/NextStepsCard";
 import { useExpertise } from "@/hooks/useExpertise";
 import { useTrust, trustLevelStyle } from "@/hooks/useTrust";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -951,6 +952,9 @@ const Profile = () => {
                 )}
               </div>
             )}
+
+            {/* Phase 3 — Opportunity Graph: where to go next */}
+            <NextStepsCard userId={user?.id} />
 
             {/* Part 1.5: Skill Tags Section */}
             {onboardingState?.primary_role === "cobuilder" && <SkillTagPicker />}

@@ -1377,6 +1377,60 @@ export type Database = {
         }
         Relationships: []
       }
+      opportunity_graph: {
+        Row: {
+          computed_at: string
+          confidence_score: number
+          experience_points: number
+          expertise_points: number
+          explanation: Json
+          freshness_points: number
+          id: string
+          intent_points: number
+          match_score: number
+          next_action: string | null
+          opportunity_id: string
+          opportunity_kind: string
+          source_event_version: number | null
+          trust_points: number
+          user_id: string
+        }
+        Insert: {
+          computed_at?: string
+          confidence_score?: number
+          experience_points?: number
+          expertise_points?: number
+          explanation?: Json
+          freshness_points?: number
+          id?: string
+          intent_points?: number
+          match_score?: number
+          next_action?: string | null
+          opportunity_id: string
+          opportunity_kind: string
+          source_event_version?: number | null
+          trust_points?: number
+          user_id: string
+        }
+        Update: {
+          computed_at?: string
+          confidence_score?: number
+          experience_points?: number
+          expertise_points?: number
+          explanation?: Json
+          freshness_points?: number
+          id?: string
+          intent_points?: number
+          match_score?: number
+          next_action?: string | null
+          opportunity_id?: string
+          opportunity_kind?: string
+          source_event_version?: number | null
+          trust_points?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       opportunity_interactions: {
         Row: {
           action_type: string
@@ -1404,6 +1458,45 @@ export type Database = {
           opportunity_id?: string
           status?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      opportunity_weights: {
+        Row: {
+          created_at: string
+          experience_weight: number
+          expertise_weight: number
+          freshness_weight: number
+          id: string
+          intent_weight: number
+          is_active: boolean
+          notes: string | null
+          trust_weight: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          experience_weight?: number
+          expertise_weight?: number
+          freshness_weight?: number
+          id?: string
+          intent_weight?: number
+          is_active?: boolean
+          notes?: string | null
+          trust_weight?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          experience_weight?: number
+          expertise_weight?: number
+          freshness_weight?: number
+          id?: string
+          intent_weight?: number
+          is_active?: boolean
+          notes?: string | null
+          trust_weight?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -2419,6 +2512,14 @@ export type Database = {
           source: string
         }[]
       }
+      backfill_opportunity_events_v1: {
+        Args: never
+        Returns: {
+          attempted: number
+          newly_emitted: number
+          source: string
+        }[]
+      }
       current_user_email: { Args: never; Returns: string }
       declaration_entity_access: {
         Args: { _entity_id: string; _user_id: string }
@@ -2460,6 +2561,10 @@ export type Database = {
       is_plan_shared_with_me: { Args: { _plan_id: string }; Returns: boolean }
       legacy_expertise_calc: { Args: { _user_id: string }; Returns: Json }
       recompute_expertise: { Args: { _user_id: string }; Returns: undefined }
+      recompute_opportunity_matches: {
+        Args: { _user_id: string }
+        Returns: number
+      }
       recompute_trust: { Args: { _user_id: string }; Returns: undefined }
     }
     Enums: {
@@ -2481,6 +2586,12 @@ export type Database = {
         | "USER_RECEIVED_REVIEW"
         | "USER_COMPLETED_PROJECT"
         | "USER_DELIVERED_OUTCOME"
+        | "USER_MATCHES_OPPORTUNITY"
+        | "OPPORTUNITY_REQUIRES_SKILL"
+        | "USER_TRUSTED_FOR_DOMAIN"
+        | "USER_INTERACTED_WITH_OPPORTUNITY"
+        | "OPPORTUNITY_IN_CATEGORY"
+        | "OPPORTUNITY_IN_DOMAIN"
       graph_event_type:
         | "skill_added"
         | "skill_removed"
@@ -2506,6 +2617,15 @@ export type Database = {
         | "job_completed"
         | "startup_contribution_completed"
         | "milestone_completed"
+        | "opportunity_created"
+        | "opportunity_updated"
+        | "opportunity_published"
+        | "opportunity_closed"
+        | "user_viewed_opportunity"
+        | "user_saved_opportunity"
+        | "user_applied_opportunity"
+        | "user_rejected_opportunity"
+        | "user_accepted_opportunity"
       graph_node_type:
         | "user"
         | "skill"
@@ -2522,6 +2642,10 @@ export type Database = {
         | "achievement"
         | "organization"
         | "project"
+        | "opportunity"
+        | "category"
+        | "domain"
+        | "location"
       journey_status:
         | "not_started"
         | "in_progress"
@@ -2679,6 +2803,12 @@ export const Constants = {
         "USER_RECEIVED_REVIEW",
         "USER_COMPLETED_PROJECT",
         "USER_DELIVERED_OUTCOME",
+        "USER_MATCHES_OPPORTUNITY",
+        "OPPORTUNITY_REQUIRES_SKILL",
+        "USER_TRUSTED_FOR_DOMAIN",
+        "USER_INTERACTED_WITH_OPPORTUNITY",
+        "OPPORTUNITY_IN_CATEGORY",
+        "OPPORTUNITY_IN_DOMAIN",
       ],
       graph_event_type: [
         "skill_added",
@@ -2705,6 +2835,15 @@ export const Constants = {
         "job_completed",
         "startup_contribution_completed",
         "milestone_completed",
+        "opportunity_created",
+        "opportunity_updated",
+        "opportunity_published",
+        "opportunity_closed",
+        "user_viewed_opportunity",
+        "user_saved_opportunity",
+        "user_applied_opportunity",
+        "user_rejected_opportunity",
+        "user_accepted_opportunity",
       ],
       graph_node_type: [
         "user",
@@ -2722,6 +2861,10 @@ export const Constants = {
         "achievement",
         "organization",
         "project",
+        "opportunity",
+        "category",
+        "domain",
+        "location",
       ],
       journey_status: [
         "not_started",

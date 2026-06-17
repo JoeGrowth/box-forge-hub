@@ -47,7 +47,18 @@ const actionTypeMap: Record<string, string> = {
   start: "request_contact",
 };
 
-export function OpportunityCard({ opportunity, matchScore }: { opportunity: Opportunity; matchScore?: number }) {
+import type { OpportunityRecommendation } from "@/hooks/useOpportunityRecommendations";
+
+export function OpportunityCard({
+  opportunity,
+  matchScore,
+  recommendation,
+}: {
+  opportunity: Opportunity;
+  matchScore?: number;
+  /** Optional projection row from opportunity_graph providing explanation + next action. */
+  recommendation?: OpportunityRecommendation;
+}) {
   const { user } = useAuth();
   const config = categoryConfig[opportunity.category];
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -123,6 +134,18 @@ export function OpportunityCard({ opportunity, matchScore }: { opportunity: Oppo
 
           {matchScore != null && (
             <div
+              title={
+                recommendation
+                  ? [
+                      `Match score ${Math.round(recommendation.matchScore)} (confidence ${Math.round(recommendation.confidenceScore * 100)}%)`,
+                      `• Expertise +${Math.round(recommendation.expertisePoints)} ${recommendation.explanation.skills_match?.matched?.length ? `(${recommendation.explanation.skills_match.matched.join(", ")})` : ""}`,
+                      `• Trust +${Math.round(recommendation.trustPoints)} — ${recommendation.explanation.trust?.reason ?? ""}`,
+                      `• Experience +${Math.round(recommendation.experiencePoints)} — ${recommendation.explanation.experience?.reason ?? ""}`,
+                      `• Freshness +${Math.round(recommendation.freshnessPoints)} — ${recommendation.explanation.freshness?.reason ?? ""}`,
+                      `Next step: ${recommendation.nextAction}`,
+                    ].join("\n")
+                  : undefined
+              }
               className={`shrink-0 flex items-center justify-center rounded-full w-11 h-11 text-xs font-bold border ${
                 matchScore >= 75
                   ? "bg-b4-teal/10 text-b4-teal border-b4-teal/30"

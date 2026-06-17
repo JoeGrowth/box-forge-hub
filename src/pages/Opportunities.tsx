@@ -10,6 +10,11 @@ import { Search, Loader2 } from "lucide-react";
 import { OpportunityCard, type Opportunity } from "@/components/opportunities/OpportunityCard";
 import { SEEDED_OPPORTUNITIES } from "@/data/seededOpportunities";
 import { useExpertise } from "@/hooks/useExpertise";
+import {
+  useOpportunityScoreMap,
+  type OpportunityRecommendation,
+} from "@/hooks/useOpportunityRecommendations";
+import { USE_OPPORTUNITY_GRAPH } from "@/lib/featureFlags";
 
 const CATEGORIES = [
   { key: "all", label: "All" },
@@ -40,6 +45,10 @@ const Opportunities = () => {
   // expertise_graph projection. Match score is derived from these tags.
   const { expertise } = useExpertise(user?.id);
   const userSkillNames = expertise?.tags ?? [];
+  // Phase 3: per-user opportunity_graph projection. Drives ranking and the
+  // "Why?" explanation on each card. Keyed by source row id so seeded
+  // opportunities (not in the projection) fall back to legacy tag overlap.
+  const { scoreById } = useOpportunityScoreMap(user?.id);
   const [userCapacity, setUserCapacity] = useState<{ hasTrackRecord: boolean; sectors: string[]; experience: number }>({
     hasTrackRecord: false,
     sectors: [],
@@ -147,7 +156,9 @@ const Opportunities = () => {
 
 
   // Normalize all sources into Opportunity[]
-  const allOpportunities = useMemo<(Opportunity & { match_score: number })[]>(() => {
+  const allOpportunities = useMemo<
+    (Opportunity & { match_score: number; recommendation?: OpportunityRecommendation })[]
+  >(() => {
     const startupOpps: Opportunity[] = rawStartups.map((s, i) => ({
       id: s.id,
       title: s.title,
@@ -218,21 +229,28 @@ const Opportunities = () => {
 
     const all = [...SEEDED_OPPORTUNITIES, ...startupOpps, ...trainingOpps, ...tenderOpps, ...jobOpps];
 
-    // Compute match scores
-    const scored = all.map((opp) => ({
-      ...opp,
-      match_score: computeMatchScore(userSkillNames, opp.required_skills),
-    }));
+    // Phase 3: prefer opportunity_graph projection. Falls back to legacy tag
+    // overlap for rows not yet in the projection (e.g. SEEDED_OPPORTUNITIES).
+    const scored = all.map((opp) => {
+      const rec = USE_OPPORTUNITY_GRAPH ? scoreById.get(opp.source_id ?? opp.id) : undefined;
+      const legacy = computeMatchScore(userSkillNames, opp.required_skills);
+      // Normalize projection match_score (0..100 cap) for the badge.
+      const projected = rec ? Math.min(100, Math.round(rec.matchScore)) : null;
+      return {
+        ...opp,
+        recommendation: rec,
+        match_score: projected ?? legacy,
+      };
+    });
 
-    // Sort: match_score descending first, then rank ascending as tiebreaker
-    if (userSkillNames.length > 0) {
+    if (USE_OPPORTUNITY_GRAPH || userSkillNames.length > 0) {
       scored.sort((a, b) => b.match_score - a.match_score || a.rank - b.rank);
     } else {
       scored.sort((a, b) => a.rank - b.rank);
     }
 
     return scored;
-  }, [rawStartups, rawTrainings, rawTenders, rawJobs, userSkillNames]);
+  }, [rawStartups, rawTrainings, rawTenders, rawJobs, userSkillNames, scoreById]);
 
   // Capacity-based tender filter helper
   const passesTenderCapacity = (opp: Opportunity & { match_score: number }) => {
@@ -368,7 +386,12 @@ const Opportunities = () => {
               ) : (
                 <div className="space-y-3">
                   {filtered.map((opp) => (
-                    <OpportunityCard key={opp.id} opportunity={opp} matchScore={opp.match_score} />
+                    <OpportunityCard
+                      key={opp.id}
+                      opportunity={opp}
+                      matchScore={opp.match_score}
+                      recommendation={opp.recommendation}
+                    />
                   ))}
                 </div>
               )}
