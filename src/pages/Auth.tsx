@@ -61,9 +61,9 @@ const Auth = () => {
 
   useEffect(() => {
     if (user && !onboardingLoading) {
-      // If user just signed up, send them to home to start their experience
+      // Fresh signup → compressed onboarding (P0.6 cold-start funnel)
       if (justSignedUp) {
-        window.location.href = "https://box4solutions.com";
+        navigate("/onboarding", { replace: true });
         return;
       }
 
@@ -78,6 +78,9 @@ const Auth = () => {
 
       if (isCoBuilderComplete || isEntrepreneurComplete) {
         navigate("/", { replace: true });
+      } else if (onboardingState?.primary_role) {
+        // Returning user mid-onboarding → resume compressed flow
+        navigate("/onboarding", { replace: true });
       } else {
         navigate("/choose-path", { replace: true });
       }
