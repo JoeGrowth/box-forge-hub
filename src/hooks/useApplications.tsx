@@ -87,7 +87,7 @@ export function useSubmitApplication() {
           opportunity_type: input.opportunity_type,
           owner_id: input.owner_id,
           message: input.message ?? null,
-          metadata: input.metadata ?? {},
+          metadata: (input.metadata ?? {}) as never,
         }])
         .select()
         .single();
