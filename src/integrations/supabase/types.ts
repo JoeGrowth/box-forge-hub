@@ -3784,6 +3784,7 @@ export type Database = {
         | "first_recommendations_viewed"
         | "first_recommendation_clicked"
         | "cold_start_updated"
+        | "route_not_found"
       graph_node_type:
         | "user"
         | "skill"
@@ -4108,6 +4109,7 @@ export const Constants = {
         "first_recommendations_viewed",
         "first_recommendation_clicked",
         "cold_start_updated",
+        "route_not_found",
       ],
       graph_node_type: [
         "user",
