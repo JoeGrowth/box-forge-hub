@@ -3447,6 +3447,31 @@ export type Database = {
       derive_professional_state: { Args: { _user_id: string }; Returns: string }
       derived_equity_role: { Args: { _percentage: number }; Returns: string }
       dispatch_growth_loops: { Args: { _user_id: string }; Returns: number }
+      get_admin_beta_health: {
+        Args: never
+        Returns: {
+          applications_accepted: number | null
+          applications_completed: number | null
+          applications_total: number | null
+          dlq_size: number | null
+          events_24h: number | null
+          loops_7d: number | null
+          loops_converted_7d: number | null
+          notif_delivered: number | null
+          notif_failed: number | null
+          recommendation_rows: number | null
+          total_users: number | null
+          users_with_expertise: number | null
+          users_with_recommendations: number | null
+          users_with_trust: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "admin_beta_health"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       graph_upsert_edge: {
         Args: {
           _attributes: Json
