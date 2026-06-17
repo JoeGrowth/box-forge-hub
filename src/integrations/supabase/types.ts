@@ -80,6 +80,66 @@ export type Database = {
         }
         Relationships: []
       }
+      applications: {
+        Row: {
+          accepted_at: string | null
+          applicant_id: string
+          completed_at: string | null
+          created_at: string
+          id: string
+          message: string | null
+          metadata: Json
+          opportunity_id: string
+          opportunity_type: Database["public"]["Enums"]["application_opportunity_kind"]
+          owner_id: string | null
+          rejected_at: string | null
+          reviewed_at: string | null
+          shortlisted_at: string | null
+          status: Database["public"]["Enums"]["application_status"]
+          submitted_at: string
+          updated_at: string
+          withdrawn_at: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          applicant_id: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          message?: string | null
+          metadata?: Json
+          opportunity_id: string
+          opportunity_type: Database["public"]["Enums"]["application_opportunity_kind"]
+          owner_id?: string | null
+          rejected_at?: string | null
+          reviewed_at?: string | null
+          shortlisted_at?: string | null
+          status?: Database["public"]["Enums"]["application_status"]
+          submitted_at?: string
+          updated_at?: string
+          withdrawn_at?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          applicant_id?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          message?: string | null
+          metadata?: Json
+          opportunity_id?: string
+          opportunity_type?: Database["public"]["Enums"]["application_opportunity_kind"]
+          owner_id?: string | null
+          rejected_at?: string | null
+          reviewed_at?: string | null
+          shortlisted_at?: string | null
+          status?: Database["public"]["Enums"]["application_status"]
+          submitted_at?: string
+          updated_at?: string
+          withdrawn_at?: string | null
+        }
+        Relationships: []
+      }
       chat_conversations: {
         Row: {
           applicant_id: string
@@ -168,6 +228,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      cold_start_profiles: {
+        Row: {
+          confidence: number
+          confirmed: boolean
+          confirmed_at: string | null
+          created_at: string
+          decoder_result: Json
+          estimated_expertise: Json
+          seed_source: string
+          updated_at: string
+          user_id: string
+          verified_expertise: Json
+        }
+        Insert: {
+          confidence?: number
+          confirmed?: boolean
+          confirmed_at?: string | null
+          created_at?: string
+          decoder_result?: Json
+          estimated_expertise?: Json
+          seed_source?: string
+          updated_at?: string
+          user_id: string
+          verified_expertise?: Json
+        }
+        Update: {
+          confidence?: number
+          confirmed?: boolean
+          confirmed_at?: string | null
+          created_at?: string
+          decoder_result?: Json
+          estimated_expertise?: Json
+          seed_source?: string
+          updated_at?: string
+          user_id?: string
+          verified_expertise?: Json
+        }
+        Relationships: []
       }
       consultant_opportunities: {
         Row: {
@@ -1520,6 +1619,60 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           wants_to_scale?: boolean | null
+        }
+        Relationships: []
+      }
+      notification_deliveries: {
+        Row: {
+          attempt_count: number
+          channel: string
+          created_at: string
+          event_type: string
+          failed_at: string | null
+          id: string
+          last_error: string | null
+          opened_at: string | null
+          payload: Json
+          queued_at: string | null
+          sent_at: string | null
+          source_event_id: string | null
+          state: Database["public"]["Enums"]["notification_delivery_state"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attempt_count?: number
+          channel?: string
+          created_at?: string
+          event_type: string
+          failed_at?: string | null
+          id?: string
+          last_error?: string | null
+          opened_at?: string | null
+          payload?: Json
+          queued_at?: string | null
+          sent_at?: string | null
+          source_event_id?: string | null
+          state?: Database["public"]["Enums"]["notification_delivery_state"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attempt_count?: number
+          channel?: string
+          created_at?: string
+          event_type?: string
+          failed_at?: string | null
+          id?: string
+          last_error?: string | null
+          opened_at?: string | null
+          payload?: Json
+          queued_at?: string | null
+          sent_at?: string | null
+          source_event_id?: string | null
+          state?: Database["public"]["Enums"]["notification_delivery_state"]
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -3223,7 +3376,25 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      admin_beta_health: {
+        Row: {
+          applications_accepted: number | null
+          applications_completed: number | null
+          applications_total: number | null
+          dlq_size: number | null
+          events_24h: number | null
+          loops_7d: number | null
+          loops_converted_7d: number | null
+          notif_delivered: number | null
+          notif_failed: number | null
+          recommendation_rows: number | null
+          total_users: number | null
+          users_with_expertise: number | null
+          users_with_recommendations: number | null
+          users_with_trust: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       audit_graph_integrity: {
@@ -3341,6 +3512,20 @@ export type Database = {
     }
     Enums: {
       app_role: "entrepreneur" | "cobuilder" | "box_manager" | "admin"
+      application_opportunity_kind:
+        | "job"
+        | "startup"
+        | "tender"
+        | "consulting"
+        | "training"
+      application_status:
+        | "submitted"
+        | "reviewing"
+        | "shortlisted"
+        | "accepted"
+        | "rejected"
+        | "withdrawn"
+        | "completed"
       graph_edge_type:
         | "HAS_SKILL"
         | "HAS_CERTIFICATION"
@@ -3507,6 +3692,12 @@ export type Database = {
         | "scaling_path"
         | "finance_literacy"
         | "security_literacy"
+      notification_delivery_state:
+        | "created"
+        | "queued"
+        | "sent"
+        | "opened"
+        | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3635,6 +3826,22 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["entrepreneur", "cobuilder", "box_manager", "admin"],
+      application_opportunity_kind: [
+        "job",
+        "startup",
+        "tender",
+        "consulting",
+        "training",
+      ],
+      application_status: [
+        "submitted",
+        "reviewing",
+        "shortlisted",
+        "accepted",
+        "rejected",
+        "withdrawn",
+        "completed",
+      ],
       graph_edge_type: [
         "HAS_SKILL",
         "HAS_CERTIFICATION",
@@ -3805,6 +4012,13 @@ export const Constants = {
         "scaling_path",
         "finance_literacy",
         "security_literacy",
+      ],
+      notification_delivery_state: [
+        "created",
+        "queued",
+        "sent",
+        "opened",
+        "failed",
       ],
     },
   },
