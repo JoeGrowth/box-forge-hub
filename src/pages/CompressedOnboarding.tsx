@@ -226,14 +226,15 @@ export default function CompressedOnboarding() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {INTENT_OPTIONS.map((o) => (
                   <button
-                    key={o}
+                    key={o.value}
                     type="button"
-                    onClick={() => setIntent(o)}
+                    onClick={() => setIntent(o.value)}
                     className={`text-left rounded-lg border p-3 transition ${
-                      intent === o ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
+                      intent === o.value ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
                     }`}
                   >
-                    <div className="font-medium text-sm">{o}</div>
+                    <div className="font-medium text-sm">{o.value}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">{o.description}</div>
                   </button>
                 ))}
               </div>
