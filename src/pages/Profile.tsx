@@ -23,7 +23,8 @@ import { useExpertise } from "@/hooks/useExpertise";
 import { useTrust, trustLevelStyle } from "@/hooks/useTrust";
 import { useRevenue } from "@/hooks/useRevenue";
 import { useReputation, reputationLevelStyle } from "@/hooks/useReputation";
-import { Wallet, Award } from "lucide-react";
+import { useOwnership, ownershipLevelStyle } from "@/hooks/useOwnership";
+import { Wallet, Award, PieChart } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   AlertDialog,
