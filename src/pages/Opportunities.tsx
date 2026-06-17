@@ -70,7 +70,7 @@ const Opportunities = () => {
     }
 
     const fetchAll = async () => {
-    const [startupsRes, trainingsRes, tendersRes, jobsRes, myProfileRes] = await Promise.all([
+    const [startupsRes, trainingsRes, tendersRes, jobsRes, consultingRes, myProfileRes] = await Promise.all([
         supabase
           .from("startup_ideas")
           .select("*")
@@ -93,6 +93,10 @@ const Opportunities = () => {
           .select("*")
           .eq("status", "published")
           .order("created_at", { ascending: false }),
+        (supabase.from("consulting_services" as any) as any)
+          .select("*")
+          .eq("is_active", true)
+          .order("created_at", { ascending: false }),
         supabase
           .from("profiles")
           .select("preferred_sector, primary_skills, years_of_experience, key_projects, summary_statement, professional_title")
@@ -104,6 +108,7 @@ const Opportunities = () => {
       const trainingData = (trainingsRes.data as any[]) || [];
       const tenderData = (tendersRes.data as any[]) || [];
       const jobData = (jobsRes.data as any[]) || [];
+      const consultingData = (consultingRes?.data as any[]) || [];
 
       // Capacity derives from profile narrative fields + expertise tag count
       // (which already encodes both skills and certifications via the graph).
