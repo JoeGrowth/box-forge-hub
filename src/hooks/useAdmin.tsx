@@ -44,6 +44,7 @@ export interface UserWithDetails {
   hasConsultantScaling: boolean;
   consultantAccess: boolean;
   procuringAccess: boolean;
+  progressionScore: number;
 }
 
 export function useAdmin() {
@@ -101,7 +102,8 @@ export function useAdmin() {
       certificationsResult,
       startupIdeasResult,
       teamMembersResult,
-      learningJourneysResult
+      learningJourneysResult,
+      progressionGraphResult
     ] = await Promise.all([
       supabase.from("profiles").select("*"),
       supabase.from("onboarding_state").select("*, consultant_access, procuring_access"),
@@ -109,7 +111,8 @@ export function useAdmin() {
       supabase.from("user_certifications").select("user_id, certification_type"),
       supabase.from("startup_ideas").select("id, creator_id, status"),
       supabase.from("startup_team_members").select("member_user_id, startup_id"),
-      supabase.from("learning_journeys").select("user_id, journey_type, status")
+      supabase.from("learning_journeys").select("user_id, journey_type, status"),
+      supabase.from("progression_graph").select("user_id, progression_score")
     ]);
 
     if (profilesResult.error) {
@@ -124,6 +127,7 @@ export function useAdmin() {
     const startupIdeas = startupIdeasResult.data || [];
     const teamMembers = teamMembersResult.data || [];
     const learningJourneys = learningJourneysResult.data || [];
+    const progressionGraphs = progressionGraphResult.data || [];
 
     // Count certifications per user
     const certCountByUser: Record<string, number> = {};
@@ -151,6 +155,12 @@ export function useAdmin() {
       if (journey.journey_type === "scaling_path" && (journey.status === "in_progress" || journey.status === "approved")) {
         hasConsultantScalingByUser[journey.user_id] = true;
       }
+    });
+
+    // Progression score lookup
+    const progressionScoreByUser: Record<string, number> = {};
+    progressionGraphs.forEach((pg: any) => {
+      progressionScoreByUser[pg.user_id] = pg.progression_score || 0;
     });
 
     // Combine the data
@@ -187,6 +197,7 @@ export function useAdmin() {
         hasConsultantScaling: hasConsultantScalingByUser[profile.user_id] || false,
         consultantAccess: (onboarding as any)?.consultant_access || false,
         procuringAccess: (onboarding as any)?.procuring_access || false,
+        progressionScore: progressionScoreByUser[profile.user_id] || 0,
       };
     });
 

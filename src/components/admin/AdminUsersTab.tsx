@@ -483,6 +483,7 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
                 <TableHead>Status</TableHead>
                 <TableHead>Boost</TableHead>
                 <TableHead>Scaling</TableHead>
+                <TableHead>PR</TableHead>
                 <TableHead>Joined</TableHead>
                 <TableHead className="w-[80px]">Actions</TableHead>
               </TableRow>
@@ -490,7 +491,7 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
             <TableBody>
               {filteredUsers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center text-muted-foreground py-12">
+                  <TableCell colSpan={9} className="text-center text-muted-foreground py-12">
                     No users found
                   </TableCell>
                 </TableRow>
@@ -567,6 +568,17 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
                         ) : (
                           <span className="text-sm text-muted-foreground">—</span>
                         )}
+                      </TableCell>
+
+                      <TableCell>
+                        <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border ${
+                          user.progressionScore >= 60 ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" :
+                          user.progressionScore >= 30 ? "bg-blue-500/10 text-blue-600 border-blue-500/20" :
+                          user.progressionScore > 0 ? "bg-amber-500/10 text-amber-600 border-amber-500/20" :
+                          "bg-muted text-muted-foreground border-border"
+                        }`}>
+                          {user.progressionScore > 0 ? `PR ${user.progressionScore}` : "—"}
+                        </span>
                       </TableCell>
 
                       <TableCell>
