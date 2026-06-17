@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { useGrowthLoops, type GrowthLoopRun } from "@/hooks/useGrowthLoops";
 import { USE_GROWTH_LOOPS } from "@/lib/featureFlags";
 import { useAuth } from "@/hooks/useAuth";
-import { Link } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 
 // Phase 8 surface. Renders the user's active growth loop runs as concrete
 // CTAs. The component itself contains no rule logic; every loop, condition
