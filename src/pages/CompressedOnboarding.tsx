@@ -99,7 +99,12 @@ export default function CompressedOnboarding() {
     try {
       const { data: u } = await supabase.auth.getUser();
       const uid = u.user?.id;
-      if (!uid) throw new Error("Not authenticated");
+      if (!uid) {
+        toast.error("Your session expired — please sign in again");
+        navigate("/auth", { replace: true });
+        return;
+      }
+
 
       if (step === 1) {
         if (!fullName.trim()) throw new Error("Name is required");
@@ -198,9 +203,15 @@ export default function CompressedOnboarding() {
                 <Input id="loc" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="City, country" maxLength={100} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="hd">Professional headline</Label>
-                <Input id="hd" value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="e.g. Product strategist & AI builder" maxLength={140} />
+                <Label htmlFor="hd">
+                  Professional headline <span className="text-muted-foreground font-normal">(optional)</span>
+                </Label>
+                <Input id="hd" value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="e.g. Student exploring product design — or leave blank" maxLength={140} />
+                <p className="text-xs text-muted-foreground">
+                  No title yet? Skip it. You can describe yourself with a goal like "Student looking for first startup role" or leave it empty — you'll refine it later from your expertise tags.
+                </p>
               </div>
+
             </div>
           )}
 
