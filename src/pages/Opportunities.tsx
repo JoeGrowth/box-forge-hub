@@ -45,6 +45,10 @@ const Opportunities = () => {
   // expertise_graph projection. Match score is derived from these tags.
   const { expertise } = useExpertise(user?.id);
   const userSkillNames = expertise?.tags ?? [];
+  // Phase 3: per-user opportunity_graph projection. Drives ranking and the
+  // "Why?" explanation on each card. Keyed by source row id so seeded
+  // opportunities (not in the projection) fall back to legacy tag overlap.
+  const { scoreById } = useOpportunityScoreMap(user?.id);
   const [userCapacity, setUserCapacity] = useState<{ hasTrackRecord: boolean; sectors: string[]; experience: number }>({
     hasTrackRecord: false,
     sectors: [],
