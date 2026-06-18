@@ -12,7 +12,7 @@ import { useReputation, reputationLevelStyle } from "@/hooks/useReputation";
 import { useOwnership, ownershipLevelStyle } from "@/hooks/useOwnership";
 import { useRevenue } from "@/hooks/useRevenue";
 import { useExpertise } from "@/hooks/useExpertise";
-import { ShieldCheck, Award, Briefcase, MapPin, Link as LinkIcon, Copy, Check } from "lucide-react";
+import { ShieldCheck, Award, Briefcase, MapPin, Link as LinkIcon, Copy, Check, Share2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 // Public profile surface at /u/:slug.
@@ -86,11 +86,29 @@ export default function PublicProfile() {
   const { expertise } = useExpertise(userId);
 
   const fullUrl = typeof window !== "undefined" ? `${window.location.origin}/u/${slug}` : `/u/${slug}`;
-  const copy = async () => {
-    await navigator.clipboard.writeText(fullUrl);
-    setCopied(true);
-    toast.success("Profile link copied");
-    setTimeout(() => setCopied(false), 1500);
+  const [sharing, setSharing] = useState(false);
+  const handleShare = async () => {
+    setSharing(true);
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `${name} — ${title}`,
+          text: description,
+          url: fullUrl,
+        });
+      } else {
+        await navigator.clipboard.writeText(fullUrl);
+        setCopied(true);
+        toast.success("Profile link copied");
+        setTimeout(() => setCopied(false), 1500);
+      }
+    } catch (e: any) {
+      if (e.name !== "AbortError") {
+        toast.error("Could not share");
+      }
+    } finally {
+      setSharing(false);
+    }
   };
 
   if (loading) {
@@ -194,8 +212,8 @@ export default function PublicProfile() {
                 )}
               </div>
             </div>
-            <Button onClick={copy} variant="outline" className="border-white/20 text-white hover:bg-white/10">
-              {copied ? <><Check className="w-4 h-4 mr-2" />Copied</> : <><Copy className="w-4 h-4 mr-2" />Share</>}
+            <Button onClick={handleShare} variant="outline" className="border-white/20 text-white hover:bg-white/10" disabled={sharing}>
+              {sharing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : copied ? <><Check className="w-4 h-4 mr-2" />Copied</> : <><Share2 className="w-4 h-4 mr-2" />Share</>}
             </Button>
           </div>
         </div>
