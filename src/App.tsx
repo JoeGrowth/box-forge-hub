@@ -8,6 +8,7 @@ import { OnboardingProvider } from "@/hooks/useOnboarding";
 import { LearningJourneysProvider } from "@/hooks/useLearningJourneys";
 import { UserStatusProvider } from "@/hooks/useUserStatus";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
+import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 import { PersistentNavbarLayout } from "@/components/layout/PersistentNavbarLayout";
 import Index from "./pages/Index";
 import Home from "./pages/Home";
@@ -103,17 +104,22 @@ const App = () => (
                   <Route path="/signup" element={<Auth />} />
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
-                  <Route path="/professional-onboarding" element={<Onboarding />} />
-                  <Route path="/choose-path" element={<ChoosePath />} />
-                  <Route path="/entrepreneurial-onboarding" element={<EntrepreneurialOnboarding />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/admin" element={<Admin />} />
-                  <Route path="/admin/opportunity/:id" element={<AdminOpportunityDetail />} />
-                  <Route path="/admin/beta" element={<BetaConsole />} />
-                  <Route path="/admin/lifecycle-integrity" element={<LifecycleIntegrity />} />
+                  {/* P0: single activation funnel = /onboarding (compressed).
+                      Legacy 9-step flows live on as optional enrichment tracks. */}
                   <Route path="/onboarding" element={<CompressedOnboarding />} />
                   <Route path="/onboarding/map" element={<ProfessionalMap />} />
+                  <Route path="/professional-track" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+                  <Route path="/entrepreneurial-track" element={<ProtectedRoute><EntrepreneurialOnboarding /></ProtectedRoute>} />
+                  {/* Legacy redirects — preserve bookmarks / emails. */}
+                  <Route path="/professional-onboarding" element={<Navigate to="/professional-track" replace />} />
+                  <Route path="/entrepreneurial-onboarding" element={<Navigate to="/entrepreneurial-track" replace />} />
+                  <Route path="/choose-path" element={<Navigate to="/onboarding" replace />} />
+                  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                  <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                  <Route path="/admin" element={<ProtectedRoute requireLevel="admin"><Admin /></ProtectedRoute>} />
+                  <Route path="/admin/opportunity/:id" element={<ProtectedRoute requireLevel="admin"><AdminOpportunityDetail /></ProtectedRoute>} />
+                  <Route path="/admin/beta" element={<ProtectedRoute requireLevel="admin"><BetaConsole /></ProtectedRoute>} />
+                  <Route path="/admin/lifecycle-integrity" element={<ProtectedRoute requireLevel="admin"><LifecycleIntegrity /></ProtectedRoute>} />
                   <Route element={<PersistentNavbarLayout />}>
                   <Route path="/opportunities" element={<Opportunities />} />
                   <Route path="/organizations" element={<Organizations />} />
@@ -178,8 +184,8 @@ const App = () => (
                   <Route path="/ideas/new" element={<Navigate to="/create-idea" replace />} />
                   <Route path="/startup/new" element={<Navigate to="/create-idea" replace />} />
                   <Route path="/startups" element={<Navigate to="/opportunities?tab=startup" replace />} />
-                  <Route path="/onboarding/professional" element={<Navigate to="/professional-onboarding" replace />} />
-                  <Route path="/onboarding/entrepreneur" element={<Navigate to="/entrepreneurial-onboarding" replace />} />
+                  <Route path="/onboarding/professional" element={<Navigate to="/professional-track" replace />} />
+                  <Route path="/onboarding/entrepreneur" element={<Navigate to="/entrepreneurial-track" replace />} />
                   <Route path="/admin/dashboard" element={<Navigate to="/admin" replace />} />
                   <Route path="/me" element={<Navigate to="/profile" replace />} />
                   <Route path="/account" element={<Navigate to="/profile" replace />} />
