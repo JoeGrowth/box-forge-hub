@@ -130,29 +130,33 @@ export default function PublicProfile() {
   const repStyle = reputation ? reputationLevelStyle(reputation.reputation_level) : null;
   const ownStyle = ownership ? ownershipLevelStyle(ownership.ownership_level) : null;
 
+  useEffect(() => {
+    if (!profile) return;
+    document.title = `${name} — ${title} | Box4Solutions`;
+    const setMeta = (sel: string, attr: string, value: string) => {
+      let el = document.head.querySelector(sel) as HTMLMetaElement | HTMLLinkElement | null;
+      if (!el) {
+        el = document.createElement(sel.startsWith("link") ? "link" : "meta");
+        if (sel.includes("[name=")) (el as HTMLMetaElement).name = sel.match(/name="([^"]+)"/)![1];
+        if (sel.includes("[property=")) (el as HTMLMetaElement).setAttribute("property", sel.match(/property="([^"]+)"/)![1]);
+        if (sel.includes("[rel=")) (el as HTMLLinkElement).rel = sel.match(/rel="([^"]+)"/)![1];
+        document.head.appendChild(el);
+      }
+      (el as any)[attr] = value;
+    };
+    setMeta('meta[name="description"]', "content", description);
+    setMeta('link[rel="canonical"]', "href", `/u/${slug}`);
+    setMeta('meta[property="og:title"]', "content", `${name} — ${title}`);
+    setMeta('meta[property="og:description"]', "content", description);
+    setMeta('meta[property="og:type"]', "content", "profile");
+    setMeta('meta[property="og:url"]', "content", `/u/${slug}`);
+    if (profile.avatar_url) setMeta('meta[property="og:image"]', "content", profile.avatar_url);
+  }, [profile, name, title, description, slug]);
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Helmet>
-        <title>{`${name} — ${title} | Box4Solutions`}</title>
-        <meta name="description" content={description} />
-        <link rel="canonical" href={`/u/${slug}`} />
-        <meta property="og:title" content={`${name} — ${title}`} />
-        <meta property="og:description" content={description} />
-        <meta property="og:type" content="profile" />
-        <meta property="og:url" content={`/u/${slug}`} />
-        {profile.avatar_url && <meta property="og:image" content={profile.avatar_url} />}
-        <script type="application/ld+json">{JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Person",
-          name,
-          jobTitle: title,
-          description,
-          image: profile.avatar_url ?? undefined,
-          url: fullUrl,
-        })}</script>
-      </Helmet>
-
       <Navbar />
+
 
       <main className="container mx-auto px-4 py-12 max-w-4xl flex-1 space-y-6">
         {/* Header */}
@@ -210,10 +214,10 @@ export default function PublicProfile() {
 
         {/* Six-graph signals */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <SignalCard label="Expertise" value={expertise ? `${expertise.tags?.length ?? 0} skills` : "—"} sub={expertise?.expertise_level ?? null} />
-          <SignalCard label="Trust" value={trust?.level ?? "—"} sub={trust ? `${trust.signals?.length ?? 0} signals` : null} />
+          <SignalCard label="Expertise" value={expertise ? `${expertise.tags?.length ?? 0} skills` : "—"} sub={expertise?.level ?? null} />
+          <SignalCard label="Trust" value={trust?.level ?? "—"} sub={trust ? `${trust.verifiedCount} verified` : null} />
           <SignalCard label="Reputation" value={reputation?.reputation_level ?? "—"} sub={reputation ? `${Math.round(reputation.reputation_score)} pts` : null} />
-          <SignalCard label="Revenue track" value={revenue ? `${Math.round(revenue.total_value)}` : "—"} sub={revenue?.revenue_level ?? null} />
+          <SignalCard label="Revenue" value={revenue ? `${revenue.transaction_count}` : "—"} sub={revenue ? `${revenue.completed_value_count} completed` : null} />
         </div>
 
         {/* Skills */}
