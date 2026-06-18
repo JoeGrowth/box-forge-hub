@@ -75,6 +75,7 @@ import PublishTraining from "./pages/PublishTraining";
 import PublishJob from "./pages/PublishJob";
 import Declaration from "./pages/Declaration";
 import PGP from "./pages/PGP";
+import PublicProfile from "./pages/PublicProfile";
 
 const queryClient = new QueryClient();
 
@@ -188,6 +189,7 @@ const App = () => (
                   <Route path="/onboarding/entrepreneur" element={<Navigate to="/entrepreneurial-track" replace />} />
                   <Route path="/admin/dashboard" element={<Navigate to="/admin" replace />} />
                   <Route path="/me" element={<Navigate to="/profile" replace />} />
+                  <Route path="/u/:slug" element={<PublicProfile />} />
                   <Route path="/account" element={<Navigate to="/profile" replace />} />
                   <Route path="/settings" element={<Navigate to="/profile" replace />} />
                   <Route path="/inbox" element={<Navigate to="/messages" replace />} />
