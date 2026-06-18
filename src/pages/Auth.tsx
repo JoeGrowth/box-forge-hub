@@ -82,7 +82,7 @@ const Auth = () => {
         // Returning user mid-onboarding → resume compressed flow
         navigate("/onboarding", { replace: true });
       } else {
-        navigate("/choose-path", { replace: true });
+        navigate("/onboarding", { replace: true });
       }
     }
   }, [user, onboardingState, onboardingLoading, navigate, justSignedUp]);

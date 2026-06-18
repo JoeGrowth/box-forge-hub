@@ -23,7 +23,7 @@ import Auth from "./pages/Auth";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Onboarding from "./pages/Onboarding";
-import ChoosePath from "./pages/ChoosePath";
+// ChoosePath retired — /choose-path now redirects to /onboarding
 import EntrepreneurialOnboarding from "./pages/EntrepreneurialOnboarding";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";

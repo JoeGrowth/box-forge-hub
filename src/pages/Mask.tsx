@@ -338,7 +338,7 @@ const Mask = () => {
                       You requested help defining your Natural Role. Once you define it, you can continue your 
                       onboarding journey and submit for approval.
                     </p>
-                    <Button variant="teal" onClick={() => navigate("/professional-onboarding")}>
+                    <Button variant="teal" onClick={() => navigate("/professional-track")}>
                       Define My Natural Role
                       <ArrowRight className="ml-2 w-4 h-4" />
                     </Button>

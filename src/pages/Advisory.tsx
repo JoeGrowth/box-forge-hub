@@ -874,7 +874,7 @@ const Advisory = () => {
                           <div className="text-center pt-2">
                             <Button
                               variant="hero"
-                              onClick={() => navigate("/entrepreneurial-onboarding")}
+                              onClick={() => navigate("/entrepreneurial-track")}
                               className="gap-2"
                             >
                               <Rocket className="w-4 h-4" />

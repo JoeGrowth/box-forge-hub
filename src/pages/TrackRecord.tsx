@@ -518,7 +518,7 @@ const TrackRecord = () => {
                       <p className="text-muted-foreground max-w-md mb-4">
                         Complete your entrepreneurial onboarding to start tracking your achievements.
                       </p>
-                      <Button variant="teal" onClick={() => navigate("/entrepreneurial-onboarding")}>
+                      <Button variant="teal" onClick={() => navigate("/entrepreneurial-track")}>
                         Start Onboarding
                         <ArrowRight className="ml-2 w-4 h-4" />
                       </Button>
