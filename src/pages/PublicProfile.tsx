@@ -12,7 +12,7 @@ import { useReputation, reputationLevelStyle } from "@/hooks/useReputation";
 import { useOwnership, ownershipLevelStyle } from "@/hooks/useOwnership";
 import { useRevenue } from "@/hooks/useRevenue";
 import { useExpertise } from "@/hooks/useExpertise";
-import { ShieldCheck, Award, Briefcase, MapPin, Link as LinkIcon, Copy, Check, Share2 } from "lucide-react";
+import { ShieldCheck, Award, Briefcase, MapPin, Link as LinkIcon, Copy, Check, Share2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 // Public profile surface at /u/:slug.
