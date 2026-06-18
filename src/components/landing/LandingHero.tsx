@@ -64,12 +64,10 @@ export function LandingHero() {
                   </div>
                 ))}
               </div>
-              <span className="text-sm">200+ Co-Builders</span>
+              <span className="text-sm">A growing community of co-builders</span>
             </div>
             <div className="h-4 w-px bg-white/20" />
-            <div className="text-sm">50+ Startups Launched</div>
-            <div className="h-4 w-px bg-white/20" />
-            <div className="text-sm">$2.5M+ Equity Distributed</div>
+            <div className="text-sm">Equity-first, transparent matching</div>
           </div>
         </div>
       </div>

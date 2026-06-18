@@ -74,20 +74,13 @@ export function HeroSection() {
               </Button>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-6 animate-fade-in" style={{ animationDelay: "0.4s" }}>
-              <div>
-                <div className="text-3xl md:text-4xl font-bold text-b4-teal">50+</div>
-                <div className="text-sm text-primary-foreground/60">Startups Launched</div>
-              </div>
-              <div>
-                <div className="text-3xl md:text-4xl font-bold text-b4-teal">200+</div>
-                <div className="text-sm text-primary-foreground/60">Co-Builders</div>
-              </div>
-              <div>
-                <div className="text-3xl md:text-4xl font-bold text-b4-teal">6</div>
-                <div className="text-sm text-primary-foreground/60">Box For Units</div>
-              </div>
+            {/* Qualitative proof — vanity counts removed in favor of live LandingStats. */}
+            <div className="flex flex-wrap items-center gap-3 text-primary-foreground/70 animate-fade-in" style={{ animationDelay: "0.4s" }}>
+              <span className="text-sm">Equity-first matching</span>
+              <span className="w-1 h-1 rounded-full bg-primary-foreground/40" />
+              <span className="text-sm">Verified co-builders</span>
+              <span className="w-1 h-1 rounded-full bg-primary-foreground/40" />
+              <span className="text-sm">6 Box For verticals</span>
             </div>
           </div>
 
@@ -125,13 +118,13 @@ export function HeroSection() {
                 </div>
               </div>
 
-              {/* Floating badge */}
+              {/* Floating badge — qualitative, not a fabricated dollar number. */}
               <div
                 className="absolute -top-4 -right-4 glass rounded-2xl p-4 shadow-xl animate-float"
                 style={{ animationDelay: "0.5s" }}
               >
-                <div className="text-2xl font-bold text-b4-teal">$2.5M</div>
-                <div className="text-xs text-muted-foreground">Equity Distributed</div>
+                <div className="text-sm font-semibold text-b4-teal">Equity-first</div>
+                <div className="text-xs text-muted-foreground">Transparent allocation</div>
               </div>
             </div>
           </div>
