@@ -715,10 +715,18 @@ const Profile = () => {
                 </div>
 
                 {!isEditing && (
-                  <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
-                    <Settings className="w-4 h-4 mr-2" />
-                    Edit
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to={`/u/${profileSlug(profile?.full_name, user?.id ?? "")}`} target="_blank">
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Public Profile
+                      </Link>
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                      <Settings className="w-4 h-4 mr-2" />
+                      Edit
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>
