@@ -42,7 +42,7 @@ const Onboarding = () => {
       
       // If step is 1 or less, user hasn't selected a path yet - send to choose-path
       if (onboardingState.current_step <= 1) {
-        navigate("/choose-path", { replace: true });
+        navigate("/onboarding", { replace: true });
         return;
       }
       
@@ -94,7 +94,7 @@ const Onboarding = () => {
       } catch (e) {
         console.error("Failed to reset onboarding state:", e);
       }
-      navigate("/choose-path");
+      navigate("/onboarding");
     }
   };
 
