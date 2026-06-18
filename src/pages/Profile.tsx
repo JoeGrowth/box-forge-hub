@@ -70,6 +70,8 @@ import {
 } from "lucide-react";
 
 import { profileSlug } from "./PublicProfile";
+
+interface Profile {
   id: string;
   user_id: string;
   full_name: string | null;
