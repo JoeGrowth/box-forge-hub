@@ -131,12 +131,19 @@ export function DashboardProgress() {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
-            Your Journey Progress
+            Getting Ready Journey Progress
           </CardTitle>
           <span className="text-sm text-muted-foreground">
             {overallProgress()}% Complete
           </span>
         </div>
+        <p className="text-sm text-muted-foreground">
+          Onboarding milestones to unlock the platform. For your full progression, see the{" "}
+          <Link to="/profile" className="text-b4-teal hover:underline font-medium">
+            Professional Growth Path
+          </Link>{" "}
+          in your Profile.
+        </p>
         <Progress value={overallProgress()} className="h-2" />
       </CardHeader>
       <CardContent className="space-y-4">
