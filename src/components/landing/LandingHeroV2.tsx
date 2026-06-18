@@ -57,18 +57,17 @@ export function LandingHeroV2() {
           <div className="flex flex-wrap items-center justify-center gap-8 text-white/50 animate-fade-in" style={{ animationDelay: "0.4s" }}>
             <div className="flex items-center gap-2">
               <div className="flex -space-x-2">
+              <div className="flex -space-x-2">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-b4-teal/40 to-b4-coral/40 border-2 border-b4-navy flex items-center justify-center text-xs font-medium text-white">
                     {String.fromCharCode(64 + i)}
                   </div>
                 ))}
               </div>
-              <span className="text-sm">200+ Co-Builders</span>
+              <span className="text-sm">A growing community of co-builders</span>
             </div>
             <div className="h-4 w-px bg-white/20" />
-            <div className="text-sm">50+ Startups Launched</div>
-            <div className="h-4 w-px bg-white/20" />
-            <div className="text-sm">$2.5M+ Equity Distributed</div>
+            <div className="text-sm">Equity-first, transparent matching</div>
           </div>
         </div>
       </div>
