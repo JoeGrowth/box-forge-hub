@@ -41,11 +41,13 @@ export function profileSlug(fullName: string | null, userId: string): string {
     .trim()
     .replace(/\s+/g, "-")
     .slice(0, 40) || "member";
-  return `${base}-${userId.slice(0, 8)}`;
+  // Append the full uuid so resolution is unambiguous and avoids ilike-on-uuid.
+  return `${base}-${userId}`;
 }
 
+const UUID_RE = /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
 function parseSlug(slug: string): string | null {
-  const m = slug.match(/-([0-9a-f]{8})$/i);
+  const m = slug.match(UUID_RE);
   return m ? m[1].toLowerCase() : null;
 }
 
@@ -58,17 +60,15 @@ export default function PublicProfile() {
 
   useEffect(() => {
     let cancelled = false;
-    const idPrefix = parseSlug(slug);
-    if (!idPrefix) { setNotFound(true); setLoading(false); return; }
+    const userId = parseSlug(slug);
+    if (!userId) { setNotFound(true); setLoading(false); return; }
 
     (async () => {
-      // Match user_id by text-prefix on the trailing 8 chars of the slug.
       const { data } = await supabase
         .from("profiles")
         .select("user_id, full_name, avatar_url, professional_title, bio, summary_statement, preferred_sector, primary_skills, years_of_experience, key_projects, education_certifications")
-        .ilike("user_id" as any, `${idPrefix}%`)
+        .eq("user_id", userId)
         .or("is_deleted.is.null,is_deleted.eq.false")
-        .limit(1)
         .maybeSingle();
       if (cancelled) return;
       if (!data) { setNotFound(true); }
