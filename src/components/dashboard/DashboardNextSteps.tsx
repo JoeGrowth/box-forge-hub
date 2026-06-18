@@ -4,10 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Sparkles, Target } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  useNextBestActions,
   progressionStageLabel,
   type NextBestAction,
 } from "@/hooks/useNextBestActions";
+import { useNextBestAction } from "@/hooks/useNextBestAction";
 import {
   RecommendationExplanationView,
   fromNextBestAction,
@@ -33,9 +33,10 @@ function actionLink(a: NextBestAction) {
 
 export function DashboardNextSteps() {
   const { user } = useAuth();
-  const { progression, loading } = useNextBestActions(user?.id);
+  const { actions, progression, loading } = useNextBestAction(user?.id, {
+    surface: "dashboard",
+  });
 
-  const actions = progression?.recommended_actions ?? [];
   const stage = progression?.current_state ?? "novice";
 
   return (
@@ -57,7 +58,7 @@ export function DashboardNextSteps() {
         )}
       </CardHeader>
       <CardContent className="space-y-3">
-        {actions.slice(0, 4).map((a) => {
+        {actions.map((a) => {
           const explanation = fromNextBestAction(a);
           return (
             <Link

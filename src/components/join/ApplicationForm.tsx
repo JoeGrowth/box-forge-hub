@@ -90,7 +90,7 @@ export function ApplicationForm({ selectedRole }: ApplicationFormProps) {
 
   const handleStartJourney = () => {
     if (user) {
-      navigate("/choose-path");
+      navigate("/onboarding");
     }
   };
 
@@ -134,7 +134,7 @@ export function ApplicationForm({ selectedRole }: ApplicationFormProps) {
         });
 
         if (selectedRole !== "partner") {
-          navigate("/choose-path");
+          navigate("/onboarding");
         }
       } else if (wantsAccount && password) {
         // Create new account

@@ -19,7 +19,7 @@ export function HeroSection() {
       return { text: "Go to Dashboard", link: "/dashboard" };
     }
 
-    return { text: "Continue Your Journey", link: "/professional-onboarding" };
+    return { text: "Continue Your Journey", link: "/professional-track" };
   };
 
   const { text: buttonText, link: buttonLink } = getButtonConfig();

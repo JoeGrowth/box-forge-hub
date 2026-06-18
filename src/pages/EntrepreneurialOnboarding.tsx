@@ -159,7 +159,7 @@ const EntrepreneurialOnboarding = () => {
       } catch (e) {
         console.error("Failed to reset onboarding state:", e);
       }
-      navigate("/choose-path");
+      navigate("/onboarding");
     }
   };
 
