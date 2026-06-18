@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -65,9 +65,11 @@ import {
   ChevronDown,
   MessageSquare,
   FileText,
+  ExternalLink,
+  Share2,
 } from "lucide-react";
 
-interface Profile {
+import { profileSlug } from "./PublicProfile";
   id: string;
   user_id: string;
   full_name: string | null;
