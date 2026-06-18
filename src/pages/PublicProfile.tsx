@@ -86,11 +86,29 @@ export default function PublicProfile() {
   const { expertise } = useExpertise(userId);
 
   const fullUrl = typeof window !== "undefined" ? `${window.location.origin}/u/${slug}` : `/u/${slug}`;
-  const copy = async () => {
-    await navigator.clipboard.writeText(fullUrl);
-    setCopied(true);
-    toast.success("Profile link copied");
-    setTimeout(() => setCopied(false), 1500);
+  const [sharing, setSharing] = useState(false);
+  const handleShare = async () => {
+    setSharing(true);
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `${name} — ${title}`,
+          text: description,
+          url: fullUrl,
+        });
+      } else {
+        await navigator.clipboard.writeText(fullUrl);
+        setCopied(true);
+        toast.success("Profile link copied");
+        setTimeout(() => setCopied(false), 1500);
+      }
+    } catch (e: any) {
+      if (e.name !== "AbortError") {
+        toast.error("Could not share");
+      }
+    } finally {
+      setSharing(false);
+    }
   };
 
   if (loading) {
