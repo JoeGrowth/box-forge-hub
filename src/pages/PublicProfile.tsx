@@ -212,8 +212,8 @@ export default function PublicProfile() {
                 )}
               </div>
             </div>
-            <Button onClick={copy} variant="outline" className="border-white/20 text-white hover:bg-white/10">
-              {copied ? <><Check className="w-4 h-4 mr-2" />Copied</> : <><Copy className="w-4 h-4 mr-2" />Share</>}
+            <Button onClick={handleShare} variant="outline" className="border-white/20 text-white hover:bg-white/10" disabled={sharing}>
+              {sharing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : copied ? <><Check className="w-4 h-4 mr-2" />Copied</> : <><Share2 className="w-4 h-4 mr-2" />Share</>}
             </Button>
           </div>
         </div>
