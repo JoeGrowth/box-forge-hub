@@ -127,7 +127,7 @@ export default function Characters() {
       );
 
       const hasCert = (key: string) =>
-        (certs ?? []).some((c: any) => c.certification_key === key && c.status === "approved");
+        (certs ?? []).some((c: any) => c.certification_type === key && c.verified);
 
       const cap = (n: number, max: number) => Math.min(100, Math.round((n / max) * 100));
 
