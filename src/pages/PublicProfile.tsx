@@ -111,38 +111,10 @@ export default function PublicProfile() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="container mx-auto px-4 py-16 max-w-4xl">
-          <div className="h-32 bg-muted/40 rounded-2xl animate-pulse mb-6" />
-          <div className="h-64 bg-muted/40 rounded-2xl animate-pulse" />
-        </div>
-      </div>
-    );
-  }
-
-  if (notFound || !profile) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <Navbar />
-        <main className="container mx-auto px-4 py-24 max-w-2xl text-center flex-1">
-          <h1 className="font-display text-3xl font-bold mb-3">Profile not available</h1>
-          <p className="text-muted-foreground mb-6">
-            This member's profile is private or doesn't exist.
-          </p>
-          <Button asChild><Link to="/cobuilders">Explore approved members</Link></Button>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  const name = profile.full_name ?? "Member";
-  const title = profile.professional_title ?? profile.preferred_sector ?? "Box4Solutions member";
-  const description = (profile.summary_statement ?? profile.bio ?? `${name} on Box4Solutions`).slice(0, 160);
-  const skills = (profile.primary_skills ?? "")
+  const name = profile?.full_name ?? "Member";
+  const title = profile?.professional_title ?? profile?.preferred_sector ?? "Box4Solutions member";
+  const description = (profile?.summary_statement ?? profile?.bio ?? `${name} on Box4Solutions`).slice(0, 160);
+  const skills = (profile?.primary_skills ?? "")
     .split(",").map((s) => s.trim()).filter(Boolean).slice(0, 12);
   const trustStyle = trust && trust.level !== "unverified" ? trustLevelStyle(trust.level) : null;
   const repStyle = reputation ? reputationLevelStyle(reputation.reputation_level) : null;
@@ -170,6 +142,34 @@ export default function PublicProfile() {
     setMeta('meta[property="og:url"]', "content", `/u/${slug}`);
     if (profile.avatar_url) setMeta('meta[property="og:image"]', "content", profile.avatar_url);
   }, [profile, name, title, description, slug]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container mx-auto px-4 py-16 max-w-4xl">
+          <div className="h-32 bg-muted/40 rounded-2xl animate-pulse mb-6" />
+          <div className="h-64 bg-muted/40 rounded-2xl animate-pulse" />
+        </div>
+      </div>
+    );
+  }
+
+  if (notFound || !profile) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Navbar />
+        <main className="container mx-auto px-4 py-24 max-w-2xl text-center flex-1">
+          <h1 className="font-display text-3xl font-bold mb-3">Profile not available</h1>
+          <p className="text-muted-foreground mb-6">
+            This member's profile is private or doesn't exist.
+          </p>
+          <Button asChild><Link to="/cobuilders">Explore approved members</Link></Button>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">

@@ -76,6 +76,7 @@ import PublishJob from "./pages/PublishJob";
 import Declaration from "./pages/Declaration";
 import PGP from "./pages/PGP";
 import PublicProfile from "./pages/PublicProfile";
+import Characters from "./pages/Characters";
 
 const queryClient = new QueryClient();
 
@@ -168,6 +169,7 @@ const App = () => (
                   <Route path="/el-space" element={<ElSpace />} />
                   <Route path="/declaration" element={<Declaration />} />
                   <Route path="/PGP" element={<PGP />} />
+                  <Route path="/characters" element={<ProtectedRoute><Characters /></ProtectedRoute>} />
                   <Route path="/pgp" element={<Navigate to="/PGP" replace />} />
 
                   {/* Intuitive aliases — keep growth loop intact for guessed URLs */}
