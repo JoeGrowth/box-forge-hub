@@ -106,10 +106,10 @@ export default function Characters() {
       if (!user) { setLoading(false); return; }
       const profileRes: any = await supabase.from("profiles").select("full_name,professional_title,bio,summary_statement,primary_skills,years_of_experience,key_projects,education_certifications,avatar_url").eq("user_id", user.id).maybeSingle();
       const servicesRes: any = await supabase.from("consulting_services").select("id", { count: "exact", head: true }).eq("user_id", user.id);
-      const trainingsRes: any = await supabase.from("training_opportunities").select("id", { count: "exact", head: true }).eq("creator_id", user.id);
+      const trainingsRes: any = await supabase.from("training_opportunities").select("id", { count: "exact", head: true }).eq("user_id", user.id);
       const ideasRes: any = await supabase.from("startup_ideas").select("id", { count: "exact", head: true }).eq("creator_id", user.id);
       const applicationsRes: any = await supabase.from("startup_applications").select("id", { count: "exact", head: true }).eq("applicant_id", user.id);
-      const certsRes: any = await supabase.from("user_certifications").select("certification_key,status").eq("user_id", user.id);
+      const certsRes: any = await supabase.from("user_certifications").select("certification_type,verified").eq("user_id", user.id);
 
       const profile = profileRes.data;
       const services = servicesRes.count;
