@@ -76,6 +76,7 @@ import PublishJob from "./pages/PublishJob";
 import Declaration from "./pages/Declaration";
 import PGP from "./pages/PGP";
 import PublicProfile from "./pages/PublicProfile";
+import Characters from "./pages/Characters";
 
 const queryClient = new QueryClient();
 
