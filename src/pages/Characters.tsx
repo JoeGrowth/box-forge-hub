@@ -104,21 +104,19 @@ export default function Characters() {
     let cancelled = false;
     (async () => {
       if (!user) { setLoading(false); return; }
-      const [
-        { data: profile },
-        { count: services },
-        { count: trainings },
-        { count: ideas },
-        { count: applications },
-        { data: certs },
-      ] = await Promise.all([
-        supabase.from("profiles").select("full_name,professional_title,bio,summary_statement,primary_skills,years_of_experience,key_projects,education_certifications,avatar_url").eq("user_id", user.id).maybeSingle(),
-        supabase.from("consulting_services").select("id", { count: "exact", head: true }).eq("user_id", user.id),
-        supabase.from("training_opportunities").select("id", { count: "exact", head: true }).eq("creator_id", user.id),
-        supabase.from("startup_ideas").select("id", { count: "exact", head: true }).eq("creator_id", user.id),
-        supabase.from("startup_applications").select("id", { count: "exact", head: true }).eq("applicant_id", user.id),
-        supabase.from("user_certifications").select("certification_key,status").eq("user_id", user.id),
-      ]);
+      const profileRes: any = await supabase.from("profiles").select("full_name,professional_title,bio,summary_statement,primary_skills,years_of_experience,key_projects,education_certifications,avatar_url").eq("user_id", user.id).maybeSingle();
+      const servicesRes: any = await supabase.from("consulting_services").select("id", { count: "exact", head: true }).eq("user_id", user.id);
+      const trainingsRes: any = await supabase.from("training_opportunities").select("id", { count: "exact", head: true }).eq("creator_id", user.id);
+      const ideasRes: any = await supabase.from("startup_ideas").select("id", { count: "exact", head: true }).eq("creator_id", user.id);
+      const applicationsRes: any = await supabase.from("startup_applications").select("id", { count: "exact", head: true }).eq("applicant_id", user.id);
+      const certsRes: any = await supabase.from("user_certifications").select("certification_key,status").eq("user_id", user.id);
+
+      const profile = profileRes.data;
+      const services = servicesRes.count;
+      const trainings = trainingsRes.count;
+      const ideas = ideasRes.count;
+      const applications = applicationsRes.count;
+      const certs = certsRes.data;
 
       if (cancelled) return;
 
