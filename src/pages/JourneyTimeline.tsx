@@ -66,7 +66,7 @@ export default function JourneyTimeline() {
       ] = await Promise.all([
         supabase.from("profiles").select("created_at, updated_at, summary_statement, primary_skills, professional_title").eq("user_id", user.id).maybeSingle(),
         supabase.from("onboarding_state").select("created_at, updated_at, onboarding_completed, primary_role, user_status, journey_status").eq("user_id", user.id).maybeSingle(),
-        supabase.from("opportunity_interactions").select("created_at, interaction_type").eq("user_id", user.id).order("created_at", { ascending: true }).limit(1).maybeSingle(),
+        supabase.from("opportunity_interactions").select("created_at, action_type").eq("user_id", user.id).order("created_at", { ascending: true }).limit(1).maybeSingle(),
         supabase.from("startup_applications").select("created_at, status").eq("applicant_id", user.id).order("created_at", { ascending: true }).limit(1).maybeSingle(),
         supabase.from("startup_ideas").select("created_at, current_episode, development_completed_at, validation_completed_at, growth_completed_at").eq("creator_id", user.id).order("created_at", { ascending: true }).limit(1).maybeSingle(),
         supabase.from("equity_allocations").select("created_at, status, percentage").eq("user_id", user.id).order("created_at", { ascending: true }).limit(1).maybeSingle(),
