@@ -77,6 +77,7 @@ import Declaration from "./pages/Declaration";
 import PGP from "./pages/PGP";
 import PublicProfile from "./pages/PublicProfile";
 import Characters from "./pages/Characters";
+import JourneyTimeline from "./pages/JourneyTimeline";
 
 const queryClient = new QueryClient();
 
