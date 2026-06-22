@@ -77,6 +77,7 @@ import Declaration from "./pages/Declaration";
 import PGP from "./pages/PGP";
 import PublicProfile from "./pages/PublicProfile";
 import Characters from "./pages/Characters";
+import JourneyTimeline from "./pages/JourneyTimeline";
 
 const queryClient = new QueryClient();
 
@@ -170,6 +171,8 @@ const App = () => (
                   <Route path="/declaration" element={<Declaration />} />
                   <Route path="/PGP" element={<PGP />} />
                   <Route path="/characters" element={<ProtectedRoute><Characters /></ProtectedRoute>} />
+                  <Route path="/journey-timeline" element={<ProtectedRoute><JourneyTimeline /></ProtectedRoute>} />
+                  <Route path="/timeline" element={<Navigate to="/journey-timeline" replace />} />
                   <Route path="/pgp" element={<Navigate to="/PGP" replace />} />
 
                   {/* Intuitive aliases — keep growth loop intact for guessed URLs */}
