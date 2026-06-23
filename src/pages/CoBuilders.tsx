@@ -118,13 +118,14 @@ const CoBuilders = () => {
           const idea = startupIdeas?.find((i) => i.creator_id === profile.user_id);
           return {
             ...profile,
+            stage: (profile as any).current_stage || "novice",
             natural_role_description: nr?.description || null,
             has_opportunity: !!idea,
             opportunity_id: idea?.id || null,
             opportunity_title: idea?.title || null,
           };
         });
-        setBaseRows(rows);
+        setBaseRows(rows as any);
 
         const me = rows.find((r) => r.user_id === user?.id);
         if (me) setSkillsInput(me.primary_skills || "");
