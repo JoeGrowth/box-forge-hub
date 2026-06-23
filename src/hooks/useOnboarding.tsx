@@ -69,25 +69,49 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
-      // Fetch onboarding state
-      const { data: stateData, error: stateError } = await supabase
-        .from("onboarding_state")
-        .select("*")
-        .eq("user_id", user.id)
-        .maybeSingle();
+      // Fetch legacy onboarding state and current 5-question onboarding session.
+      const [{ data: stateData, error: stateError }, { data: sessionData, error: sessionError }] = await Promise.all([
+        supabase
+          .from("onboarding_state")
+          .select("*")
+          .eq("user_id", user.id)
+          .maybeSingle(),
+        supabase
+          .from("onboarding_sessions")
+          .select("current_step, completed_steps, completed_at")
+          .eq("user_id", user.id)
+          .maybeSingle(),
+      ]);
 
       if (stateError) throw stateError;
+      if (sessionError) throw sessionError;
+
+      const completedSteps = Array.isArray(sessionData?.completed_steps)
+        ? (sessionData.completed_steps as number[])
+        : [];
+      const hasCompletedFiveQuestionOnboarding = !!sessionData?.completed_at ||
+        [1, 2, 3, 4, 5].every((step) => completedSteps.includes(step));
 
       if (stateData) {
-        setOnboardingState(stateData as OnboardingState);
+        const normalizedState = hasCompletedFiveQuestionOnboarding
+          ? {
+              ...stateData,
+              onboarding_completed: true,
+              current_step: Math.max(stateData.current_step ?? 1, 5),
+              journey_status: ["approved", "entrepreneur_approved"].includes(stateData.journey_status ?? "")
+                ? stateData.journey_status
+                : "pending_approval",
+            }
+          : stateData;
+        setOnboardingState(normalizedState as OnboardingState);
       } else {
         // Create initial onboarding state
         const newState = {
           user_id: user.id,
           primary_role: null,
-          onboarding_completed: false,
-          current_step: 1,
-          journey_status: 'in_progress' as const,
+          onboarding_completed: hasCompletedFiveQuestionOnboarding,
+          current_step: hasCompletedFiveQuestionOnboarding ? 5 : 1,
+          journey_status: hasCompletedFiveQuestionOnboarding ? 'pending_approval' as const : 'in_progress' as const,
         };
         
         const { data: insertedState, error: insertError } = await supabase
@@ -235,7 +259,7 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
     await updateOnboardingState({ 
       onboarding_completed: true,
       journey_status: 'pending_approval',
-      current_step: 9  // Ensure step is always 9 when completing
+      current_step: 5
     });
   };
 
