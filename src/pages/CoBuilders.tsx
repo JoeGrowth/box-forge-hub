@@ -93,29 +93,22 @@ const CoBuilders = () => {
 
   useEffect(() => {
     const fetchBase = async () => {
-      if (!isApproved) {
-        setLoading(false);
-        return;
-      }
-
       setLoading(true);
       try {
-        const { data: onboardingData, error: onboardingError } = await supabase
-          .from("onboarding_state")
-          .select("user_id")
-          .in("journey_status", ["approved", "entrepreneur_approved"]);
-        if (onboardingError) throw onboardingError;
+        const { data: profiles, error: profilesError } = await supabase
+          .from("profiles")
+          .select("id, user_id, full_name, avatar_url, primary_skills")
+          .not("full_name", "is", null);
+        if (profilesError) throw profilesError;
 
-        const ids = onboardingData?.map((o) => o.user_id) || [];
+        const ids = profiles?.map((p) => p.user_id) || [];
         setApprovedUserIds(ids);
         if (ids.length === 0) { setBaseRows([]); setLoading(false); return; }
 
-        const [{ data: profiles, error: profilesError }, { data: naturalRoles, error: rolesError }, { data: startupIdeas, error: ideasError }] = await Promise.all([
-          supabase.from("profiles").select("id, user_id, full_name, avatar_url, primary_skills").in("user_id", ids),
+        const [{ data: naturalRoles, error: rolesError }, { data: startupIdeas, error: ideasError }] = await Promise.all([
           supabase.from("natural_roles").select("user_id, description").in("user_id", ids),
           supabase.from("startup_ideas").select("id, creator_id, title").eq("status", "active").eq("is_looking_for_cobuilders", true).in("creator_id", ids),
         ]);
-        if (profilesError) throw profilesError;
         if (rolesError) throw rolesError;
         if (ideasError) throw ideasError;
 
@@ -142,7 +135,7 @@ const CoBuilders = () => {
     };
 
     fetchBase();
-  }, [isApproved, user?.id]);
+  }, [user?.id]);
 
   // Merge base rows with batch expertise + apply directory sort.
   useEffect(() => {
