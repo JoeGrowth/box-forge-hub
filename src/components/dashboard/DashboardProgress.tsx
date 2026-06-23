@@ -107,9 +107,10 @@ export function DashboardProgress() {
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
-  // Check if onboarding is truly complete (step 9 AND completed flag)
-  const isOnboardingTrulyComplete = onboardingState?.onboarding_completed && 
-    (onboardingState?.current_step ?? 0) >= 9;
+  // Check if onboarding is truly complete (step 5 AND completed flag)
+  const isOnboardingTrulyComplete = onboardingState?.onboarding_completed &&
+    (onboardingState?.current_step ?? 0) >= 5;
+
 
   // Check if user is approved by admin
   const isApproved = onboardingState?.journey_status === "approved" || 
