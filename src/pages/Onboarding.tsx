@@ -48,7 +48,7 @@ const Onboarding = () => {
       }
 
       // If a forced step was applied this session, don't snap back to stored step.
-      if (hasAppliedForcedStep && Number.isFinite(forcedStep) && forcedStep >= 2 && forcedStep <= 9) {
+      if (hasAppliedForcedStep && currentStep >= 2) {
         return;
       }
 
