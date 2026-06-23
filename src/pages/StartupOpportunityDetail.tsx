@@ -107,13 +107,8 @@ const StartupOpportunityDetail = () => {
     }
   }, [user, authLoading, navigate]);
 
-  useEffect(() => {
-    const isApproved = onboardingState?.journey_status === "approved" || 
-                       onboardingState?.journey_status === "entrepreneur_approved";
-    if (onboardingState && !isApproved) {
-      navigate("/profile", { replace: true });
-    }
-  }, [onboardingState, navigate]);
+  // Detail page is viewable by any authenticated user; application/role-taking
+  // actions remain gated by RLS and certification checks inside the page.
 
   useEffect(() => {
     const fetchIdea = async () => {
