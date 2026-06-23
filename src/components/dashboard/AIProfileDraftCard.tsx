@@ -25,7 +25,33 @@ type Draft = {
   profile_draft_source: string | null;
   profile_draft_accepted_at: string | null;
   profile_draft_dismissed_at: string | null;
+  profile_draft_generated_at: string | null;
 };
+
+async function emitDraftEvent(
+  userId: string,
+  type: "draft_viewed" | "draft_accepted" | "draft_edited" | "draft_regenerated" | "draft_dismissed",
+  generatedAt: string | null,
+  extra?: Record<string, unknown>,
+) {
+  const canonical = `draft.${type.replace("draft_", "")}`;
+  // Tie idempotency to the draft generation timestamp so a regenerate
+  // re-opens a fresh feedback window without losing prior signal.
+  const gen = generatedAt ?? "unknown";
+  await supabase.from("graph_events").upsert(
+    {
+      user_id: userId,
+      event_type: type,
+      aggregate_type: "profile_draft",
+      aggregate_id: userId,
+      source_module: "ai_profile_draft",
+      payload: { canonical_name: canonical, generated_at: gen, ...(extra ?? {}) } as never,
+      idempotency_key: `${type}:v1:${userId}:${gen}`,
+      weight: type === "draft_accepted" ? 2 : type === "draft_dismissed" ? 0.5 : 1,
+    },
+    { onConflict: "idempotency_key", ignoreDuplicates: true },
+  );
+}
 
 export function AIProfileDraftCard() {
   const { user } = useAuth();
@@ -43,7 +69,7 @@ export function AIProfileDraftCard() {
     const { data } = await supabase
       .from("profiles")
       .select(
-        "draft_title, draft_summary, draft_skills, profile_draft_source, profile_draft_accepted_at, profile_draft_dismissed_at",
+        "draft_title, draft_summary, draft_skills, profile_draft_source, profile_draft_accepted_at, profile_draft_dismissed_at, profile_draft_generated_at",
       )
       .eq("user_id", user.id)
       .maybeSingle();
@@ -59,6 +85,14 @@ export function AIProfileDraftCard() {
   useEffect(() => {
     void load();
   }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fire draft_viewed once per draft generation (DB-deduped on idempotency_key).
+  useEffect(() => {
+    if (!user || !draft || draft.profile_draft_source !== "ai_v1") return;
+    if (draft.profile_draft_accepted_at || draft.profile_draft_dismissed_at) return;
+    if (!draft.draft_title) return;
+    void emitDraftEvent(user.id, "draft_viewed", draft.profile_draft_generated_at);
+  }, [user?.id, draft?.profile_draft_generated_at, draft?.profile_draft_source]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading || !draft) return null;
   if (
