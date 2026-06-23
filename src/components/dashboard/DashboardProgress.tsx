@@ -55,6 +55,27 @@ export function DashboardProgress() {
       setNaturalRoleComplete(!!naturalRole?.description);
       setNrDecoderComplete(!!nrDecoder);
 
+      // Fetch profile for resume + track record completion
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("professional_title, bio, primary_skills, summary_statement, key_projects, years_of_experience, education_certifications")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      const p: any = profile || {};
+      const resumeDone = Boolean(
+        p.professional_title &&
+        (p.bio || p.summary_statement) &&
+        p.primary_skills
+      );
+      const trackDone = Boolean(
+        (p.key_projects && String(p.key_projects).trim().length > 20) ||
+        (p.summary_statement && String(p.summary_statement).trim().length > 20 && p.years_of_experience)
+      );
+      setResumeComplete(resumeDone);
+      setTrackRecordComplete(trackDone);
+
+
       const journeyMap: JourneyProgress[] = [];
 
       // Add onboarding progress
