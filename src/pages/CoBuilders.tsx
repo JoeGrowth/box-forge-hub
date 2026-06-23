@@ -9,12 +9,16 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, User, Briefcase, Loader2, Pencil, Check, X, ShieldCheck, Award, MessageCircle, Rocket, Eye } from "lucide-react";
+import { Search, User, Briefcase, Loader2, Pencil, Check, X, ShieldCheck, Award, MessageCircle, Rocket, Eye, Users, Sparkles, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { DirectorySkeletonGrid } from "@/components/ui/skeleton-card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useExpertiseBatch, type Expertise } from "@/hooks/useExpertise";
 import { useTrustBatch, trustLevelStyle } from "@/hooks/useTrust";
+
+type DirectoryFilter = "talents" | "cobuilders";
+const COBUILDER_STAGES = new Set(["capable", "monetizing", "building", "founder"]);
 
 interface CoBuilder {
   id: string;
@@ -60,9 +64,27 @@ const CoBuilders = () => {
   const [previewData, setPreviewData] = useState<NaturalRolePreview | null>(null);
   const [previewName, setPreviewName] = useState<string>("");
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [myStage, setMyStage] = useState<string>("novice");
+  const canSeeCobuilders = COBUILDER_STAGES.has(myStage);
+  const [filter, setFilter] = useState<DirectoryFilter>("talents");
   // Derive approval status from cached onboarding state
   const isApproved =
     onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved";
+
+  // Fetch viewer's progression stage to gate the Co-Builders filter tab.
+  useEffect(() => {
+    if (!user?.id) return;
+    (async () => {
+      const { data } = await supabase
+        .from("progression_graph")
+        .select("current_state")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      const stage = (data as any)?.current_state ?? "novice";
+      setMyStage(stage);
+      if (COBUILDER_STAGES.has(stage)) setFilter("cobuilders");
+    })();
+  }, [user?.id]);
 
   // Two-stage load: (1) fetch profile/role/idea rows for approved users,
   // (2) hydrate per-user expertise via the batch graph hook below.
@@ -236,8 +258,14 @@ const CoBuilders = () => {
     }
   };
 
-  // Filter co-builders based on search
+  // Filter co-builders based on search + Talents/Co-Builders tab.
+  // Talents = not yet certified (certCount === 0). Co-Builders = at least 1 cert.
+  // Always keep the current user pinned so they can edit their own card.
   const filteredCobuilders = cobuilders.filter((cb) => {
+    if (cb.user_id !== user?.id) {
+      if (filter === "cobuilders" && cb.certCount < 1) return false;
+      if (filter === "talents" && cb.certCount >= 1) return false;
+    }
     const searchLower = searchQuery.toLowerCase();
     const nameMatch = cb.full_name?.toLowerCase().includes(searchLower);
     const skillsMatch = cb.primary_skills?.toLowerCase().includes(searchLower);
@@ -335,8 +363,24 @@ const CoBuilders = () => {
 
           {/* Search and Filter */}
           <section className="py-8 border-b border-border">
-            <div className="container mx-auto px-4">
-              <div className="relative max-w-md">
+            <div className="container mx-auto px-4 flex flex-col md:flex-row md:items-center gap-4">
+              <Tabs value={filter} onValueChange={(v) => setFilter(v as DirectoryFilter)}>
+                <TabsList>
+                  <TabsTrigger value="talents" className="gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" /> Talents
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="cobuilders"
+                    disabled={!canSeeCobuilders}
+                    className="gap-1.5"
+                    title={canSeeCobuilders ? undefined : "Unlocks at Capable stage"}
+                  >
+                    {canSeeCobuilders ? <Users className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+                    Co-Builders
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+              <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   placeholder="Search by name, skills, or natural role..."
@@ -345,6 +389,11 @@ const CoBuilders = () => {
                   className="pl-10"
                 />
               </div>
+              {!canSeeCobuilders && (
+                <p className="text-xs text-muted-foreground md:ml-auto">
+                  Co-Builders unlocks at <span className="font-medium">Capable</span> stage.
+                </p>
+              )}
             </div>
           </section>
 
