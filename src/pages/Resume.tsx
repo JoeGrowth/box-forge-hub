@@ -507,8 +507,9 @@ const Resume = () => {
       
       toast({
         title: "Resume Updated",
-        description: `Version ${nextVersion} saved successfully.`,
+        description: naturalRole ? `Version ${nextVersion} saved successfully.` : `Profile saved successfully.`,
       });
+
       
       setIsEditing(false);
       refetch();
