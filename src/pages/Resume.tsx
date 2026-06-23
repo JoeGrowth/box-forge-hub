@@ -442,40 +442,44 @@ const Resume = () => {
   };
 
   const handleSave = async () => {
-    if (!user || !naturalRole) return;
+    if (!user) return;
     
     setIsSaving(true);
     try {
-      const nextVersion = versions.length > 0 ? versions[0].version_number + 1 : 1;
-      
-      const { error: versionError } = await supabase
-        .from("onboarding_answer_versions")
-        .insert({
-          user_id: user.id,
-          version_number: nextVersion,
-          description: editData.description,
-          practice_entities: editData.practice_entities,
-          practice_case_studies: naturalRole.practice_case_studies,
-          training_contexts: editData.training_contexts,
-          training_count: naturalRole.training_count,
-          consulting_with_whom: editData.consulting_with_whom,
-          consulting_case_studies: editData.consulting_case_studies,
-          promise_check: naturalRole.promise_check,
-          practice_check: naturalRole.practice_check,
-          training_check: naturalRole.training_check,
-          consulting_check: naturalRole.consulting_check,
-          wants_to_scale: naturalRole.wants_to_scale,
-          change_notes: `Updated via Resume page`,
-        });
-      
-      if (versionError) throw versionError;
-      
-      const { error: updateError } = await supabase
-        .from("natural_roles")
-        .update(editData)
-        .eq("user_id", user.id);
-      
-      if (updateError) throw updateError;
+      let nextVersion = 0;
+      if (naturalRole) {
+        nextVersion = versions.length > 0 ? versions[0].version_number + 1 : 1;
+        
+        const { error: versionError } = await supabase
+          .from("onboarding_answer_versions")
+          .insert({
+            user_id: user.id,
+            version_number: nextVersion,
+            description: editData.description,
+            practice_entities: editData.practice_entities,
+            practice_case_studies: naturalRole.practice_case_studies,
+            training_contexts: editData.training_contexts,
+            training_count: naturalRole.training_count,
+            consulting_with_whom: editData.consulting_with_whom,
+            consulting_case_studies: editData.consulting_case_studies,
+            promise_check: naturalRole.promise_check,
+            practice_check: naturalRole.practice_check,
+            training_check: naturalRole.training_check,
+            consulting_check: naturalRole.consulting_check,
+            wants_to_scale: naturalRole.wants_to_scale,
+            change_notes: `Updated via Resume page`,
+          });
+        
+        if (versionError) throw versionError;
+        
+        const { error: updateError } = await supabase
+          .from("natural_roles")
+          .update(editData)
+          .eq("user_id", user.id);
+        
+        if (updateError) throw updateError;
+      }
+
 
       // Save profile fields
       const { error: profileError } = await supabase
