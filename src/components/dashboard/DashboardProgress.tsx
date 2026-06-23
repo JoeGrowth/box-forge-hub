@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, CheckCircle2, Circle, Lock } from "lucide-react";
+import { ArrowRight, CheckCircle2, Circle, Lock, FileText, Briefcase } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +24,9 @@ export function DashboardProgress() {
   const [journeys, setJourneys] = useState<JourneyProgress[]>([]);
   const [naturalRoleComplete, setNaturalRoleComplete] = useState(false);
   const [nrDecoderComplete, setNrDecoderComplete] = useState(false);
+  const [resumeComplete, setResumeComplete] = useState(false);
+  const [trackRecordComplete, setTrackRecordComplete] = useState(false);
+
 
   useEffect(() => {
     const fetchProgress = async () => {
@@ -51,6 +54,27 @@ export function DashboardProgress() {
 
       setNaturalRoleComplete(!!naturalRole?.description);
       setNrDecoderComplete(!!nrDecoder);
+
+      // Fetch profile for resume + track record completion
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("professional_title, bio, primary_skills, summary_statement, key_projects, years_of_experience, education_certifications")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      const p: any = profile || {};
+      const resumeDone = Boolean(
+        p.professional_title &&
+        (p.bio || p.summary_statement) &&
+        p.primary_skills
+      );
+      const trackDone = Boolean(
+        (p.key_projects && String(p.key_projects).trim().length > 20) ||
+        (p.summary_statement && String(p.summary_statement).trim().length > 20 && p.years_of_experience)
+      );
+      setResumeComplete(resumeDone);
+      setTrackRecordComplete(trackDone);
+
 
       const journeyMap: JourneyProgress[] = [];
 
@@ -118,14 +142,17 @@ export function DashboardProgress() {
 
   const overallProgress = () => {
     let completed = 0;
-    let total = 3; // Base milestones: Decoder, Onboarding, Learning
+    const total = 5; // Decoder, Onboarding, Resume, Track Record, Learning
 
     if (nrDecoderComplete) completed++;
     if (isOnboardingTrulyComplete) completed++;
+    if (resumeComplete) completed++;
+    if (trackRecordComplete) completed++;
     if (journeys.some((j) => j.status === "approved")) completed++;
 
     return Math.round((completed / total) * 100);
   };
+
 
 
   return (
@@ -190,6 +217,54 @@ export function DashboardProgress() {
               </Button>
             )}
           </div>
+
+          {/* 3. Complete Resume */}
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+            {resumeComplete ? (
+              <CheckCircle2 className="w-5 h-5 text-b4-teal flex-shrink-0" />
+            ) : (
+              <Circle className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+            )}
+            <div className="flex-1">
+              <div className="font-medium flex items-center gap-2">
+                <FileText className="w-4 h-4 text-muted-foreground" />
+                Complete Your Resume
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Add your title, bio, and skills
+              </div>
+            </div>
+            {!resumeComplete && (
+              <Button size="sm" variant="outline" asChild>
+                <Link to="/resume">Complete</Link>
+              </Button>
+            )}
+          </div>
+
+          {/* 4. Complete Professional Track Record */}
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+            {trackRecordComplete ? (
+              <CheckCircle2 className="w-5 h-5 text-b4-teal flex-shrink-0" />
+            ) : (
+              <Circle className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+            )}
+            <div className="flex-1">
+              <div className="font-medium flex items-center gap-2">
+                <Briefcase className="w-4 h-4 text-muted-foreground" />
+                Professional Track Record
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Document your key projects and experience
+              </div>
+            </div>
+            {!trackRecordComplete && (
+              <Button size="sm" variant="outline" asChild>
+                <Link to="/track-record">Complete</Link>
+              </Button>
+            )}
+          </div>
+
+
 
 
 
