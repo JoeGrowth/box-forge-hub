@@ -15,11 +15,18 @@ const Onboarding = () => {
   const { user, loading: authLoading } = useAuth();
   const { onboardingState, naturalRole, updateOnboardingState, loading: onboardingLoading } = useOnboarding();
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const forcedStep = parseInt(searchParams.get("step") || "", 10);
+  const [currentStep, setCurrentStep] = useState(
+    Number.isFinite(forcedStep) && forcedStep >= 2 && forcedStep <= 9 ? forcedStep : 1,
+  );
   const [showNotReady, setShowNotReady] = useState(false);
   const [showPendingHelp, setShowPendingHelp] = useState(false);
   const [showFormDirectly, setShowFormDirectly] = useState(false);
   const [hasRestarted, setHasRestarted] = useState(false);
+  const [hasAppliedForcedStep, setHasAppliedForcedStep] = useState(
+    !(Number.isFinite(forcedStep) && forcedStep >= 2 && forcedStep <= 9),
+  );
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/auth", { replace: true });
