@@ -201,7 +201,14 @@ export default function CompressedOnboarding() {
           <Progress value={progress} className="h-1.5" />
         </div>
 
-        <Card className="p-6 md:p-8 space-y-6">
+        <Card asChild className="p-6 md:p-8">
+          <form
+            className="space-y-6"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!submitting) next();
+            }}
+          >
           {step === 1 && (
             <div className="space-y-4">
               <div>
