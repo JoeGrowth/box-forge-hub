@@ -131,7 +131,7 @@ export function DashboardProgress() {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
-            Getting Ready Journey Progress
+            Getting Ready
           </CardTitle>
           <span className="text-sm text-muted-foreground">
             {overallProgress()}% Complete
