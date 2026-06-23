@@ -142,14 +142,17 @@ export function DashboardProgress() {
 
   const overallProgress = () => {
     let completed = 0;
-    let total = 3; // Base milestones: Decoder, Onboarding, Learning
+    const total = 5; // Decoder, Onboarding, Resume, Track Record, Learning
 
     if (nrDecoderComplete) completed++;
     if (isOnboardingTrulyComplete) completed++;
+    if (resumeComplete) completed++;
+    if (trackRecordComplete) completed++;
     if (journeys.some((j) => j.status === "approved")) completed++;
 
     return Math.round((completed / total) * 100);
   };
+
 
 
   return (
