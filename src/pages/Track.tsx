@@ -97,7 +97,8 @@ const Track = () => {
   const isEntrepreneurialPrimary =
     primaryRole === "entrepreneur" || (!primaryRole && hasEntrepreneurial && !hasProfessional);
 
-  const showProfessional = isProfessionalPrimary || professionalUnlocked || (hasProfessional && hasEntrepreneurial);
+  const showProfessional =
+    isProfessionalPrimary || professionalUnlocked || hasProfessional || !isEntrepreneurialPrimary;
   const showEntrepreneurial =
     isEntrepreneurialPrimary || entrepreneurialUnlocked || (hasProfessional && hasEntrepreneurial);
 
@@ -324,7 +325,7 @@ const Track = () => {
             <div className="mt-4 p-4 bg-muted/30 rounded-lg border border-dashed text-center">
               <p className="text-sm text-muted-foreground mb-3">You haven't started this journey yet.</p>
               <Button variant="outline" size="sm" asChild>
-                <Link to={linkTo === "/resume" ? "/professional-track" : "/entrepreneurial-track"}>
+                <Link to={linkTo === "/resume" ? "/professional-track?step=2" : "/entrepreneurial-track"}>
                   Start Journey <ArrowRight className="ml-2 w-4 h-4" />
                 </Link>
               </Button>

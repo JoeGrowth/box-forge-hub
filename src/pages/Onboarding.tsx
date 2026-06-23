@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 import { NaturalRoleDefinitionStep } from "@/components/onboarding/steps/NaturalRoleDefinitionStep";
 import { PromiseCheckStep, NotReadyStep, PracticeCheckStep, TrainingCheckStep, ConsultingCheckStep } from "@/components/onboarding/steps/AssessmentSteps";
@@ -15,11 +15,18 @@ const Onboarding = () => {
   const { user, loading: authLoading } = useAuth();
   const { onboardingState, naturalRole, updateOnboardingState, loading: onboardingLoading } = useOnboarding();
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const forcedStep = parseInt(searchParams.get("step") || "", 10);
+  const [currentStep, setCurrentStep] = useState(
+    Number.isFinite(forcedStep) && forcedStep >= 2 && forcedStep <= 9 ? forcedStep : 1,
+  );
   const [showNotReady, setShowNotReady] = useState(false);
   const [showPendingHelp, setShowPendingHelp] = useState(false);
   const [showFormDirectly, setShowFormDirectly] = useState(false);
   const [hasRestarted, setHasRestarted] = useState(false);
+  const [hasAppliedForcedStep, setHasAppliedForcedStep] = useState(
+    !(Number.isFinite(forcedStep) && forcedStep >= 2 && forcedStep <= 9),
+  );
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/auth", { replace: true });
@@ -28,6 +35,16 @@ const Onboarding = () => {
 
   useEffect(() => {
     if (onboardingState) {
+      // Honor ?step=N once — overrides stored progress so user lands on requested step
+      if (!hasAppliedForcedStep && Number.isFinite(forcedStep) && forcedStep >= 2 && forcedStep <= 9) {
+        setCurrentStep(forcedStep);
+        setHasAppliedForcedStep(true);
+        updateOnboardingState({ current_step: forcedStep, onboarding_completed: false });
+        searchParams.delete("step");
+        setSearchParams(searchParams, { replace: true });
+        return;
+      }
+
       // If user has assistance_requested status but came back to define their NR,
       // start them at step 2 (NR definition) — only if they haven't restarted
       if (naturalRole?.status === "assistance_requested" && onboardingState.onboarding_completed && !hasRestarted) {
@@ -54,7 +71,7 @@ const Onboarding = () => {
         navigate("/", { replace: true });
       }
     }
-  }, [onboardingState, naturalRole, navigate, hasRestarted]);
+  }, [onboardingState, naturalRole, navigate, hasRestarted, hasAppliedForcedStep, forcedStep, searchParams, setSearchParams, updateOnboardingState]);
 
   useEffect(() => {
     // Only show pending help if they just requested it in this session, not from stale DB state
