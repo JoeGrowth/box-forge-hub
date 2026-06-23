@@ -41,6 +41,7 @@ const Onboarding = () => {
       if (!hasAppliedForcedStep && Number.isFinite(forcedStep) && forcedStep >= 2 && forcedStep <= 9) {
         setCurrentStep(forcedStep);
         setHasAppliedForcedStep(true);
+        setUsedForcedStep(true);
         updateOnboardingState({ current_step: forcedStep, onboarding_completed: false });
         searchParams.delete("step");
         setSearchParams(searchParams, { replace: true });
@@ -48,7 +49,7 @@ const Onboarding = () => {
       }
 
       // If a forced step was applied this session, don't snap back to stored step.
-      if (hasAppliedForcedStep && currentStep >= 2) {
+      if (usedForcedStep) {
         return;
       }
 
