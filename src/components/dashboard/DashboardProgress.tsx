@@ -259,7 +259,7 @@ export function DashboardProgress() {
             </div>
             {!trackRecordComplete && (
               <Button size="sm" variant="outline" asChild>
-                <Link to="/track-record">Complete</Link>
+                <Link to="/professional-track">Complete</Link>
               </Button>
             )}
           </div>
