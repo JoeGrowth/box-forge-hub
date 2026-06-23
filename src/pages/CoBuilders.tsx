@@ -402,7 +402,8 @@ const CoBuilders = () => {
                     const getStatusLabel = () => {
                       if (certCount >= 2) return "Fully Certified";
                       if (certCount === 1) return "Certified";
-                      return "Approved - Ready to boost";
+                      const s = cobuilder.stage || "novice";
+                      return s.charAt(0).toUpperCase() + s.slice(1);
                     };
 
                     return (
