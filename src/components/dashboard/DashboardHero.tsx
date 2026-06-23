@@ -128,21 +128,6 @@ export function DashboardHero() {
         </div>
       </div>
 
-      {level === "pending" && (
-        <div className="relative z-10 mt-6 rounded-xl bg-white/10 border border-white/15 px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3">
-          <div className="flex items-start gap-3 flex-1 min-w-0">
-            <Clock className="w-4 h-4 text-b4-teal mt-0.5 shrink-0" />
-            <div className="text-sm text-white/85">
-              <span className="font-semibold text-white">Pending review.</span>{" "}
-              You can browse opportunities, save them and view co-builders.
-              Publishing and applying unlock once you're approved.
-            </div>
-          </div>
-          <Button asChild size="sm" className="bg-b4-teal hover:bg-b4-teal/90 text-white shrink-0">
-            <Link to="/professional-track">Boost approval <ArrowRight className="ml-1 w-3 h-3" /></Link>
-          </Button>
-        </div>
-      )}
     </div>
     <div className="mt-4">
       <AIProfileDraftCard />
