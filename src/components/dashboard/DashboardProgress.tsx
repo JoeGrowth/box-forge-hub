@@ -61,10 +61,11 @@ export function DashboardProgress() {
           title: "Onboarding Journey",
           status: "in_progress",
           currentPhase: onboardingState.current_step || 1,
-          totalPhases: 5,
+          totalPhases: 9,
           link: "/professional-track",
         });
       }
+
 
       // Map learning journeys
       learningJourneys?.forEach((journey) => {
@@ -116,15 +117,15 @@ export function DashboardProgress() {
 
   const overallProgress = () => {
     let completed = 0;
-    let total = 4; // Base milestones: Decoder, Onboarding, Approval, Learning
+    let total = 3; // Base milestones: Decoder, Onboarding, Learning
 
     if (nrDecoderComplete) completed++;
     if (isOnboardingTrulyComplete) completed++;
-    if (isApproved) completed++;
     if (journeys.some((j) => j.status === "approved")) completed++;
 
     return Math.round((completed / total) * 100);
   };
+
 
   return (
     <Card>
@@ -189,29 +190,8 @@ export function DashboardProgress() {
             )}
           </div>
 
-          {/* 3. Getting Approved - Third */}
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-            {isApproved ? (
-              <CheckCircle2 className="w-5 h-5 text-b4-teal flex-shrink-0" />
-            ) : isOnboardingTrulyComplete ? (
-              <Circle className="w-5 h-5 text-amber-500 flex-shrink-0" />
-            ) : (
-              <Lock className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-            )}
-            <div className="flex-1">
-              <div className="font-medium">Getting Approved</div>
-              <div className="text-sm text-muted-foreground">
-                {isApproved 
-                  ? "You can now access all learning paths" 
-                  : isOnboardingTrulyComplete 
-                    ? "Pending admin review"
-                    : "Complete onboarding first"}
-              </div>
-            </div>
-            {isOnboardingTrulyComplete && !isApproved && (
-              <Badge variant="secondary">Pending</Badge>
-            )}
-          </div>
+
+
 
           {journeys.map((journey, i) => (
             <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
