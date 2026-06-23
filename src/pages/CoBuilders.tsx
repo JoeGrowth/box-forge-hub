@@ -258,8 +258,14 @@ const CoBuilders = () => {
     }
   };
 
-  // Filter co-builders based on search
+  // Filter co-builders based on search + Talents/Co-Builders tab.
+  // Talents = not yet certified (certCount === 0). Co-Builders = at least 1 cert.
+  // Always keep the current user pinned so they can edit their own card.
   const filteredCobuilders = cobuilders.filter((cb) => {
+    if (cb.user_id !== user?.id) {
+      if (filter === "cobuilders" && cb.certCount < 1) return false;
+      if (filter === "talents" && cb.certCount >= 1) return false;
+    }
     const searchLower = searchQuery.toLowerCase();
     const nameMatch = cb.full_name?.toLowerCase().includes(searchLower);
     const skillsMatch = cb.primary_skills?.toLowerCase().includes(searchLower);
