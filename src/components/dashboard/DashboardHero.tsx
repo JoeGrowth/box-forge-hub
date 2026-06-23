@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sparkles, ArrowRight, Lightbulb, Search, Clock, Users, Briefcase, GraduationCap, DollarSign } from "lucide-react";
+import { Sparkles, ArrowRight, Lightbulb, Search, Users, GraduationCap, DollarSign } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useAccessLevel } from "@/hooks/useAccessLevel";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { AIProfileDraftCard } from "@/components/dashboard/AIProfileDraftCard";
