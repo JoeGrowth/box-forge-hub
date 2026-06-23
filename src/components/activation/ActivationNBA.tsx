@@ -1,6 +1,5 @@
 // Single Next Best Action card for the Activation Hub.
-// Click → emit nba_executed, mark action completed in the projection,
-// then call onExecuted so the hub marks activation completed.
+// Click → emit nba_executed, then onExecuted closes activation.
 
 import { ArrowRight, Target } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -26,22 +25,27 @@ export function ActivationNBA({ action, source, onExecuted }: Props) {
     );
   }
 
+  const href =
+    typeof action.payload?.link === "string" ? action.payload.link : "/dashboard";
+  const label =
+    typeof action.payload?.label === "string" ? action.payload.label : "Start";
+  const titleText = action.action ?? "Next step";
+
   const handleClick = async () => {
     if (!user) return;
-    await supabase.from("graph_events").insert({
+    const insert = {
       user_id: user.id,
-      event_type: "nba_executed",
+      event_type: "nba_executed" as const,
       aggregate_type: "action",
-      aggregate_id: action.action_id ?? action.action_type ?? "nba",
+      aggregate_id: action.rule,
       source_module: source,
-      payload: { source, action_type: action.action_type } as never,
-      idempotency_key: `nba_executed:v1:${user.id}:${action.action_id ?? action.action_type}`,
+      payload: { source, rule: action.rule, action: action.action } as never,
+      idempotency_key: `nba_executed:v1:${user.id}:${action.rule}`,
       weight: 1,
-    });
+    };
+    await supabase.from("graph_events").insert(insert);
     onExecuted();
   };
-
-  const href = action.cta_href ?? "/dashboard";
 
   return (
     <div className="rounded-xl border bg-card px-5 py-4">
@@ -50,14 +54,16 @@ export function ActivationNBA({ action, source, onExecuted }: Props) {
           <Target className="w-4 h-4 text-b4-teal" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-foreground">{action.title ?? "Next step"}</div>
-          {action.description && (
-            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{action.description}</p>
+          <div className="font-semibold text-foreground">{titleText}</div>
+          {action.target_stage && (
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Moves you toward: {action.target_stage}
+            </p>
           )}
         </div>
         <Button size="sm" asChild>
           <Link to={href} onClick={handleClick}>
-            {action.cta_label ?? "Start"} <ArrowRight className="w-3 h-3 ml-1" />
+            {label} <ArrowRight className="w-3 h-3 ml-1" />
           </Link>
         </Button>
       </div>

@@ -1,5 +1,5 @@
 // Single-field, single-save drawer. By design this NEVER opens a multi-step
-// flow or routes to /profile. Add one skill → emit signal.completed → close.
+// flow or routes to /profile. Add one skill → emit signal_completed → close.
 
 import { useState } from "react";
 import { Loader2, Plus } from "lucide-react";
@@ -32,7 +32,6 @@ export function MissingSignalDrawer({ open, onOpenChange, userId, source, onComp
     if (!value || !userId) return;
     setSaving(true);
     try {
-      // Append the new skill to primary_skills (comma-separated text).
       const { data: prof } = await supabase
         .from("profiles")
         .select("primary_skills")
@@ -46,16 +45,17 @@ export function MissingSignalDrawer({ open, onOpenChange, userId, source, onComp
         const next = [...existing, value].join(", ");
         await supabase.from("profiles").update({ primary_skills: next }).eq("user_id", userId);
       }
-      await supabase.from("graph_events").insert({
+      const insert = {
         user_id: userId,
-        event_type: "signal_completed",
+        event_type: "signal_completed" as const,
         aggregate_type: "user",
         aggregate_id: userId,
         source_module: source,
         payload: { source, signal_type: "skill", value } as never,
         idempotency_key: `signal_completed:skill:v1:${userId}:${value}`,
         weight: 1,
-      });
+      };
+      await supabase.from("graph_events").insert(insert);
       setSkill("");
       onCompleted();
     } finally {
