@@ -4197,6 +4197,12 @@ export type Database = {
         | "opportunity_interested"
         | "nba_executed"
         | "signal_completed"
+        | "draft_generated"
+        | "draft_viewed"
+        | "draft_accepted"
+        | "draft_edited"
+        | "draft_regenerated"
+        | "draft_dismissed"
       graph_node_type:
         | "user"
         | "skill"
@@ -4535,6 +4541,12 @@ export const Constants = {
         "opportunity_interested",
         "nba_executed",
         "signal_completed",
+        "draft_generated",
+        "draft_viewed",
+        "draft_accepted",
+        "draft_edited",
+        "draft_regenerated",
+        "draft_dismissed",
       ],
       graph_node_type: [
         "user",
