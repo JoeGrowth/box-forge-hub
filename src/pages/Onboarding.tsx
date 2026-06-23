@@ -24,9 +24,9 @@ const Onboarding = () => {
   const [showPendingHelp, setShowPendingHelp] = useState(false);
   const [showFormDirectly, setShowFormDirectly] = useState(false);
   const [hasRestarted, setHasRestarted] = useState(false);
-  const [hasAppliedForcedStep, setHasAppliedForcedStep] = useState(
-    !(Number.isFinite(forcedStep) && forcedStep >= 2 && forcedStep <= 9),
-  );
+  const hasForcedStepParam = Number.isFinite(forcedStep) && forcedStep >= 2 && forcedStep <= 9;
+  const [hasAppliedForcedStep, setHasAppliedForcedStep] = useState(!hasForcedStepParam);
+  const [usedForcedStep, setUsedForcedStep] = useState(false);
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/auth", { replace: true });
@@ -35,13 +35,21 @@ const Onboarding = () => {
 
   useEffect(() => {
     if (onboardingState) {
-      // Honor ?step=N once — overrides stored progress so user lands on requested step
+      // Honor ?step=N once — overrides stored progress so user lands on requested step.
+      // Once applied, keep local control of currentStep and stop syncing from onboardingState
+      // (the hook normalizes current_step to >=5 once the 5-question session is done).
       if (!hasAppliedForcedStep && Number.isFinite(forcedStep) && forcedStep >= 2 && forcedStep <= 9) {
         setCurrentStep(forcedStep);
         setHasAppliedForcedStep(true);
+        setUsedForcedStep(true);
         updateOnboardingState({ current_step: forcedStep, onboarding_completed: false });
         searchParams.delete("step");
         setSearchParams(searchParams, { replace: true });
+        return;
+      }
+
+      // If a forced step was applied this session, don't snap back to stored step.
+      if (usedForcedStep) {
         return;
       }
 
