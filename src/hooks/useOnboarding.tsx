@@ -87,7 +87,7 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
       if (sessionError) throw sessionError;
 
       const completedSteps = Array.isArray(sessionData?.completed_steps)
-        ? (sessionData.completed_steps as number[])
+        ? (sessionData.completed_steps as unknown as number[])
         : [];
       const hasCompletedFiveQuestionOnboarding = !!sessionData?.completed_at ||
         [1, 2, 3, 4, 5].every((step) => completedSteps.includes(step));
