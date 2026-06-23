@@ -280,8 +280,8 @@ const CoBuilders = () => {
       .filter((s) => s.length > 0);
   };
 
-  // Show loading until auth AND onboarding state are both loaded
-  if (authLoading || onboardingLoading) {
+  // Show loading until auth is ready
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-background">
         <div className="pt-20 flex items-center justify-center min-h-[60vh]">
