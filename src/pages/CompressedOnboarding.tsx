@@ -201,7 +201,7 @@ export default function CompressedOnboarding() {
           <Progress value={progress} className="h-1.5" />
         </div>
 
-        <Card asChild className="p-6 md:p-8">
+        <Card className="p-6 md:p-8">
           <form
             className="space-y-6"
             onSubmit={(e) => {
