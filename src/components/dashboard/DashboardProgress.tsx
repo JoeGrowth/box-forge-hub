@@ -251,7 +251,7 @@ export function DashboardProgress() {
             <div className="flex-1">
               <div className="font-medium flex items-center gap-2">
                 <Briefcase className="w-4 h-4 text-muted-foreground" />
-                Professional Track Record
+                Fill Your Track Record
               </div>
               <div className="text-sm text-muted-foreground">
                 Document your key projects and experience
