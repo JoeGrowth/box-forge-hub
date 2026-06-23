@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import {
   useOnboardingSession,
   useStartOnboarding,
@@ -49,6 +50,7 @@ const SUGGESTED_TAGS = [
 
 export default function CompressedOnboarding() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { data: session, isLoading } = useOnboardingSession();
   const start = useStartOnboarding();
   const complete = useCompleteStep();
@@ -66,8 +68,10 @@ export default function CompressedOnboarding() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (isLoading) return;
-    if (!session) {
+    if (isLoading || !user) return;
+    // Guard against stale cache leaking a prior user's session row.
+    const sessionBelongsToUser = session && session.user_id === user.id;
+    if (!sessionBelongsToUser) {
       start.mutateAsync().catch(() => {});
     } else if (session.completed_at) {
       navigate("/activation", { replace: true });
@@ -77,7 +81,7 @@ export default function CompressedOnboarding() {
       setGoal(session.goal ?? "");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading, session?.id]);
+  }, [isLoading, session?.id, session?.user_id, user?.id]);
 
 
   const progress = useMemo(() => ((step - 1) / 5) * 100, [step]);
