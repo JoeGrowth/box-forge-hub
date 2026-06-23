@@ -218,6 +218,54 @@ export function DashboardProgress() {
             )}
           </div>
 
+          {/* 3. Complete Resume */}
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+            {resumeComplete ? (
+              <CheckCircle2 className="w-5 h-5 text-b4-teal flex-shrink-0" />
+            ) : (
+              <Circle className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+            )}
+            <div className="flex-1">
+              <div className="font-medium flex items-center gap-2">
+                <FileText className="w-4 h-4 text-muted-foreground" />
+                Complete Your Resume
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Add your title, bio, and skills
+              </div>
+            </div>
+            {!resumeComplete && (
+              <Button size="sm" variant="outline" asChild>
+                <Link to="/resume">Complete</Link>
+              </Button>
+            )}
+          </div>
+
+          {/* 4. Complete Professional Track Record */}
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+            {trackRecordComplete ? (
+              <CheckCircle2 className="w-5 h-5 text-b4-teal flex-shrink-0" />
+            ) : (
+              <Circle className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+            )}
+            <div className="flex-1">
+              <div className="font-medium flex items-center gap-2">
+                <Briefcase className="w-4 h-4 text-muted-foreground" />
+                Professional Track Record
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Document your key projects and experience
+              </div>
+            </div>
+            {!trackRecordComplete && (
+              <Button size="sm" variant="outline" asChild>
+                <Link to="/track-record">Complete</Link>
+              </Button>
+            )}
+          </div>
+
+
+
 
 
 
