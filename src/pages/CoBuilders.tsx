@@ -33,6 +33,7 @@ interface CoBuilder {
   has_opportunity: boolean;
   opportunity_id: string | null;
   opportunity_title: string | null;
+  stage: string;
 }
 
 interface NaturalRolePreview {
