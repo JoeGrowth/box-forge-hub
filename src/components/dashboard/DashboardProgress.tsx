@@ -181,7 +181,7 @@ export function DashboardProgress() {
               <div className="text-sm text-muted-foreground">
                 {isOnboardingTrulyComplete 
                   ? "Define your role and goals" 
-                  : `Step ${onboardingState?.current_step || 1} of 9 - Continue where you left off`}
+                  : `Step ${onboardingState?.current_step || 1} of 5 - Continue where you left off`}
               </div>
             </div>
             {!isOnboardingTrulyComplete && (
