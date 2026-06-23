@@ -61,7 +61,7 @@ export function DashboardProgress() {
           title: "Onboarding Journey",
           status: "in_progress",
           currentPhase: onboardingState.current_step || 1,
-          totalPhases: 9,
+          totalPhases: 5,
           link: "/professional-track",
         });
       }
