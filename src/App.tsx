@@ -78,6 +78,8 @@ import PGP from "./pages/PGP";
 import PublicProfile from "./pages/PublicProfile";
 import Characters from "./pages/Characters";
 import JourneyTimeline from "./pages/JourneyTimeline";
+import ActivationHub from "./pages/ActivationHub";
+
 
 const queryClient = new QueryClient();
 
@@ -117,8 +119,10 @@ const App = () => (
                   <Route path="/professional-onboarding" element={<Navigate to="/professional-track" replace />} />
                   <Route path="/entrepreneurial-onboarding" element={<Navigate to="/entrepreneurial-track" replace />} />
                   <Route path="/choose-path" element={<Navigate to="/onboarding" replace />} />
+                  <Route path="/activation" element={<ProtectedRoute><ActivationHub /></ProtectedRoute>} />
                   <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                   <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+
                   <Route path="/admin" element={<ProtectedRoute requireLevel="admin"><Admin /></ProtectedRoute>} />
                   <Route path="/admin/opportunity/:id" element={<ProtectedRoute requireLevel="admin"><AdminOpportunityDetail /></ProtectedRoute>} />
                   <Route path="/admin/beta" element={<ProtectedRoute requireLevel="admin"><BetaConsole /></ProtectedRoute>} />

@@ -70,7 +70,7 @@ export default function CompressedOnboarding() {
     if (!session) {
       start.mutateAsync().catch(() => {});
     } else if (session.completed_at) {
-      navigate("/onboarding/map", { replace: true });
+      navigate("/activation", { replace: true });
     } else {
       setStep(session.current_step);
       setIntent(session.onboarding_intent ?? "");
@@ -78,6 +78,7 @@ export default function CompressedOnboarding() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, session?.id]);
+
 
   const progress = useMemo(() => ((step - 1) / 5) * 100, [step]);
 
@@ -158,10 +159,17 @@ export default function CompressedOnboarding() {
           step: 5,
           patch: { availability: { commitment } },
         });
-        toast.success("Welcome — building your professional map");
-        navigate("/onboarding/map", { replace: true });
+        // Fire-and-forget AI profile draft. Never blocks the user; runs
+        // regardless of approval status (identity initialization is internal
+        // infrastructure, not a permissioned action).
+        void supabase.functions
+          .invoke("draft-profile", { body: {} })
+          .catch((e) => console.warn("draft-profile invoke failed", e));
+        toast.success("Welcome — let's get you matched");
+        navigate("/activation", { replace: true });
         return;
       }
+
       setStep((s) => s + 1);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not save");

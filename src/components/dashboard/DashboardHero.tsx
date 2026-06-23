@@ -6,6 +6,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAccessLevel } from "@/hooks/useAccessLevel";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { AIProfileDraftCard } from "@/components/dashboard/AIProfileDraftCard";
+
 
 type CtaSpec = {
   to: string;
@@ -142,6 +144,11 @@ export function DashboardHero() {
         </div>
       )}
     </div>
+    <div className="mt-4">
+      <AIProfileDraftCard />
+    </div>
+    </>
   );
 }
+
 
