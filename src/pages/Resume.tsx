@@ -1643,7 +1643,8 @@ const Resume = () => {
                 </Card>
               </div>
             </div>
-            )}
+
+
 
           </div>
         </section>
