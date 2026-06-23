@@ -98,7 +98,7 @@ const CoBuilders = () => {
       try {
         const { data: profiles, error: profilesError } = await supabase
           .from("profiles")
-          .select("id, user_id, full_name, avatar_url, primary_skills")
+          .select("id, user_id, full_name, avatar_url, primary_skills, current_stage")
           .not("full_name", "is", null);
         if (profilesError) throw profilesError;
 
