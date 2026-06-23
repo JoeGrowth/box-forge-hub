@@ -52,7 +52,6 @@ interface NaturalRolePreview {
 const CoBuilders = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { onboardingState, loading: onboardingLoading } = useOnboarding();
   const [cobuilders, setCobuilders] = useState<CoBuilder[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -67,9 +66,6 @@ const CoBuilders = () => {
   const [myStage, setMyStage] = useState<string>("novice");
   const canSeeCobuilders = COBUILDER_STAGES.has(myStage);
   const [filter, setFilter] = useState<DirectoryFilter>("talents");
-  // Derive approval status from cached onboarding state
-  const isApproved =
-    onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved";
 
   // Fetch viewer's progression stage to gate the Co-Builders filter tab.
   useEffect(() => {
