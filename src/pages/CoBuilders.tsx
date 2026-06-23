@@ -363,8 +363,24 @@ const CoBuilders = () => {
 
           {/* Search and Filter */}
           <section className="py-8 border-b border-border">
-            <div className="container mx-auto px-4">
-              <div className="relative max-w-md">
+            <div className="container mx-auto px-4 flex flex-col md:flex-row md:items-center gap-4">
+              <Tabs value={filter} onValueChange={(v) => setFilter(v as DirectoryFilter)}>
+                <TabsList>
+                  <TabsTrigger value="talents" className="gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" /> Talents
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="cobuilders"
+                    disabled={!canSeeCobuilders}
+                    className="gap-1.5"
+                    title={canSeeCobuilders ? undefined : "Unlocks at Capable stage"}
+                  >
+                    {canSeeCobuilders ? <Users className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+                    Co-Builders
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+              <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   placeholder="Search by name, skills, or natural role..."
@@ -373,6 +389,11 @@ const CoBuilders = () => {
                   className="pl-10"
                 />
               </div>
+              {!canSeeCobuilders && (
+                <p className="text-xs text-muted-foreground md:ml-auto">
+                  Co-Builders unlocks at <span className="font-medium">Capable</span> stage.
+                </p>
+              )}
             </div>
           </section>
 
