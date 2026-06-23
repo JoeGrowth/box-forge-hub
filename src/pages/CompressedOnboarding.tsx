@@ -201,7 +201,14 @@ export default function CompressedOnboarding() {
           <Progress value={progress} className="h-1.5" />
         </div>
 
-        <Card className="p-6 md:p-8 space-y-6">
+        <Card className="p-6 md:p-8">
+          <form
+            className="space-y-6"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!submitting) next();
+            }}
+          >
           {step === 1 && (
             <div className="space-y-4">
               <div>
@@ -360,7 +367,7 @@ export default function CompressedOnboarding() {
                 Graph-first onboarding
               </Badge>
             </div>
-            <Button onClick={next} disabled={submitting}>
+            <Button type="submit" disabled={submitting}>
               {submitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
@@ -370,6 +377,7 @@ export default function CompressedOnboarding() {
               )}
             </Button>
           </div>
+          </form>
         </Card>
       </div>
     </div>
