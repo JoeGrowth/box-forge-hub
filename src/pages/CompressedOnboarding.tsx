@@ -367,7 +367,7 @@ export default function CompressedOnboarding() {
                 Graph-first onboarding
               </Badge>
             </div>
-            <Button onClick={next} disabled={submitting}>
+            <Button type="submit" disabled={submitting}>
               {submitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
@@ -377,6 +377,7 @@ export default function CompressedOnboarding() {
               )}
             </Button>
           </div>
+          </form>
         </Card>
       </div>
     </div>
