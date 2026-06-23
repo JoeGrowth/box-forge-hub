@@ -1941,6 +1941,8 @@ export type Database = {
       }
       onboarding_state: {
         Row: {
+          activation_completed_at: string | null
+          activation_seen_at: string | null
           boost_type: string | null
           consultant_access: boolean | null
           created_at: string | null
@@ -1959,6 +1961,8 @@ export type Database = {
           user_status: string | null
         }
         Insert: {
+          activation_completed_at?: string | null
+          activation_seen_at?: string | null
           boost_type?: string | null
           consultant_access?: boolean | null
           created_at?: string | null
@@ -1977,6 +1981,8 @@ export type Database = {
           user_status?: string | null
         }
         Update: {
+          activation_completed_at?: string | null
+          activation_seen_at?: string | null
           boost_type?: string | null
           consultant_access?: boolean | null
           created_at?: string | null
@@ -2473,6 +2479,9 @@ export type Database = {
           created_at: string
           current_stage: string | null
           deleted_at: string | null
+          draft_skills: string[] | null
+          draft_summary: string | null
+          draft_title: string | null
           education_certifications: string | null
           full_name: string | null
           id: string
@@ -2483,6 +2492,11 @@ export type Database = {
           preferred_sector: string | null
           primary_skills: string | null
           professional_title: string | null
+          profile_draft_accepted_at: string | null
+          profile_draft_confidence: number | null
+          profile_draft_dismissed_at: string | null
+          profile_draft_generated_at: string | null
+          profile_draft_source: string | null
           startup_name: string | null
           summary_statement: string | null
           updated_at: string
@@ -2495,6 +2509,9 @@ export type Database = {
           created_at?: string
           current_stage?: string | null
           deleted_at?: string | null
+          draft_skills?: string[] | null
+          draft_summary?: string | null
+          draft_title?: string | null
           education_certifications?: string | null
           full_name?: string | null
           id?: string
@@ -2505,6 +2522,11 @@ export type Database = {
           preferred_sector?: string | null
           primary_skills?: string | null
           professional_title?: string | null
+          profile_draft_accepted_at?: string | null
+          profile_draft_confidence?: number | null
+          profile_draft_dismissed_at?: string | null
+          profile_draft_generated_at?: string | null
+          profile_draft_source?: string | null
           startup_name?: string | null
           summary_statement?: string | null
           updated_at?: string
@@ -2517,6 +2539,9 @@ export type Database = {
           created_at?: string
           current_stage?: string | null
           deleted_at?: string | null
+          draft_skills?: string[] | null
+          draft_summary?: string | null
+          draft_title?: string | null
           education_certifications?: string | null
           full_name?: string | null
           id?: string
@@ -2527,6 +2552,11 @@ export type Database = {
           preferred_sector?: string | null
           primary_skills?: string | null
           professional_title?: string | null
+          profile_draft_accepted_at?: string | null
+          profile_draft_confidence?: number | null
+          profile_draft_dismissed_at?: string | null
+          profile_draft_generated_at?: string | null
+          profile_draft_source?: string | null
           startup_name?: string | null
           summary_statement?: string | null
           updated_at?: string
@@ -3969,6 +3999,10 @@ export type Database = {
           variant_key: string
         }[]
       }
+      promote_profile_draft: {
+        Args: { _skills?: string[]; _summary?: string; _title?: string }
+        Returns: undefined
+      }
       recompute_expertise: { Args: { _user_id: string }; Returns: undefined }
       recompute_expertise_confidence: {
         Args: { _user_id: string }
@@ -4159,6 +4193,10 @@ export type Database = {
         | "practice_verified"
         | "training_verified"
         | "consulting_verified"
+        | "activation_hub_viewed"
+        | "opportunity_interested"
+        | "nba_executed"
+        | "signal_completed"
       graph_node_type:
         | "user"
         | "skill"
@@ -4493,6 +4531,10 @@ export const Constants = {
         "practice_verified",
         "training_verified",
         "consulting_verified",
+        "activation_hub_viewed",
+        "opportunity_interested",
+        "nba_executed",
+        "signal_completed",
       ],
       graph_node_type: [
         "user",
