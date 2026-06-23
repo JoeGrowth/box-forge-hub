@@ -51,11 +51,18 @@ export function MissingSignalDrawer({ open, onOpenChange, userId, source, onComp
         aggregate_type: "user",
         aggregate_id: userId,
         source_module: source,
-        payload: { source, signal_type: "skill", value } as never,
+        payload: {
+          canonical_name: "signal.completed",
+          source,
+          signal_type: "skill",
+          value,
+        } as never,
         idempotency_key: `signal_completed:skill:v1:${userId}:${value}`,
         weight: 1,
       };
-      await supabase.from("graph_events").insert(insert);
+      await supabase
+        .from("graph_events")
+        .upsert(insert, { onConflict: "idempotency_key", ignoreDuplicates: true });
       setSkill("");
       onCompleted();
     } finally {

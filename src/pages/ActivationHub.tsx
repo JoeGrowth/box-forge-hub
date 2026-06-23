@@ -163,6 +163,35 @@ export default function ActivationHub() {
     return [...personalized, ...explore];
   }, [recommendations, fallbacks]);
 
+  // Recommendation-quality counters. Emit activation_hub_viewed exactly once
+  // per user (DB-level dedup via idempotency_key) AFTER matches resolve, so
+  // personalized vs fallback counts are accurate.
+  useEffect(() => {
+    if (!user || viewEmittedRef.current) return;
+    if (recsLoading) return;
+    viewEmittedRef.current = true;
+    const personalizedCount = matches.filter((m) => m.kind === "personalized").length;
+    const fallbackCount = matches.filter((m) => m.kind === "explore").length;
+    void supabase.from("graph_events").upsert(
+      {
+        user_id: user.id,
+        event_type: "activation_hub_viewed",
+        aggregate_type: "user",
+        aggregate_id: user.id,
+        source_module: ACTIVATION_SOURCE,
+        payload: {
+          canonical_name: "activation.hub_viewed",
+          source: ACTIVATION_SOURCE,
+          personalized_matches_count: personalizedCount,
+          fallback_matches_count: fallbackCount,
+        } as never,
+        idempotency_key: `activation_hub_viewed:v1:${user.id}`,
+        weight: 0,
+      },
+      { onConflict: "idempotency_key", ignoreDuplicates: true },
+    );
+  }, [user, recsLoading, matches]);
+
   const markCompleted = async () => {
     if (!user || completed) return;
     setCompleted(true);

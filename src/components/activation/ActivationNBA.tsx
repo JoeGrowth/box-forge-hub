@@ -39,11 +39,18 @@ export function ActivationNBA({ action, source, onExecuted }: Props) {
       aggregate_type: "action",
       aggregate_id: action.rule,
       source_module: source,
-      payload: { source, rule: action.rule, action: action.action } as never,
+      payload: {
+        canonical_name: "nba.executed",
+        source,
+        rule: action.rule,
+        action: action.action,
+      } as never,
       idempotency_key: `nba_executed:v1:${user.id}:${action.rule}`,
       weight: 1,
     };
-    await supabase.from("graph_events").insert(insert);
+    await supabase
+      .from("graph_events")
+      .upsert(insert, { onConflict: "idempotency_key", ignoreDuplicates: true });
     onExecuted();
   };
 
