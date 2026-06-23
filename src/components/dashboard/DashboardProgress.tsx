@@ -61,7 +61,7 @@ export function DashboardProgress() {
           title: "Onboarding Journey",
           status: "in_progress",
           currentPhase: onboardingState.current_step || 1,
-          totalPhases: 9,
+          totalPhases: 5,
           link: "/professional-track",
         });
       }
@@ -107,9 +107,10 @@ export function DashboardProgress() {
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
-  // Check if onboarding is truly complete (step 9 AND completed flag)
-  const isOnboardingTrulyComplete = onboardingState?.onboarding_completed && 
-    (onboardingState?.current_step ?? 0) >= 9;
+  // Check if onboarding is truly complete (step 5 AND completed flag)
+  const isOnboardingTrulyComplete = onboardingState?.onboarding_completed &&
+    (onboardingState?.current_step ?? 0) >= 5;
+
 
   // Check if user is approved by admin
   const isApproved = onboardingState?.journey_status === "approved" || 
@@ -180,7 +181,7 @@ export function DashboardProgress() {
               <div className="text-sm text-muted-foreground">
                 {isOnboardingTrulyComplete 
                   ? "Define your role and goals" 
-                  : `Step ${onboardingState?.current_step || 1} of 9 - Continue where you left off`}
+                  : `Step ${onboardingState?.current_step || 1} of 5 - Continue where you left off`}
               </div>
             </div>
             {!isOnboardingTrulyComplete && (
