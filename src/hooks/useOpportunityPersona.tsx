@@ -71,7 +71,7 @@ export function useOpportunityPersona(): PersonaConfig {
       return {
         persona: "venture_creator",
         label: "Venture Creator",
-        defaultTab: "startup",
+        defaultTab: "job",
         banner: {
           title: "You're operating as a Venture Creator",
           body: "Browse to benchmark, or publish a role, tender, or job to grow your venture.",
