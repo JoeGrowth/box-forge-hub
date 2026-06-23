@@ -746,33 +746,32 @@ const Resume = () => {
               </Card>
             )}
 
-            {/* Empty State for users who haven't completed onboarding */}
+            {/* Soft prompt for users who haven't completed onboarding yet */}
             {!naturalRole && (
-              <Card className="mb-8 border-b4-teal/20 bg-b4-teal/5">
-                <CardContent className="py-8">
-                  <div className="flex flex-col items-center text-center gap-4">
-                    <div className="w-16 h-16 rounded-full bg-b4-teal/10 flex items-center justify-center">
-                      <FileText className="w-8 h-8 text-b4-teal" />
+              <Card className="mb-6 border-b4-teal/20 bg-b4-teal/5">
+                <CardContent className="py-4 flex items-center justify-between gap-4 flex-wrap">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-b4-teal/10 flex items-center justify-center">
+                      <Sparkles className="w-5 h-5 text-b4-teal" />
                     </div>
                     <div>
-                      <h3 className="font-display text-xl font-semibold text-foreground mb-2">Build Your Resume</h3>
-                      <p className="text-muted-foreground max-w-md mb-4">
-                        Complete your onboarding journey to define your Natural Role and track your experience. 
-                        Your resume will show your progress as you add new case studies and experiences.
+                      <p className="font-medium text-foreground">Unlock your Natural Role sections</p>
+                      <p className="text-sm text-muted-foreground">
+                        Complete the 5-question onboarding to add Practice, Training, and Consulting experience.
                       </p>
-                      <Button variant="teal" onClick={() => navigate("/onboarding")}>
-                        Start Onboarding
-                        <ArrowRight className="ml-2 w-4 h-4" />
-                      </Button>
                     </div>
                   </div>
+                  <Button variant="teal" size="sm" onClick={() => navigate("/onboarding")}>
+                    Start Onboarding
+                    <ArrowRight className="ml-2 w-4 h-4" />
+                  </Button>
                 </CardContent>
               </Card>
             )}
 
-            {/* Resume Content - Only show if user has natural role data */}
-            {naturalRole && (
-              <div className="space-y-6 animate-fade-in">
+            {/* Resume Content - always visible */}
+            <div className="space-y-6 animate-fade-in">
+
               
               {/* Quick Stats Overview */}
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
