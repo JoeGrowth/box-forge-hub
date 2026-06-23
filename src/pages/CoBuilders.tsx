@@ -64,9 +64,27 @@ const CoBuilders = () => {
   const [previewData, setPreviewData] = useState<NaturalRolePreview | null>(null);
   const [previewName, setPreviewName] = useState<string>("");
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [myStage, setMyStage] = useState<string>("novice");
+  const canSeeCobuilders = COBUILDER_STAGES.has(myStage);
+  const [filter, setFilter] = useState<DirectoryFilter>("talents");
   // Derive approval status from cached onboarding state
   const isApproved =
     onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved";
+
+  // Fetch viewer's progression stage to gate the Co-Builders filter tab.
+  useEffect(() => {
+    if (!user?.id) return;
+    (async () => {
+      const { data } = await supabase
+        .from("progression_graph")
+        .select("current_state")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      const stage = (data as any)?.current_state ?? "novice";
+      setMyStage(stage);
+      if (COBUILDER_STAGES.has(stage)) setFilter("cobuilders");
+    })();
+  }, [user?.id]);
 
   // Two-stage load: (1) fetch profile/role/idea rows for approved users,
   // (2) hydrate per-user expertise via the batch graph hook below.
