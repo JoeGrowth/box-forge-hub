@@ -189,6 +189,8 @@ Tone: concrete, builder-y, no buzzwords, no emojis.`;
     // If the user has already accepted a previous draft, regeneration must
     // not silently clear the accepted timestamp — we leave it intact. Only
     // promotion via promote_profile_draft updates accepted_at.
+    const generatedAt = new Date().toISOString();
+    updatePayload.profile_draft_generated_at = generatedAt;
     const { error: upErr } = await admin
       .from("profiles")
       .update(updatePayload)
@@ -199,9 +201,29 @@ Tone: concrete, builder-y, no buzzwords, no emojis.`;
       return json(500, { error: "db_update_failed" });
     }
 
+    // Implicit feedback — draft_generated event (DB-deduped by idempotency_key).
+    await admin.from("graph_events").upsert(
+      {
+        user_id: userId,
+        event_type: "draft_generated",
+        aggregate_type: "profile_draft",
+        aggregate_id: userId,
+        source_module: "ai_profile_draft",
+        payload: {
+          canonical_name: "draft.generated",
+          generated_at: generatedAt,
+          confidence,
+          forced: !!body.force,
+        },
+        idempotency_key: `draft_generated:v1:${userId}:${generatedAt}`,
+        weight: 0.5,
+      },
+      { onConflict: "idempotency_key", ignoreDuplicates: true },
+    );
+
     return json(200, {
       ok: true,
-      draft: { title, summary, skills, confidence },
+      draft: { title, summary, skills, confidence, generated_at: generatedAt },
     });
   } catch (e) {
     console.error("draft-profile error", e);

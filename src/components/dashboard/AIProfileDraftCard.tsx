@@ -115,6 +115,13 @@ export function AIProfileDraftCard() {
       toast({ title: "Couldn't save", description: error.message, variant: "destructive" });
       return;
     }
+    if (user) {
+      const isEdit = !!overrides && (overrides.title || overrides.summary || (overrides.skills && overrides.skills.length));
+      if (isEdit) {
+        await emitDraftEvent(user.id, "draft_edited", draft.profile_draft_generated_at);
+      }
+      await emitDraftEvent(user.id, "draft_accepted", draft.profile_draft_generated_at, { edited: !!isEdit });
+    }
     toast({ title: "Profile updated" });
     setEditing(false);
     await load();
@@ -122,6 +129,10 @@ export function AIProfileDraftCard() {
 
   const regenerate = async () => {
     setBusy("regen");
+    if (user) {
+      // Emit BEFORE invoking — ties the event to the draft being replaced.
+      await emitDraftEvent(user.id, "draft_regenerated", draft.profile_draft_generated_at);
+    }
     const { error } = await supabase.functions.invoke("draft-profile", { body: { force: true } });
     setBusy(null);
     if (error) {
@@ -133,6 +144,9 @@ export function AIProfileDraftCard() {
 
   const dismiss = async () => {
     setBusy("dismiss");
+    if (user) {
+      await emitDraftEvent(user.id, "draft_dismissed", draft.profile_draft_generated_at);
+    }
     await supabase
       .from("profiles")
       .update({ profile_draft_dismissed_at: new Date().toISOString() })
