@@ -39,6 +39,10 @@ export function DashboardNextSteps() {
 
   const stage = progression?.current_state ?? "novice";
 
+  // Novice users get a cleaner dashboard — no recommended next steps card.
+  if (!loading && stage === "novice") return null;
+
+
   return (
     <Card>
       <CardHeader>

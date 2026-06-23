@@ -47,7 +47,21 @@ export function DashboardStats() {
   // Same formula as before — equity weighting is unchanged; only the inputs
   // now come from the graph projection instead of two parallel COUNT(*)s.
   const baseEquity = teamMemberships * 5 + certifications * 2;
-  const potentialEquity = baseEquity > 0 ? `${Math.min(baseEquity, 25)}%` : "0%";
+  const potentialEquityNum = Math.min(baseEquity, 25);
+  const potentialEquity = baseEquity > 0 ? `${potentialEquityNum}%` : "0%";
+
+  // Gate the entire stats bar — only show for users with meaningful signals.
+  // Novice / cold-start users see a cleaner dashboard.
+  const meetsThreshold =
+    potentialEquityNum >= 10 ||
+    certifications >= 2 ||
+    teamMemberships >= 1 ||
+    activity.applications >= 2 ||
+    activity.ideas >= 2 ||
+    activity.journeysCompleted >= 1;
+
+  if (loading) return null;
+  if (!meetsThreshold) return null;
 
   const statCards = [
     {
