@@ -87,7 +87,7 @@ export function useOpportunityPersona(): PersonaConfig {
       return {
         persona: "cobuilder",
         label: "Co-Builder",
-        defaultTab: "startup",
+        defaultTab: "job",
         banner: {
           title: "Find a startup to co-build",
           body: "Approved co-builders are matched to startup roles by skill graph overlap.",
@@ -105,7 +105,7 @@ export function useOpportunityPersona(): PersonaConfig {
       explorer: {
         persona: "explorer",
         label: "Explorer",
-        defaultTab: "training",
+        defaultTab: "job",
         banner: {
           title: "Build signals first",
           body: "Complete one validated training or practice journey to unlock paid missions.",
@@ -131,7 +131,7 @@ export function useOpportunityPersona(): PersonaConfig {
       validated_expert: {
         persona: "validated_expert",
         label: "Validated Expert",
-        defaultTab: "consulting",
+        defaultTab: "job",
         banner: {
           title: "Take on consulting missions",
           body: "Your verified expertise unlocks consulting requests and qualifying tenders.",
@@ -144,7 +144,7 @@ export function useOpportunityPersona(): PersonaConfig {
       professional_operator: {
         persona: "professional_operator",
         label: "Professional Operator",
-        defaultTab: "tender",
+        defaultTab: "job",
         banner: {
           title: "High-value contracts",
           body: "Tenders and senior roles aligned with your sector experience.",
@@ -157,7 +157,7 @@ export function useOpportunityPersona(): PersonaConfig {
       cobuilder: {
         persona: "cobuilder",
         label: "Co-Builder",
-        defaultTab: "startup",
+        defaultTab: "job",
         banner: null,
         hasApprovedStartupIdea: false,
         loading: false,
@@ -165,7 +165,7 @@ export function useOpportunityPersona(): PersonaConfig {
       venture_creator: {
         persona: "venture_creator",
         label: "Venture Creator",
-        defaultTab: "startup",
+        defaultTab: "job",
         banner: null,
         hasApprovedStartupIdea: hasApprovedStartup,
         loading: false,
