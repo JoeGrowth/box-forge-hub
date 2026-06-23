@@ -105,12 +105,8 @@ export default function GenericOpportunityDetail({ category, id }: { category: C
     if (!authLoading && !user) navigate("/auth", { replace: true });
   }, [user, authLoading, navigate]);
 
-  useEffect(() => {
-    const isApproved =
-      onboardingState?.journey_status === "approved" ||
-      onboardingState?.journey_status === "entrepreneur_approved";
-    if (onboardingState && !isApproved) navigate("/profile", { replace: true });
-  }, [onboardingState, navigate]);
+  // Detail pages are viewable by any authenticated user; apply/interaction actions
+  // remain gated by RLS and certification checks inside the page.
 
   useEffect(() => {
     const load = async () => {
