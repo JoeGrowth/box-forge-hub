@@ -851,8 +851,10 @@ const Resume = () => {
                   </>
                 )}
               </div>
+              )}
 
               {/* Header Controls */}
+
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>
                   <h2 className="text-2xl font-display font-bold text-foreground">Experience Details</h2>
