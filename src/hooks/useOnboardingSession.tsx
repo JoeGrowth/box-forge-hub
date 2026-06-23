@@ -47,7 +47,7 @@ async function emitEvent(
 
 export function useOnboardingSession() {
   return useQuery({
-    queryKey: ["onboarding_session"],
+    queryKey: ["onboarding_session", "current_user"],
     queryFn: async () => {
       const { data: u } = await supabase.auth.getUser();
       const uid = u.user?.id;
@@ -58,8 +58,17 @@ export function useOnboardingSession() {
         .eq("user_id", uid)
         .maybeSingle();
       if (error) throw error;
-      return (data as unknown as OnboardingSession | null) ?? null;
+      const row = (data as unknown as OnboardingSession | null) ?? null;
+      // Defensive: ensure the row actually belongs to the current user.
+      // Prevents stale cache from a prior session leaking across sign-ins.
+      if (row && row.user_id !== uid) return null;
+      return row;
     },
+    // Always refetch on mount/window-focus so a fresh sign-in doesn't reuse
+    // a previous user's cached session row.
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
 }
 
