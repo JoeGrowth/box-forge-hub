@@ -147,6 +147,29 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user, authLoading]);
 
+  // Realtime: refetch whenever the user's onboarding rows change in Supabase.
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel(`onboarding-sync-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "onboarding_sessions", filter: `user_id=eq.${user.id}` },
+        () => { fetchOnboardingData(); }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "onboarding_state", filter: `user_id=eq.${user.id}` },
+        () => { fetchOnboardingData(); }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
+
   const updateOnboardingState = async (updates: Partial<OnboardingState>) => {
     if (!user) {
       throw new Error("User not authenticated");
