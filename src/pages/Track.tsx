@@ -97,7 +97,8 @@ const Track = () => {
   const isEntrepreneurialPrimary =
     primaryRole === "entrepreneur" || (!primaryRole && hasEntrepreneurial && !hasProfessional);
 
-  const showProfessional = isProfessionalPrimary || professionalUnlocked || (hasProfessional && hasEntrepreneurial);
+  const showProfessional =
+    isProfessionalPrimary || professionalUnlocked || hasProfessional || !isEntrepreneurialPrimary;
   const showEntrepreneurial =
     isEntrepreneurialPrimary || entrepreneurialUnlocked || (hasProfessional && hasEntrepreneurial);
 
