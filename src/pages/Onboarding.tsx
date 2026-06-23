@@ -35,6 +35,16 @@ const Onboarding = () => {
 
   useEffect(() => {
     if (onboardingState) {
+      // Honor ?step=N once — overrides stored progress so user lands on requested step
+      if (!hasAppliedForcedStep && Number.isFinite(forcedStep) && forcedStep >= 2 && forcedStep <= 9) {
+        setCurrentStep(forcedStep);
+        setHasAppliedForcedStep(true);
+        updateOnboardingState({ current_step: forcedStep, onboarding_completed: false });
+        searchParams.delete("step");
+        setSearchParams(searchParams, { replace: true });
+        return;
+      }
+
       // If user has assistance_requested status but came back to define their NR,
       // start them at step 2 (NR definition) — only if they haven't restarted
       if (naturalRole?.status === "assistance_requested" && onboardingState.onboarding_completed && !hasRestarted) {
@@ -61,7 +71,7 @@ const Onboarding = () => {
         navigate("/", { replace: true });
       }
     }
-  }, [onboardingState, naturalRole, navigate, hasRestarted]);
+  }, [onboardingState, naturalRole, navigate, hasRestarted, hasAppliedForcedStep, forcedStep, searchParams, setSearchParams, updateOnboardingState]);
 
   useEffect(() => {
     // Only show pending help if they just requested it in this session, not from stale DB state
