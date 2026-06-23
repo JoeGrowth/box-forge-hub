@@ -47,7 +47,7 @@ export function useSavedOpportunities(userId?: string | null) {
   );
 
   const toggle = useCallback(
-    (id: string, category: string) => {
+    (id: string, category: string, source?: string) => {
       const current = read();
       const exists = current.some((e) => e.id === id);
       const next = exists
@@ -61,12 +61,14 @@ export function useSavedOpportunities(userId?: string | null) {
           userId,
           opportunityId: id,
           category,
+          source,
         });
       }
       return !exists;
     },
     [userId]
   );
+
 
   const remove = useCallback((id: string) => {
     const next = read().filter((e) => e.id !== id);

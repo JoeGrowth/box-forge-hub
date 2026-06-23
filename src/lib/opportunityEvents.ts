@@ -10,18 +10,20 @@ import { supabase } from "@/integrations/supabase/client";
 export type OpportunityEventType =
   | "user_viewed_opportunity"
   | "user_saved_opportunity"
-  | "user_applied_opportunity";
+  | "user_applied_opportunity"
+  | "opportunity_interested";
 
 const dayBucket = (d = new Date()) => d.toISOString().slice(0, 10);
 
 function buildKey(type: OpportunityEventType, userId: string, opportunityId: string) {
   switch (type) {
     case "user_applied_opportunity":
-      // Single-shot: one application per opportunity per user.
+    case "opportunity_interested":
+      // Single-shot per user/opp.
       return `${type}:v1:${userId}:${opportunityId}`;
     case "user_saved_opportunity":
     case "user_viewed_opportunity":
-      // Day-bucketed: one signal per user/opp/day. Prevents spam, keeps repeat-day signal.
+      // Day-bucketed.
       return `${type}:v1:${userId}:${opportunityId}:${dayBucket()}`;
   }
 }
@@ -32,10 +34,11 @@ export async function emitOpportunityEvent(
     userId: string;
     opportunityId: string;
     category: string;
+    source?: string;
     extra?: Record<string, unknown>;
   }
 ): Promise<void> {
-  const { userId, opportunityId, category, extra } = args;
+  const { userId, opportunityId, category, source, extra } = args;
   if (!userId || !opportunityId) return;
   try {
     await supabase.from("graph_events").insert({
@@ -44,15 +47,15 @@ export async function emitOpportunityEvent(
       event_version: 1,
       aggregate_type: "opportunity",
       aggregate_id: opportunityId,
-      source_module: "opportunities_ui",
+      source_module: source ?? "opportunities_ui",
       idempotency_key: buildKey(type, userId, opportunityId),
-      payload: { category, ...(extra ?? {}) } as never,
-      weight: type === "user_applied_opportunity" ? 3 : type === "user_saved_opportunity" ? 1 : 0.2,
+      payload: { category, source: source ?? "opportunities_ui", ...(extra ?? {}) } as never,
+      weight: type === "user_applied_opportunity" ? 3 : type === "user_saved_opportunity" || type === "opportunity_interested" ? 1 : 0.2,
       occurred_at: new Date().toISOString(),
     });
   } catch {
-    // Idempotency collisions are expected and silent. Other failures are
-    // non-fatal — UI must never block on telemetry.
+    // Idempotency collisions are expected and silent.
   }
 }
+
 
