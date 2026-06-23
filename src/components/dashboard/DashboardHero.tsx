@@ -59,7 +59,6 @@ function ctasForGoal(goal: string | null, primaryRole: string | null): [CtaSpec,
 
 export function DashboardHero() {
   const { user } = useAuth();
-  const { level } = useAccessLevel();
   const [profile, setProfile] = useState<{ full_name: string | null } | null>(null);
   const [primaryRole, setPrimaryRole] = useState<string | null>(null);
   const [goal, setGoal] = useState<string | null>(null);
