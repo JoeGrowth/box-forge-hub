@@ -16,7 +16,7 @@ export const PendingHelpStep = ({ onDefineNow, onBack }: PendingHelpStepProps) =
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleContinueToProfile = async () => {
+  const handleContinueToDashboard = async () => {
     setIsLoading(true);
     try {
       // Mark onboarding as complete but keep assistance_requested status in natural_roles
@@ -28,10 +28,10 @@ export const PendingHelpStep = ({ onDefineNow, onBack }: PendingHelpStepProps) =
       });
       
       toast({
-        title: "Profile Created",
-        description: "You can define your Natural Role anytime from your profile.",
+        title: "Dashboard Ready",
+        description: "You can define your Natural Role anytime from your dashboard.",
       });
-      navigate("/profile", { replace: true });
+      navigate("/dashboard", { replace: true });
     } catch (error) {
       toast({
         title: "Error",
@@ -99,7 +99,7 @@ export const PendingHelpStep = ({ onDefineNow, onBack }: PendingHelpStepProps) =
         <ul className="space-y-2 text-sm text-muted-foreground">
           <li className="flex items-start gap-2">
             <MessageCircle className="w-4 h-4 mt-0.5 text-b4-teal flex-shrink-0" />
-            <span>Continue to your profile with a "Support" badge to get help</span>
+            <span>Continue to your dashboard with a "Support" badge to get help</span>
           </li>
           <li className="flex items-start gap-2">
             <Edit2 className="w-4 h-4 mt-0.5 text-b4-coral flex-shrink-0" />
@@ -112,11 +112,11 @@ export const PendingHelpStep = ({ onDefineNow, onBack }: PendingHelpStepProps) =
         <Button
           variant="teal"
           size="lg"
-          onClick={handleContinueToProfile}
+          onClick={handleContinueToDashboard}
           disabled={isLoading}
           className="w-full"
         >
-          {isLoading ? "Saving..." : "Continue to Profile"}
+          {isLoading ? "Saving..." : "Continue to Dashboard"}
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
         
