@@ -33,6 +33,7 @@ interface CoBuilder {
   has_opportunity: boolean;
   opportunity_id: string | null;
   opportunity_title: string | null;
+  stage: string;
 }
 
 interface NaturalRolePreview {
@@ -97,7 +98,7 @@ const CoBuilders = () => {
       try {
         const { data: profiles, error: profilesError } = await supabase
           .from("profiles")
-          .select("id, user_id, full_name, avatar_url, primary_skills")
+          .select("id, user_id, full_name, avatar_url, primary_skills, current_stage")
           .not("full_name", "is", null);
         if (profilesError) throw profilesError;
 
@@ -117,13 +118,14 @@ const CoBuilders = () => {
           const idea = startupIdeas?.find((i) => i.creator_id === profile.user_id);
           return {
             ...profile,
+            stage: (profile as any).current_stage || "novice",
             natural_role_description: nr?.description || null,
             has_opportunity: !!idea,
             opportunity_id: idea?.id || null,
             opportunity_title: idea?.title || null,
           };
         });
-        setBaseRows(rows);
+        setBaseRows(rows as any);
 
         const me = rows.find((r) => r.user_id === user?.id);
         if (me) setSkillsInput(me.primary_skills || "");
@@ -400,7 +402,8 @@ const CoBuilders = () => {
                     const getStatusLabel = () => {
                       if (certCount >= 2) return "Fully Certified";
                       if (certCount === 1) return "Certified";
-                      return "Approved - Ready to boost";
+                      const s = cobuilder.stage || "novice";
+                      return s.charAt(0).toUpperCase() + s.slice(1);
                     };
 
                     return (
