@@ -93,7 +93,9 @@ export function DashboardHero() {
   const SecondaryIcon = secondaryCta.icon;
 
   return (
+    <>
     <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-b4-navy via-b4-navy/95 to-b4-navy/90 p-8 md:p-10">
+
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-b4-teal/20 rounded-full blur-3xl" />
