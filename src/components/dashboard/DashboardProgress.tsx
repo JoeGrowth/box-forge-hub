@@ -24,6 +24,9 @@ export function DashboardProgress() {
   const [journeys, setJourneys] = useState<JourneyProgress[]>([]);
   const [naturalRoleComplete, setNaturalRoleComplete] = useState(false);
   const [nrDecoderComplete, setNrDecoderComplete] = useState(false);
+  const [resumeComplete, setResumeComplete] = useState(false);
+  const [trackRecordComplete, setTrackRecordComplete] = useState(false);
+
 
   useEffect(() => {
     const fetchProgress = async () => {
