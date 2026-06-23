@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sparkles, ArrowRight, Lightbulb, Search, Clock, Users, Briefcase, GraduationCap, DollarSign } from "lucide-react";
+import { Sparkles, ArrowRight, Lightbulb, Search, Users, GraduationCap, DollarSign } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useAccessLevel } from "@/hooks/useAccessLevel";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { AIProfileDraftCard } from "@/components/dashboard/AIProfileDraftCard";
@@ -60,7 +59,6 @@ function ctasForGoal(goal: string | null, primaryRole: string | null): [CtaSpec,
 
 export function DashboardHero() {
   const { user } = useAuth();
-  const { level } = useAccessLevel();
   const [profile, setProfile] = useState<{ full_name: string | null } | null>(null);
   const [primaryRole, setPrimaryRole] = useState<string | null>(null);
   const [goal, setGoal] = useState<string | null>(null);
@@ -130,21 +128,6 @@ export function DashboardHero() {
         </div>
       </div>
 
-      {level === "pending" && (
-        <div className="relative z-10 mt-6 rounded-xl bg-white/10 border border-white/15 px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3">
-          <div className="flex items-start gap-3 flex-1 min-w-0">
-            <Clock className="w-4 h-4 text-b4-teal mt-0.5 shrink-0" />
-            <div className="text-sm text-white/85">
-              <span className="font-semibold text-white">Pending review.</span>{" "}
-              You can browse opportunities, save them and view co-builders.
-              Publishing and applying unlock once you're approved.
-            </div>
-          </div>
-          <Button asChild size="sm" className="bg-b4-teal hover:bg-b4-teal/90 text-white shrink-0">
-            <Link to="/professional-track">Boost approval <ArrowRight className="ml-1 w-3 h-3" /></Link>
-          </Button>
-        </div>
-      )}
     </div>
     <div className="mt-4">
       <AIProfileDraftCard />
