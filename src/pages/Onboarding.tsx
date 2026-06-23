@@ -24,9 +24,9 @@ const Onboarding = () => {
   const [showPendingHelp, setShowPendingHelp] = useState(false);
   const [showFormDirectly, setShowFormDirectly] = useState(false);
   const [hasRestarted, setHasRestarted] = useState(false);
-  const [hasAppliedForcedStep, setHasAppliedForcedStep] = useState(
-    !(Number.isFinite(forcedStep) && forcedStep >= 2 && forcedStep <= 9),
-  );
+  const hasForcedStepParam = Number.isFinite(forcedStep) && forcedStep >= 2 && forcedStep <= 9;
+  const [hasAppliedForcedStep, setHasAppliedForcedStep] = useState(!hasForcedStepParam);
+  const [usedForcedStep, setUsedForcedStep] = useState(false);
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/auth", { replace: true });
