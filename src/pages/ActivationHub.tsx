@@ -23,54 +23,56 @@ import { MissingSignalDrawer } from "@/components/activation/MissingSignalDrawer
 const ACTIVATION_SOURCE = "activation_hub";
 
 async function fetchFallbacks(): Promise<FallbackMatch[]> {
-  const [{ data: jobs }, { data: trainings }, { data: startups }] = await Promise.all([
-    supabase
-      .from("job_opportunities")
-      .select("id, title, summary, company_name")
-      .eq("status", "published")
-      .order("published_at", { ascending: false, nullsFirst: false })
-      .limit(1),
-    supabase
-      .from("training_opportunities")
-      .select("id, title, summary, provider")
-      .eq("status", "published")
-      .order("published_at", { ascending: false, nullsFirst: false })
-      .limit(1),
-    supabase
-      .from("startup_ideas")
-      .select("id, idea_title, idea_description")
-      .eq("status", "approved")
-      .order("created_at", { ascending: false })
-      .limit(1),
-  ]);
-
   const out: FallbackMatch[] = [];
+
+  const { data: jobs } = await supabase
+    .from("job_opportunities")
+    .select("id, title, company")
+    .eq("status", "published")
+    .order("created_at", { ascending: false })
+    .limit(1);
   if (jobs?.[0])
     out.push({
       opportunityId: jobs[0].id,
       kind: "job",
       title: jobs[0].title ?? "Open role",
-      subtitle: jobs[0].company_name ?? null,
+      subtitle: jobs[0].company ?? null,
       reason: "Popular on the platform right now",
     });
+
+  const { data: trainings } = await supabase
+    .from("training_opportunities")
+    .select("id, title, sector")
+    .eq("review_status", "approved")
+    .order("created_at", { ascending: false })
+    .limit(1);
   if (trainings?.[0])
     out.push({
       opportunityId: trainings[0].id,
       kind: "training",
       title: trainings[0].title ?? "Training",
-      subtitle: trainings[0].provider ?? null,
+      subtitle: trainings[0].sector ?? null,
       reason: "Popular on the platform right now",
     });
+
+  const { data: startups } = await supabase
+    .from("startup_ideas")
+    .select("id, title, sector")
+    .eq("status", "active")
+    .order("created_at", { ascending: false })
+    .limit(1);
   if (startups?.[0])
     out.push({
       opportunityId: startups[0].id,
       kind: "startup",
-      title: startups[0].idea_title ?? "Startup idea",
-      subtitle: null,
+      title: startups[0].title ?? "Startup idea",
+      subtitle: startups[0].sector ?? null,
       reason: "Popular on the platform right now",
     });
+
   return out;
 }
+
 
 export default function ActivationHub() {
   const navigate = useNavigate();
