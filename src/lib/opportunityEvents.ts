@@ -40,19 +40,34 @@ export async function emitOpportunityEvent(
 ): Promise<void> {
   const { userId, opportunityId, category, source, extra } = args;
   if (!userId || !opportunityId) return;
+  // Canonical (dotted) event name shipped in payload until the enum is migrated.
+  const canonicalMap: Record<OpportunityEventType, string> = {
+    user_viewed_opportunity: "opportunity.viewed",
+    user_saved_opportunity: "opportunity.saved",
+    user_applied_opportunity: "opportunity.applied",
+    opportunity_interested: "opportunity.interested",
+  };
   try {
-    await supabase.from("graph_events").insert({
-      user_id: userId,
-      event_type: type,
-      event_version: 1,
-      aggregate_type: "opportunity",
-      aggregate_id: opportunityId,
-      source_module: source ?? "opportunities_ui",
-      idempotency_key: buildKey(type, userId, opportunityId),
-      payload: { category, source: source ?? "opportunities_ui", ...(extra ?? {}) } as never,
-      weight: type === "user_applied_opportunity" ? 3 : type === "user_saved_opportunity" || type === "opportunity_interested" ? 1 : 0.2,
-      occurred_at: new Date().toISOString(),
-    });
+    await supabase.from("graph_events").upsert(
+      {
+        user_id: userId,
+        event_type: type,
+        event_version: 1,
+        aggregate_type: "opportunity",
+        aggregate_id: opportunityId,
+        source_module: source ?? "opportunities_ui",
+        idempotency_key: buildKey(type, userId, opportunityId),
+        payload: {
+          canonical_name: canonicalMap[type],
+          category,
+          source: source ?? "opportunities_ui",
+          ...(extra ?? {}),
+        } as never,
+        weight: type === "user_applied_opportunity" ? 3 : type === "user_saved_opportunity" || type === "opportunity_interested" ? 1 : 0.2,
+        occurred_at: new Date().toISOString(),
+      },
+      { onConflict: "idempotency_key", ignoreDuplicates: true },
+    );
   } catch {
     // Idempotency collisions are expected and silent.
   }

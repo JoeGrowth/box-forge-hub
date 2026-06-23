@@ -7,7 +7,7 @@
 //                             (Save / Interest / Apply / Signal completed)
 //   activation_hub_viewed   → graph_events row on first mount
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -82,6 +82,7 @@ export default function ActivationHub() {
   const [fallbacks, setFallbacks] = useState<FallbackMatch[]>([]);
   const [signalOpen, setSignalOpen] = useState(false);
   const [completed, setCompleted] = useState(false);
+  const viewEmittedRef = useRef(false);
 
   const { recommendations, loading: recsLoading } =
     useOpportunityRecommendations(user?.id, { limit: 3 });
@@ -114,7 +115,8 @@ export default function ActivationHub() {
         .maybeSingle();
       if (!cancelled) setFullName(prof?.full_name ?? null);
 
-      // Idempotent seen_at + viewed event (once per user).
+      // seen_at is set once; the unique idempotency_key on graph_events
+      // guarantees a single activation_hub_viewed across refreshes & tabs.
       const seenAt =
         (onboardingState as { activation_seen_at?: string | null } | null)
           ?.activation_seen_at ?? null;
@@ -122,17 +124,8 @@ export default function ActivationHub() {
         await supabase
           .from("onboarding_state")
           .update({ activation_seen_at: new Date().toISOString() })
+          .is("activation_seen_at", null)
           .eq("user_id", user.id);
-        await supabase.from("graph_events").insert({
-          user_id: user.id,
-          event_type: "activation_hub_viewed",
-          aggregate_type: "user",
-          aggregate_id: user.id,
-          source_module: ACTIVATION_SOURCE,
-          payload: { source: ACTIVATION_SOURCE } as never,
-          idempotency_key: `activation_hub_viewed:v1:${user.id}`,
-          weight: 0,
-        });
       }
 
       const fb = await fetchFallbacks();
@@ -170,13 +163,45 @@ export default function ActivationHub() {
     return [...personalized, ...explore];
   }, [recommendations, fallbacks]);
 
+  // Recommendation-quality counters. Emit activation_hub_viewed exactly once
+  // per user (DB-level dedup via idempotency_key) AFTER matches resolve, so
+  // personalized vs fallback counts are accurate.
+  useEffect(() => {
+    if (!user || viewEmittedRef.current) return;
+    if (recsLoading) return;
+    viewEmittedRef.current = true;
+    const personalizedCount = matches.filter((m) => m.kind === "personalized").length;
+    const fallbackCount = matches.filter((m) => m.kind === "explore").length;
+    void supabase.from("graph_events").upsert(
+      {
+        user_id: user.id,
+        event_type: "activation_hub_viewed",
+        aggregate_type: "user",
+        aggregate_id: user.id,
+        source_module: ACTIVATION_SOURCE,
+        payload: {
+          canonical_name: "activation.hub_viewed",
+          source: ACTIVATION_SOURCE,
+          personalized_matches_count: personalizedCount,
+          fallback_matches_count: fallbackCount,
+        } as never,
+        idempotency_key: `activation_hub_viewed:v1:${user.id}`,
+        weight: 0,
+      },
+      { onConflict: "idempotency_key", ignoreDuplicates: true },
+    );
+  }, [user, recsLoading, matches]);
+
   const markCompleted = async () => {
     if (!user || completed) return;
     setCompleted(true);
+    // Only stamp the first meaningful action; guard against double-writes
+    // (refresh, two tabs, racing handlers).
     await supabase
       .from("onboarding_state")
       .update({ activation_completed_at: new Date().toISOString() })
-      .eq("user_id", user.id);
+      .eq("user_id", user.id)
+      .is("activation_completed_at", null);
     // Small UX pause so the user sees the toast/state, then route to dashboard.
     setTimeout(() => navigate("/dashboard", { replace: true }), 700);
   };
