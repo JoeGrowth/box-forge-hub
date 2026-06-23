@@ -772,8 +772,9 @@ const Resume = () => {
             {/* Resume Content - always visible */}
             <div className="space-y-6 animate-fade-in">
 
-              
               {/* Quick Stats Overview */}
+              {naturalRole && (
+
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
                 <button
                   onClick={() => startEditing('section-natural-role')}
