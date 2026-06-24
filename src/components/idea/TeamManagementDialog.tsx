@@ -685,6 +685,26 @@ export const TeamManagementDialog = ({
           </Tabs>
         )}
       </DialogContent>
+
+      {compMember && (
+        <CompensationDialog
+          open={!!compMember}
+          onOpenChange={(o) => !o && setCompMember(null)}
+          teamMember={{
+            id: compMember.id,
+            member_user_id: compMember.member_user_id,
+            role_type: compMember.role_type,
+            full_name: compMember.full_name,
+          }}
+          startupId={startupId}
+          currentUserId={currentUserId}
+          isInitiator={true}
+          onOfferSubmitted={() => {
+            setCompMember(null);
+            fetchData();
+          }}
+        />
+      )}
     </Dialog>
   );
 };
