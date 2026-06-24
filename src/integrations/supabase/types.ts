@@ -3191,6 +3191,7 @@ export type Database = {
       }
       team_compensation_offers: {
         Row: {
+          application_id: string | null
           cancellation_reason: string | null
           cliff_years: number | null
           cobuilder_user_id: string
@@ -3204,13 +3205,14 @@ export type Database = {
           salary_currency: string | null
           startup_id: string
           status: string
-          team_member_id: string
+          team_member_id: string | null
           time_equity_percentage: number | null
           updated_at: string
           version: number
           vesting_years: number | null
         }
         Insert: {
+          application_id?: string | null
           cancellation_reason?: string | null
           cliff_years?: number | null
           cobuilder_user_id: string
@@ -3224,13 +3226,14 @@ export type Database = {
           salary_currency?: string | null
           startup_id: string
           status?: string
-          team_member_id: string
+          team_member_id?: string | null
           time_equity_percentage?: number | null
           updated_at?: string
           version?: number
           vesting_years?: number | null
         }
         Update: {
+          application_id?: string | null
           cancellation_reason?: string | null
           cliff_years?: number | null
           cobuilder_user_id?: string
@@ -3244,13 +3247,20 @@ export type Database = {
           salary_currency?: string | null
           startup_id?: string
           status?: string
-          team_member_id?: string
+          team_member_id?: string | null
           time_equity_percentage?: number | null
           updated_at?: string
           version?: number
           vesting_years?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "team_compensation_offers_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "startup_applications"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "team_compensation_offers_startup_id_fkey"
             columns: ["startup_id"]
