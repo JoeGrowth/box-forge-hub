@@ -586,11 +586,30 @@ export const TeamManagementDialog = ({
                                 </div>
                               )}
                               <p className="text-[10px] text-muted-foreground pt-1 italic">
-                                On Accept, this proposal becomes v1 — you can then counter-propose.
+                                Opens negotiation. The applicant only joins your Collaborations once both sides accept.
                               </p>
                             </div>
                           )}
 
+                          {/* Negotiation status badge */}
+                          {applicant.negotiation && applicant.status === "pending" && (
+                            <div className="text-xs flex items-center gap-2">
+                              <Badge
+                                variant="secondary"
+                                className={
+                                  applicant.negotiation.current_proposer_id !== currentUserId
+                                    ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                                    : "bg-blue-500/10 text-blue-600 border-blue-500/20"
+                                }
+                              >
+                                <MessageCircle className="w-3 h-3 mr-1" />
+                                v{applicant.negotiation.version} —{" "}
+                                {applicant.negotiation.current_proposer_id !== currentUserId
+                                  ? "Your turn"
+                                  : "Awaiting their response"}
+                              </Badge>
+                            </div>
+                          )}
 
                           {applicant.status === "pending" && (
                             <div className="flex gap-2 pt-1">
@@ -599,22 +618,12 @@ export const TeamManagementDialog = ({
                                 size="sm"
                                 className="flex-1"
                                 disabled={processingId === applicant.id}
-                                onClick={() =>
-                                  handleUpdateStatus(
-                                    applicant.id,
-                                    "accepted",
-                                    applicant.applicant_id,
-                                    applicant.full_name,
-                                    applicant.role_applied,
-                                  )
-                                }
+                                onClick={() => setCompApplicant(applicant)}
                               >
-                                {processingId === applicant.id ? (
-                                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                                ) : (
-                                  <Check className="w-4 h-4 mr-1" />
-                                )}
-                                Accept
+                                <MessageCircle className="w-4 h-4 mr-1" />
+                                {applicant.negotiation
+                                  ? `Continue Negotiation (v${applicant.negotiation.version})`
+                                  : "Open Negotiation"}
                               </Button>
                               <Button
                                 variant="outline"
