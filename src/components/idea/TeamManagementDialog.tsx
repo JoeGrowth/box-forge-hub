@@ -499,6 +499,63 @@ export const TeamManagementDialog = ({
                             </div>
                           )}
 
+                          {/* Proposed compensation summary */}
+                          {((applicant.proposed_time_equity_percentage || 0) > 0 ||
+                            (applicant.proposed_performance_equity_percentage || 0) > 0 ||
+                            applicant.proposed_include_salary) && (
+                            <div className="rounded-md border bg-b4-teal/5 p-3 space-y-1.5">
+                              <div className="flex items-center gap-1.5 text-xs font-medium text-foreground">
+                                <PieChart className="w-3.5 h-3.5 text-b4-teal" />
+                                Proposed Compensation
+                              </div>
+                              <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+                                {(applicant.proposed_time_equity_percentage || 0) > 0 && (
+                                  <div>
+                                    <span className="text-muted-foreground">Time Equity:</span>{" "}
+                                    <span className="font-semibold text-foreground">
+                                      {applicant.proposed_time_equity_percentage}%
+                                    </span>{" "}
+                                    <span className="text-muted-foreground">
+                                      ({applicant.proposed_cliff_years ?? 1}y cliff +{" "}
+                                      {applicant.proposed_vesting_years ?? 4}y vest)
+                                    </span>
+                                  </div>
+                                )}
+                                {(applicant.proposed_performance_equity_percentage || 0) > 0 && (
+                                  <div>
+                                    <span className="text-muted-foreground">Perf Equity:</span>{" "}
+                                    <span className="font-semibold text-foreground">
+                                      {applicant.proposed_performance_equity_percentage}%
+                                    </span>
+                                  </div>
+                                )}
+                                {applicant.proposed_include_salary &&
+                                  applicant.proposed_monthly_salary != null && (
+                                    <div className="flex items-center gap-1">
+                                      <DollarSign className="w-3 h-3 text-muted-foreground" />
+                                      <span className="font-semibold text-foreground">
+                                        {applicant.proposed_monthly_salary.toLocaleString()}{" "}
+                                        {applicant.proposed_salary_currency || "USD"}
+                                      </span>
+                                      <span className="text-muted-foreground">/mo</span>
+                                    </div>
+                                  )}
+                              </div>
+                              {applicant.proposed_performance_milestone && (
+                                <div className="text-xs pt-1">
+                                  <span className="text-muted-foreground">Milestone:</span>{" "}
+                                  <span className="text-foreground">
+                                    {applicant.proposed_performance_milestone}
+                                  </span>
+                                </div>
+                              )}
+                              <p className="text-[10px] text-muted-foreground pt-1 italic">
+                                On Accept, this proposal becomes v1 — you can then counter-propose.
+                              </p>
+                            </div>
+                          )}
+
+
                           {applicant.status === "pending" && (
                             <div className="flex gap-2 pt-1">
                               <Button
