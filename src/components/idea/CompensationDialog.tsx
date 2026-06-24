@@ -414,11 +414,11 @@ export const CompensationDialog = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <PieChart className="w-5 h-5 text-b4-teal" />
-            Compensation for {teamMember.full_name || "Co-Builder"}
+            Negotiate Compensation — {subjectName}
           </DialogTitle>
           <DialogDescription>
             <Badge variant="outline" className="mt-1">
-              {ROLE_LABELS[teamMember.role_type] || teamMember.role_type}
+              {roleLabel}
             </Badge>
             {existingOffer && (
               <Badge 
