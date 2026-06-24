@@ -38,6 +38,14 @@ interface Applicant {
   full_name: string | null;
   avatar_url: string | null;
   natural_role: string | null;
+  proposed_monthly_salary: number | null;
+  proposed_salary_currency: string | null;
+  proposed_time_equity_percentage: number | null;
+  proposed_cliff_years: number | null;
+  proposed_vesting_years: number | null;
+  proposed_performance_equity_percentage: number | null;
+  proposed_performance_milestone: string | null;
+  proposed_include_salary: boolean | null;
 }
 
 interface TeamMemberData {
