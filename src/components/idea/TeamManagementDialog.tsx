@@ -198,6 +198,7 @@ export const TeamManagementDialog = ({
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [compMember, setCompMember] = useState<TeamMemberData | null>(null);
+  const [compApplicant, setCompApplicant] = useState<Applicant | null>(null);
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
