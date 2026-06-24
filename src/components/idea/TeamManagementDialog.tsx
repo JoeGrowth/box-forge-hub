@@ -224,9 +224,10 @@ export const TeamManagementDialog = ({
       const memberUserIds = members?.map((m) => m.member_user_id) || [];
       const allUserIds = [...new Set([...appUserIds, ...memberUserIds])];
       const memberIds = members?.map((m) => m.id) || [];
+      const applicationIds = apps?.map((a) => a.id) || [];
 
-      // Fetch profiles, natural roles, and compensation in parallel
-      const [profilesRes, naturalRolesRes, compensationRes] = await Promise.all([
+      // Fetch profiles, natural roles, and compensation (by team_member AND by application) in parallel
+      const [profilesRes, naturalRolesRes, compensationRes, appCompRes] = await Promise.all([
         allUserIds.length > 0
           ? supabase
               .from("profiles")
@@ -247,21 +248,44 @@ export const TeamManagementDialog = ({
               )
               .in("team_member_id", memberIds)
           : { data: [] },
+        applicationIds.length > 0
+          ? (supabase
+              .from("team_compensation_offers")
+              .select(
+                "application_id, status, time_equity_percentage, performance_equity_percentage, monthly_salary, salary_currency, current_proposer_id, version"
+              )
+              .in("application_id", applicationIds) as unknown as Promise<{ data: Array<Record<string, unknown>> }>)
+          : { data: [] as Array<Record<string, unknown>> },
       ]);
 
       const profiles = profilesRes.data || [];
       const naturalRoles = naturalRolesRes.data || [];
       const compensations = compensationRes.data || [];
+      const appComps = (appCompRes as { data: Array<Record<string, unknown>> }).data || [];
 
-      // Enrich applicants
+      // Enrich applicants (including negotiation snapshot keyed by application_id)
       const enrichedApplicants: Applicant[] = (apps || []).map((app) => {
         const profile = profiles.find((p) => p.user_id === app.applicant_id);
         const nr = naturalRoles.find((r) => r.user_id === app.applicant_id);
+        const negRow = appComps.find((c) => c.application_id === app.id);
+        const negotiation: NegotiationSnapshot | null = negRow
+          ? {
+              status: String(negRow.status),
+              version: Number(negRow.version),
+              current_proposer_id: String(negRow.current_proposer_id),
+              time_equity_percentage: (negRow.time_equity_percentage as number) ?? null,
+              performance_equity_percentage:
+                (negRow.performance_equity_percentage as number) ?? null,
+              monthly_salary: (negRow.monthly_salary as number) ?? null,
+              salary_currency: (negRow.salary_currency as string) ?? null,
+            }
+          : null;
         return {
           ...app,
           full_name: profile?.full_name || null,
           avatar_url: profile?.avatar_url || null,
           natural_role: nr?.description || null,
+          negotiation,
         };
       });
 
