@@ -28,6 +28,16 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { CompensationDialog } from "./CompensationDialog";
 
+interface NegotiationSnapshot {
+  status: string;
+  version: number;
+  current_proposer_id: string;
+  time_equity_percentage: number | null;
+  performance_equity_percentage: number | null;
+  monthly_salary: number | null;
+  salary_currency: string | null;
+}
+
 interface Applicant {
   id: string;
   applicant_id: string;
@@ -46,6 +56,7 @@ interface Applicant {
   proposed_performance_equity_percentage: number | null;
   proposed_performance_milestone: string | null;
   proposed_include_salary: boolean | null;
+  negotiation: NegotiationSnapshot | null;
 }
 
 interface TeamMemberData {
@@ -187,6 +198,7 @@ export const TeamManagementDialog = ({
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [compMember, setCompMember] = useState<TeamMemberData | null>(null);
+  const [compApplicant, setCompApplicant] = useState<Applicant | null>(null);
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
@@ -212,9 +224,10 @@ export const TeamManagementDialog = ({
       const memberUserIds = members?.map((m) => m.member_user_id) || [];
       const allUserIds = [...new Set([...appUserIds, ...memberUserIds])];
       const memberIds = members?.map((m) => m.id) || [];
+      const applicationIds = apps?.map((a) => a.id) || [];
 
-      // Fetch profiles, natural roles, and compensation in parallel
-      const [profilesRes, naturalRolesRes, compensationRes] = await Promise.all([
+      // Fetch profiles, natural roles, and compensation (by team_member AND by application) in parallel
+      const [profilesRes, naturalRolesRes, compensationRes, appCompRes] = await Promise.all([
         allUserIds.length > 0
           ? supabase
               .from("profiles")
@@ -235,21 +248,44 @@ export const TeamManagementDialog = ({
               )
               .in("team_member_id", memberIds)
           : { data: [] },
+        applicationIds.length > 0
+          ? (supabase
+              .from("team_compensation_offers")
+              .select(
+                "application_id, status, time_equity_percentage, performance_equity_percentage, monthly_salary, salary_currency, current_proposer_id, version"
+              )
+              .in("application_id", applicationIds) as unknown as Promise<{ data: Array<Record<string, unknown>> }>)
+          : { data: [] as Array<Record<string, unknown>> },
       ]);
 
       const profiles = profilesRes.data || [];
       const naturalRoles = naturalRolesRes.data || [];
       const compensations = compensationRes.data || [];
+      const appComps = (appCompRes as { data: Array<Record<string, unknown>> }).data || [];
 
-      // Enrich applicants
+      // Enrich applicants (including negotiation snapshot keyed by application_id)
       const enrichedApplicants: Applicant[] = (apps || []).map((app) => {
         const profile = profiles.find((p) => p.user_id === app.applicant_id);
         const nr = naturalRoles.find((r) => r.user_id === app.applicant_id);
+        const negRow = appComps.find((c) => c.application_id === app.id);
+        const negotiation: NegotiationSnapshot | null = negRow
+          ? {
+              status: String(negRow.status),
+              version: Number(negRow.version),
+              current_proposer_id: String(negRow.current_proposer_id),
+              time_equity_percentage: (negRow.time_equity_percentage as number) ?? null,
+              performance_equity_percentage:
+                (negRow.performance_equity_percentage as number) ?? null,
+              monthly_salary: (negRow.monthly_salary as number) ?? null,
+              salary_currency: (negRow.salary_currency as string) ?? null,
+            }
+          : null;
         return {
           ...app,
           full_name: profile?.full_name || null,
           avatar_url: profile?.avatar_url || null,
           natural_role: nr?.description || null,
+          negotiation,
         };
       });
 
@@ -550,11 +586,30 @@ export const TeamManagementDialog = ({
                                 </div>
                               )}
                               <p className="text-[10px] text-muted-foreground pt-1 italic">
-                                On Accept, this proposal becomes v1 — you can then counter-propose.
+                                Opens negotiation. The applicant only joins your Collaborations once both sides accept.
                               </p>
                             </div>
                           )}
 
+                          {/* Negotiation status badge */}
+                          {applicant.negotiation && applicant.status === "pending" && (
+                            <div className="text-xs flex items-center gap-2">
+                              <Badge
+                                variant="secondary"
+                                className={
+                                  applicant.negotiation.current_proposer_id !== currentUserId
+                                    ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                                    : "bg-blue-500/10 text-blue-600 border-blue-500/20"
+                                }
+                              >
+                                <MessageCircle className="w-3 h-3 mr-1" />
+                                v{applicant.negotiation.version} —{" "}
+                                {applicant.negotiation.current_proposer_id !== currentUserId
+                                  ? "Your turn"
+                                  : "Awaiting their response"}
+                              </Badge>
+                            </div>
+                          )}
 
                           {applicant.status === "pending" && (
                             <div className="flex gap-2 pt-1">
@@ -563,22 +618,12 @@ export const TeamManagementDialog = ({
                                 size="sm"
                                 className="flex-1"
                                 disabled={processingId === applicant.id}
-                                onClick={() =>
-                                  handleUpdateStatus(
-                                    applicant.id,
-                                    "accepted",
-                                    applicant.applicant_id,
-                                    applicant.full_name,
-                                    applicant.role_applied,
-                                  )
-                                }
+                                onClick={() => setCompApplicant(applicant)}
                               >
-                                {processingId === applicant.id ? (
-                                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                                ) : (
-                                  <Check className="w-4 h-4 mr-1" />
-                                )}
-                                Accept
+                                <MessageCircle className="w-4 h-4 mr-1" />
+                                {applicant.negotiation
+                                  ? `Continue Negotiation (v${applicant.negotiation.version})`
+                                  : "Open Negotiation"}
                               </Button>
                               <Button
                                 variant="outline"
@@ -766,6 +811,39 @@ export const TeamManagementDialog = ({
           isInitiator={true}
           onOfferSubmitted={() => {
             setCompMember(null);
+            fetchData();
+          }}
+        />
+      )}
+
+      {compApplicant && (
+        <CompensationDialog
+          open={!!compApplicant}
+          onOpenChange={(o) => !o && setCompApplicant(null)}
+          application={{
+            applicationId: compApplicant.id,
+            applicantId: compApplicant.applicant_id,
+            applicantName: compApplicant.full_name,
+            startupId,
+            initiatorId: currentUserId,
+            roleApplied: compApplicant.role_applied,
+            proposed: {
+              monthly_salary: compApplicant.proposed_monthly_salary,
+              salary_currency: compApplicant.proposed_salary_currency,
+              time_equity_percentage: compApplicant.proposed_time_equity_percentage,
+              cliff_years: compApplicant.proposed_cliff_years,
+              vesting_years: compApplicant.proposed_vesting_years,
+              performance_equity_percentage: compApplicant.proposed_performance_equity_percentage,
+              performance_milestone: compApplicant.proposed_performance_milestone,
+              include_salary: compApplicant.proposed_include_salary,
+            },
+          }}
+          startupId={startupId}
+          startupTitle={startupTitle}
+          currentUserId={currentUserId}
+          isInitiator={true}
+          onOfferSubmitted={() => {
+            setCompApplicant(null);
             fetchData();
           }}
         />

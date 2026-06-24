@@ -25,6 +25,25 @@ interface TeamMember {
   full_name: string | null;
 }
 
+interface ApplicationContext {
+  applicationId: string;
+  applicantId: string;
+  applicantName: string | null;
+  startupId: string;
+  initiatorId: string;
+  roleApplied: string | null;
+  proposed: {
+    monthly_salary: number | null;
+    salary_currency: string | null;
+    time_equity_percentage: number | null;
+    cliff_years: number | null;
+    vesting_years: number | null;
+    performance_equity_percentage: number | null;
+    performance_milestone: string | null;
+    include_salary: boolean | null;
+  };
+}
+
 interface CompensationOffer {
   id?: string;
   monthly_salary: number | null;
@@ -38,13 +57,17 @@ interface CompensationOffer {
   initiator_user_id: string;
   current_proposer_id: string;
   version: number;
+  team_member_id?: string | null;
+  application_id?: string | null;
 }
 
 interface CompensationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  teamMember: TeamMember | null;
+  teamMember?: TeamMember | null;
+  application?: ApplicationContext | null;
   startupId: string;
+  startupTitle?: string;
   currentUserId: string;
   isInitiator: boolean;
   onOfferSubmitted: () => void;
@@ -60,7 +83,9 @@ export const CompensationDialog = ({
   open,
   onOpenChange,
   teamMember,
+  application,
   startupId,
+  startupTitle,
   currentUserId,
   isInitiator,
   onOfferSubmitted,
@@ -79,32 +104,38 @@ export const CompensationDialog = ({
   const [performanceEquity, setPerformanceEquity] = useState("");
   const [performanceMilestone, setPerformanceMilestone] = useState("");
 
+  const subjectName = teamMember?.full_name || application?.applicantName || "Co-Builder";
+  const roleLabel =
+    (teamMember && ROLE_LABELS[teamMember.role_type]) ||
+    application?.roleApplied ||
+    "Co-Builder";
+
   // Load existing offer
   useEffect(() => {
-    if (open && teamMember) {
+    if (open && (teamMember || application)) {
       loadExistingOffer();
     }
-  }, [open, teamMember]);
+  }, [open, teamMember, application]);
 
   const loadExistingOffer = async () => {
-    if (!teamMember) return;
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase
-        .from("team_compensation_offers")
-        .select("*")
-        .eq("team_member_id", teamMember.id)
-        .single();
+      let query = supabase.from("team_compensation_offers").select("*");
+      if (teamMember) {
+        query = query.eq("team_member_id", teamMember.id);
+      } else if (application) {
+        query = query.eq("application_id", application.applicationId);
+      }
+
+      const { data, error } = await query.maybeSingle();
 
       if (error && error.code !== "PGRST116") {
         console.error("Error loading offer:", error);
-        return;
       }
 
       if (data) {
         setExistingOffer(data as CompensationOffer);
-        // Populate form with existing values
         setIncludeSalary(data.monthly_salary !== null);
         setMonthlySalary(data.monthly_salary?.toString() || "");
         setSalaryCurrency(data.salary_currency || "USD");
@@ -113,8 +144,20 @@ export const CompensationDialog = ({
         setVestingYears(data.vesting_years?.toString() || "4");
         setPerformanceEquity(data.performance_equity_percentage?.toString() || "0");
         setPerformanceMilestone(data.performance_milestone || "");
+      } else if (application) {
+        // Seed form from applicant's proposal so the initiator opens negotiation
+        // looking at exactly what the applicant asked for.
+        const p = application.proposed;
+        setExistingOffer(null);
+        setIncludeSalary(!!p.include_salary);
+        setMonthlySalary(p.monthly_salary?.toString() || "");
+        setSalaryCurrency(p.salary_currency || "USD");
+        setTimeEquity(p.time_equity_percentage?.toString() || "");
+        setCliffYears(p.cliff_years?.toString() || "1");
+        setVestingYears(p.vesting_years?.toString() || "4");
+        setPerformanceEquity(p.performance_equity_percentage?.toString() || "");
+        setPerformanceMilestone(p.performance_milestone || "");
       } else {
-        // Reset form for new offer
         setExistingOffer(null);
         setIncludeSalary(false);
         setMonthlySalary("");
@@ -137,14 +180,14 @@ export const CompensationDialog = ({
   };
 
   const canEdit = () => {
-    if (!existingOffer) return isInitiator; // Only initiator can create first offer
+    if (!existingOffer) return true; // First proposal: either side can open with a counter
     if (existingOffer.status === "accepted") return false;
     // Can edit if it's my turn (I'm not the current proposer)
     return existingOffer.current_proposer_id !== currentUserId;
   };
 
   const handleSubmit = async (action: "propose" | "accept") => {
-    if (!teamMember) return;
+    if (!teamMember && !application) return;
 
     // Validation
     const timeEq = parseFloat(timeEquity) || 0;
@@ -157,7 +200,6 @@ export const CompensationDialog = ({
       return;
     }
 
-    // Time-Based Equity must equal Cliff + Vesting years
     if (timeEq > 0 && timeEq !== cliff + vesting) {
       toast.error(`Time-Based Equity (${timeEq}%) must equal Cliff (${cliff}) + Vesting (${vesting}) = ${cliff + vesting}%`);
       return;
@@ -171,11 +213,19 @@ export const CompensationDialog = ({
     setIsSaving(true);
 
     try {
-      const offerData = {
+      const cobuilderId =
+        teamMember?.member_user_id || application?.applicantId;
+      const initiatorIdForOffer =
+        existingOffer?.initiator_user_id ||
+        application?.initiatorId ||
+        (isInitiator ? currentUserId : currentUserId);
+
+      const offerData: Record<string, unknown> = {
         startup_id: startupId,
-        team_member_id: teamMember.id,
-        cobuilder_user_id: teamMember.member_user_id,
-        initiator_user_id: isInitiator ? currentUserId : existingOffer?.initiator_user_id || currentUserId,
+        team_member_id: teamMember?.id ?? null,
+        application_id: application?.applicationId ?? null,
+        cobuilder_user_id: cobuilderId,
+        initiator_user_id: initiatorIdForOffer,
         monthly_salary: includeSalary ? parseFloat(monthlySalary) || null : null,
         salary_currency: salaryCurrency,
         time_equity_percentage: timeEq,
@@ -188,76 +238,159 @@ export const CompensationDialog = ({
         version: (existingOffer?.version || 0) + 1,
       };
 
+      let offerId = existingOffer?.id ?? null;
+
       if (existingOffer?.id) {
-        // Update existing offer
         const { error } = await supabase
           .from("team_compensation_offers")
-          .update({
-            ...offerData,
-            updated_at: new Date().toISOString(),
-          })
+          .update({ ...offerData, updated_at: new Date().toISOString() })
           .eq("id", existingOffer.id);
-
         if (error) throw error;
-
-        // Add history entry
-        await supabase.from("team_compensation_history").insert({
-          offer_id: existingOffer.id,
-          proposer_id: currentUserId,
-          monthly_salary: offerData.monthly_salary,
-          salary_currency: offerData.salary_currency,
-          time_equity_percentage: offerData.time_equity_percentage,
-          cliff_years: offerData.cliff_years,
-          vesting_years: offerData.vesting_years,
-          performance_equity_percentage: offerData.performance_equity_percentage,
-          performance_milestone: offerData.performance_milestone,
-          version: offerData.version,
-          action: action === "accept" ? "accepted" : "counter_proposed",
-        });
       } else {
-        // Create new offer
         const { data: newOffer, error } = await supabase
           .from("team_compensation_offers")
-          .insert(offerData)
+          .insert(offerData as never)
           .select()
           .single();
-
         if (error) throw error;
+        offerId = newOffer.id;
+      }
 
-        // Add history entry
+      if (offerId) {
         await supabase.from("team_compensation_history").insert({
-          offer_id: newOffer.id,
+          offer_id: offerId,
           proposer_id: currentUserId,
-          monthly_salary: offerData.monthly_salary,
-          salary_currency: offerData.salary_currency,
-          time_equity_percentage: offerData.time_equity_percentage,
-          cliff_years: offerData.cliff_years,
-          vesting_years: offerData.vesting_years,
-          performance_equity_percentage: offerData.performance_equity_percentage,
-          performance_milestone: offerData.performance_milestone,
-          version: 1,
-          action: "proposed",
+          monthly_salary: offerData.monthly_salary as number | null,
+          salary_currency: offerData.salary_currency as string,
+          time_equity_percentage: offerData.time_equity_percentage as number,
+          cliff_years: offerData.cliff_years as number,
+          vesting_years: offerData.vesting_years as number,
+          performance_equity_percentage: offerData.performance_equity_percentage as number,
+          performance_milestone: offerData.performance_milestone as string | null,
+          version: offerData.version as number,
+          action: action === "accept" ? "accepted" : existingOffer ? "counter_proposed" : "proposed",
         });
       }
 
-      // Send notification to other party with role-appropriate link
-      const otherUserId = isInitiator ? teamMember.member_user_id : existingOffer?.initiator_user_id;
-      const notificationLink = isInitiator 
-        ? "/start?section=cobuilder"   // Co-builder sees their teams
-        : "/start?section=initiator";  // Initiator sees their idea management
+      // ──────────────────────────────────────────────────────────────
+      // On final acceptance from an application-only negotiation:
+      // promote to team_member + flip application status.
+      // ──────────────────────────────────────────────────────────────
+      if (action === "accept" && application && !teamMember && offerId) {
+        const { data: newMember, error: tmErr } = await supabase
+          .from("startup_team_members")
+          .insert({
+            startup_id: startupId,
+            member_user_id: application.applicantId,
+            added_by: application.initiatorId,
+            role_type: application.roleApplied || "MMCB",
+          })
+          .select("id")
+          .single();
+        if (tmErr) console.error("team_member insert failed", tmErr);
+        if (newMember) {
+          await supabase
+            .from("team_compensation_offers")
+            .update({ team_member_id: newMember.id })
+            .eq("id", offerId);
+        }
+        await supabase
+          .from("startup_applications")
+          .update({ status: "accepted" })
+          .eq("id", application.applicationId);
+
+        try {
+          const { emitGraphEvent, idemKey } = await import("@/lib/graph");
+          emitGraphEvent({
+            userId: application.applicantId,
+            eventType: "startup_contribution_accepted",
+            eventVersion: 1,
+            aggregateType: "startup",
+            aggregateId: startupId,
+            sourceModule: "idea.team",
+            idempotencyKey: idemKey("startup_contribution_accepted", 1, application.applicantId, startupId),
+            payload: { startup_id: startupId, role: application.roleApplied, applicant_name: application.applicantName },
+          });
+          emitGraphEvent({
+            userId: application.applicantId,
+            eventType: "startup_member_added",
+            eventVersion: 1,
+            aggregateType: "startup",
+            aggregateId: startupId,
+            sourceModule: "idea.team",
+            idempotencyKey: idemKey("startup_member_added", 1, application.applicantId, startupId),
+            payload: { startup_id: startupId },
+          });
+        } catch (e) {
+          console.error("graph event failed", e);
+        }
+      }
+
+      // ──────────────────────────────────────────────────────────────
+      // Seed/append the chat thread so negotiation shows in Messages.
+      // Only the initiator can create the conversation row (per RLS).
+      // ──────────────────────────────────────────────────────────────
+      if (application) {
+        const { ensureChatConversation, postNegotiationSystemMessage } = await import(
+          "@/lib/negotiationChat"
+        );
+        let convId: string | null = null;
+        if (isInitiator) {
+          convId = await ensureChatConversation({
+            applicationId: application.applicationId,
+            initiatorId: application.initiatorId,
+            applicantId: application.applicantId,
+            startupId,
+          });
+        } else {
+          const { data: c } = await supabase
+            .from("chat_conversations")
+            .select("id")
+            .eq("application_id", application.applicationId)
+            .maybeSingle();
+          convId = c?.id ?? null;
+        }
+        if (convId) {
+          const headline = action === "accept" ? "✅ Compensation agreed" : `📝 New compensation proposal (v${offerData.version})`;
+          const lines = [
+            headline,
+            `• Time equity: ${timeEq}% (${cliff}y cliff + ${vesting}y vest)`,
+            perfEq > 0 ? `• Performance equity: ${perfEq}%` : null,
+            includeSalary && monthlySalary
+              ? `• Salary: ${monthlySalary} ${salaryCurrency}/mo`
+              : null,
+          ].filter(Boolean);
+          await postNegotiationSystemMessage({
+            conversationId: convId,
+            senderId: currentUserId,
+            content: lines.join("\n"),
+          });
+        }
+      }
+
+      // Notify the other party.
+      const otherUserId = isInitiator
+        ? teamMember?.member_user_id || application?.applicantId
+        : application?.initiatorId || existingOffer?.initiator_user_id;
+      const notificationLink = application
+        ? `/chat/${application.applicationId}`
+        : isInitiator
+        ? "/start?section=cobuilder"
+        : "/start?section=initiator";
       if (otherUserId) {
         await supabase.from("user_notifications").insert({
           user_id: otherUserId,
           title: action === "accept" ? "Compensation Offer Accepted!" : "Compensation Offer Update",
-          message: action === "accept"
-            ? `${teamMember.full_name || "A co-builder"} has accepted the compensation offer.`
-            : `A new compensation offer has been proposed. Please review and respond.`,
+          message:
+            action === "accept"
+              ? `${subjectName} compensation has been agreed${startupTitle ? ` for ${startupTitle}` : ""}.`
+              : `A new compensation proposal needs your response${startupTitle ? ` for ${startupTitle}` : ""}.`,
           notification_type: "compensation_offer",
           link: notificationLink,
         });
       }
 
-      toast.success(action === "accept" ? "Offer accepted!" : "Offer submitted successfully!");
+      toast.success(action === "accept" ? "Agreement confirmed — co-builder added to your team." : "Proposal sent.");
       onOfferSubmitted();
       onOpenChange(false);
     } catch (error) {
@@ -268,7 +401,8 @@ export const CompensationDialog = ({
     }
   };
 
-  if (!teamMember) return null;
+  if (!teamMember && !application) return null;
+
 
   const isMyTurn = canEdit();
   const isAccepted = existingOffer?.status === "accepted";
@@ -280,11 +414,11 @@ export const CompensationDialog = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <PieChart className="w-5 h-5 text-b4-teal" />
-            Compensation for {teamMember.full_name || "Co-Builder"}
+            Negotiate Compensation — {subjectName}
           </DialogTitle>
           <DialogDescription>
             <Badge variant="outline" className="mt-1">
-              {ROLE_LABELS[teamMember.role_type] || teamMember.role_type}
+              {roleLabel}
             </Badge>
             {existingOffer && (
               <Badge 
