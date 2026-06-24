@@ -488,6 +488,51 @@ export const TeamManagementDialog = ({
                               <p className="text-foreground line-clamp-3">{applicant.cover_message}</p>
                             </div>
                           )}
+
+                          {applicant.status === "pending" && (
+                            <div className="flex gap-2 pt-1">
+                              <Button
+                                variant="teal"
+                                size="sm"
+                                className="flex-1"
+                                disabled={processingId === applicant.id}
+                                onClick={() =>
+                                  handleUpdateStatus(
+                                    applicant.id,
+                                    "accepted",
+                                    applicant.applicant_id,
+                                    applicant.full_name,
+                                    applicant.role_applied,
+                                  )
+                                }
+                              >
+                                {processingId === applicant.id ? (
+                                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                ) : (
+                                  <Check className="w-4 h-4 mr-1" />
+                                )}
+                                Accept
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex-1"
+                                disabled={processingId === applicant.id}
+                                onClick={() =>
+                                  handleUpdateStatus(
+                                    applicant.id,
+                                    "rejected",
+                                    applicant.applicant_id,
+                                    applicant.full_name,
+                                    applicant.role_applied,
+                                  )
+                                }
+                              >
+                                <X className="w-4 h-4 mr-1" />
+                                Reject
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </>
