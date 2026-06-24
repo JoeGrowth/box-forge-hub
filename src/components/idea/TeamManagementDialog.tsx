@@ -282,6 +282,88 @@ export const TeamManagementDialog = ({
     if (open) fetchData();
   }, [open, fetchData]);
 
+  const handleUpdateStatus = async (
+    applicationId: string,
+    newStatus: "accepted" | "rejected",
+    applicantId: string,
+    applicantName: string | null,
+    roleApplied: string | null,
+  ) => {
+    setProcessingId(applicationId);
+    try {
+      const { error } = await supabase
+        .from("startup_applications")
+        .update({ status: newStatus })
+        .eq("id", applicationId);
+      if (error) throw error;
+
+      if (newStatus === "accepted") {
+        // Create team member from accepted application
+        const { error: tmError } = await supabase
+          .from("startup_team_members")
+          .insert({
+            startup_id: startupId,
+            member_user_id: applicantId,
+            added_by: currentUserId,
+            role_type: roleApplied || "MMCB",
+          });
+        if (tmError) console.error("team member insert failed", tmError);
+
+        // Emit graph events
+        try {
+          const { emitGraphEvent, idemKey } = await import("@/lib/graph");
+          emitGraphEvent({
+            userId: applicantId,
+            eventType: "startup_contribution_accepted",
+            eventVersion: 1,
+            aggregateType: "startup",
+            aggregateId: startupId,
+            sourceModule: "idea.team",
+            idempotencyKey: idemKey("startup_contribution_accepted", 1, applicantId, startupId),
+            payload: { startup_id: startupId, role: roleApplied ?? null, applicant_name: applicantName },
+          });
+          emitGraphEvent({
+            userId: applicantId,
+            eventType: "startup_member_added",
+            eventVersion: 1,
+            aggregateType: "startup",
+            aggregateId: startupId,
+            sourceModule: "idea.team",
+            idempotencyKey: idemKey("startup_member_added", 1, applicantId, startupId),
+            payload: { startup_id: startupId },
+          });
+        } catch (e) {
+          console.error("graph event failed", e);
+        }
+      }
+
+      await supabase.from("user_notifications").insert({
+        user_id: applicantId,
+        title: newStatus === "accepted" ? "Application Accepted! 🎉" : "Application Update",
+        message:
+          newStatus === "accepted"
+            ? `Your application to join "${startupTitle}" has been accepted! Review and negotiate your compensation package.`
+            : `Your application to join "${startupTitle}" was not accepted at this time.`,
+        notification_type: `application_${newStatus}`,
+        link: newStatus === "accepted" ? "/start?section=cobuilder" : "/opportunities",
+      });
+
+      toast({
+        title: newStatus === "accepted" ? "Application Accepted" : "Application Rejected",
+        description:
+          newStatus === "accepted"
+            ? "Applicant added to your team. They can now negotiate compensation."
+            : "The applicant has been notified.",
+      });
+
+      await fetchData();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
   const acceptedCount = applicants.filter((a) => a.status === "accepted").length;
   const pendingCount = applicants.filter((a) => a.status === "pending").length;
 
