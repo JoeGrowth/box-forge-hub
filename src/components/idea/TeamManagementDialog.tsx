@@ -815,6 +815,39 @@ export const TeamManagementDialog = ({
           }}
         />
       )}
+
+      {compApplicant && (
+        <CompensationDialog
+          open={!!compApplicant}
+          onOpenChange={(o) => !o && setCompApplicant(null)}
+          application={{
+            applicationId: compApplicant.id,
+            applicantId: compApplicant.applicant_id,
+            applicantName: compApplicant.full_name,
+            startupId,
+            initiatorId: currentUserId,
+            roleApplied: compApplicant.role_applied,
+            proposed: {
+              monthly_salary: compApplicant.proposed_monthly_salary,
+              salary_currency: compApplicant.proposed_salary_currency,
+              time_equity_percentage: compApplicant.proposed_time_equity_percentage,
+              cliff_years: compApplicant.proposed_cliff_years,
+              vesting_years: compApplicant.proposed_vesting_years,
+              performance_equity_percentage: compApplicant.proposed_performance_equity_percentage,
+              performance_milestone: compApplicant.proposed_performance_milestone,
+              include_salary: compApplicant.proposed_include_salary,
+            },
+          }}
+          startupId={startupId}
+          startupTitle={startupTitle}
+          currentUserId={currentUserId}
+          isInitiator={true}
+          onOfferSubmitted={() => {
+            setCompApplicant(null);
+            fetchData();
+          }}
+        />
+      )}
     </Dialog>
   );
 };
