@@ -197,7 +197,7 @@ export const TeamManagementDialog = ({
       // Fetch applications
       const { data: apps } = await supabase
         .from("startup_applications")
-        .select("id, applicant_id, role_applied, cover_message, status, created_at")
+        .select("id, applicant_id, role_applied, cover_message, status, created_at, proposed_monthly_salary, proposed_salary_currency, proposed_time_equity_percentage, proposed_cliff_years, proposed_vesting_years, proposed_performance_equity_percentage, proposed_performance_milestone, proposed_include_salary")
         .eq("startup_id", startupId)
         .order("created_at", { ascending: false });
 
