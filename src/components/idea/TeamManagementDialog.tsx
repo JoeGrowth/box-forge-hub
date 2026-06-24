@@ -28,6 +28,16 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { CompensationDialog } from "./CompensationDialog";
 
+interface NegotiationSnapshot {
+  status: string;
+  version: number;
+  current_proposer_id: string;
+  time_equity_percentage: number | null;
+  performance_equity_percentage: number | null;
+  monthly_salary: number | null;
+  salary_currency: string | null;
+}
+
 interface Applicant {
   id: string;
   applicant_id: string;
@@ -46,6 +56,7 @@ interface Applicant {
   proposed_performance_equity_percentage: number | null;
   proposed_performance_milestone: string | null;
   proposed_include_salary: boolean | null;
+  negotiation: NegotiationSnapshot | null;
 }
 
 interface TeamMemberData {
