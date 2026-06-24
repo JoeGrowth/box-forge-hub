@@ -7,6 +7,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -19,8 +20,11 @@ import {
   DollarSign,
   PieChart,
   MessageCircle,
+  Check,
+  X,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
 interface Applicant {
@@ -172,6 +176,8 @@ export const TeamManagementDialog = ({
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMemberData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [processingId, setProcessingId] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
     if (!startupId) return;
@@ -275,6 +281,88 @@ export const TeamManagementDialog = ({
   useEffect(() => {
     if (open) fetchData();
   }, [open, fetchData]);
+
+  const handleUpdateStatus = async (
+    applicationId: string,
+    newStatus: "accepted" | "rejected",
+    applicantId: string,
+    applicantName: string | null,
+    roleApplied: string | null,
+  ) => {
+    setProcessingId(applicationId);
+    try {
+      const { error } = await supabase
+        .from("startup_applications")
+        .update({ status: newStatus })
+        .eq("id", applicationId);
+      if (error) throw error;
+
+      if (newStatus === "accepted") {
+        // Create team member from accepted application
+        const { error: tmError } = await supabase
+          .from("startup_team_members")
+          .insert({
+            startup_id: startupId,
+            member_user_id: applicantId,
+            added_by: currentUserId,
+            role_type: roleApplied || "MMCB",
+          });
+        if (tmError) console.error("team member insert failed", tmError);
+
+        // Emit graph events
+        try {
+          const { emitGraphEvent, idemKey } = await import("@/lib/graph");
+          emitGraphEvent({
+            userId: applicantId,
+            eventType: "startup_contribution_accepted",
+            eventVersion: 1,
+            aggregateType: "startup",
+            aggregateId: startupId,
+            sourceModule: "idea.team",
+            idempotencyKey: idemKey("startup_contribution_accepted", 1, applicantId, startupId),
+            payload: { startup_id: startupId, role: roleApplied ?? null, applicant_name: applicantName },
+          });
+          emitGraphEvent({
+            userId: applicantId,
+            eventType: "startup_member_added",
+            eventVersion: 1,
+            aggregateType: "startup",
+            aggregateId: startupId,
+            sourceModule: "idea.team",
+            idempotencyKey: idemKey("startup_member_added", 1, applicantId, startupId),
+            payload: { startup_id: startupId },
+          });
+        } catch (e) {
+          console.error("graph event failed", e);
+        }
+      }
+
+      await supabase.from("user_notifications").insert({
+        user_id: applicantId,
+        title: newStatus === "accepted" ? "Application Accepted! 🎉" : "Application Update",
+        message:
+          newStatus === "accepted"
+            ? `Your application to join "${startupTitle}" has been accepted! Review and negotiate your compensation package.`
+            : `Your application to join "${startupTitle}" was not accepted at this time.`,
+        notification_type: `application_${newStatus}`,
+        link: newStatus === "accepted" ? "/start?section=cobuilder" : "/opportunities",
+      });
+
+      toast({
+        title: newStatus === "accepted" ? "Application Accepted" : "Application Rejected",
+        description:
+          newStatus === "accepted"
+            ? "Applicant added to your team. They can now negotiate compensation."
+            : "The applicant has been notified.",
+      });
+
+      await fetchData();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setProcessingId(null);
+    }
+  };
 
   const acceptedCount = applicants.filter((a) => a.status === "accepted").length;
   const pendingCount = applicants.filter((a) => a.status === "pending").length;
@@ -398,6 +486,51 @@ export const TeamManagementDialog = ({
                             <div className="text-xs bg-muted/50 rounded-md p-3">
                               <p className="text-muted-foreground font-medium mb-1">Cover Message:</p>
                               <p className="text-foreground line-clamp-3">{applicant.cover_message}</p>
+                            </div>
+                          )}
+
+                          {applicant.status === "pending" && (
+                            <div className="flex gap-2 pt-1">
+                              <Button
+                                variant="teal"
+                                size="sm"
+                                className="flex-1"
+                                disabled={processingId === applicant.id}
+                                onClick={() =>
+                                  handleUpdateStatus(
+                                    applicant.id,
+                                    "accepted",
+                                    applicant.applicant_id,
+                                    applicant.full_name,
+                                    applicant.role_applied,
+                                  )
+                                }
+                              >
+                                {processingId === applicant.id ? (
+                                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                ) : (
+                                  <Check className="w-4 h-4 mr-1" />
+                                )}
+                                Accept
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex-1"
+                                disabled={processingId === applicant.id}
+                                onClick={() =>
+                                  handleUpdateStatus(
+                                    applicant.id,
+                                    "rejected",
+                                    applicant.applicant_id,
+                                    applicant.full_name,
+                                    applicant.role_applied,
+                                  )
+                                }
+                              >
+                                <X className="w-4 h-4 mr-1" />
+                                Reject
+                              </Button>
                             </div>
                           )}
                         </div>
