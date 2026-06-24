@@ -653,6 +653,28 @@ export const TeamManagementDialog = ({
                               )}
                             </div>
                           )}
+
+                          {/* Action: open compensation dialog */}
+                          {(!member.compensation || member.compensation.status !== "accepted") && (
+                            <Button
+                              variant={
+                                member.compensation &&
+                                member.compensation.current_proposer_id !== currentUserId
+                                  ? "teal"
+                                  : "outline"
+                              }
+                              size="sm"
+                              className="w-full"
+                              onClick={() => setCompMember(member)}
+                            >
+                              <MessageCircle className="w-4 h-4 mr-2" />
+                              {!member.compensation
+                                ? "Set Compensation"
+                                : member.compensation.current_proposer_id !== currentUserId
+                                ? `Review & Respond (v${member.compensation.version})`
+                                : "View Proposal — Awaiting Response"}
+                            </Button>
+                          )}
                         </div>
                       );
                     })
