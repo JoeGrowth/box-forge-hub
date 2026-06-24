@@ -83,7 +83,9 @@ export const CompensationDialog = ({
   open,
   onOpenChange,
   teamMember,
+  application,
   startupId,
+  startupTitle,
   currentUserId,
   isInitiator,
   onOfferSubmitted,
@@ -102,32 +104,38 @@ export const CompensationDialog = ({
   const [performanceEquity, setPerformanceEquity] = useState("");
   const [performanceMilestone, setPerformanceMilestone] = useState("");
 
+  const subjectName = teamMember?.full_name || application?.applicantName || "Co-Builder";
+  const roleLabel =
+    (teamMember && ROLE_LABELS[teamMember.role_type]) ||
+    application?.roleApplied ||
+    "Co-Builder";
+
   // Load existing offer
   useEffect(() => {
-    if (open && teamMember) {
+    if (open && (teamMember || application)) {
       loadExistingOffer();
     }
-  }, [open, teamMember]);
+  }, [open, teamMember, application]);
 
   const loadExistingOffer = async () => {
-    if (!teamMember) return;
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase
-        .from("team_compensation_offers")
-        .select("*")
-        .eq("team_member_id", teamMember.id)
-        .single();
+      let query = supabase.from("team_compensation_offers").select("*");
+      if (teamMember) {
+        query = query.eq("team_member_id", teamMember.id);
+      } else if (application) {
+        query = query.eq("application_id", application.applicationId);
+      }
+
+      const { data, error } = await query.maybeSingle();
 
       if (error && error.code !== "PGRST116") {
         console.error("Error loading offer:", error);
-        return;
       }
 
       if (data) {
         setExistingOffer(data as CompensationOffer);
-        // Populate form with existing values
         setIncludeSalary(data.monthly_salary !== null);
         setMonthlySalary(data.monthly_salary?.toString() || "");
         setSalaryCurrency(data.salary_currency || "USD");
@@ -136,8 +144,20 @@ export const CompensationDialog = ({
         setVestingYears(data.vesting_years?.toString() || "4");
         setPerformanceEquity(data.performance_equity_percentage?.toString() || "0");
         setPerformanceMilestone(data.performance_milestone || "");
+      } else if (application) {
+        // Seed form from applicant's proposal so the initiator opens negotiation
+        // looking at exactly what the applicant asked for.
+        const p = application.proposed;
+        setExistingOffer(null);
+        setIncludeSalary(!!p.include_salary);
+        setMonthlySalary(p.monthly_salary?.toString() || "");
+        setSalaryCurrency(p.salary_currency || "USD");
+        setTimeEquity(p.time_equity_percentage?.toString() || "");
+        setCliffYears(p.cliff_years?.toString() || "1");
+        setVestingYears(p.vesting_years?.toString() || "4");
+        setPerformanceEquity(p.performance_equity_percentage?.toString() || "");
+        setPerformanceMilestone(p.performance_milestone || "");
       } else {
-        // Reset form for new offer
         setExistingOffer(null);
         setIncludeSalary(false);
         setMonthlySalary("");
