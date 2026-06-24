@@ -25,6 +25,25 @@ interface TeamMember {
   full_name: string | null;
 }
 
+interface ApplicationContext {
+  applicationId: string;
+  applicantId: string;
+  applicantName: string | null;
+  startupId: string;
+  initiatorId: string;
+  roleApplied: string | null;
+  proposed: {
+    monthly_salary: number | null;
+    salary_currency: string | null;
+    time_equity_percentage: number | null;
+    cliff_years: number | null;
+    vesting_years: number | null;
+    performance_equity_percentage: number | null;
+    performance_milestone: string | null;
+    include_salary: boolean | null;
+  };
+}
+
 interface CompensationOffer {
   id?: string;
   monthly_salary: number | null;
@@ -38,13 +57,17 @@ interface CompensationOffer {
   initiator_user_id: string;
   current_proposer_id: string;
   version: number;
+  team_member_id?: string | null;
+  application_id?: string | null;
 }
 
 interface CompensationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  teamMember: TeamMember | null;
+  teamMember?: TeamMember | null;
+  application?: ApplicationContext | null;
   startupId: string;
+  startupTitle?: string;
   currentUserId: string;
   isInitiator: boolean;
   onOfferSubmitted: () => void;
