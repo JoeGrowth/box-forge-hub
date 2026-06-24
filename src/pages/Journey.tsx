@@ -612,7 +612,7 @@ const Journey = () => {
                       )}
                       {activeSection === 'cobuilder' && (
                         <Button 
-                          onClick={() => navigate('/opportunities')}
+                          onClick={() => navigate('/opportunities?tab=startup')}
                           className="bg-b4-teal hover:bg-b4-teal/90 text-white shrink-0 ml-4"
                         >
                           Co Build a Venture
