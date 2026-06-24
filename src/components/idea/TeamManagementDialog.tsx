@@ -26,6 +26,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { CompensationDialog } from "./CompensationDialog";
 
 interface Applicant {
   id: string;
@@ -177,6 +178,7 @@ export const TeamManagementDialog = ({
   const [teamMembers, setTeamMembers] = useState<TeamMemberData[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [compMember, setCompMember] = useState<TeamMemberData | null>(null);
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
@@ -651,6 +653,28 @@ export const TeamManagementDialog = ({
                               )}
                             </div>
                           )}
+
+                          {/* Action: open compensation dialog */}
+                          {(!member.compensation || member.compensation.status !== "accepted") && (
+                            <Button
+                              variant={
+                                member.compensation &&
+                                member.compensation.current_proposer_id !== currentUserId
+                                  ? "teal"
+                                  : "outline"
+                              }
+                              size="sm"
+                              className="w-full"
+                              onClick={() => setCompMember(member)}
+                            >
+                              <MessageCircle className="w-4 h-4 mr-2" />
+                              {!member.compensation
+                                ? "Set Compensation"
+                                : member.compensation.current_proposer_id !== currentUserId
+                                ? `Review & Respond (v${member.compensation.version})`
+                                : "View Proposal — Awaiting Response"}
+                            </Button>
+                          )}
                         </div>
                       );
                     })
@@ -661,6 +685,26 @@ export const TeamManagementDialog = ({
           </Tabs>
         )}
       </DialogContent>
+
+      {compMember && (
+        <CompensationDialog
+          open={!!compMember}
+          onOpenChange={(o) => !o && setCompMember(null)}
+          teamMember={{
+            id: compMember.id,
+            member_user_id: compMember.member_user_id,
+            role_type: compMember.role_type,
+            full_name: compMember.full_name,
+          }}
+          startupId={startupId}
+          currentUserId={currentUserId}
+          isInitiator={true}
+          onOfferSubmitted={() => {
+            setCompMember(null);
+            fetchData();
+          }}
+        />
+      )}
     </Dialog>
   );
 };
