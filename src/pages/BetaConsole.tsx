@@ -50,6 +50,31 @@ type SystemAlert = {
   detected_at: string;
 };
 
+type EventAudit = {
+  generated_at: string;
+  totals: {
+    events: number; with_idempotency_key: number; missing_idempotency_key: number;
+    duplicates: number; dead_letters: number; unprocessed: number; unprocessed_stale_5m: number;
+  };
+  projections: {
+    funnel_users: number; distinct_event_users: number; delta: number;
+    relationships_table: number; relationship_health_rows: number;
+    commitments_table: number; contributions_table: number;
+  };
+  checks: { name: string; value: number; unit: string; status: "pass" | "warn" | "fail"; detail: string }[];
+  error?: string;
+};
+
+type WeeklyReview = {
+  generated_at: string;
+  healthiest_boxes: { box_id: string; name: string; active_relationships: number; avg_health: number; advisor_count: number }[];
+  top_advisors: { advisor_id: string; advisor_name: string | null; total_relationships: number; successful_relationships: number; avg_health: number; verified_contributions: number }[];
+  top_templates: { template_id: string; name: string; cadence: string; completed_30d: number; scheduled_30d: number; completion_pct: number }[];
+  unfilled_opportunities: { opportunity_id: string; title: string; type: string; status: string; age_seconds: number; applications: number; created_at: string }[];
+  recurring_alerts: { code: string; occurrences: number; severity: string; first_seen: string }[];
+  error?: string;
+};
+
 interface Metric { label: string; value: string | number; tone?: "default" | "warn" | "good"; sub?: string }
 
 function MetricCard({ label, value, tone = "default", sub }: Metric) {
