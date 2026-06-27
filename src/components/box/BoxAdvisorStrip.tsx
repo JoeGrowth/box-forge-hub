@@ -344,6 +344,41 @@ export function BoxAdvisorStrip({ boxSlug, boxName }: Props) {
           assignmentPolicy="select"
         />
       )}
+
+      <Dialog open={affinityDialogOpen} onOpenChange={setAffinityDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Link a profile or idea to this box first</DialogTitle>
+            <DialogDescription>
+              Advisor requests are reserved for users with a profile or startup idea aligned with{" "}
+              <span className="font-medium text-foreground">{boxName}</span>. Update your preferred
+              sector or submit an idea in this domain to unlock advisor requests.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button variant="outline" onClick={() => setAffinityDialogOpen(false)}>
+              Not now
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setAffinityDialogOpen(false);
+                navigate("/profile");
+              }}
+            >
+              Update profile
+            </Button>
+            <Button
+              onClick={() => {
+                setAffinityDialogOpen(false);
+                navigate("/ideas/new");
+              }}
+            >
+              Submit an idea
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
