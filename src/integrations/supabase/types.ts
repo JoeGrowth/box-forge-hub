@@ -182,6 +182,66 @@ export type Database = {
         }
         Relationships: []
       }
+      advisor_relationships: {
+        Row: {
+          advisor_id: string
+          box_id: string | null
+          created_at: string
+          ended_at: string | null
+          id: string
+          metadata: Json
+          origin_request_id: string | null
+          relationship_type: string
+          started_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          advisor_id: string
+          box_id?: string | null
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          metadata?: Json
+          origin_request_id?: string | null
+          relationship_type: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          advisor_id?: string
+          box_id?: string | null
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          metadata?: Json
+          origin_request_id?: string | null
+          relationship_type?: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "advisor_relationships_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
+            referencedRelation: "boxes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "advisor_relationships_origin_request_id_fkey"
+            columns: ["origin_request_id"]
+            isOneToOne: false
+            referencedRelation: "box_inbound_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       applications: {
         Row: {
           accepted_at: string | null
@@ -3047,6 +3107,47 @@ export type Database = {
           },
         ]
       }
+      relationship_health: {
+        Row: {
+          computed_at: string
+          days_since_last_interaction: number | null
+          health_score: number
+          interaction_count: number
+          last_interaction_at: string | null
+          milestones_completed: number
+          open_commitments: number
+          relationship_id: string
+        }
+        Insert: {
+          computed_at?: string
+          days_since_last_interaction?: number | null
+          health_score?: number
+          interaction_count?: number
+          last_interaction_at?: string | null
+          milestones_completed?: number
+          open_commitments?: number
+          relationship_id: string
+        }
+        Update: {
+          computed_at?: string
+          days_since_last_interaction?: number | null
+          health_score?: number
+          interaction_count?: number
+          last_interaction_at?: string | null
+          milestones_completed?: number
+          open_commitments?: number
+          relationship_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "relationship_health_relationship_id_fkey"
+            columns: ["relationship_id"]
+            isOneToOne: true
+            referencedRelation: "advisor_relationships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reputation_graph: {
         Row: {
           achievement_count: number
@@ -4373,6 +4474,26 @@ export type Database = {
       is_org_member: { Args: { _org: string; _user: string }; Returns: boolean }
       is_plan_shared_with_me: { Args: { _plan_id: string }; Returns: boolean }
       legacy_expertise_calc: { Args: { _user_id: string }; Returns: Json }
+      list_box_advisors_public: {
+        Args: { _box_id: string }
+        Returns: {
+          accepting_requests: boolean
+          advisor_id: string
+          avatar_url: string
+          capacity: number
+          display_name: string
+          eligible: boolean
+          median_response_seconds: number
+          natural_role: string
+          remaining_capacity: number
+          reputation_score: number
+          response_rate: number
+          status: string
+          suitability_score: number
+          track_record_count: number
+          verified_skills_count: number
+        }[]
+      }
       match_advisors_for_request: {
         Args: { _limit?: number; _request_id: string }
         Returns: {

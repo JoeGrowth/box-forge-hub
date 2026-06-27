@@ -1,4 +1,5 @@
 import { useParams, Link } from "react-router-dom";
+import { BoxAdvisorStrip } from "@/components/box/BoxAdvisorStrip";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -374,6 +375,9 @@ const BoxDetail = () => {
             </div>
           </div>
         </section>
+
+        {/* Advisor Strip — public interface to the advisor system */}
+        <BoxAdvisorStrip boxSlug={box.id} boxName={box.name} />
 
         {/* CTA */}
         <section className={`py-24 bg-gradient-to-br ${box.color} text-primary-foreground`}>
