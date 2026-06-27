@@ -36,25 +36,32 @@ export function primaryCtaForGoal(goal: string | null, primaryRole: string | nul
   }
 }
 
-/** Secondary CTA — driven by onboarding intent ("Where are you today?"). */
+/**
+ * Secondary CTA — driven by onboarding intent ("Where are you today?").
+ * The label literally surfaces the user's answer so the button reads as a
+ * direct continuation of their declared posture, and the route points to the
+ * single canonical place to act on that posture.
+ */
 export function secondaryCtaForIntent(intent: string | null): CtaSpec {
   switch (intent) {
     case "Validated Expert":
-      return { to: "/people?tab=advisors", label: "Open Advisor Hub", icon: BadgeCheck };
+      // Monetize / advise → Advisory hub is the canonical workspace.
+      return { to: "/advisory", label: "Activate Validated Expert", icon: BadgeCheck };
     case "Builder":
-      return { to: "/opportunities?category=startup", label: "Find a Builder Mission", icon: Rocket };
+      return { to: "/opportunities?category=startup", label: "Continue as Builder", icon: Rocket };
     case "Co-Builder":
-      return { to: "/people?tab=cobuilders", label: "Meet Co-Builders", icon: Users };
+      return { to: "/opportunities?category=startup", label: "Continue as Co-Builder", icon: Users };
     case "Venture Creator":
-      return { to: "/entrepreneurship", label: "Manage My Venture", icon: Lightbulb };
+      return { to: "/entrepreneurship", label: "Continue as Venture Creator", icon: Lightbulb };
     case "Professional Operator":
-      return { to: "/career", label: "Open Career Tools", icon: Briefcase };
+      return { to: "/career", label: "Continue as Professional Operator", icon: Briefcase };
     case "Explorer":
-      return { to: "/opportunities", label: "Explore the Ecosystem", icon: Compass };
+      return { to: "/opportunities", label: "Continue as Explorer", icon: Compass };
     default:
       return { to: "/people", label: "Connect with People", icon: Users };
   }
 }
+
 
 export function ctasFor(
   goal: string | null,
