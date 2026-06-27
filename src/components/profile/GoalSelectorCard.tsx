@@ -21,6 +21,8 @@ export const GOAL_OPTIONS: { value: string; label: string; desc: string }[] = [
 export function GoalSelectorCard() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const qc = useQueryClient();
+
   const [currentGoal, setCurrentGoal] = useState<string | null>(null);
   const [onboardingIntent, setOnboardingIntent] = useState<string | null>(null);
   const [selected, setSelected] = useState<string>("");
