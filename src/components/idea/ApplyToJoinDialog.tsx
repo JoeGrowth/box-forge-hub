@@ -302,6 +302,27 @@ export function ApplyToJoinDialog({
       );
     }
 
+    if (solutionStage === "draft") {
+      return (
+        <>
+          <DialogHeader>
+            <DialogTitle>Solution Not Yet Defined</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-3">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Lock className="w-5 h-5" />
+              <span className="font-medium text-foreground">Applications locked</span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              The initiator hasn't completed the Solution Canvas yet. We don't open recruiting on ideas
+              that haven't proven a real problem. Check back once they move to Discovery.
+            </p>
+            <Button variant="outline" className="w-full" onClick={() => handleClose(false)}>Close</Button>
+          </div>
+        </>
+      );
+    }
+
     if (dialogStep === 1) {
       return (
         <>
