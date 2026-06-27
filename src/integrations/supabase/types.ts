@@ -637,6 +637,7 @@ export type Database = {
           due_at: string | null
           duration_days: number
           id: string
+          idempotency_key: string | null
           metadata: Json
           owner_id: string
           relationship_id: string | null
@@ -655,6 +656,7 @@ export type Database = {
           due_at?: string | null
           duration_days?: number
           id?: string
+          idempotency_key?: string | null
           metadata?: Json
           owner_id: string
           relationship_id?: string | null
@@ -673,6 +675,7 @@ export type Database = {
           due_at?: string | null
           duration_days?: number
           id?: string
+          idempotency_key?: string | null
           metadata?: Json
           owner_id?: string
           relationship_id?: string | null
