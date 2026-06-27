@@ -147,18 +147,21 @@ const boxes = [
 const Boxes = () => {
   const [extraBoxes, setExtraBoxes] = useState<DemoBoxListing[]>([]);
   const [liveStats, setLiveStats] = useState<Record<string, { startups: number; cobuilders: number; featured: { name: string; desc: string }[] }>>({});
+  const [dataModes, setDataModes] = useState<Record<string, "demo" | "live">>({});
 
   useEffect(() => {
     (async () => {
       const { data } = await (supabase as any)
         .from("boxes")
-        .select("slug,name")
+        .select("slug,name,data_mode")
         .order("name");
       const knownSlugs = new Set(boxes.map((b) => b.id));
-      const extras = ((data as any[]) ?? [])
+      const rows = (data as any[]) ?? [];
+      const extras = rows
         .filter((b) => !knownSlugs.has(b.slug))
         .map((b) => buildDemoBox(b.name, b.slug) as DemoBoxListing);
       setExtraBoxes(extras);
+      setDataModes(Object.fromEntries(rows.map((r) => [r.slug, (r.data_mode as "demo" | "live") ?? "demo"])));
     })();
   }, []);
 
@@ -167,8 +170,10 @@ const Boxes = () => {
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      // Only fetch live stats for boxes in 'live' mode; others stay on demo.
+      const liveSlugs = allBoxes.filter((b) => dataModes[b.id] === "live");
       const entries = await Promise.all(
-        allBoxes.map(async (b) => {
+        liveSlugs.map(async (b) => {
           const s = await fetchBoxLiveStats(b.id);
           return [b.id, {
             startups: s.startups,
@@ -181,7 +186,7 @@ const Boxes = () => {
     })();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allBoxes.length]);
+  }, [allBoxes.length, dataModes]);
 
   return (
     <div className="min-h-screen bg-background">
