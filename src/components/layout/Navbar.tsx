@@ -54,6 +54,7 @@ const moreLinks = [
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdminLoading, setIsAdminLoading] = useState(false);
   const [engineOpen, setEngineOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
@@ -66,9 +67,11 @@ export function Navbar() {
     const checkUserStatus = async () => {
       if (!user) {
         setIsAdmin(false);
+        setIsAdminLoading(false);
         return;
       }
 
+      setIsAdminLoading(true);
       const adminResult = await supabase
         .from("user_roles")
         .select("role")
@@ -77,6 +80,7 @@ export function Navbar() {
         .maybeSingle();
 
       setIsAdmin(!!adminResult.data);
+      setIsAdminLoading(false);
     };
     checkUserStatus();
   }, [user]);
@@ -225,20 +229,24 @@ export function Navbar() {
           </div>
 
           {/* Desktop CTA */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center justify-end gap-3 min-w-[360px]">
             {!loading && (
               user ? (
                 <>
                   <ChatBell />
                   <NotificationBell />
-                  {isAdmin && (
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link to="/admin" className="flex items-center gap-2">
-                        <Shield size={16} />
-                        Admin
-                      </Link>
-                    </Button>
-                  )}
+                  <div className="w-[86px] shrink-0 flex justify-center">
+                    {isAdmin ? (
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link to="/admin" className="flex items-center gap-2">
+                          <Shield size={16} />
+                          Admin
+                        </Link>
+                      </Button>
+                    ) : isAdminLoading ? (
+                      <div className="h-9 w-[86px]" aria-hidden="true" />
+                    ) : null}
+                  </div>
                   <Button variant="ghost" size="sm" asChild>
                     <Link to="/profile" className="flex items-center gap-2">
                       <User size={16} />
