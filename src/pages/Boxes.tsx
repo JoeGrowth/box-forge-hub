@@ -15,6 +15,7 @@ import {
   Building2,
   Cpu,
   ShieldCheck,
+  Landmark,
   ArrowRight,
   Users,
   Rocket,
@@ -140,6 +141,23 @@ const boxes = [
     featured: [
       { name: "SentryGrid", desc: "AI threat detection for SMEs" },
       { name: "TrustLayer", desc: "Compliance automation for SaaS" },
+    ],
+  },
+  {
+    id: "finance",
+    name: "Box For Financial Solutions",
+    abbr: "BFFS",
+    icon: Landmark,
+    description: "Fintech, inclusive banking and capital infrastructure. From payments and lending to insurance and treasury, we back ventures making finance faster, fairer and more accessible.",
+    color: "from-sky-500 to-blue-700",
+    bgColor: "bg-sky-50",
+    startups: 6,
+    cobuilders: 22,
+    totalRaised: "$540K",
+    fields: ["Fintech", "Payments", "Lending & Credit", "InsurTech"],
+    featured: [
+      { name: "PayBridge", desc: "Cross-border payments for SMBs" },
+      { name: "CreditLoop", desc: "AI underwriting for thin-file borrowers" },
     ],
   },
 ];
