@@ -15,6 +15,7 @@ import {
   Utensils, 
   Building2, 
   Cpu,
+  ShieldCheck,
   ArrowRight,
   Users,
   Rocket,
@@ -24,7 +25,10 @@ import {
   BarChart3,
   Shield,
   Zap,
-  Globe
+  Globe,
+  Lock,
+  Eye,
+  AlertTriangle
 } from "lucide-react";
 
 const boxesData: Record<string, {
