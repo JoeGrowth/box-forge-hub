@@ -5,10 +5,21 @@ import { ScrollToTopButton } from "@/components/layout/ScrollToTopButton";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, Rocket, Eye } from "lucide-react";
+import { Plus, Rocket, Eye, Users, Layers, Film, Shield, TrendingUp, Trash2, CheckCircle, Loader2 } from "lucide-react";
 import { CreateIdeaDialog } from "@/components/idea/CreateIdeaDialog";
 import { ApplyToJoinDialog } from "@/components/idea/ApplyToJoinDialog";
+import { IdeaDevelopDialog } from "@/components/idea/IdeaDevelopDialog";
+import { IdeaValidationDialog } from "@/components/idea/IdeaValidationDialog";
+import { IdeaGrowthDialog } from "@/components/idea/IdeaGrowthDialog";
+import { IdeaEpisodesDialog } from "@/components/idea/IdeaEpisodesDialog";
+import { TeamManagementDialog } from "@/components/idea/TeamManagementDialog";
+import { FiveElementsDialog } from "@/components/idea/FiveElementsDialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +36,10 @@ interface StartupIdea {
   is_looking_for_cobuilders: boolean | null;
   created_at: string;
   status: string | null;
+  review_status?: string | null;
+  development_completed_at?: string | null;
 }
+
 
 interface StatsData {
   yourProjects: number;
@@ -48,6 +62,7 @@ const getEpisodeLabel = (episode: string) => {
 
 const Entrepreneurship = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [applyProject, setApplyProject] = useState<StartupIdea | null>(null);
   const [activeTab, setActiveTab] = useState("browse");
@@ -62,10 +77,59 @@ const Entrepreneurship = () => {
   });
   const [loading, setLoading] = useState(true);
 
+  // Action dialog state (mirrors /start)
+  const [selectedIdea, setSelectedIdea] = useState<{ id: string; title: string; currentEpisode: string } | null>(null);
+  const [developDialogOpen, setDevelopDialogOpen] = useState(false);
+  const [validationDialogOpen, setValidationDialogOpen] = useState(false);
+  const [growthDialogOpen, setGrowthDialogOpen] = useState(false);
+  const [episodesDialogOpen, setEpisodesDialogOpen] = useState(false);
+  const [teamDialogIdea, setTeamDialogIdea] = useState<{ id: string; title: string } | null>(null);
+  const [teamDialogOpen, setTeamDialogOpen] = useState(false);
+  const [fiveElementsDialogOpen, setFiveElementsDialogOpen] = useState(false);
+  const [fiveElementsIdea, setFiveElementsIdea] = useState<{ id: string; title: string; description: string } | null>(null);
+  const [ideaToDelete, setIdeaToDelete] = useState<{ id: string; title: string } | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteType, setDeleteType] = useState<"archive" | "permanent" | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   useEffect(() => {
     if (!user) return;
     fetchData();
   }, [user]);
+
+  const handleDeleteIdea = async () => {
+    if (!ideaToDelete || !user || !deleteType) return;
+    setIsDeleting(true);
+    try {
+      if (deleteType === "archive") {
+        const { error } = await supabase
+          .from("startup_ideas")
+          .update({ status: "archived" })
+          .eq("id", ideaToDelete.id)
+          .eq("creator_id", user.id);
+        if (error) throw error;
+        toast({ title: "Idea archived", description: `"${ideaToDelete.title}" was archived.` });
+      } else {
+        const { error } = await supabase
+          .from("startup_ideas")
+          .delete()
+          .eq("id", ideaToDelete.id)
+          .eq("creator_id", user.id);
+        if (error) throw error;
+        toast({ title: "Idea deleted", description: `"${ideaToDelete.title}" was permanently deleted.` });
+      }
+      setMyProjects((prev) => prev.filter((p) => p.id !== ideaToDelete.id));
+    } catch (err: any) {
+      toast({ title: "Action failed", description: err.message ?? "Try again.", variant: "destructive" });
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+      setIdeaToDelete(null);
+      setDeleteType(null);
+    }
+  };
+
+
 
   const fetchData = async () => {
     if (!user) return;
