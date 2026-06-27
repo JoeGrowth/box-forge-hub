@@ -191,6 +191,7 @@ export type Database = {
           id: string
           metadata: Json
           origin_request_id: string | null
+          relationship_kind: string
           relationship_type: string
           started_at: string
           status: string
@@ -205,6 +206,7 @@ export type Database = {
           id?: string
           metadata?: Json
           origin_request_id?: string | null
+          relationship_kind?: string
           relationship_type: string
           started_at?: string
           status?: string
@@ -219,6 +221,7 @@ export type Database = {
           id?: string
           metadata?: Json
           origin_request_id?: string | null
+          relationship_kind?: string
           relationship_type?: string
           started_at?: string
           status?: string
@@ -699,6 +702,13 @@ export type Database = {
             referencedRelation: "advisor_relationships"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "commitments_relationship_id_fkey"
+            columns: ["relationship_id"]
+            isOneToOne: false
+            referencedRelation: "relationships"
+            referencedColumns: ["id"]
+          },
         ]
       }
       consultant_opportunities: {
@@ -965,6 +975,13 @@ export type Database = {
             columns: ["relationship_id"]
             isOneToOne: false
             referencedRelation: "advisor_relationships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contributions_relationship_id_fkey"
+            columns: ["relationship_id"]
+            isOneToOne: false
+            referencedRelation: "relationships"
             referencedColumns: ["id"]
           },
         ]
@@ -2625,6 +2642,138 @@ export type Database = {
         }
         Relationships: []
       }
+      opportunities: {
+        Row: {
+          box_id: string | null
+          closed_at: string | null
+          created_at: string
+          creator_id: string
+          description: string | null
+          expires_at: string | null
+          id: string
+          idempotency_key: string | null
+          metadata: Json
+          opened_at: string | null
+          source_entity_id: string | null
+          source_entity_type: string | null
+          status: string
+          title: string
+          type: string
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          box_id?: string | null
+          closed_at?: string | null
+          created_at?: string
+          creator_id: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          idempotency_key?: string | null
+          metadata?: Json
+          opened_at?: string | null
+          source_entity_id?: string | null
+          source_entity_type?: string | null
+          status?: string
+          title: string
+          type: string
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          box_id?: string | null
+          closed_at?: string | null
+          created_at?: string
+          creator_id?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          idempotency_key?: string | null
+          metadata?: Json
+          opened_at?: string | null
+          source_entity_id?: string | null
+          source_entity_type?: string | null
+          status?: string
+          title?: string
+          type?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunities_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
+            referencedRelation: "boxes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      opportunity_applications: {
+        Row: {
+          applicant_id: string
+          created_at: string
+          decided_at: string | null
+          id: string
+          idempotency_key: string | null
+          message: string | null
+          metadata: Json
+          opportunity_id: string
+          relationship_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          applicant_id: string
+          created_at?: string
+          decided_at?: string | null
+          id?: string
+          idempotency_key?: string | null
+          message?: string | null
+          metadata?: Json
+          opportunity_id: string
+          relationship_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          applicant_id?: string
+          created_at?: string
+          decided_at?: string | null
+          id?: string
+          idempotency_key?: string | null
+          message?: string | null
+          metadata?: Json
+          opportunity_id?: string
+          relationship_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunity_applications_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opportunity_applications_relationship_id_fkey"
+            columns: ["relationship_id"]
+            isOneToOne: false
+            referencedRelation: "advisor_relationships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opportunity_applications_relationship_id_fkey"
+            columns: ["relationship_id"]
+            isOneToOne: false
+            referencedRelation: "relationships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       opportunity_graph: {
         Row: {
           computed_at: string
@@ -3370,6 +3519,13 @@ export type Database = {
             referencedRelation: "advisor_relationships"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "relationship_health_relationship_id_fkey"
+            columns: ["relationship_id"]
+            isOneToOne: true
+            referencedRelation: "relationships"
+            referencedColumns: ["id"]
+          },
         ]
       }
       reputation_graph: {
@@ -3554,6 +3710,13 @@ export type Database = {
             columns: ["relationship_id"]
             isOneToOne: false
             referencedRelation: "advisor_relationships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ritual_instances_relationship_id_fkey"
+            columns: ["relationship_id"]
+            isOneToOne: false
+            referencedRelation: "relationships"
             referencedColumns: ["id"]
           },
           {
@@ -4664,6 +4827,69 @@ export type Database = {
         }
         Relationships: []
       }
+      relationships: {
+        Row: {
+          box_id: string | null
+          created_at: string | null
+          ended_at: string | null
+          id: string | null
+          kind: string | null
+          metadata: Json | null
+          origin_request_id: string | null
+          party_a_id: string | null
+          party_b_id: string | null
+          started_at: string | null
+          status: string | null
+          sub_type: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          box_id?: string | null
+          created_at?: string | null
+          ended_at?: string | null
+          id?: string | null
+          kind?: string | null
+          metadata?: Json | null
+          origin_request_id?: string | null
+          party_a_id?: string | null
+          party_b_id?: string | null
+          started_at?: string | null
+          status?: string | null
+          sub_type?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          box_id?: string | null
+          created_at?: string | null
+          ended_at?: string | null
+          id?: string | null
+          kind?: string | null
+          metadata?: Json | null
+          origin_request_id?: string | null
+          party_a_id?: string | null
+          party_b_id?: string | null
+          started_at?: string | null
+          status?: string | null
+          sub_type?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "advisor_relationships_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
+            referencedRelation: "boxes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "advisor_relationships_origin_request_id_fkey"
+            columns: ["origin_request_id"]
+            isOneToOne: false
+            referencedRelation: "box_inbound_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       v_core_loop_metrics: {
         Row: {
           activated_at: string | null
@@ -4746,6 +4972,16 @@ export type Database = {
       dispatch_notifications_for_event: {
         Args: { _event_id: string }
         Returns: number
+      }
+      emit_opportunity_event: {
+        Args: {
+          _actor_id: string
+          _event_type: Database["public"]["Enums"]["graph_event_type"]
+          _idem: string
+          _opportunity_id: string
+          _payload: Json
+        }
+        Returns: undefined
       }
       get_admin_beta_health: {
         Args: never
@@ -5134,6 +5370,12 @@ export type Database = {
         | "startup.team.joined"
         | "company.incorporated"
         | "commitment.checkpoint.completed"
+        | "opportunity.created"
+        | "opportunity.opened"
+        | "opportunity.applied"
+        | "opportunity.matched"
+        | "opportunity.accepted"
+        | "opportunity.closed"
       graph_node_type:
         | "user"
         | "skill"
@@ -5509,6 +5751,12 @@ export const Constants = {
         "startup.team.joined",
         "company.incorporated",
         "commitment.checkpoint.completed",
+        "opportunity.created",
+        "opportunity.opened",
+        "opportunity.applied",
+        "opportunity.matched",
+        "opportunity.accepted",
+        "opportunity.closed",
       ],
       graph_node_type: [
         "user",
