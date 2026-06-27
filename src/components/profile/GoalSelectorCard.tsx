@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -7,6 +8,7 @@ import { Loader2, Target } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+
 
 export const GOAL_OPTIONS: { value: string; label: string; desc: string }[] = [
   { value: "find_opportunities", label: "Find opportunities", desc: "Scout jobs, projects, and missions worth your time." },
@@ -19,6 +21,8 @@ export const GOAL_OPTIONS: { value: string; label: string; desc: string }[] = [
 export function GoalSelectorCard() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const qc = useQueryClient();
+
   const [currentGoal, setCurrentGoal] = useState<string | null>(null);
   const [onboardingIntent, setOnboardingIntent] = useState<string | null>(null);
   const [selected, setSelected] = useState<string>("");
@@ -59,7 +63,10 @@ export function GoalSelectorCard() {
         source: "profile",
       });
       setCurrentGoal(selected);
+      qc.invalidateQueries({ queryKey: ["onboarding_session_goal"] });
+      qc.invalidateQueries({ queryKey: ["onboarding_session"] });
       toast({ title: "Goal updated", description: "Your dashboard will adapt to your new direction." });
+
     } catch (e: any) {
       toast({ title: "Could not update", description: e.message, variant: "destructive" });
     } finally {

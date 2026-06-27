@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight, Lightbulb, Search, Users, GraduationCap, DollarSign } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { AIProfileDraftCard } from "@/components/dashboard/AIProfileDraftCard";
+
 
 
 type CtaSpec = {
@@ -61,22 +63,34 @@ export function DashboardHero() {
   const { user } = useAuth();
   const [profile, setProfile] = useState<{ full_name: string | null } | null>(null);
   const [primaryRole, setPrimaryRole] = useState<string | null>(null);
-  const [goal, setGoal] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user) return;
-      const [{ data: prof }, { data: state }, { data: session }] = await Promise.all([
+      const [{ data: prof }, { data: state }] = await Promise.all([
         supabase.from("profiles").select("full_name").eq("user_id", user.id).single(),
         supabase.from("onboarding_state").select("primary_role").eq("user_id", user.id).maybeSingle(),
-        supabase.from("onboarding_sessions").select("goal").eq("user_id", user.id).maybeSingle(),
       ]);
       setProfile(prof);
       setPrimaryRole((state as any)?.primary_role ?? null);
-      setGoal((session as any)?.goal ?? null);
     };
     fetchProfile();
   }, [user]);
+
+  const { data: goal = null } = useQuery({
+    queryKey: ["onboarding_session_goal", user?.id],
+    enabled: !!user,
+    staleTime: 0,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("onboarding_sessions")
+        .select("goal")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return ((data as any)?.goal as string | null) ?? null;
+    },
+  });
+
 
   const getGreeting = () => {
     const hour = new Date().getHours();
