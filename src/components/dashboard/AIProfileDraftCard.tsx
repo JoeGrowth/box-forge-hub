@@ -163,9 +163,9 @@ export function AIProfileDraftCard() {
             <Sparkles className="w-4 h-4 text-b4-teal" />
           </div>
           <div>
-            <div className="font-semibold text-foreground">We drafted your profile</div>
+            <div className="font-semibold text-foreground">A first draft of you</div>
             <div className="text-xs text-muted-foreground">
-              Generated from your onboarding answers. Accept, edit, or regenerate.
+              Written from your onboarding answers. Make it yours — accept, edit, or regenerate.
             </div>
           </div>
         </div>

@@ -49,57 +49,57 @@ export function DashboardAchievements() {
       const achievementsList: Achievement[] = [
         {
           icon: Target,
-          title: "First Steps",
-          description: "Complete onboarding",
+          title: "Onboarded",
+          description: "Intent declared",
           earned: !!onboardingState?.onboarding_completed,
           color: "text-blue-500",
         },
         {
           icon: Zap,
-          title: "Role Discovered",
-          description: "Complete NR Decoder",
+          title: "Self-aware",
+          description: "Natural role decoded",
           earned: !!nrDecoder,
           color: "text-purple-500",
         },
         {
           icon: Award,
-          title: "Certified Builder",
-          description: "Earn your first certification",
+          title: "Vaccinated",
+          description: "First certification earned",
           earned: (certifications?.length || 0) > 0,
           color: "text-amber-500",
         },
         {
           icon: Rocket,
           title: "Initiator",
-          description: "Create your first idea",
+          description: "First idea launched",
           earned: (ideas?.length || 0) > 0,
           color: "text-rose-500",
         },
         {
           icon: Users,
-          title: "Team Player",
-          description: "Join a startup team",
+          title: "Co-builder",
+          description: "Took a seat in a venture",
           earned: (teamMemberships?.length || 0) > 0,
           color: "text-emerald-500",
         },
         {
           icon: Star,
-          title: "Go-Getter",
-          description: "Submit first application",
+          title: "In motion",
+          description: "First application sent",
           earned: (applications?.length || 0) > 0,
           color: "text-cyan-500",
         },
         {
           icon: Trophy,
           title: "Approved",
-          description: "Get journey approved",
+          description: "Journey validated",
           earned: onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved",
           color: "text-b4-teal",
         },
         {
           icon: CheckCircle,
-          title: "Multi-Certified",
-          description: "Earn 2+ certifications",
+          title: "Stacked",
+          description: "2+ certifications",
           earned: (certifications?.length || 0) >= 2,
           color: "text-pink-500",
         },
@@ -164,7 +164,7 @@ export function DashboardAchievements() {
         {earnedCount === achievements.length && (
           <div className="mt-4 p-3 rounded-lg bg-gradient-to-r from-b4-teal/10 to-emerald-500/10 border border-b4-teal/20 text-center">
             <span className="text-sm font-medium text-b4-teal">
-              🎉 All achievements unlocked!
+              Every badge unlocked. You're shaping the future.
             </span>
           </div>
         )}

@@ -47,7 +47,7 @@ export function DashboardNextSteps() {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Recommended Next Steps</CardTitle>
+          <CardTitle className="text-lg">Your next move</CardTitle>
           <Badge variant="outline" className="gap-1">
             <Target className="w-3 h-3" />
             {progressionStageLabel[stage] ?? stage}
@@ -55,9 +55,9 @@ export function DashboardNextSteps() {
         </div>
         {progression && (
           <p className="text-xs text-muted-foreground">
-            Progression score {Math.round(progression.progression_score)} ·{" "}
-            {progression.completed_actions_count} action
-            {progression.completed_actions_count === 1 ? "" : "s"} completed
+            Momentum score {Math.round(progression.progression_score)} ·{" "}
+            {progression.completed_actions_count} move
+            {progression.completed_actions_count === 1 ? "" : "s"} already made
           </p>
         )}
       </CardHeader>
@@ -88,8 +88,8 @@ export function DashboardNextSteps() {
           <div className="text-center py-4 text-muted-foreground">
             <Sparkles className="w-8 h-8 mx-auto mb-2 text-b4-teal" />
             <p className="text-sm">
-              You're at the <span className="font-medium">{progressionStageLabel[stage] ?? stage}</span> stage.
-              Keep building signals to unlock the next move.
+              You're at <span className="font-medium">{progressionStageLabel[stage] ?? stage}</span>.
+              Keep stacking signals — the next move unlocks itself.
             </p>
           </div>
         )}

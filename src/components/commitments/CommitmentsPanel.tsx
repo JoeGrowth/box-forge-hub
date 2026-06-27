@@ -108,16 +108,16 @@ export function CommitmentsPanel() {
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <div>
           <CardTitle className="flex items-center gap-2"><Target className="w-5 h-5" /> Your commitments</CardTitle>
-          <p className="text-sm text-muted-foreground mt-1">What you're committed to, and what happens next.</p>
+          <p className="text-sm text-muted-foreground mt-1">Words become weight when you put a date on them. 14 days. Public to your future self.</p>
         </div>
-        <Button size="sm" onClick={() => setCreateOpen(true)}><Plus className="w-4 h-4 mr-1.5" /> New</Button>
+        <Button size="sm" onClick={() => setCreateOpen(true)}><Plus className="w-4 h-4 mr-1.5" /> New commitment</Button>
       </CardHeader>
       <CardContent className="space-y-4">
         {loading ? (
           <p className="text-sm text-muted-foreground">Loading…</p>
         ) : open.length === 0 && closed.length === 0 ? (
           <div className="text-sm text-muted-foreground border border-dashed rounded-lg p-6 text-center">
-            No commitments yet. Create a 14-day commitment to make progress visible.
+            No commitments yet. Pick one outcome. Give it 14 days. Make progress impossible to ignore.
           </div>
         ) : (
           <>
