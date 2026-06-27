@@ -145,29 +145,29 @@ export function DashboardHero() {
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-b4-coral/10 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
+      <div className="relative z-10 flex flex-col gap-6">
+        <div className="max-w-3xl">
+          <div className="flex items-center gap-2 mb-3">
             <Sparkles className="w-5 h-5 text-b4-teal" />
             <span className="text-b4-teal text-sm font-medium">
               {copy.eyebrow} · {format(new Date(), "EEEE, MMMM d")}
             </span>
           </div>
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-white mb-2">
+          <h1 className="font-display text-3xl md:text-4xl font-bold text-white mb-3 leading-tight">
             {copy.headline}
           </h1>
-          <p className="text-white/70 max-w-xl">
+          <p className="text-white/70 text-base md:text-lg max-w-2xl">
             {copy.subline}
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Button className="bg-b4-teal hover:bg-b4-teal/90 text-white" asChild>
+        <div className="flex flex-col sm:flex-row flex-wrap gap-3 pt-2">
+          <Button size="lg" className="bg-b4-teal hover:bg-b4-teal/90 text-white" asChild>
             <Link to={primaryCta.to}>
               <PrimaryIcon className="mr-2 w-4 h-4" /> {primaryCta.label}
             </Link>
           </Button>
-          <Button variant="outline" className="border-white/20 text-white hover:bg-white/10" asChild>
+          <Button size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10" asChild>
             <Link to={secondaryCta.to}>
               <SecondaryIcon className="mr-2 w-4 h-4" /> {secondaryCta.label} <ArrowRight className="ml-2 w-4 h-4" />
             </Link>
