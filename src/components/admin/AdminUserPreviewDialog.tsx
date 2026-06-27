@@ -45,6 +45,9 @@ export function AdminUserPreviewDialog({
   onUserUpdated,
 }: AdminUserPreviewDialogProps) {
   const [toggling, setToggling] = useState(false);
+  const [advisorDialogOpen, setAdvisorDialogOpen] = useState(false);
+  const [boxAdminDialogOpen, setBoxAdminDialogOpen] = useState(false);
+
 
   if (!user) return null;
 
