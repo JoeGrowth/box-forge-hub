@@ -25,6 +25,8 @@ import {
   Rocket,
   ShieldCheck,
   ShieldOff,
+  Compass,
+  Crown,
 } from "lucide-react";
 
 interface AdminUserPreviewDialogProps {
