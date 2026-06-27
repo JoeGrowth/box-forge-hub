@@ -15,7 +15,7 @@ describe("primaryCtaForGoal (current direction → green button)", () => {
   it("monetize_expertise → Browse Tenders", () => {
     const cta = primaryCtaForGoal("monetize_expertise", null);
     expect(cta.label).toBe("Browse Tenders");
-    expect(cta.to).toBe("/opportunities?v=discover&kind=Tenders");
+    expect(cta.to).toBe("/opportunities?v=discover&kind=tender");
   });
 
   it("falls back to entrepreneur posting when role=entrepreneur and no goal", () => {

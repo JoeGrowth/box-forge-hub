@@ -5,7 +5,7 @@
 // Both are pure functions so they can be unit-tested without React.
 
 import {
-  Lightbulb, Search, Users, GraduationCap, DollarSign,
+  Lightbulb, Search, Users, GraduationCap, FileText,
   Briefcase, Compass, ShieldCheck, Rocket, BadgeCheck, Sparkles,
 } from "lucide-react";
 
@@ -25,7 +25,7 @@ export function primaryCtaForGoal(goal: string | null, primaryRole: string | nul
     case "build_venture":
       return { to: "/entrepreneurship?new=1", label: "Post an Idea", icon: Lightbulb };
     case "monetize_expertise":
-      return { to: "/opportunities?v=discover&kind=Tenders", label: "Browse Tenders", icon: DollarSign };
+      return { to: "/opportunities?v=discover&kind=tender", label: "Browse Tenders", icon: FileText };
     case "learn_skills":
       return { to: "/journey", label: "Open Learning", icon: GraduationCap };
     default:
