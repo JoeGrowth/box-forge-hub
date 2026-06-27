@@ -5,6 +5,7 @@ import { buildDemoBox, type DemoBoxDetail } from "@/data/boxDemoTemplate";
 import { fetchBoxLiveStats } from "@/lib/boxAffinity";
 
 import { BoxAdvisorStrip } from "@/components/box/BoxAdvisorStrip";
+import { BoxDataModeToggle } from "@/components/box/BoxDataModeToggle";
 import { BoxFeed } from "@/components/box/BoxFeed";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -261,21 +262,24 @@ const BoxDetail = () => {
   const staticBox = boxId ? boxesData[boxId] : null;
   const [dbBox, setDbBox] = useState<DemoBoxDetail | null>(null);
   const [loadingDb, setLoadingDb] = useState(!staticBox);
+  const [boxMeta, setBoxMeta] = useState<{ id: string; data_mode: "demo" | "live" } | null>(null);
   const [liveStats, setLiveStats] = useState<{ startups: number; cobuilders: number; featured: { name: string; desc: string }[] } | null>(null);
 
+  // Always fetch row metadata (id + data_mode) for the box; if no static
+  // catalog entry exists, also build a demo shell from the row's name/slug.
   useEffect(() => {
-    if (staticBox || !boxId) {
-      setLoadingDb(false);
-      return;
-    }
+    if (!boxId) return;
     (async () => {
-      setLoadingDb(true);
+      if (!staticBox) setLoadingDb(true);
       const { data } = await (supabase as any)
         .from("boxes")
-        .select("slug,name")
+        .select("id,slug,name,data_mode")
         .eq("slug", boxId)
         .maybeSingle();
-      if (data) setDbBox(buildDemoBox(data.name, data.slug));
+      if (data) {
+        setBoxMeta({ id: data.id, data_mode: (data.data_mode as "demo" | "live") ?? "demo" });
+        if (!staticBox) setDbBox(buildDemoBox(data.name, data.slug));
+      }
       setLoadingDb(false);
     })();
   }, [boxId, staticBox]);
@@ -293,12 +297,16 @@ const BoxDetail = () => {
   }, [boxId]);
 
   const baseBox = staticBox ?? dbBox;
+  const isLive = boxMeta?.data_mode === "live";
   const box = baseBox
     ? {
         ...baseBox,
-        startups: liveStats?.startups ?? baseBox.startups,
-        cobuilders: liveStats?.cobuilders ?? baseBox.cobuilders,
-        featured: liveStats && liveStats.featured.length > 0 ? liveStats.featured : baseBox.featured,
+        startups: isLive ? liveStats?.startups ?? baseBox.startups : baseBox.startups,
+        cobuilders: isLive ? liveStats?.cobuilders ?? baseBox.cobuilders : baseBox.cobuilders,
+        featured:
+          isLive && liveStats && liveStats.featured.length > 0
+            ? liveStats.featured
+            : baseBox.featured,
       }
     : null;
 
@@ -476,6 +484,19 @@ const BoxDetail = () => {
             </div>
           </div>
         </section>
+
+        {/* Admin-only: switch between curated demo data and live DB data */}
+        {boxMeta && (
+          <section className="pb-4">
+            <div className="container mx-auto px-4 max-w-4xl">
+              <BoxDataModeToggle
+                boxId={boxMeta.id}
+                initialMode={boxMeta.data_mode}
+                onChange={(m) => setBoxMeta({ ...boxMeta, data_mode: m })}
+              />
+            </div>
+          </section>
+        )}
 
         {/* Advisor Strip — public interface to the advisor system */}
         <BoxAdvisorStrip boxSlug={box.id} boxName={box.name} />

@@ -530,6 +530,7 @@ export type Database = {
       boxes: {
         Row: {
           created_at: string
+          data_mode: string
           description: string | null
           domain: string | null
           id: string
@@ -539,6 +540,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          data_mode?: string
           description?: string | null
           domain?: string | null
           id?: string
@@ -548,6 +550,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          data_mode?: string
           description?: string | null
           domain?: string | null
           id?: string
