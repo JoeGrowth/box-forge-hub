@@ -5172,6 +5172,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: boolean
       }
+      can_view_advisors_directory: { Args: never; Returns: boolean }
       compute_user_state: { Args: { _user_id: string }; Returns: Json }
       compute_user_state_scores: { Args: { _user_id: string }; Returns: Json }
       current_user_email: { Args: never; Returns: string }

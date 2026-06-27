@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Input } from "@/components/ui/input";
@@ -50,8 +50,11 @@ interface NaturalRolePreview {
   consulting_case_studies: string | null;
 }
 
+const VALID_TABS: DirectoryFilter[] = ["talents", "cobuilders", "advisors"];
+
 const CoBuilders = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, loading: authLoading } = useAuth();
   const [cobuilders, setCobuilders] = useState<CoBuilder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,9 +69,30 @@ const CoBuilders = () => {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [myStage, setMyStage] = useState<string>("novice");
   const canSeeCobuilders = COBUILDER_STAGES.has(myStage);
-  const [filter, setFilter] = useState<DirectoryFilter>("talents");
+  const initialTab = (() => {
+    const t = searchParams.get("tab") as DirectoryFilter | null;
+    return t && VALID_TABS.includes(t) ? t : "talents";
+  })();
+  const [filter, setFilterState] = useState<DirectoryFilter>(initialTab);
   const [canSeeAdvisors, setCanSeeAdvisors] = useState(false);
   const [advisorUserIds, setAdvisorUserIds] = useState<Set<string>>(new Set());
+
+  // Keep URL in sync with selected tab for deep-linking and refresh-persistence.
+  const setFilter = (next: DirectoryFilter) => {
+    setFilterState(next);
+    const sp = new URLSearchParams(searchParams);
+    sp.set("tab", next);
+    setSearchParams(sp, { replace: true });
+  };
+
+  // React to back/forward navigation changing ?tab=
+  useEffect(() => {
+    const t = searchParams.get("tab") as DirectoryFilter | null;
+    if (t && VALID_TABS.includes(t) && t !== filter) {
+      setFilterState(t);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   // Fetch viewer's progression stage to gate the Co-Builders filter tab.
   useEffect(() => {
@@ -81,24 +105,39 @@ const CoBuilders = () => {
         .maybeSingle();
       const stage = (data as any)?.current_state ?? "novice";
       setMyStage(stage);
-      if (COBUILDER_STAGES.has(stage)) setFilter("cobuilders");
+      // Only auto-switch when there is no explicit tab in the URL.
+      if (COBUILDER_STAGES.has(stage) && !searchParams.get("tab")) {
+        setFilter("cobuilders");
+      }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
-  // Gate the Advisors tab: admin (user_roles) or ecosystem admin (box_ecosystem_admins).
+  // Gate the Advisors tab via server-validated SECURITY DEFINER RPC.
+  // Protects against client-side route tampering.
   useEffect(() => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      setCanSeeAdvisors(false);
+      return;
+    }
     (async () => {
-      const [{ data: adminRow }, { data: ecoRow }] = await Promise.all([
-        supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle(),
-        supabase.from("box_ecosystem_admins").select("user_id").eq("user_id", user.id).limit(1).maybeSingle(),
-      ]);
-      setCanSeeAdvisors(!!adminRow || !!ecoRow);
+      const { data, error } = await supabase.rpc("can_view_advisors_directory");
+      const allowed = !error && data === true;
+      setCanSeeAdvisors(allowed);
+      // If URL requests advisors but user isn't authorized, fall back to talents.
+      if (!allowed && (searchParams.get("tab") as DirectoryFilter) === "advisors") {
+        setFilter("talents");
+      }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
-  // Load advisor user_ids (active assignments) — used to filter the Advisors tab.
+  // Load advisor user_ids (active assignments) — only when authorized.
   useEffect(() => {
+    if (!canSeeAdvisors) {
+      setAdvisorUserIds(new Set());
+      return;
+    }
     (async () => {
       const { data } = await supabase
         .from("box_advisors")
@@ -107,7 +146,7 @@ const CoBuilders = () => {
       const set = new Set<string>((data || []).map((r: any) => r.user_id));
       setAdvisorUserIds(set);
     })();
-  }, []);
+  }, [canSeeAdvisors]);
 
   // Two-stage load: (1) fetch profile/role/idea rows for approved users,
   // (2) hydrate per-user expertise via the batch graph hook below.
@@ -442,7 +481,7 @@ const CoBuilders = () => {
                     return (
                       <div
                         key={cobuilder.id}
-                        className={`rounded-2xl border p-6 transition-all relative ${getCardStyle()}`}
+                        className={`rounded-2xl border p-6 transition-all relative flex flex-col h-full ${getCardStyle()}`}
                       >
                         {/* Preview Button - top right */}
                         <button
@@ -638,40 +677,43 @@ const CoBuilders = () => {
                           </p>
                         )}
 
-                        {/* Get Vaccinated Button - shown on current user's card if no cobuilder certification */}
-                        {isCurrentUser && cobuilder.certCount === 0 && (
-                          <div className="mt-4 pt-4 border-t border-border">
-                            <Button
-                              variant="teal"
-                              size="sm"
-                              onClick={() => navigate("/journey?section=cobuilder")}
-                              className="w-full gap-2"
-                            >
-                              <ShieldCheck className="w-4 h-4" />
-                              Get Vaccinated Co Builder
-                            </Button>
-                          </div>
-                        )}
+                        {/* Bottom action area — pinned so Message buttons align across cards */}
+                        <div className="mt-auto">
+                          {/* Get Vaccinated Button - shown on current user's card if no cobuilder certification */}
+                          {isCurrentUser && cobuilder.certCount === 0 && (
+                            <div className="mt-4 pt-4 border-t border-border">
+                              <Button
+                                variant="teal"
+                                size="sm"
+                                onClick={() => navigate("/journey?section=cobuilder")}
+                                className="w-full gap-2"
+                              >
+                                <ShieldCheck className="w-4 h-4" />
+                                Get Vaccinated Co Builder
+                              </Button>
+                            </div>
+                          )}
 
-                        {/* Message Button */}
-                        {!isCurrentUser && (
-                          <div className="mt-4 pt-4 border-t border-border">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleStartChat(cobuilder.user_id)}
-                              disabled={startingChat === cobuilder.user_id}
-                              className="w-full gap-2"
-                            >
-                              {startingChat === cobuilder.user_id ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <MessageCircle className="w-4 h-4" />
-                              )}
-                              Message
-                            </Button>
-                          </div>
-                        )}
+                          {/* Message Button */}
+                          {!isCurrentUser && (
+                            <div className="mt-4 pt-4 border-t border-border">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleStartChat(cobuilder.user_id)}
+                                disabled={startingChat === cobuilder.user_id}
+                                className="w-full gap-2"
+                              >
+                                {startingChat === cobuilder.user_id ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <MessageCircle className="w-4 h-4" />
+                                )}
+                                Message
+                              </Button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
