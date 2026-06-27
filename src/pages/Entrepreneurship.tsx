@@ -615,6 +615,114 @@ const Entrepreneurship = () => {
           onApplicationSubmitted={() => fetchData()}
         />
       )}
+
+      {selectedIdea && (
+        <>
+          <IdeaDevelopDialog
+            open={developDialogOpen}
+            onOpenChange={setDevelopDialogOpen}
+            ideaId={selectedIdea.id}
+            ideaTitle={selectedIdea.title}
+            onEpisodeComplete={refreshMyAndCollabs}
+          />
+          <IdeaValidationDialog
+            open={validationDialogOpen}
+            onOpenChange={setValidationDialogOpen}
+            ideaId={selectedIdea.id}
+            ideaTitle={selectedIdea.title}
+            onEpisodeComplete={refreshMyAndCollabs}
+          />
+          <IdeaGrowthDialog
+            open={growthDialogOpen}
+            onOpenChange={setGrowthDialogOpen}
+            ideaId={selectedIdea.id}
+            ideaTitle={selectedIdea.title}
+            onEpisodeComplete={refreshMyAndCollabs}
+          />
+          <IdeaEpisodesDialog
+            open={episodesDialogOpen}
+            onOpenChange={setEpisodesDialogOpen}
+            startupId={selectedIdea.id}
+            startupTitle={selectedIdea.title}
+            currentEpisode={selectedIdea.currentEpisode}
+          />
+        </>
+      )}
+
+      {teamDialogIdea && (
+        <TeamManagementDialog
+          open={teamDialogOpen}
+          onOpenChange={setTeamDialogOpen}
+          startupId={teamDialogIdea.id}
+          startupTitle={teamDialogIdea.title}
+          currentUserId={user?.id || ""}
+        />
+      )}
+
+      <FiveElementsDialog
+        open={fiveElementsDialogOpen}
+        onOpenChange={setFiveElementsDialogOpen}
+        idea={fiveElementsIdea}
+      />
+
+      <AlertDialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open);
+          if (!open) setDeleteType(null);
+        }}
+      >
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Choose deletion type</AlertDialogTitle>
+            <AlertDialogDescription>
+              What would you like to do with{" "}
+              <span className="font-semibold text-foreground">"{ideaToDelete?.title}"</span>?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-3 py-4">
+            <div
+              className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                deleteType === "archive" ? "border-amber-500 bg-amber-500/10" : "border-border hover:border-amber-500/50"
+              }`}
+              onClick={() => setDeleteType("archive")}
+            >
+              <p className="font-semibold text-foreground">Archive Idea (Recommended)</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Hidden from public view but can be restored later.
+              </p>
+            </div>
+            <div
+              className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                deleteType === "permanent" ? "border-destructive bg-destructive/10" : "border-border hover:border-destructive/50"
+              }`}
+              onClick={() => setDeleteType("permanent")}
+            >
+              <p className="font-semibold text-foreground">Delete Permanently</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Idea and associated data will be permanently removed. Cannot be undone.
+              </p>
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteIdea}
+              disabled={isDeleting || !deleteType}
+              className={
+                deleteType === "permanent"
+                  ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  : "bg-amber-500 text-white hover:bg-amber-600"
+              }
+            >
+              {isDeleting ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{deleteType === "permanent" ? "Deleting..." : "Archiving..."}</>
+              ) : deleteType === "permanent" ? "Delete Permanently" : "Archive Idea"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
     </div>
   );
 };
