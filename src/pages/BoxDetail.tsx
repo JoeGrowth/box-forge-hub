@@ -1,4 +1,5 @@
 import { useParams, Link } from "react-router-dom";
+import { BoxAdvisorStrip } from "@/components/box/BoxAdvisorStrip";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
