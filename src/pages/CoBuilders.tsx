@@ -481,7 +481,7 @@ const CoBuilders = () => {
                     return (
                       <div
                         key={cobuilder.id}
-                        className={`rounded-2xl border p-6 transition-all relative ${getCardStyle()}`}
+                        className={`rounded-2xl border p-6 transition-all relative flex flex-col h-full ${getCardStyle()}`}
                       >
                         {/* Preview Button - top right */}
                         <button
