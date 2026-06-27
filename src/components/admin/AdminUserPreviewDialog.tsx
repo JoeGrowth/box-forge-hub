@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -47,7 +47,20 @@ export function AdminUserPreviewDialog({
   const [toggling, setToggling] = useState(false);
   const [advisorDialogOpen, setAdvisorDialogOpen] = useState(false);
   const [boxAdminDialogOpen, setBoxAdminDialogOpen] = useState(false);
+  const [currentGoal, setCurrentGoal] = useState<string | null>(null);
+  const [goalHistory, setGoalHistory] = useState<Array<{ id: string; old_goal: string | null; new_goal: string; created_at: string; source: string | null }>>([]);
 
+  useEffect(() => {
+    if (!user?.id || !open) return;
+    (async () => {
+      const [{ data: sess }, { data: log }] = await Promise.all([
+        supabase.from("onboarding_sessions").select("goal").eq("user_id", user.id).maybeSingle(),
+        supabase.from("goal_change_log").select("id, old_goal, new_goal, created_at, source").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20),
+      ]);
+      setCurrentGoal((sess as any)?.goal ?? null);
+      setGoalHistory((log as any) ?? []);
+    })();
+  }, [user?.id, open]);
 
   if (!user) return null;
 
@@ -354,6 +367,39 @@ export function AdminUserPreviewDialog({
               >
                 {toggling ? "Updating..." : user.procuringAccess ? "Revoke Procuring Access" : "Grant Procuring Access"}
               </Button>
+            </CardContent>
+          </Card>
+
+          {/* Goal & History */}
+          <Card>
+            <CardContent className="pt-4 space-y-3">
+              <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <TrendingUp className="w-4 h-4" />
+                Goal ("What do you want next?")
+              </h4>
+              <div className="text-sm">
+                <span className="text-muted-foreground">Current: </span>
+                <span className="font-medium">{currentGoal ?? "Not set"}</span>
+              </div>
+              {goalHistory.length > 0 ? (
+                <div className="space-y-1 pt-2 border-t border-border">
+                  <p className="text-xs text-muted-foreground mb-1">Change history</p>
+                  {goalHistory.map((h) => (
+                    <div key={h.id} className="text-xs text-foreground flex items-center justify-between gap-2">
+                      <span>
+                        <span className="text-muted-foreground">{h.old_goal ?? "—"}</span>
+                        {" → "}
+                        <span className="font-medium">{h.new_goal}</span>
+                      </span>
+                      <span className="text-muted-foreground whitespace-nowrap">
+                        {new Date(h.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">No goal changes recorded.</p>
+              )}
             </CardContent>
           </Card>
 

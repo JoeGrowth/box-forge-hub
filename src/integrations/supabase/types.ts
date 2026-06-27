@@ -1638,6 +1638,33 @@ export type Database = {
         }
         Relationships: []
       }
+      goal_change_log: {
+        Row: {
+          created_at: string
+          id: string
+          new_goal: string
+          old_goal: string | null
+          source: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          new_goal: string
+          old_goal?: string | null
+          source?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          new_goal?: string
+          old_goal?: string | null
+          source?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       graph_dead_letters: {
         Row: {
           attempt_count: number
