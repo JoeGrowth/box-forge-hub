@@ -1,4 +1,8 @@
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { buildDemoBox, type DemoBoxDetail } from "@/data/boxDemoTemplate";
+
 import { BoxAdvisorStrip } from "@/components/box/BoxAdvisorStrip";
 import { BoxFeed } from "@/components/box/BoxFeed";
 import { Navbar } from "@/components/layout/Navbar";
@@ -212,9 +216,41 @@ const boxesData: Record<string, {
 
 const BoxDetail = () => {
   const { boxId } = useParams<{ boxId: string }>();
-  const box = boxId ? boxesData[boxId] : null;
+  const staticBox = boxId ? boxesData[boxId] : null;
+  const [dbBox, setDbBox] = useState<DemoBoxDetail | null>(null);
+  const [loadingDb, setLoadingDb] = useState(!staticBox);
+
+  useEffect(() => {
+    if (staticBox || !boxId) {
+      setLoadingDb(false);
+      return;
+    }
+    (async () => {
+      setLoadingDb(true);
+      const { data } = await (supabase as any)
+        .from("boxes")
+        .select("slug,name")
+        .eq("slug", boxId)
+        .maybeSingle();
+      if (data) setDbBox(buildDemoBox(data.name, data.slug));
+      setLoadingDb(false);
+    })();
+  }, [boxId, staticBox]);
+
+  const box = staticBox ?? dbBox;
 
   if (!box) {
+    if (loadingDb) {
+      return (
+        <div className="min-h-screen bg-background">
+          <Navbar />
+          <main className="pt-20 flex items-center justify-center min-h-[60vh]">
+            <p className="text-muted-foreground">Loading box…</p>
+          </main>
+          <Footer />
+        </div>
+      );
+    }
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
@@ -233,6 +269,7 @@ const BoxDetail = () => {
   }
 
   const IconComponent = box.icon;
+
 
   return (
     <div className="min-h-screen bg-background">

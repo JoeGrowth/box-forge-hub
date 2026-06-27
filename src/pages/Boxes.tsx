@@ -1,20 +1,24 @@
+import { useEffect, useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { 
-  Heart, 
-  Leaf, 
-  GraduationCap, 
-  Utensils, 
-  Building2, 
+import { supabase } from "@/integrations/supabase/client";
+import { buildDemoBox, type DemoBoxListing } from "@/data/boxDemoTemplate";
+import {
+  Heart,
+  Leaf,
+  GraduationCap,
+  Utensils,
+  Building2,
   Cpu,
   ArrowRight,
   Users,
   Rocket,
-  TrendingUp
+  TrendingUp,
 } from "lucide-react";
+
 
 const boxes = [
   {
@@ -122,11 +126,30 @@ const boxes = [
 ];
 
 const Boxes = () => {
+  const [extraBoxes, setExtraBoxes] = useState<DemoBoxListing[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("boxes")
+        .select("slug,name")
+        .order("name");
+      const knownSlugs = new Set(boxes.map((b) => b.id));
+      const extras = ((data as any[]) ?? [])
+        .filter((b) => !knownSlugs.has(b.slug))
+        .map((b) => buildDemoBox(b.name, b.slug) as DemoBoxListing);
+      setExtraBoxes(extras);
+    })();
+  }, []);
+
+  const allBoxes = [...boxes, ...extraBoxes];
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <PageTransition>
         <main className="pt-20">
+
         {/* Hero */}
         <section className="py-24 gradient-hero text-primary-foreground">
           <div className="container mx-auto px-4">
@@ -149,7 +172,7 @@ const Boxes = () => {
         <section className="py-24">
           <div className="container mx-auto px-4">
             <div className="space-y-12">
-              {boxes.map((box, i) => (
+              {allBoxes.map((box, i) => (
                 <div 
                   key={box.id}
                   className="bg-card rounded-3xl border border-border overflow-hidden hover:shadow-xl transition-all duration-500 animate-fade-in"

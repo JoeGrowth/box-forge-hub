@@ -9,7 +9,9 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+
 import {
   Select,
   SelectContent,
@@ -70,6 +72,10 @@ export function AddAdvisorDialog({
   const [overrideReason, setOverrideReason] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const NEW_BOX = "__new__";
+  const [newBoxName, setNewBoxName] = useState("");
+  const [newBoxSlug, setNewBoxSlug] = useState("");
+
 
   useEffect(() => {
     if (!open || !userId) return;
@@ -77,7 +83,10 @@ export function AddAdvisorDialog({
     setOverrideReason("");
     setReadiness(null);
     setExisting([]);
+    setNewBoxName("");
+    setNewBoxSlug("");
     setLoading(true);
+
     (async () => {
       const [{ data: bx }, { data: rd }, { data: ex }] = await Promise.all([
         (supabase as any).from("boxes").select("id,slug,name").order("name"),
@@ -101,19 +110,38 @@ export function AddAdvisorDialog({
   }, [open, userId]);
 
   const eligible = readiness?.eligible === true;
+  const isCreatingBox = boxId === NEW_BOX;
+  const newBoxValid =
+    isCreatingBox &&
+    newBoxName.trim().length >= 3 &&
+    /^[a-z0-9-]{3,}$/.test(newBoxSlug.trim());
   const alreadyInBox =
-    boxId != null && existing.some((e) => e.box_id === boxId);
+    !isCreatingBox && boxId != null && existing.some((e) => e.box_id === boxId);
   const requireOverride = !eligible;
   const canSubmit =
     !!boxId &&
     !alreadyInBox &&
     !submitting &&
+    (!isCreatingBox || newBoxValid) &&
     (!requireOverride || overrideReason.trim().length >= 10);
 
   const handleSubmit = async () => {
     if (!userId || !admin || !boxId) return;
     setSubmitting(true);
     try {
+      // 0) Create the Box if requested
+      let targetBoxId = boxId;
+      if (isCreatingBox) {
+        const slug = newBoxSlug.trim();
+        const { data: created, error: createErr } = await (supabase as any)
+          .from("boxes")
+          .insert({ slug, name: newBoxName.trim() })
+          .select("id")
+          .single();
+        if (createErr) throw createErr;
+        targetBoxId = created.id;
+      }
+
       // 1) Override audit (only when overriding ineligibility)
       if (requireOverride) {
         const { error: ovErr } = await (supabase as any)
@@ -125,7 +153,7 @@ export function AddAdvisorDialog({
             overridden_rule: "advisor_readiness.eligible",
             reason: overrideReason.trim(),
             snapshot: {
-              box_id: boxId,
+              box_id: targetBoxId,
               readiness: readiness ?? null,
             },
           });
@@ -138,7 +166,7 @@ export function AddAdvisorDialog({
         .upsert(
           {
             user_id: userId,
-            box_id: boxId,
+            box_id: targetBoxId,
             status: "active",
             approved_by: admin.id,
             approved_at: new Date().toISOString(),
@@ -165,6 +193,7 @@ export function AddAdvisorDialog({
       setSubmitting(false);
     }
   };
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -235,6 +264,7 @@ export function AddAdvisorDialog({
                       {b.name}
                     </SelectItem>
                   ))}
+                  <SelectItem value={NEW_BOX}>+ Create a new Box…</SelectItem>
                 </SelectContent>
               </Select>
               {alreadyInBox && (
@@ -243,7 +273,52 @@ export function AddAdvisorDialog({
                   appointment.
                 </p>
               )}
+              {isCreatingBox && (
+                <div className="mt-3 space-y-2 rounded-md border border-dashed p-3">
+                  <p className="text-xs text-muted-foreground">
+                    The Box page will be generated automatically using the demo
+                    template. Existing demo content is never overwritten.
+                  </p>
+                  <div>
+                    <Label className="text-xs">Box name</Label>
+                    <Input
+                      value={newBoxName}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setNewBoxName(v);
+                        if (!newBoxSlug) {
+                          setNewBoxSlug(
+                            v
+                              .toLowerCase()
+                              .replace(/^box\s*for\s*/i, "")
+                              .replace(/\s*solutions?$/i, "")
+                              .replace(/[^a-z0-9]+/g, "-")
+                              .replace(/(^-|-$)/g, ""),
+                          );
+                        }
+                      }}
+                      placeholder="e.g. Box For Security Solutions"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Slug (URL)</Label>
+                    <Input
+                      value={newBoxSlug}
+                      onChange={(e) =>
+                        setNewBoxSlug(
+                          e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""),
+                        )
+                      }
+                      placeholder="security"
+                    />
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      /boxes/{newBoxSlug || "your-slug"}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
+
 
             {/* Override */}
             {requireOverride && (
