@@ -166,6 +166,9 @@ export default function AdvisorWorkQueue() {
   const wrap = async (r: RequestRow, status: "accepted" | "completed" | "archived") => {
     setBusy(r.id);
     try {
+      if (r.status === "requested" && !r.assigned_advisor_id && status === "accepted" && user) {
+        await transitionRequest(r.id, "matched", user.id, { reason: "self_claim" });
+      }
       await transitionRequest(r.id, status);
       await load();
       toast({ title: `Marked ${status}` });
