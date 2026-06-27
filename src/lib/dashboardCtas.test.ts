@@ -22,30 +22,40 @@ describe("primaryCtaForGoal (current direction → green button)", () => {
 });
 
 describe("secondaryCtaForIntent (Where are you today? → second button)", () => {
-  it("Validated Expert → routes to advisors directory", () => {
+  it("Validated Expert → label reflects answer and routes to /advisory", () => {
     const cta = secondaryCtaForIntent("Validated Expert");
-    expect(cta.label).toBe("Open Advisor Hub");
-    expect(cta.to).toBe("/people?tab=advisors");
+    expect(cta.label).toBe("Activate Validated Expert");
+    expect(cta.to).toBe("/advisory");
   });
 
-  it("Builder → Find a Builder Mission", () => {
-    expect(secondaryCtaForIntent("Builder").to).toBe("/opportunities?category=startup");
+  it("Builder → label reflects answer and routes to startup missions", () => {
+    const cta = secondaryCtaForIntent("Builder");
+    expect(cta.label).toBe("Continue as Builder");
+    expect(cta.to).toBe("/opportunities?category=startup");
   });
 
-  it("Co-Builder → cobuilders tab", () => {
-    expect(secondaryCtaForIntent("Co-Builder").to).toBe("/people?tab=cobuilders");
+  it("Co-Builder → label reflects answer and routes to startup missions", () => {
+    const cta = secondaryCtaForIntent("Co-Builder");
+    expect(cta.label).toBe("Continue as Co-Builder");
+    expect(cta.to).toBe("/opportunities?category=startup");
   });
 
   it("Venture Creator → /entrepreneurship", () => {
-    expect(secondaryCtaForIntent("Venture Creator").to).toBe("/entrepreneurship");
+    const cta = secondaryCtaForIntent("Venture Creator");
+    expect(cta.label).toBe("Continue as Venture Creator");
+    expect(cta.to).toBe("/entrepreneurship");
   });
 
   it("Professional Operator → /career", () => {
-    expect(secondaryCtaForIntent("Professional Operator").to).toBe("/career");
+    const cta = secondaryCtaForIntent("Professional Operator");
+    expect(cta.label).toBe("Continue as Professional Operator");
+    expect(cta.to).toBe("/career");
   });
 
   it("Explorer → /opportunities", () => {
-    expect(secondaryCtaForIntent("Explorer").to).toBe("/opportunities");
+    const cta = secondaryCtaForIntent("Explorer");
+    expect(cta.label).toBe("Continue as Explorer");
+    expect(cta.to).toBe("/opportunities");
   });
 
   it("unknown intent falls back to /people", () => {
@@ -54,11 +64,16 @@ describe("secondaryCtaForIntent (Where are you today? → second button)", () =>
 });
 
 describe("ctasFor — Keo's case (build_venture + Validated Expert)", () => {
-  it("returns Post an Idea + Open Advisor Hub", () => {
-    const { primary, secondary } = ctasFor("build_venture", "Validated Expert", null);
+  it("primary green = Post an Idea → /entrepreneurship?new=1", () => {
+    const { primary } = ctasFor("build_venture", "Validated Expert", null);
     expect(primary.label).toBe("Post an Idea");
     expect(primary.to).toBe("/entrepreneurship?new=1");
-    expect(secondary.label).toBe("Open Advisor Hub");
-    expect(secondary.to).toBe("/people?tab=advisors");
+  });
+
+  it("secondary = Activate Validated Expert → /advisory", () => {
+    const { secondary } = ctasFor("build_venture", "Validated Expert", null);
+    expect(secondary.label).toBe("Activate Validated Expert");
+    expect(secondary.to).toBe("/advisory");
   });
 });
+
