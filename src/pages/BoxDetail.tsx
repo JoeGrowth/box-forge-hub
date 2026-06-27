@@ -282,6 +282,34 @@ const boxesData: Record<string, {
     ],
     mission: "To unlock inclusive, transparent and reliable financial infrastructure for every founder and customer in the ecosystem.",
   },
+  economic: {
+    id: "economic",
+    name: "Box For Economic Solutions",
+    abbr: "B4ECS",
+    icon: TrendingUp,
+    description: "Economic development, public policy and inclusive growth ventures.",
+    longDescription: "From local economic development and SME enablement to labor markets, trade infrastructure and public-sector innovation, we back ventures shaping how economies grow and how prosperity is distributed. Our ecosystem connects economists, public-sector leaders, founders and operators to ship solutions that move real economic indicators.",
+    color: "from-amber-500 to-yellow-600",
+    bgColor: "bg-amber-50",
+    startups: 5,
+    cobuilders: 18,
+    totalRaised: "$420K",
+    fields: ["Economic Development", "SME Enablement", "Labor & Jobs", "Public Sector Innovation"],
+    featured: [
+      { name: "GrowthGrid", desc: "Regional economic dashboards for cities" },
+      { name: "SMEBoost", desc: "Operating system for small businesses" },
+      { name: "JobBridge", desc: "Skills-to-jobs marketplace for emerging markets" },
+    ],
+    digitalSolutions: [
+      { icon: TrendingUp, title: "Economic Intelligence", description: "Real-time indicators, forecasting and macro dashboards for regions and sectors." },
+      { icon: Briefcase, title: "SME Enablement", description: "Digital tooling, access to credit and growth services for small and mid-size businesses." },
+      { icon: Factory, title: "Industrial & Trade Tech", description: "Productivity, logistics and trade infrastructure for value chains." },
+      { icon: Coins, title: "Inclusive Finance", description: "Microfinance, cooperative finance and capital access for underserved operators." },
+      { icon: BarChart3, title: "Public Sector Analytics", description: "Evidence-based policy tooling for ministries, municipalities and donors." },
+      { icon: Globe, title: "Markets & Exports", description: "Cross-border commerce, export enablement and regional market access." },
+    ],
+    mission: "To grow inclusive, resilient economies by connecting founders, operators and public-sector leaders around measurable outcomes.",
+  },
 };
 
 const BoxDetail = () => {
