@@ -649,6 +649,36 @@ export type Database = {
           },
         ]
       }
+      click_events: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          label: string
+          page_path: string
+          target_path: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind?: string
+          label: string
+          page_path: string
+          target_path?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          label?: string
+          page_path?: string
+          target_path?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       cold_start_profiles: {
         Row: {
           confidence: number
