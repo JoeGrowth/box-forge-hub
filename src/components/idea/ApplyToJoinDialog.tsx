@@ -327,10 +327,29 @@ export function ApplyToJoinDialog({
       return (
         <>
           <DialogHeader>
-            <DialogTitle>Apply to Join "{idea.title}"</DialogTitle>
+            <DialogTitle className="flex items-center gap-2 flex-wrap">
+              <span>Apply to Join "{idea.title}"</span>
+              <SolutionStageBadge stage={solutionStage} />
+            </DialogTitle>
             <DialogDescription>Step 1 of 2 — Tell the initiator about yourself and your interest.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-4">
+            {solutionStage === "discovery" && (
+              <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3 space-y-2">
+                <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 text-sm font-medium">
+                  <AlertTriangle className="w-4 h-4" />
+                  Solution not yet validated
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  The initiator has described the problem but no advisor or admin has signed off yet.
+                  You're applying at an earlier, riskier stage. Acknowledge to continue.
+                </p>
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <Checkbox checked={acknowledgedDiscovery} onCheckedChange={(v) => setAcknowledgedDiscovery(!!v)} />
+                  <span>I understand this idea is not validated yet.</span>
+                </label>
+              </div>
+            )}
             {idea.roles_needed && idea.roles_needed.length > 0 && (
               <div className="space-y-2">
                 <Label>Which role are you applying for?</Label>
@@ -349,7 +368,15 @@ export function ApplyToJoinDialog({
               <Label>Your message to the initiator</Label>
               <Textarea placeholder="Introduce yourself, share your relevant skills and experience..." value={applyMessage} onChange={(e) => setApplyMessage(e.target.value)} rows={4} />
             </div>
-            <Button variant="teal" className="w-full" onClick={() => setDialogStep(2)} disabled={!!(idea.roles_needed && idea.roles_needed.length > 0 && !selectedRole)}>
+            <Button
+              variant="teal"
+              className="w-full"
+              onClick={() => setDialogStep(2)}
+              disabled={
+                !!(idea.roles_needed && idea.roles_needed.length > 0 && !selectedRole) ||
+                (solutionStage === "discovery" && !acknowledgedDiscovery)
+              }
+            >
               Next: Compensation Proposal <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
