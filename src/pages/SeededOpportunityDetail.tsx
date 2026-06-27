@@ -44,7 +44,7 @@ export default function SeededOpportunityDetail({ id }: { id: string }) {
         <main className="pt-24 container mx-auto px-4">
           <p className="text-muted-foreground">Opportunity not found.</p>
           <Button variant="outline" className="mt-4" onClick={() => navigate(-1)}>
-            Back to Opportunities
+            Back
           </Button>
         </main>
         <Footer />
@@ -67,7 +67,7 @@ export default function SeededOpportunityDetail({ id }: { id: string }) {
             className="text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Opportunities
+            Back
           </Button>
         </div>
 
