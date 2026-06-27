@@ -80,6 +80,8 @@ import Characters from "./pages/Characters";
 import JourneyTimeline from "./pages/JourneyTimeline";
 import ActivationHub from "./pages/ActivationHub";
 import AdvisorWorkQueue from "./pages/AdvisorWorkQueue";
+import ClickAnalytics from "./pages/admin/ClickAnalytics";
+import { ClickTracker } from "./components/analytics/ClickTracker";
 
 
 const queryClient = new QueryClient();
