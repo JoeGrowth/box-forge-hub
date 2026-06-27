@@ -50,6 +50,31 @@ type SystemAlert = {
   detected_at: string;
 };
 
+type EventAudit = {
+  generated_at: string;
+  totals: {
+    events: number; with_idempotency_key: number; missing_idempotency_key: number;
+    duplicates: number; dead_letters: number; unprocessed: number; unprocessed_stale_5m: number;
+  };
+  projections: {
+    funnel_users: number; distinct_event_users: number; delta: number;
+    relationships_table: number; relationship_health_rows: number;
+    commitments_table: number; contributions_table: number;
+  };
+  checks: { name: string; value: number; unit: string; status: "pass" | "warn" | "fail"; detail: string }[];
+  error?: string;
+};
+
+type WeeklyReview = {
+  generated_at: string;
+  healthiest_boxes: { box_id: string; name: string; active_relationships: number; avg_health: number; advisor_count: number }[];
+  top_advisors: { advisor_id: string; advisor_name: string | null; total_relationships: number; successful_relationships: number; avg_health: number; verified_contributions: number }[];
+  top_templates: { template_id: string; name: string; cadence: string; completed_30d: number; scheduled_30d: number; completion_pct: number }[];
+  unfilled_opportunities: { opportunity_id: string; title: string; type: string; status: string; age_seconds: number; applications: number; created_at: string }[];
+  recurring_alerts: { code: string; occurrences: number; severity: string; first_seen: string }[];
+  error?: string;
+};
+
 interface Metric { label: string; value: string | number; tone?: "default" | "warn" | "good"; sub?: string }
 
 function MetricCard({ label, value, tone = "default", sub }: Metric) {
@@ -63,6 +88,36 @@ function MetricCard({ label, value, tone = "default", sub }: Metric) {
         <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
         <div className={`text-3xl font-semibold mt-1 ${toneClass}`}>{value}</div>
         {sub && <div className="text-xs text-muted-foreground mt-1">{sub}</div>}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ReviewList({
+  title, subtitle, empty, rows,
+}: { title: string; subtitle: string; empty: string; rows: { key: string; primary: string; secondary: string; metric: string }[] }) {
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm">{title}</CardTitle>
+        <p className="text-xs text-muted-foreground">{subtitle}</p>
+      </CardHeader>
+      <CardContent>
+        {rows.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{empty}</p>
+        ) : (
+          <ul className="divide-y divide-border">
+            {rows.map((r) => (
+              <li key={r.key} className="py-2 flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-foreground truncate">{r.primary}</p>
+                  <p className="text-[11px] text-muted-foreground truncate">{r.secondary}</p>
+                </div>
+                <span className="text-base font-semibold text-foreground shrink-0">{r.metric}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </CardContent>
     </Card>
   );
@@ -95,6 +150,8 @@ export default function BetaConsole() {
   const [alerts, setAlerts] = useState<SystemAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  const [audit, setAudit] = useState<EventAudit | null>(null);
+  const [review, setReview] = useState<WeeklyReview | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -110,13 +167,17 @@ export default function BetaConsole() {
   async function refresh() {
     setLoading(true);
     setErr(null);
-    const [metricsRes, alertsRes] = await Promise.all([
+    const [metricsRes, alertsRes, auditRes, reviewRes] = await Promise.all([
       supabase.rpc("get_ops_metrics"),
       supabase.rpc("get_system_alerts"),
+      supabase.rpc("get_event_audit"),
+      supabase.rpc("get_weekly_review"),
     ]);
     if (metricsRes.error) setErr(metricsRes.error.message);
     else setData(metricsRes.data as OpsMetrics);
     if (!alertsRes.error) setAlerts((alertsRes.data as SystemAlert[]) ?? []);
+    if (!auditRes.error) setAudit(auditRes.data as EventAudit);
+    if (!reviewRes.error) setReview(reviewRes.data as WeeklyReview);
     setLoading(false);
   }
 
@@ -245,6 +306,121 @@ export default function BetaConsole() {
               </CardContent>
             </Card>
           </section>
+
+          {audit && !audit.error && (
+            <section>
+              <div className="mb-3">
+                <h2 className="text-xl font-semibold">Event stream audit</h2>
+                <p className="text-sm text-muted-foreground">
+                  Verifies exactly-once delivery, idempotency under retries, and projection consistency.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
+                {audit.checks.map((c) => (
+                  <Card key={c.name} className={
+                    c.status === "fail" ? "border-destructive/50" :
+                    c.status === "warn" ? "border-amber-500/40" : ""
+                  }>
+                    <CardContent className="pt-5">
+                      <div className="flex items-center justify-between">
+                        <div className="text-xs uppercase tracking-wide text-muted-foreground">{c.name}</div>
+                        <Badge variant="outline" className={
+                          c.status === "fail" ? "border-destructive/40 text-destructive" :
+                          c.status === "warn" ? "border-amber-500/40 text-amber-600 dark:text-amber-400" :
+                          "border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
+                        }>{c.status}</Badge>
+                      </div>
+                      <div className="text-2xl font-semibold mt-1">{c.value}{c.unit}</div>
+                      <div className="text-xs text-muted-foreground mt-1">{c.detail}</div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              <Card>
+                <CardHeader className="pb-2"><CardTitle className="text-sm">Projection drift snapshot</CardTitle></CardHeader>
+                <CardContent className="text-xs text-muted-foreground grid grid-cols-2 md:grid-cols-4 gap-y-1 gap-x-6">
+                  <div>Events total: <span className="text-foreground font-medium">{audit.totals.events}</span></div>
+                  <div>With idem key: <span className="text-foreground font-medium">{audit.totals.with_idempotency_key}</span></div>
+                  <div>Duplicates: <span className="text-foreground font-medium">{audit.totals.duplicates}</span></div>
+                  <div>Dead letters: <span className="text-foreground font-medium">{audit.totals.dead_letters}</span></div>
+                  <div>Funnel users: <span className="text-foreground font-medium">{audit.projections.funnel_users}</span></div>
+                  <div>Event users: <span className="text-foreground font-medium">{audit.projections.distinct_event_users}</span></div>
+                  <div>Relationships: <span className="text-foreground font-medium">{audit.projections.relationships_table}</span></div>
+                  <div>Health rows: <span className="text-foreground font-medium">{audit.projections.relationship_health_rows}</span></div>
+                  <div>Commitments: <span className="text-foreground font-medium">{audit.projections.commitments_table}</span></div>
+                  <div>Contributions: <span className="text-foreground font-medium">{audit.projections.contributions_table}</span></div>
+                </CardContent>
+              </Card>
+            </section>
+          )}
+
+          {review && !review.error && (
+            <section>
+              <div className="mb-3">
+                <h2 className="text-xl font-semibold">Weekly ecosystem review</h2>
+                <p className="text-sm text-muted-foreground">
+                  Operational questions, not vanity numbers. Recurring patterns set the post-freeze roadmap.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <ReviewList
+                  title="Healthiest Boxes"
+                  subtitle="Avg relationship health · active relationships"
+                  empty="No Box data yet."
+                  rows={review.healthiest_boxes.map((b) => ({
+                    key: b.box_id,
+                    primary: b.name,
+                    secondary: `${b.active_relationships} active · ${b.advisor_count} advisors`,
+                    metric: `${b.avg_health}`,
+                  }))}
+                />
+                <ReviewList
+                  title="Top advisors driving successful relationships"
+                  subtitle="Successful = health ≥ 70 · last 90d"
+                  empty="No advisor relationships in the last 90 days."
+                  rows={review.top_advisors.map((a) => ({
+                    key: a.advisor_id,
+                    primary: a.advisor_name ?? a.advisor_id.slice(0, 8),
+                    secondary: `${a.total_relationships} rel · ${a.verified_contributions} verified contribs · avg ${a.avg_health}`,
+                    metric: `${a.successful_relationships}`,
+                  }))}
+                />
+                <ReviewList
+                  title="Ritual templates most completed"
+                  subtitle="Completed in last 30 days"
+                  empty="No ritual completions in the last 30 days."
+                  rows={review.top_templates.map((t) => ({
+                    key: t.template_id,
+                    primary: t.name,
+                    secondary: `${t.cadence} · ${t.scheduled_30d} scheduled · ${t.completion_pct}% completion`,
+                    metric: `${t.completed_30d}`,
+                  }))}
+                />
+                <ReviewList
+                  title="Opportunities still unfilled"
+                  subtitle="Open > 7 days, oldest first"
+                  empty="All opportunities filled within 7 days."
+                  rows={review.unfilled_opportunities.map((o) => ({
+                    key: o.opportunity_id,
+                    primary: o.title,
+                    secondary: `${o.type} · ${o.applications} applications · open ${fmtSeconds(o.age_seconds)}`,
+                    metric: `${o.applications}`,
+                  }))}
+                />
+                <ReviewList
+                  title="Recurring alerts"
+                  subtitle="Grouped by code across current snapshot"
+                  empty="No recurring alert codes."
+                  rows={review.recurring_alerts.map((a) => ({
+                    key: a.code,
+                    primary: a.code,
+                    secondary: `severity ${a.severity} · first seen ${new Date(a.first_seen).toLocaleDateString()}`,
+                    metric: `${a.occurrences}`,
+                  }))}
+                />
+              </div>
+            </section>
+          )}
 
           <p className="text-xs text-muted-foreground">Generated {new Date(data.generated_at).toLocaleString()}</p>
         </div>
