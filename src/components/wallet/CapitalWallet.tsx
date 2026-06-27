@@ -9,6 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Clock, BookOpen, Users, Award, Coins } from "lucide-react";
 
+// Untyped alias to side-step deep generic instantiation in parallel queries.
+const sb = supabase as any;
+
 interface Wallet {
   time: { commitments_completed: number; consistency_streak_days: number };
   knowledge: { skills: number; evidence: number };
@@ -42,55 +45,57 @@ export function CapitalWallet({ userId, className }: Props) {
           equity,
           revenue,
         ] = await Promise.all([
-          supabase
+          sb
             .from("commitments")
             .select("id", { count: "exact", head: true })
             .eq("user_id", userId)
             .eq("status", "completed"),
-          supabase
+          sb
             .from("commitment_checkpoints")
             .select("created_at")
-            .eq("user_id", userId)
+            .eq("owner_id", userId)
             .order("created_at", { ascending: false })
-            .limit(30),
-          supabase
+            .limit(60),
+          sb
             .from("user_skills")
             .select("id", { count: "exact", head: true })
             .eq("user_id", userId),
-          supabase
+          sb
             .from("evidence")
             .select("id", { count: "exact", head: true })
-            .eq("user_id", userId),
-          supabase
+            .eq("captured_by", userId),
+          sb
             .from("advisor_relationships")
             .select("id", { count: "exact", head: true })
             .or(`advisor_id.eq.${userId},user_id.eq.${userId}`)
             .eq("status", "active"),
-          supabase
+          sb
             .from("contributions")
             .select("id", { count: "exact", head: true })
-            .eq("user_id", userId),
-          supabase
+            .eq("actor_id", userId),
+          sb
             .from("milestones")
             .select("id", { count: "exact", head: true })
-            .eq("user_id", userId),
-          supabase
+            .eq("achieved_by", userId),
+          sb
             .from("equity_allocations")
             .select("id", { count: "exact", head: true })
             .eq("user_id", userId),
-          supabase
+          sb
             .from("revenue_graph")
-            .select("id", { count: "exact", head: true })
+            .select("user_id")
             .eq("user_id", userId),
         ]);
 
         if (cancelled) return;
 
-        // Consistency = distinct days with a checkpoint in trailing 30d.
+        // Consistency = distinct days with a checkpoint in trailing 30d window.
         const days = new Set<string>();
-        (checkpoints.data ?? []).forEach((r: any) =>
-          days.add(String(r.created_at).slice(0, 10)),
-        );
+        const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+        ((checkpoints.data as any[]) ?? []).forEach((r) => {
+          const t = new Date(r.created_at).getTime();
+          if (t >= cutoff) days.add(String(r.created_at).slice(0, 10));
+        });
 
         setWallet({
           time: {
@@ -103,7 +108,7 @@ export function CapitalWallet({ userId, className }: Props) {
           },
           network: {
             relationships: rels.count ?? 0,
-            introductions: 0, // wired in 4D follow-up
+            introductions: 0,
           },
           reputation: {
             contributions: contribs.count ?? 0,
@@ -111,7 +116,7 @@ export function CapitalWallet({ userId, className }: Props) {
           },
           ownership: {
             equity_positions: equity.count ?? 0,
-            revenue_streams: revenue.count ?? 0,
+            revenue_streams: (revenue.data as any[] | null)?.length ?? 0,
           },
         });
       } finally {

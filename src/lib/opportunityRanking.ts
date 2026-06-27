@@ -1,23 +1,17 @@
 // Sprint 4A — opportunity ranking.
 // Consumes EXISTING primitives only. Does not create a second reputation system.
-//
-// Inputs (per candidate, vs opportunity):
-//   - Trust Block (advisor_metrics / reputation_graph projection)
-//   - Verified contributions count
-//   - Milestones earned count
-//   - Relationship health (avg)
-//   - Skill overlap with opportunity tags
-//   - Track-record density
-//   - Box overlap
-//
-// Output: ordered candidates with a rank score + an `evidence` breakdown so
+// Output: candidates ordered by an internal score + an `evidence` breakdown so
 // the UI can render evidence, not a single opaque score.
 
 import { supabase } from "@/integrations/supabase/client";
 
+// Untyped alias — the supabase generated types are union-heavy and trip
+// TS2589 when we run many .in() queries in parallel.
+const sb = supabase as any;
+
 export interface RankedCandidate {
   user_id: string;
-  rank: number; // 0..1 monotonic, NOT user-facing
+  rank: number; // internal ordering signal, NOT user-facing
   evidence: {
     contributions: number;
     milestones: number;
@@ -52,56 +46,58 @@ export async function rankCandidates({
   const [
     contribRes,
     milestoneRes,
-    relHealthRes,
+    relRes,
     skillsRes,
     trackRes,
     boxRes,
   ] = await Promise.all([
-    supabase
-      .from("contributions")
-      .select("user_id")
-      .in("user_id", candidateIds),
-    supabase
-      .from("milestones")
-      .select("user_id")
-      .in("user_id", candidateIds),
-    supabase
-      .from("relationship_health")
-      .select("user_id, score")
-      .in("user_id", candidateIds),
-    supabase
-      .from("user_skills")
-      .select("user_id, skill_id")
-      .in("user_id", candidateIds),
-    supabase
+    sb.from("contributions").select("actor_id").in("actor_id", candidateIds),
+    sb.from("milestones").select("achieved_by").in("achieved_by", candidateIds),
+    sb
+      .from("advisor_relationships")
+      .select("id, advisor_id, user_id, relationship_health(health_score)")
+      .or(
+        `advisor_id.in.(${candidateIds.join(",")}),user_id.in.(${candidateIds.join(",")})`,
+      ),
+    sb.from("user_skills").select("user_id, skill_id").in("user_id", candidateIds),
+    sb
       .from("entrepreneurial_onboarding")
       .select("user_id, completion_score")
       .in("user_id", candidateIds),
     opportunity.box_id
-      ? supabase
+      ? sb
           .from("box_advisors")
           .select("user_id")
           .eq("box_id", opportunity.box_id)
           .in("user_id", candidateIds)
-      : Promise.resolve({ data: [], error: null } as const),
+      : Promise.resolve({ data: [] as { user_id: string }[] }),
   ]);
 
-  const bag = (rows: { user_id: string }[] | null | undefined) => {
+  const countBy = <T extends Record<string, any>>(rows: T[] | null, key: keyof T) => {
     const m = new Map<string, number>();
-    (rows ?? []).forEach((r) => m.set(r.user_id, (m.get(r.user_id) ?? 0) + 1));
+    (rows ?? []).forEach((r) => {
+      const k = r[key] as unknown as string;
+      if (!k) return;
+      m.set(k, (m.get(k) ?? 0) + 1);
+    });
     return m;
   };
 
-  const contributions = bag(contribRes.data as { user_id: string }[]);
-  const milestones = bag(milestoneRes.data as { user_id: string }[]);
+  const contributions = countBy<{ actor_id: string }>(contribRes.data, "actor_id");
+  const milestones = countBy<{ achieved_by: string }>(milestoneRes.data, "achieved_by");
 
-  const health = new Map<string, number>();
-  (relHealthRes.data ?? []).forEach((r: any) => {
-    const prev = health.get(r.user_id);
-    health.set(
-      r.user_id,
-      prev == null ? r.score : (prev + r.score) / 2,
-    );
+  // Average relationship_health per candidate across all their relationships.
+  const healthAgg = new Map<string, { sum: number; n: number }>();
+  (relRes.data ?? []).forEach((r: any) => {
+    const score = r?.relationship_health?.[0]?.health_score;
+    if (score == null) return;
+    [r.advisor_id, r.user_id].forEach((uid: string) => {
+      if (!candidateIds.includes(uid)) return;
+      const cur = healthAgg.get(uid) ?? { sum: 0, n: 0 };
+      cur.sum += Number(score);
+      cur.n += 1;
+      healthAgg.set(uid, cur);
+    });
   });
 
   const skillsByUser = new Map<string, Set<string>>();
@@ -113,25 +109,23 @@ export async function rankCandidates({
 
   const track = new Map<string, number>();
   (trackRes.data ?? []).forEach((r: any) => {
-    if (r.completion_score != null) track.set(r.user_id, r.completion_score);
+    if (r.completion_score != null) track.set(r.user_id, Number(r.completion_score));
   });
 
   const boxOverlap = new Set<string>(
-    ((boxRes as { data: { user_id: string }[] | null }).data ?? []).map(
-      (r) => r.user_id,
-    ),
+    (boxRes.data ?? []).map((r: any) => r.user_id),
   );
 
   const scored = candidateIds.map((uid) => {
     const cContrib = contributions.get(uid) ?? 0;
     const cMilestones = milestones.get(uid) ?? 0;
-    const cHealth = health.get(uid) ?? null;
-    const userSkills = skillsByUser.get(uid) ?? new Set();
+    const agg = healthAgg.get(uid);
+    const cHealth = agg ? agg.sum / agg.n : null;
+    const userSkills = skillsByUser.get(uid) ?? new Set<string>();
     const overlap = wantedSkills.filter((s) => userSkills.has(s)).length;
     const cTrack = track.get(uid) ?? null;
     const inBox = boxOverlap.has(uid);
 
-    // Bounded, monotonic. NOT shown to the user. Used only for ordering.
     const rank =
       Math.min(cContrib, 10) * 0.08 +
       Math.min(cMilestones, 10) * 0.07 +

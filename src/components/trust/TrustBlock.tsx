@@ -10,6 +10,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CheckCircle2, Award, Users, Briefcase } from "lucide-react";
 
+const sb = supabase as any;
+
 interface TrustBlockData {
   natural_role: string | null;
   top_skills: string[];
@@ -42,30 +44,26 @@ export function TrustBlock({ userId, variant = "compact", className }: Props) {
           relRes,
           trackRes,
         ] = await Promise.all([
-          supabase
-            .from("profiles")
-            .select("natural_role")
-            .eq("id", userId)
-            .maybeSingle(),
-          supabase
+          sb.from("profiles").select("natural_role").eq("id", userId).maybeSingle(),
+          sb
             .from("user_skills")
             .select("skill_id, skill_tags(name)")
             .eq("user_id", userId)
             .limit(5),
-          supabase
+          sb
             .from("contributions")
             .select("id", { count: "exact", head: true })
-            .eq("user_id", userId),
-          supabase
+            .eq("actor_id", userId),
+          sb
             .from("milestones")
             .select("id", { count: "exact", head: true })
-            .eq("user_id", userId),
-          supabase
+            .eq("achieved_by", userId),
+          sb
             .from("advisor_relationships")
             .select("id", { count: "exact", head: true })
             .or(`advisor_id.eq.${userId},user_id.eq.${userId}`)
             .eq("status", "active"),
-          supabase
+          sb
             .from("entrepreneurial_onboarding")
             .select("completion_score")
             .eq("user_id", userId)
@@ -76,8 +74,8 @@ export function TrustBlock({ userId, variant = "compact", className }: Props) {
         setData({
           natural_role: (profileRes.data as any)?.natural_role ?? null,
           top_skills:
-            (skillsRes.data ?? [])
-              .map((r: any) => r.skill_tags?.name)
+            ((skillsRes.data as any[]) ?? [])
+              .map((r) => r.skill_tags?.name)
               .filter(Boolean) ?? [],
           verified_contributions: contribRes.count ?? 0,
           milestones_earned: milestonesRes.count ?? 0,
@@ -132,15 +130,13 @@ export function TrustBlock({ userId, variant = "compact", className }: Props) {
   return (
     <Card className={className}>
       <CardContent className="space-y-3 p-4">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">
-              Natural role
-            </p>
-            <p className="text-sm font-medium">
-              {data.natural_role ?? "Not yet defined"}
-            </p>
-          </div>
+        <div>
+          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+            Natural role
+          </p>
+          <p className="text-sm font-medium">
+            {data.natural_role ?? "Not yet defined"}
+          </p>
         </div>
 
         {data.top_skills.length > 0 && (
