@@ -80,6 +80,108 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_overrides: {
+        Row: {
+          actor_id: string
+          created_at: string
+          id: string
+          overridden_rule: string
+          reason: string
+          snapshot: Json
+          target_id: string
+          target_kind: string
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          id?: string
+          overridden_rule: string
+          reason: string
+          snapshot?: Json
+          target_id: string
+          target_kind: string
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          id?: string
+          overridden_rule?: string
+          reason?: string
+          snapshot?: Json
+          target_id?: string
+          target_kind?: string
+        }
+        Relationships: []
+      }
+      advisor_metrics: {
+        Row: {
+          advisor_id: string
+          approval_rate: number | null
+          average_feedback: number | null
+          computed_at: string
+          last_request_at: string | null
+          median_response_seconds: number | null
+          requests_completed: number
+          requests_received: number
+        }
+        Insert: {
+          advisor_id: string
+          approval_rate?: number | null
+          average_feedback?: number | null
+          computed_at?: string
+          last_request_at?: string | null
+          median_response_seconds?: number | null
+          requests_completed?: number
+          requests_received?: number
+        }
+        Update: {
+          advisor_id?: string
+          approval_rate?: number | null
+          average_feedback?: number | null
+          computed_at?: string
+          last_request_at?: string | null
+          median_response_seconds?: number | null
+          requests_completed?: number
+          requests_received?: number
+        }
+        Relationships: []
+      }
+      advisor_readiness: {
+        Row: {
+          computed_at: string
+          eligibility_reason: string | null
+          eligible: boolean
+          last_activity_at: string | null
+          nr_complete: boolean
+          reputation_score: number
+          track_record_count: number
+          user_id: string
+          verified_skills: number
+        }
+        Insert: {
+          computed_at?: string
+          eligibility_reason?: string | null
+          eligible?: boolean
+          last_activity_at?: string | null
+          nr_complete?: boolean
+          reputation_score?: number
+          track_record_count?: number
+          user_id: string
+          verified_skills?: number
+        }
+        Update: {
+          computed_at?: string
+          eligibility_reason?: string | null
+          eligible?: boolean
+          last_activity_at?: string | null
+          nr_complete?: boolean
+          reputation_score?: number
+          track_record_count?: number
+          user_id?: string
+          verified_skills?: number
+        }
+        Relationships: []
+      }
       applications: {
         Row: {
           accepted_at: string | null
@@ -137,6 +239,151 @@ export type Database = {
           submitted_at?: string
           updated_at?: string
           withdrawn_at?: string | null
+        }
+        Relationships: []
+      }
+      box_advisors: {
+        Row: {
+          accepting_requests: boolean
+          approved_at: string | null
+          approved_by: string | null
+          box_id: string
+          capacity: number
+          created_at: string
+          override_reason: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accepting_requests?: boolean
+          approved_at?: string | null
+          approved_by?: string | null
+          box_id: string
+          capacity?: number
+          created_at?: string
+          override_reason?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accepting_requests?: boolean
+          approved_at?: string | null
+          approved_by?: string | null
+          box_id?: string
+          capacity?: number
+          created_at?: string
+          override_reason?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "box_advisors_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
+            referencedRelation: "boxes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      box_inbound_requests: {
+        Row: {
+          accepted_at: string | null
+          archived_at: string | null
+          assigned_advisor_id: string | null
+          assigned_at: string | null
+          box_id: string | null
+          completed_at: string | null
+          context: string | null
+          created_at: string
+          id: string
+          metadata: Json
+          request_type: string
+          requester_id: string
+          status: string
+          subject_entity_id: string | null
+          subject_entity_type: string | null
+          topic: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          archived_at?: string | null
+          assigned_advisor_id?: string | null
+          assigned_at?: string | null
+          box_id?: string | null
+          completed_at?: string | null
+          context?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          request_type?: string
+          requester_id: string
+          status?: string
+          subject_entity_id?: string | null
+          subject_entity_type?: string | null
+          topic: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          archived_at?: string | null
+          assigned_advisor_id?: string | null
+          assigned_at?: string | null
+          box_id?: string | null
+          completed_at?: string | null
+          context?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          request_type?: string
+          requester_id?: string
+          status?: string
+          subject_entity_id?: string | null
+          subject_entity_type?: string | null
+          topic?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "box_inbound_requests_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
+            referencedRelation: "boxes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      boxes: {
+        Row: {
+          created_at: string
+          description: string | null
+          domain: string | null
+          id: string
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          domain?: string | null
+          id?: string
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          domain?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -930,6 +1177,45 @@ export type Database = {
           id?: string
           payload_schema?: Json
           source_module?: string
+        }
+        Relationships: []
+      }
+      evidence: {
+        Row: {
+          captured_at: string
+          captured_by: string
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          kind: string
+          payload: Json
+          summary: string | null
+          url: string | null
+        }
+        Insert: {
+          captured_at?: string
+          captured_by: string
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          kind: string
+          payload?: Json
+          summary?: string | null
+          url?: string | null
+        }
+        Update: {
+          captured_at?: string
+          captured_by?: string
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          kind?: string
+          payload?: Json
+          summary?: string | null
+          url?: string | null
         }
         Relationships: []
       }
@@ -3090,6 +3376,7 @@ export type Database = {
           current_episode: string
           description: string
           development_completed_at: string | null
+          evidence_count: number
           growth_completed_at: string | null
           id: string
           is_looking_for_cobuilders: boolean | null
@@ -3098,6 +3385,7 @@ export type Database = {
           ladder_product_at: string | null
           ladder_solution_at: string | null
           ladder_structure_at: string | null
+          last_evidence_at: string | null
           review_status: string | null
           reviewed_at: string | null
           roles_needed: string[] | null
@@ -3107,6 +3395,8 @@ export type Database = {
           status: string | null
           title: string
           updated_at: string
+          validated_at: string | null
+          validated_by: string | null
           validation_completed_at: string | null
         }
         Insert: {
@@ -3116,6 +3406,7 @@ export type Database = {
           current_episode?: string
           description: string
           development_completed_at?: string | null
+          evidence_count?: number
           growth_completed_at?: string | null
           id?: string
           is_looking_for_cobuilders?: boolean | null
@@ -3124,6 +3415,7 @@ export type Database = {
           ladder_product_at?: string | null
           ladder_solution_at?: string | null
           ladder_structure_at?: string | null
+          last_evidence_at?: string | null
           review_status?: string | null
           reviewed_at?: string | null
           roles_needed?: string[] | null
@@ -3133,6 +3425,8 @@ export type Database = {
           status?: string | null
           title: string
           updated_at?: string
+          validated_at?: string | null
+          validated_by?: string | null
           validation_completed_at?: string | null
         }
         Update: {
@@ -3142,6 +3436,7 @@ export type Database = {
           current_episode?: string
           description?: string
           development_completed_at?: string | null
+          evidence_count?: number
           growth_completed_at?: string | null
           id?: string
           is_looking_for_cobuilders?: boolean | null
@@ -3150,6 +3445,7 @@ export type Database = {
           ladder_product_at?: string | null
           ladder_solution_at?: string | null
           ladder_structure_at?: string | null
+          last_evidence_at?: string | null
           review_status?: string | null
           reviewed_at?: string | null
           roles_needed?: string[] | null
@@ -3159,6 +3455,8 @@ export type Database = {
           status?: string | null
           title?: string
           updated_at?: string
+          validated_at?: string | null
+          validated_by?: string | null
           validation_completed_at?: string | null
         }
         Relationships: []
@@ -4075,6 +4373,18 @@ export type Database = {
       is_org_member: { Args: { _org: string; _user: string }; Returns: boolean }
       is_plan_shared_with_me: { Args: { _plan_id: string }; Returns: boolean }
       legacy_expertise_calc: { Args: { _user_id: string }; Returns: Json }
+      match_advisors_for_request: {
+        Args: { _limit?: number; _request_id: string }
+        Returns: {
+          advisor_id: string
+          box_id: string
+          capacity: number
+          current_load: number
+          match_score: number
+          median_response_seconds: number
+          reputation_score: number
+        }[]
+      }
       opportunity_lifecycle_rank: { Args: { _state: string }; Returns: number }
       pick_growth_loop_variant: {
         Args: { _loop_key: string; _user_id: string }
@@ -4085,6 +4395,14 @@ export type Database = {
       }
       promote_profile_draft: {
         Args: { _skills?: string[]; _summary?: string; _title?: string }
+        Returns: undefined
+      }
+      recompute_advisor_metrics: {
+        Args: { _advisor_id: string }
+        Returns: undefined
+      }
+      recompute_advisor_readiness: {
+        Args: { _user_id: string }
         Returns: undefined
       }
       recompute_expertise: { Args: { _user_id: string }; Returns: undefined }
@@ -4117,6 +4435,15 @@ export type Database = {
       run_lifecycle_integrity_checks: { Args: never; Returns: string }
       seed_cold_start_expertise: { Args: { _user_id: string }; Returns: number }
       test_growth_loop_dispatch: { Args: { _user_id: string }; Returns: Json }
+      transition_box_request: {
+        Args: {
+          _advisor?: string
+          _meta?: Json
+          _new_status: string
+          _request_id: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_org_role: "viewer" | "editor" | "admin"
@@ -4287,6 +4614,22 @@ export type Database = {
         | "draft_edited"
         | "draft_regenerated"
         | "draft_dismissed"
+        | "idea_solution_canvas_completed"
+        | "idea_discovery_entered"
+        | "idea_validation_approved"
+        | "idea_validation_extended"
+        | "idea_validation_revoked"
+        | "idea_evidence_added"
+        | "advisor_eligibility_changed"
+        | "advisor_approved"
+        | "advisor_paused"
+        | "advisor_removed"
+        | "box_request_created"
+        | "box_request_accepted"
+        | "box_request_matched"
+        | "box_request_completed"
+        | "box_request_archived"
+        | "admin_override_recorded"
       graph_node_type:
         | "user"
         | "skill"
@@ -4631,6 +4974,22 @@ export const Constants = {
         "draft_edited",
         "draft_regenerated",
         "draft_dismissed",
+        "idea_solution_canvas_completed",
+        "idea_discovery_entered",
+        "idea_validation_approved",
+        "idea_validation_extended",
+        "idea_validation_revoked",
+        "idea_evidence_added",
+        "advisor_eligibility_changed",
+        "advisor_approved",
+        "advisor_paused",
+        "advisor_removed",
+        "box_request_created",
+        "box_request_accepted",
+        "box_request_matched",
+        "box_request_completed",
+        "box_request_archived",
+        "admin_override_recorded",
       ],
       graph_node_type: [
         "user",

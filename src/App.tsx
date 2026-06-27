@@ -79,6 +79,7 @@ import PublicProfile from "./pages/PublicProfile";
 import Characters from "./pages/Characters";
 import JourneyTimeline from "./pages/JourneyTimeline";
 import ActivationHub from "./pages/ActivationHub";
+import AdvisorWorkQueue from "./pages/AdvisorWorkQueue";
 
 
 const queryClient = new QueryClient();
@@ -120,6 +121,7 @@ const App = () => (
                   <Route path="/entrepreneurial-onboarding" element={<Navigate to="/entrepreneurial-track" replace />} />
                   <Route path="/choose-path" element={<Navigate to="/onboarding" replace />} />
                   <Route path="/activation" element={<ProtectedRoute><ActivationHub /></ProtectedRoute>} />
+                  <Route path="/advisor" element={<ProtectedRoute><AdvisorWorkQueue /></ProtectedRoute>} />
                   <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                   <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
