@@ -162,6 +162,7 @@ export default function BetaConsole() {
   const [err, setErr] = useState<string | null>(null);
   const [audit, setAudit] = useState<EventAudit | null>(null);
   const [review, setReview] = useState<WeeklyReview | null>(null);
+  const [readiness, setReadiness] = useState<BetaReadinessRow[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -177,17 +178,19 @@ export default function BetaConsole() {
   async function refresh() {
     setLoading(true);
     setErr(null);
-    const [metricsRes, alertsRes, auditRes, reviewRes] = await Promise.all([
+    const [metricsRes, alertsRes, auditRes, reviewRes, readinessRes] = await Promise.all([
       supabase.rpc("get_ops_metrics"),
       supabase.rpc("get_system_alerts"),
       supabase.rpc("get_event_audit"),
       supabase.rpc("get_weekly_review"),
+      supabase.rpc("get_beta_readiness"),
     ]);
     if (metricsRes.error) setErr(metricsRes.error.message);
     else setData(metricsRes.data as OpsMetrics);
     if (!alertsRes.error) setAlerts((alertsRes.data as SystemAlert[]) ?? []);
     if (!auditRes.error) setAudit(auditRes.data as EventAudit);
     if (!reviewRes.error) setReview(reviewRes.data as WeeklyReview);
+    if (!readinessRes.error) setReadiness((readinessRes.data as BetaReadinessRow[]) ?? []);
     setLoading(false);
   }
 
