@@ -25,7 +25,11 @@ import {
   Rocket,
   ShieldCheck,
   ShieldOff,
+  Crown,
 } from "lucide-react";
+import { AddAdvisorDialog } from "./AddAdvisorDialog";
+import { AssignBoxAdminDialog } from "./AssignBoxAdminDialog";
+
 
 interface AdminUserPreviewDialogProps {
   open: boolean;
