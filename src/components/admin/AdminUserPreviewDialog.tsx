@@ -356,7 +356,65 @@ export function AdminUserPreviewDialog({
               </Button>
             </CardContent>
           </Card>
+
+          {/* Box Advisor Assignment */}
+          <Card className="border-dashed">
+            <CardContent className="pt-4 space-y-3">
+              <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-b4-teal" />
+                Box Advisor
+              </h4>
+              <p className="text-xs text-muted-foreground">
+                Appoint this user as an advisor in a Box. If the Box does not
+                exist yet, it will be generated automatically with the demo
+                template.
+              </p>
+              <Button
+                size="sm"
+                className="w-full"
+                onClick={() => setAdvisorDialogOpen(true)}
+              >
+                Assign as Box Advisor
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Box Admin Assignment */}
+          <Card className="border-dashed">
+            <CardContent className="pt-4 space-y-3">
+              <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <Crown className="w-4 h-4 text-b4-navy" />
+                Box Admin
+              </h4>
+              <p className="text-xs text-muted-foreground">
+                Grant this user Box-level admin permissions. Missing Boxes are
+                created on the fly. Existing demo content stays intact.
+              </p>
+              <Button
+                size="sm"
+                className="w-full"
+                onClick={() => setBoxAdminDialogOpen(true)}
+              >
+                Assign as Box Admin
+              </Button>
+            </CardContent>
+          </Card>
         </div>
+
+        <AddAdvisorDialog
+          open={advisorDialogOpen}
+          onOpenChange={setAdvisorDialogOpen}
+          userId={user.id}
+          userName={user.profile?.full_name ?? user.email}
+          onAdded={onUserUpdated}
+        />
+        <AssignBoxAdminDialog
+          open={boxAdminDialogOpen}
+          onOpenChange={setBoxAdminDialogOpen}
+          userId={user.id}
+          userName={user.profile?.full_name ?? user.email}
+          onAdded={onUserUpdated}
+        />
       </DialogContent>
     </Dialog>
   );
