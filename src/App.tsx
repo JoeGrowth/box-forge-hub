@@ -162,7 +162,7 @@ const App = () => (
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/privacy" element={<Privacy />} />
                   <Route path="/terms" element={<Terms />} />
-                  <Route path="/decoder" element={<NRDecoder />} />
+                  <Route path="/decoder" element={<ProtectedRoute><NRDecoder /></ProtectedRoute>} />
                   <Route path="/coming-soon" element={<ComingSoon />} />
                   <Route path="/paths" element={<Paths />} />
                   <Route path="/career" element={<Career />} />
