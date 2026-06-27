@@ -470,6 +470,15 @@ const Entrepreneurship = () => {
         <main className="pt-20">
           <section className="py-10">
             <div className="container mx-auto px-4">
+              {/* Back to Paths */}
+              <div className="mb-6">
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/paths">
+                    <ArrowLeft className="w-4 h-4 mr-1" /> Back to Paths
+                  </Link>
+                </Button>
+              </div>
+
               {/* Header */}
               <div className="flex items-center justify-between mb-8">
                 <div>
