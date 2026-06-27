@@ -74,9 +74,18 @@ const moreLinks = [
   { name: "Distribution per Training Mission", path: "/trainingmanagement", icon: GraduationCap },
 ];
 
+// Synchronous read of cached admin flag so first paint is stable.
+function readCachedAdmin(userId: string | undefined): boolean {
+  if (!userId) return false;
+  try {
+    return localStorage.getItem(`b4_is_admin:${userId}`) === "1";
+  } catch {
+    return false;
+  }
+}
+
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [engineOpen, setEngineOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
@@ -85,21 +94,18 @@ export function Navbar() {
   const { user, signOut, loading } = useAuth();
   const { canAccessBoosting, canAccessScaling, potentialRole } = useUserStatus();
 
-  // Hydrate admin flag synchronously from localStorage so the navbar layout
-  // is stable on first paint (no width jump when Admin button appears after
-  // an async role check). Then re-verify in the background and update cache.
+  // Hydrate synchronously from localStorage (lazy initializer) so the Admin
+  // button is present on first paint when cached — no flash, no layout shift.
+  const [isAdmin, setIsAdmin] = useState<boolean>(() => readCachedAdmin(user?.id));
+
+  // Re-sync when user changes (login/logout) and re-verify in background.
   useEffect(() => {
     if (!user) {
       setIsAdmin(false);
       return;
     }
+    setIsAdmin(readCachedAdmin(user.id));
     const cacheKey = `b4_is_admin:${user.id}`;
-    try {
-      const cached = localStorage.getItem(cacheKey);
-      if (cached === "1") setIsAdmin(true);
-      else if (cached === "0") setIsAdmin(false);
-    } catch {}
-
     let cancelled = false;
     (async () => {
       const { data } = await supabase
@@ -119,6 +125,7 @@ export function Navbar() {
       cancelled = true;
     };
   }, [user]);
+
 
   const isEngineActive = useMemo(() => engineLinks.some((l) => location.pathname === l.path), [location.pathname]);
 
