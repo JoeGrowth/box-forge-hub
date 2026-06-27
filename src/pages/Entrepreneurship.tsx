@@ -594,7 +594,7 @@ const Entrepreneurship = () => {
                   ) : (
                     <div className="space-y-4">
                       {collaborations.map((project) => (
-                        <MyProjectCard key={project.id} project={project} />
+                        <MyProjectCard key={project.id} project={project} isOwner={false} />
                       ))}
                     </div>
                   )}
