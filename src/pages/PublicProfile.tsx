@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { useTrust, trustLevelStyle } from "@/hooks/useTrust";
@@ -12,14 +13,11 @@ import { useReputation, reputationLevelStyle } from "@/hooks/useReputation";
 import { useOwnership, ownershipLevelStyle } from "@/hooks/useOwnership";
 import { useRevenue } from "@/hooks/useRevenue";
 import { useExpertise } from "@/hooks/useExpertise";
-import { ShieldCheck, Award, Briefcase, MapPin, Link as LinkIcon, Copy, Check, Share2, Loader2 } from "lucide-react";
+import { ShieldCheck, Award, Briefcase, MapPin, Link as LinkIcon, Copy, Check, Share2, Loader2, Users, Sparkles, Handshake } from "lucide-react";
 import { toast } from "sonner";
 import { SharedRelationshipsCard } from "@/components/relationships/SharedRelationshipsCard";
-
-// Public profile surface at /u/:slug.
-// The slug is `<kebab-name>-<first-8-of-user-id>`. Anonymous and
-// authenticated requests are both allowed (RLS exposes only approved,
-// non-deleted profiles to anon/authenticated).
+import { TrustBlock } from "@/components/trust/TrustBlock";
+import { ActivityFeed } from "@/components/profile/ActivityFeed";
 
 interface PublicProfile {
   user_id: string;
@@ -42,7 +40,6 @@ export function profileSlug(fullName: string | null, userId: string): string {
     .trim()
     .replace(/\s+/g, "-")
     .slice(0, 40) || "member";
-  // Append the full uuid so resolution is unambiguous and avoids ilike-on-uuid.
   return `${base}-${userId}`;
 }
 
@@ -58,6 +55,9 @@ export default function PublicProfile() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [contributions, setContributions] = useState<any[]>([]);
+  const [opportunities, setOpportunities] = useState<any[]>([]);
+  const [relationships, setRelationships] = useState<any[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -75,6 +75,15 @@ export default function PublicProfile() {
       if (!data) { setNotFound(true); }
       else setProfile(data as PublicProfile);
       setLoading(false);
+
+      // Fire-and-forget side projections
+      supabase.from("contributions").select("id, kind, summary, verified_at, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(20)
+        .then(({ data }) => !cancelled && setContributions(data ?? []));
+      supabase.from("opportunity_applications").select("id, status, opportunity_id, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(20)
+        .then(({ data }) => !cancelled && setOpportunities(data ?? []));
+      supabase.from("advisor_relationships").select("id, kind, status, created_at, advisor_id, founder_id")
+        .or(`advisor_id.eq.${userId},founder_id.eq.${userId}`).limit(20)
+        .then(({ data }) => !cancelled && setRelationships(data ?? []));
     })();
     return () => { cancelled = true; };
   }, [slug]);
@@ -86,32 +95,6 @@ export default function PublicProfile() {
   const { revenue } = useRevenue(userId);
   const { expertise } = useExpertise(userId);
 
-  const fullUrl = typeof window !== "undefined" ? `${window.location.origin}/u/${slug}` : `/u/${slug}`;
-  const [sharing, setSharing] = useState(false);
-  const handleShare = async () => {
-    setSharing(true);
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: `${name} — ${title}`,
-          text: description,
-          url: fullUrl,
-        });
-      } else {
-        await navigator.clipboard.writeText(fullUrl);
-        setCopied(true);
-        toast.success("Profile link copied");
-        setTimeout(() => setCopied(false), 1500);
-      }
-    } catch (e: any) {
-      if (e.name !== "AbortError") {
-        toast.error("Could not share");
-      }
-    } finally {
-      setSharing(false);
-    }
-  };
-
   const name = profile?.full_name ?? "Member";
   const title = profile?.professional_title ?? profile?.preferred_sector ?? "Box4Solutions member";
   const description = (profile?.summary_statement ?? profile?.bio ?? `${name} on Box4Solutions`).slice(0, 160);
@@ -120,6 +103,26 @@ export default function PublicProfile() {
   const trustStyle = trust && trust.level !== "unverified" ? trustLevelStyle(trust.level) : null;
   const repStyle = reputation ? reputationLevelStyle(reputation.reputation_level) : null;
   const ownStyle = ownership ? ownershipLevelStyle(ownership.ownership_level) : null;
+
+  const fullUrl = typeof window !== "undefined" ? `${window.location.origin}/u/${slug}` : `/u/${slug}`;
+  const [sharing, setSharing] = useState(false);
+  const handleShare = async () => {
+    setSharing(true);
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: `${name} — ${title}`, text: description, url: fullUrl });
+      } else {
+        await navigator.clipboard.writeText(fullUrl);
+        setCopied(true);
+        toast.success("Profile link copied");
+        setTimeout(() => setCopied(false), 1500);
+      }
+    } catch (e: any) {
+      if (e.name !== "AbortError") toast.error("Could not share");
+    } finally {
+      setSharing(false);
+    }
+  };
 
   useEffect(() => {
     if (!profile) return;
@@ -162,9 +165,7 @@ export default function PublicProfile() {
         <Navbar />
         <main className="container mx-auto px-4 py-24 max-w-2xl text-center flex-1">
           <h1 className="font-display text-3xl font-bold mb-3">Profile not available</h1>
-          <p className="text-muted-foreground mb-6">
-            This member's profile is private or doesn't exist.
-          </p>
+          <p className="text-muted-foreground mb-6">This member's profile is private or doesn't exist.</p>
           <Button asChild><Link to="/cobuilders">Explore approved members</Link></Button>
         </main>
         <Footer />
@@ -172,12 +173,14 @@ export default function PublicProfile() {
     );
   }
 
+  const verifiedContributions = contributions.filter((c) => c.verified_at).length;
+  const acceptedOpps = opportunities.filter((o) => o.status === "accepted").length;
+  const collaborators = new Set(relationships.map((r) => r.advisor_id === profile.user_id ? r.founder_id : r.advisor_id)).size;
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
-
-
-      <main className="container mx-auto px-4 py-12 max-w-4xl flex-1 space-y-6">
+      <main className="container mx-auto px-4 py-12 max-w-5xl flex-1 space-y-6">
         {/* Header */}
         <div className="bg-gradient-to-br from-b4-navy via-b4-navy/95 to-b4-navy/85 rounded-2xl p-8 text-white">
           <div className="flex flex-col sm:flex-row items-start gap-6">
@@ -191,21 +194,9 @@ export default function PublicProfile() {
               <h1 className="font-display text-3xl md:text-4xl font-bold mb-1">{name}</h1>
               <p className="text-white/80 mb-4">{title}</p>
               <div className="flex flex-wrap gap-2">
-                {trustStyle && (
-                  <Badge variant="outline" className={`gap-1 ${trustStyle.className}`}>
-                    <ShieldCheck className="w-3 h-3" /> Trust: {trustStyle.label}
-                  </Badge>
-                )}
-                {repStyle && (
-                  <Badge variant="outline" className={repStyle.className}>
-                    <Award className="w-3 h-3 mr-1" /> {repStyle.label}
-                  </Badge>
-                )}
-                {ownStyle && (
-                  <Badge variant="outline" className={ownStyle.className}>
-                    Ownership: {ownStyle.label}
-                  </Badge>
-                )}
+                {trustStyle && <Badge variant="outline" className={`gap-1 ${trustStyle.className}`}><ShieldCheck className="w-3 h-3" /> Trust: {trustStyle.label}</Badge>}
+                {repStyle && <Badge variant="outline" className={repStyle.className}><Award className="w-3 h-3 mr-1" /> {repStyle.label}</Badge>}
+                {ownStyle && <Badge variant="outline" className={ownStyle.className}>Ownership: {ownStyle.label}</Badge>}
                 {profile.preferred_sector && (
                   <Badge variant="outline" className="bg-white/10 text-white border-white/20">
                     <MapPin className="w-3 h-3 mr-1" /> {profile.preferred_sector}
@@ -219,66 +210,182 @@ export default function PublicProfile() {
           </div>
         </div>
 
-        {/* Summary */}
-        {(profile.summary_statement || profile.bio) && (
-          <Card>
-            <CardHeader><CardTitle className="text-lg">About</CardTitle></CardHeader>
-            <CardContent>
-              <p className="text-foreground whitespace-pre-line leading-relaxed">
-                {profile.summary_statement || profile.bio}
-              </p>
-            </CardContent>
-          </Card>
-        )}
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="w-full justify-start flex-wrap h-auto">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="contributions">Contributions</TabsTrigger>
+            <TabsTrigger value="relationships">Relationships</TabsTrigger>
+            <TabsTrigger value="opportunities">Opportunities</TabsTrigger>
+            <TabsTrigger value="track">Track Record</TabsTrigger>
+            <TabsTrigger value="activity">Activity</TabsTrigger>
+          </TabsList>
 
-        {/* Six-graph signals */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <SignalCard label="Expertise" value={expertise ? `${expertise.tags?.length ?? 0} skills` : "—"} sub={expertise?.level ?? null} />
-          <SignalCard label="Trust" value={trust?.level ?? "—"} sub={trust ? `${trust.verifiedCount} verified` : null} />
-          <SignalCard label="Reputation" value={reputation?.reputation_level ?? "—"} sub={reputation ? `${Math.round(reputation.reputation_score)} pts` : null} />
-          <SignalCard label="Revenue" value={revenue ? `${revenue.transaction_count}` : "—"} sub={revenue ? `${revenue.completed_value_count} completed` : null} />
-        </div>
+          {/* Overview answers the four trust questions */}
+          <TabsContent value="overview" className="space-y-6 mt-6">
+            <div className="grid md:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader><CardTitle className="text-base flex items-center gap-2"><ShieldCheck className="w-4 h-4" /> Why trust this person?</CardTitle></CardHeader>
+                <CardContent>
+                  <TrustBlock userId={profile.user_id} variant="inline" />
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader><CardTitle className="text-base flex items-center gap-2"><Sparkles className="w-4 h-4" /> What have they built?</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-foreground">{verifiedContributions}</div>
+                  <p className="text-xs text-muted-foreground">verified contributions</p>
+                  {contributions.length > 0 && (
+                    <p className="text-sm text-foreground mt-2 line-clamp-2">
+                      Latest: {contributions[0].summary ?? contributions[0].kind}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader><CardTitle className="text-base flex items-center gap-2"><Users className="w-4 h-4" /> Who have they collaborated with?</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-foreground">{collaborators}</div>
+                  <p className="text-xs text-muted-foreground">collaborators</p>
+                  <SharedRelationshipsCard profileUserId={profile.user_id} />
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader><CardTitle className="text-base flex items-center gap-2"><Award className="w-4 h-4" /> What opportunities have they earned?</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-foreground">{acceptedOpps}</div>
+                  <p className="text-xs text-muted-foreground">accepted opportunities</p>
+                </CardContent>
+              </Card>
+            </div>
 
-        {/* Skills */}
-        {skills.length > 0 && (
-          <Card>
-            <CardHeader><CardTitle className="text-lg">Skills</CardTitle></CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {skills.map((s) => (
-                  <Badge key={s} variant="secondary">{s}</Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+            {(profile.summary_statement || profile.bio) && (
+              <Card>
+                <CardHeader><CardTitle className="text-base">About</CardTitle></CardHeader>
+                <CardContent>
+                  <p className="text-foreground whitespace-pre-line leading-relaxed">{profile.summary_statement || profile.bio}</p>
+                </CardContent>
+              </Card>
+            )}
 
-        {/* Experience */}
-        {(profile.years_of_experience || profile.key_projects) && (
-          <Card>
-            <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Briefcase className="w-5 h-5" /> Experience</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
-              {profile.years_of_experience != null && (
-                <p className="text-sm text-muted-foreground">{profile.years_of_experience} years of experience</p>
-              )}
-              {profile.key_projects && (
-                <p className="text-foreground whitespace-pre-line">{profile.key_projects}</p>
-              )}
-            </CardContent>
-          </Card>
-        )}
+            {skills.length > 0 && (
+              <Card>
+                <CardHeader><CardTitle className="text-base">Skills</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {skills.map((s) => <Badge key={s} variant="secondary">{s}</Badge>)}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
 
-        {profile.education_certifications && (
-          <Card>
-            <CardHeader><CardTitle className="text-lg">Education & Certifications</CardTitle></CardHeader>
-            <CardContent>
-              <p className="text-foreground whitespace-pre-line">{profile.education_certifications}</p>
-            </CardContent>
-          </Card>
-        )}
-        <SharedRelationshipsCard profileUserId={profile.user_id} />
+          <TabsContent value="contributions" className="mt-6">
+            <Card>
+              <CardHeader><CardTitle className="text-base">Contributions</CardTitle></CardHeader>
+              <CardContent>
+                {contributions.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No contributions recorded yet.</p>
+                ) : (
+                  <ul className="space-y-3">
+                    {contributions.map((c) => (
+                      <li key={c.id} className="flex items-start gap-3 pb-3 border-b last:border-0">
+                        <Sparkles className="w-4 h-4 text-primary mt-0.5" />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{c.summary ?? c.kind}</p>
+                          <div className="flex gap-2 mt-1">
+                            <Badge variant="outline" className="text-[10px]">{c.kind}</Badge>
+                            {c.verified_at && <Badge className="text-[10px] bg-emerald-500/15 text-emerald-700 border-emerald-500/30">verified</Badge>}
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        {/* CTA */}
+          <TabsContent value="relationships" className="mt-6 space-y-4">
+            <SharedRelationshipsCard profileUserId={profile.user_id} />
+            <Card>
+              <CardHeader><CardTitle className="text-base">All relationships</CardTitle></CardHeader>
+              <CardContent>
+                {relationships.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No relationships yet.</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {relationships.map((r) => (
+                      <li key={r.id} className="flex items-center justify-between py-2 border-b last:border-0">
+                        <div className="flex items-center gap-2">
+                          <Handshake className="w-4 h-4 text-primary" />
+                          <span className="text-sm">{r.kind ?? "relationship"}</span>
+                        </div>
+                        <Badge variant="outline" className="text-[10px]">{r.status}</Badge>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="opportunities" className="mt-6">
+            <Card>
+              <CardHeader><CardTitle className="text-base">Opportunities earned</CardTitle></CardHeader>
+              <CardContent>
+                {opportunities.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No opportunity activity yet.</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {opportunities.map((o) => (
+                      <li key={o.id} className="flex items-center justify-between py-2 border-b last:border-0">
+                        <span className="text-sm">Opportunity #{String(o.opportunity_id).slice(0, 8)}</span>
+                        <Badge variant="outline" className="text-[10px]">{o.status}</Badge>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="track" className="mt-6 space-y-4">
+            {(profile.years_of_experience || profile.key_projects) && (
+              <Card>
+                <CardHeader><CardTitle className="text-base flex items-center gap-2"><Briefcase className="w-4 h-4" /> Experience</CardTitle></CardHeader>
+                <CardContent className="space-y-3">
+                  {profile.years_of_experience != null && (
+                    <p className="text-sm text-muted-foreground">{profile.years_of_experience} years of experience</p>
+                  )}
+                  {profile.key_projects && (
+                    <p className="text-foreground whitespace-pre-line">{profile.key_projects}</p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+            {profile.education_certifications && (
+              <Card>
+                <CardHeader><CardTitle className="text-base">Education & Certifications</CardTitle></CardHeader>
+                <CardContent>
+                  <p className="text-foreground whitespace-pre-line">{profile.education_certifications}</p>
+                </CardContent>
+              </Card>
+            )}
+            {!profile.years_of_experience && !profile.key_projects && !profile.education_certifications && (
+              <p className="text-sm text-muted-foreground">No track record entries yet.</p>
+            )}
+          </TabsContent>
+
+          <TabsContent value="activity" className="mt-6">
+            <Card>
+              <CardHeader><CardTitle className="text-base">Public activity stream</CardTitle></CardHeader>
+              <CardContent>
+                <ActivityFeed userId={profile.user_id} limit={50} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
         <div className="rounded-2xl border border-border bg-card p-6 text-center">
           <p className="text-muted-foreground mb-3">Want a profile like this?</p>
           <Button asChild size="lg">
@@ -286,18 +393,7 @@ export default function PublicProfile() {
           </Button>
         </div>
       </main>
-
       <Footer />
-    </div>
-  );
-}
-
-function SignalCard({ label, value, sub }: { label: string; value: string; sub?: string | null }) {
-  return (
-    <div className="rounded-xl border border-border bg-card p-4">
-      <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">{label}</div>
-      <div className="font-display text-xl font-bold text-foreground capitalize">{value}</div>
-      {sub && <div className="text-xs text-muted-foreground mt-1 capitalize">{sub}</div>}
     </div>
   );
 }
