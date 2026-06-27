@@ -110,19 +110,38 @@ export function AddAdvisorDialog({
   }, [open, userId]);
 
   const eligible = readiness?.eligible === true;
+  const isCreatingBox = boxId === NEW_BOX;
+  const newBoxValid =
+    isCreatingBox &&
+    newBoxName.trim().length >= 3 &&
+    /^[a-z0-9-]{3,}$/.test(newBoxSlug.trim());
   const alreadyInBox =
-    boxId != null && existing.some((e) => e.box_id === boxId);
+    !isCreatingBox && boxId != null && existing.some((e) => e.box_id === boxId);
   const requireOverride = !eligible;
   const canSubmit =
     !!boxId &&
     !alreadyInBox &&
     !submitting &&
+    (!isCreatingBox || newBoxValid) &&
     (!requireOverride || overrideReason.trim().length >= 10);
 
   const handleSubmit = async () => {
     if (!userId || !admin || !boxId) return;
     setSubmitting(true);
     try {
+      // 0) Create the Box if requested
+      let targetBoxId = boxId;
+      if (isCreatingBox) {
+        const slug = newBoxSlug.trim();
+        const { data: created, error: createErr } = await (supabase as any)
+          .from("boxes")
+          .insert({ slug, name: newBoxName.trim() })
+          .select("id")
+          .single();
+        if (createErr) throw createErr;
+        targetBoxId = created.id;
+      }
+
       // 1) Override audit (only when overriding ineligibility)
       if (requireOverride) {
         const { error: ovErr } = await (supabase as any)
@@ -134,7 +153,7 @@ export function AddAdvisorDialog({
             overridden_rule: "advisor_readiness.eligible",
             reason: overrideReason.trim(),
             snapshot: {
-              box_id: boxId,
+              box_id: targetBoxId,
               readiness: readiness ?? null,
             },
           });
@@ -147,7 +166,7 @@ export function AddAdvisorDialog({
         .upsert(
           {
             user_id: userId,
-            box_id: boxId,
+            box_id: targetBoxId,
             status: "active",
             approved_by: admin.id,
             approved_at: new Date().toISOString(),
@@ -174,6 +193,7 @@ export function AddAdvisorDialog({
       setSubmitting(false);
     }
   };
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
