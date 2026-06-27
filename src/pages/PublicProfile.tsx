@@ -76,14 +76,16 @@ export default function PublicProfile() {
       else setProfile(data as PublicProfile);
       setLoading(false);
 
-      // Fire-and-forget side projections
-      supabase.from("contributions").select("id, kind, summary, verified_at, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(20)
-        .then(({ data }) => !cancelled && setContributions(data ?? []));
-      supabase.from("opportunity_applications").select("id, status, opportunity_id, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(20)
-        .then(({ data }) => !cancelled && setOpportunities(data ?? []));
-      supabase.from("advisor_relationships").select("id, kind, status, created_at, advisor_id, founder_id")
-        .or(`advisor_id.eq.${userId},founder_id.eq.${userId}`).limit(20)
-        .then(({ data }) => !cancelled && setRelationships(data ?? []));
+      // Side projections
+      const [cRes, oRes, rRes] = await Promise.all([
+        supabase.from("contributions").select("id, kind, summary, verified_at, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(20),
+        supabase.from("opportunity_applications").select("id, status, opportunity_id, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(20),
+        supabase.from("advisor_relationships").select("id, kind, status, created_at, advisor_id, founder_id").or(`advisor_id.eq.${userId},founder_id.eq.${userId}`).limit(20),
+      ]);
+      if (cancelled) return;
+      setContributions((cRes.data as any[]) ?? []);
+      setOpportunities((oRes.data as any[]) ?? []);
+      setRelationships((rRes.data as any[]) ?? []);
     })();
     return () => { cancelled = true; };
   }, [slug]);
