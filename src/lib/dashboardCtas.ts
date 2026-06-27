@@ -5,7 +5,7 @@
 // Both are pure functions so they can be unit-tested without React.
 
 import {
-  Lightbulb, Search, Users, GraduationCap, DollarSign,
+  Lightbulb, Search, Users, GraduationCap, FileText,
   Briefcase, Compass, ShieldCheck, Rocket, BadgeCheck, Sparkles,
 } from "lucide-react";
 
