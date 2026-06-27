@@ -370,6 +370,39 @@ export function AdminUserPreviewDialog({
             </CardContent>
           </Card>
 
+          {/* Goal & History */}
+          <Card>
+            <CardContent className="pt-4 space-y-3">
+              <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <TrendingUp className="w-4 h-4" />
+                Goal ("What do you want next?")
+              </h4>
+              <div className="text-sm">
+                <span className="text-muted-foreground">Current: </span>
+                <span className="font-medium">{currentGoal ?? "Not set"}</span>
+              </div>
+              {goalHistory.length > 0 ? (
+                <div className="space-y-1 pt-2 border-t border-border">
+                  <p className="text-xs text-muted-foreground mb-1">Change history</p>
+                  {goalHistory.map((h) => (
+                    <div key={h.id} className="text-xs text-foreground flex items-center justify-between gap-2">
+                      <span>
+                        <span className="text-muted-foreground">{h.old_goal ?? "—"}</span>
+                        {" → "}
+                        <span className="font-medium">{h.new_goal}</span>
+                      </span>
+                      <span className="text-muted-foreground whitespace-nowrap">
+                        {new Date(h.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">No goal changes recorded.</p>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Box Advisor Assignment */}
           <Card className="border-dashed">
             <CardContent className="pt-4 space-y-3">
