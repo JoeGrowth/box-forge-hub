@@ -231,22 +231,6 @@ function Section({
   busy,
   onTimeline,
   hints,
-}: {
-  title: string;
-  icon: React.ReactNode;
-  rows: RequestRow[];
-  emptyHint: string;
-  primary?: string;
-function Section({
-  title,
-  icon,
-  rows,
-  emptyHint,
-  primary,
-  onPrimary,
-  busy,
-  onTimeline,
-  hints,
   onOpenProfile,
 }: {
   title: string;
