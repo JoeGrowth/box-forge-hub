@@ -15,6 +15,7 @@ import {
   Utensils, 
   Building2, 
   Cpu,
+  ShieldCheck,
   ArrowRight,
   Users,
   Rocket,
@@ -24,7 +25,10 @@ import {
   BarChart3,
   Shield,
   Zap,
-  Globe
+  Globe,
+  Lock,
+  Eye,
+  AlertTriangle
 } from "lucide-react";
 
 const boxesData: Record<string, {
@@ -211,6 +215,34 @@ const boxesData: Record<string, {
       { icon: Globe, title: "API Ecosystems", description: "Integration platforms connecting diverse systems." },
     ],
     mission: "To develop foundational technologies that empower innovation across all sectors.",
+  },
+  security: {
+    id: "security",
+    name: "Box For Security Solutions",
+    abbr: "B4SS",
+    icon: ShieldCheck,
+    description: "Cybersecurity, physical security and trust ventures defending people, data and infrastructure.",
+    longDescription: "From threat intelligence and zero-trust architectures to compliance automation and physical security, we nurture startups protecting the modern enterprise and the public. Our ecosystem unites CISOs, ethical hackers, GRC experts and operators to ship security solutions that move at the speed of risk.",
+    color: "from-indigo-500 to-blue-700",
+    bgColor: "bg-indigo-50",
+    startups: 7,
+    cobuilders: 28,
+    totalRaised: "$720K",
+    fields: ["Cybersecurity", "Threat Intelligence", "Compliance & GRC", "Physical Security"],
+    featured: [
+      { name: "SentryGrid", desc: "AI threat detection for SMEs" },
+      { name: "TrustLayer", desc: "Compliance automation for SaaS" },
+      { name: "GuardPost", desc: "Smart access & on-site security" },
+    ],
+    digitalSolutions: [
+      { icon: Eye, title: "Threat Intelligence", description: "Continuous monitoring and AI-driven detection of emerging threats." },
+      { icon: Lock, title: "Identity & Access", description: "Zero-trust identity, SSO and privileged access management." },
+      { icon: Shield, title: "Compliance & GRC", description: "Automated controls for SOC 2, ISO 27001, GDPR and sector regs." },
+      { icon: AlertTriangle, title: "Incident Response", description: "Playbooks, on-call tooling and forensics for fast containment." },
+      { icon: BarChart3, title: "Security Analytics", description: "SIEM dashboards turning telemetry into prioritized actions." },
+      { icon: Globe, title: "Physical & IoT Security", description: "Connected sensors, access control and on-site protection." },
+    ],
+    mission: "To build a trusted ecosystem where every venture has the security posture of a Fortune 500 from day one.",
   },
 };
 
