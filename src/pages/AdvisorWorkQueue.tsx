@@ -237,10 +237,28 @@ function Section({
   rows: RequestRow[];
   emptyHint: string;
   primary?: string;
+function Section({
+  title,
+  icon,
+  rows,
+  emptyHint,
+  primary,
+  onPrimary,
+  busy,
+  onTimeline,
+  hints,
+  onOpenProfile,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  rows: RequestRow[];
+  emptyHint: string;
+  primary?: string;
   onPrimary?: (r: RequestRow) => void;
   busy?: string | null;
   onTimeline?: (r: RequestRow) => void;
   hints: Record<string, RequesterHint>;
+  onOpenProfile: (id: string) => void;
 }) {
   return (
     <div className="space-y-3">
