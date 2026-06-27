@@ -74,18 +74,34 @@ const Boxes = () => {
         supabase.from("boxes").select("id, slug, name, description").order("name"),
         supabase
           .from("box_advisors")
-          .select("box_id, status, user_id, profile:profiles!box_advisors_user_id_fkey(full_name, avatar_url)")
+          .select("box_id, status, user_id")
           .eq("status", "active"),
       ]);
       if (cancelled) return;
+      const userIds = Array.from(new Set((advRows ?? []).map((a: any) => a.user_id)));
+      let profiles: Record<string, string | null> = {};
+      if (userIds.length) {
+        const { data: profRows } = await supabase
+          .from("profiles")
+          .select("id, full_name")
+          .in("id", userIds);
+        profiles = Object.fromEntries((profRows ?? []).map((p: any) => [p.id, p.full_name]));
+      }
+      const enriched: AdvisorRow[] = (advRows ?? []).map((a: any) => ({
+        box_id: a.box_id,
+        status: a.status,
+        user_id: a.user_id,
+        full_name: profiles[a.user_id] ?? null,
+      }));
       setBoxes((boxRows ?? []) as BoxRow[]);
-      setAdvisors((advRows ?? []) as unknown as AdvisorRow[]);
+      setAdvisors(enriched);
       setLoading(false);
     })();
     return () => {
       cancelled = true;
     };
   }, []);
+
 
   return (
     <div className="min-h-screen bg-background">
