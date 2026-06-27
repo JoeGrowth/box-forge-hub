@@ -480,9 +480,9 @@ const Entrepreneurship = () => {
               </div>
 
               {/* Header */}
-              <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center justify-between mb-12 bg-muted/40 rounded-2xl p-6">
                 <div>
-                  <h1 className="font-display text-3xl font-bold text-foreground mb-2">
+                  <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-1">
                     Entrepreneurship Engine
                   </h1>
                   <p className="text-muted-foreground">
