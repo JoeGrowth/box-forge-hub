@@ -351,6 +351,9 @@ export function AdminUserPreviewDialog({
               </Button>
             </CardContent>
           </Card>
+
+          {/* Quick-grant: Advisor & Ecosystem Admin for Box For Security Solutions */}
+          <BoxRoleQuickGrant userId={user.id} onDone={onUserUpdated} />
         </div>
       </DialogContent>
     </Dialog>
