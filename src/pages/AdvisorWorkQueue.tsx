@@ -292,7 +292,7 @@ export default function AdvisorWorkQueue() {
         </TabsList>
 
         <TabsContent value="awaiting" className="mt-4">
-          <Section
+          <Section hints={hints}
             title="Accept or decline"
             icon={<Clock className="h-4 w-4" />}
             rows={sections.awaiting}
@@ -303,7 +303,7 @@ export default function AdvisorWorkQueue() {
           />
         </TabsContent>
         <TabsContent value="signoff" className="mt-4">
-          <Section
+          <Section hints={hints}
             title="Solution Canvas waiting on you"
             icon={<ShieldCheck className="h-4 w-4" />}
             rows={sections.awaitingSignoff}
@@ -316,7 +316,7 @@ export default function AdvisorWorkQueue() {
           />
         </TabsContent>
         <TabsContent value="upcoming" className="mt-4">
-          <Section
+          <Section hints={hints}
             title="Check in this week"
             icon={<Clock className="h-4 w-4" />}
             rows={sections.upcoming}
@@ -328,7 +328,7 @@ export default function AdvisorWorkQueue() {
           />
         </TabsContent>
         <TabsContent value="stale" className="mt-4">
-          <Section
+          <Section hints={hints}
             title="Stale — re-engage or archive"
             icon={<AlertTriangle className="h-4 w-4 text-amber-500" />}
             rows={sections.stale}
@@ -340,7 +340,7 @@ export default function AdvisorWorkQueue() {
           />
         </TabsContent>
         <TabsContent value="done" className="mt-4">
-          <Section
+          <Section hints={hints}
             title="Recently closed"
             icon={<CheckCircle2 className="h-4 w-4 text-emerald-600" />}
             rows={sections.completed}
