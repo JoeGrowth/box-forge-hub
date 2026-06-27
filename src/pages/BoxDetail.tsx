@@ -1,5 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { BoxAdvisorStrip } from "@/components/box/BoxAdvisorStrip";
+import { BoxFeed } from "@/components/box/BoxFeed";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -378,6 +379,14 @@ const BoxDetail = () => {
 
         {/* Advisor Strip — public interface to the advisor system */}
         <BoxAdvisorStrip boxSlug={box.id} boxName={box.name} />
+
+        {/* Box Feed — high-signal graph events only */}
+        <section className="py-16">
+          <div className="container mx-auto px-4 max-w-4xl">
+            <BoxFeed boxSlug={box.id} />
+          </div>
+        </section>
+
 
         {/* CTA */}
         <section className={`py-24 bg-gradient-to-br ${box.color} text-primary-foreground`}>
