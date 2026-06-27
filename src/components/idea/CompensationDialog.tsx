@@ -442,9 +442,10 @@ export const CompensationDialog = ({
             )}
           </DialogDescription>
         </DialogHeader>
-        {applicationContext?.applicantId && (
-          <TrustBlock userId={applicationContext.applicantId} variant="inline" className="-mt-2" />
+        {application?.applicantId && (
+          <TrustBlock userId={application.applicantId} variant="inline" className="-mt-2" />
         )}
+
 
 
         {isLoading ? (
