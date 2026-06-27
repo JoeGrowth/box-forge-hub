@@ -508,6 +508,9 @@ export const TeamManagementDialog = ({
                                     {applicant.natural_role}
                                   </p>
                                 )}
+                                {applicant.applicant_id && (
+                                  <TrustBlock userId={applicant.applicant_id} variant="inline" className="mt-1" />
+                                )}
                               </div>
                             </div>
                             {getApplicantStatusBadge(applicant.status)}
