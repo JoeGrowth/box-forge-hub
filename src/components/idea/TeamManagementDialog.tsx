@@ -27,6 +27,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { CompensationDialog } from "./CompensationDialog";
+import { TrustBlock } from "@/components/trust/TrustBlock";
 
 interface NegotiationSnapshot {
   status: string;
@@ -507,6 +508,9 @@ export const TeamManagementDialog = ({
                                   <p className="text-xs text-muted-foreground line-clamp-1">
                                     {applicant.natural_role}
                                   </p>
+                                )}
+                                {applicant.applicant_id && (
+                                  <TrustBlock userId={applicant.applicant_id} variant="inline" className="mt-1" />
                                 )}
                               </div>
                             </div>

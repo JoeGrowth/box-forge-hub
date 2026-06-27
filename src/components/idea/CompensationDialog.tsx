@@ -18,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, DollarSign, PieChart, Clock, Target, Send, Check, Edit2 } from "lucide-react";
 import { markApplicationConversationRead } from "@/lib/negotiationChat";
+import { TrustBlock } from "@/components/trust/TrustBlock";
 
 
 interface TeamMember {
@@ -441,6 +442,11 @@ export const CompensationDialog = ({
             )}
           </DialogDescription>
         </DialogHeader>
+        {application?.applicantId && (
+          <TrustBlock userId={application.applicantId} variant="inline" className="-mt-2" />
+        )}
+
+
 
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
