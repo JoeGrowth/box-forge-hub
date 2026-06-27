@@ -13,6 +13,7 @@ import {
   Utensils,
   Building2,
   Cpu,
+  ShieldCheck,
   ArrowRight,
   Users,
   Rocket,
