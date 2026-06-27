@@ -36,9 +36,11 @@ import {
   Loader2,
   X,
   Eye,
+  ShieldCheck,
 } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { AdminUserPreviewDialog } from "./AdminUserPreviewDialog";
+import { AddAdvisorDialog } from "./AddAdvisorDialog";
 import {
   Tooltip,
   TooltipContent,
