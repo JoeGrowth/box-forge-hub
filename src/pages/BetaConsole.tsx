@@ -118,6 +118,8 @@ export default function BetaConsole() {
   const [authorized, setAuthorized] = useState<boolean | null>(null);
   const [data, setData] = useState<OpsMetrics | null>(null);
   const [alerts, setAlerts] = useState<SystemAlert[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
   const [audit, setAudit] = useState<EventAudit | null>(null);
   const [review, setReview] = useState<WeeklyReview | null>(null);
 
