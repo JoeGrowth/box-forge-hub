@@ -69,6 +69,8 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
   // Preview dialog state
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   const [previewUser, setPreviewUser] = useState<UserWithDetails | null>(null);
+  const [advisorDialogOpen, setAdvisorDialogOpen] = useState(false);
+  const [advisorTargetUser, setAdvisorTargetUser] = useState<UserWithDetails | null>(null);
   
   // Delete dialog state (works for both single and bulk)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
