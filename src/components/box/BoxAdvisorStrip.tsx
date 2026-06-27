@@ -57,21 +57,34 @@ export function BoxAdvisorStrip({ boxSlug, boxName }: Props) {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const { data: box } = await (supabase as any)
+      // Resolve box by slug first, then fall back to exact name match.
+      // Static catalog slugs (e.g. "health") don't always equal DB slugs
+      // (e.g. "box4health"), but the name is stable across both.
+      let resolved: { id: string } | null = null;
+      const { data: bySlug } = await (supabase as any)
         .from("boxes")
         .select("id")
         .eq("slug", boxSlug)
         .maybeSingle();
+      resolved = bySlug ?? null;
+      if (!resolved && boxName) {
+        const { data: byName } = await (supabase as any)
+          .from("boxes")
+          .select("id")
+          .ilike("name", boxName)
+          .maybeSingle();
+        resolved = byName ?? null;
+      }
       if (cancelled) return;
-      if (!box?.id) {
+      if (!resolved?.id) {
         setBoxId(null);
         setRows([]);
         setLoading(false);
         return;
       }
-      setBoxId(box.id);
+      setBoxId(resolved.id);
       const { data } = await (supabase as any).rpc("list_box_advisors_public", {
-        _box_id: box.id,
+        _box_id: resolved.id,
       });
       if (cancelled) return;
       setRows((data as AdvisorRow[]) ?? []);
@@ -80,7 +93,7 @@ export function BoxAdvisorStrip({ boxSlug, boxName }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [boxSlug]);
+  }, [boxSlug, boxName]);
 
   const availableNow = useMemo(
     () =>
