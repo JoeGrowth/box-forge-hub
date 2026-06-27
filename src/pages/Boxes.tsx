@@ -126,11 +126,30 @@ const boxes = [
 ];
 
 const Boxes = () => {
+  const [extraBoxes, setExtraBoxes] = useState<DemoBoxListing[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("boxes")
+        .select("slug,name")
+        .order("name");
+      const knownSlugs = new Set(boxes.map((b) => b.id));
+      const extras = ((data as any[]) ?? [])
+        .filter((b) => !knownSlugs.has(b.slug))
+        .map((b) => buildDemoBox(b.name, b.slug) as DemoBoxListing);
+      setExtraBoxes(extras);
+    })();
+  }, []);
+
+  const allBoxes = [...boxes, ...extraBoxes];
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <PageTransition>
         <main className="pt-20">
+
         {/* Hero */}
         <section className="py-24 gradient-hero text-primary-foreground">
           <div className="container mx-auto px-4">
