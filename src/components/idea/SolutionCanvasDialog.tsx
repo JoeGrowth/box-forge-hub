@@ -7,8 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAdmin } from "@/hooks/useAdmin";
-import { Loader2, ShieldCheck, Lightbulb } from "lucide-react";
+import { Loader2, ShieldCheck, Lightbulb, Users } from "lucide-react";
 import { SolutionStageBadge, SolutionStage } from "./SolutionStageBadge";
+import { RequestAdvisorDrawer } from "@/components/box/RequestAdvisorDrawer";
 
 interface Props {
   open: boolean;
@@ -80,6 +81,8 @@ export function SolutionCanvasDialog({ open, onOpenChange, ideaId, isCreator, on
   const [stage, setStage] = useState<SolutionStage>("draft");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [requestOpen, setRequestOpen] = useState(false);
+
 
   useEffect(() => {
     if (!open) return;
@@ -191,6 +194,11 @@ export function SolutionCanvasDialog({ open, onOpenChange, ideaId, isCreator, on
 
             <div className="flex flex-wrap gap-2 justify-end pt-2">
               <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+              {isCreator && stage === "discovery" && !canvas.signed_off_at && (
+                <Button variant="outline" onClick={() => setRequestOpen(true)}>
+                  <Users className="h-4 w-4 mr-1" /> Request validation
+                </Button>
+              )}
               {isCreator && (
                 <Button onClick={handleSave} disabled={saving} variant="teal">
                   {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
@@ -202,6 +210,16 @@ export function SolutionCanvasDialog({ open, onOpenChange, ideaId, isCreator, on
                 </Button>
               )}
             </div>
+
+            <RequestAdvisorDrawer
+              open={requestOpen}
+              onOpenChange={setRequestOpen}
+              defaultType="solution_signoff"
+              defaultTopic="Solution Canvas sign-off"
+              subjectEntityType="idea"
+              subjectEntityId={ideaId}
+              assignmentPolicy="select"
+            />
           </div>
         )}
       </DialogContent>
