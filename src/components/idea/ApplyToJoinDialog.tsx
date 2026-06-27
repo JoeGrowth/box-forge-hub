@@ -73,6 +73,9 @@ export function ApplyToJoinDialog({
     created_at: string;
   } | null>(null);
   const [checkedExisting, setCheckedExisting] = useState(false);
+  const [solutionStage, setSolutionStage] = useState<SolutionStage>("draft");
+  const [acknowledgedDiscovery, setAcknowledgedDiscovery] = useState(false);
+
 
   // Compensation state
   const [includeSalary, setIncludeSalary] = useState(false);
