@@ -485,6 +485,19 @@ const BoxDetail = () => {
           </div>
         </section>
 
+        {/* Admin-only: switch between curated demo data and live DB data */}
+        {boxMeta && (
+          <section className="pb-4">
+            <div className="container mx-auto px-4 max-w-4xl">
+              <BoxDataModeToggle
+                boxId={boxMeta.id}
+                initialMode={boxMeta.data_mode}
+                onChange={(m) => setBoxMeta({ ...boxMeta, data_mode: m })}
+              />
+            </div>
+          </section>
+        )}
+
         {/* Advisor Strip — public interface to the advisor system */}
         <BoxAdvisorStrip boxSlug={box.id} boxName={box.name} />
 
