@@ -4886,6 +4886,24 @@ export type Database = {
         }
         Relationships: []
       }
+      funnel_progress: {
+        Row: {
+          accepted_opportunity_at: string | null
+          activated_at: string | null
+          contribs_last_30d: number | null
+          first_commitment_at: string | null
+          first_contribution_at: string | null
+          first_milestone_at: string | null
+          first_opportunity_at: string | null
+          first_relationship_at: string | null
+          onboarded_at: string | null
+          signup_at: string | null
+          stage: string | null
+          stage_rank: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
       relationships: {
         Row: {
           box_id: string | null
@@ -4948,6 +4966,17 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      system_alerts: {
+        Row: {
+          code: string | null
+          detected_at: string | null
+          message: string | null
+          severity: string | null
+          subject_id: string | null
+          subject_kind: string | null
+        }
+        Relationships: []
       }
       v_core_loop_metrics: {
         Row: {
@@ -5136,6 +5165,23 @@ export type Database = {
           payload: Json
           user_id: string
         }[]
+      }
+      get_system_alerts: {
+        Args: never
+        Returns: {
+          code: string | null
+          detected_at: string | null
+          message: string | null
+          severity: string | null
+          subject_id: string | null
+          subject_kind: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "system_alerts"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       graph_upsert_edge: {
         Args: {
