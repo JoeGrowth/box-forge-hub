@@ -85,6 +85,30 @@ const CoBuilders = () => {
     })();
   }, [user?.id]);
 
+  // Gate the Advisors tab: admin (user_roles) or ecosystem admin (box_ecosystem_admins).
+  useEffect(() => {
+    if (!user?.id) return;
+    (async () => {
+      const [{ data: adminRow }, { data: ecoRow }] = await Promise.all([
+        supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle(),
+        supabase.from("box_ecosystem_admins").select("user_id").eq("user_id", user.id).limit(1).maybeSingle(),
+      ]);
+      setCanSeeAdvisors(!!adminRow || !!ecoRow);
+    })();
+  }, [user?.id]);
+
+  // Load advisor user_ids (active assignments) — used to filter the Advisors tab.
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("box_advisors")
+        .select("user_id, status")
+        .eq("status", "active");
+      const set = new Set<string>((data || []).map((r: any) => r.user_id));
+      setAdvisorUserIds(set);
+    })();
+  }, []);
+
   // Two-stage load: (1) fetch profile/role/idea rows for approved users,
   // (2) hydrate per-user expertise via the batch graph hook below.
   // Expertise (certification count, level) is sourced ONLY from
