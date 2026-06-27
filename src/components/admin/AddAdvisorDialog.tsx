@@ -72,6 +72,10 @@ export function AddAdvisorDialog({
   const [overrideReason, setOverrideReason] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const NEW_BOX = "__new__";
+  const [newBoxName, setNewBoxName] = useState("");
+  const [newBoxSlug, setNewBoxSlug] = useState("");
+
 
   useEffect(() => {
     if (!open || !userId) return;
