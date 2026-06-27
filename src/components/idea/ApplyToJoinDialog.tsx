@@ -32,7 +32,10 @@ import {
   Lock,
   Send,
   Target,
+  AlertTriangle,
 } from "lucide-react";
+import { SolutionStageBadge, SolutionStage } from "./SolutionStageBadge";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface ApplyToJoinDialogProps {
   open: boolean;
