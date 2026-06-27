@@ -32,8 +32,9 @@ type AdvisorRow = {
   box_id: string;
   status: string;
   user_id: string;
-  profile: { full_name: string | null; avatar_url: string | null } | null;
+  full_name: string | null;
 };
+
 
 const ICON_BY_KEYWORD: Array<{ match: RegExp; icon: typeof Heart; color: string; bg: string }> = [
   { match: /health|medical|wellness/i, icon: Heart, color: "from-rose-500 to-red-600", bg: "bg-rose-50" },
