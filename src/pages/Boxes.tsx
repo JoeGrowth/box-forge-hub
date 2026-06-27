@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { buildDemoBox, type DemoBoxListing } from "@/data/boxDemoTemplate";
+import { fetchBoxLiveStats } from "@/lib/boxAffinity";
 import {
   Heart,
   Leaf,
@@ -145,6 +146,7 @@ const boxes = [
 
 const Boxes = () => {
   const [extraBoxes, setExtraBoxes] = useState<DemoBoxListing[]>([]);
+  const [liveStats, setLiveStats] = useState<Record<string, { startups: number; cobuilders: number; featured: { name: string; desc: string }[] }>>({});
 
   useEffect(() => {
     (async () => {
@@ -161,6 +163,25 @@ const Boxes = () => {
   }, []);
 
   const allBoxes = [...boxes, ...extraBoxes];
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const entries = await Promise.all(
+        allBoxes.map(async (b) => {
+          const s = await fetchBoxLiveStats(b.id);
+          return [b.id, {
+            startups: s.startups,
+            cobuilders: s.cobuilders,
+            featured: s.featured.map((f) => ({ name: f.name, desc: f.desc || "Live venture" })),
+          }] as const;
+        })
+      );
+      if (!cancelled) setLiveStats(Object.fromEntries(entries));
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allBoxes.length]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -190,7 +211,12 @@ const Boxes = () => {
         <section className="py-24">
           <div className="container mx-auto px-4">
             <div className="space-y-12">
-              {allBoxes.map((box, i) => (
+              {allBoxes.map((box, i) => {
+                const stats = liveStats[box.id];
+                const startups = stats?.startups ?? box.startups;
+                const cobuilders = stats?.cobuilders ?? box.cobuilders;
+                const featured = stats && stats.featured.length > 0 ? stats.featured : box.featured;
+                return (
                 <div 
                   key={box.id}
                   className="bg-card rounded-3xl border border-border overflow-hidden hover:shadow-xl transition-all duration-500 animate-fade-in"
@@ -228,11 +254,11 @@ const Boxes = () => {
                         <div className="grid grid-cols-3 gap-4 mb-6">
                           <div className="flex items-center gap-2">
                             <Rocket className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-sm"><strong>{box.startups}</strong> startups</span>
+                            <span className="text-sm"><strong>{startups}</strong> startups</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Users className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-sm"><strong>{box.cobuilders}</strong> co-builders</span>
+                            <span className="text-sm"><strong>{cobuilders}</strong> co-builders</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <TrendingUp className="w-4 h-4 text-muted-foreground" />
@@ -245,7 +271,9 @@ const Boxes = () => {
                       <div className="bg-muted/50 rounded-2xl p-6">
                         <h4 className="font-semibold text-sm text-foreground mb-4">Featured Startups</h4>
                         <div className="space-y-3">
-                          {box.featured.map((startup) => (
+                          {featured.length === 0 ? (
+                            <div className="text-sm text-muted-foreground italic">No ventures yet.</div>
+                          ) : featured.map((startup) => (
                             <div key={startup.name} className="bg-card rounded-lg p-3">
                               <div className="font-medium text-foreground">{startup.name}</div>
                               <div className="text-sm text-muted-foreground">{startup.desc}</div>
@@ -261,7 +289,8 @@ const Boxes = () => {
                     </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>

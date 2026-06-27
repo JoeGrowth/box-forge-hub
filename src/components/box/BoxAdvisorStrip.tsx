@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { RequestAdvisorDrawer } from "./RequestAdvisorDrawer";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { userHasBoxAffinity } from "@/lib/boxAffinity";
 import {
   ShieldCheck,
   Award,
@@ -59,13 +60,23 @@ export function BoxAdvisorStrip({ boxSlug, boxName }: Props) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleRequestClick = () => {
+  const handleRequestClick = async () => {
     if (!user) {
       toast({
         title: "Sign in required",
         description: "Create an account or sign in to request an advisor.",
       });
       navigate(`/auth?redirect=${encodeURIComponent(location.pathname + location.search)}`);
+      return;
+    }
+    const eligible = await userHasBoxAffinity(user.id, boxSlug);
+    if (!eligible) {
+      toast({
+        title: "Link a profile or idea to this box first",
+        description:
+          "Advisor requests are reserved for users with a profile or startup idea linked to this box. Update your preferred sector or submit an idea in this domain.",
+        variant: "destructive",
+      });
       return;
     }
     setRequestOpen(true);
