@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { buildDemoBox, type DemoBoxDetail } from "@/data/boxDemoTemplate";
 
@@ -216,6 +216,15 @@ const boxesData: Record<string, {
 
 const BoxDetail = () => {
   const { boxId } = useParams<{ boxId: string }>();
+  const navigate = useNavigate();
+
+  // Legacy redirect: /boxes/box4* → /boxes/*
+  useEffect(() => {
+    if (boxId && /^box4/.test(boxId)) {
+      navigate(`/boxes/${boxId.replace(/^box4/, "")}`, { replace: true });
+    }
+  }, [boxId, navigate]);
+
   const staticBox = boxId ? boxesData[boxId] : null;
   const [dbBox, setDbBox] = useState<DemoBoxDetail | null>(null);
   const [loadingDb, setLoadingDb] = useState(!staticBox);

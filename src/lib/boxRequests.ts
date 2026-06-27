@@ -38,7 +38,16 @@ export async function createBoxRequest(input: CreateBoxRequestInput) {
     })
     .select()
     .single();
-  if (error) throw error;
+  if (error) {
+    const msg = error.message || "";
+    if (msg.includes("rate_limit_exceeded")) {
+      throw new Error("You've sent too many advisor requests in the last hour. Please try again later.");
+    }
+    if (msg.includes("cooldown_active")) {
+      throw new Error("You just sent a similar request. Please wait 10 minutes before sending another.");
+    }
+    throw error;
+  }
   return data;
 }
 

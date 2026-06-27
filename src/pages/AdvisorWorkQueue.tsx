@@ -5,9 +5,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { transitionRequest } from "@/lib/boxRequests";
-import { Loader2, ShieldCheck, Clock, AlertTriangle, CheckCircle2, Archive, History } from "lucide-react";
+import { Loader2, ShieldCheck, Clock, AlertTriangle, CheckCircle2, Archive, History, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 import { RelationshipDrawer } from "@/components/relationships/RelationshipDrawer";
 
@@ -39,7 +40,15 @@ interface RequesterHint {
   prior_requests: number;
 }
 
-function RequesterChip({ hint }: { hint?: RequesterHint }) {
+function RequesterChip({
+  hint,
+  requesterId,
+  onOpen,
+}: {
+  hint?: RequesterHint;
+  requesterId: string;
+  onOpen: (id: string) => void;
+}) {
   if (!hint) return null;
   const name = hint.full_name?.trim() || "Member";
   const initials = name.split(" ").map((s) => s[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "?";
@@ -50,7 +59,12 @@ function RequesterChip({ hint }: { hint?: RequesterHint }) {
       : `member ${Math.round(hint.account_age_days / 30)}mo`;
   const isNew = hint.account_age_days < 3 && hint.prior_requests === 0;
   return (
-    <div className="mt-2 flex items-center gap-2 rounded-md bg-muted/40 px-2 py-1.5 text-xs">
+    <button
+      type="button"
+      onClick={() => onOpen(requesterId)}
+      className="mt-2 flex w-full items-center gap-2 rounded-md bg-muted/40 px-2 py-1.5 text-xs text-left hover:bg-muted transition-colors"
+      title="View requester profile"
+    >
       <Avatar className="h-6 w-6">
         <AvatarImage src={hint.avatar_url ?? undefined} />
         <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
@@ -79,7 +93,124 @@ function RequesterChip({ hint }: { hint?: RequesterHint }) {
           )}
         </div>
       </div>
-    </div>
+    </button>
+  );
+}
+
+interface RequesterDetail {
+  full_name: string | null;
+  avatar_url: string | null;
+  professional_title: string | null;
+  years_of_experience: number | null;
+  bio: string | null;
+  location: string | null;
+  account_age_days: number;
+  prior_requests: number;
+  skills: string[];
+}
+
+function RequesterProfileDialog({
+  userId,
+  open,
+  onOpenChange,
+  baseHint,
+}: {
+  userId: string | null;
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  baseHint?: RequesterHint;
+}) {
+  const [detail, setDetail] = useState<RequesterDetail | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!open || !userId) return;
+    setLoading(true);
+    setDetail(null);
+    (async () => {
+      const { data: prof } = await (supabase as any)
+        .from("profiles")
+        .select("full_name, avatar_url, professional_title, years_of_experience, bio, created_at")
+        .eq("user_id", userId)
+        .maybeSingle();
+      const ageDays = prof?.created_at
+        ? Math.max(0, Math.floor((Date.now() - new Date(prof.created_at).getTime()) / 86_400_000))
+        : baseHint?.account_age_days ?? 0;
+      setDetail({
+        full_name: prof?.full_name ?? baseHint?.full_name ?? null,
+        avatar_url: prof?.avatar_url ?? baseHint?.avatar_url ?? null,
+        professional_title: prof?.professional_title ?? baseHint?.professional_title ?? null,
+        years_of_experience: prof?.years_of_experience ?? baseHint?.years_of_experience ?? null,
+        bio: prof?.bio ?? null,
+        location: null,
+        account_age_days: ageDays,
+        prior_requests: baseHint?.prior_requests ?? 0,
+        skills: [],
+      });
+      setLoading(false);
+    })();
+  }, [open, userId, baseHint]);
+
+  const name = detail?.full_name?.trim() || "Member";
+  const initials = name.split(" ").map((s) => s[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "?";
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Requester profile</DialogTitle>
+          <DialogDescription>Quick context to decide on this request.</DialogDescription>
+        </DialogHeader>
+        {loading || !detail ? (
+          <div className="flex items-center justify-center py-10"><Loader2 className="h-5 w-5 animate-spin" /></div>
+        ) : (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-14 w-14">
+                <AvatarImage src={detail.avatar_url ?? undefined} />
+                <AvatarFallback>{initials}</AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <div className="font-semibold truncate">{name}</div>
+                {detail.professional_title && (
+                  <div className="text-sm text-muted-foreground truncate">{detail.professional_title}</div>
+                )}
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  {detail.location && <>{detail.location} · </>}
+                  member {detail.account_age_days}d · {detail.prior_requests} prior request{detail.prior_requests === 1 ? "" : "s"}
+                  {detail.years_of_experience != null && <> · {detail.years_of_experience}y exp</>}
+                </div>
+              </div>
+            </div>
+            {detail.bio && (
+              <div>
+                <div className="text-xs font-semibold text-muted-foreground mb-1">Bio</div>
+                <p className="text-sm whitespace-pre-line">{detail.bio}</p>
+              </div>
+            )}
+            {detail.skills.length > 0 && (
+              <div>
+                <div className="text-xs font-semibold text-muted-foreground mb-1">Skills</div>
+                <div className="flex flex-wrap gap-1">
+                  {detail.skills.map((s) => (
+                    <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            {userId && (
+              <Link
+                to={`/u/${userId}`}
+                target="_blank"
+                className="inline-flex items-center gap-1 text-sm text-b4-teal hover:underline"
+              >
+                Open full profile <ExternalLink className="h-3 w-3" />
+              </Link>
+            )}
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -93,6 +224,7 @@ function Section({
   busy,
   onTimeline,
   hints,
+  onOpenProfile,
 }: {
   title: string;
   icon: React.ReactNode;
@@ -103,6 +235,7 @@ function Section({
   busy?: string | null;
   onTimeline?: (r: RequestRow) => void;
   hints: Record<string, RequesterHint>;
+  onOpenProfile: (id: string) => void;
 }) {
   return (
     <div className="space-y-3">
@@ -120,7 +253,7 @@ function Section({
                   <span className="text-xs text-muted-foreground">· {ageHours(r.created_at)}h old</span>
                 </div>
                 {r.context && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{r.context}</p>}
-                <RequesterChip hint={hints[r.requester_id]} />
+                <RequesterChip hint={hints[r.requester_id]} requesterId={r.requester_id} onOpen={onOpenProfile} />
                 {r.subject_entity_type === "idea" && r.subject_entity_id && (
                   <Link to={`/startup-opportunities/${r.subject_entity_id}`} className="text-xs text-b4-teal hover:underline">
                     View linked idea →
@@ -275,6 +408,9 @@ export default function AdvisorWorkQueue() {
     return <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin" /></div>;
   }
 
+  const [profileUserId, setProfileUserId] = useState<string | null>(null);
+  const openProfile = (id: string) => setProfileUserId(id);
+
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <div>
@@ -292,7 +428,7 @@ export default function AdvisorWorkQueue() {
         </TabsList>
 
         <TabsContent value="awaiting" className="mt-4">
-          <Section hints={hints}
+          <Section hints={hints} onOpenProfile={openProfile}
             title="Accept or decline"
             icon={<Clock className="h-4 w-4" />}
             rows={sections.awaiting}
@@ -303,7 +439,7 @@ export default function AdvisorWorkQueue() {
           />
         </TabsContent>
         <TabsContent value="signoff" className="mt-4">
-          <Section hints={hints}
+          <Section hints={hints} onOpenProfile={openProfile}
             title="Solution Canvas waiting on you"
             icon={<ShieldCheck className="h-4 w-4" />}
             rows={sections.awaitingSignoff}
@@ -316,7 +452,7 @@ export default function AdvisorWorkQueue() {
           />
         </TabsContent>
         <TabsContent value="upcoming" className="mt-4">
-          <Section hints={hints}
+          <Section hints={hints} onOpenProfile={openProfile}
             title="Check in this week"
             icon={<Clock className="h-4 w-4" />}
             rows={sections.upcoming}
@@ -328,7 +464,7 @@ export default function AdvisorWorkQueue() {
           />
         </TabsContent>
         <TabsContent value="stale" className="mt-4">
-          <Section hints={hints}
+          <Section hints={hints} onOpenProfile={openProfile}
             title="Stale — re-engage or archive"
             icon={<AlertTriangle className="h-4 w-4 text-amber-500" />}
             rows={sections.stale}
@@ -340,7 +476,7 @@ export default function AdvisorWorkQueue() {
           />
         </TabsContent>
         <TabsContent value="done" className="mt-4">
-          <Section hints={hints}
+          <Section hints={hints} onOpenProfile={openProfile}
             title="Recently closed"
             icon={<CheckCircle2 className="h-4 w-4 text-emerald-600" />}
             rows={sections.completed}
@@ -355,6 +491,12 @@ export default function AdvisorWorkQueue() {
         onOpenChange={(v) => !v && setDrawerRequestId(null)}
         originRequestId={drawerRequestId}
         title="Advisor relationship"
+      />
+      <RequesterProfileDialog
+        userId={profileUserId}
+        open={!!profileUserId}
+        onOpenChange={(v) => !v && setProfileUserId(null)}
+        baseHint={profileUserId ? hints[profileUserId] : undefined}
       />
     </div>
   );
