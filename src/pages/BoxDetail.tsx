@@ -376,6 +376,9 @@ const BoxDetail = () => {
           </div>
         </section>
 
+        {/* Advisor Strip — public interface to the advisor system */}
+        <BoxAdvisorStrip boxSlug={box.id} boxName={box.name} />
+
         {/* CTA */}
         <section className={`py-24 bg-gradient-to-br ${box.color} text-primary-foreground`}>
           <div className="container mx-auto px-4 text-center">
