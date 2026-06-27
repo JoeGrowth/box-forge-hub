@@ -80,6 +80,8 @@ import Characters from "./pages/Characters";
 import JourneyTimeline from "./pages/JourneyTimeline";
 import ActivationHub from "./pages/ActivationHub";
 import AdvisorWorkQueue from "./pages/AdvisorWorkQueue";
+import ClickAnalytics from "./pages/admin/ClickAnalytics";
+import { ClickTracker } from "./components/analytics/ClickTracker";
 
 
 const queryClient = new QueryClient();
@@ -95,6 +97,7 @@ const App = () => (
               <Sonner />
               <BrowserRouter>
                 <ScrollToTop />
+                <ClickTracker />
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/home" element={<Home />} />
@@ -129,6 +132,7 @@ const App = () => (
                   <Route path="/admin/opportunity/:id" element={<ProtectedRoute requireLevel="admin"><AdminOpportunityDetail /></ProtectedRoute>} />
                   <Route path="/admin/beta" element={<ProtectedRoute requireLevel="admin"><BetaConsole /></ProtectedRoute>} />
                   <Route path="/admin/lifecycle-integrity" element={<ProtectedRoute requireLevel="admin"><LifecycleIntegrity /></ProtectedRoute>} />
+                  <Route path="/admin/click-analytics" element={<ProtectedRoute requireLevel="admin"><ClickAnalytics /></ProtectedRoute>} />
                   <Route element={<PersistentNavbarLayout />}>
                   <Route path="/opportunities" element={<Opportunities />} />
                   <Route path="/organizations" element={<Organizations />} />
