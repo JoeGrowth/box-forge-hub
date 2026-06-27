@@ -366,48 +366,6 @@ export type Database = {
           },
         ]
       }
-      box_ecosystem_admins: {
-        Row: {
-          assigned_at: string
-          assigned_by: string | null
-          box_id: string
-          id: string
-          notes: string | null
-          user_id: string
-        }
-        Insert: {
-          assigned_at?: string
-          assigned_by?: string | null
-          box_id: string
-          id?: string
-          notes?: string | null
-          user_id: string
-        }
-        Update: {
-          assigned_at?: string
-          assigned_by?: string | null
-          box_id?: string
-          id?: string
-          notes?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "box_ecosystem_admins_box_id_fkey"
-            columns: ["box_id"]
-            isOneToOne: false
-            referencedRelation: "box_beta_readiness"
-            referencedColumns: ["box_id"]
-          },
-          {
-            foreignKeyName: "box_ecosystem_admins_box_id_fkey"
-            columns: ["box_id"]
-            isOneToOne: false
-            referencedRelation: "boxes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       box_inbound_requests: {
         Row: {
           accepted_at: string | null
@@ -5329,15 +5287,6 @@ export type Database = {
         }
       }
       get_weekly_review: { Args: never; Returns: Json }
-      grant_box_role: {
-        Args: {
-          _box_name: string
-          _override_reason?: string
-          _role: string
-          _target_user: string
-        }
-        Returns: Json
-      }
       graph_upsert_edge: {
         Args: {
           _attributes: Json
