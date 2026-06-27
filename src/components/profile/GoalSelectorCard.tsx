@@ -66,6 +66,8 @@ export function GoalSelectorCard() {
 
   if (loading) return null;
 
+  const currentLabel = GOAL_OPTIONS.find((g) => g.value === currentGoal)?.label;
+
   return (
     <Card>
       <CardHeader>
@@ -75,7 +77,14 @@ export function GoalSelectorCard() {
         <p className="text-sm text-muted-foreground">
           Pick the direction that fits you today. Your dashboard messages and CTAs will adapt instantly.
         </p>
+        <div className="mt-2 rounded-lg bg-muted/60 px-3 py-2 text-sm">
+          <span className="text-muted-foreground">Your current answer: </span>
+          <span className="font-semibold text-foreground">
+            {currentLabel ?? "Not set yet — pick one below"}
+          </span>
+        </div>
       </CardHeader>
+
       <CardContent className="space-y-4">
         <RadioGroup value={selected} onValueChange={setSelected} className="space-y-2">
           {GOAL_OPTIONS.map((g) => (
