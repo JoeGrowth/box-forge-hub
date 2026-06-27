@@ -40,7 +40,15 @@ interface RequesterHint {
   prior_requests: number;
 }
 
-function RequesterChip({ hint }: { hint?: RequesterHint }) {
+function RequesterChip({
+  hint,
+  requesterId,
+  onOpen,
+}: {
+  hint?: RequesterHint;
+  requesterId: string;
+  onOpen: (id: string) => void;
+}) {
   if (!hint) return null;
   const name = hint.full_name?.trim() || "Member";
   const initials = name.split(" ").map((s) => s[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "?";
@@ -51,7 +59,12 @@ function RequesterChip({ hint }: { hint?: RequesterHint }) {
       : `member ${Math.round(hint.account_age_days / 30)}mo`;
   const isNew = hint.account_age_days < 3 && hint.prior_requests === 0;
   return (
-    <div className="mt-2 flex items-center gap-2 rounded-md bg-muted/40 px-2 py-1.5 text-xs">
+    <button
+      type="button"
+      onClick={() => onOpen(requesterId)}
+      className="mt-2 flex w-full items-center gap-2 rounded-md bg-muted/40 px-2 py-1.5 text-xs text-left hover:bg-muted transition-colors"
+      title="View requester profile"
+    >
       <Avatar className="h-6 w-6">
         <AvatarImage src={hint.avatar_url ?? undefined} />
         <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
@@ -80,7 +93,131 @@ function RequesterChip({ hint }: { hint?: RequesterHint }) {
           )}
         </div>
       </div>
-    </div>
+    </button>
+  );
+}
+
+interface RequesterDetail {
+  full_name: string | null;
+  avatar_url: string | null;
+  professional_title: string | null;
+  years_of_experience: number | null;
+  bio: string | null;
+  location: string | null;
+  account_age_days: number;
+  prior_requests: number;
+  skills: string[];
+}
+
+function RequesterProfileDialog({
+  userId,
+  open,
+  onOpenChange,
+  baseHint,
+}: {
+  userId: string | null;
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  baseHint?: RequesterHint;
+}) {
+  const [detail, setDetail] = useState<RequesterDetail | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!open || !userId) return;
+    setLoading(true);
+    setDetail(null);
+    (async () => {
+      const [{ data: prof }, { data: skillRows }] = await Promise.all([
+        (supabase as any)
+          .from("profiles")
+          .select("full_name, avatar_url, professional_title, years_of_experience, bio, location, created_at")
+          .eq("user_id", userId)
+          .maybeSingle(),
+        (supabase as any)
+          .from("user_skills")
+          .select("skill_tags(name)")
+          .eq("user_id", userId)
+          .limit(20),
+      ]);
+      const ageDays = prof?.created_at
+        ? Math.max(0, Math.floor((Date.now() - new Date(prof.created_at).getTime()) / 86_400_000))
+        : baseHint?.account_age_days ?? 0;
+      setDetail({
+        full_name: prof?.full_name ?? baseHint?.full_name ?? null,
+        avatar_url: prof?.avatar_url ?? baseHint?.avatar_url ?? null,
+        professional_title: prof?.professional_title ?? baseHint?.professional_title ?? null,
+        years_of_experience: prof?.years_of_experience ?? baseHint?.years_of_experience ?? null,
+        bio: prof?.bio ?? null,
+        location: prof?.location ?? null,
+        account_age_days: ageDays,
+        prior_requests: baseHint?.prior_requests ?? 0,
+        skills: (skillRows ?? []).map((s: any) => s.skill_tags?.name).filter(Boolean),
+      });
+      setLoading(false);
+    })();
+  }, [open, userId, baseHint]);
+
+  const name = detail?.full_name?.trim() || "Member";
+  const initials = name.split(" ").map((s) => s[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "?";
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Requester profile</DialogTitle>
+          <DialogDescription>Quick context to decide on this request.</DialogDescription>
+        </DialogHeader>
+        {loading || !detail ? (
+          <div className="flex items-center justify-center py-10"><Loader2 className="h-5 w-5 animate-spin" /></div>
+        ) : (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-14 w-14">
+                <AvatarImage src={detail.avatar_url ?? undefined} />
+                <AvatarFallback>{initials}</AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <div className="font-semibold truncate">{name}</div>
+                {detail.professional_title && (
+                  <div className="text-sm text-muted-foreground truncate">{detail.professional_title}</div>
+                )}
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  {detail.location && <>{detail.location} · </>}
+                  member {detail.account_age_days}d · {detail.prior_requests} prior request{detail.prior_requests === 1 ? "" : "s"}
+                  {detail.years_of_experience != null && <> · {detail.years_of_experience}y exp</>}
+                </div>
+              </div>
+            </div>
+            {detail.bio && (
+              <div>
+                <div className="text-xs font-semibold text-muted-foreground mb-1">Bio</div>
+                <p className="text-sm whitespace-pre-line">{detail.bio}</p>
+              </div>
+            )}
+            {detail.skills.length > 0 && (
+              <div>
+                <div className="text-xs font-semibold text-muted-foreground mb-1">Skills</div>
+                <div className="flex flex-wrap gap-1">
+                  {detail.skills.map((s) => (
+                    <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            {userId && (
+              <Link
+                to={`/u/${userId}`}
+                target="_blank"
+                className="inline-flex items-center gap-1 text-sm text-b4-teal hover:underline"
+              >
+                Open full profile <ExternalLink className="h-3 w-3" />
+              </Link>
+            )}
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 
