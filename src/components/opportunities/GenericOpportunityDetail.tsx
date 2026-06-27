@@ -205,7 +205,7 @@ export default function GenericOpportunityDetail({ category, id }: { category: C
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(`/opportunities?tab=${category}`)}
+            onClick={() => navigate(-1)}
             className="text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />

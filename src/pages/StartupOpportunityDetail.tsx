@@ -383,7 +383,7 @@ const StartupOpportunityDetail = () => {
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={() => navigate("/opportunities")}
+            onClick={() => navigate(-1)}
             className="text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />

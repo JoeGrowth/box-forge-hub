@@ -43,7 +43,7 @@ export default function SeededOpportunityDetail({ id }: { id: string }) {
         <Navbar />
         <main className="pt-24 container mx-auto px-4">
           <p className="text-muted-foreground">Opportunity not found.</p>
-          <Button variant="outline" className="mt-4" onClick={() => navigate("/opportunities")}>
+          <Button variant="outline" className="mt-4" onClick={() => navigate(-1)}>
             Back to Opportunities
           </Button>
         </main>
@@ -63,7 +63,7 @@ export default function SeededOpportunityDetail({ id }: { id: string }) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(`/opportunities?tab=${opp.category}`)}
+            onClick={() => navigate(-1)}
             className="text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -148,7 +148,7 @@ export default function SeededOpportunityDetail({ id }: { id: string }) {
                   <Button
                     variant="outline"
                     className="w-full"
-                    onClick={() => navigate(`/opportunities?tab=${opp.category}`)}
+                    onClick={() => navigate(-1)}
                   >
                     View all {label.toLowerCase()}s
                   </Button>
