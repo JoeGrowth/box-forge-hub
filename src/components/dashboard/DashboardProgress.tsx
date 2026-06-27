@@ -160,18 +160,17 @@ export function DashboardProgress() {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
-            Getting Ready
+            Your launch checklist
           </CardTitle>
           <span className="text-sm text-muted-foreground">
-            {overallProgress()}% Complete
+            {overallProgress()}% ready
           </span>
         </div>
         <p className="text-sm text-muted-foreground">
-          Onboarding milestones to unlock the platform. For your full progression, see the{" "}
+          Finish these milestones to unlock matches, opportunities and co-builders. Track your long-game in the{" "}
           <Link to="/profile" className="text-b4-teal hover:underline font-medium">
             Professional Growth Path
-          </Link>{" "}
-          in your Profile.
+          </Link>.
         </p>
         <Progress value={overallProgress()} className="h-2" />
       </CardHeader>
