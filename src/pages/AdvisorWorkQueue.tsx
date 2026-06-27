@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { transitionRequest } from "@/lib/boxRequests";
-import { Loader2, ShieldCheck, Clock, AlertTriangle, CheckCircle2, Archive } from "lucide-react";
+import { Loader2, ShieldCheck, Clock, AlertTriangle, CheckCircle2, Archive, History } from "lucide-react";
 import { Link } from "react-router-dom";
+import { RelationshipDrawer } from "@/components/relationships/RelationshipDrawer";
 
 interface RequestRow {
   id: string;
@@ -36,6 +37,7 @@ function Section({
   primary,
   onPrimary,
   busy,
+  onTimeline,
 }: {
   title: string;
   icon: React.ReactNode;
@@ -44,6 +46,7 @@ function Section({
   primary?: string;
   onPrimary?: (r: RequestRow) => void;
   busy?: string | null;
+  onTimeline?: (r: RequestRow) => void;
 }) {
   return (
     <div className="space-y-3">
@@ -67,11 +70,18 @@ function Section({
                   </Link>
                 )}
               </div>
-              {primary && onPrimary && (
-                <Button size="sm" variant="teal" disabled={busy === r.id} onClick={() => onPrimary(r)}>
-                  {busy === r.id ? <Loader2 className="h-4 w-4 animate-spin" /> : primary}
-                </Button>
-              )}
+              <div className="flex items-center gap-2 shrink-0">
+                {onTimeline && r.accepted_at && (
+                  <Button size="sm" variant="ghost" onClick={() => onTimeline(r)} title="Open relationship timeline">
+                    <History className="h-4 w-4" />
+                  </Button>
+                )}
+                {primary && onPrimary && (
+                  <Button size="sm" variant="teal" disabled={busy === r.id} onClick={() => onPrimary(r)}>
+                    {busy === r.id ? <Loader2 className="h-4 w-4 animate-spin" /> : primary}
+                  </Button>
+                )}
+              </div>
             </li>
           ))}
         </ul>

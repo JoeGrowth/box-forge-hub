@@ -14,6 +14,7 @@ import { useRevenue } from "@/hooks/useRevenue";
 import { useExpertise } from "@/hooks/useExpertise";
 import { ShieldCheck, Award, Briefcase, MapPin, Link as LinkIcon, Copy, Check, Share2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { SharedRelationshipsCard } from "@/components/relationships/SharedRelationshipsCard";
 
 // Public profile surface at /u/:slug.
 // The slug is `<kebab-name>-<first-8-of-user-id>`. Anonymous and
@@ -275,6 +276,7 @@ export default function PublicProfile() {
             </CardContent>
           </Card>
         )}
+        <SharedRelationshipsCard profileUserId={profile.user_id} />
 
         {/* CTA */}
         <div className="rounded-2xl border border-border bg-card p-6 text-center">
