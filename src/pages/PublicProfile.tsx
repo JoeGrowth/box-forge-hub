@@ -76,11 +76,12 @@ export default function PublicProfile() {
       else setProfile(data as PublicProfile);
       setLoading(false);
 
-      // Side projections
+      // Side projections (cast to any to avoid deep generic instantiation)
+      const sb: any = supabase;
       const [cRes, oRes, rRes] = await Promise.all([
-        supabase.from("contributions").select("id, kind, summary, verified_at, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(20),
-        supabase.from("opportunity_applications").select("id, status, opportunity_id, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(20),
-        supabase.from("advisor_relationships").select("id, kind, status, created_at, advisor_id, founder_id").or(`advisor_id.eq.${userId},founder_id.eq.${userId}`).limit(20),
+        sb.from("contributions").select("id, kind, summary, verified_at, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(20),
+        sb.from("opportunity_applications").select("id, status, opportunity_id, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(20),
+        sb.from("advisor_relationships").select("id, kind, status, created_at, advisor_id, founder_id").or(`advisor_id.eq.${userId},founder_id.eq.${userId}`).limit(20),
       ]);
       if (cancelled) return;
       setContributions((cRes.data as any[]) ?? []);
