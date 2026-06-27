@@ -73,7 +73,7 @@ const DirectChat = () => {
             description: "Conversation not found",
             variant: "destructive",
           });
-          navigate("/cobuilders");
+          navigate("/people");
           return;
         }
 
@@ -84,7 +84,7 @@ const DirectChat = () => {
             description: "You don't have access to this conversation",
             variant: "destructive",
           });
-          navigate("/cobuilders");
+          navigate("/people");
           return;
         }
 

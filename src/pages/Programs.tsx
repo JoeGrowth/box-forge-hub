@@ -258,7 +258,7 @@ const Programs = () => {
 
                 <div className="flex gap-4">
                   <Button variant="default" size="lg" asChild>
-                    <Link to="/cobuilders">
+                    <Link to="/people">
                       Browse Directory <ArrowRight className="ml-2 w-4 h-4" />
                     </Link>
                   </Button>

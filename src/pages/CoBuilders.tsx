@@ -17,7 +17,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useExpertiseBatch, type Expertise } from "@/hooks/useExpertise";
 import { useTrustBatch, trustLevelStyle } from "@/hooks/useTrust";
 
-type DirectoryFilter = "talents" | "cobuilders";
+type DirectoryFilter = "talents" | "cobuilders" | "advisors";
 const COBUILDER_STAGES = new Set(["capable", "monetizing", "building", "founder"]);
 
 interface CoBuilder {
@@ -67,6 +67,8 @@ const CoBuilders = () => {
   const [myStage, setMyStage] = useState<string>("novice");
   const canSeeCobuilders = COBUILDER_STAGES.has(myStage);
   const [filter, setFilter] = useState<DirectoryFilter>("talents");
+  const [canSeeAdvisors, setCanSeeAdvisors] = useState(false);
+  const [advisorUserIds, setAdvisorUserIds] = useState<Set<string>>(new Set());
 
   // Fetch viewer's progression stage to gate the Co-Builders filter tab.
   useEffect(() => {
@@ -82,6 +84,30 @@ const CoBuilders = () => {
       if (COBUILDER_STAGES.has(stage)) setFilter("cobuilders");
     })();
   }, [user?.id]);
+
+  // Gate the Advisors tab: admin (user_roles) or ecosystem admin (box_ecosystem_admins).
+  useEffect(() => {
+    if (!user?.id) return;
+    (async () => {
+      const [{ data: adminRow }, { data: ecoRow }] = await Promise.all([
+        supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle(),
+        supabase.from("box_ecosystem_admins").select("user_id").eq("user_id", user.id).limit(1).maybeSingle(),
+      ]);
+      setCanSeeAdvisors(!!adminRow || !!ecoRow);
+    })();
+  }, [user?.id]);
+
+  // Load advisor user_ids (active assignments) — used to filter the Advisors tab.
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("box_advisors")
+        .select("user_id, status")
+        .eq("status", "active");
+      const set = new Set<string>((data || []).map((r: any) => r.user_id));
+      setAdvisorUserIds(set);
+    })();
+  }, []);
 
   // Two-stage load: (1) fetch profile/role/idea rows for approved users,
   // (2) hydrate per-user expertise via the batch graph hook below.
@@ -253,7 +279,9 @@ const CoBuilders = () => {
   // Talents = not yet certified (certCount === 0). Co-Builders = at least 1 cert.
   // Always keep the current user pinned so they can edit their own card.
   const filteredCobuilders = cobuilders.filter((cb) => {
-    if (cb.user_id !== user?.id) {
+    if (filter === "advisors") {
+      if (!advisorUserIds.has(cb.user_id)) return false;
+    } else if (cb.user_id !== user?.id) {
       if (filter === "cobuilders" && cb.certCount < 1) return false;
       if (filter === "talents" && cb.certCount >= 1) return false;
     }
@@ -347,6 +375,11 @@ const CoBuilders = () => {
                     {canSeeCobuilders ? <Users className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
                     Co-Builders
                   </TabsTrigger>
+                  {canSeeAdvisors && (
+                    <TabsTrigger value="advisors" className="gap-1.5">
+                      <ShieldCheck className="w-3.5 h-3.5" /> Advisors
+                    </TabsTrigger>
+                  )}
                 </TabsList>
               </Tabs>
               <div className="relative flex-1 max-w-md">

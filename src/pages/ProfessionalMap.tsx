@@ -68,7 +68,7 @@ export default function ProfessionalMap() {
         title: "Find co-builders",
         reason: "Density of warm matches improves with 5+ connections",
         next: "Open the co-builder directory",
-        link: "/cobuilders",
+        link: "/people",
       },
     ];
     return [...fromGraph, ...fallback].slice(0, Math.max(3, fromGraph.length + 1));
