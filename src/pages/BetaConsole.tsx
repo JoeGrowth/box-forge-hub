@@ -93,6 +93,36 @@ function MetricCard({ label, value, tone = "default", sub }: Metric) {
   );
 }
 
+function ReviewList({
+  title, subtitle, empty, rows,
+}: { title: string; subtitle: string; empty: string; rows: { key: string; primary: string; secondary: string; metric: string }[] }) {
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm">{title}</CardTitle>
+        <p className="text-xs text-muted-foreground">{subtitle}</p>
+      </CardHeader>
+      <CardContent>
+        {rows.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{empty}</p>
+        ) : (
+          <ul className="divide-y divide-border">
+            {rows.map((r) => (
+              <li key={r.key} className="py-2 flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-foreground truncate">{r.primary}</p>
+                  <p className="text-[11px] text-muted-foreground truncate">{r.secondary}</p>
+                </div>
+                <span className="text-base font-semibold text-foreground shrink-0">{r.metric}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 function Section({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
     <section>
