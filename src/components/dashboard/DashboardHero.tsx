@@ -85,7 +85,8 @@ export function DashboardHero() {
     return "Good evening";
   };
 
-  const firstName = profile?.full_name?.split(" ")[0] || "Builder";
+  const rawFirst = profile?.full_name?.split(" ")[0] || "Builder";
+  const firstName = rawFirst.charAt(0).toUpperCase() + rawFirst.slice(1);
   const [primaryCta, secondaryCta] = ctasForGoal(goal, primaryRole);
   const PrimaryIcon = primaryCta.icon;
   const SecondaryIcon = secondaryCta.icon;

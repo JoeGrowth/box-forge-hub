@@ -95,16 +95,16 @@ export function DashboardOpportunities() {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-b4-teal" />
-            Top matches for you
+            Picked for you
           </CardTitle>
           <Button variant="ghost" size="sm" asChild>
             <Link to="/opportunities">
-              View all <ArrowRight className="ml-1 w-4 h-4" />
+              See everything <ArrowRight className="ml-1 w-4 h-4" />
             </Link>
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">
-          Ranked across jobs, training, consulting, tenders and startups.
+          Jobs, ventures, missions, training and tenders — ranked on one match score.
         </p>
       </CardHeader>
       <CardContent>
@@ -117,8 +117,8 @@ export function DashboardOpportunities() {
         ) : items.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Briefcase className="w-10 h-10 mx-auto mb-2 opacity-50" />
-            <p>No matches yet</p>
-            <p className="text-sm">Add skills to your profile to unlock recommendations.</p>
+            <p>No matches yet.</p>
+            <p className="text-sm">Add a few skills to your profile and the ecosystem will start pointing back at you.</p>
           </div>
         ) : (
           <div className="space-y-3">
