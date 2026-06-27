@@ -63,9 +63,21 @@ const getEpisodeLabel = (episode: string) => {
 const Entrepreneurship = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [applyProject, setApplyProject] = useState<StartupIdea | null>(null);
-  const [activeTab, setActiveTab] = useState("browse");
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "browse");
+
+  useEffect(() => {
+    if (searchParams.get("new") === "1") {
+      setShowCreateDialog(true);
+      setActiveTab("my");
+      const next = new URLSearchParams(searchParams);
+      next.delete("new");
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [browseProjects, setBrowseProjects] = useState<StartupIdea[]>([]);
   const [myProjects, setMyProjects] = useState<StartupIdea[]>([]);
   const [collaborations, setCollaborations] = useState<StartupIdea[]>([]);
