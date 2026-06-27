@@ -2,62 +2,14 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Sparkles, ArrowRight, Lightbulb, Search, Users, GraduationCap, DollarSign } from "lucide-react";
+import { Sparkles, ArrowRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { AIProfileDraftCard } from "@/components/dashboard/AIProfileDraftCard";
+import { ctasFor } from "@/lib/dashboardCtas";
 
 
-
-type CtaSpec = {
-  to: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  primary?: boolean;
-};
-
-// Map onboarding goal → two CTAs. Falls back to primary_role logic when goal is missing.
-function ctasForGoal(goal: string | null, primaryRole: string | null): [CtaSpec, CtaSpec] {
-  switch (goal) {
-    case "find_opportunities":
-      return [
-        { to: "/opportunities", label: "Browse Opportunities", icon: Search, primary: true },
-        { to: "/people", label: "Connect with People", icon: Users },
-      ];
-    case "join_startup":
-      return [
-        { to: "/opportunities?category=startup", label: "Browse Ideas", icon: Search, primary: true },
-        { to: "/people", label: "Connect Co-Builders", icon: Users },
-      ];
-    case "build_venture":
-      return [
-        { to: "/entrepreneurship?new=1", label: "Post an Idea", icon: Lightbulb, primary: true },
-        { to: "/people?tab=advisors", label: "Get a Validated Expert", icon: Sparkles },
-      ];
-    case "monetize_expertise":
-      return [
-        { to: "/publish-consulting", label: "Publish a Service", icon: DollarSign, primary: true },
-        { to: "/opportunities", label: "Browse Opportunities", icon: Search },
-      ];
-    case "learn_skills":
-      return [
-        { to: "/journey", label: "Open Learning", icon: GraduationCap, primary: true },
-        { to: "/opportunities", label: "Browse Opportunities", icon: Search },
-      ];
-    default:
-      if (primaryRole === "entrepreneur") {
-        return [
-          { to: "/entrepreneurship?new=1", label: "Post an Idea", icon: Lightbulb, primary: true },
-          { to: "/people", label: "Connect Co-Builders", icon: Users },
-        ];
-      }
-      return [
-        { to: "/opportunities?category=startup", label: "Browse Ideas", icon: Search, primary: true },
-        { to: "/people", label: "Connect Co-Builders", icon: Users },
-      ];
-  }
-}
 
 export function DashboardHero() {
   const { user } = useAuth();
@@ -91,6 +43,19 @@ export function DashboardHero() {
     },
   });
 
+  const { data: intent = null } = useQuery({
+    queryKey: ["onboarding_session_intent", user?.id],
+    enabled: !!user,
+    staleTime: 0,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("onboarding_sessions")
+        .select("onboarding_intent")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return ((data as any)?.onboarding_intent as string | null) ?? null;
+    },
+  });
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -101,7 +66,7 @@ export function DashboardHero() {
 
   const rawFirst = profile?.full_name?.split(" ")[0] || "Builder";
   const firstName = rawFirst.charAt(0).toUpperCase() + rawFirst.slice(1);
-  const [primaryCta, secondaryCta] = ctasForGoal(goal, primaryRole);
+  const { primary: primaryCta, secondary: secondaryCta } = ctasFor(goal, intent, primaryRole);
   const PrimaryIcon = primaryCta.icon;
   const SecondaryIcon = secondaryCta.icon;
 
