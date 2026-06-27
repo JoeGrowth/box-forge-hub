@@ -677,40 +677,43 @@ const CoBuilders = () => {
                           </p>
                         )}
 
-                        {/* Get Vaccinated Button - shown on current user's card if no cobuilder certification */}
-                        {isCurrentUser && cobuilder.certCount === 0 && (
-                          <div className="mt-4 pt-4 border-t border-border">
-                            <Button
-                              variant="teal"
-                              size="sm"
-                              onClick={() => navigate("/journey?section=cobuilder")}
-                              className="w-full gap-2"
-                            >
-                              <ShieldCheck className="w-4 h-4" />
-                              Get Vaccinated Co Builder
-                            </Button>
-                          </div>
-                        )}
+                        {/* Bottom action area — pinned so Message buttons align across cards */}
+                        <div className="mt-auto">
+                          {/* Get Vaccinated Button - shown on current user's card if no cobuilder certification */}
+                          {isCurrentUser && cobuilder.certCount === 0 && (
+                            <div className="mt-4 pt-4 border-t border-border">
+                              <Button
+                                variant="teal"
+                                size="sm"
+                                onClick={() => navigate("/journey?section=cobuilder")}
+                                className="w-full gap-2"
+                              >
+                                <ShieldCheck className="w-4 h-4" />
+                                Get Vaccinated Co Builder
+                              </Button>
+                            </div>
+                          )}
 
-                        {/* Message Button */}
-                        {!isCurrentUser && (
-                          <div className="mt-4 pt-4 border-t border-border">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleStartChat(cobuilder.user_id)}
-                              disabled={startingChat === cobuilder.user_id}
-                              className="w-full gap-2"
-                            >
-                              {startingChat === cobuilder.user_id ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <MessageCircle className="w-4 h-4" />
-                              )}
-                              Message
-                            </Button>
-                          </div>
-                        )}
+                          {/* Message Button */}
+                          {!isCurrentUser && (
+                            <div className="mt-4 pt-4 border-t border-border">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleStartChat(cobuilder.user_id)}
+                                disabled={startingChat === cobuilder.user_id}
+                                className="w-full gap-2"
+                              >
+                                {startingChat === cobuilder.user_id ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <MessageCircle className="w-4 h-4" />
+                                )}
+                                Message
+                              </Button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
