@@ -47,7 +47,20 @@ export function AdminUserPreviewDialog({
   const [toggling, setToggling] = useState(false);
   const [advisorDialogOpen, setAdvisorDialogOpen] = useState(false);
   const [boxAdminDialogOpen, setBoxAdminDialogOpen] = useState(false);
+  const [currentGoal, setCurrentGoal] = useState<string | null>(null);
+  const [goalHistory, setGoalHistory] = useState<Array<{ id: string; old_goal: string | null; new_goal: string; created_at: string; source: string | null }>>([]);
 
+  useEffect(() => {
+    if (!user?.id || !open) return;
+    (async () => {
+      const [{ data: sess }, { data: log }] = await Promise.all([
+        supabase.from("onboarding_sessions").select("goal").eq("user_id", user.id).maybeSingle(),
+        supabase.from("goal_change_log").select("id, old_goal, new_goal, created_at, source").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20),
+      ]);
+      setCurrentGoal((sess as any)?.goal ?? null);
+      setGoalHistory((log as any) ?? []);
+    })();
+  }, [user?.id, open]);
 
   if (!user) return null;
 
