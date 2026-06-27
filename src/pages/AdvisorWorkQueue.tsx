@@ -190,7 +190,41 @@ export default function AdvisorWorkQueue() {
 
     const { data, error } = await query;
     if (error) toast({ title: "Could not load queue", description: error.message, variant: "destructive" });
-    setRows((data as RequestRow[]) ?? []);
+    const allRows = (data as RequestRow[]) ?? [];
+    setRows(allRows);
+
+    // Fetch requester hints (anti-spam context)
+    const requesterIds = Array.from(new Set(allRows.map((r) => r.requester_id).filter(Boolean)));
+    if (requesterIds.length > 0) {
+      const [{ data: profs }, { data: counts }] = await Promise.all([
+        (supabase as any)
+          .from("profiles")
+          .select("user_id, full_name, avatar_url, professional_title, years_of_experience, created_at")
+          .in("user_id", requesterIds),
+        (supabase as any)
+          .from("box_inbound_requests")
+          .select("requester_id")
+          .in("requester_id", requesterIds),
+      ]);
+      const countMap: Record<string, number> = {};
+      (counts ?? []).forEach((c: any) => {
+        countMap[c.requester_id] = (countMap[c.requester_id] ?? 0) + 1;
+      });
+      const map: Record<string, RequesterHint> = {};
+      (profs ?? []).forEach((p: any) => {
+        const ageMs = Date.now() - new Date(p.created_at).getTime();
+        map[p.user_id] = {
+          full_name: p.full_name,
+          avatar_url: p.avatar_url,
+          professional_title: p.professional_title,
+          years_of_experience: p.years_of_experience,
+          account_age_days: Math.max(0, Math.floor(ageMs / 86_400_000)),
+          prior_requests: Math.max(0, (countMap[p.user_id] ?? 0) - 1),
+        };
+      });
+      setHints(map);
+    }
+
     setLoading(false);
   };
 
