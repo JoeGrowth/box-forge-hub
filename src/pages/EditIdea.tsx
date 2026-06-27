@@ -15,8 +15,11 @@ import {
   ArrowLeft,
   Plus,
   X,
-  AlertCircle
+  AlertCircle,
+  Lightbulb
 } from "lucide-react";
+import { SolutionCanvasDialog } from "@/components/idea/SolutionCanvasDialog";
+import { SolutionStageBadge, SolutionStage } from "@/components/idea/SolutionStageBadge";
 
 const SECTORS = [
   "Health",
