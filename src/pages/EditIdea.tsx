@@ -81,6 +81,7 @@ const EditIdea = () => {
       setRolesNeeded(data.roles_needed || []);
       setAdminNotes(data.admin_notes);
       setReviewStatus(data.review_status);
+      setSolutionStage((data.solution_stage as SolutionStage) ?? "draft");
       setLoading(false);
     };
 
