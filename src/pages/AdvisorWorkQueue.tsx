@@ -128,18 +128,11 @@ function RequesterProfileDialog({
     setLoading(true);
     setDetail(null);
     (async () => {
-      const [{ data: prof }, { data: skillRows }] = await Promise.all([
-        (supabase as any)
-          .from("profiles")
-          .select("full_name, avatar_url, professional_title, years_of_experience, bio, location, created_at")
-          .eq("user_id", userId)
-          .maybeSingle(),
-        (supabase as any)
-          .from("user_skills")
-          .select("skill_tags(name)")
-          .eq("user_id", userId)
-          .limit(20),
-      ]);
+      const { data: prof } = await (supabase as any)
+        .from("profiles")
+        .select("full_name, avatar_url, professional_title, years_of_experience, bio, created_at")
+        .eq("user_id", userId)
+        .maybeSingle();
       const ageDays = prof?.created_at
         ? Math.max(0, Math.floor((Date.now() - new Date(prof.created_at).getTime()) / 86_400_000))
         : baseHint?.account_age_days ?? 0;
@@ -149,10 +142,10 @@ function RequesterProfileDialog({
         professional_title: prof?.professional_title ?? baseHint?.professional_title ?? null,
         years_of_experience: prof?.years_of_experience ?? baseHint?.years_of_experience ?? null,
         bio: prof?.bio ?? null,
-        location: prof?.location ?? null,
+        location: null,
         account_age_days: ageDays,
         prior_requests: baseHint?.prior_requests ?? 0,
-        skills: (skillRows ?? []).map((s: any) => s.skill_tags?.name).filter(Boolean),
+        skills: [],
       });
       setLoading(false);
     })();
