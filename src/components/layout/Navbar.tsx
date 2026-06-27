@@ -7,7 +7,30 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, X, LogOut, User, Shield, ChevronDown, Briefcase, Lightbulb, Handshake, Plus, GraduationCap, FileText, Rocket, MoreHorizontal, Package, BookOpen, Compass, Building2, Sparkles, ListChecks, Activity, BarChart3 } from "lucide-react";
+import {
+  Menu,
+  X,
+  LogOut,
+  User,
+  Shield,
+  ChevronDown,
+  Briefcase,
+  Lightbulb,
+  Handshake,
+  Plus,
+  GraduationCap,
+  FileText,
+  Rocket,
+  MoreHorizontal,
+  Package,
+  BookOpen,
+  Compass,
+  Building2,
+  Sparkles,
+  ListChecks,
+  Activity,
+  BarChart3,
+} from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,7 +53,7 @@ const engineLinks = [
 
 const publishLinks = [
   { name: "Recruiting", path: "/publish-job", icon: Briefcase, desc: "Offer a job" },
-  { name: "Consulting Opportunity", path: "/publish-consulting", icon: Handshake, desc: "Create a service" },
+  { name: "Consulting", path: "/publish-consulting", icon: Handshake, desc: "Create a service" },
   { name: "Startup Idea", path: "/create-idea", icon: Lightbulb, desc: "Launch a venture" },
   { name: "Training", path: "/publish-training", icon: GraduationCap, desc: "Submit a training" },
   { name: "Procuring", path: "/procuring", icon: FileText, desc: "Post a tender" },
@@ -54,7 +77,6 @@ const moreLinks = [
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isAdminLoading, setIsAdminLoading] = useState(false);
   const [engineOpen, setEngineOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
@@ -67,11 +89,9 @@ export function Navbar() {
     const checkUserStatus = async () => {
       if (!user) {
         setIsAdmin(false);
-        setIsAdminLoading(false);
         return;
       }
 
-      setIsAdminLoading(true);
       const adminResult = await supabase
         .from("user_roles")
         .select("role")
@@ -80,15 +100,11 @@ export function Navbar() {
         .maybeSingle();
 
       setIsAdmin(!!adminResult.data);
-      setIsAdminLoading(false);
     };
     checkUserStatus();
   }, [user]);
 
-  const isEngineActive = useMemo(
-    () => engineLinks.some((l) => location.pathname === l.path),
-    [location.pathname]
-  );
+  const isEngineActive = useMemo(() => engineLinks.some((l) => location.pathname === l.path), [location.pathname]);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
@@ -110,9 +126,7 @@ export function Navbar() {
                   key={link.path}
                   to={link.path}
                   className={`text-sm font-medium transition-colors hover:text-b4-teal ${
-                    location.pathname === link.path
-                      ? "text-b4-teal"
-                      : "text-muted-foreground"
+                    location.pathname === link.path ? "text-b4-teal" : "text-muted-foreground"
                   }`}
                 >
                   {link.name}
@@ -142,9 +156,7 @@ export function Navbar() {
                           <Link
                             to={link.path}
                             className={`flex items-center gap-2 cursor-pointer ${
-                              location.pathname === link.path
-                                ? "text-b4-teal"
-                                : "text-foreground"
+                              location.pathname === link.path ? "text-b4-teal" : "text-foreground"
                             }`}
                           >
                             <Icon size={16} />
@@ -159,9 +171,7 @@ export function Navbar() {
                 <Link
                   to="/opportunities"
                   className={`text-sm font-medium transition-colors hover:text-b4-teal ${
-                    location.pathname === "/opportunities"
-                      ? "text-b4-teal"
-                      : "text-muted-foreground"
+                    location.pathname === "/opportunities" ? "text-b4-teal" : "text-muted-foreground"
                   }`}
                 >
                   Opportunities
@@ -229,31 +239,33 @@ export function Navbar() {
           </div>
 
           {/* Desktop CTA */}
-          <div className="hidden md:flex items-center justify-end gap-3 min-w-[360px]">
-            {!loading && (
-              user ? (
+          <div className="hidden md:flex items-center gap-3">
+            {!loading &&
+              (user ? (
                 <>
                   <ChatBell />
                   <NotificationBell />
-                  <div className="w-[86px] shrink-0 flex justify-center">
-                    {isAdmin ? (
-                      <Button variant="ghost" size="sm" asChild>
-                        <Link to="/admin" className="flex items-center gap-2">
-                          <Shield size={16} />
-                          Admin
-                        </Link>
-                      </Button>
-                    ) : isAdminLoading ? (
-                      <div className="h-9 w-[86px]" aria-hidden="true" />
-                    ) : null}
-                  </div>
+                  {isAdmin && (
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link to="/admin" className="flex items-center gap-2">
+                        <Shield size={16} />
+                        Admin
+                      </Link>
+                    </Button>
+                  )}
                   <Button variant="ghost" size="sm" asChild>
                     <Link to="/profile" className="flex items-center gap-2">
                       <User size={16} />
                       <span className="max-w-[120px] truncate">{user.user_metadata?.full_name || user.email}</span>
                     </Link>
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={async () => { await signOut(); }}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={async () => {
+                      await signOut();
+                    }}
+                  >
                     <LogOut size={16} className="mr-1" />
                     Sign Out
                   </Button>
@@ -267,8 +279,7 @@ export function Navbar() {
                     <Link to="/auth?mode=signup">Get Started</Link>
                   </Button>
                 </>
-              )
-            )}
+              ))}
           </div>
 
           {/* Mobile: Icons + Menu Button */}
@@ -279,11 +290,7 @@ export function Navbar() {
                 <NotificationBell />
               </>
             )}
-            <button
-              className="p-2 text-foreground"
-              onClick={() => setIsOpen(!isOpen)}
-              aria-label="Toggle menu"
-            >
+            <button className="p-2 text-foreground" onClick={() => setIsOpen(!isOpen)} aria-label="Toggle menu">
               {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
@@ -299,9 +306,7 @@ export function Navbar() {
                     key={link.path}
                     to={link.path}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      location.pathname === link.path
-                        ? "bg-muted text-b4-teal"
-                        : "text-muted-foreground hover:bg-muted"
+                      location.pathname === link.path ? "bg-muted text-b4-teal" : "text-muted-foreground hover:bg-muted"
                     }`}
                     onClick={() => setIsOpen(false)}
                   >
@@ -381,8 +386,8 @@ export function Navbar() {
                 </>
               )}
               <div className="flex flex-col gap-2 px-4 pt-2">
-                {!loading && (
-                  user ? (
+                {!loading &&
+                  (user ? (
                     <>
                       <Button variant="outline" size="sm" asChild>
                         <Link to="/profile" onClick={() => setIsOpen(false)}>
@@ -390,7 +395,14 @@ export function Navbar() {
                           Profile
                         </Link>
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={async () => { await signOut(); setIsOpen(false); }}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={async () => {
+                          await signOut();
+                          setIsOpen(false);
+                        }}
+                      >
                         <LogOut size={16} className="mr-1" />
                         Sign Out
                       </Button>
@@ -398,14 +410,17 @@ export function Navbar() {
                   ) : (
                     <>
                       <Button variant="outline" size="sm" className="flex-1" asChild>
-                        <Link to="/login" onClick={() => setIsOpen(false)}>Log In</Link>
+                        <Link to="/login" onClick={() => setIsOpen(false)}>
+                          Log In
+                        </Link>
                       </Button>
                       <Button variant="teal" size="sm" className="flex-1" asChild>
-                        <Link to="/auth?mode=signup" onClick={() => setIsOpen(false)}>Get Started</Link>
+                        <Link to="/auth?mode=signup" onClick={() => setIsOpen(false)}>
+                          Get Started
+                        </Link>
                       </Button>
                     </>
-                  )
-                )}
+                  ))}
               </div>
             </div>
           </div>
