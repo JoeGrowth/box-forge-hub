@@ -92,7 +92,7 @@ export function ApplyToJoinDialog({
     if (!user || checkedExisting) return;
     setCheckedExisting(true);
 
-    const [certRes, appRes] = await Promise.all([
+    const [certRes, appRes, ideaRes] = await Promise.all([
       supabase
         .from("user_certifications")
         .select("id")
@@ -105,12 +105,19 @@ export function ApplyToJoinDialog({
         .eq("startup_id", idea.id)
         .eq("applicant_id", user.id)
         .maybeSingle(),
+      supabase
+        .from("startup_ideas")
+        .select("solution_stage")
+        .eq("id", idea.id)
+        .maybeSingle(),
     ]);
 
     setHasCoBuilderCert(!!certRes.data);
     setHasCheckedCert(true);
     if (appRes.data) setExistingApplication(appRes.data);
+    setSolutionStage(((ideaRes.data as { solution_stage?: string } | null)?.solution_stage ?? "draft") as SolutionStage);
   };
+
 
   if (open && !checkedExisting) {
     checkPrerequisites();
