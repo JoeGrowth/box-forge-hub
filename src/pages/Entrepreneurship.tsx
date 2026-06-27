@@ -571,7 +571,7 @@ const Entrepreneurship = () => {
                   ) : (
                     <div className="space-y-4">
                       {myProjects.map((project) => (
-                        <MyProjectCard key={project.id} project={project} />
+                        <MyProjectCard key={project.id} project={project} isOwner={true} />
                       ))}
                     </div>
                   )}
