@@ -140,7 +140,11 @@ export default function AdvisorWorkQueue() {
 
   const sections = useMemo(() => {
     const now = Date.now();
-    const awaiting = rows.filter((r) => r.status === "matched" && !r.accepted_at);
+    const awaiting = rows.filter(
+      (r) =>
+        (r.status === "matched" && !r.accepted_at) ||
+        (r.status === "requested" && !r.assigned_advisor_id),
+    );
     const awaitingSignoff = rows.filter(
       (r) => r.request_type === "solution_signoff" && r.status === "accepted" && !r.completed_at
     );
