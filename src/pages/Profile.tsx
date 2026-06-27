@@ -784,6 +784,10 @@ const Profile = () => {
               </div>
             )}
 
+            <div className="mb-8">
+              <GoalSelectorCard />
+            </div>
+
             {/* Part 1: Natural Role Section */}
             {onboardingState?.primary_role === "cobuilder" && naturalRole && (
               <div className="bg-card rounded-3xl border border-border p-8 mb-8">
