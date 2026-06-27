@@ -36,9 +36,11 @@ import {
   Loader2,
   X,
   Eye,
+  ShieldCheck,
 } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { AdminUserPreviewDialog } from "./AdminUserPreviewDialog";
+import { AddAdvisorDialog } from "./AddAdvisorDialog";
 import {
   Tooltip,
   TooltipContent,
@@ -67,6 +69,8 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
   // Preview dialog state
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   const [previewUser, setPreviewUser] = useState<UserWithDetails | null>(null);
+  const [advisorDialogOpen, setAdvisorDialogOpen] = useState(false);
+  const [advisorTargetUser, setAdvisorTargetUser] = useState<UserWithDetails | null>(null);
   
   // Delete dialog state (works for both single and bulk)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -607,6 +611,24 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
                               <TooltipContent>Preview user</TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-b4-teal hover:text-b4-teal hover:bg-b4-teal/10"
+                                  onClick={() => {
+                                    setAdvisorTargetUser(user);
+                                    setAdvisorDialogOpen(true);
+                                  }}
+                                >
+                                  <ShieldCheck className="w-4 h-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Appoint as advisor</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                           <Button
                             variant="ghost"
                             size="icon"
@@ -830,6 +852,15 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
         onOpenChange={setPreviewDialogOpen}
         user={previewUser}
         onUserUpdated={onRefresh}
+      />
+
+      {/* Add Advisor Dialog */}
+      <AddAdvisorDialog
+        open={advisorDialogOpen}
+        onOpenChange={setAdvisorDialogOpen}
+        userId={advisorTargetUser?.id ?? null}
+        userName={advisorTargetUser?.profile?.full_name ?? null}
+        onAdded={onRefresh}
       />
     </div>
   );
