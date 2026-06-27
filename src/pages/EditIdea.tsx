@@ -242,6 +242,42 @@ const EditIdea = () => {
               </div>
             )}
 
+            {/* Solution Canvas gate */}
+            <div className="mb-6 p-5 rounded-xl border border-border bg-card">
+              <div className="flex items-start gap-3">
+                <Lightbulb className="w-5 h-5 text-b4-teal flex-shrink-0 mt-1" />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-semibold text-foreground">Solution Canvas</h3>
+                    <SolutionStageBadge stage={solutionStage} />
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {solutionStage === "draft" && "Required before others can apply. Prove the problem before building the product."}
+                    {solutionStage === "discovery" && "Applications are open with a 'not validated' badge. Get an advisor or admin sign-off within 7 days to keep recruiting."}
+                    {solutionStage === "validated" && "Signed off. Full recruiting unlocked."}
+                  </p>
+                  <Button type="button" variant="outline" size="sm" className="mt-3" onClick={() => setCanvasOpen(true)}>
+                    {solutionStage === "draft" ? "Fill Solution Canvas" : "View / Edit Canvas"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <SolutionCanvasDialog
+              open={canvasOpen}
+              onOpenChange={setCanvasOpen}
+              ideaId={id!}
+              isCreator={true}
+              onSaved={async () => {
+                const { data } = await supabase
+                  .from("startup_ideas")
+                  .select("solution_stage")
+                  .eq("id", id!)
+                  .maybeSingle();
+                setSolutionStage(((data as { solution_stage?: string } | null)?.solution_stage ?? "draft") as SolutionStage);
+              }}
+            />
+
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="bg-card rounded-2xl border border-border p-8">
                 <h2 className="font-display text-xl font-bold text-foreground mb-6">
