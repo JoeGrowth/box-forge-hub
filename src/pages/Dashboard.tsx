@@ -11,6 +11,7 @@ import { DashboardProgress } from "@/components/dashboard/DashboardProgress";
 import { DashboardNextSteps } from "@/components/dashboard/DashboardNextSteps";
 import { DashboardOpportunities } from "@/components/dashboard/DashboardOpportunities";
 import { DashboardAchievements } from "@/components/dashboard/DashboardAchievements";
+import { CommitmentsPanel } from "@/components/commitments/CommitmentsPanel";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const Dashboard = () => {
@@ -56,6 +57,7 @@ const Dashboard = () => {
             <div className="grid lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 space-y-8">
                 <DashboardProgress />
+                <CommitmentsPanel />
                 <DashboardOpportunities />
               </div>
               <div className="space-y-8">
