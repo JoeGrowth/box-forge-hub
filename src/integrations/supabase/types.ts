@@ -5128,6 +5128,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_event_audit: { Args: never; Returns: Json }
       get_global_activity: {
         Args: { _limit?: number; _min_importance?: string }
         Returns: {
@@ -5183,6 +5184,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      get_weekly_review: { Args: never; Returns: Json }
       graph_upsert_edge: {
         Args: {
           _attributes: Json
