@@ -1371,6 +1371,59 @@ export type Database = {
           },
         ]
       }
+      idea_solution_canvas: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          current_alternatives: string | null
+          evidence: string | null
+          idea_id: string
+          problem_statement: string | null
+          signed_off_at: string | null
+          signed_off_by: string | null
+          signed_off_role: string | null
+          updated_at: string
+          who_suffers: string | null
+          why_now: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          current_alternatives?: string | null
+          evidence?: string | null
+          idea_id: string
+          problem_statement?: string | null
+          signed_off_at?: string | null
+          signed_off_by?: string | null
+          signed_off_role?: string | null
+          updated_at?: string
+          who_suffers?: string | null
+          why_now?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          current_alternatives?: string | null
+          evidence?: string | null
+          idea_id?: string
+          problem_statement?: string | null
+          signed_off_at?: string | null
+          signed_off_by?: string | null
+          signed_off_role?: string | null
+          updated_at?: string
+          who_suffers?: string | null
+          why_now?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "idea_solution_canvas_idea_id_fkey"
+            columns: ["idea_id"]
+            isOneToOne: true
+            referencedRelation: "startup_ideas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       intent_graph: {
         Row: {
           availability: string | null
@@ -3040,10 +3093,17 @@ export type Database = {
           growth_completed_at: string | null
           id: string
           is_looking_for_cobuilders: boolean | null
+          ladder_business_at: string | null
+          ladder_company_at: string | null
+          ladder_product_at: string | null
+          ladder_solution_at: string | null
+          ladder_structure_at: string | null
           review_status: string | null
           reviewed_at: string | null
           roles_needed: string[] | null
           sector: string | null
+          solution_extended_until: string | null
+          solution_stage: string
           status: string | null
           title: string
           updated_at: string
@@ -3059,10 +3119,17 @@ export type Database = {
           growth_completed_at?: string | null
           id?: string
           is_looking_for_cobuilders?: boolean | null
+          ladder_business_at?: string | null
+          ladder_company_at?: string | null
+          ladder_product_at?: string | null
+          ladder_solution_at?: string | null
+          ladder_structure_at?: string | null
           review_status?: string | null
           reviewed_at?: string | null
           roles_needed?: string[] | null
           sector?: string | null
+          solution_extended_until?: string | null
+          solution_stage?: string
           status?: string | null
           title: string
           updated_at?: string
@@ -3078,10 +3145,17 @@ export type Database = {
           growth_completed_at?: string | null
           id?: string
           is_looking_for_cobuilders?: boolean | null
+          ladder_business_at?: string | null
+          ladder_company_at?: string | null
+          ladder_product_at?: string | null
+          ladder_solution_at?: string | null
+          ladder_structure_at?: string | null
           review_status?: string | null
           reviewed_at?: string | null
           roles_needed?: string[] | null
           sector?: string | null
+          solution_extended_until?: string | null
+          solution_stage?: string
           status?: string | null
           title?: string
           updated_at?: string
