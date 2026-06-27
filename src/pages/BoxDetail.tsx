@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { buildDemoBox, type DemoBoxDetail } from "@/data/boxDemoTemplate";
+import { fetchBoxLiveStats } from "@/lib/boxAffinity";
 
 import { BoxAdvisorStrip } from "@/components/box/BoxAdvisorStrip";
 import { BoxFeed } from "@/components/box/BoxFeed";
@@ -260,6 +261,7 @@ const BoxDetail = () => {
   const staticBox = boxId ? boxesData[boxId] : null;
   const [dbBox, setDbBox] = useState<DemoBoxDetail | null>(null);
   const [loadingDb, setLoadingDb] = useState(!staticBox);
+  const [liveStats, setLiveStats] = useState<{ startups: number; cobuilders: number; featured: { name: string; desc: string }[] } | null>(null);
 
   useEffect(() => {
     if (staticBox || !boxId) {
@@ -278,7 +280,27 @@ const BoxDetail = () => {
     })();
   }, [boxId, staticBox]);
 
-  const box = staticBox ?? dbBox;
+  // Live stats from the database (startups, cobuilders, featured ventures)
+  useEffect(() => {
+    if (!boxId) return;
+    fetchBoxLiveStats(boxId).then((stats) => {
+      setLiveStats({
+        startups: stats.startups,
+        cobuilders: stats.cobuilders,
+        featured: stats.featured.map((f) => ({ name: f.name, desc: f.desc || "Live venture" })),
+      });
+    });
+  }, [boxId]);
+
+  const baseBox = staticBox ?? dbBox;
+  const box = baseBox
+    ? {
+        ...baseBox,
+        startups: liveStats?.startups ?? baseBox.startups,
+        cobuilders: liveStats?.cobuilders ?? baseBox.cobuilders,
+        featured: liveStats && liveStats.featured.length > 0 ? liveStats.featured : baseBox.featured,
+      }
+    : null;
 
   if (!box) {
     if (loadingDb) {
