@@ -29,6 +29,15 @@ interface RequestRow {
 
 const ageHours = (iso: string) => Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 3_600_000));
 
+interface RequesterHint {
+  full_name: string | null;
+  avatar_url: string | null;
+  professional_title: string | null;
+  years_of_experience: number | null;
+  account_age_days: number;
+  prior_requests: number;
+}
+
 function Section({
   title,
   icon,
