@@ -106,7 +106,7 @@ export async function createOpportunity(input: {
         box_id: input.box_id ?? null,
         visibility: input.visibility ?? "public",
         status: input.status ?? "open",
-        metadata: input.metadata ?? {},
+        metadata: (input.metadata ?? {}) as any,
         idempotency_key: input.idempotency_key ?? null,
       },
     ])
@@ -155,7 +155,7 @@ export async function applyToOpportunity(input: {
         opportunity_id: input.opportunity_id,
         applicant_id: user.user.id,
         message: input.message ?? null,
-        metadata: input.metadata ?? {},
+        metadata: (input.metadata ?? {}) as any,
         idempotency_key: `opp_app:${input.opportunity_id}:${user.user.id}`,
       },
     ])
