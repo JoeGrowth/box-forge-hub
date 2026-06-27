@@ -83,7 +83,10 @@ export function AddAdvisorDialog({
     setOverrideReason("");
     setReadiness(null);
     setExisting([]);
+    setNewBoxName("");
+    setNewBoxSlug("");
     setLoading(true);
+
     (async () => {
       const [{ data: bx }, { data: rd }, { data: ex }] = await Promise.all([
         (supabase as any).from("boxes").select("id,slug,name").order("name"),
