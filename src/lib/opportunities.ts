@@ -95,23 +95,25 @@ export async function createOpportunity(input: {
 
   const { data, error } = await supabase
     .from("opportunities")
-    .insert({
-      creator_id: user.user.id,
-      type: input.type,
-      title: input.title,
-      description: input.description ?? null,
-      source_entity_type: input.source_entity_type ?? null,
-      source_entity_id: input.source_entity_id ?? null,
-      box_id: input.box_id ?? null,
-      visibility: input.visibility ?? "public",
-      status: input.status ?? "open",
-      metadata: input.metadata ?? {},
-      idempotency_key: input.idempotency_key ?? null,
-    })
+    .insert([
+      {
+        creator_id: user.user.id,
+        type: input.type,
+        title: input.title,
+        description: input.description ?? null,
+        source_entity_type: input.source_entity_type ?? null,
+        source_entity_id: input.source_entity_id ?? null,
+        box_id: input.box_id ?? null,
+        visibility: input.visibility ?? "public",
+        status: input.status ?? "open",
+        metadata: input.metadata ?? {},
+        idempotency_key: input.idempotency_key ?? null,
+      },
+    ])
     .select("*")
     .single();
   if (error) throw error;
-  return data as Opportunity;
+  return data as unknown as Opportunity;
 }
 
 export async function openOpportunity(opportunityId: string) {
@@ -148,17 +150,19 @@ export async function applyToOpportunity(input: {
   if (!user.user) throw new Error("Not authenticated");
   const { data, error } = await supabase
     .from("opportunity_applications")
-    .insert({
-      opportunity_id: input.opportunity_id,
-      applicant_id: user.user.id,
-      message: input.message ?? null,
-      metadata: input.metadata ?? {},
-      idempotency_key: `opp_app:${input.opportunity_id}:${user.user.id}`,
-    })
+    .insert([
+      {
+        opportunity_id: input.opportunity_id,
+        applicant_id: user.user.id,
+        message: input.message ?? null,
+        metadata: input.metadata ?? {},
+        idempotency_key: `opp_app:${input.opportunity_id}:${user.user.id}`,
+      },
+    ])
     .select("*")
     .single();
   if (error) throw error;
-  return data as OpportunityApplication;
+  return data as unknown as OpportunityApplication;
 }
 
 export async function decideApplication(
