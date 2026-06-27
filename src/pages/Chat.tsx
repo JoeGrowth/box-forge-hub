@@ -12,6 +12,7 @@ import { ArrowLeft, Send, Loader2, MessageSquare, Briefcase } from "lucide-react
 import { format } from "date-fns";
 import { ChatFileUpload } from "@/components/chat/ChatFileUpload";
 import { ChatMessageBubble } from "@/components/chat/ChatMessageBubble";
+import { TrustBlock } from "@/components/trust/TrustBlock";
 
 interface Message {
   id: string;
@@ -351,6 +352,9 @@ const Chat = () => {
                   </Badge>
                 )}
               </div>
+              {otherUser?.user_id && (
+                <TrustBlock userId={otherUser.user_id} variant="inline" className="mt-1" />
+              )}
             </div>
           </div>
         </div>
