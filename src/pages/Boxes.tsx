@@ -190,7 +190,7 @@ const Boxes = () => {
                                       className="flex items-center gap-3 bg-card rounded-lg p-2"
                                     >
                                       <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-semibold">
-                                        {(a.profile?.full_name ?? "?")
+                                        {(a.full_name ?? "?")
                                           .split(" ")
                                           .map((w) => w[0])
                                           .slice(0, 2)
@@ -198,7 +198,7 @@ const Boxes = () => {
                                           .toUpperCase()}
                                       </div>
                                       <div className="text-sm font-medium text-foreground">
-                                        {a.profile?.full_name ?? "Advisor"}
+                                        {a.full_name ?? "Advisor"}
                                       </div>
                                       <Badge variant="secondary" className="ml-auto text-xs">
                                         Advisor
