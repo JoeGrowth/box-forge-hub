@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { buildDemoBox, type DemoBoxListing } from "@/data/boxDemoTemplate";
+import { fetchBoxLiveStats } from "@/lib/boxAffinity";
 import {
   Heart,
   Leaf,
@@ -145,6 +146,7 @@ const boxes = [
 
 const Boxes = () => {
   const [extraBoxes, setExtraBoxes] = useState<DemoBoxListing[]>([]);
+  const [liveStats, setLiveStats] = useState<Record<string, { startups: number; cobuilders: number; featured: { name: string; desc: string }[] }>>({});
 
   useEffect(() => {
     (async () => {
@@ -161,6 +163,25 @@ const Boxes = () => {
   }, []);
 
   const allBoxes = [...boxes, ...extraBoxes];
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const entries = await Promise.all(
+        allBoxes.map(async (b) => {
+          const s = await fetchBoxLiveStats(b.id);
+          return [b.id, {
+            startups: s.startups,
+            cobuilders: s.cobuilders,
+            featured: s.featured.map((f) => ({ name: f.name, desc: f.desc || "Live venture" })),
+          }] as const;
+        })
+      );
+      if (!cancelled) setLiveStats(Object.fromEntries(entries));
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allBoxes.length]);
 
   return (
     <div className="min-h-screen bg-background">
