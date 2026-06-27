@@ -26,6 +26,9 @@ import {
   Users,
   ArrowRight,
   CheckCircle2,
+  UserCircle2,
+  Lightbulb,
+  Lock,
 } from "lucide-react";
 
 interface AdvisorRow {
