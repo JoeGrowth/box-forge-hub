@@ -329,27 +329,139 @@ const Entrepreneurship = () => {
     </div>
   );
 
-  const MyProjectCard = ({ project }: { project: StartupIdea }) => (
+  const refreshMyAndCollabs = async () => {
+    if (!user) return;
+    const [{ data: mine }, { data: memberships }] = await Promise.all([
+      supabase.from("startup_ideas").select("*").eq("creator_id", user.id),
+      supabase.from("startup_team_members").select("startup_id").eq("member_user_id", user.id),
+    ]);
+    setMyProjects(mine || []);
+    const ids = (memberships || []).map((m) => m.startup_id);
+    if (ids.length) {
+      const { data: collabs } = await supabase.from("startup_ideas").select("*").in("id", ids);
+      setCollaborations(collabs || []);
+    } else {
+      setCollaborations([]);
+    }
+  };
+
+  const MyProjectCard = ({ project, isOwner }: { project: StartupIdea; isOwner: boolean }) => (
     <div className="border border-border rounded-2xl p-6 bg-card hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <h3 className="font-display text-xl font-bold text-foreground">{project.title}</h3>
             <Badge variant="outline" className="text-xs">{getEpisodeLabel(project.current_episode)}</Badge>
+            {isOwner && project.review_status && (
+              <Badge variant="secondary" className="text-xs capitalize">{project.review_status}</Badge>
+            )}
           </div>
           {project.sector && (
             <p className="text-sm text-muted-foreground italic mb-2">{project.sector}</p>
           )}
           <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
         </div>
-        <div className="flex flex-col gap-2 shrink-0">
+        <div className="flex flex-wrap gap-2 shrink-0 justify-end max-w-[60%]">
+          {isOwner && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={() => {
+                setIdeaToDelete({ id: project.id, title: project.title });
+                setDeleteDialogOpen(true);
+              }}
+              title="Delete idea"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
           <Button variant="outline" size="sm" asChild>
-            <Link to="/start">Manage</Link>
+            <Link to={`/opportunities/${project.id}`}>
+              <Eye className="w-3 h-3 mr-1" /> View
+            </Link>
           </Button>
+          {(isOwner ? project.review_status === "approved" : true) && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setTeamDialogIdea({ id: project.id, title: project.title });
+                  setTeamDialogOpen(true);
+                }}
+              >
+                <Users className="w-4 h-4 mr-1" /> Team
+              </Button>
+              {isOwner && !project.development_completed_at && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setFiveElementsIdea({ id: project.id, title: project.title, description: project.description });
+                    setFiveElementsDialogOpen(true);
+                  }}
+                >
+                  <Layers className="w-4 h-4 mr-1" /> 5 Elements
+                </Button>
+              )}
+              {project.development_completed_at && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedIdea({ id: project.id, title: project.title, currentEpisode: project.current_episode });
+                    setEpisodesDialogOpen(true);
+                  }}
+                >
+                  <Film className="w-4 h-4 mr-1" /> Episodes
+                </Button>
+              )}
+              {isOwner && project.current_episode === "development" && (
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setSelectedIdea({ id: project.id, title: project.title, currentEpisode: project.current_episode });
+                    setDevelopDialogOpen(true);
+                  }}
+                >
+                  Develop
+                </Button>
+              )}
+              {isOwner && project.current_episode === "validation" && (
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setSelectedIdea({ id: project.id, title: project.title, currentEpisode: project.current_episode });
+                    setValidationDialogOpen(true);
+                  }}
+                >
+                  <Shield className="w-4 h-4 mr-1" /> Validate
+                </Button>
+              )}
+              {isOwner && project.current_episode === "growth" && (
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setSelectedIdea({ id: project.id, title: project.title, currentEpisode: project.current_episode });
+                    setGrowthDialogOpen(true);
+                  }}
+                >
+                  <TrendingUp className="w-4 h-4 mr-1" /> Grow
+                </Button>
+              )}
+              {project.current_episode === "completed" && (
+                <Badge className="bg-b4-teal text-white">
+                  <CheckCircle className="w-3 h-3 mr-1" /> Journey Complete
+                </Badge>
+              )}
+            </>
+          )}
         </div>
       </div>
     </div>
   );
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -459,7 +571,7 @@ const Entrepreneurship = () => {
                   ) : (
                     <div className="space-y-4">
                       {myProjects.map((project) => (
-                        <MyProjectCard key={project.id} project={project} />
+                        <MyProjectCard key={project.id} project={project} isOwner={true} />
                       ))}
                     </div>
                   )}
@@ -482,7 +594,7 @@ const Entrepreneurship = () => {
                   ) : (
                     <div className="space-y-4">
                       {collaborations.map((project) => (
-                        <MyProjectCard key={project.id} project={project} />
+                        <MyProjectCard key={project.id} project={project} isOwner={false} />
                       ))}
                     </div>
                   )}
@@ -503,6 +615,114 @@ const Entrepreneurship = () => {
           onApplicationSubmitted={() => fetchData()}
         />
       )}
+
+      {selectedIdea && (
+        <>
+          <IdeaDevelopDialog
+            open={developDialogOpen}
+            onOpenChange={setDevelopDialogOpen}
+            ideaId={selectedIdea.id}
+            ideaTitle={selectedIdea.title}
+            onEpisodeComplete={refreshMyAndCollabs}
+          />
+          <IdeaValidationDialog
+            open={validationDialogOpen}
+            onOpenChange={setValidationDialogOpen}
+            ideaId={selectedIdea.id}
+            ideaTitle={selectedIdea.title}
+            onEpisodeComplete={refreshMyAndCollabs}
+          />
+          <IdeaGrowthDialog
+            open={growthDialogOpen}
+            onOpenChange={setGrowthDialogOpen}
+            ideaId={selectedIdea.id}
+            ideaTitle={selectedIdea.title}
+            onEpisodeComplete={refreshMyAndCollabs}
+          />
+          <IdeaEpisodesDialog
+            open={episodesDialogOpen}
+            onOpenChange={setEpisodesDialogOpen}
+            startupId={selectedIdea.id}
+            startupTitle={selectedIdea.title}
+            currentEpisode={selectedIdea.currentEpisode}
+          />
+        </>
+      )}
+
+      {teamDialogIdea && (
+        <TeamManagementDialog
+          open={teamDialogOpen}
+          onOpenChange={setTeamDialogOpen}
+          startupId={teamDialogIdea.id}
+          startupTitle={teamDialogIdea.title}
+          currentUserId={user?.id || ""}
+        />
+      )}
+
+      <FiveElementsDialog
+        open={fiveElementsDialogOpen}
+        onOpenChange={setFiveElementsDialogOpen}
+        idea={fiveElementsIdea}
+      />
+
+      <AlertDialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open);
+          if (!open) setDeleteType(null);
+        }}
+      >
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Choose deletion type</AlertDialogTitle>
+            <AlertDialogDescription>
+              What would you like to do with{" "}
+              <span className="font-semibold text-foreground">"{ideaToDelete?.title}"</span>?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-3 py-4">
+            <div
+              className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                deleteType === "archive" ? "border-amber-500 bg-amber-500/10" : "border-border hover:border-amber-500/50"
+              }`}
+              onClick={() => setDeleteType("archive")}
+            >
+              <p className="font-semibold text-foreground">Archive Idea (Recommended)</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Hidden from public view but can be restored later.
+              </p>
+            </div>
+            <div
+              className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                deleteType === "permanent" ? "border-destructive bg-destructive/10" : "border-border hover:border-destructive/50"
+              }`}
+              onClick={() => setDeleteType("permanent")}
+            >
+              <p className="font-semibold text-foreground">Delete Permanently</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Idea and associated data will be permanently removed. Cannot be undone.
+              </p>
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteIdea}
+              disabled={isDeleting || !deleteType}
+              className={
+                deleteType === "permanent"
+                  ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  : "bg-amber-500 text-white hover:bg-amber-600"
+              }
+            >
+              {isDeleting ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{deleteType === "permanent" ? "Deleting..." : "Archiving..."}</>
+              ) : deleteType === "permanent" ? "Delete Permanently" : "Archive Idea"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
     </div>
   );
 };
