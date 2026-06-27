@@ -105,24 +105,39 @@ const CoBuilders = () => {
         .maybeSingle();
       const stage = (data as any)?.current_state ?? "novice";
       setMyStage(stage);
-      if (COBUILDER_STAGES.has(stage)) setFilter("cobuilders");
+      // Only auto-switch when there is no explicit tab in the URL.
+      if (COBUILDER_STAGES.has(stage) && !searchParams.get("tab")) {
+        setFilter("cobuilders");
+      }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
-  // Gate the Advisors tab: admin (user_roles) or ecosystem admin (box_ecosystem_admins).
+  // Gate the Advisors tab via server-validated SECURITY DEFINER RPC.
+  // Protects against client-side route tampering.
   useEffect(() => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      setCanSeeAdvisors(false);
+      return;
+    }
     (async () => {
-      const [{ data: adminRow }, { data: ecoRow }] = await Promise.all([
-        supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle(),
-        supabase.from("box_ecosystem_admins").select("user_id").eq("user_id", user.id).limit(1).maybeSingle(),
-      ]);
-      setCanSeeAdvisors(!!adminRow || !!ecoRow);
+      const { data, error } = await supabase.rpc("can_view_advisors_directory");
+      const allowed = !error && data === true;
+      setCanSeeAdvisors(allowed);
+      // If URL requests advisors but user isn't authorized, fall back to talents.
+      if (!allowed && (searchParams.get("tab") as DirectoryFilter) === "advisors") {
+        setFilter("talents");
+      }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
-  // Load advisor user_ids (active assignments) — used to filter the Advisors tab.
+  // Load advisor user_ids (active assignments) — only when authorized.
   useEffect(() => {
+    if (!canSeeAdvisors) {
+      setAdvisorUserIds(new Set());
+      return;
+    }
     (async () => {
       const { data } = await supabase
         .from("box_advisors")
@@ -131,7 +146,7 @@ const CoBuilders = () => {
       const set = new Set<string>((data || []).map((r: any) => r.user_id));
       setAdvisorUserIds(set);
     })();
-  }, []);
+  }, [canSeeAdvisors]);
 
   // Two-stage load: (1) fetch profile/role/idea rows for approved users,
   // (2) hydrate per-user expertise via the batch graph hook below.
