@@ -20,6 +20,7 @@ export function GoalSelectorCard() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [currentGoal, setCurrentGoal] = useState<string | null>(null);
+  const [onboardingIntent, setOnboardingIntent] = useState<string | null>(null);
   const [selected, setSelected] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -28,11 +29,13 @@ export function GoalSelectorCard() {
     if (!user) return;
     const { data } = await supabase
       .from("onboarding_sessions")
-      .select("goal")
+      .select("goal, onboarding_intent")
       .eq("user_id", user.id)
       .maybeSingle();
     const g = (data as any)?.goal ?? null;
+    const intent = (data as any)?.onboarding_intent ?? null;
     setCurrentGoal(g);
+    setOnboardingIntent(intent);
     setSelected(g ?? "");
     setLoading(false);
   };
@@ -77,13 +80,22 @@ export function GoalSelectorCard() {
         <p className="text-sm text-muted-foreground">
           Pick the direction that fits you today. Your dashboard messages and CTAs will adapt instantly.
         </p>
-        <div className="mt-2 rounded-lg bg-muted/60 px-3 py-2 text-sm">
-          <span className="text-muted-foreground">Your current answer: </span>
-          <span className="font-semibold text-foreground">
-            {currentLabel ?? "Not set yet — pick one below"}
-          </span>
+        <div className="mt-3 space-y-2">
+          {onboardingIntent && (
+            <div className="rounded-lg border border-b4-teal/30 bg-b4-teal/5 px-3 py-2 text-sm">
+              <span className="text-muted-foreground">Your onboarding answer: </span>
+              <span className="font-semibold text-foreground">{onboardingIntent}</span>
+            </div>
+          )}
+          <div className="rounded-lg bg-muted/60 px-3 py-2 text-sm">
+            <span className="text-muted-foreground">Current direction: </span>
+            <span className="font-semibold text-foreground">
+              {currentLabel ?? "Not set yet — pick one below"}
+            </span>
+          </div>
         </div>
       </CardHeader>
+
 
       <CardContent className="space-y-4">
         <RadioGroup value={selected} onValueChange={setSelected} className="space-y-2">
