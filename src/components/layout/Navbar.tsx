@@ -85,23 +85,39 @@ export function Navbar() {
   const { user, signOut, loading } = useAuth();
   const { canAccessBoosting, canAccessScaling, potentialRole } = useUserStatus();
 
+  // Hydrate admin flag synchronously from localStorage so the navbar layout
+  // is stable on first paint (no width jump when Admin button appears after
+  // an async role check). Then re-verify in the background and update cache.
   useEffect(() => {
-    const checkUserStatus = async () => {
-      if (!user) {
-        setIsAdmin(false);
-        return;
-      }
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
+    const cacheKey = `b4_is_admin:${user.id}`;
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached === "1") setIsAdmin(true);
+      else if (cached === "0") setIsAdmin(false);
+    } catch {}
 
-      const adminResult = await supabase
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id)
         .eq("role", "admin")
         .maybeSingle();
-
-      setIsAdmin(!!adminResult.data);
+      if (cancelled) return;
+      const next = !!data;
+      setIsAdmin(next);
+      try {
+        localStorage.setItem(cacheKey, next ? "1" : "0");
+      } catch {}
+    })();
+    return () => {
+      cancelled = true;
     };
-    checkUserStatus();
   }, [user]);
 
   const isEngineActive = useMemo(() => engineLinks.some((l) => location.pathname === l.path), [location.pathname]);
