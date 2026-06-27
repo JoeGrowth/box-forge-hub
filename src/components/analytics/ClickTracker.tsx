@@ -30,7 +30,8 @@ export function ClickTracker() {
         .trim();
       if (!rawLabel) return;
 
-      const kindAttr = el.getAttribute("data-track-kind") as
+      const kindEl = el.closest<HTMLElement>("[data-track-kind]");
+      const kindAttr = kindEl?.getAttribute("data-track-kind") as
         | "navbar"
         | "button"
         | "link"
