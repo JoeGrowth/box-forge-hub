@@ -25,6 +25,8 @@ import {
   Rocket,
   ShieldCheck,
   ShieldOff,
+  Compass,
+  Crown,
 } from "lucide-react";
 
 interface AdminUserPreviewDialogProps {
@@ -349,8 +351,83 @@ export function AdminUserPreviewDialog({
               </Button>
             </CardContent>
           </Card>
+
+          {/* Quick-grant: Advisor & Ecosystem Admin for Box For Security Solutions */}
+          <BoxRoleQuickGrant userId={user.id} onDone={onUserUpdated} />
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function BoxRoleQuickGrant({ userId, onDone }: { userId: string; onDone?: () => void }) {
+  const BOX_NAME = "Box For Security Solutions";
+  const [boxName, setBoxName] = useState(BOX_NAME);
+  const [busy, setBusy] = useState<null | "advisor" | "ecosystem_admin">(null);
+
+  async function grant(role: "advisor" | "ecosystem_admin") {
+    if (!boxName.trim()) {
+      toast({ title: "Box name required", variant: "destructive" });
+      return;
+    }
+    setBusy(role);
+    const { data, error } = await supabase.rpc("grant_box_role", {
+      _target_user: userId,
+      _box_name: boxName.trim(),
+      _role: role,
+      _override_reason: null,
+    });
+    setBusy(null);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({
+      title: role === "advisor" ? "Advisor role granted" : "Ecosystem Admin assigned",
+      description: `Box: ${(data as any)?.box_name ?? boxName}`,
+    });
+    onDone?.();
+  }
+
+  return (
+    <Card className="border-dashed">
+      <CardContent className="pt-4 space-y-3">
+        <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+          <Compass className="w-4 h-4 text-primary" />
+          Box Roles · Quick Grant
+        </h4>
+        <p className="text-xs text-muted-foreground">
+          Auto-creates the Box if it doesn't exist, then assigns the role.
+        </p>
+        <input
+          type="text"
+          value={boxName}
+          onChange={(e) => setBoxName(e.target.value)}
+          className="w-full text-sm px-3 py-2 rounded-md border border-input bg-background"
+          placeholder="Box name"
+        />
+        <div className="grid grid-cols-1 gap-2">
+          <Button
+            size="sm"
+            disabled={busy !== null}
+            onClick={() => grant("advisor")}
+            className="w-full"
+          >
+            <ShieldCheck className="w-4 h-4 mr-2" />
+            {busy === "advisor" ? "Granting..." : "Grant Advisor Role"}
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            disabled={busy !== null}
+            onClick={() => grant("ecosystem_admin")}
+            className="w-full"
+          >
+            <Crown className="w-4 h-4 mr-2" />
+            {busy === "ecosystem_admin" ? "Assigning..." : "Assign as Ecosystem Admin"}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
