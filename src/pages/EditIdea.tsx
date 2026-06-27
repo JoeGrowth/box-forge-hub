@@ -48,6 +48,8 @@ const EditIdea = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [solutionStage, setSolutionStage] = useState<SolutionStage>("draft");
+  const [canvasOpen, setCanvasOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
