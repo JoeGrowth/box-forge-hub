@@ -110,7 +110,7 @@ export function CommitmentsPanel() {
           <CardTitle className="flex items-center gap-2"><Target className="w-5 h-5" /> Your commitments</CardTitle>
           <p className="text-sm text-muted-foreground mt-1">Words become weight when you put a date on them. 14 days. Public to your future self.</p>
         </div>
-        <Button size="sm" onClick={() => setCreateOpen(true)}><Plus className="w-4 h-4 mr-1.5" /> New commitment</Button>
+        <Button size="sm" onClick={() => setCreateOpen(true)}><Plus className="w-4 h-4 mr-1.5" /> New</Button>
       </CardHeader>
       <CardContent className="space-y-4">
         {loading ? (
