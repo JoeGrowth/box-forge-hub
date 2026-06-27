@@ -15,6 +15,7 @@ import {
   Building2,
   Cpu,
   ShieldCheck,
+  Landmark,
   ArrowRight,
   Users,
   Rocket,
