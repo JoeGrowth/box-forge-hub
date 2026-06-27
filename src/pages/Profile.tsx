@@ -732,6 +732,10 @@ const Profile = () => {
               </div>
             </div>
 
+            <div className="mb-8">
+              <GoalSelectorCard />
+            </div>
+
             {/* Rejected Application - Retry Card */}
             {onboardingState?.journey_status === "rejected" && (
               <div className="bg-gradient-to-br from-b4-coral/10 to-red-500/5 rounded-3xl border border-b4-coral/20 p-8 mb-8">
@@ -784,9 +788,6 @@ const Profile = () => {
               </div>
             )}
 
-            <div className="mb-8">
-              <GoalSelectorCard />
-            </div>
 
             {/* Part 1: Natural Role Section */}
             {onboardingState?.primary_role === "cobuilder" && naturalRole && (
