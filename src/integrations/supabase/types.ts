@@ -1560,6 +1560,13 @@ export type Database = {
             foreignKeyName: "graph_dead_letters_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: true
+            referencedRelation: "activity_stream"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "graph_dead_letters_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
             referencedRelation: "graph_events"
             referencedColumns: ["id"]
           },
@@ -1612,6 +1619,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "graph_nodes"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "graph_edges_source_event_id_fkey"
+            columns: ["source_event_id"]
+            isOneToOne: false
+            referencedRelation: "activity_stream"
+            referencedColumns: ["event_id"]
           },
           {
             foreignKeyName: "graph_edges_source_event_id_fkey"
@@ -4793,6 +4807,51 @@ export type Database = {
       }
     }
     Views: {
+      activity_stream: {
+        Row: {
+          actor_id: string | null
+          event_id: string | null
+          event_type: string | null
+          importance: string | null
+          metadata: Json | null
+          occurred_at: string | null
+          primary_entity_id: string | null
+          primary_entity_type: string | null
+          secondary_entity_id: string | null
+          secondary_entity_type: string | null
+          summary: string | null
+          visibility: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          event_id?: string | null
+          event_type?: never
+          importance?: never
+          metadata?: Json | null
+          occurred_at?: string | null
+          primary_entity_id?: string | null
+          primary_entity_type?: string | null
+          secondary_entity_id?: never
+          secondary_entity_type?: never
+          summary?: never
+          visibility?: never
+        }
+        Update: {
+          actor_id?: string | null
+          event_id?: string | null
+          event_type?: never
+          importance?: never
+          metadata?: Json | null
+          occurred_at?: string | null
+          primary_entity_id?: string | null
+          primary_entity_type?: string | null
+          secondary_entity_id?: never
+          secondary_entity_type?: never
+          summary?: never
+          visibility?: never
+        }
+        Relationships: []
+      }
       admin_beta_health: {
         Row: {
           applications_accepted: number | null
@@ -4904,6 +4963,15 @@ export type Database = {
       }
     }
     Functions: {
+      activity_importance: { Args: { _event_type: string }; Returns: string }
+      activity_summary: {
+        Args: { _event_type: string; _payload: Json }
+        Returns: string
+      }
+      activity_visibility: {
+        Args: { _aggregate_type: string; _event_type: string }
+        Returns: string
+      }
       apply_experience_validation: {
         Args: {
           _aggregate_external_id: string
@@ -5008,6 +5076,18 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      get_box_activity: {
+        Args: { _box_id: string; _limit?: number }
+        Returns: {
+          actor_id: string
+          event_id: string
+          event_type: string
+          importance: string
+          metadata: Json
+          occurred_at: string
+          summary: string
+        }[]
+      }
       get_box_feed: {
         Args: { _box_id: string; _limit?: number }
         Returns: {
@@ -5017,6 +5097,33 @@ export type Database = {
           occurred_at: string
           payload: Json
           user_id: string
+        }[]
+      }
+      get_global_activity: {
+        Args: { _limit?: number; _min_importance?: string }
+        Returns: {
+          actor_id: string
+          event_id: string
+          event_type: string
+          importance: string
+          occurred_at: string
+          primary_entity_id: string
+          primary_entity_type: string
+          summary: string
+        }[]
+      }
+      get_ops_metrics: { Args: never; Returns: Json }
+      get_profile_activity: {
+        Args: { _limit?: number; _user_id: string }
+        Returns: {
+          event_id: string
+          event_type: string
+          importance: string
+          metadata: Json
+          occurred_at: string
+          primary_entity_id: string
+          primary_entity_type: string
+          summary: string
         }[]
       }
       get_relationship_timeline: {
