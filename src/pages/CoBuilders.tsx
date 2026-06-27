@@ -17,7 +17,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useExpertiseBatch, type Expertise } from "@/hooks/useExpertise";
 import { useTrustBatch, trustLevelStyle } from "@/hooks/useTrust";
 
-type DirectoryFilter = "talents" | "cobuilders";
+type DirectoryFilter = "talents" | "cobuilders" | "advisors";
 const COBUILDER_STAGES = new Set(["capable", "monetizing", "building", "founder"]);
 
 interface CoBuilder {
@@ -67,6 +67,8 @@ const CoBuilders = () => {
   const [myStage, setMyStage] = useState<string>("novice");
   const canSeeCobuilders = COBUILDER_STAGES.has(myStage);
   const [filter, setFilter] = useState<DirectoryFilter>("talents");
+  const [canSeeAdvisors, setCanSeeAdvisors] = useState(false);
+  const [advisorUserIds, setAdvisorUserIds] = useState<Set<string>>(new Set());
 
   // Fetch viewer's progression stage to gate the Co-Builders filter tab.
   useEffect(() => {
