@@ -160,6 +160,23 @@ const boxes = [
       { name: "CreditLoop", desc: "AI underwriting for thin-file borrowers" },
     ],
   },
+  {
+    id: "economic",
+    name: "Box For Economic Solutions",
+    abbr: "B4ECS",
+    icon: TrendingUp,
+    description: "Economic development, SME enablement and public-sector innovation. We back ventures shaping how economies grow and how prosperity is distributed.",
+    color: "from-amber-500 to-yellow-600",
+    bgColor: "bg-amber-50",
+    startups: 5,
+    cobuilders: 18,
+    totalRaised: "$420K",
+    fields: ["Economic Development", "SME Enablement", "Labor & Jobs", "Public Sector Innovation"],
+    featured: [
+      { name: "GrowthGrid", desc: "Regional economic dashboards" },
+      { name: "SMEBoost", desc: "Operating system for small businesses" },
+    ],
+  },
 ];
 
 const Boxes = () => {
