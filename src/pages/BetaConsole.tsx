@@ -92,6 +92,7 @@ export default function BetaConsole() {
   const navigate = useNavigate();
   const [authorized, setAuthorized] = useState<boolean | null>(null);
   const [data, setData] = useState<OpsMetrics | null>(null);
+  const [alerts, setAlerts] = useState<SystemAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
 
@@ -109,9 +110,13 @@ export default function BetaConsole() {
   async function refresh() {
     setLoading(true);
     setErr(null);
-    const { data, error } = await supabase.rpc("get_ops_metrics");
-    if (error) setErr(error.message);
-    else setData(data as OpsMetrics);
+    const [metricsRes, alertsRes] = await Promise.all([
+      supabase.rpc("get_ops_metrics"),
+      supabase.rpc("get_system_alerts"),
+    ]);
+    if (metricsRes.error) setErr(metricsRes.error.message);
+    else setData(metricsRes.data as OpsMetrics);
+    if (!alertsRes.error) setAlerts((alertsRes.data as SystemAlert[]) ?? []);
     setLoading(false);
   }
 
