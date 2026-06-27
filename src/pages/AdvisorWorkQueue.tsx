@@ -96,6 +96,7 @@ export default function AdvisorWorkQueue() {
   const [rows, setRows] = useState<RequestRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
+  const [drawerRequestId, setDrawerRequestId] = useState<string | null>(null);
 
   const load = async () => {
     if (!user) return;
@@ -199,6 +200,7 @@ export default function AdvisorWorkQueue() {
             primary="Mark complete"
             busy={busy}
             onPrimary={(r) => wrap(r, "completed")}
+            onTimeline={(r) => setDrawerRequestId(r.id)}
           />
         </TabsContent>
         <TabsContent value="stale" className="mt-4">
@@ -210,6 +212,7 @@ export default function AdvisorWorkQueue() {
             primary="Archive"
             busy={busy}
             onPrimary={(r) => wrap(r, "archived")}
+            onTimeline={(r) => setDrawerRequestId(r.id)}
           />
         </TabsContent>
         <TabsContent value="done" className="mt-4">
@@ -218,9 +221,17 @@ export default function AdvisorWorkQueue() {
             icon={<CheckCircle2 className="h-4 w-4 text-emerald-600" />}
             rows={sections.completed}
             emptyHint="No closed requests yet."
+            onTimeline={(r) => setDrawerRequestId(r.id)}
           />
         </TabsContent>
       </Tabs>
+
+      <RelationshipDrawer
+        open={!!drawerRequestId}
+        onOpenChange={(v) => !v && setDrawerRequestId(null)}
+        originRequestId={drawerRequestId}
+        title="Advisor relationship"
+      />
     </div>
   );
 }
