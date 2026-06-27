@@ -5067,6 +5067,7 @@ export type Database = {
         | "idea.solution.validated"
         | "startup.team.joined"
         | "company.incorporated"
+        | "commitment.checkpoint.completed"
       graph_node_type:
         | "user"
         | "skill"
@@ -5441,6 +5442,7 @@ export const Constants = {
         "idea.solution.validated",
         "startup.team.joined",
         "company.incorporated",
+        "commitment.checkpoint.completed",
       ],
       graph_node_type: [
         "user",
