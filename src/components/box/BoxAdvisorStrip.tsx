@@ -314,7 +314,7 @@ export function BoxAdvisorStrip({ boxSlug, boxName }: Props) {
             size="lg"
             variant="teal"
             disabled={!boxId}
-            onClick={() => setRequestOpen(true)}
+            onClick={handleRequestClick}
           >
             Request advisor <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
