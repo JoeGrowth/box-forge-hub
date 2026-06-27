@@ -63,7 +63,10 @@ export function GoalSelectorCard() {
         source: "profile",
       });
       setCurrentGoal(selected);
+      qc.invalidateQueries({ queryKey: ["onboarding_session_goal"] });
+      qc.invalidateQueries({ queryKey: ["onboarding_session"] });
       toast({ title: "Goal updated", description: "Your dashboard will adapt to your new direction." });
+
     } catch (e: any) {
       toast({ title: "Could not update", description: e.message, variant: "destructive" });
     } finally {
