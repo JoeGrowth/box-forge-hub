@@ -34,7 +34,11 @@ import {
   Landmark,
   Wallet,
   CreditCard,
-  LineChart
+  LineChart,
+  Briefcase,
+  TrendingDown,
+  Coins,
+  Factory
 } from "lucide-react";
 
 const boxesData: Record<string, {
