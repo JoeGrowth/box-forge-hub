@@ -187,6 +187,13 @@ export default function BetaConsole() {
             <MetricCard label="Opportunity fill rate" value={`${data.health.opportunity_fill_pct}%`} />
           </Section>
 
+          <Section title="Risk" subtitle="Intervene before damage">
+            <MetricCard label="Unanswered requests" value={data.risk.unanswered_requests} tone={data.risk.unanswered_requests > 0 ? "warn" : "good"} sub=">7 days" />
+            <MetricCard label="Stale relationships" value={data.risk.stale_relationships} tone={data.risk.stale_relationships > 0 ? "warn" : "good"} sub=">30 days idle" />
+            <MetricCard label="Unvalidated ideas" value={data.risk.unvalidated_ideas} tone={data.risk.unvalidated_ideas > 0 ? "warn" : "good"} sub=">30 days old" />
+            <MetricCard label="Full advisors" value={data.risk.full_advisors} tone={data.risk.full_advisors > 0 ? "warn" : "good"} sub="not accepting" />
+          </Section>
+
           <Section title="Quality" subtitle="Does the ecosystem compound?">
             <MetricCard label="Contributions / relationship" value={data.quality.contributions_per_relationship} />
             <MetricCard label="Median rel → contribution" value={fmtSeconds(data.quality.median_rel_to_contribution_seconds)} />
