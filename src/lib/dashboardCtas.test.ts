@@ -28,10 +28,10 @@ describe("secondaryCtaForIntent (Where are you today? → second button)", () =>
     expect(cta.to).toBe("/advisory");
   });
 
-  it("Builder → label reflects answer and routes to startup missions", () => {
+  it("Builder → Unlock your Entrepreneurial Track → /entrepreneurial-track", () => {
     const cta = secondaryCtaForIntent("Builder");
-    expect(cta.label).toBe("Continue as Builder");
-    expect(cta.to).toBe("/opportunities?category=startup");
+    expect(cta.label).toBe("Unlock your Entrepreneurial Track");
+    expect(cta.to).toBe("/entrepreneurial-track");
   });
 
   it("Co-Builder → label reflects answer and routes to startup missions", () => {
