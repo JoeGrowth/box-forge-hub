@@ -43,6 +43,19 @@ export function DashboardHero() {
     },
   });
 
+  const { data: intent = null } = useQuery({
+    queryKey: ["onboarding_session_intent", user?.id],
+    enabled: !!user,
+    staleTime: 0,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("onboarding_sessions")
+        .select("onboarding_intent")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return ((data as any)?.onboarding_intent as string | null) ?? null;
+    },
+  });
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -53,7 +66,9 @@ export function DashboardHero() {
 
   const rawFirst = profile?.full_name?.split(" ")[0] || "Builder";
   const firstName = rawFirst.charAt(0).toUpperCase() + rawFirst.slice(1);
-  const [primaryCta, secondaryCta] = ctasForGoal(goal, primaryRole);
+  const { primary: primaryCta, secondary: secondaryCta } = ctasFor(goal, intent, primaryRole);
+  const PrimaryIcon = primaryCta.icon;
+  const SecondaryIcon = secondaryCta.icon;
   const PrimaryIcon = primaryCta.icon;
   const SecondaryIcon = secondaryCta.icon;
 
