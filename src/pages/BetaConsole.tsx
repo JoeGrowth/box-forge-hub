@@ -28,7 +28,26 @@ type OpsMetrics = {
     unvalidated_ideas: number;
     full_advisors: number;
   };
+  quality: {
+    contributions_per_relationship: number;
+    median_rel_to_contribution_seconds: number | null;
+    median_contribution_to_opportunity_seconds: number | null;
+    relationship_survival_30d_pct: number;
+    relationship_survival_60d_pct: number;
+    relationship_survival_90d_pct: number;
+    advisor_effectiveness_verified_contribs: number;
+  };
+  funnel: Record<string, number>;
   error?: string;
+};
+
+type SystemAlert = {
+  code: string;
+  severity: "high" | "medium" | "low";
+  subject_id: string;
+  subject_kind: string;
+  message: string;
+  detected_at: string;
 };
 
 interface Metric { label: string; value: string | number; tone?: "default" | "warn" | "good"; sub?: string }
