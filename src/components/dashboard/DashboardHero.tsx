@@ -90,6 +90,50 @@ export function DashboardHero() {
   const PrimaryIcon = primaryCta.icon;
   const SecondaryIcon = secondaryCta.icon;
 
+  // Goal-aware copy. Reinforces the platform vision: decide to grow, take part
+  // in shaping the future. Each onboarding goal gets its own reminder so the
+  // dashboard speaks the user's language from the first second.
+  const copyByGoal: Record<string, { eyebrow: string; headline: string; subline: string }> = {
+    find_opportunities: {
+      eyebrow: "Explorer mode",
+      headline: `${getGreeting()}, ${firstName} — your next move is on the board`,
+      subline:
+        "The future belongs to those who scout it first. Scan today's opportunities, shortlist the ones that match the builder you're becoming, and move.",
+    },
+    join_startup: {
+      eyebrow: "Co-builder in motion",
+      headline: `${getGreeting()}, ${firstName} — a venture is waiting for your signature`,
+      subline:
+        "Great startups aren't built alone. Pick the idea you want your name on, meet its initiator, and start co-shaping the future from day one.",
+    },
+    build_venture: {
+      eyebrow: "Initiator mode",
+      headline: `${getGreeting()}, ${firstName} — the future you imagined still needs to be built`,
+      subline:
+        "You didn't come here to watch. Sharpen your idea, recruit your co-builders, and turn the vision into a venture the ecosystem can rally behind.",
+    },
+    monetize_expertise: {
+      eyebrow: "Advisor in the making",
+      headline: `${getGreeting()}, ${firstName} — your expertise deserves to be paid`,
+      subline:
+        "Stop giving advice for free. Publish a service, qualify the requests that come in, and grow a consulting track record that compounds.",
+    },
+    learn_skills: {
+      eyebrow: "Learner mode",
+      headline: `${getGreeting()}, ${firstName} — every certification opens a new door`,
+      subline:
+        "Builders are trained, not born. Pick a journey, get vaccinated, and let the ecosystem unlock the opportunities your new skills deserve.",
+    },
+  };
+
+  const copy =
+    (goal && copyByGoal[goal]) || {
+      eyebrow: "Welcome back",
+      headline: `${getGreeting()}, ${firstName}! 👋`,
+      subline:
+        "You're here to grow, to build, and to take part in shaping the future. Pick your next move and let the ecosystem move with you.",
+    };
+
   return (
     <>
     <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-b4-navy via-b4-navy/95 to-b4-navy/90 p-8 md:p-10">
@@ -104,13 +148,15 @@ export function DashboardHero() {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="w-5 h-5 text-b4-teal" />
-            <span className="text-b4-teal text-sm font-medium">{format(new Date(), "EEEE, MMMM d")}</span>
+            <span className="text-b4-teal text-sm font-medium">
+              {copy.eyebrow} · {format(new Date(), "EEEE, MMMM d")}
+            </span>
           </div>
           <h1 className="font-display text-3xl md:text-4xl font-bold text-white mb-2">
-            {getGreeting()}, {firstName}! 👋
+            {copy.headline}
           </h1>
-          <p className="text-white/70 max-w-lg">
-            Your startup journey continues. Check your progress and discover new opportunities waiting for you.
+          <p className="text-white/70 max-w-xl">
+            {copy.subline}
           </p>
         </div>
 
