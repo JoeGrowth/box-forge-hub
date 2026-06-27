@@ -1,4 +1,8 @@
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { buildDemoBox, type DemoBoxDetail } from "@/data/boxDemoTemplate";
+
 import { BoxAdvisorStrip } from "@/components/box/BoxAdvisorStrip";
 import { BoxFeed } from "@/components/box/BoxFeed";
 import { Navbar } from "@/components/layout/Navbar";
