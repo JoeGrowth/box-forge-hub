@@ -1,3 +1,9 @@
+// Sprint 5A — Opportunities surface rebuilt as the primary entry point to the
+// Opportunity Graph. Five top-level tabs:
+//   discover · recommended · mine · applications · created
+//
+// The 4-question card (OpportunityCardV2) is mounted in every tab.
+
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Footer } from "@/components/layout/Footer";
@@ -8,8 +14,9 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Loader2, ArrowRight, Sparkles, Bookmark, ListChecks } from "lucide-react";
-import { OpportunityCard, type Opportunity } from "@/components/opportunities/OpportunityCard";
+import { Search, Loader2, ArrowRight, Sparkles, Briefcase, Inbox, FilePlus2, Users } from "lucide-react";
+import { OpportunityCardV2 } from "@/components/opportunities/OpportunityCardV2";
+import type { Opportunity } from "@/components/opportunities/OpportunityCard";
 import { SEEDED_OPPORTUNITIES } from "@/data/seededOpportunities";
 import { useExpertise } from "@/hooks/useExpertise";
 import {
@@ -18,25 +25,26 @@ import {
 } from "@/hooks/useOpportunityRecommendations";
 import { USE_OPPORTUNITY_GRAPH } from "@/lib/featureFlags";
 import { useOpportunityPersona, type OpportunityCategory } from "@/hooks/useOpportunityPersona";
-import { useSavedOpportunities } from "@/hooks/useSavedOpportunities";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
-const CATEGORIES: { key: OpportunityCategory; label: string }[] = [
+const sb = supabase as any;
+
+type Tab = "discover" | "recommended" | "mine" | "applications" | "created";
+
+const TABS: { key: Tab; label: string; icon: React.ReactNode; hint: string }[] = [
+  { key: "discover",     label: "Discover",        icon: <Sparkles className="w-4 h-4" />,    hint: "Every open opportunity in the graph." },
+  { key: "recommended",  label: "Recommended",     icon: <Sparkles className="w-4 h-4" />,    hint: "Ranked for you by skill, trust, and intent." },
+  { key: "mine",         label: "My opportunities", icon: <Users className="w-4 h-4" />,      hint: "Relationships you're already in." },
+  { key: "applications", label: "My applications", icon: <Inbox className="w-4 h-4" />,       hint: "Pending and historical applications." },
+  { key: "created",      label: "Created by me",   icon: <FilePlus2 className="w-4 h-4" />,    hint: "Opportunities you posted." },
+];
+
+const KINDS: { key: OpportunityCategory; label: string }[] = [
   { key: "job", label: "Jobs" },
+  { key: "startup", label: "Startups" },
   { key: "training", label: "Training" },
   { key: "consulting", label: "Consulting" },
   { key: "tender", label: "Tenders" },
-  { key: "startup", label: "Startups" },
 ];
-
-type View = "feed" | "saved" | "applied";
-type Sort = "match" | "newest" | "reward";
 
 function computeMatchScore(userSkillNames: string[], oppSkills: string[]): number {
   if (oppSkills.length === 0 || userSkillNames.length === 0) return 0;
@@ -45,44 +53,28 @@ function computeMatchScore(userSkillNames: string[], oppSkills: string[]): numbe
   return Math.round((matches.length / oppSkills.length) * 100);
 }
 
-function parseReward(s: string): number {
-  if (!s) return 0;
-  // Pull the first number from a free-text reward range (e.g. "5000-8000 USD").
-  const m = s.replace(/,/g, "").match(/\d+(\.\d+)?/);
-  return m ? parseFloat(m[0]) : 0;
-}
-
 const Opportunities = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, loading: authLoading } = useAuth();
-  const { onboardingState, loading: onboardingLoading } = useOnboarding();
+  const { loading: onboardingLoading } = useOnboarding();
   const persona = useOpportunityPersona();
-  const { savedIds } = useSavedOpportunities(user?.id);
 
-  const [rawStartups, setRawStartups] = useState<any[]>([]);
-  const [rawTrainings, setRawTrainings] = useState<any[]>([]);
-  const [rawTenders, setRawTenders] = useState<any[]>([]);
-  const [rawJobs, setRawJobs] = useState<any[]>([]);
-  const [rawConsulting, setRawConsulting] = useState<any[]>([]);
-  const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
-
-  const { expertise } = useExpertise(user?.id);
-  const userSkillNames = expertise?.tags ?? [];
-  const { scoreById } = useOpportunityScoreMap(user?.id);
-  const [userCapacity, setUserCapacity] = useState<{
-    hasTrackRecord: boolean;
-    sectors: string[];
-    experience: number;
-  }>({ hasTrackRecord: false, sectors: [], experience: 0 });
-  const [loading, setLoading] = useState(true);
-
-  // URL-driven state (mandatory).
-  const view = (searchParams.get("view") as View) || "feed";
-  const categoryFilter = (searchParams.get("tab") as OpportunityCategory) || persona.defaultTab;
+  // Legacy `?tab=job` (kind) is now `?kind=job`. Backward-compat shim below.
+  const tab = (searchParams.get("v") as Tab) || "discover";
+  const kindFilter = (searchParams.get("kind") as OpportunityCategory | "all") || "all";
   const searchQuery = searchParams.get("q") || "";
-  const sort = (searchParams.get("sort") as Sort) || "match";
-  const sectorFilter = searchParams.get("sector") || "";
+
+  // Back-compat: prior code linked to /opportunities?tab=startup; preserve.
+  useEffect(() => {
+    const legacyTab = searchParams.get("tab");
+    if (legacyTab && !searchParams.get("kind")) {
+      const next = new URLSearchParams(searchParams);
+      next.set("kind", legacyTab);
+      next.delete("tab");
+      setSearchParams(next, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const setParam = (key: string, value: string | null) => {
     setSearchParams((prev) => {
@@ -93,28 +85,20 @@ const Opportunities = () => {
     }, { replace: true });
   };
 
-  const setParams = (updates: Record<string, string | null>) => {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      for (const [k, v] of Object.entries(updates)) {
-        if (v == null || v === "") next.delete(k);
-        else next.set(k, v);
-      }
-      return next;
-    }, { replace: true });
-  };
+  // Data ------------------------------------------------------------------
+  const [rawStartups, setRawStartups] = useState<any[]>([]);
+  const [rawTrainings, setRawTrainings] = useState<any[]>([]);
+  const [rawTenders, setRawTenders] = useState<any[]>([]);
+  const [rawJobs, setRawJobs] = useState<any[]>([]);
+  const [rawConsulting, setRawConsulting] = useState<any[]>([]);
+  const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
+  const [createdIds, setCreatedIds] = useState<Set<string>>(new Set());
+  const [mineIds, setMineIds] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
 
-  // Apply persona default tab once on initial load if no ?tab param.
-  useEffect(() => {
-    if (!searchParams.get("tab") && !persona.loading) {
-      setParam("tab", persona.defaultTab);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [persona.loading, persona.defaultTab]);
-
-  const isApproved =
-    onboardingState?.journey_status === "approved" ||
-    onboardingState?.journey_status === "entrepreneur_approved";
+  const { expertise } = useExpertise(user?.id);
+  const userSkillNames = expertise?.tags ?? [];
+  const { scoreById } = useOpportunityScoreMap(user?.id);
 
   useEffect(() => {
     if (authLoading) return;
@@ -122,28 +106,16 @@ const Opportunities = () => {
       setLoading(false);
       return;
     }
-
-    const fetchAll = async () => {
-      const [startupsRes, trainingsRes, tendersRes, jobsRes, consultingRes, myProfileRes, interactionsRes] = await Promise.all([
-        supabase
-          .from("startup_ideas")
-          .select("*")
-          .eq("status", "active")
-          .eq("review_status", "approved")
-          .eq("is_looking_for_cobuilders", true)
-          .order("created_at", { ascending: false }),
-        supabase.from("training_opportunities" as any).select("*").eq("review_status", "approved").order("created_at", { ascending: false }),
-        supabase.from("tenders" as any).select("*").eq("status", "published").order("created_at", { ascending: false }),
-        supabase.from("job_opportunities" as any).select("*").eq("status", "published").order("created_at", { ascending: false }),
-        (supabase.from("consulting_services" as any) as any).select("*").eq("is_active", true).order("created_at", { ascending: false }),
-        supabase
-          .from("profiles")
-          .select("preferred_sector, primary_skills, years_of_experience, key_projects, summary_statement, professional_title")
-          .eq("user_id", user.id)
-          .maybeSingle(),
-        (supabase.from("opportunity_interactions" as any) as any)
-          .select("opportunity_id")
-          .eq("user_id", user.id),
+    (async () => {
+      const [startupsRes, trainingsRes, tendersRes, jobsRes, consultingRes, interactionsRes, teamRes, appsRes] = await Promise.all([
+        supabase.from("startup_ideas").select("*").eq("status", "active").eq("review_status", "approved").eq("is_looking_for_cobuilders", true).order("created_at", { ascending: false }),
+        sb.from("training_opportunities").select("*").eq("review_status", "approved").order("created_at", { ascending: false }),
+        sb.from("tenders").select("*").eq("status", "published").order("created_at", { ascending: false }),
+        sb.from("job_opportunities").select("*").eq("status", "published").order("created_at", { ascending: false }),
+        sb.from("consulting_services").select("*").eq("is_active", true).order("created_at", { ascending: false }),
+        sb.from("opportunity_interactions").select("opportunity_id").eq("user_id", user.id),
+        sb.from("startup_team_members").select("startup_idea_id").eq("user_id", user.id),
+        sb.from("startup_applications").select("startup_idea_id, status").eq("applicant_id", user.id),
       ]);
 
       const startupData = startupsRes.data || [];
@@ -152,26 +124,7 @@ const Opportunities = () => {
       const jobData = (jobsRes.data as any[]) || [];
       const consultingData = (consultingRes?.data as any[]) || [];
 
-      const p = (myProfileRes.data as any) || {};
-      const sectors = [
-        p.preferred_sector,
-        ...(p.primary_skills ? String(p.primary_skills).split(",") : []),
-      ]
-        .map((s: string) => (s || "").trim().toLowerCase())
-        .filter(Boolean);
-      const tagCount = userSkillNames.length;
-      const hasTrackRecord = Boolean(
-        (p.key_projects && String(p.key_projects).trim().length > 20) ||
-          (p.summary_statement && String(p.summary_statement).trim().length > 20) ||
-          (p.years_of_experience && Number(p.years_of_experience) >= 1) ||
-          tagCount >= 3
-      );
-      setUserCapacity({
-        hasTrackRecord,
-        sectors: [...new Set([...sectors, ...userSkillNames.map((s) => s.toLowerCase())])],
-        experience: Number(p.years_of_experience) || 0,
-      });
-
+      // Author profile resolution.
       const allUserIds = [
         ...startupData.map((s: any) => s.creator_id),
         ...trainingData.map((t: any) => t.user_id),
@@ -193,12 +146,10 @@ const Opportunities = () => {
         ...tenderData.map((t: any) => t.organization_id),
         ...jobData.map((j: any) => j.organization_id),
       ].filter(Boolean) as string[];
-      let orgMap = new Map<string, { name: string; slug: string }>();
+      let orgMap = new Map<string, { name: string }>();
       if (orgIds.length > 0) {
-        const { data: orgs } = await (supabase.from("organizations" as any) as any)
-          .select("id, name, slug")
-          .in("id", [...new Set(orgIds)]);
-        orgMap = new Map((orgs || []).map((o: any) => [o.id, { name: o.name, slug: o.slug }]));
+        const { data: orgs } = await sb.from("organizations").select("id, name").in("id", [...new Set(orgIds)]);
+        orgMap = new Map((orgs || []).map((o: any) => [o.id, { name: o.name }]));
       }
 
       const skillTagIds = [...new Set(consultingData.map((c: any) => c.skill_tag_id).filter(Boolean))] as string[];
@@ -207,185 +158,103 @@ const Opportunities = () => {
         const { data: tags } = await supabase.from("skill_tags").select("id, name").in("id", skillTagIds);
         skillTagMap = new Map((tags || []).map((t: any) => [t.id, t.name]));
       }
-
       const orgLabel = (orgId: string | null, fallback: string) =>
         orgId && orgMap.get(orgId) ? orgMap.get(orgId)!.name : fallback;
 
       setRawStartups(startupData.map((s: any) => ({ ...s, _author: profileMap.get(s.creator_id) || "Unknown" })));
       setRawTrainings(trainingData.map((t: any) => ({ ...t, _author: profileMap.get(t.user_id) || "Unknown" })));
-      setRawTenders(tenderData.map((t: any) => ({
-        ...t,
-        _author: orgLabel(t.organization_id, profileMap.get(t.user_id) || "Unknown"),
-        _org_slug: t.organization_id ? orgMap.get(t.organization_id)?.slug ?? null : null,
+      setRawTenders(tenderData.map((t: any) => ({ ...t, _author: orgLabel(t.organization_id, profileMap.get(t.user_id) || "Unknown") })));
+      setRawJobs(jobData.map((j: any) => ({ ...j, _author: orgLabel(j.organization_id, profileMap.get(j.user_id) || "Unknown") })));
+      setRawConsulting(consultingData.map((c: any) => ({
+        ...c,
+        _author: profileMap.get(c.user_id) || "Unknown",
+        _skill_name: c.skill_tag_id ? skillTagMap.get(c.skill_tag_id) || null : null,
       })));
-      setRawJobs(jobData.map((j: any) => ({
-        ...j,
-        _author: orgLabel(j.organization_id, profileMap.get(j.user_id) || "Unknown"),
-        _org_slug: j.organization_id ? orgMap.get(j.organization_id)?.slug ?? null : null,
-      })));
-      setRawConsulting(
-        consultingData.map((c: any) => ({
-          ...c,
-          _author: profileMap.get(c.user_id) || "Unknown",
-          _skill_name: c.skill_tag_id ? skillTagMap.get(c.skill_tag_id) || null : null,
-        }))
-      );
 
-      const applied = new Set<string>(
-        ((interactionsRes?.data as any[]) || []).map((r: any) => r.opportunity_id)
-      );
-      setAppliedIds(applied);
+      // Personal projections.
+      setAppliedIds(new Set(
+        [
+          ...((interactionsRes?.data as any[]) || []).map((r: any) => r.opportunity_id),
+          ...((appsRes?.data as any[]) || []).map((r: any) => r.startup_idea_id),
+        ].filter(Boolean)
+      ));
+      setMineIds(new Set(
+        [
+          ...((teamRes?.data as any[]) || []).map((r: any) => r.startup_idea_id),
+          ...((appsRes?.data as any[]) || []).filter((r: any) => r.status === "accepted").map((r: any) => r.startup_idea_id),
+        ].filter(Boolean)
+      ));
+      const created = new Set<string>();
+      for (const s of startupData) if (s.creator_id === user.id) created.add(s.id);
+      for (const t of trainingData) if (t.user_id === user.id) created.add(t.id);
+      for (const t of tenderData) if (t.user_id === user.id) created.add(t.id);
+      for (const j of jobData) if (j.user_id === user.id) created.add(j.id);
+      for (const c of consultingData) if (c.user_id === user.id) created.add(c.id);
+      setCreatedIds(created);
 
       setLoading(false);
-    };
-
-    fetchAll();
+    })();
   }, [user, authLoading, expertise?.tags.length]);
 
-  // Normalize → unified Opportunity[] with correct per-category detail routes.
   const allOpportunities = useMemo<
     (Opportunity & { match_score: number; recommendation?: OpportunityRecommendation })[]
   >(() => {
-    const startupOpps: Opportunity[] = rawStartups.map((s, i) => ({
-      id: s.id,
-      title: s.title,
-      category: "startup" as const,
-      required_skills: (s.roles_needed || []).slice(0, 5),
-      income_range: "Equity-based",
-      effort_level: "Part-time",
-      description: s.description,
+    const toStartup: Opportunity[] = rawStartups.map((s, i) => ({
+      id: s.id, title: s.title, category: "startup", required_skills: (s.roles_needed || []).slice(0, 5),
+      income_range: "Equity-based", effort_level: "Part-time", description: s.description,
       primary_action: { type: "apply", label: "Check venture", route: `/opportunities/startup/${s.id}` },
-      source_id: s.id,
-      created_at: s.created_at,
-      author_name: s._author || "Unknown",
-      author_user_id: s.creator_id ?? null,
-      sector: s.sector,
-      rank: 50 + i,
+      source_id: s.id, created_at: s.created_at, author_name: s._author, author_user_id: s.creator_id ?? null, sector: s.sector, rank: 50 + i,
     }));
-
-    const trainingOpps: Opportunity[] = rawTrainings.map((t, i) => ({
-      id: t.id,
-      title: t.title,
-      category: "training" as const,
-      required_skills: [t.sector, t.target_audience, t.format, t.duration].filter(Boolean).slice(0, 5),
-      income_range: "Free",
-      effort_level: t.duration || "Self-paced",
-      description: t.description,
+    const toTraining: Opportunity[] = rawTrainings.map((t, i) => ({
+      id: t.id, title: t.title, category: "training", required_skills: [t.sector, t.target_audience, t.format, t.duration].filter(Boolean).slice(0, 5),
+      income_range: "Free", effort_level: t.duration || "Self-paced", description: t.description,
       primary_action: { type: "start", label: "View training", route: `/opportunities/training/${t.id}` },
-      source_id: t.id,
-      created_at: t.created_at,
-      author_name: t._author || "Unknown",
-      author_user_id: t.user_id ?? null,
-      sector: t.sector,
-      rank: 200 + i,
+      source_id: t.id, created_at: t.created_at, author_name: t._author, author_user_id: t.user_id ?? null, sector: t.sector, rank: 200 + i,
     }));
-
-    const tenderOpps: Opportunity[] = rawTenders.map((t, i) => ({
-      id: t.id,
-      title: t.title,
-      category: "tender" as const,
-      required_skills: [t.sector, t.location, t.budget_range].filter(Boolean).slice(0, 5),
-      income_range: t.budget_range || "Contract",
-      effort_level: t.deadline ? `Due ${t.deadline}` : "Open",
-      description: t.description,
+    const toTender: Opportunity[] = rawTenders.map((t, i) => ({
+      id: t.id, title: t.title, category: "tender", required_skills: [t.sector, t.location, t.budget_range].filter(Boolean).slice(0, 5),
+      income_range: t.budget_range || "Contract", effort_level: t.deadline ? `Due ${t.deadline}` : "Open", description: t.description,
       primary_action: { type: "apply", label: "View tender", route: `/opportunities/tender/${t.id}` },
-      source_id: t.id,
-      created_at: t.created_at,
-      author_name: t._author || "Unknown",
-      author_user_id: t.user_id ?? null,
-      sector: t.sector,
-      rank: 100 + i,
+      source_id: t.id, created_at: t.created_at, author_name: t._author, author_user_id: t.user_id ?? null, sector: t.sector, rank: 100 + i,
     }));
-
-    const jobOpps: Opportunity[] = rawJobs.map((j, i) => ({
-      id: j.id,
-      title: j.title,
-      category: "job" as const,
-      required_skills: [j.sector, j.employment_type, j.location].filter(Boolean).slice(0, 5),
-      income_range: j.salary_range || "Not specified",
-      effort_level: j.employment_type || "Full-time",
-      description: j.description,
+    const toJob: Opportunity[] = rawJobs.map((j, i) => ({
+      id: j.id, title: j.title, category: "job", required_skills: [j.sector, j.employment_type, j.location].filter(Boolean).slice(0, 5),
+      income_range: j.salary_range || "Not specified", effort_level: j.employment_type || "Full-time", description: j.description,
       primary_action: { type: "apply", label: "View job", route: `/opportunities/job/${j.id}` },
-      source_id: j.id,
-      created_at: j.created_at,
-      author_name: j._author || "Unknown",
-      author_user_id: j.user_id ?? null,
-      sector: j.sector,
-      rank: 75 + i,
+      source_id: j.id, created_at: j.created_at, author_name: j._author, author_user_id: j.user_id ?? null, sector: j.sector, rank: 75 + i,
     }));
-
-    const consultingOpps: Opportunity[] = rawConsulting.map((c, i) => ({
-      id: c.id,
-      title: c.service_title,
-      category: "consulting" as const,
-      required_skills: [c._skill_name, c.delivery_type, c.availability].filter(Boolean).slice(0, 5),
+    const toConsulting: Opportunity[] = rawConsulting.map((c, i) => ({
+      id: c.id, title: c.service_title, category: "consulting", required_skills: [c._skill_name, c.delivery_type, c.availability].filter(Boolean).slice(0, 5),
       income_range: c.price > 0 ? `${c.price} ${c.currency}` : "Free",
       effort_level: c.delivery_type === "remote" ? "Remote" : c.delivery_type === "on-site" ? "On-site" : "Remote / On-site",
       description: c.description || `Consulting service offered by ${c._author || "a co-builder"}.`,
       primary_action: { type: "apply", label: "View service", route: `/opportunities/consulting/${c.id}` },
-      source_id: c.id,
-      created_at: c.created_at,
-      author_name: c._author || "Unknown",
-      author_user_id: c.user_id ?? null,
-      sector: c._skill_name || null,
-      rank: 60 + i,
+      source_id: c.id, created_at: c.created_at, author_name: c._author, author_user_id: c.user_id ?? null, sector: c._skill_name || null, rank: 60 + i,
     }));
-
-    const all = [...SEEDED_OPPORTUNITIES, ...startupOpps, ...trainingOpps, ...tenderOpps, ...jobOpps, ...consultingOpps];
-
-    const scored = all.map((opp) => {
+    const all = [...SEEDED_OPPORTUNITIES, ...toStartup, ...toTraining, ...toTender, ...toJob, ...toConsulting];
+    return all.map((opp) => {
       const rec = USE_OPPORTUNITY_GRAPH ? scoreById.get(opp.source_id ?? opp.id) : undefined;
       const legacy = computeMatchScore(userSkillNames, opp.required_skills);
       const projected = rec ? Math.min(100, Math.round(rec.matchScore)) : null;
       return { ...opp, recommendation: rec, match_score: projected ?? legacy };
     });
-
-    return scored;
   }, [rawStartups, rawTrainings, rawTenders, rawJobs, rawConsulting, userSkillNames, scoreById]);
 
-  const passesTenderCapacity = (opp: Opportunity & { match_score: number }) => {
-    if (opp.category !== "tender") return true;
-    if (!userCapacity.hasTrackRecord) return false;
-    const tenderSector = (opp.sector || "").toLowerCase().trim();
-    if (!tenderSector) return userCapacity.experience >= 1;
-    const sectorMatch = userCapacity.sectors.some(
-      (s) => s && (tenderSector.includes(s) || s.includes(tenderSector))
-    );
-    return sectorMatch || userCapacity.experience >= 3 || opp.match_score > 0;
-  };
-
-  const hiddenTenderCount = useMemo(
-    () => allOpportunities.filter((o) => o.category === "tender" && !passesTenderCapacity(o)).length,
-    [allOpportunities, userCapacity]
-  );
-
-  // Available sectors in current category (chip filter).
-  const sectorsForCategory = useMemo(() => {
-    const set = new Set<string>();
-    allOpportunities
-      .filter((o) => o.category === categoryFilter && o.sector)
-      .forEach((o) => set.add(o.sector as string));
-    return [...set].sort();
-  }, [allOpportunities, categoryFilter]);
-
-  // Filter + sort.
+  // Tab projections -------------------------------------------------------
   const filtered = useMemo(() => {
     let base = allOpportunities;
-
-    // View-level filtering first.
-    if (view === "saved") {
-      const savedSet = new Set(savedIds);
-      base = base.filter((o) => savedSet.has(o.id));
-    } else if (view === "applied") {
+    if (tab === "recommended") {
+      base = base.filter((o) => o.match_score > 0);
+    } else if (tab === "mine") {
+      base = base.filter((o) => mineIds.has(o.id));
+    } else if (tab === "applications") {
       base = base.filter((o) => appliedIds.has(o.id));
-    } else {
-      base = base.filter((o) => o.category === categoryFilter && passesTenderCapacity(o));
+    } else if (tab === "created") {
+      base = base.filter((o) => createdIds.has(o.id));
     }
-
-    if (sectorFilter && view === "feed") {
-      base = base.filter((o) => (o.sector || "").toLowerCase() === sectorFilter.toLowerCase());
+    if (kindFilter !== "all" && (tab === "discover" || tab === "recommended")) {
+      base = base.filter((o) => o.category === kindFilter);
     }
-
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       base = base.filter(
@@ -397,23 +266,16 @@ const Opportunities = () => {
           o.author_name.toLowerCase().includes(q)
       );
     }
-
-    // Sort.
     const sorted = [...base];
-    if (sort === "newest") {
+    if (tab === "recommended") {
+      sorted.sort((a, b) => b.match_score - a.match_score || a.rank - b.rank);
+    } else if (tab === "mine" || tab === "applications" || tab === "created") {
       sorted.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    } else if (sort === "reward") {
-      sorted.sort((a, b) => parseReward(b.income_range) - parseReward(a.income_range));
     } else {
-      // match (default)
-      if (USE_OPPORTUNITY_GRAPH || userSkillNames.length > 0) {
-        sorted.sort((a, b) => b.match_score - a.match_score || a.rank - b.rank);
-      } else {
-        sorted.sort((a, b) => a.rank - b.rank);
-      }
+      sorted.sort((a, b) => b.match_score - a.match_score || a.rank - b.rank);
     }
     return sorted;
-  }, [allOpportunities, categoryFilter, searchQuery, sort, sectorFilter, view, savedIds, appliedIds, userCapacity, userSkillNames]);
+  }, [allOpportunities, tab, kindFilter, searchQuery, mineIds, appliedIds, createdIds]);
 
   if (authLoading || onboardingLoading) {
     return (
@@ -426,113 +288,72 @@ const Opportunities = () => {
     );
   }
 
-  const isVentureCreator = persona.persona === "venture_creator";
+  const activeTab = TABS.find((t) => t.key === tab) ?? TABS[0];
 
   return (
     <div className="min-h-screen bg-background">
       <PageTransition>
         <main className="pt-20">
-          {/* Header */}
-          <section className="py-10">
+          <section className="py-8">
             <div className="container mx-auto px-4">
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
-                  <h1 className="font-display text-3xl font-bold text-foreground mb-2">Opportunity Marketplace</h1>
-                  <p className="text-muted-foreground max-w-2xl">
-                    Discover jobs, consulting missions, tenders, training, and startup roles tailored to you.
-                  </p>
+                  <h1 className="font-display text-3xl font-bold text-foreground mb-2">Opportunities</h1>
+                  <p className="text-muted-foreground max-w-2xl text-sm">{activeTab.hint}</p>
                 </div>
-                <Badge variant="outline" className="text-xs">
-                  Viewing as {persona.label}
-                </Badge>
+                <Badge variant="outline" className="text-xs">Viewing as {persona.label}</Badge>
               </div>
             </div>
           </section>
 
-          {/* Persona banner */}
-          {persona.banner && view === "feed" && (
-            <section className="pb-4">
-              <div className="container mx-auto px-4">
-                <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 flex items-start gap-3">
-                  <Sparkles className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground">{persona.banner.title}</p>
-                    <p className="text-sm text-muted-foreground">{persona.banner.body}</p>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => navigate(persona.banner!.ctaRoute)}
-                    className="shrink-0"
-                  >
-                    {persona.banner.ctaLabel}
-                    <ArrowRight className="w-3 h-3 ml-1" />
-                  </Button>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* View tabs: Feed / Saved / Applied */}
+          {/* Primary tabs */}
           <section className="pb-3">
             <div className="container mx-auto px-4">
-              <div className="inline-flex border border-border rounded-lg overflow-hidden">
-                <button
-                  onClick={() => setParam("view", null)}
-                  className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                    view === "feed" ? "bg-foreground text-background" : "bg-card text-muted-foreground hover:bg-muted"
-                  }`}
-                >
-                  Feed
-                </button>
-                <button
-                  onClick={() => setParam("view", "saved")}
-                  className={`px-3 py-1.5 text-sm font-medium transition-colors border-l border-border flex items-center gap-1.5 ${
-                    view === "saved" ? "bg-foreground text-background" : "bg-card text-muted-foreground hover:bg-muted"
-                  }`}
-                >
-                  <Bookmark className="w-3.5 h-3.5" /> Saved {savedIds.length > 0 && `(${savedIds.length})`}
-                </button>
-                <button
-                  onClick={() => setParam("view", "applied")}
-                  className={`px-3 py-1.5 text-sm font-medium transition-colors border-l border-border flex items-center gap-1.5 ${
-                    view === "applied" ? "bg-foreground text-background" : "bg-card text-muted-foreground hover:bg-muted"
-                  }`}
-                >
-                  <ListChecks className="w-3.5 h-3.5" /> Applied {appliedIds.size > 0 && `(${appliedIds.size})`}
-                </button>
+              <div className="flex items-center gap-1 overflow-x-auto border-b border-border">
+                {TABS.map((t) => (
+                  <button
+                    key={t.key}
+                    onClick={() => setParam("v", t.key === "discover" ? null : t.key)}
+                    className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
+                      tab === t.key
+                        ? "border-primary text-foreground"
+                        : "border-transparent text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {t.icon}
+                    {t.label}
+                  </button>
+                ))}
               </div>
             </div>
           </section>
 
-          {/* Category pills (feed only) */}
-          {view === "feed" && (
+          {/* Kind chips + search (Discover / Recommended only) */}
+          {(tab === "discover" || tab === "recommended") && (
             <section className="pb-3">
-              <div className="container mx-auto px-4">
+              <div className="container mx-auto px-4 space-y-3">
                 <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                  {CATEGORIES.map((cat) => (
+                  <button
+                    onClick={() => setParam("kind", null)}
+                    className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                      kindFilter === "all" ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    }`}
+                  >
+                    All kinds
+                  </button>
+                  {KINDS.map((k) => (
                     <button
-                      key={cat.key}
-                      onClick={() => setParams({ tab: cat.key, sector: null })}
-                      className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                        categoryFilter === cat.key
-                          ? "bg-foreground text-background"
-                          : "bg-muted text-muted-foreground hover:bg-muted/80"
+                      key={k.key}
+                      onClick={() => setParam("kind", kindFilter === k.key ? null : k.key)}
+                      className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                        kindFilter === k.key ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:bg-muted/80"
                       }`}
                     >
-                      {cat.label}
+                      {k.label}
                     </button>
                   ))}
                 </div>
-              </div>
-            </section>
-          )}
-
-          {/* Search + sort + sector chips */}
-          <section className="pb-6">
-            <div className="container mx-auto px-4 space-y-3">
-              <div className="flex flex-col sm:flex-row gap-3">
-                <div className="relative flex-1 max-w-xl">
+                <div className="relative max-w-xl">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     placeholder="Search title, sector, skill, author..."
@@ -541,106 +362,27 @@ const Opportunities = () => {
                     className="pl-10"
                   />
                 </div>
-                <Select value={sort} onValueChange={(v) => setParam("sort", v === "match" ? null : v)}>
-                  <SelectTrigger className="w-full sm:w-48">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="match">Best match</SelectItem>
-                    <SelectItem value="newest">Newest first</SelectItem>
-                    <SelectItem value="reward">Highest reward</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {view === "feed" && sectorsForCategory.length > 0 && (
-                <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                  <span className="text-xs text-muted-foreground shrink-0">Sector:</span>
-                  <button
-                    onClick={() => setParam("sector", null)}
-                    className={`shrink-0 px-2.5 py-1 rounded-full text-xs transition-colors border ${
-                      !sectorFilter ? "bg-foreground text-background border-foreground" : "border-border text-muted-foreground hover:bg-muted"
-                    }`}
-                  >
-                    All
-                  </button>
-                  {sectorsForCategory.map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setParam("sector", sectorFilter === s ? null : s)}
-                      className={`shrink-0 px-2.5 py-1 rounded-full text-xs transition-colors border ${
-                        sectorFilter === s ? "bg-foreground text-background border-foreground" : "border-border text-muted-foreground hover:bg-muted"
-                      }`}
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </section>
-
-
-          {/* Capacity banner for tenders */}
-          {view === "feed" && categoryFilter === "tender" && !userCapacity.hasTrackRecord && (
-            <section className="pb-4">
-              <div className="container mx-auto px-4">
-                <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-sm">
-                  <p className="font-medium text-foreground mb-1">Build your track record to unlock tenders</p>
-                  <p className="text-muted-foreground">
-                    Tenders are filtered by capacity. Add key projects, experience, or skills to your{" "}
-                    <a href="/resume" className="text-primary hover:underline">profile</a> to qualify.
-                  </p>
-                </div>
-              </div>
-            </section>
-          )}
-          {view === "feed" && categoryFilter === "tender" && userCapacity.hasTrackRecord && hiddenTenderCount > 0 && (
-            <section className="pb-4">
-              <div className="container mx-auto px-4">
-                <p className="text-xs text-muted-foreground">
-                  {hiddenTenderCount} tender{hiddenTenderCount > 1 ? "s" : ""} hidden — outside your current capacity.
-                </p>
               </div>
             </section>
           )}
 
           {/* Feed */}
-          <section className="pb-16">
+          <section className="pb-16 pt-2">
             <div className="container mx-auto px-4">
               {loading ? (
                 <div className="flex justify-center py-12">
                   <Loader2 className="w-6 h-6 animate-spin text-primary" />
                 </div>
               ) : filtered.length === 0 ? (
-                <div className="text-center py-16">
-                  <p className="text-muted-foreground mb-4">
-                    {view === "saved"
-                      ? "You haven't saved any opportunities yet. Tap the bookmark icon on any card."
-                      : view === "applied"
-                      ? "No applications yet. Apply from any opportunity detail page."
-                      : "No opportunities match your current filters."}
-                  </p>
-                  <button
-                    onClick={() => setParams({ q: null, sector: null, view: null })}
-                    className="text-sm text-primary hover:underline"
-                  >
-                    Clear filters
-                  </button>
-                </div>
+                <EmptyState tab={tab} onPost={() => navigate("/publish-job")} onDiscover={() => setParam("v", null)} />
               ) : (
                 <div className="space-y-3">
                   {filtered.map((opp) => (
-                    <OpportunityCard
+                    <OpportunityCardV2
                       key={opp.id}
                       opportunity={opp}
                       matchScore={opp.match_score}
                       recommendation={opp.recommendation}
-                      ctaOverride={
-                        isVentureCreator && opp.category === "startup"
-                          ? { label: "Check venture" }
-                          : undefined
-                      }
                     />
                   ))}
                 </div>
@@ -653,5 +395,29 @@ const Opportunities = () => {
     </div>
   );
 };
+
+function EmptyState({ tab, onPost, onDiscover }: { tab: Tab; onPost: () => void; onDiscover: () => void }) {
+  const copy: Record<Tab, { title: string; body: string; cta?: { label: string; onClick: () => void } }> = {
+    discover:     { title: "No opportunities match your filters.", body: "Try removing kind filters or clearing your search." },
+    recommended:  { title: "We haven't matched any opportunities yet.", body: "Add skills to your profile so the graph can rank for you.", cta: { label: "Browse all", onClick: onDiscover } },
+    mine:         { title: "You're not in any opportunities yet.", body: "Once an application is accepted, the resulting relationship shows up here.", cta: { label: "Discover opportunities", onClick: onDiscover } },
+    applications: { title: "No applications yet.", body: "Apply from any opportunity detail page.", cta: { label: "Discover opportunities", onClick: onDiscover } },
+    created:      { title: "You haven't posted any opportunities.", body: "Post a job, training, or open a startup role.", cta: { label: "Post one", onClick: onPost } },
+  };
+  const c = copy[tab];
+  return (
+    <div className="text-center py-16 max-w-md mx-auto">
+      <Briefcase className="w-10 h-10 mx-auto mb-3 text-muted-foreground opacity-50" />
+      <p className="font-medium text-foreground mb-1">{c.title}</p>
+      <p className="text-sm text-muted-foreground mb-4">{c.body}</p>
+      {c.cta && (
+        <Button variant="outline" size="sm" onClick={c.cta.onClick}>
+          {c.cta.label}
+          <ArrowRight className="w-3 h-3 ml-1" />
+        </Button>
+      )}
+    </div>
+  );
+}
 
 export default Opportunities;
