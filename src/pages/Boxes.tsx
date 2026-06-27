@@ -1,20 +1,24 @@
+import { useEffect, useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { 
-  Heart, 
-  Leaf, 
-  GraduationCap, 
-  Utensils, 
-  Building2, 
+import { supabase } from "@/integrations/supabase/client";
+import { buildDemoBox, type DemoBoxListing } from "@/data/boxDemoTemplate";
+import {
+  Heart,
+  Leaf,
+  GraduationCap,
+  Utensils,
+  Building2,
   Cpu,
   ArrowRight,
   Users,
   Rocket,
-  TrendingUp
+  TrendingUp,
 } from "lucide-react";
+
 
 const boxes = [
   {
