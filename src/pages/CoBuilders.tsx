@@ -50,8 +50,11 @@ interface NaturalRolePreview {
   consulting_case_studies: string | null;
 }
 
+const VALID_TABS: DirectoryFilter[] = ["talents", "cobuilders", "advisors"];
+
 const CoBuilders = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, loading: authLoading } = useAuth();
   const [cobuilders, setCobuilders] = useState<CoBuilder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,9 +69,30 @@ const CoBuilders = () => {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [myStage, setMyStage] = useState<string>("novice");
   const canSeeCobuilders = COBUILDER_STAGES.has(myStage);
-  const [filter, setFilter] = useState<DirectoryFilter>("talents");
+  const initialTab = (() => {
+    const t = searchParams.get("tab") as DirectoryFilter | null;
+    return t && VALID_TABS.includes(t) ? t : "talents";
+  })();
+  const [filter, setFilterState] = useState<DirectoryFilter>(initialTab);
   const [canSeeAdvisors, setCanSeeAdvisors] = useState(false);
   const [advisorUserIds, setAdvisorUserIds] = useState<Set<string>>(new Set());
+
+  // Keep URL in sync with selected tab for deep-linking and refresh-persistence.
+  const setFilter = (next: DirectoryFilter) => {
+    setFilterState(next);
+    const sp = new URLSearchParams(searchParams);
+    sp.set("tab", next);
+    setSearchParams(sp, { replace: true });
+  };
+
+  // React to back/forward navigation changing ?tab=
+  useEffect(() => {
+    const t = searchParams.get("tab") as DirectoryFilter | null;
+    if (t && VALID_TABS.includes(t) && t !== filter) {
+      setFilterState(t);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   // Fetch viewer's progression stage to gate the Co-Builders filter tab.
   useEffect(() => {
