@@ -30,7 +30,11 @@ import {
   Globe,
   Lock,
   Eye,
-  AlertTriangle
+  AlertTriangle,
+  Landmark,
+  Wallet,
+  CreditCard,
+  LineChart
 } from "lucide-react";
 
 const boxesData: Record<string, {
