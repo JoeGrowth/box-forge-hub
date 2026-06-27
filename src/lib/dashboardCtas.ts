@@ -32,7 +32,7 @@ export function primaryCtaForGoal(goal: string | null, primaryRole: string | nul
       if (primaryRole === "entrepreneur") {
         return { to: "/entrepreneurship?new=1", label: "Post an Idea", icon: Lightbulb };
       }
-      return { to: "/opportunities?category=startup", label: "Browse Ideas", icon: Search };
+      return { to: "/opportunities?v=discover&kind=startup", label: "Browse ideas", icon: Search };
   }
 }
 
@@ -52,7 +52,7 @@ export function secondaryCtaForIntent(intent: string | null): CtaSpec {
       // verifiable track-record signals (ownership, equity readiness, role labels).
       return { to: "/entrepreneurial-track", label: "Unlock your Entrepreneurial Track", icon: Rocket };
     case "Co-Builder":
-      return { to: "/opportunities?category=startup", label: "Continue as Co-Builder", icon: Users };
+      return { to: "/opportunities?v=discover&kind=startup", label: "Continue as Co-Builder", icon: Users };
     case "Venture Creator":
       return { to: "/entrepreneurship", label: "Continue as Venture Creator", icon: Lightbulb };
     case "Professional Operator":
