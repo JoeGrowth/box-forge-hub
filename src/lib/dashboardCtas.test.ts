@@ -19,6 +19,12 @@ describe("primaryCtaForGoal (current direction → green button)", () => {
   it("falls back to entrepreneur posting when role=entrepreneur and no goal", () => {
     expect(primaryCtaForGoal(null, "entrepreneur").to).toBe("/entrepreneurship?new=1");
   });
+
+  it("join_startup → Browse ideas routes to discover + startups", () => {
+    const cta = primaryCtaForGoal("join_startup", null);
+    expect(cta.label).toBe("Browse ideas");
+    expect(cta.to).toBe("/opportunities?v=discover&kind=startup");
+  });
 });
 
 describe("secondaryCtaForIntent (Where are you today? → second button)", () => {
@@ -37,7 +43,7 @@ describe("secondaryCtaForIntent (Where are you today? → second button)", () =>
   it("Co-Builder → label reflects answer and routes to startup missions", () => {
     const cta = secondaryCtaForIntent("Co-Builder");
     expect(cta.label).toBe("Continue as Co-Builder");
-    expect(cta.to).toBe("/opportunities?category=startup");
+    expect(cta.to).toBe("/opportunities?v=discover&kind=startup");
   });
 
   it("Venture Creator → /entrepreneurship", () => {
