@@ -187,16 +187,87 @@ export default function BetaConsole() {
             <MetricCard label="Opportunity fill rate" value={`${data.health.opportunity_fill_pct}%`} />
           </Section>
 
-          <Section title="Risk" subtitle="Intervene before damage">
-            <MetricCard label="Unanswered requests" value={data.risk.unanswered_requests} tone={data.risk.unanswered_requests > 0 ? "warn" : "good"} sub=">7 days" />
-            <MetricCard label="Stale relationships" value={data.risk.stale_relationships} tone={data.risk.stale_relationships > 0 ? "warn" : "good"} sub=">30 days idle" />
-            <MetricCard label="Unvalidated ideas" value={data.risk.unvalidated_ideas} tone={data.risk.unvalidated_ideas > 0 ? "warn" : "good"} sub=">30 days old" />
-            <MetricCard label="Full advisors" value={data.risk.full_advisors} tone={data.risk.full_advisors > 0 ? "warn" : "good"} sub="at capacity" />
+          <Section title="Quality" subtitle="Does the ecosystem compound?">
+            <MetricCard label="Contributions / relationship" value={data.quality.contributions_per_relationship} />
+            <MetricCard label="Median rel → contribution" value={fmtSeconds(data.quality.median_rel_to_contribution_seconds)} />
+            <MetricCard label="Median contribution → opp" value={fmtSeconds(data.quality.median_contribution_to_opportunity_seconds)} />
+            <MetricCard label="Advisor effectiveness" value={data.quality.advisor_effectiveness_verified_contribs} sub="verified contributors / advisor" />
+            <MetricCard label="Survival 30d" value={`${data.quality.relationship_survival_30d_pct}%`} />
+            <MetricCard label="Survival 60d" value={`${data.quality.relationship_survival_60d_pct}%`} />
+            <MetricCard label="Survival 90d" value={`${data.quality.relationship_survival_90d_pct}%`} />
           </Section>
+
+          <section>
+            <div className="mb-3">
+              <h2 className="text-xl font-semibold">North-star funnel</h2>
+              <p className="text-sm text-muted-foreground">Users at each canonical stage. Single source of truth.</p>
+            </div>
+            <Card>
+              <CardContent className="pt-6">
+                <FunnelChart funnel={data.funnel} />
+              </CardContent>
+            </Card>
+          </section>
+
+          <section>
+            <div className="mb-3">
+              <h2 className="text-xl font-semibold">System alerts ({alerts.length})</h2>
+              <p className="text-sm text-muted-foreground">Derived from existing tables. No new workflow state.</p>
+            </div>
+            <Card>
+              <CardContent className="pt-6">
+                {alerts.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No active alerts.</p>
+                ) : (
+                  <ul className="divide-y divide-border">
+                    {alerts.slice(0, 50).map((a) => (
+                      <li key={`${a.code}-${a.subject_id}`} className="py-2 flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-foreground">{a.message}</p>
+                          <p className="text-[11px] text-muted-foreground">{a.code} · {a.subject_kind} · {new Date(a.detected_at).toLocaleString()}</p>
+                        </div>
+                        <Badge variant="outline" className={
+                          a.severity === "high" ? "border-destructive/40 text-destructive" :
+                          a.severity === "medium" ? "border-amber-500/40 text-amber-600 dark:text-amber-400" :
+                          ""
+                        }>{a.severity}</Badge>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
+          </section>
 
           <p className="text-xs text-muted-foreground">Generated {new Date(data.generated_at).toLocaleString()}</p>
         </div>
       )}
     </div>
+  );
+}
+
+const FUNNEL_ORDER = [
+  "signup","onboarded","activated","first_relationship","first_commitment",
+  "first_contribution","first_milestone","first_opportunity","accepted_opportunity","retained_30d",
+] as const;
+
+function FunnelChart({ funnel }: { funnel: Record<string, number> }) {
+  const max = Math.max(1, ...FUNNEL_ORDER.map((s) => funnel[s] ?? 0));
+  return (
+    <ol className="space-y-2">
+      {FUNNEL_ORDER.map((stage) => {
+        const n = funnel[stage] ?? 0;
+        const pct = (n / max) * 100;
+        return (
+          <li key={stage} className="flex items-center gap-3">
+            <span className="w-44 text-xs text-muted-foreground capitalize shrink-0">{stage.replace(/_/g, " ")}</span>
+            <div className="flex-1 h-6 rounded bg-muted relative overflow-hidden">
+              <div className="absolute inset-y-0 left-0 bg-primary/70" style={{ width: `${pct}%` }} />
+              <span className="absolute inset-0 flex items-center px-2 text-xs font-medium text-foreground">{n}</span>
+            </div>
+          </li>
+        );
+      })}
+    </ol>
   );
 }
