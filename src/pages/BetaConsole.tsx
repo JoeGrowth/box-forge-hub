@@ -75,6 +75,16 @@ type WeeklyReview = {
   error?: string;
 };
 
+type BetaReadinessRow = {
+  box_id: string; slug: string; name: string;
+  active_advisors: number; total_capacity: number; active_advisor_load: number; capacity_available: number;
+  open_opportunities: number; validated_ideas: number; recent_rituals: number; upcoming_rituals: number;
+  pending_validations: number; critical_alerts: number;
+  check_advisor: boolean; check_opportunity: boolean; check_validated_idea: boolean;
+  check_ritual: boolean; check_no_critical_alerts: boolean; check_validation_queue: boolean; check_capacity_available: boolean;
+  checks_passed: number; checks_total: number; is_beta_ready: boolean;
+};
+
 interface Metric { label: string; value: string | number; tone?: "default" | "warn" | "good"; sub?: string }
 
 function MetricCard({ label, value, tone = "default", sub }: Metric) {
@@ -152,6 +162,7 @@ export default function BetaConsole() {
   const [err, setErr] = useState<string | null>(null);
   const [audit, setAudit] = useState<EventAudit | null>(null);
   const [review, setReview] = useState<WeeklyReview | null>(null);
+  const [readiness, setReadiness] = useState<BetaReadinessRow[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -167,17 +178,19 @@ export default function BetaConsole() {
   async function refresh() {
     setLoading(true);
     setErr(null);
-    const [metricsRes, alertsRes, auditRes, reviewRes] = await Promise.all([
+    const [metricsRes, alertsRes, auditRes, reviewRes, readinessRes] = await Promise.all([
       supabase.rpc("get_ops_metrics"),
       supabase.rpc("get_system_alerts"),
       supabase.rpc("get_event_audit"),
       supabase.rpc("get_weekly_review"),
+      supabase.rpc("get_beta_readiness"),
     ]);
     if (metricsRes.error) setErr(metricsRes.error.message);
     else setData(metricsRes.data as OpsMetrics);
     if (!alertsRes.error) setAlerts((alertsRes.data as SystemAlert[]) ?? []);
     if (!auditRes.error) setAudit(auditRes.data as EventAudit);
     if (!reviewRes.error) setReview(reviewRes.data as WeeklyReview);
+    if (!readinessRes.error) setReadiness((readinessRes.data as BetaReadinessRow[]) ?? []);
     setLoading(false);
   }
 
@@ -222,6 +235,8 @@ export default function BetaConsole() {
 
       {data && !data.error && (
         <div className="space-y-10">
+          <BetaReadinessSection rows={readiness} />
+
           <Section title="Supply" subtitle="Capacity available right now">
             <MetricCard label="Active advisors" value={data.supply.active_advisors} />
             <MetricCard label="Open opportunities" value={data.supply.open_opportunities} />
@@ -452,5 +467,70 @@ function FunnelChart({ funnel }: { funnel: Record<string, number> }) {
         );
       })}
     </ol>
+  );
+}
+
+const READINESS_CHECKS: { key: keyof BetaReadinessRow; label: string; detail: (r: BetaReadinessRow) => string }[] = [
+  { key: "check_advisor", label: "≥1 active advisor", detail: (r) => `${r.active_advisors} active` },
+  { key: "check_opportunity", label: "≥1 open opportunity", detail: (r) => `${r.open_opportunities} open` },
+  { key: "check_validated_idea", label: "≥1 validated idea", detail: (r) => `${r.validated_ideas} validated` },
+  { key: "check_ritual", label: "Recent or upcoming ritual", detail: (r) => `${r.recent_rituals} past 14d · ${r.upcoming_rituals} upcoming` },
+  { key: "check_no_critical_alerts", label: "No critical alerts", detail: (r) => `${r.critical_alerts} critical/high` },
+  { key: "check_validation_queue", label: "Validation queue ≤ 5", detail: (r) => `${r.pending_validations} pending` },
+  { key: "check_capacity_available", label: "Advisor capacity available", detail: (r) => `${r.capacity_available} / ${r.total_capacity} free` },
+];
+
+function BetaReadinessSection({ rows }: { rows: BetaReadinessRow[] }) {
+  const readyCount = rows.filter((r) => r.is_beta_ready).length;
+  return (
+    <section>
+      <div className="mb-3 flex items-end justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-semibold">Beta readiness</h2>
+          <p className="text-sm text-muted-foreground">
+            A Box is beta-ready only when all 7 measurable conditions hold. Derived from existing data — no manual flag.
+          </p>
+        </div>
+        <Badge variant="outline">{readyCount} / {rows.length} ready</Badge>
+      </div>
+      {rows.length === 0 ? (
+        <Card><CardContent className="pt-6 text-sm text-muted-foreground">No Boxes configured.</CardContent></Card>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          {rows.map((r) => (
+            <Card key={r.box_id} className={r.is_beta_ready ? "border-emerald-500/40" : "border-amber-500/30"}>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm">{r.name}</CardTitle>
+                  <Badge variant="outline" className={
+                    r.is_beta_ready
+                      ? "border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
+                      : "border-amber-500/40 text-amber-600 dark:text-amber-400"
+                  }>
+                    {r.is_beta_ready ? "Ready" : `${r.checks_passed}/${r.checks_total}`}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-1.5">
+                  {READINESS_CHECKS.map((c) => {
+                    const pass = r[c.key] as boolean;
+                    return (
+                      <li key={String(c.key)} className="flex items-center justify-between text-xs">
+                        <span className="flex items-center gap-2">
+                          <span className={`inline-block h-2 w-2 rounded-full ${pass ? "bg-emerald-500" : "bg-amber-500"}`} />
+                          <span className="text-foreground">{c.label}</span>
+                        </span>
+                        <span className="text-muted-foreground">{c.detail(r)}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }

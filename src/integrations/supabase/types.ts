@@ -233,6 +233,13 @@ export type Database = {
             foreignKeyName: "advisor_relationships_box_id_fkey"
             columns: ["box_id"]
             isOneToOne: false
+            referencedRelation: "box_beta_readiness"
+            referencedColumns: ["box_id"]
+          },
+          {
+            foreignKeyName: "advisor_relationships_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
             referencedRelation: "boxes"
             referencedColumns: ["id"]
           },
@@ -347,6 +354,13 @@ export type Database = {
             foreignKeyName: "box_advisors_box_id_fkey"
             columns: ["box_id"]
             isOneToOne: false
+            referencedRelation: "box_beta_readiness"
+            referencedColumns: ["box_id"]
+          },
+          {
+            foreignKeyName: "box_advisors_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
             referencedRelation: "boxes"
             referencedColumns: ["id"]
           },
@@ -411,6 +425,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "box_inbound_requests_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
+            referencedRelation: "box_beta_readiness"
+            referencedColumns: ["box_id"]
+          },
           {
             foreignKeyName: "box_inbound_requests_box_id_fkey"
             columns: ["box_id"]
@@ -688,6 +709,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "commitments_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
+            referencedRelation: "box_beta_readiness"
+            referencedColumns: ["box_id"]
+          },
           {
             foreignKeyName: "commitments_box_id_fkey"
             columns: ["box_id"]
@@ -2719,6 +2747,13 @@ export type Database = {
             foreignKeyName: "opportunities_box_id_fkey"
             columns: ["box_id"]
             isOneToOne: false
+            referencedRelation: "box_beta_readiness"
+            referencedColumns: ["box_id"]
+          },
+          {
+            foreignKeyName: "opportunities_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
             referencedRelation: "boxes"
             referencedColumns: ["id"]
           },
@@ -3712,6 +3747,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "ritual_instances_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
+            referencedRelation: "box_beta_readiness"
+            referencedColumns: ["box_id"]
+          },
           {
             foreignKeyName: "ritual_instances_box_id_fkey"
             columns: ["box_id"]
@@ -4886,6 +4928,31 @@ export type Database = {
         }
         Relationships: []
       }
+      box_beta_readiness: {
+        Row: {
+          active_advisor_load: number | null
+          active_advisors: number | null
+          box_id: string | null
+          capacity_available: number | null
+          check_advisor: boolean | null
+          check_capacity_available: boolean | null
+          check_no_critical_alerts: boolean | null
+          check_opportunity: boolean | null
+          check_ritual: boolean | null
+          check_validated_idea: boolean | null
+          check_validation_queue: boolean | null
+          critical_alerts: number | null
+          name: string | null
+          open_opportunities: number | null
+          pending_validations: number | null
+          recent_rituals: number | null
+          slug: string | null
+          total_capacity: number | null
+          upcoming_rituals: number | null
+          validated_ideas: number | null
+        }
+        Relationships: []
+      }
       funnel_progress: {
         Row: {
           accepted_opportunity_at: string | null
@@ -4951,6 +5018,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "advisor_relationships_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
+            referencedRelation: "box_beta_readiness"
+            referencedColumns: ["box_id"]
+          },
           {
             foreignKeyName: "advisor_relationships_box_id_fkey"
             columns: ["box_id"]
@@ -5104,6 +5178,34 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      get_beta_readiness: {
+        Args: never
+        Returns: {
+          active_advisor_load: number
+          active_advisors: number
+          box_id: string
+          capacity_available: number
+          check_advisor: boolean
+          check_capacity_available: boolean
+          check_no_critical_alerts: boolean
+          check_opportunity: boolean
+          check_ritual: boolean
+          check_validated_idea: boolean
+          check_validation_queue: boolean
+          checks_passed: number
+          checks_total: number
+          critical_alerts: number
+          is_beta_ready: boolean
+          name: string
+          open_opportunities: number
+          pending_validations: number
+          recent_rituals: number
+          slug: string
+          total_capacity: number
+          upcoming_rituals: number
+          validated_ideas: number
+        }[]
       }
       get_box_activity: {
         Args: { _box_id: string; _limit?: number }
