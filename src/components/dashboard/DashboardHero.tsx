@@ -69,8 +69,6 @@ export function DashboardHero() {
   const { primary: primaryCta, secondary: secondaryCta } = ctasFor(goal, intent, primaryRole);
   const PrimaryIcon = primaryCta.icon;
   const SecondaryIcon = secondaryCta.icon;
-  const PrimaryIcon = primaryCta.icon;
-  const SecondaryIcon = secondaryCta.icon;
 
   // Goal-aware copy. Reinforces the platform vision: decide to grow, take part
   // in shaping the future. Each onboarding goal gets its own reminder so the
