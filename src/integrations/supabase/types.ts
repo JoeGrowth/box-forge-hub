@@ -575,6 +575,78 @@ export type Database = {
         }
         Relationships: []
       }
+      commitments: {
+        Row: {
+          box_id: string | null
+          cancelled_at: string | null
+          completed_at: string | null
+          created_at: string
+          created_from: string
+          description: string | null
+          due_at: string | null
+          duration_days: number
+          id: string
+          metadata: Json
+          owner_id: string
+          relationship_id: string | null
+          started_at: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          box_id?: string | null
+          cancelled_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_from?: string
+          description?: string | null
+          due_at?: string | null
+          duration_days?: number
+          id?: string
+          metadata?: Json
+          owner_id: string
+          relationship_id?: string | null
+          started_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          box_id?: string | null
+          cancelled_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_from?: string
+          description?: string | null
+          due_at?: string | null
+          duration_days?: number
+          id?: string
+          metadata?: Json
+          owner_id?: string
+          relationship_id?: string | null
+          started_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commitments_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
+            referencedRelation: "boxes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commitments_relationship_id_fkey"
+            columns: ["relationship_id"]
+            isOneToOne: false
+            referencedRelation: "advisor_relationships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       consultant_opportunities: {
         Row: {
           amount_per_day: number
@@ -785,6 +857,60 @@ export type Database = {
             columns: ["transaction_id"]
             isOneToOne: false
             referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contributions: {
+        Row: {
+          actor_id: string
+          created_at: string
+          entity_id: string
+          entity_type: string
+          evidence_id: string | null
+          id: string
+          kind: string
+          metadata: Json
+          relationship_id: string | null
+          weight: number
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          evidence_id?: string | null
+          id?: string
+          kind: string
+          metadata?: Json
+          relationship_id?: string | null
+          weight?: number
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          evidence_id?: string | null
+          id?: string
+          kind?: string
+          metadata?: Json
+          relationship_id?: string | null
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contributions_evidence_id_fkey"
+            columns: ["evidence_id"]
+            isOneToOne: false
+            referencedRelation: "evidence"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contributions_relationship_id_fkey"
+            columns: ["relationship_id"]
+            isOneToOne: false
+            referencedRelation: "advisor_relationships"
             referencedColumns: ["id"]
           },
         ]
@@ -2016,6 +2142,50 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      milestones: {
+        Row: {
+          achieved_at: string
+          achieved_by: string | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          evidence_id: string | null
+          id: string
+          kind: string
+          metadata: Json
+        }
+        Insert: {
+          achieved_at?: string
+          achieved_by?: string | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          evidence_id?: string | null
+          id?: string
+          kind: string
+          metadata?: Json
+        }
+        Update: {
+          achieved_at?: string
+          achieved_by?: string | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          evidence_id?: string | null
+          id?: string
+          kind?: string
+          metadata?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestones_evidence_id_fkey"
+            columns: ["evidence_id"]
+            isOneToOne: false
+            referencedRelation: "evidence"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       natural_roles: {
         Row: {
@@ -3271,6 +3441,112 @@ export type Database = {
         }
         Relationships: []
       }
+      ritual_instances: {
+        Row: {
+          box_id: string | null
+          created_at: string
+          duration_minutes: number
+          host_id: string
+          id: string
+          metadata: Json
+          notes: string | null
+          participants: string[]
+          relationship_id: string | null
+          scheduled_at: string
+          status: string
+          template_id: string
+          updated_at: string
+        }
+        Insert: {
+          box_id?: string | null
+          created_at?: string
+          duration_minutes?: number
+          host_id: string
+          id?: string
+          metadata?: Json
+          notes?: string | null
+          participants?: string[]
+          relationship_id?: string | null
+          scheduled_at: string
+          status?: string
+          template_id: string
+          updated_at?: string
+        }
+        Update: {
+          box_id?: string | null
+          created_at?: string
+          duration_minutes?: number
+          host_id?: string
+          id?: string
+          metadata?: Json
+          notes?: string | null
+          participants?: string[]
+          relationship_id?: string | null
+          scheduled_at?: string
+          status?: string
+          template_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ritual_instances_box_id_fkey"
+            columns: ["box_id"]
+            isOneToOne: false
+            referencedRelation: "boxes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ritual_instances_relationship_id_fkey"
+            columns: ["relationship_id"]
+            isOneToOne: false
+            referencedRelation: "advisor_relationships"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ritual_instances_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "ritual_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ritual_templates: {
+        Row: {
+          cadence: string
+          created_at: string
+          default_duration_minutes: number
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          cadence: string
+          created_at?: string
+          default_duration_minutes?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          cadence?: string
+          created_at?: string
+          default_duration_minutes?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       role_affinity_projection: {
         Row: {
           computed_at: string
@@ -4430,6 +4706,28 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      get_box_feed: {
+        Args: { _box_id: string; _limit?: number }
+        Returns: {
+          aggregate_id: string
+          aggregate_type: string
+          event_type: string
+          occurred_at: string
+          payload: Json
+          user_id: string
+        }[]
+      }
+      get_relationship_timeline: {
+        Args: { _rel_id: string }
+        Returns: {
+          aggregate_id: string
+          aggregate_type: string
+          event_type: string
+          occurred_at: string
+          payload: Json
+          user_id: string
+        }[]
+      }
       graph_upsert_edge: {
         Args: {
           _attributes: Json
@@ -4550,6 +4848,10 @@ export type Database = {
           _value: number
         }
         Returns: number
+      }
+      refresh_relationship_health: {
+        Args: { _rel_id: string }
+        Returns: undefined
       }
       render_template: { Args: { _ctx: Json; _tpl: string }; Returns: string }
       run_beta_simulation: { Args: never; Returns: Json }
@@ -4751,6 +5053,20 @@ export type Database = {
         | "box_request_completed"
         | "box_request_archived"
         | "admin_override_recorded"
+        | "commitment.created"
+        | "commitment.started"
+        | "commitment.progressed"
+        | "commitment.completed"
+        | "commitment.failed"
+        | "commitment.cancelled"
+        | "milestone.achieved"
+        | "contribution.recorded"
+        | "ritual.instance.scheduled"
+        | "ritual.instance.completed"
+        | "relationship.formed"
+        | "idea.solution.validated"
+        | "startup.team.joined"
+        | "company.incorporated"
       graph_node_type:
         | "user"
         | "skill"
@@ -5111,6 +5427,20 @@ export const Constants = {
         "box_request_completed",
         "box_request_archived",
         "admin_override_recorded",
+        "commitment.created",
+        "commitment.started",
+        "commitment.progressed",
+        "commitment.completed",
+        "commitment.failed",
+        "commitment.cancelled",
+        "milestone.achieved",
+        "contribution.recorded",
+        "ritual.instance.scheduled",
+        "ritual.instance.completed",
+        "relationship.formed",
+        "idea.solution.validated",
+        "startup.team.joined",
+        "company.incorporated",
       ],
       graph_node_type: [
         "user",
