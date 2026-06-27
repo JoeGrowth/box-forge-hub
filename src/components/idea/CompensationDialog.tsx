@@ -444,6 +444,8 @@ export const CompensationDialog = ({
         </DialogHeader>
         {applicationContext?.applicantId && (
           <TrustBlock userId={applicationContext.applicantId} variant="inline" className="-mt-2" />
+        )}
+
 
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
