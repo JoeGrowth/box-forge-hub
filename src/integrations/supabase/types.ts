@@ -5134,6 +5134,12 @@ export type Database = {
         | "startup.team.joined"
         | "company.incorporated"
         | "commitment.checkpoint.completed"
+        | "opportunity.created"
+        | "opportunity.opened"
+        | "opportunity.applied"
+        | "opportunity.matched"
+        | "opportunity.accepted"
+        | "opportunity.closed"
       graph_node_type:
         | "user"
         | "skill"
@@ -5509,6 +5515,12 @@ export const Constants = {
         "startup.team.joined",
         "company.incorporated",
         "commitment.checkpoint.completed",
+        "opportunity.created",
+        "opportunity.opened",
+        "opportunity.applied",
+        "opportunity.matched",
+        "opportunity.accepted",
+        "opportunity.closed",
       ],
       graph_node_type: [
         "user",
