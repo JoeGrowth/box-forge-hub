@@ -27,6 +27,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { CompensationDialog } from "./CompensationDialog";
+import { TrustBlock } from "@/components/trust/TrustBlock";
 
 interface NegotiationSnapshot {
   status: string;
