@@ -33,7 +33,7 @@ function ctasForGoal(goal: string | null, primaryRole: string | null): [CtaSpec,
     case "build_venture":
       return [
         { to: "/entrepreneurship?new=1", label: "Post an Idea", icon: Lightbulb, primary: true },
-        { to: "/people", label: "Connect Co-Builders", icon: Users },
+        { to: "/people?tab=advisors", label: "Get a Validated Expert", icon: Sparkles },
       ];
     case "monetize_expertise":
       return [
