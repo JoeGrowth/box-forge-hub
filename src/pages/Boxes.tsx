@@ -172,7 +172,7 @@ const Boxes = () => {
         <section className="py-24">
           <div className="container mx-auto px-4">
             <div className="space-y-12">
-              {boxes.map((box, i) => (
+              {allBoxes.map((box, i) => (
                 <div 
                   key={box.id}
                   className="bg-card rounded-3xl border border-border overflow-hidden hover:shadow-xl transition-all duration-500 animate-fade-in"
