@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { transitionRequest } from "@/lib/boxRequests";
 import { Loader2, ShieldCheck, Clock, AlertTriangle, CheckCircle2, Archive, History } from "lucide-react";
