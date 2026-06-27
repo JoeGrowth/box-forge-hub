@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { transitionRequest } from "@/lib/boxRequests";
 import { Loader2, ShieldCheck, Clock, AlertTriangle, CheckCircle2, Archive, History } from "lucide-react";
@@ -29,6 +30,59 @@ interface RequestRow {
 
 const ageHours = (iso: string) => Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 3_600_000));
 
+interface RequesterHint {
+  full_name: string | null;
+  avatar_url: string | null;
+  professional_title: string | null;
+  years_of_experience: number | null;
+  account_age_days: number;
+  prior_requests: number;
+}
+
+function RequesterChip({ hint }: { hint?: RequesterHint }) {
+  if (!hint) return null;
+  const name = hint.full_name?.trim() || "Member";
+  const initials = name.split(" ").map((s) => s[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "?";
+  const accountLabel =
+    hint.account_age_days < 1 ? "joined today"
+      : hint.account_age_days < 7 ? `joined ${hint.account_age_days}d ago`
+      : hint.account_age_days < 30 ? `joined ${Math.round(hint.account_age_days / 7)}w ago`
+      : `member ${Math.round(hint.account_age_days / 30)}mo`;
+  const isNew = hint.account_age_days < 3 && hint.prior_requests === 0;
+  return (
+    <div className="mt-2 flex items-center gap-2 rounded-md bg-muted/40 px-2 py-1.5 text-xs">
+      <Avatar className="h-6 w-6">
+        <AvatarImage src={hint.avatar_url ?? undefined} />
+        <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
+      </Avatar>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="font-medium truncate">{name}</span>
+          {hint.professional_title && (
+            <span className="text-muted-foreground truncate">· {hint.professional_title}</span>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5 text-muted-foreground flex-wrap">
+          <span>{accountLabel}</span>
+          <span>·</span>
+          <span>{hint.prior_requests} prior request{hint.prior_requests === 1 ? "" : "s"}</span>
+          {hint.years_of_experience != null && (
+            <>
+              <span>·</span>
+              <span>{hint.years_of_experience}y exp</span>
+            </>
+          )}
+          {isNew && (
+            <Badge variant="outline" className="ml-1 border-amber-400 text-amber-600 text-[10px] px-1 py-0">
+              new — verify intent
+            </Badge>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Section({
   title,
   icon,
@@ -38,6 +92,7 @@ function Section({
   onPrimary,
   busy,
   onTimeline,
+  hints,
 }: {
   title: string;
   icon: React.ReactNode;
@@ -47,6 +102,7 @@ function Section({
   onPrimary?: (r: RequestRow) => void;
   busy?: string | null;
   onTimeline?: (r: RequestRow) => void;
+  hints: Record<string, RequesterHint>;
 }) {
   return (
     <div className="space-y-3">
@@ -57,13 +113,14 @@ function Section({
         <ul className="space-y-2">
           {rows.map((r) => (
             <li key={r.id} className="rounded-md border p-3 flex items-start justify-between gap-3">
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-medium truncate">{r.topic}</span>
                   <Badge variant="outline">{r.request_type}</Badge>
                   <span className="text-xs text-muted-foreground">· {ageHours(r.created_at)}h old</span>
                 </div>
                 {r.context && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{r.context}</p>}
+                <RequesterChip hint={hints[r.requester_id]} />
                 {r.subject_entity_type === "idea" && r.subject_entity_id && (
                   <Link to={`/startup-opportunities/${r.subject_entity_id}`} className="text-xs text-b4-teal hover:underline">
                     View linked idea →
@@ -97,6 +154,7 @@ export default function AdvisorWorkQueue() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [drawerRequestId, setDrawerRequestId] = useState<string | null>(null);
+  const [hints, setHints] = useState<Record<string, RequesterHint>>({});
 
   const load = async () => {
     if (!user) return;
@@ -132,7 +190,41 @@ export default function AdvisorWorkQueue() {
 
     const { data, error } = await query;
     if (error) toast({ title: "Could not load queue", description: error.message, variant: "destructive" });
-    setRows((data as RequestRow[]) ?? []);
+    const allRows = (data as RequestRow[]) ?? [];
+    setRows(allRows);
+
+    // Fetch requester hints (anti-spam context)
+    const requesterIds = Array.from(new Set(allRows.map((r) => r.requester_id).filter(Boolean)));
+    if (requesterIds.length > 0) {
+      const [{ data: profs }, { data: counts }] = await Promise.all([
+        (supabase as any)
+          .from("profiles")
+          .select("user_id, full_name, avatar_url, professional_title, years_of_experience, created_at")
+          .in("user_id", requesterIds),
+        (supabase as any)
+          .from("box_inbound_requests")
+          .select("requester_id")
+          .in("requester_id", requesterIds),
+      ]);
+      const countMap: Record<string, number> = {};
+      (counts ?? []).forEach((c: any) => {
+        countMap[c.requester_id] = (countMap[c.requester_id] ?? 0) + 1;
+      });
+      const map: Record<string, RequesterHint> = {};
+      (profs ?? []).forEach((p: any) => {
+        const ageMs = Date.now() - new Date(p.created_at).getTime();
+        map[p.user_id] = {
+          full_name: p.full_name,
+          avatar_url: p.avatar_url,
+          professional_title: p.professional_title,
+          years_of_experience: p.years_of_experience,
+          account_age_days: Math.max(0, Math.floor(ageMs / 86_400_000)),
+          prior_requests: Math.max(0, (countMap[p.user_id] ?? 0) - 1),
+        };
+      });
+      setHints(map);
+    }
+
     setLoading(false);
   };
 
@@ -200,7 +292,7 @@ export default function AdvisorWorkQueue() {
         </TabsList>
 
         <TabsContent value="awaiting" className="mt-4">
-          <Section
+          <Section hints={hints}
             title="Accept or decline"
             icon={<Clock className="h-4 w-4" />}
             rows={sections.awaiting}
@@ -211,7 +303,7 @@ export default function AdvisorWorkQueue() {
           />
         </TabsContent>
         <TabsContent value="signoff" className="mt-4">
-          <Section
+          <Section hints={hints}
             title="Solution Canvas waiting on you"
             icon={<ShieldCheck className="h-4 w-4" />}
             rows={sections.awaitingSignoff}
@@ -224,7 +316,7 @@ export default function AdvisorWorkQueue() {
           />
         </TabsContent>
         <TabsContent value="upcoming" className="mt-4">
-          <Section
+          <Section hints={hints}
             title="Check in this week"
             icon={<Clock className="h-4 w-4" />}
             rows={sections.upcoming}
@@ -236,7 +328,7 @@ export default function AdvisorWorkQueue() {
           />
         </TabsContent>
         <TabsContent value="stale" className="mt-4">
-          <Section
+          <Section hints={hints}
             title="Stale — re-engage or archive"
             icon={<AlertTriangle className="h-4 w-4 text-amber-500" />}
             rows={sections.stale}
@@ -248,7 +340,7 @@ export default function AdvisorWorkQueue() {
           />
         </TabsContent>
         <TabsContent value="done" className="mt-4">
-          <Section
+          <Section hints={hints}
             title="Recently closed"
             icon={<CheckCircle2 className="h-4 w-4 text-emerald-600" />}
             rows={sections.completed}

@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RequestAdvisorDrawer } from "./RequestAdvisorDrawer";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import {
   ShieldCheck,
   Award,
@@ -52,6 +54,22 @@ export function BoxAdvisorStrip({ boxSlug, boxName }: Props) {
   const [rows, setRows] = useState<AdvisorRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [requestOpen, setRequestOpen] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleRequestClick = () => {
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Create an account or sign in to request an advisor.",
+      });
+      navigate(`/auth?redirect=${encodeURIComponent(location.pathname + location.search)}`);
+      return;
+    }
+    setRequestOpen(true);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -296,7 +314,7 @@ export function BoxAdvisorStrip({ boxSlug, boxName }: Props) {
             size="lg"
             variant="teal"
             disabled={!boxId}
-            onClick={() => setRequestOpen(true)}
+            onClick={handleRequestClick}
           >
             Request advisor <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
