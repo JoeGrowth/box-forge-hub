@@ -250,6 +250,34 @@ const boxesData: Record<string, {
     ],
     mission: "To build a trusted ecosystem where every venture has the security posture of a Fortune 500 from day one.",
   },
+  finance: {
+    id: "finance",
+    name: "Box For Financial Solutions",
+    abbr: "BFFS",
+    icon: Landmark,
+    description: "Fintech, inclusive banking and capital infrastructure for the next generation of founders and operators.",
+    longDescription: "From digital banking and payments to lending, insurance and capital markets infrastructure, we back ventures making finance faster, fairer and more accessible. Our ecosystem connects bankers, regulators, fintech operators and engineers to ship trustworthy financial products at scale.",
+    color: "from-sky-500 to-blue-700",
+    bgColor: "bg-sky-50",
+    startups: 6,
+    cobuilders: 22,
+    totalRaised: "$540K",
+    fields: ["Fintech", "Payments", "Lending & Credit", "InsurTech"],
+    featured: [
+      { name: "PayBridge", desc: "Cross-border payments for SMBs" },
+      { name: "CreditLoop", desc: "AI underwriting for thin-file borrowers" },
+      { name: "InsureFlex", desc: "Embedded insurance for marketplaces" },
+    ],
+    digitalSolutions: [
+      { icon: Wallet, title: "Digital Wallets", description: "Multi-currency wallets, stored value and consumer accounts." },
+      { icon: CreditCard, title: "Payments & Acquiring", description: "Card, account-to-account and QR payment rails for merchants." },
+      { icon: LineChart, title: "Lending & Credit Scoring", description: "Alternative data underwriting and decisioning engines." },
+      { icon: Shield, title: "Risk, Fraud & AML", description: "Real-time fraud detection, KYC, sanctions and AML monitoring." },
+      { icon: BarChart3, title: "Financial Analytics", description: "Treasury, FP&A and embedded analytics for finance teams." },
+      { icon: Globe, title: "Open Banking & APIs", description: "Connectivity to bank accounts, ledgers and capital markets." },
+    ],
+    mission: "To unlock inclusive, transparent and reliable financial infrastructure for every founder and customer in the ecosystem.",
+  },
 };
 
 const BoxDetail = () => {
