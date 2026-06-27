@@ -575,6 +575,57 @@ export type Database = {
         }
         Relationships: []
       }
+      commitment_checkpoints: {
+        Row: {
+          commitment_id: string
+          completed_at: string
+          created_at: string
+          day_offset: number
+          evidence_id: string | null
+          id: string
+          label: string
+          note: string | null
+          owner_id: string
+        }
+        Insert: {
+          commitment_id: string
+          completed_at?: string
+          created_at?: string
+          day_offset: number
+          evidence_id?: string | null
+          id?: string
+          label: string
+          note?: string | null
+          owner_id: string
+        }
+        Update: {
+          commitment_id?: string
+          completed_at?: string
+          created_at?: string
+          day_offset?: number
+          evidence_id?: string | null
+          id?: string
+          label?: string
+          note?: string | null
+          owner_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commitment_checkpoints_commitment_id_fkey"
+            columns: ["commitment_id"]
+            isOneToOne: false
+            referencedRelation: "commitments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commitment_checkpoints_evidence_id_fkey"
+            columns: ["evidence_id"]
+            isOneToOne: false
+            referencedRelation: "evidence"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       commitments: {
         Row: {
           box_id: string | null
@@ -4607,6 +4658,18 @@ export type Database = {
           scores: Json | null
           signals: Json | null
           user_id: string | null
+        }
+        Relationships: []
+      }
+      v_core_loop_metrics: {
+        Row: {
+          activated_at: string | null
+          first_commitment_at: string | null
+          first_completion_at: string | null
+          first_contribution_at: string | null
+          first_milestone_at: string | null
+          user_id: string | null
+          verified_contributor_30d: boolean | null
         }
         Relationships: []
       }
