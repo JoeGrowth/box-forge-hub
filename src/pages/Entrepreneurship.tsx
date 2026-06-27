@@ -5,10 +5,21 @@ import { ScrollToTopButton } from "@/components/layout/ScrollToTopButton";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, Rocket, Eye } from "lucide-react";
+import { Plus, Rocket, Eye, Users, Layers, Film, Shield, TrendingUp, Trash2, CheckCircle, Loader2 } from "lucide-react";
 import { CreateIdeaDialog } from "@/components/idea/CreateIdeaDialog";
 import { ApplyToJoinDialog } from "@/components/idea/ApplyToJoinDialog";
+import { IdeaDevelopDialog } from "@/components/idea/IdeaDevelopDialog";
+import { IdeaValidationDialog } from "@/components/idea/IdeaValidationDialog";
+import { IdeaGrowthDialog } from "@/components/idea/IdeaGrowthDialog";
+import { IdeaEpisodesDialog } from "@/components/idea/IdeaEpisodesDialog";
+import { TeamManagementDialog } from "@/components/idea/TeamManagementDialog";
+import { FiveElementsDialog } from "@/components/idea/FiveElementsDialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +36,10 @@ interface StartupIdea {
   is_looking_for_cobuilders: boolean | null;
   created_at: string;
   status: string | null;
+  review_status?: string | null;
+  development_completed_at?: string | null;
 }
+
 
 interface StatsData {
   yourProjects: number;
