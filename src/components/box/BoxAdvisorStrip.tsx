@@ -10,6 +10,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { userHasBoxAffinity } from "@/lib/boxAffinity";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
   ShieldCheck,
   Award,
   Star,
@@ -55,6 +63,7 @@ export function BoxAdvisorStrip({ boxSlug, boxName }: Props) {
   const [rows, setRows] = useState<AdvisorRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [requestOpen, setRequestOpen] = useState(false);
+  const [affinityDialogOpen, setAffinityDialogOpen] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -71,12 +80,7 @@ export function BoxAdvisorStrip({ boxSlug, boxName }: Props) {
     }
     const eligible = await userHasBoxAffinity(user.id, boxSlug);
     if (!eligible) {
-      toast({
-        title: "Link a profile or idea to this box first",
-        description:
-          "Advisor requests are reserved for users with a profile or startup idea linked to this box. Update your preferred sector or submit an idea in this domain.",
-        variant: "destructive",
-      });
+      setAffinityDialogOpen(true);
       return;
     }
     setRequestOpen(true);
@@ -340,6 +344,41 @@ export function BoxAdvisorStrip({ boxSlug, boxName }: Props) {
           assignmentPolicy="select"
         />
       )}
+
+      <Dialog open={affinityDialogOpen} onOpenChange={setAffinityDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Link a profile or idea to this box first</DialogTitle>
+            <DialogDescription>
+              Advisor requests are reserved for users with a profile or startup idea aligned with{" "}
+              <span className="font-medium text-foreground">{boxName}</span>. Update your preferred
+              sector or submit an idea in this domain to unlock advisor requests.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button variant="outline" onClick={() => setAffinityDialogOpen(false)}>
+              Not now
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setAffinityDialogOpen(false);
+                navigate("/profile");
+              }}
+            >
+              Update profile
+            </Button>
+            <Button
+              onClick={() => {
+                setAffinityDialogOpen(false);
+                navigate("/ideas/new");
+              }}
+            >
+              Submit an idea
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
