@@ -154,6 +154,7 @@ export default function AdvisorWorkQueue() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [drawerRequestId, setDrawerRequestId] = useState<string | null>(null);
+  const [hints, setHints] = useState<Record<string, RequesterHint>>({});
 
   const load = async () => {
     if (!user) return;
