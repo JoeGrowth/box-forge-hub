@@ -101,11 +101,36 @@ export default function AdvisorWorkQueue() {
   const load = async () => {
     if (!user) return;
     setLoading(true);
-    const { data, error } = await (supabase as any)
+
+    // Boxes where I'm an active advisor → I can pick up unassigned requests there
+    const { data: myBoxes } = await (supabase as any)
+      .from("box_advisors")
+      .select("box_id")
+      .eq("user_id", user.id)
+      .eq("status", "active");
+    const boxIds = (myBoxes ?? []).map((b: any) => b.box_id).filter(Boolean);
+
+    // Admins see everything
+    const { data: roleRows } = await (supabase as any)
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id);
+    const isAdmin = (roleRows ?? []).some((r: any) => r.role === "admin");
+
+    let query = (supabase as any)
       .from("box_inbound_requests")
       .select("*")
-      .eq("assigned_advisor_id", user.id)
       .order("created_at", { ascending: false });
+
+    if (!isAdmin) {
+      const orParts = [`assigned_advisor_id.eq.${user.id}`];
+      if (boxIds.length > 0) {
+        orParts.push(`and(assigned_advisor_id.is.null,box_id.in.(${boxIds.join(",")}))`);
+      }
+      query = query.or(orParts.join(","));
+    }
+
+    const { data, error } = await query;
     if (error) toast({ title: "Could not load queue", description: error.message, variant: "destructive" });
     setRows((data as RequestRow[]) ?? []);
     setLoading(false);
