@@ -415,6 +415,9 @@ export default function AdvisorWorkQueue() {
     return <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin" /></div>;
   }
 
+  const [profileUserId, setProfileUserId] = useState<string | null>(null);
+  const openProfile = (id: string) => setProfileUserId(id);
+
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <div>
@@ -432,7 +435,7 @@ export default function AdvisorWorkQueue() {
         </TabsList>
 
         <TabsContent value="awaiting" className="mt-4">
-          <Section hints={hints}
+          <Section hints={hints} onOpenProfile={openProfile}
             title="Accept or decline"
             icon={<Clock className="h-4 w-4" />}
             rows={sections.awaiting}
@@ -443,7 +446,7 @@ export default function AdvisorWorkQueue() {
           />
         </TabsContent>
         <TabsContent value="signoff" className="mt-4">
-          <Section hints={hints}
+          <Section hints={hints} onOpenProfile={openProfile}
             title="Solution Canvas waiting on you"
             icon={<ShieldCheck className="h-4 w-4" />}
             rows={sections.awaitingSignoff}
@@ -456,7 +459,7 @@ export default function AdvisorWorkQueue() {
           />
         </TabsContent>
         <TabsContent value="upcoming" className="mt-4">
-          <Section hints={hints}
+          <Section hints={hints} onOpenProfile={openProfile}
             title="Check in this week"
             icon={<Clock className="h-4 w-4" />}
             rows={sections.upcoming}
@@ -468,7 +471,7 @@ export default function AdvisorWorkQueue() {
           />
         </TabsContent>
         <TabsContent value="stale" className="mt-4">
-          <Section hints={hints}
+          <Section hints={hints} onOpenProfile={openProfile}
             title="Stale — re-engage or archive"
             icon={<AlertTriangle className="h-4 w-4 text-amber-500" />}
             rows={sections.stale}
@@ -480,7 +483,7 @@ export default function AdvisorWorkQueue() {
           />
         </TabsContent>
         <TabsContent value="done" className="mt-4">
-          <Section hints={hints}
+          <Section hints={hints} onOpenProfile={openProfile}
             title="Recently closed"
             icon={<CheckCircle2 className="h-4 w-4 text-emerald-600" />}
             rows={sections.completed}
@@ -495,6 +498,12 @@ export default function AdvisorWorkQueue() {
         onOpenChange={(v) => !v && setDrawerRequestId(null)}
         originRequestId={drawerRequestId}
         title="Advisor relationship"
+      />
+      <RequesterProfileDialog
+        userId={profileUserId}
+        open={!!profileUserId}
+        onOpenChange={(v) => !v && setProfileUserId(null)}
+        baseHint={profileUserId ? hints[profileUserId] : undefined}
       />
     </div>
   );
