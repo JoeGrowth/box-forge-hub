@@ -137,13 +137,17 @@ export default function BetaConsole() {
   async function refresh() {
     setLoading(true);
     setErr(null);
-    const [metricsRes, alertsRes] = await Promise.all([
+    const [metricsRes, alertsRes, auditRes, reviewRes] = await Promise.all([
       supabase.rpc("get_ops_metrics"),
       supabase.rpc("get_system_alerts"),
+      supabase.rpc("get_event_audit"),
+      supabase.rpc("get_weekly_review"),
     ]);
     if (metricsRes.error) setErr(metricsRes.error.message);
     else setData(metricsRes.data as OpsMetrics);
     if (!alertsRes.error) setAlerts((alertsRes.data as SystemAlert[]) ?? []);
+    if (!auditRes.error) setAudit(auditRes.data as EventAudit);
+    if (!reviewRes.error) setReview(reviewRes.data as WeeklyReview);
     setLoading(false);
   }
 
