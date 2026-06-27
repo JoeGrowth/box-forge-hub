@@ -15,7 +15,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   ShieldCheck,
@@ -26,6 +25,9 @@ import {
   Users,
   ArrowRight,
   CheckCircle2,
+  UserCircle2,
+  Lightbulb,
+  Lock,
 } from "lucide-react";
 
 interface AdvisorRow {
@@ -346,37 +348,84 @@ export function BoxAdvisorStrip({ boxSlug, boxName }: Props) {
       )}
 
       <Dialog open={affinityDialogOpen} onOpenChange={setAffinityDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Link a profile or idea to this box first</DialogTitle>
-            <DialogDescription>
-              Advisor requests are reserved for users with a profile or startup idea aligned with{" "}
-              <span className="font-medium text-foreground">{boxName}</span>. Update your preferred
-              sector or submit an idea in this domain to unlock advisor requests.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2 sm:gap-2">
-            <Button variant="outline" onClick={() => setAffinityDialogOpen(false)}>
-              Not now
-            </Button>
-            <Button
-              variant="outline"
+        <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
+          {/* Header band */}
+          <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent px-6 pt-6 pb-5 border-b">
+            <div className="flex items-start gap-4">
+              <div className="h-12 w-12 rounded-xl bg-primary/15 text-primary flex items-center justify-center shrink-0">
+                <Lock className="h-6 w-6" />
+              </div>
+              <div className="min-w-0">
+                <DialogHeader className="space-y-1.5 text-left">
+                  <DialogTitle className="text-lg leading-tight">
+                    Advisor requests are gated for {boxName}
+                  </DialogTitle>
+                  <DialogDescription className="text-sm leading-relaxed">
+                    To keep advisor time high-signal, requests are reserved for members whose
+                    profile or active idea is aligned with this box. Pick a quick path below to
+                    unlock it.
+                  </DialogDescription>
+                </DialogHeader>
+              </div>
+            </div>
+          </div>
+
+          {/* Two paths */}
+          <div className="px-6 py-5 grid gap-3 sm:grid-cols-2">
+            <button
+              type="button"
               onClick={() => {
                 setAffinityDialogOpen(false);
                 navigate("/profile");
               }}
+              className="group text-left rounded-xl border bg-card hover:border-primary/50 hover:shadow-sm transition-all p-4 flex flex-col gap-2"
             >
-              Update profile
-            </Button>
-            <Button
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center">
+                  <UserCircle2 className="h-4 w-4 text-foreground" />
+                </div>
+                <span className="font-medium text-sm">Update your profile</span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Set your preferred sector to match this box. Takes under a minute.
+              </p>
+              <span className="mt-auto pt-1 text-xs font-medium text-primary inline-flex items-center gap-1 group-hover:gap-1.5 transition-all">
+                Go to profile <ArrowRight className="h-3 w-3" />
+              </span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => {
                 setAffinityDialogOpen(false);
                 navigate("/ideas/new");
               }}
+              className="group text-left rounded-xl border bg-card hover:border-primary/50 hover:shadow-sm transition-all p-4 flex flex-col gap-2"
             >
-              Submit an idea
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center">
+                  <Lightbulb className="h-4 w-4 text-foreground" />
+                </div>
+                <span className="font-medium text-sm">Submit a startup idea</span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Register an idea in this domain and your request unlocks immediately.
+              </p>
+              <span className="mt-auto pt-1 text-xs font-medium text-primary inline-flex items-center gap-1 group-hover:gap-1.5 transition-all">
+                New idea <ArrowRight className="h-3 w-3" />
+              </span>
+            </button>
+          </div>
+
+          {/* Footer */}
+          <div className="px-6 pb-5 pt-1 flex items-center justify-between border-t bg-muted/30">
+            <p className="text-[11px] text-muted-foreground">
+              This keeps advisors focused on relevant requests.
+            </p>
+            <Button variant="ghost" size="sm" onClick={() => setAffinityDialogOpen(false)}>
+              Not now
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </section>
