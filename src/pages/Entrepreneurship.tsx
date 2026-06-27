@@ -5,7 +5,7 @@ import { ScrollToTopButton } from "@/components/layout/ScrollToTopButton";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, Rocket, Eye, Users, Layers, Film, Shield, TrendingUp, Trash2, CheckCircle, Loader2 } from "lucide-react";
+import { Plus, Rocket, Eye, Users, Layers, Film, Shield, TrendingUp, Trash2, CheckCircle, Loader2, ArrowLeft } from "lucide-react";
 import { CreateIdeaDialog } from "@/components/idea/CreateIdeaDialog";
 import { ApplyToJoinDialog } from "@/components/idea/ApplyToJoinDialog";
 import { IdeaDevelopDialog } from "@/components/idea/IdeaDevelopDialog";
@@ -470,6 +470,15 @@ const Entrepreneurship = () => {
         <main className="pt-20">
           <section className="py-10">
             <div className="container mx-auto px-4">
+              {/* Back to Paths */}
+              <div className="mb-6">
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/paths">
+                    <ArrowLeft className="w-4 h-4 mr-1" /> Back to Paths
+                  </Link>
+                </Button>
+              </div>
+
               {/* Header */}
               <div className="flex items-center justify-between mb-8">
                 <div>
