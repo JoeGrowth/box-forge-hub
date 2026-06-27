@@ -853,6 +853,15 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
         user={previewUser}
         onUserUpdated={onRefresh}
       />
+
+      {/* Add Advisor Dialog */}
+      <AddAdvisorDialog
+        open={advisorDialogOpen}
+        onOpenChange={setAdvisorDialogOpen}
+        userId={advisorTargetUser?.id ?? null}
+        userName={advisorTargetUser?.profile?.full_name ?? null}
+        onAdded={onRefresh}
+      />
     </div>
   );
 }
