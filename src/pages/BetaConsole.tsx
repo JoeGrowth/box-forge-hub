@@ -75,6 +75,16 @@ type WeeklyReview = {
   error?: string;
 };
 
+type BetaReadinessRow = {
+  box_id: string; slug: string; name: string;
+  active_advisors: number; total_capacity: number; active_advisor_load: number; capacity_available: number;
+  open_opportunities: number; validated_ideas: number; recent_rituals: number; upcoming_rituals: number;
+  pending_validations: number; critical_alerts: number;
+  check_advisor: boolean; check_opportunity: boolean; check_validated_idea: boolean;
+  check_ritual: boolean; check_no_critical_alerts: boolean; check_validation_queue: boolean; check_capacity_available: boolean;
+  checks_passed: number; checks_total: number; is_beta_ready: boolean;
+};
+
 interface Metric { label: string; value: string | number; tone?: "default" | "warn" | "good"; sub?: string }
 
 function MetricCard({ label, value, tone = "default", sub }: Metric) {
