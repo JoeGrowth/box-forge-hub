@@ -279,7 +279,9 @@ const CoBuilders = () => {
   // Talents = not yet certified (certCount === 0). Co-Builders = at least 1 cert.
   // Always keep the current user pinned so they can edit their own card.
   const filteredCobuilders = cobuilders.filter((cb) => {
-    if (cb.user_id !== user?.id) {
+    if (filter === "advisors") {
+      if (!advisorUserIds.has(cb.user_id)) return false;
+    } else if (cb.user_id !== user?.id) {
       if (filter === "cobuilders" && cb.certCount < 1) return false;
       if (filter === "talents" && cb.certCount >= 1) return false;
     }
