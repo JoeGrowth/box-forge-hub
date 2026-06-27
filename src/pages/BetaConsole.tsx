@@ -235,6 +235,8 @@ export default function BetaConsole() {
 
       {data && !data.error && (
         <div className="space-y-10">
+          <BetaReadinessSection rows={readiness} />
+
           <Section title="Supply" subtitle="Capacity available right now">
             <MetricCard label="Active advisors" value={data.supply.active_advisors} />
             <MetricCard label="Open opportunities" value={data.supply.open_opportunities} />
