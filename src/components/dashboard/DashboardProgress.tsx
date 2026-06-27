@@ -185,12 +185,12 @@ export function DashboardProgress() {
               <Circle className="w-5 h-5 text-muted-foreground flex-shrink-0" />
             )}
             <div className="flex-1">
-              <div className="font-medium">Natural Role Decoder</div>
-              <div className="text-sm text-muted-foreground">Discover your unique strengths</div>
+              <div className="font-medium">Decode your natural role</div>
+              <div className="text-sm text-muted-foreground">7 questions. Your starting compass on the platform.</div>
             </div>
             {!nrDecoderComplete && (
               <Button size="sm" variant="outline" asChild>
-                <Link to="/decoder">Take Test</Link>
+                <Link to="/decoder">Start</Link>
               </Button>
             )}
           </div>
@@ -203,11 +203,11 @@ export function DashboardProgress() {
               <Circle className="w-5 h-5 text-muted-foreground flex-shrink-0" />
             )}
             <div className="flex-1">
-              <div className="font-medium">Complete Onboarding</div>
+              <div className="font-medium">Declare your intent</div>
               <div className="text-sm text-muted-foreground">
                 {isOnboardingTrulyComplete 
-                  ? "Define your role and goals" 
-                  : `Step ${onboardingState?.current_step || 1} of 5 - Continue where you left off`}
+                  ? "Role, goals and direction locked in." 
+                  : `Step ${onboardingState?.current_step || 1} of 5 — pick up where you left off.`}
               </div>
             </div>
             {!isOnboardingTrulyComplete && (
@@ -227,10 +227,10 @@ export function DashboardProgress() {
             <div className="flex-1">
               <div className="font-medium flex items-center gap-2">
                 <FileText className="w-4 h-4 text-muted-foreground" />
-                Complete Your Resume
+                Sharpen your resume
               </div>
               <div className="text-sm text-muted-foreground">
-                Add your title, bio, and skills
+                Title, summary and signature skills — the first thing recruiters and initiators see.
               </div>
             </div>
             {!resumeComplete && (
@@ -250,10 +250,10 @@ export function DashboardProgress() {
             <div className="flex-1">
               <div className="font-medium flex items-center gap-2">
                 <Briefcase className="w-4 h-4 text-muted-foreground" />
-                Fill Your Track Record
+                Build your track record
               </div>
               <div className="text-sm text-muted-foreground">
-                Document your key projects and experience
+                Receipts beat resumes. Add the projects you've shipped.
               </div>
             </div>
             {!trackRecordComplete && (
@@ -297,7 +297,7 @@ export function DashboardProgress() {
 
         <Button variant="ghost" className="w-full mt-4" asChild>
           <Link to="/journey">
-            View All Learning Paths <ArrowRight className="ml-2 w-4 h-4" />
+            Explore all learning paths <ArrowRight className="ml-2 w-4 h-4" />
           </Link>
         </Button>
       </CardContent>
