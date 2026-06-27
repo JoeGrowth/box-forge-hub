@@ -5,9 +5,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { transitionRequest } from "@/lib/boxRequests";
-import { Loader2, ShieldCheck, Clock, AlertTriangle, CheckCircle2, Archive, History } from "lucide-react";
+import { Loader2, ShieldCheck, Clock, AlertTriangle, CheckCircle2, Archive, History, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 import { RelationshipDrawer } from "@/components/relationships/RelationshipDrawer";
 
