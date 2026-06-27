@@ -46,7 +46,7 @@ function ctasForGoal(goal: string | null, primaryRole: string | null): [CtaSpec,
     default:
       if (primaryRole === "entrepreneur") {
         return [
-          { to: "/create-idea", label: "Post an Idea", icon: Lightbulb, primary: true },
+          { to: "/entrepreneurship?new=1", label: "Post an Idea", icon: Lightbulb, primary: true },
           { to: "/people", label: "Connect Co-Builders", icon: Users },
         ];
       }
