@@ -17,6 +17,8 @@ import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, DollarSign, PieChart, Clock, Target, Send, Check, Edit2 } from "lucide-react";
+import { markApplicationConversationRead } from "@/lib/negotiationChat";
+
 
 interface TeamMember {
   id: string;
@@ -114,8 +116,17 @@ export const CompensationDialog = ({
   useEffect(() => {
     if (open && (teamMember || application)) {
       loadExistingOffer();
+      // Reconcile: opening the negotiation surface clears unread negotiation
+      // messages for this viewer so the bell badge stays in sync.
+      if (application && currentUserId) {
+        markApplicationConversationRead({
+          applicationId: application.applicationId,
+          viewerId: currentUserId,
+        });
+      }
     }
-  }, [open, teamMember, application]);
+  }, [open, teamMember, application, currentUserId]);
+
 
   const loadExistingOffer = async () => {
     setIsLoading(true);

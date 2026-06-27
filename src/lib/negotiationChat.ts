@@ -52,3 +52,59 @@ export async function postNegotiationSystemMessage(params: {
   });
   if (error) console.error("postNegotiationSystemMessage failed", error);
 }
+
+/**
+ * Reconciliation: mark every unread message in a conversation as read for the
+ * current viewer. Use whenever a user opens the surface that displays the
+ * conversation (chat page, negotiation dialog, etc.) so the bell badge and
+ * thread state stay in sync.
+ */
+export async function markConversationRead(params: {
+  conversationId: string;
+  viewerId: string;
+}) {
+  const { conversationId, viewerId } = params;
+  const { error } = await supabase
+    .from("chat_messages")
+    .update({ is_read: true })
+    .eq("conversation_id", conversationId)
+    .eq("is_read", false)
+    .neq("sender_id", viewerId);
+  if (error) console.error("markConversationRead failed", error);
+}
+
+/**
+ * Reconciliation by application id: resolves the conversation row for the
+ * application and marks all unread messages as read for the viewer.
+ */
+export async function markApplicationConversationRead(params: {
+  applicationId: string;
+  viewerId: string;
+}) {
+  const { applicationId, viewerId } = params;
+  const { data: conv } = await supabase
+    .from("chat_conversations")
+    .select("id")
+    .eq("application_id", applicationId)
+    .maybeSingle();
+  if (!conv?.id) return;
+  await markConversationRead({ conversationId: conv.id, viewerId });
+}
+
+/**
+ * Reconciliation for direct conversations.
+ */
+export async function markDirectConversationRead(params: {
+  conversationId: string;
+  viewerId: string;
+}) {
+  const { conversationId, viewerId } = params;
+  const { error } = await supabase
+    .from("direct_messages")
+    .update({ is_read: true })
+    .eq("conversation_id", conversationId)
+    .eq("is_read", false)
+    .neq("sender_id", viewerId);
+  if (error) console.error("markDirectConversationRead failed", error);
+}
+
