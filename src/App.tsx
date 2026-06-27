@@ -205,7 +205,7 @@ const App = () => (
                   <Route path="/settings" element={<Navigate to="/profile" replace />} />
                   <Route path="/inbox" element={<Navigate to="/messages" replace />} />
                   <Route path="/chat" element={<Navigate to="/messages" replace />} />
-                  <Route path="/cobuilders" element={<Navigate to="/people" replace />} />
+                  <Route path="/people" element={<Navigate to="/people" replace />} />
                   <Route path="/network" element={<Navigate to="/people" replace />} />
                   <Route path="/match" element={<Navigate to="/opportunities" replace />} />
                   <Route path="/matches" element={<Navigate to="/opportunities" replace />} />

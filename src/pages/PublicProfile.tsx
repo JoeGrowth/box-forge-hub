@@ -169,7 +169,7 @@ export default function PublicProfile() {
         <main className="container mx-auto px-4 py-24 max-w-2xl text-center flex-1">
           <h1 className="font-display text-3xl font-bold mb-3">Profile not available</h1>
           <p className="text-muted-foreground mb-6">This member's profile is private or doesn't exist.</p>
-          <Button asChild><Link to="/cobuilders">Explore approved members</Link></Button>
+          <Button asChild><Link to="/people">Explore approved members</Link></Button>
         </main>
         <Footer />
       </div>

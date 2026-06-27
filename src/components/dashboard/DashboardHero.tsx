@@ -21,17 +21,17 @@ function ctasForGoal(goal: string | null, primaryRole: string | null): [CtaSpec,
     case "find_opportunities":
       return [
         { to: "/opportunities", label: "Browse Opportunities", icon: Search, primary: true },
-        { to: "/cobuilders", label: "Connect with People", icon: Users },
+        { to: "/people", label: "Connect with People", icon: Users },
       ];
     case "join_startup":
       return [
         { to: "/opportunities?category=startup", label: "Browse Ideas", icon: Search, primary: true },
-        { to: "/cobuilders", label: "Connect Co-Builders", icon: Users },
+        { to: "/people", label: "Connect Co-Builders", icon: Users },
       ];
     case "build_venture":
       return [
         { to: "/create-idea", label: "Post an Idea", icon: Lightbulb, primary: true },
-        { to: "/cobuilders", label: "Connect Co-Builders", icon: Users },
+        { to: "/people", label: "Connect Co-Builders", icon: Users },
       ];
     case "monetize_expertise":
       return [
@@ -47,12 +47,12 @@ function ctasForGoal(goal: string | null, primaryRole: string | null): [CtaSpec,
       if (primaryRole === "entrepreneur") {
         return [
           { to: "/create-idea", label: "Post an Idea", icon: Lightbulb, primary: true },
-          { to: "/cobuilders", label: "Connect Co-Builders", icon: Users },
+          { to: "/people", label: "Connect Co-Builders", icon: Users },
         ];
       }
       return [
         { to: "/opportunities?category=startup", label: "Browse Ideas", icon: Search, primary: true },
-        { to: "/cobuilders", label: "Connect Co-Builders", icon: Users },
+        { to: "/people", label: "Connect Co-Builders", icon: Users },
       ];
   }
 }

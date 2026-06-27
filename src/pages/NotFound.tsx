@@ -24,7 +24,7 @@ const DESTINATIONS: Array<{
   keywords: string[];
 }> = [
   { path: "/opportunities", label: "Opportunities", description: "Jobs, startups, training and consulting matched to you", icon: Compass, keywords: ["opportunity", "opportunities", "match", "matches", "discover", "feed", "explore", "jobs", "job", "training", "trainings", "services", "consulting", "startup", "startups"] },
-  { path: "/cobuilders", label: "Co-Builders", description: "Find people to build, hire and partner with", icon: Users, keywords: ["people", "network", "cobuilders", "co-builder", "team", "members", "directory"] },
+  { path: "/people", label: "Co-Builders", description: "Find people to build, hire and partner with", icon: Users, keywords: ["people", "network", "cobuilders", "co-builder", "team", "members", "directory"] },
   { path: "/start", label: "Build a Venture", description: "Scale an idea into a venture with a team", icon: Rocket, keywords: ["scale", "start", "venture", "project", "projects", "build", "company"] },
   { path: "/advisory", label: "Consulting", description: "Publish your expertise and earn", icon: Handshake, keywords: ["advisory", "consulting", "consult", "service", "services", "expert", "monetize"] },
   { path: "/career", label: "Career", description: "Roadmap for stability and progression", icon: Briefcase, keywords: ["career", "job", "stability", "resume", "cv"] },
