@@ -132,6 +132,7 @@ const App = () => (
                   <Route path="/admin/opportunity/:id" element={<ProtectedRoute requireLevel="admin"><AdminOpportunityDetail /></ProtectedRoute>} />
                   <Route path="/admin/beta" element={<ProtectedRoute requireLevel="admin"><BetaConsole /></ProtectedRoute>} />
                   <Route path="/admin/lifecycle-integrity" element={<ProtectedRoute requireLevel="admin"><LifecycleIntegrity /></ProtectedRoute>} />
+                  <Route path="/admin/click-analytics" element={<ProtectedRoute requireLevel="admin"><ClickAnalytics /></ProtectedRoute>} />
                   <Route element={<PersistentNavbarLayout />}>
                   <Route path="/opportunities" element={<Opportunities />} />
                   <Route path="/organizations" element={<Organizations />} />
