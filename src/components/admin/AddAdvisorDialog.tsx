@@ -264,6 +264,7 @@ export function AddAdvisorDialog({
                       {b.name}
                     </SelectItem>
                   ))}
+                  <SelectItem value={NEW_BOX}>+ Create a new Box…</SelectItem>
                 </SelectContent>
               </Select>
               {alreadyInBox && (
@@ -272,7 +273,52 @@ export function AddAdvisorDialog({
                   appointment.
                 </p>
               )}
+              {isCreatingBox && (
+                <div className="mt-3 space-y-2 rounded-md border border-dashed p-3">
+                  <p className="text-xs text-muted-foreground">
+                    The Box page will be generated automatically using the demo
+                    template. Existing demo content is never overwritten.
+                  </p>
+                  <div>
+                    <Label className="text-xs">Box name</Label>
+                    <Input
+                      value={newBoxName}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setNewBoxName(v);
+                        if (!newBoxSlug) {
+                          setNewBoxSlug(
+                            v
+                              .toLowerCase()
+                              .replace(/^box\s*for\s*/i, "")
+                              .replace(/\s*solutions?$/i, "")
+                              .replace(/[^a-z0-9]+/g, "-")
+                              .replace(/(^-|-$)/g, ""),
+                          );
+                        }
+                      }}
+                      placeholder="e.g. Box For Security Solutions"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Slug (URL)</Label>
+                    <Input
+                      value={newBoxSlug}
+                      onChange={(e) =>
+                        setNewBoxSlug(
+                          e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""),
+                        )
+                      }
+                      placeholder="security"
+                    />
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      /boxes/{newBoxSlug || "your-slug"}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
+
 
             {/* Override */}
             {requireOverride && (
