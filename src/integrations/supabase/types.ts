@@ -4751,6 +4751,20 @@ export type Database = {
         | "box_request_completed"
         | "box_request_archived"
         | "admin_override_recorded"
+        | "commitment.created"
+        | "commitment.started"
+        | "commitment.progressed"
+        | "commitment.completed"
+        | "commitment.failed"
+        | "commitment.cancelled"
+        | "milestone.achieved"
+        | "contribution.recorded"
+        | "ritual.instance.scheduled"
+        | "ritual.instance.completed"
+        | "relationship.formed"
+        | "idea.solution.validated"
+        | "startup.team.joined"
+        | "company.incorporated"
       graph_node_type:
         | "user"
         | "skill"
@@ -5111,6 +5125,20 @@ export const Constants = {
         "box_request_completed",
         "box_request_archived",
         "admin_override_recorded",
+        "commitment.created",
+        "commitment.started",
+        "commitment.progressed",
+        "commitment.completed",
+        "commitment.failed",
+        "commitment.cancelled",
+        "milestone.achieved",
+        "contribution.recorded",
+        "ritual.instance.scheduled",
+        "ritual.instance.completed",
+        "relationship.formed",
+        "idea.solution.validated",
+        "startup.team.joined",
+        "company.incorporated",
       ],
       graph_node_type: [
         "user",

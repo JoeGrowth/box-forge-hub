@@ -1,0 +1,14 @@
+ALTER TYPE public.graph_event_type ADD VALUE IF NOT EXISTS 'commitment.created';
+ALTER TYPE public.graph_event_type ADD VALUE IF NOT EXISTS 'commitment.started';
+ALTER TYPE public.graph_event_type ADD VALUE IF NOT EXISTS 'commitment.progressed';
+ALTER TYPE public.graph_event_type ADD VALUE IF NOT EXISTS 'commitment.completed';
+ALTER TYPE public.graph_event_type ADD VALUE IF NOT EXISTS 'commitment.failed';
+ALTER TYPE public.graph_event_type ADD VALUE IF NOT EXISTS 'commitment.cancelled';
+ALTER TYPE public.graph_event_type ADD VALUE IF NOT EXISTS 'milestone.achieved';
+ALTER TYPE public.graph_event_type ADD VALUE IF NOT EXISTS 'contribution.recorded';
+ALTER TYPE public.graph_event_type ADD VALUE IF NOT EXISTS 'ritual.instance.scheduled';
+ALTER TYPE public.graph_event_type ADD VALUE IF NOT EXISTS 'ritual.instance.completed';
+ALTER TYPE public.graph_event_type ADD VALUE IF NOT EXISTS 'relationship.formed';
+ALTER TYPE public.graph_event_type ADD VALUE IF NOT EXISTS 'idea.solution.validated';
+ALTER TYPE public.graph_event_type ADD VALUE IF NOT EXISTS 'startup.team.joined';
+ALTER TYPE public.graph_event_type ADD VALUE IF NOT EXISTS 'company.incorporated';
