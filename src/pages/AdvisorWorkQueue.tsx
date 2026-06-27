@@ -260,7 +260,7 @@ function Section({
                   <span className="text-xs text-muted-foreground">· {ageHours(r.created_at)}h old</span>
                 </div>
                 {r.context && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{r.context}</p>}
-                <RequesterChip hint={hints[r.requester_id]} />
+                <RequesterChip hint={hints[r.requester_id]} requesterId={r.requester_id} onOpen={onOpenProfile} />
                 {r.subject_entity_type === "idea" && r.subject_entity_id && (
                   <Link to={`/startup-opportunities/${r.subject_entity_id}`} className="text-xs text-b4-teal hover:underline">
                     View linked idea →
