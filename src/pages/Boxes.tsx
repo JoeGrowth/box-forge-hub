@@ -124,6 +124,23 @@ const boxes = [
       { name: "SecureChain", desc: "Blockchain security" },
     ],
   },
+  {
+    id: "security",
+    name: "Box For Security Solutions",
+    abbr: "B4SS",
+    icon: ShieldCheck,
+    description: "Cybersecurity, physical security and trust ventures. From threat intelligence to compliance automation, we back founders defending people, data and infrastructure.",
+    color: "from-indigo-500 to-blue-700",
+    bgColor: "bg-indigo-50",
+    startups: 7,
+    cobuilders: 28,
+    totalRaised: "$720K",
+    fields: ["Cybersecurity", "Threat Intelligence", "Compliance & GRC", "Physical Security"],
+    featured: [
+      { name: "SentryGrid", desc: "AI threat detection for SMEs" },
+      { name: "TrustLayer", desc: "Compliance automation for SaaS" },
+    ],
+  },
 ];
 
 const Boxes = () => {
