@@ -116,8 +116,17 @@ export const CompensationDialog = ({
   useEffect(() => {
     if (open && (teamMember || application)) {
       loadExistingOffer();
+      // Reconcile: opening the negotiation surface clears unread negotiation
+      // messages for this viewer so the bell badge stays in sync.
+      if (application && currentUserId) {
+        markApplicationConversationRead({
+          applicationId: application.applicationId,
+          viewerId: currentUserId,
+        });
+      }
     }
-  }, [open, teamMember, application]);
+  }, [open, teamMember, application, currentUserId]);
+
 
   const loadExistingOffer = async () => {
     setIsLoading(true);
