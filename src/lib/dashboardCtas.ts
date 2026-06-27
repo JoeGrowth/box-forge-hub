@@ -48,7 +48,9 @@ export function secondaryCtaForIntent(intent: string | null): CtaSpec {
       // Monetize / advise → Advisory hub is the canonical workspace.
       return { to: "/advisory", label: "Activate Validated Expert", icon: BadgeCheck };
     case "Builder":
-      return { to: "/opportunities?category=startup", label: "Continue as Builder", icon: Rocket };
+      // Builders ship — the Entrepreneurial Track turns that posture into
+      // verifiable track-record signals (ownership, equity readiness, role labels).
+      return { to: "/entrepreneurial-track", label: "Unlock your Entrepreneurial Track", icon: Rocket };
     case "Co-Builder":
       return { to: "/opportunities?category=startup", label: "Continue as Co-Builder", icon: Users };
     case "Venture Creator":
