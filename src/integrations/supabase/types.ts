@@ -1138,6 +1138,7 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          organization_id: string | null
           owner_id: string
           updated_at: string
         }
@@ -1145,6 +1146,7 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
+          organization_id?: string | null
           owner_id: string
           updated_at?: string
         }
@@ -1152,10 +1154,19 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+          organization_id?: string | null
           owner_id?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "declaration_entities_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       declaration_entity_collaborators: {
         Row: {

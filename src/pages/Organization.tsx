@@ -55,6 +55,8 @@ import {
   ExternalLink,
   Trash2,
   ArrowLeft,
+  ClipboardList,
+  ArrowRight,
 } from "lucide-react";
 
 type JobRow = {
@@ -99,19 +101,42 @@ export default function OrganizationPage() {
 
   const [jobs, setJobs] = useState<JobRow[]>([]);
   const [tenders, setTenders] = useState<TenderRow[]>([]);
+  const [declarations, setDeclarations] = useState<{ id: string; name: string; created_at: string }[]>([]);
+  const [newDeclName, setNewDeclName] = useState("");
+  const [creatingDecl, setCreatingDecl] = useState(false);
   const { members, reload: reloadMembers } = useOrgMembers(org?.id);
 
   const loadOpps = useCallback(async () => {
     if (!org) return;
-    const [{ data: js }, { data: ts }] = await Promise.all([
+    const [{ data: js }, { data: ts }, { data: ds }] = await Promise.all([
       supabase.from("job_opportunities").select("*").eq("organization_id", org.id).order("created_at", { ascending: false }),
       supabase.from("tenders").select("*").eq("organization_id", org.id).order("created_at", { ascending: false }),
+      supabase.from("declaration_entities").select("id, name, created_at").eq("organization_id", org.id).order("created_at", { ascending: true }),
     ]);
     setJobs((js as JobRow[]) ?? []);
     setTenders((ts as TenderRow[]) ?? []);
+    setDeclarations((ds as any) ?? []);
   }, [org]);
 
   useEffect(() => { loadOpps(); }, [loadOpps]);
+
+  const createDeclaration = async () => {
+    if (!org || !user || !newDeclName.trim()) return;
+    setCreatingDecl(true);
+    const { data, error } = await supabase
+      .from("declaration_entities")
+      .insert({ name: newDeclName.trim(), owner_id: user.id, organization_id: org.id })
+      .select()
+      .single();
+    setCreatingDecl(false);
+    if (error) {
+      toast({ title: "Could not create declaration", description: error.message, variant: "destructive" });
+      return;
+    }
+    setNewDeclName("");
+    await loadOpps();
+    navigate(`/declaration?entity=${data.id}`);
+  };
 
   if (loading) return <div className="container mx-auto p-8 text-sm text-muted-foreground">Loading…</div>;
   if (!org) return (
@@ -159,6 +184,7 @@ export default function OrganizationPage() {
         <TabsList>
           <TabsTrigger value="jobs"><Briefcase className="w-3 h-3 mr-1" /> Jobs ({jobs.length})</TabsTrigger>
           <TabsTrigger value="tenders"><FileText className="w-3 h-3 mr-1" /> Tenders ({tenders.length})</TabsTrigger>
+          <TabsTrigger value="declaration"><ClipboardList className="w-3 h-3 mr-1" /> Declaration ({declarations.length})</TabsTrigger>
           <TabsTrigger value="members"><Users className="w-3 h-3 mr-1" /> Members ({members.length})</TabsTrigger>
         </TabsList>
 
@@ -241,6 +267,53 @@ export default function OrganizationPage() {
                 }}
               />
             ))
+          )}
+        </TabsContent>
+
+        {/* DECLARATION */}
+        <TabsContent value="declaration" className="space-y-3">
+          {canEdit && (
+            <div className="rounded-xl border border-dashed border-border bg-card p-4 flex gap-2 flex-wrap items-end">
+              <div className="flex-1 min-w-[220px]">
+                <Label className="text-xs uppercase tracking-wide text-muted-foreground">New declaration entity</Label>
+                <Input
+                  value={newDeclName}
+                  onChange={(e) => setNewDeclName(e.target.value)}
+                  placeholder={`e.g. ${org.name} Q1 declaration`}
+                  onKeyDown={(e) => e.key === "Enter" && createDeclaration()}
+                />
+              </div>
+              <Button onClick={createDeclaration} disabled={creatingDecl || !newDeclName.trim()}>
+                <Plus className="w-3 h-3 mr-1" /> {creatingDecl ? "Creating…" : "Add declaration"}
+              </Button>
+            </div>
+          )}
+          {declarations.length === 0 ? (
+            <EmptyState
+              icon={ClipboardList}
+              title="No declarations yet"
+              hint={canEdit ? "Create one above. It will open in the full Declaration workspace." : "An editor needs to create one."}
+            />
+          ) : (
+            <div className="rounded-xl border border-border bg-card divide-y divide-border">
+              {declarations.map((d) => (
+                <Link
+                  key={d.id}
+                  to={`/declaration?entity=${d.id}`}
+                  className="flex items-center justify-between p-4 hover:bg-muted/40 transition"
+                >
+                  <div className="min-w-0">
+                    <p className="font-medium text-foreground truncate">{d.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Created {new Date(d.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <span className="text-xs text-primary inline-flex items-center">
+                    Open <ArrowRight className="w-3 h-3 ml-1" />
+                  </span>
+                </Link>
+              ))}
+            </div>
           )}
         </TabsContent>
 

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Plus, Trash2, Wallet, Users, Building2, FlaskConical, CheckCircle2, Clock,
   TrendingUp, Settings, Briefcase, ArrowDownCircle,
@@ -75,6 +75,8 @@ const getTypeMeta = (t: string) => ({ label: typeLabel(t), tone: typeTone(t) });
 export default function Declaration() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const entityParam = searchParams.get("entity");
 
   const [entities, setEntities] = useState<Entity[]>([]);
   const [activeEntityId, setActiveEntityId] = useState<string | null>(null);
@@ -142,9 +144,10 @@ export default function Declaration() {
     }
     setEntities((data || []) as Entity[]);
     const saved = localStorage.getItem(ACTIVE_ENTITY_KEY);
+    const preselect = entityParam && data?.find((e) => e.id === entityParam);
     const found = data?.find((e) => e.id === saved);
-    setActiveEntityId(found?.id ?? data?.[0]?.id ?? null);
-  }, [user]);
+    setActiveEntityId(preselect?.id ?? found?.id ?? data?.[0]?.id ?? null);
+  }, [user, entityParam]);
 
   useEffect(() => {
     if (!user) return;
