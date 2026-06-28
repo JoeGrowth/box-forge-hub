@@ -144,9 +144,10 @@ export default function Declaration() {
     }
     setEntities((data || []) as Entity[]);
     const saved = localStorage.getItem(ACTIVE_ENTITY_KEY);
+    const preselect = entityParam && data?.find((e) => e.id === entityParam);
     const found = data?.find((e) => e.id === saved);
-    setActiveEntityId(found?.id ?? data?.[0]?.id ?? null);
-  }, [user]);
+    setActiveEntityId(preselect?.id ?? found?.id ?? data?.[0]?.id ?? null);
+  }, [user, entityParam]);
 
   useEffect(() => {
     if (!user) return;
