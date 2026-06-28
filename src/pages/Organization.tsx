@@ -270,6 +270,53 @@ export default function OrganizationPage() {
           )}
         </TabsContent>
 
+        {/* DECLARATION */}
+        <TabsContent value="declaration" className="space-y-3">
+          {canEdit && (
+            <div className="rounded-xl border border-dashed border-border bg-card p-4 flex gap-2 flex-wrap items-end">
+              <div className="flex-1 min-w-[220px]">
+                <Label className="text-xs uppercase tracking-wide text-muted-foreground">New declaration entity</Label>
+                <Input
+                  value={newDeclName}
+                  onChange={(e) => setNewDeclName(e.target.value)}
+                  placeholder={`e.g. ${org.name} Q1 declaration`}
+                  onKeyDown={(e) => e.key === "Enter" && createDeclaration()}
+                />
+              </div>
+              <Button onClick={createDeclaration} disabled={creatingDecl || !newDeclName.trim()}>
+                <Plus className="w-3 h-3 mr-1" /> {creatingDecl ? "Creating…" : "Add declaration"}
+              </Button>
+            </div>
+          )}
+          {declarations.length === 0 ? (
+            <EmptyState
+              icon={ClipboardList}
+              title="No declarations yet"
+              hint={canEdit ? "Create one above. It will open in the full Declaration workspace." : "An editor needs to create one."}
+            />
+          ) : (
+            <div className="rounded-xl border border-border bg-card divide-y divide-border">
+              {declarations.map((d) => (
+                <Link
+                  key={d.id}
+                  to={`/declaration?entity=${d.id}`}
+                  className="flex items-center justify-between p-4 hover:bg-muted/40 transition"
+                >
+                  <div className="min-w-0">
+                    <p className="font-medium text-foreground truncate">{d.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Created {new Date(d.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <span className="text-xs text-primary inline-flex items-center">
+                    Open <ArrowRight className="w-3 h-3 ml-1" />
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
         {/* MEMBERS */}
         <TabsContent value="members" className="space-y-3">
           {canAdmin && <InviteMemberRow orgId={org.id} onAdded={reloadMembers} />}
