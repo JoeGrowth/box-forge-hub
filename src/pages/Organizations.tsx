@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Building2, Plus, Shield, Eye, Pencil, ArrowRight } from "lucide-react";
+import { Building2, Plus, Shield, Eye, Pencil, ArrowRight, Trash2 } from "lucide-react";
 
 const slugify = (s: string) =>
   s.toLowerCase().trim()
@@ -153,6 +153,19 @@ export default function Organizations() {
         <div className="grid sm:grid-cols-2 gap-4">
           {memberships.map(({ organization: o, role }) => {
             const RoleIcon = ROLE_ICON[role];
+            const canDelete = role === "admin";
+            const handleDelete = async (e: React.MouseEvent) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (!confirm(`Delete "${o.name}"? This removes the organization, its memberships, and unlinks its opportunities. This cannot be undone.`)) return;
+              const { error } = await supabase.from("organizations").delete().eq("id", o.id);
+              if (error) {
+                toast({ title: "Could not delete organization", description: error.message, variant: "destructive" });
+                return;
+              }
+              toast({ title: `Deleted "${o.name}"` });
+              await reload();
+            };
             return (
               <Link
                 key={o.id}
@@ -164,9 +177,22 @@ export default function Organizations() {
                     <h3 className="font-semibold text-foreground truncate">{o.name}</h3>
                     <p className="text-xs text-muted-foreground capitalize">{o.type}</p>
                   </div>
-                  <Badge className={ROLE_COLOR[role]}>
-                    <RoleIcon className="w-3 h-3 mr-1" /> {role}
-                  </Badge>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Badge className={ROLE_COLOR[role]}>
+                      <RoleIcon className="w-3 h-3 mr-1" /> {role}
+                    </Badge>
+                    {canDelete && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                        onClick={handleDelete}
+                        aria-label={`Delete ${o.name}`}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 {o.description && (
                   <p className="text-sm text-muted-foreground mt-3 line-clamp-2">{o.description}</p>
