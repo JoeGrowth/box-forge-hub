@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Plus, Trash2, Wallet, Users, Building2, FlaskConical, CheckCircle2, Clock,
   TrendingUp, Settings, Briefcase, ArrowDownCircle,
