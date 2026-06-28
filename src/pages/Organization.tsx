@@ -55,6 +55,8 @@ import {
   ExternalLink,
   Trash2,
   ArrowLeft,
+  ClipboardList,
+  ArrowRight,
 } from "lucide-react";
 
 type JobRow = {
