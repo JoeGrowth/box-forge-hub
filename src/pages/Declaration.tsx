@@ -74,7 +74,8 @@ const getTypeMeta = (t: string) => ({ label: typeLabel(t), tone: typeTone(t) });
 
 export default function Declaration() {
   const { user, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const entityParam = searchParams.get("entity");
 
   const [entities, setEntities] = useState<Entity[]>([]);
   const [activeEntityId, setActiveEntityId] = useState<string | null>(null);
