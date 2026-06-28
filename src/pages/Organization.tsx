@@ -101,19 +101,42 @@ export default function OrganizationPage() {
 
   const [jobs, setJobs] = useState<JobRow[]>([]);
   const [tenders, setTenders] = useState<TenderRow[]>([]);
+  const [declarations, setDeclarations] = useState<{ id: string; name: string; created_at: string }[]>([]);
+  const [newDeclName, setNewDeclName] = useState("");
+  const [creatingDecl, setCreatingDecl] = useState(false);
   const { members, reload: reloadMembers } = useOrgMembers(org?.id);
 
   const loadOpps = useCallback(async () => {
     if (!org) return;
-    const [{ data: js }, { data: ts }] = await Promise.all([
+    const [{ data: js }, { data: ts }, { data: ds }] = await Promise.all([
       supabase.from("job_opportunities").select("*").eq("organization_id", org.id).order("created_at", { ascending: false }),
       supabase.from("tenders").select("*").eq("organization_id", org.id).order("created_at", { ascending: false }),
+      supabase.from("declaration_entities").select("id, name, created_at").eq("organization_id", org.id).order("created_at", { ascending: true }),
     ]);
     setJobs((js as JobRow[]) ?? []);
     setTenders((ts as TenderRow[]) ?? []);
+    setDeclarations((ds as any) ?? []);
   }, [org]);
 
   useEffect(() => { loadOpps(); }, [loadOpps]);
+
+  const createDeclaration = async () => {
+    if (!org || !user || !newDeclName.trim()) return;
+    setCreatingDecl(true);
+    const { data, error } = await supabase
+      .from("declaration_entities")
+      .insert({ name: newDeclName.trim(), owner_id: user.id, organization_id: org.id })
+      .select()
+      .single();
+    setCreatingDecl(false);
+    if (error) {
+      toast({ title: "Could not create declaration", description: error.message, variant: "destructive" });
+      return;
+    }
+    setNewDeclName("");
+    await loadOpps();
+    navigate(`/declaration?entity=${data.id}`);
+  };
 
   if (loading) return <div className="container mx-auto p-8 text-sm text-muted-foreground">Loading…</div>;
   if (!org) return (
