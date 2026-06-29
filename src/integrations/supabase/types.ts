@@ -5583,6 +5583,7 @@ export type Database = {
       run_beta_simulation: { Args: never; Returns: Json }
       run_lifecycle_integrity_checks: { Args: never; Returns: string }
       seed_cold_start_expertise: { Args: { _user_id: string }; Returns: number }
+      slugify_text: { Args: { _input: string }; Returns: string }
       test_growth_loop_dispatch: { Args: { _user_id: string }; Returns: Json }
       transition_box_request: {
         Args: {
@@ -5593,6 +5594,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      unique_org_slug: { Args: { _base: string }; Returns: string }
     }
     Enums: {
       app_org_role: "viewer" | "editor" | "admin"
