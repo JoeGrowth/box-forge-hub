@@ -130,7 +130,7 @@ export function useEngineAccess() {
       const expertiseScore = Number(expertiseRes.data?.expertise_score ?? 0);
       const verifiedExpertise = Number(expertiseRes.data?.verified_expertise_count ?? 0);
       const completedTx = Number(revenueRes.data?.completed_value_count ?? 0);
-      const advisorReady = Boolean(readinessRes.data?.is_ready);
+      const advisorReady = Boolean(readinessRes.data?.eligible);
       const allocatedEquity = Number(ownershipRes.data?.total_allocated_equity ?? 0);
       const repLevel = String(reputationRes.data?.reputation_level ?? "verified");
 
