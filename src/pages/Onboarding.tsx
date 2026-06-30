@@ -113,13 +113,12 @@ const Onboarding = () => {
     if (currentStep > 2) {
       setCurrentStep(currentStep - 1);
     } else {
-      // Going back from first professional step (step 2) → reset and go to choose-path
-      try {
-        await updateOnboardingState({ current_step: 1, primary_role: null, onboarding_completed: false });
-      } catch (e) {
-        console.error("Failed to reset onboarding state:", e);
+      // Going back from the first professional step (step 2) → return to the page that referred the user here
+      if (window.history.length > 1) {
+        navigate(-1);
+      } else {
+        navigate("/dashboard");
       }
-      navigate("/onboarding");
     }
   };
 
