@@ -634,6 +634,7 @@ const Entrepreneurship = () => {
             </div>
           </section>
         </main>
+        )}
       </PageTransition>
       <Footer />
       <ScrollToTopButton />
