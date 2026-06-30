@@ -525,7 +525,7 @@ const Messages = () => {
           {selectedConversation ? (
             <>
               {/* Chat Header */}
-              <div className="border-b border-border bg-card px-6 py-4">
+              <div className="border-b border-border bg-card px-6 py-4 shadow-sm z-10">
                 <div className="flex items-center gap-4">
                   <Avatar className="w-10 h-10">
                     <AvatarImage src={otherUser?.avatar_url || undefined} />
@@ -588,7 +588,7 @@ const Messages = () => {
               </ScrollArea>
 
               {/* Input */}
-              <div className="border-t border-border bg-card p-4">
+              <div className="border-t-2 border-border bg-card p-4 shadow-[0_-4px_12px_-4px_rgba(0,0,0,0.08)]">
                 <div className="flex items-end gap-2">
                   <ChatFileUpload
                     userId={user?.id || ""}
@@ -600,7 +600,7 @@ const Messages = () => {
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Type a message..."
-                    className="flex-1"
+                    className="flex-1 bg-white border-2 shadow-sm"
                     disabled={sending}
                   />
                   <Button
