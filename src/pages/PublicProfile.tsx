@@ -183,7 +183,7 @@ export default function PublicProfile() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
-      <main className="container mx-auto px-4 py-12 max-w-5xl flex-1 space-y-6">
+      <main className="container mx-auto px-4 pt-24 pb-12 max-w-5xl flex-1 space-y-6">
         {/* Header */}
         <div className="bg-gradient-to-br from-b4-navy via-b4-navy/95 to-b4-navy/85 rounded-2xl p-8 text-white">
           <div className="flex flex-col sm:flex-row items-start gap-6">
