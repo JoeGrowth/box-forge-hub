@@ -24,6 +24,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useEngineAccess } from "@/hooks/useEngineAccess";
+import { EngineLockedPanel } from "@/components/engines/EngineLockedPanel";
 
 interface StartupIdea {
   id: string;
@@ -62,6 +64,7 @@ const getEpisodeLabel = (episode: string) => {
 
 const Entrepreneurship = () => {
   const { user } = useAuth();
+  const { engines, loading: accessLoading } = useEngineAccess();
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -479,6 +482,13 @@ const Entrepreneurship = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <PageTransition>
+        {accessLoading ? (
+          <main className="pt-24 container mx-auto px-4 max-w-3xl">
+            <Skeleton className="h-64 w-full rounded-2xl" />
+          </main>
+        ) : !engines.entrepreneurship.unlocked ? (
+          <EngineLockedPanel engine="entrepreneurship" access={engines.entrepreneurship} />
+        ) : (
         <main className="pt-20">
           <section className="py-10">
             <div className="container mx-auto px-4">
@@ -624,6 +634,7 @@ const Entrepreneurship = () => {
             </div>
           </section>
         </main>
+        )}
       </PageTransition>
       <Footer />
       <ScrollToTopButton />

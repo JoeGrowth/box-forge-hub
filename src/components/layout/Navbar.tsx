@@ -30,7 +30,9 @@ import {
   ListChecks,
   Activity,
   BarChart3,
+  Lock,
 } from "lucide-react";
+import { useEngineAccess, type EngineKey } from "@/hooks/useEngineAccess";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,10 +47,10 @@ const guestNavLinks = [
   { name: "Boxes", path: "/boxes" },
 ];
 
-const engineLinks = [
-  { name: "Career", path: "/career", icon: Briefcase },
-  { name: "Consulting", path: "/consulting", icon: Handshake },
-  { name: "Entrepreneurship", path: "/entrepreneurship", icon: Lightbulb },
+const engineLinks: Array<{ name: string; path: string; icon: typeof Briefcase; key: EngineKey }> = [
+  { name: "Career", path: "/career", icon: Briefcase, key: "career" },
+  { name: "Consulting", path: "/consulting", icon: Handshake, key: "consulting" },
+  { name: "Entrepreneurship", path: "/entrepreneurship", icon: Lightbulb, key: "entrepreneurship" },
 ];
 
 const publishLinks = [
@@ -93,6 +95,8 @@ export function Navbar() {
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
   const { canAccessBoosting, canAccessScaling, potentialRole } = useUserStatus();
+
+  const { engines: engineAccess } = useEngineAccess();
 
   // Hydrate synchronously from localStorage (lazy initializer) so the Admin
   // button is present on first paint when cached — no flash, no layout shift.
@@ -174,16 +178,20 @@ export function Navbar() {
                   <DropdownMenuContent align="center" className="w-48 mt-2">
                     {engineLinks.map((link) => {
                       const Icon = link.icon;
+                      const locked = !engineAccess[link.key].unlocked;
+                      const topMissing = engineAccess[link.key].missing[0]?.label;
                       return (
                         <DropdownMenuItem key={link.path} asChild>
                           <Link
                             to={link.path}
                             className={`flex items-center gap-2 cursor-pointer ${
                               location.pathname === link.path ? "text-b4-teal" : "text-foreground"
-                            }`}
+                            } ${locked ? "opacity-70" : ""}`}
+                            title={locked && topMissing ? `Locked — needs: ${topMissing}` : undefined}
                           >
                             <Icon size={16} />
-                            {link.name}
+                            <span className="flex-1">{link.name}</span>
+                            {locked && <Lock size={12} className="text-muted-foreground" />}
                           </Link>
                         </DropdownMenuItem>
                       );
@@ -343,6 +351,7 @@ export function Navbar() {
                   </div>
                   {engineLinks.map((link) => {
                     const Icon = link.icon;
+                    const locked = !engineAccess[link.key].unlocked;
                     return (
                       <Link
                         key={link.path}
@@ -351,11 +360,12 @@ export function Navbar() {
                           location.pathname === link.path
                             ? "bg-muted text-b4-teal"
                             : "text-muted-foreground hover:bg-muted"
-                        }`}
+                        } ${locked ? "opacity-70" : ""}`}
                         onClick={() => setIsOpen(false)}
                       >
                         <Icon size={16} />
-                        {link.name}
+                        <span className="flex-1">{link.name}</span>
+                        {locked && <Lock size={12} className="text-muted-foreground" />}
                       </Link>
                     );
                   })}

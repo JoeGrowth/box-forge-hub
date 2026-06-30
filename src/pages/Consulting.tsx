@@ -9,6 +9,9 @@ import { BookOpen, Briefcase, FileText, Layers, TrendingUp, ArrowRight, ArrowLef
 import { TrainTeamDialog } from "@/components/resume/TrainTeamDialog";
 import { CreateServiceDialog } from "@/components/consulting/CreateServiceDialog";
 import { ServiceListing } from "@/components/consulting/ServiceListing";
+import { useEngineAccess } from "@/hooks/useEngineAccess";
+import { EngineLockedPanel } from "@/components/engines/EngineLockedPanel";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const STORAGE_KEY = "b4-favorite-steps";
 
@@ -27,6 +30,7 @@ const scaleSteps = [
 ];
 
 const Consulting = () => {
+  const { engines, loading: accessLoading } = useEngineAccess();
   const [favorites, setFavorites] = useState<string[]>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -99,6 +103,13 @@ const Consulting = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <PageTransition>
+        {accessLoading ? (
+          <main className="pt-24 container mx-auto px-4 max-w-3xl">
+            <Skeleton className="h-64 w-full rounded-2xl" />
+          </main>
+        ) : !engines.consulting.unlocked ? (
+          <EngineLockedPanel engine="consulting" access={engines.consulting} />
+        ) : (
         <main className="pt-20">
           <section className="py-10">
             <div className="container mx-auto px-4">
@@ -155,6 +166,7 @@ const Consulting = () => {
             </div>
           </section>
         </main>
+        )}
       </PageTransition>
       <Footer />
       <ScrollToTopButton />
