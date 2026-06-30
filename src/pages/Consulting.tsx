@@ -166,6 +166,7 @@ const Consulting = () => {
             </div>
           </section>
         </main>
+        )}
       </PageTransition>
       <Footer />
       <ScrollToTopButton />
