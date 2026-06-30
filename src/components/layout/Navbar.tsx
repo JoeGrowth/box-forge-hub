@@ -32,7 +32,6 @@ import {
   BarChart3,
   Lock,
 } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useEngineAccess, type EngineKey } from "@/hooks/useEngineAccess";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserStatus } from "@/hooks/useUserStatus";
