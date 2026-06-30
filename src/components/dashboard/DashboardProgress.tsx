@@ -153,13 +153,13 @@ export function DashboardProgress() {
 
   const overallProgress = () => {
     let completed = 0;
-    const total = 5; // Decoder, Onboarding, Resume, Track Record, Learning
+    const total = 5; // Intent, Decoder, Professional Track, Entrepreneurial Track, Resume
 
-    if (nrDecoderComplete) completed++;
     if (isOnboardingTrulyComplete) completed++;
-    if (resumeComplete) completed++;
+    if (nrDecoderComplete) completed++;
+    if (proTrackComplete) completed++;
     if (trackRecordComplete) completed++;
-    if (journeys.some((j) => j.status === "approved")) completed++;
+    if (resumeComplete) completed++;
 
     return Math.round((completed / total) * 100);
   };
@@ -173,7 +173,7 @@ export function DashboardProgress() {
       description: isOnboardingTrulyComplete
         ? "Role, goals and direction locked in."
         : `Step ${onboardingState?.current_step || 1} of 5 — pick up where you left off.`,
-      icon: null,
+      icon: Target,
       done: isOnboardingTrulyComplete,
       cta: { label: "Continue", to: "/professional-track" },
     },
@@ -181,17 +181,25 @@ export function DashboardProgress() {
       key: "decoder",
       title: "Decode your natural role",
       description: "7 questions. Your starting compass on the platform.",
-      icon: null,
+      icon: Compass,
       done: nrDecoderComplete,
       cta: { label: "Start", to: "/decoder" },
     },
     {
-      key: "track",
-      title: "Fill your track record",
-      description: "Receipts beat resumes. Add the projects you've shipped.",
+      key: "pro-track",
+      title: "Fill your Professional Track Record",
+      description: "Promise, practice, training, consulting — the receipts behind your natural role.",
       icon: Briefcase,
+      done: proTrackComplete,
+      cta: { label: "Complete", to: "/track" },
+    },
+    {
+      key: "ent-track",
+      title: "Fill your Entrepreneurial Track Record",
+      description: "Initiatives, products, teams, business, equity — what you've shipped as a builder.",
+      icon: Rocket,
       done: trackRecordComplete,
-      cta: { label: "Complete", to: "/professional-track" },
+      cta: { label: "Complete", to: "/track" },
     },
     {
       key: "resume",
