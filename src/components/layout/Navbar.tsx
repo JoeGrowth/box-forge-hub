@@ -179,16 +179,20 @@ export function Navbar() {
                   <DropdownMenuContent align="center" className="w-48 mt-2">
                     {engineLinks.map((link) => {
                       const Icon = link.icon;
+                      const locked = !engineAccess[link.key].unlocked;
+                      const topMissing = engineAccess[link.key].missing[0]?.label;
                       return (
                         <DropdownMenuItem key={link.path} asChild>
                           <Link
                             to={link.path}
                             className={`flex items-center gap-2 cursor-pointer ${
                               location.pathname === link.path ? "text-b4-teal" : "text-foreground"
-                            }`}
+                            } ${locked ? "opacity-70" : ""}`}
+                            title={locked && topMissing ? `Locked — needs: ${topMissing}` : undefined}
                           >
                             <Icon size={16} />
-                            {link.name}
+                            <span className="flex-1">{link.name}</span>
+                            {locked && <Lock size={12} className="text-muted-foreground" />}
                           </Link>
                         </DropdownMenuItem>
                       );
