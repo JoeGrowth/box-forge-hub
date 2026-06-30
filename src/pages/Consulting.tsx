@@ -30,6 +30,7 @@ const scaleSteps = [
 ];
 
 const Consulting = () => {
+  const { engines, loading: accessLoading } = useEngineAccess();
   const [favorites, setFavorites] = useState<string[]>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
