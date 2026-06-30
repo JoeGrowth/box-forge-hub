@@ -1,136 +1,99 @@
-# Phase 5 — Product Integration
 
-Goal: make the existing graph perceivable. No new core entities. All work goes into surfaces, projections, and consistent mounting of what already exists.
+# Engine Access Gating — Implementation Plan
 
-Sequenced in 6 sprints so each lands a usable surface before moving on.
+Gate the three engines off the existing graph projections (no new tables). Career stays open as the on-ramp; Consulting and Entrepreneurship show as visible-but-locked until the user earns the qualifying signals.
 
----
+## 1. Access rules (single source of truth)
 
-## Sprint 5A — Opportunities surface (highest priority)
+```text
+Career
+  unlocked = signed-in (always true post-auth)
 
-Rebuild `/opportunities` as the canonical entry point to the Opportunity Graph.
+Consulting
+  unlocked = ANY of:
+    - expertise_graph.verified_expertise_count >= 1
+    - expertise_graph.expertise_score >= 8
+    - revenue_graph.completed_transactions >= 1
+    - advisor_readiness.is_ready = true
+    - admin
 
-Tabs:
-- **Discover** — all live opportunities, filterable by kind (job, startup, training, consulting, tender, advisor invite, partnership, hiring, investment, collaboration, co_builder).
-- **Recommended** — ranked feed from `opportunity_graph` + `opportunities` ranking.
-- **My Opportunities** — relationships I'm already in (active commitments / accepted apps).
-- **My Applications** — `opportunity_applications` + legacy `startup_applications` unioned.
-- **Created by Me** — opportunities I own (and legacy ideas/jobs/etc. I authored).
-
-Each card answers the 4 questions:
-1. **What** — title, kind badge, sector, one-line summary.
-2. **Why recommended** — evidence chips (matched skills, shared box, shared relationships, contribution overlap) — no numeric weights.
-3. **Evidence expected** — what the applicant needs to bring (skills, validated contributions, canvas).
-4. **Resulting relationship** — `relationship_kind` that would form on acceptance (advisor, teammate, partner…).
-
-New components:
-- `src/pages/Opportunities.tsx` — restructured with the 5 tabs above (replace current tab system).
-- `src/components/opportunities/OpportunityCardV2.tsx` — 4-question layout. Wraps existing card data.
-- `src/components/opportunities/WhyRecommended.tsx` — evidence chips from `OpportunityRecommendation.explanation`.
-- `src/components/opportunities/ExpectedEvidence.tsx`.
-- `src/components/opportunities/ResultingRelationship.tsx`.
-
-## Sprint 5B — TrustBlock mount sweep
-
-Mount `TrustBlock` (compact variant) wherever a person renders. Add a `compact` prop to `TrustBlock` if missing.
-
-Surfaces to patch:
-- `TeamManagementDialog` applicant rows
-- `OpportunityCardV2` author row
-- `CompensationDialog` header
-- `AdvisorWorkQueue` requester row
-- `BoxAdvisorStrip` advisor chips
-- `Chat` header (`Chat.tsx`, `DirectChat.tsx`)
-- `PublicProfile` header
-- `IdeaApplicationsViewer` rows
-- `CoBuilderApplicationsSection`
-
-## Sprint 5C — Relationship-first profile
-
-Rework `PublicProfile.tsx` into a tabbed shell:
+Entrepreneurship
+  unlocked = ANY of:
+    - Vaccinated Co-Builder cert
+    - Vaccinated Initiator cert
+    - ownership_graph.total_allocated_equity > 0
+    - reputation_graph.reputation_level in (recognized, expert, authority)
+    - user already owns/co-owns a startup_idea (grandfather)
+    - admin
 ```
-Summary | Contributions | Relationships | Opportunities | Track Record | Trust
+
+Building / Founder remain status badges *inside* Entrepreneurship — not access tiers.
+
+## 2. New hook: `useEngineAccess`
+
+`src/hooks/useEngineAccess.tsx` — composes the existing hooks (`useExpertise`, `useReputation`, `useRevenue`, `useOwnership`, `useAdvisorReadiness`, `useAdmin`, plus a small query for owned `startup_ideas` and cert status). Returns:
+
+```ts
+type EngineKey = "career" | "consulting" | "entrepreneurship";
+type EngineAccess = {
+  unlocked: boolean;
+  reasons: { met: string[]; missing: { label: string; cta: { label: string; to: string } }[] };
+};
+useEngineAccess(): { loading: boolean; engines: Record<EngineKey, EngineAccess> };
 ```
-- **Summary** — generated from graph (TrustBlock + top 3 contributions + active relationship counts).
-- **Contributions** — list from `contributions`.
-- **Relationships** — `RelationshipTimeline` aggregated across all relationships.
-- **Opportunities** — created + open applications.
-- **Track Record** — existing track record export.
-- **Trust** — full TrustBlock + evidence list.
 
-No new tables. Pure presentation.
+Reasons are human-readable evidence strings — never expose raw booleans.
 
-## Sprint 5D — Recommendation explanations everywhere
+## 3. Navbar changes
 
-Generalize `RecommendationExplanation` so it renders the same evidence-chip set used by `WhyRecommended`. Mount on:
-- Opportunity recommendation cards (already partial)
-- Advisor matching results in `BoxAdvisorStrip` / `AdvisorWorkQueue`
-- Team member search results in `TeamMemberSearch`
-- Dashboard top matches
+`src/components/layout/Navbar.tsx`:
+- Always render Career / Consulting / Entrepreneurship links (no hiding).
+- When `!unlocked`, append a small `Lock` icon (lucide), reduce opacity slightly, add a tooltip with the top missing signal.
+- Locked link still navigates — to the engine page, which then shows the locked panel (not a 403, no redirect to /dashboard).
+- Admins always see unlocked.
 
-## Sprint 5E — Unified activity stream
+## 4. New component: `EngineLockedPanel`
 
-One projection feeding many views.
+`src/components/engines/EngineLockedPanel.tsx` — full-page panel rendered at the top of each engine page when locked. Props: `engine`, `reasons`. Shows:
+- Title: "Not yet unlocked" (never "forbidden")
+- "What this engine gives you" (1-line value prop)
+- "Evidence required" list with checkmarks for met signals, empty circles for missing
+- "Next actions" CTAs routing to: `/decoder`, `/resume`, `/track-record`, `/learning-journeys`, `/opportunities`, etc.
+- "Already unlocked elsewhere?" link to support (no-op for now)
 
-Schema (additive, projection only — no new core entities):
-```sql
-create view public.activity_stream as
-  select 'opportunity'::text as entity_type, opportunity_id as entity_id,
-         actor_user_id as actor_id, event_type::text, occurred_at,
-         coalesce((payload->>'importance')::int, 3) as importance
-  from public.graph_events
-  where event_type::text like 'opportunity.%'
-  union all
-  select 'commitment', commitment_id, owner_user_id, event_type::text, occurred_at, 3
-  from public.graph_events where event_type::text like 'commitment.%'
-  union all
-  select 'contribution', contribution_id, contributor_user_id, 'contribution.recorded', created_at, 2
-  from public.contributions
-  union all
-  select 'milestone', id, owner_user_id, 'milestone.reached', reached_at, 4
-  from public.milestones where reached_at is not null
-  union all
-  select 'relationship', id, initiator_user_id, 'relationship.formed', created_at, 3
-  from public.advisor_relationships;
-```
-(Real SQL will resolve actual column names during implementation.)
+## 5. Engine pages
 
-Grants: `grant select on public.activity_stream to authenticated, service_role;`
+`src/pages/Career.tsx` — no gating change (open).
+`src/pages/Consulting.tsx` and `src/pages/Entrepreneurship.tsx`:
+- Call `useEngineAccess()`.
+- If `loading`, show existing skeleton.
+- If `!engines[key].unlocked`, render `<EngineLockedPanel ... />` instead of the dashboard.
+- Otherwise render existing content unchanged.
 
-Consumers — refactor to read from the view with filters:
-- `DashboardActivity` (new) — personal + relationships
-- `BoxFeed` — filter by box
-- Opportunity detail timeline — filter by `entity_id`
-- `PublicProfile > Relationships` tab — filter by actor
+No changes to deep child routes for now (e.g. `/start`, `/scale`, `/advisory`). Those continue to use their existing checks; we can fold them into `useEngineAccess` in a follow-up.
 
-## Sprint 5F — Beta operations console
+## 6. Capability gating (kept, not changed in this pass)
 
-Extend `BetaConsole` with operational metrics:
-- advisor capacity utilization (active / capacity from `box_advisors`)
-- median request response time (`box_inbound_requests` accepted_at − created_at)
-- opportunity fill rate (accepted apps / opportunities)
-- commitment completion rate (`commitments` status='completed' / total)
-- relationship formation rate (new relationships / week)
-- validated contributions / week
-- verified contributors in last 30 days
+Inside Career we leave the existing sub-feature gates as-is (publish training, apply, etc. via `useAccessLevel`). This plan only adds engine-level gating; nothing existing gets loosened.
 
-Add to `get_admin_beta_health` RPC.
+## Technical notes
 
----
+- All reads come from existing tables: `expertise_graph`, `reputation_graph`, `revenue_graph`, `ownership_graph`, `advisor_readiness`, `user_certifications`, `startup_ideas`, `startup_team_members`. No migration needed.
+- Cert detection: read `user_certifications` for the two Vaccinated cert keys already used in the certification data mapping.
+- Grandfathering: `startup_ideas.created_by = user.id` OR row in `startup_team_members.member_user_id = user.id`.
+- Cache `useEngineAccess` results in component state; re-runs on auth change. No localStorage cache (graph state changes too often and we don't want stale locks).
+- Admin bypass uses existing `useAdmin`.
 
-## Out of scope (frozen)
+## Files touched
 
-- No new core entities. Only event types / projections / views.
-- No ranking-weight exposure to end users.
-- No payments, no scoring redesign.
+- add `src/hooks/useEngineAccess.tsx`
+- add `src/components/engines/EngineLockedPanel.tsx`
+- edit `src/components/layout/Navbar.tsx` (lock icon + tooltip on the 3 engine links)
+- edit `src/pages/Consulting.tsx` (render locked panel when locked)
+- edit `src/pages/Entrepreneurship.tsx` (render locked panel when locked)
 
-## Order of execution
+## Out of scope (next pass if you want)
 
-1. 5A Opportunities surface
-2. 5B TrustBlock sweep
-3. 5D Recommendation explanations (small, ride alongside 5B)
-4. 5C Relationship-first profile
-5. 5E Activity stream view + Dashboard/Box/Profile consumers
-6. 5F Beta ops console
-
-Each sprint is shippable independently.
+- Locking sub-routes like `/scale`, `/advisory`, `/start` directly (today they're reachable via other links).
+- Tracking unlock events to `click_events` / `graph_events` for funnel analytics.
+- Email nudge when a user crosses an unlock threshold.
