@@ -63,10 +63,16 @@ export function DashboardProgress() {
         .maybeSingle();
 
       const p: any = profile || {};
+      const filled = (v: any) =>
+        v !== null && v !== undefined && String(v).trim().length > 0;
       const resumeDone = Boolean(
-        p.professional_title &&
-        (p.bio || p.summary_statement) &&
-        p.primary_skills
+        filled(p.professional_title) &&
+        filled(p.bio) &&
+        filled(p.summary_statement) &&
+        filled(p.primary_skills) &&
+        filled(p.key_projects) &&
+        filled(p.education_certifications) &&
+        p.years_of_experience !== null && p.years_of_experience !== undefined
       );
       const trackDone = Boolean(
         (p.key_projects && String(p.key_projects).trim().length > 20) ||
@@ -74,6 +80,7 @@ export function DashboardProgress() {
       );
       setResumeComplete(resumeDone);
       setTrackRecordComplete(trackDone);
+
 
 
       const journeyMap: JourneyProgress[] = [];
