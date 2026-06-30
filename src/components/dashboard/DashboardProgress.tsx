@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, CheckCircle2, Circle, Lock, FileText, Briefcase } from "lucide-react";
+import { ArrowRight, CheckCircle2, Circle, Lock, FileText, Briefcase, Rocket, Compass, Target } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +26,7 @@ export function DashboardProgress() {
   const [nrDecoderComplete, setNrDecoderComplete] = useState(false);
   const [resumeComplete, setResumeComplete] = useState(false);
   const [trackRecordComplete, setTrackRecordComplete] = useState(false);
+  const [proTrackComplete, setProTrackComplete] = useState(false);
 
 
   useEffect(() => {
@@ -82,6 +83,8 @@ export function DashboardProgress() {
         .maybeSingle();
       setResumeComplete(resumeDone);
       setTrackRecordComplete(!!entOnboarding?.is_completed);
+      // Professional Track Record = the 9-step natural role flow complete
+      setProTrackComplete(!!naturalRole?.description);
 
 
 
@@ -152,13 +155,13 @@ export function DashboardProgress() {
 
   const overallProgress = () => {
     let completed = 0;
-    const total = 5; // Decoder, Onboarding, Resume, Track Record, Learning
+    const total = 5; // Intent, Decoder, Professional Track, Entrepreneurial Track, Resume
 
-    if (nrDecoderComplete) completed++;
     if (isOnboardingTrulyComplete) completed++;
-    if (resumeComplete) completed++;
+    if (nrDecoderComplete) completed++;
+    if (proTrackComplete) completed++;
     if (trackRecordComplete) completed++;
-    if (journeys.some((j) => j.status === "approved")) completed++;
+    if (resumeComplete) completed++;
 
     return Math.round((completed / total) * 100);
   };
@@ -172,7 +175,7 @@ export function DashboardProgress() {
       description: isOnboardingTrulyComplete
         ? "Role, goals and direction locked in."
         : `Step ${onboardingState?.current_step || 1} of 5 — pick up where you left off.`,
-      icon: null,
+      icon: Target,
       done: isOnboardingTrulyComplete,
       cta: { label: "Continue", to: "/professional-track" },
     },
@@ -180,17 +183,25 @@ export function DashboardProgress() {
       key: "decoder",
       title: "Decode your natural role",
       description: "7 questions. Your starting compass on the platform.",
-      icon: null,
+      icon: Compass,
       done: nrDecoderComplete,
       cta: { label: "Start", to: "/decoder" },
     },
     {
-      key: "track",
-      title: "Fill your track record",
-      description: "Receipts beat resumes. Add the projects you've shipped.",
+      key: "pro-track",
+      title: "Fill your Professional Track Record",
+      description: "Promise, practice, training, consulting — the receipts behind your natural role.",
       icon: Briefcase,
+      done: proTrackComplete,
+      cta: { label: "Complete", to: "/track" },
+    },
+    {
+      key: "ent-track",
+      title: "Fill your Entrepreneurial Track Record",
+      description: "Initiatives, products, teams, business, equity — what you've shipped as a builder.",
+      icon: Rocket,
       done: trackRecordComplete,
-      cta: { label: "Complete", to: "/professional-track" },
+      cta: { label: "Complete", to: "/track" },
     },
     {
       key: "resume",
@@ -223,7 +234,7 @@ export function DashboardProgress() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-3">
-          {steps.map((step, idx) => {
+          {steps.map((step) => {
             const Icon = step.icon;
             return (
               <div
@@ -235,19 +246,22 @@ export function DashboardProgress() {
                 }`}
               >
                 <div
-                  className={`flex items-center justify-center w-9 h-9 rounded-full text-sm font-semibold flex-shrink-0 transition-colors ${
+                  className={`flex items-center justify-center w-9 h-9 rounded-full flex-shrink-0 transition-colors ${
                     step.done
                       ? "bg-b4-teal text-white"
                       : "bg-background border border-border text-muted-foreground group-hover:border-b4-teal/50 group-hover:text-b4-teal"
                   }`}
                 >
-                  {step.done ? <CheckCircle2 className="w-5 h-5" /> : idx + 1}
+                  {step.done ? (
+                    <CheckCircle2 className="w-5 h-5" />
+                  ) : Icon ? (
+                    <Icon className="w-4 h-4" />
+                  ) : (
+                    <Circle className="w-4 h-4" />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium flex items-center gap-2">
-                    {Icon && <Icon className="w-4 h-4 text-muted-foreground" />}
-                    {step.title}
-                  </div>
+                  <div className="font-medium">{step.title}</div>
                   <div className="text-sm text-muted-foreground">{step.description}</div>
                 </div>
                 {!step.done && (
