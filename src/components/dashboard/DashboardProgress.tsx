@@ -83,6 +83,9 @@ export function DashboardProgress() {
         .maybeSingle();
       setResumeComplete(resumeDone);
       setTrackRecordComplete(!!entOnboarding?.is_completed);
+      // Professional Track Record = the 9-step natural role flow complete
+      // (description filled + scaling answered = end of /professional-track)
+      setProTrackComplete(!!naturalRole?.description && naturalRole?.wants_to_scale !== null);
 
 
 
