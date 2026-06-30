@@ -4,10 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, CheckCircle2, Circle, Lock, FileText, Briefcase, Rocket, Compass, Target } from "lucide-react";
+import { ArrowRight, CheckCircle2, Circle, FileText, Briefcase, Rocket, Compass, Target, Award } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
+import { useCallback } from "react";
 
 interface JourneyProgress {
   type: string;
@@ -29,108 +30,106 @@ export function DashboardProgress() {
   const [proTrackComplete, setProTrackComplete] = useState(false);
 
 
-  useEffect(() => {
-    const fetchProgress = async () => {
-      if (!user) return;
+  const fetchProgress = useCallback(async () => {
+    if (!user) return;
 
-      // Fetch learning journeys
-      const { data: learningJourneys } = await supabase
-        .from("learning_journeys")
-        .select("*")
-        .eq("user_id", user.id);
-
-      // Fetch natural role
-      const { data: naturalRole } = await supabase
-        .from("natural_roles")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
-
-      // Fetch NR Decoder submission
-      const { data: nrDecoder } = await supabase
-        .from("nr_decoder_submissions")
-        .select("status")
-        .eq("user_id", user.id)
-        .single();
-
-      setNaturalRoleComplete(!!naturalRole?.description);
-      setNrDecoderComplete(!!nrDecoder);
-
-      // Fetch profile for resume + track record completion
-      const { data: profile } = await supabase
+    const [
+      { data: learningJourneys },
+      { data: naturalRole },
+      { data: nrDecoder },
+      { data: profile },
+      { data: entOnboarding },
+    ] = await Promise.all([
+      supabase.from("learning_journeys").select("*").eq("user_id", user.id),
+      supabase.from("natural_roles").select("*").eq("user_id", user.id).maybeSingle(),
+      supabase.from("nr_decoder_submissions").select("status").eq("user_id", user.id).maybeSingle(),
+      supabase
         .from("profiles")
         .select("professional_title, bio, primary_skills, summary_statement, key_projects, years_of_experience, education_certifications")
         .eq("user_id", user.id)
-        .maybeSingle();
+        .maybeSingle(),
+      supabase.from("entrepreneurial_onboarding").select("is_completed").eq("user_id", user.id).maybeSingle(),
+    ]);
 
-      const p: any = profile || {};
-      const filled = (v: any) =>
-        v !== null && v !== undefined && String(v).trim().length > 0;
-      const resumeDone = Boolean(
-        filled(p.professional_title) &&
-        filled(p.bio) &&
-        filled(p.summary_statement) &&
-        filled(p.primary_skills) &&
-        filled(p.key_projects) &&
-        filled(p.education_certifications) &&
-        p.years_of_experience !== null && p.years_of_experience !== undefined
-      );
-      // Track record completion = entrepreneurial onboarding marked complete
-      const { data: entOnboarding } = await supabase
-        .from("entrepreneurial_onboarding")
-        .select("is_completed")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      setResumeComplete(resumeDone);
-      setTrackRecordComplete(!!entOnboarding?.is_completed);
-      // Professional Track Record = the 9-step natural role flow complete
-      setProTrackComplete(!!naturalRole?.description);
+    setNaturalRoleComplete(!!naturalRole?.description);
+    setNrDecoderComplete(!!nrDecoder);
 
+    const p: any = profile || {};
+    const filled = (v: any) => v !== null && v !== undefined && String(v).trim().length > 0;
+    const resumeDone = Boolean(
+      filled(p.professional_title) &&
+      filled(p.bio) &&
+      filled(p.summary_statement) &&
+      filled(p.primary_skills) &&
+      filled(p.key_projects) &&
+      filled(p.education_certifications) &&
+      p.years_of_experience !== null && p.years_of_experience !== undefined
+    );
+    setResumeComplete(resumeDone);
+    setTrackRecordComplete(!!entOnboarding?.is_completed);
+    setProTrackComplete(!!naturalRole?.description);
 
+    const journeyMap: JourneyProgress[] = [];
 
-
-      const journeyMap: JourneyProgress[] = [];
-
-      // Add onboarding progress
-      if (onboardingState && !onboardingState.onboarding_completed) {
-        journeyMap.push({
-          type: "onboarding",
-          title: "Onboarding Journey",
-          status: "in_progress",
-          currentPhase: onboardingState.current_step || 1,
-          totalPhases: 5,
-          link: "/professional-track",
-        });
-      }
-
-
-      // Map learning journeys
-      learningJourneys?.forEach((journey) => {
-        const titleMap: Record<string, string> = {
-          skill_ptc: "Co-Builder Certification",
-          idea_ptc: "Initiator Certification",
-          scaling_path: "Scaling Path",
-        };
-        const phaseMap: Record<string, number> = {
-          skill_ptc: 4,
-          idea_ptc: 4,
-          scaling_path: 5,
-        };
-        journeyMap.push({
-          type: journey.journey_type,
-          title: titleMap[journey.journey_type] || journey.journey_type,
-          status: journey.status,
-          currentPhase: journey.current_phase,
-          totalPhases: phaseMap[journey.journey_type] || 4,
-          link: "/journey",
-        });
+    if (onboardingState && !onboardingState.onboarding_completed) {
+      journeyMap.push({
+        type: "onboarding",
+        title: "Onboarding Journey",
+        status: "in_progress",
+        currentPhase: onboardingState.current_step || 1,
+        totalPhases: 5,
+        link: "/professional-track",
       });
+    }
 
-      setJourneys(journeyMap);
+    const titleMap: Record<string, string> = {
+      skill_ptc: "Co-Builder Certification",
+      idea_ptc: "Initiator Certification",
+      scaling_path: "Scaling Path",
+      finance_literacy: "Finance Literacy",
+      security_literacy: "Security Literacy",
     };
+    const phaseMap: Record<string, number> = {
+      skill_ptc: 4,
+      idea_ptc: 4,
+      scaling_path: 5,
+    };
+    learningJourneys?.forEach((journey) => {
+      journeyMap.push({
+        type: journey.journey_type,
+        title: titleMap[journey.journey_type] || journey.journey_type,
+        status: journey.status,
+        currentPhase: journey.current_phase,
+        totalPhases: phaseMap[journey.journey_type] || 4,
+        link: "/journey",
+      });
+    });
 
-    fetchProgress();
+    setJourneys(journeyMap);
   }, [user, onboardingState]);
+
+  useEffect(() => {
+    fetchProgress();
+    if (!user) return;
+    const onVisible = () => { if (document.visibilityState === "visible") fetchProgress(); };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", fetchProgress);
+
+    const channel = supabase
+      .channel(`dashboard-progress-${user.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles", filter: `user_id=eq.${user.id}` }, fetchProgress)
+      .on("postgres_changes", { event: "*", schema: "public", table: "natural_roles", filter: `user_id=eq.${user.id}` }, fetchProgress)
+      .on("postgres_changes", { event: "*", schema: "public", table: "nr_decoder_submissions", filter: `user_id=eq.${user.id}` }, fetchProgress)
+      .on("postgres_changes", { event: "*", schema: "public", table: "entrepreneurial_onboarding", filter: `user_id=eq.${user.id}` }, fetchProgress)
+      .on("postgres_changes", { event: "*", schema: "public", table: "learning_journeys", filter: `user_id=eq.${user.id}` }, fetchProgress)
+      .subscribe();
+
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", fetchProgress);
+      supabase.removeChannel(channel);
+    };
+  }, [fetchProgress, user]);
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "outline" | "destructive" }> = {
@@ -274,31 +273,43 @@ export function DashboardProgress() {
             );
           })}
 
-          {journeys.map((journey, i) => (
-            <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-              {journey.status === "approved" ? (
-                <CheckCircle2 className="w-5 h-5 text-b4-teal flex-shrink-0" />
-              ) : journey.status === "not_started" ? (
-                <Lock className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-              ) : (
-                <Circle className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-              )}
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">{journey.title}</span>
-                  {getStatusBadge(journey.status)}
+          {journeys.map((journey, i) => {
+            const done = journey.status === "approved";
+            return (
+              <div
+                key={i}
+                className={`group relative flex items-center gap-4 p-4 rounded-xl border transition-all ${
+                  done
+                    ? "bg-b4-teal/5 border-b4-teal/30"
+                    : "bg-muted/40 border-border/60 hover:border-b4-teal/40 hover:bg-muted/60"
+                }`}
+              >
+                <div
+                  className={`flex items-center justify-center w-9 h-9 rounded-full flex-shrink-0 transition-colors ${
+                    done
+                      ? "bg-b4-teal text-white"
+                      : "bg-background border border-border text-muted-foreground group-hover:border-b4-teal/50 group-hover:text-b4-teal"
+                  }`}
+                >
+                  {done ? <CheckCircle2 className="w-5 h-5" /> : <Award className="w-4 h-4" />}
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  Phase {journey.currentPhase} of {journey.totalPhases}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-medium">{journey.title}</span>
+                    {getStatusBadge(journey.status)}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Phase {journey.currentPhase} of {journey.totalPhases}
+                  </div>
                 </div>
+                {!done && (
+                  <Button size="sm" variant="outline" asChild className="min-w-[110px] flex-shrink-0">
+                    <Link to={journey.link}>Continue</Link>
+                  </Button>
+                )}
               </div>
-              {journey.status !== "approved" && journey.status !== "not_started" && (
-                <Button size="sm" variant="outline" asChild>
-                  <Link to={journey.link}>Continue</Link>
-                </Button>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
 
 
