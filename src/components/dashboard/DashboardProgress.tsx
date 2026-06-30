@@ -74,12 +74,15 @@ export function DashboardProgress() {
         filled(p.education_certifications) &&
         p.years_of_experience !== null && p.years_of_experience !== undefined
       );
-      const trackDone = Boolean(
-        (p.key_projects && String(p.key_projects).trim().length > 20) ||
-        (p.summary_statement && String(p.summary_statement).trim().length > 20 && p.years_of_experience)
-      );
+      // Track record completion = entrepreneurial onboarding marked complete
+      const { data: entOnboarding } = await supabase
+        .from("entrepreneurial_onboarding")
+        .select("is_completed")
+        .eq("user_id", user.id)
+        .maybeSingle();
       setResumeComplete(resumeDone);
-      setTrackRecordComplete(trackDone);
+      setTrackRecordComplete(!!entOnboarding?.is_completed);
+
 
 
 
