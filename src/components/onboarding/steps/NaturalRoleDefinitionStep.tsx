@@ -27,13 +27,10 @@ export const NaturalRoleDefinitionStep = ({ onNext, onNeedHelp, showFormDirectly
   };
 
   const handleBackToChoice = () => {
-    // If we came from the help screen, go back to help screen
-    if (showFormDirectly && onBackToHelp) {
-      onBackToHelp();
-    } else {
-      setKnowsNR(null);
-    }
+    // Always return to the "Do you know your Natural Role?" choice screen
+    setKnowsNR(null);
   };
+
 
   const handleNeedsHelp = async () => {
     setIsLoading(true);
