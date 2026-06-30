@@ -42,7 +42,7 @@ export const OnboardingLayout = ({
               <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-lg">B4</span>
               </div>
-              <span className="font-display font-semibold text-foreground">Onboarding</span>
+              <span className="font-display font-semibold text-foreground">Professional Track Record</span>
             </div>
             <span className="text-sm text-muted-foreground">
               Step {currentStep} of {totalSteps}
