@@ -96,7 +96,7 @@ export function useEngineAccess() {
           .maybeSingle(),
         supabase
           .from("advisor_readiness")
-          .select("is_ready")
+          .select("eligible")
           .eq("user_id", uid)
           .maybeSingle(),
         supabase
