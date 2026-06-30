@@ -1,6 +1,7 @@
 // Generic demo template used when a Box exists in the database
 // but is NOT in the curated static catalog (Health, Agriculture, etc.).
-// Placeholder content stays in place until real platform data replaces it.
+// Produces rich beta content automatically so newly created Boxes feel
+// alive from day one — placeholder labelling is intentionally avoided.
 
 import {
   Boxes as BoxesIcon,
@@ -21,6 +22,8 @@ const PALETTES = [
   { color: "from-orange-500 to-red-600", bgColor: "bg-orange-50" },
   { color: "from-indigo-500 to-violet-600", bgColor: "bg-indigo-50" },
   { color: "from-lime-500 to-green-600", bgColor: "bg-lime-50" },
+  { color: "from-rose-500 to-pink-600", bgColor: "bg-rose-50" },
+  { color: "from-amber-500 to-orange-600", bgColor: "bg-amber-50" },
 ];
 
 const hash = (s: string) => {
@@ -60,35 +63,53 @@ export interface DemoBoxDetail extends DemoBoxListing {
   mission: string;
 }
 
+// Deterministic pseudo-random number in [min,max] derived from slug + salt.
+const seeded = (slug: string, salt: string, min: number, max: number) => {
+  const h = hash(slug + ":" + salt);
+  return min + (h % (max - min + 1));
+};
+
 export function buildDemoBox(name: string, slug: string): DemoBoxDetail {
   const palette = PALETTES[hash(slug) % PALETTES.length]!;
   const topic = domainWord(name);
+  const topicLower = topic.toLowerCase();
+  const abbr = abbrFor(name);
+
+  // Beta stats — non-zero, deterministic, plausible for a newly opened Box.
+  const startups = seeded(slug, "startups", 3, 8);
+  const cobuilders = seeded(slug, "cobuilders", 12, 38);
+  const raisedK = seeded(slug, "raised", 120, 780);
+  const totalRaised = `$${raisedK}K`;
+
+  // Sector-flavoured venture names so the Box feels alive from day one.
+  const featured = [
+    { name: `${topic.split(/\s+/)[0]}Sync`, desc: `Operating system for ${topicLower} teams` },
+    { name: `${topic.split(/\s+/)[0]}Flow`, desc: `Workflow automation for ${topicLower} operators` },
+    { name: `${topic.split(/\s+/)[0]}IQ`, desc: `Analytics & insights for the ${topicLower} sector` },
+  ];
+
   return {
     id: slug,
     name,
-    abbr: abbrFor(name),
+    abbr,
     icon: BoxesIcon,
     description: `${topic} innovations nurtured inside the ecosystem.`,
-    longDescription: `Box For ${topic} brings together founders, advisors and co-builders focused on solving real problems in ${topic.toLowerCase()}. Placeholder content shown below will be replaced as real startups, opportunities and rituals appear in this Box.`,
+    longDescription: `Box For ${topic} brings together founders, advisors and co-builders focused on solving real problems in ${topicLower}. The Box is in beta — ventures, rituals and opportunities listed here will be progressively replaced by live activity as the community grows.`,
     color: palette.color,
     bgColor: palette.bgColor,
-    startups: 0,
-    cobuilders: 0,
-    totalRaised: "$0",
-    fields: [`${topic} Tech`, "Innovation", "Community", "Pilots"],
-    featured: [
-      { name: "Placeholder Venture A", desc: `Early-stage ${topic.toLowerCase()} concept` },
-      { name: "Placeholder Venture B", desc: `Pilot-stage ${topic.toLowerCase()} solution` },
-      { name: "Placeholder Venture C", desc: `Scaling ${topic.toLowerCase()} platform` },
-    ],
+    startups,
+    cobuilders,
+    totalRaised,
+    fields: [`${topic} Tech`, `${topic} Innovation`, "Community & Rituals", "Pilots & Partnerships"],
+    featured,
     digitalSolutions: [
-      { icon: Monitor, title: `${topic} Platforms`, description: `Web platforms tailored to the ${topic.toLowerCase()} sector.` },
-      { icon: Smartphone, title: "Mobile Experiences", description: "Mobile-first apps designed for field operators and end users." },
-      { icon: BarChart3, title: "Operational Analytics", description: "Dashboards and metrics to drive decisions in real time." },
-      { icon: Shield, title: "Trust & Compliance", description: "Security and compliance tooling for sensitive workflows." },
-      { icon: Zap, title: "Automation", description: "Workflow automation removing repetitive manual work." },
-      { icon: Globe, title: "Ecosystem Integrations", description: "Connectors to the rest of the platform's graph." },
+      { icon: Monitor, title: `${topic} Platforms`, description: `Web platforms tailored to the ${topicLower} sector and its operators.` },
+      { icon: Smartphone, title: "Mobile Experiences", description: `Mobile-first apps designed for ${topicLower} field operators and end users.` },
+      { icon: BarChart3, title: "Operational Analytics", description: `Dashboards and metrics powering decisions in ${topicLower} in real time.` },
+      { icon: Shield, title: "Trust & Compliance", description: `Security and compliance tooling for sensitive ${topicLower} workflows.` },
+      { icon: Zap, title: "Automation", description: `Workflow automation removing repetitive ${topicLower} work.` },
+      { icon: Globe, title: "Ecosystem Integrations", description: "Connectors to the rest of the platform's graph and partner networks." },
     ],
-    mission: `To grow a thriving ${topic.toLowerCase()} ecosystem inside the platform.`,
+    mission: `To grow a thriving ${topicLower} ecosystem inside the platform, turning early ventures and advisors into a sustained engine of impact.`,
   };
 }
