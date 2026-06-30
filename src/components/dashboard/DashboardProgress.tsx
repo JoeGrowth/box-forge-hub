@@ -210,6 +210,14 @@ export function DashboardProgress() {
       done: resumeComplete,
       cta: { label: "Complete", to: "/resume" },
     },
+    {
+      key: "certify",
+      title: "Start getting certified",
+      description: "Pick a certification path — Initiator, Co-Builder, Finance or Security — and earn your badges.",
+      icon: Award,
+      done: false,
+      cta: { label: "Explore", to: "/journey" },
+    },
   ];
 
   return (
