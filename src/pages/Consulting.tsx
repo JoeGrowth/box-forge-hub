@@ -9,6 +9,9 @@ import { BookOpen, Briefcase, FileText, Layers, TrendingUp, ArrowRight, ArrowLef
 import { TrainTeamDialog } from "@/components/resume/TrainTeamDialog";
 import { CreateServiceDialog } from "@/components/consulting/CreateServiceDialog";
 import { ServiceListing } from "@/components/consulting/ServiceListing";
+import { useEngineAccess } from "@/hooks/useEngineAccess";
+import { EngineLockedPanel } from "@/components/engines/EngineLockedPanel";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const STORAGE_KEY = "b4-favorite-steps";
 
