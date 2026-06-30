@@ -525,7 +525,7 @@ const Messages = () => {
           {selectedConversation ? (
             <>
               {/* Chat Header */}
-              <div className="border-b border-border bg-card px-6 py-4">
+              <div className="border-b border-border bg-card px-6 py-4 shadow-sm z-10">
                 <div className="flex items-center gap-4">
                   <Avatar className="w-10 h-10">
                     <AvatarImage src={otherUser?.avatar_url || undefined} />
