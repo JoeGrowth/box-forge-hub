@@ -24,6 +24,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useEngineAccess } from "@/hooks/useEngineAccess";
+import { EngineLockedPanel } from "@/components/engines/EngineLockedPanel";
 
 interface StartupIdea {
   id: string;
