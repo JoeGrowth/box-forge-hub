@@ -251,10 +251,11 @@ export function DashboardProgress() {
                   <div className="text-sm text-muted-foreground">{step.description}</div>
                 </div>
                 {!step.done && (
-                  <Button size="sm" variant="outline" asChild>
+                  <Button size="sm" variant="outline" asChild className="min-w-[110px] flex-shrink-0">
                     <Link to={step.cta.to}>{step.cta.label}</Link>
                   </Button>
                 )}
+
               </div>
             );
           })}
