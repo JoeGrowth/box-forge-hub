@@ -482,6 +482,13 @@ const Entrepreneurship = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <PageTransition>
+        {accessLoading ? (
+          <main className="pt-24 container mx-auto px-4 max-w-3xl">
+            <Skeleton className="h-64 w-full rounded-2xl" />
+          </main>
+        ) : !engines.entrepreneurship.unlocked ? (
+          <EngineLockedPanel engine="entrepreneurship" access={engines.entrepreneurship} />
+        ) : (
         <main className="pt-20">
           <section className="py-10">
             <div className="container mx-auto px-4">
