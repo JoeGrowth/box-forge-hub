@@ -103,6 +103,13 @@ const Consulting = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <PageTransition>
+        {accessLoading ? (
+          <main className="pt-24 container mx-auto px-4 max-w-3xl">
+            <Skeleton className="h-64 w-full rounded-2xl" />
+          </main>
+        ) : !engines.consulting.unlocked ? (
+          <EngineLockedPanel engine="consulting" access={engines.consulting} />
+        ) : (
         <main className="pt-20">
           <section className="py-10">
             <div className="container mx-auto px-4">
