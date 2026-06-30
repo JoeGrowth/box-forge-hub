@@ -97,6 +97,8 @@ export function Navbar() {
   const { user, signOut, loading } = useAuth();
   const { canAccessBoosting, canAccessScaling, potentialRole } = useUserStatus();
 
+  const { engines: engineAccess } = useEngineAccess();
+
   // Hydrate synchronously from localStorage (lazy initializer) so the Admin
   // button is present on first paint when cached — no flash, no layout shift.
   const [isAdmin, setIsAdmin] = useState<boolean>(() => readCachedAdmin(user?.id));
