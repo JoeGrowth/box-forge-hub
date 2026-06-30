@@ -155,12 +155,49 @@ export function DashboardProgress() {
 
 
 
+  const steps = [
+    {
+      key: "intent",
+      title: "Declare your intent",
+      description: isOnboardingTrulyComplete
+        ? "Role, goals and direction locked in."
+        : `Step ${onboardingState?.current_step || 1} of 5 — pick up where you left off.`,
+      icon: null,
+      done: isOnboardingTrulyComplete,
+      cta: { label: "Continue", to: "/professional-track" },
+    },
+    {
+      key: "decoder",
+      title: "Decode your natural role",
+      description: "7 questions. Your starting compass on the platform.",
+      icon: null,
+      done: nrDecoderComplete,
+      cta: { label: "Start", to: "/decoder" },
+    },
+    {
+      key: "track",
+      title: "Fill your track record",
+      description: "Receipts beat resumes. Add the projects you've shipped.",
+      icon: Briefcase,
+      done: trackRecordComplete,
+      cta: { label: "Complete", to: "/professional-track" },
+    },
+    {
+      key: "resume",
+      title: "Sharpen your resume",
+      description: "Title, summary and signature skills — the first thing recruiters and initiators see.",
+      icon: FileText,
+      done: resumeComplete,
+      cta: { label: "Complete", to: "/resume" },
+    },
+  ];
+
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
-            Your launch checklist
+            Shape your talent
           </CardTitle>
           <span className="text-sm text-muted-foreground">
             {overallProgress()}% ready
@@ -175,98 +212,42 @@ export function DashboardProgress() {
         <Progress value={overallProgress()} className="h-2" />
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Core Milestones - Reordered */}
         <div className="space-y-3">
-          {/* 1. Natural Role Decoder - First */}
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-            {nrDecoderComplete ? (
-              <CheckCircle2 className="w-5 h-5 text-b4-teal flex-shrink-0" />
-            ) : (
-              <Circle className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-            )}
-            <div className="flex-1">
-              <div className="font-medium">Decode your natural role</div>
-              <div className="text-sm text-muted-foreground">7 questions. Your starting compass on the platform.</div>
-            </div>
-            {!nrDecoderComplete && (
-              <Button size="sm" variant="outline" asChild>
-                <Link to="/decoder">Start</Link>
-              </Button>
-            )}
-          </div>
-
-          {/* 2. Complete Onboarding - Second */}
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-            {isOnboardingTrulyComplete ? (
-              <CheckCircle2 className="w-5 h-5 text-b4-teal flex-shrink-0" />
-            ) : (
-              <Circle className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-            )}
-            <div className="flex-1">
-              <div className="font-medium">Declare your intent</div>
-              <div className="text-sm text-muted-foreground">
-                {isOnboardingTrulyComplete 
-                  ? "Role, goals and direction locked in." 
-                  : `Step ${onboardingState?.current_step || 1} of 5 — pick up where you left off.`}
+          {steps.map((step, idx) => {
+            const Icon = step.icon;
+            return (
+              <div
+                key={step.key}
+                className={`group relative flex items-center gap-4 p-4 rounded-xl border transition-all ${
+                  step.done
+                    ? "bg-b4-teal/5 border-b4-teal/30"
+                    : "bg-muted/40 border-border/60 hover:border-b4-teal/40 hover:bg-muted/60"
+                }`}
+              >
+                <div
+                  className={`flex items-center justify-center w-9 h-9 rounded-full text-sm font-semibold flex-shrink-0 transition-colors ${
+                    step.done
+                      ? "bg-b4-teal text-white"
+                      : "bg-background border border-border text-muted-foreground group-hover:border-b4-teal/50 group-hover:text-b4-teal"
+                  }`}
+                >
+                  {step.done ? <CheckCircle2 className="w-5 h-5" /> : idx + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium flex items-center gap-2">
+                    {Icon && <Icon className="w-4 h-4 text-muted-foreground" />}
+                    {step.title}
+                  </div>
+                  <div className="text-sm text-muted-foreground">{step.description}</div>
+                </div>
+                {!step.done && (
+                  <Button size="sm" variant="outline" asChild>
+                    <Link to={step.cta.to}>{step.cta.label}</Link>
+                  </Button>
+                )}
               </div>
-            </div>
-            {!isOnboardingTrulyComplete && (
-              <Button size="sm" variant="outline" asChild>
-                <Link to="/professional-track">Continue</Link>
-              </Button>
-            )}
-          </div>
-
-          {/* 3. Complete Resume */}
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-            {resumeComplete ? (
-              <CheckCircle2 className="w-5 h-5 text-b4-teal flex-shrink-0" />
-            ) : (
-              <Circle className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-            )}
-            <div className="flex-1">
-              <div className="font-medium flex items-center gap-2">
-                <FileText className="w-4 h-4 text-muted-foreground" />
-                Sharpen your resume
-              </div>
-              <div className="text-sm text-muted-foreground">
-                Title, summary and signature skills — the first thing recruiters and initiators see.
-              </div>
-            </div>
-            {!resumeComplete && (
-              <Button size="sm" variant="outline" asChild>
-                <Link to="/resume">Complete</Link>
-              </Button>
-            )}
-          </div>
-
-          {/* 4. Complete Professional Track Record */}
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-            {trackRecordComplete ? (
-              <CheckCircle2 className="w-5 h-5 text-b4-teal flex-shrink-0" />
-            ) : (
-              <Circle className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-            )}
-            <div className="flex-1">
-              <div className="font-medium flex items-center gap-2">
-                <Briefcase className="w-4 h-4 text-muted-foreground" />
-                Build your track record
-              </div>
-              <div className="text-sm text-muted-foreground">
-                Receipts beat resumes. Add the projects you've shipped.
-              </div>
-            </div>
-            {!trackRecordComplete && (
-              <Button size="sm" variant="outline" asChild>
-                <Link to="/track">Complete</Link>
-              </Button>
-            )}
-          </div>
-
-
-
-
-
+            );
+          })}
 
           {journeys.map((journey, i) => (
             <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
@@ -294,6 +275,7 @@ export function DashboardProgress() {
             </div>
           ))}
         </div>
+
 
         <Button variant="ghost" className="w-full mt-4" asChild>
           <Link to="/journey">
