@@ -48,10 +48,10 @@ const guestNavLinks = [
   { name: "Boxes", path: "/boxes" },
 ];
 
-const engineLinks = [
-  { name: "Career", path: "/career", icon: Briefcase },
-  { name: "Consulting", path: "/consulting", icon: Handshake },
-  { name: "Entrepreneurship", path: "/entrepreneurship", icon: Lightbulb },
+const engineLinks: Array<{ name: string; path: string; icon: typeof Briefcase; key: EngineKey }> = [
+  { name: "Career", path: "/career", icon: Briefcase, key: "career" },
+  { name: "Consulting", path: "/consulting", icon: Handshake, key: "consulting" },
+  { name: "Entrepreneurship", path: "/entrepreneurship", icon: Lightbulb, key: "entrepreneurship" },
 ];
 
 const publishLinks = [
