@@ -26,6 +26,7 @@ export function DashboardProgress() {
   const [nrDecoderComplete, setNrDecoderComplete] = useState(false);
   const [resumeComplete, setResumeComplete] = useState(false);
   const [trackRecordComplete, setTrackRecordComplete] = useState(false);
+  const [proTrackComplete, setProTrackComplete] = useState(false);
 
 
   useEffect(() => {
