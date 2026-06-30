@@ -30,108 +30,106 @@ export function DashboardProgress() {
   const [proTrackComplete, setProTrackComplete] = useState(false);
 
 
-  useEffect(() => {
-    const fetchProgress = async () => {
-      if (!user) return;
+  const fetchProgress = useCallback(async () => {
+    if (!user) return;
 
-      // Fetch learning journeys
-      const { data: learningJourneys } = await supabase
-        .from("learning_journeys")
-        .select("*")
-        .eq("user_id", user.id);
-
-      // Fetch natural role
-      const { data: naturalRole } = await supabase
-        .from("natural_roles")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
-
-      // Fetch NR Decoder submission
-      const { data: nrDecoder } = await supabase
-        .from("nr_decoder_submissions")
-        .select("status")
-        .eq("user_id", user.id)
-        .single();
-
-      setNaturalRoleComplete(!!naturalRole?.description);
-      setNrDecoderComplete(!!nrDecoder);
-
-      // Fetch profile for resume + track record completion
-      const { data: profile } = await supabase
+    const [
+      { data: learningJourneys },
+      { data: naturalRole },
+      { data: nrDecoder },
+      { data: profile },
+      { data: entOnboarding },
+    ] = await Promise.all([
+      supabase.from("learning_journeys").select("*").eq("user_id", user.id),
+      supabase.from("natural_roles").select("*").eq("user_id", user.id).maybeSingle(),
+      supabase.from("nr_decoder_submissions").select("status").eq("user_id", user.id).maybeSingle(),
+      supabase
         .from("profiles")
         .select("professional_title, bio, primary_skills, summary_statement, key_projects, years_of_experience, education_certifications")
         .eq("user_id", user.id)
-        .maybeSingle();
+        .maybeSingle(),
+      supabase.from("entrepreneurial_onboarding").select("is_completed").eq("user_id", user.id).maybeSingle(),
+    ]);
 
-      const p: any = profile || {};
-      const filled = (v: any) =>
-        v !== null && v !== undefined && String(v).trim().length > 0;
-      const resumeDone = Boolean(
-        filled(p.professional_title) &&
-        filled(p.bio) &&
-        filled(p.summary_statement) &&
-        filled(p.primary_skills) &&
-        filled(p.key_projects) &&
-        filled(p.education_certifications) &&
-        p.years_of_experience !== null && p.years_of_experience !== undefined
-      );
-      // Track record completion = entrepreneurial onboarding marked complete
-      const { data: entOnboarding } = await supabase
-        .from("entrepreneurial_onboarding")
-        .select("is_completed")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      setResumeComplete(resumeDone);
-      setTrackRecordComplete(!!entOnboarding?.is_completed);
-      // Professional Track Record = the 9-step natural role flow complete
-      setProTrackComplete(!!naturalRole?.description);
+    setNaturalRoleComplete(!!naturalRole?.description);
+    setNrDecoderComplete(!!nrDecoder);
 
+    const p: any = profile || {};
+    const filled = (v: any) => v !== null && v !== undefined && String(v).trim().length > 0;
+    const resumeDone = Boolean(
+      filled(p.professional_title) &&
+      filled(p.bio) &&
+      filled(p.summary_statement) &&
+      filled(p.primary_skills) &&
+      filled(p.key_projects) &&
+      filled(p.education_certifications) &&
+      p.years_of_experience !== null && p.years_of_experience !== undefined
+    );
+    setResumeComplete(resumeDone);
+    setTrackRecordComplete(!!entOnboarding?.is_completed);
+    setProTrackComplete(!!naturalRole?.description);
 
+    const journeyMap: JourneyProgress[] = [];
 
-
-      const journeyMap: JourneyProgress[] = [];
-
-      // Add onboarding progress
-      if (onboardingState && !onboardingState.onboarding_completed) {
-        journeyMap.push({
-          type: "onboarding",
-          title: "Onboarding Journey",
-          status: "in_progress",
-          currentPhase: onboardingState.current_step || 1,
-          totalPhases: 5,
-          link: "/professional-track",
-        });
-      }
-
-
-      // Map learning journeys
-      learningJourneys?.forEach((journey) => {
-        const titleMap: Record<string, string> = {
-          skill_ptc: "Co-Builder Certification",
-          idea_ptc: "Initiator Certification",
-          scaling_path: "Scaling Path",
-        };
-        const phaseMap: Record<string, number> = {
-          skill_ptc: 4,
-          idea_ptc: 4,
-          scaling_path: 5,
-        };
-        journeyMap.push({
-          type: journey.journey_type,
-          title: titleMap[journey.journey_type] || journey.journey_type,
-          status: journey.status,
-          currentPhase: journey.current_phase,
-          totalPhases: phaseMap[journey.journey_type] || 4,
-          link: "/journey",
-        });
+    if (onboardingState && !onboardingState.onboarding_completed) {
+      journeyMap.push({
+        type: "onboarding",
+        title: "Onboarding Journey",
+        status: "in_progress",
+        currentPhase: onboardingState.current_step || 1,
+        totalPhases: 5,
+        link: "/professional-track",
       });
+    }
 
-      setJourneys(journeyMap);
+    const titleMap: Record<string, string> = {
+      skill_ptc: "Co-Builder Certification",
+      idea_ptc: "Initiator Certification",
+      scaling_path: "Scaling Path",
+      finance_literacy: "Finance Literacy",
+      security_literacy: "Security Literacy",
     };
+    const phaseMap: Record<string, number> = {
+      skill_ptc: 4,
+      idea_ptc: 4,
+      scaling_path: 5,
+    };
+    learningJourneys?.forEach((journey) => {
+      journeyMap.push({
+        type: journey.journey_type,
+        title: titleMap[journey.journey_type] || journey.journey_type,
+        status: journey.status,
+        currentPhase: journey.current_phase,
+        totalPhases: phaseMap[journey.journey_type] || 4,
+        link: "/journey",
+      });
+    });
 
-    fetchProgress();
+    setJourneys(journeyMap);
   }, [user, onboardingState]);
+
+  useEffect(() => {
+    fetchProgress();
+    if (!user) return;
+    const onVisible = () => { if (document.visibilityState === "visible") fetchProgress(); };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", fetchProgress);
+
+    const channel = supabase
+      .channel(`dashboard-progress-${user.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles", filter: `user_id=eq.${user.id}` }, fetchProgress)
+      .on("postgres_changes", { event: "*", schema: "public", table: "natural_roles", filter: `user_id=eq.${user.id}` }, fetchProgress)
+      .on("postgres_changes", { event: "*", schema: "public", table: "nr_decoder_submissions", filter: `user_id=eq.${user.id}` }, fetchProgress)
+      .on("postgres_changes", { event: "*", schema: "public", table: "entrepreneurial_onboarding", filter: `user_id=eq.${user.id}` }, fetchProgress)
+      .on("postgres_changes", { event: "*", schema: "public", table: "learning_journeys", filter: `user_id=eq.${user.id}` }, fetchProgress)
+      .subscribe();
+
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", fetchProgress);
+      supabase.removeChannel(channel);
+    };
+  }, [fetchProgress, user]);
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "outline" | "destructive" }> = {
