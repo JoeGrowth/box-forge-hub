@@ -64,6 +64,7 @@ const getEpisodeLabel = (episode: string) => {
 
 const Entrepreneurship = () => {
   const { user } = useAuth();
+  const { engines, loading: accessLoading } = useEngineAccess();
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
