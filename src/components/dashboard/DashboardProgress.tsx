@@ -234,7 +234,7 @@ export function DashboardProgress() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-3">
-          {steps.map((step, idx) => {
+          {steps.map((step) => {
             const Icon = step.icon;
             return (
               <div
@@ -246,19 +246,22 @@ export function DashboardProgress() {
                 }`}
               >
                 <div
-                  className={`flex items-center justify-center w-9 h-9 rounded-full text-sm font-semibold flex-shrink-0 transition-colors ${
+                  className={`flex items-center justify-center w-9 h-9 rounded-full flex-shrink-0 transition-colors ${
                     step.done
                       ? "bg-b4-teal text-white"
                       : "bg-background border border-border text-muted-foreground group-hover:border-b4-teal/50 group-hover:text-b4-teal"
                   }`}
                 >
-                  {step.done ? <CheckCircle2 className="w-5 h-5" /> : idx + 1}
+                  {step.done ? (
+                    <CheckCircle2 className="w-5 h-5" />
+                  ) : Icon ? (
+                    <Icon className="w-4 h-4" />
+                  ) : (
+                    <Circle className="w-4 h-4" />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium flex items-center gap-2">
-                    {Icon && <Icon className="w-4 h-4 text-muted-foreground" />}
-                    {step.title}
-                  </div>
+                  <div className="font-medium">{step.title}</div>
                   <div className="text-sm text-muted-foreground">{step.description}</div>
                 </div>
                 {!step.done && (
