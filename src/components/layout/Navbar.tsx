@@ -352,6 +352,7 @@ export function Navbar() {
                   </div>
                   {engineLinks.map((link) => {
                     const Icon = link.icon;
+                    const locked = !engineAccess[link.key].unlocked;
                     return (
                       <Link
                         key={link.path}
@@ -360,11 +361,12 @@ export function Navbar() {
                           location.pathname === link.path
                             ? "bg-muted text-b4-teal"
                             : "text-muted-foreground hover:bg-muted"
-                        }`}
+                        } ${locked ? "opacity-70" : ""}`}
                         onClick={() => setIsOpen(false)}
                       >
                         <Icon size={16} />
-                        {link.name}
+                        <span className="flex-1">{link.name}</span>
+                        {locked && <Lock size={12} className="text-muted-foreground" />}
                       </Link>
                     );
                   })}
