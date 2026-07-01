@@ -85,10 +85,14 @@ export default function Organizations() {
           </p>
         </div>
 
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button><Plus className="w-4 h-4 mr-1" /> New organization</Button>
-          </DialogTrigger>
+        <div className="flex items-center gap-2">
+          <Link to="/opsmanagement">
+            <Button variant="outline"><Settings className="w-4 h-4 mr-1" /> Ops management</Button>
+          </Link>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button><Plus className="w-4 h-4 mr-1" /> New organization</Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Create an organization</DialogTitle>
