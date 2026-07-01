@@ -228,7 +228,16 @@ function DistributionBuilder({
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-1.5">
             <Label>Mission title</Label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className={titleTaken ? "border-destructive focus-visible:ring-destructive" : ""}
+            />
+            {titleTaken && (
+              <p className="text-xs text-destructive">
+                A {kind} distribution with this title already exists.
+              </p>
+            )}
           </div>
           <div className="space-y-1.5">
             <Label>{budgetLabel}</Label>
