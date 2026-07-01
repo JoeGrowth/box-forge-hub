@@ -127,8 +127,13 @@ function DistributionBuilder({
   };
 
   const titleTaken = useMemo(
-    () => saved.some((r) => r.title.trim().toLowerCase() === title.trim().toLowerCase()),
-    [saved, title],
+    () =>
+      saved.some(
+        (r) =>
+          r.id !== editingId &&
+          r.title.trim().toLowerCase() === title.trim().toLowerCase(),
+      ),
+    [saved, title, editingId],
   );
 
   const handleSave = async () => {
@@ -149,7 +154,7 @@ function DistributionBuilder({
       return;
     }
     setSaving(true);
-    const { error } = await (supabase.from("distribution_records" as any) as any).insert({
+    const payload = {
       user_id: user.id,
       kind,
       title: title.trim(),
@@ -158,7 +163,12 @@ function DistributionBuilder({
       charges,
       tasks,
       people,
-    });
+    };
+    const { error } = editingId
+      ? await (supabase.from("distribution_records" as any) as any)
+          .update(payload)
+          .eq("id", editingId)
+      : await (supabase.from("distribution_records" as any) as any).insert(payload);
     setSaving(false);
     if (error) {
       if ((error as any).code === "23505") {
@@ -168,7 +178,7 @@ function DistributionBuilder({
       }
       return;
     }
-    toast.success("Distribution saved.");
+    toast.success(editingId ? "Distribution updated." : "Distribution saved.");
     await fetchSaved();
     resetForm();
   };
