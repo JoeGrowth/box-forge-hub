@@ -184,7 +184,7 @@ const Resume = () => {
   // Resume is now accessible to all authenticated users
 
   useEffect(() => {
-    if (naturalRole) {
+    if (naturalRole && !isEditing) {
       setEditData({
         description: naturalRole.description || "",
         services_description: (naturalRole as any).services_description || "",
@@ -194,6 +194,7 @@ const Resume = () => {
         consulting_case_studies: naturalRole.consulting_case_studies || "",
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [naturalRole]);
 
   useEffect(() => {
@@ -212,9 +213,10 @@ const Resume = () => {
     };
     
     fetchVersions();
-  }, [user]);
+  }, [user?.id]);
 
-  // Fetch profile data
+  // Fetch profile data — keyed on user.id (stable) so tab-switch auth token
+  // refreshes don't re-run this and clobber unsaved edits.
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user) return;
@@ -227,20 +229,26 @@ const Resume = () => {
       
       if (!error && data) {
         setProfile(data as any);
-        setProfileEditData({
-          professional_title: (data as any).professional_title || "",
-          bio: data.bio || "",
-          primary_skills: data.primary_skills || "",
-          years_of_experience: data.years_of_experience?.toString() || "",
-          key_projects: (data as any).key_projects || "",
-          education_certifications: (data as any).education_certifications || "",
-          summary_statement: (data as any).summary_statement || "",
+        // Never overwrite profileEditData while the user is editing —
+        // that wipes in-progress input (e.g. Key Projects & Solutions).
+        setProfileEditData(prev => {
+          if (isEditing) return prev;
+          return {
+            professional_title: (data as any).professional_title || "",
+            bio: data.bio || "",
+            primary_skills: data.primary_skills || "",
+            years_of_experience: data.years_of_experience?.toString() || "",
+            key_projects: (data as any).key_projects || "",
+            education_certifications: (data as any).education_certifications || "",
+            summary_statement: (data as any).summary_statement || "",
+          };
         });
       }
     };
     
     fetchProfile();
-  }, [user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const handleGenerateTitle = async () => {
     if (!user) return;
