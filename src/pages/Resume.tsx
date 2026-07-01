@@ -214,7 +214,8 @@ const Resume = () => {
     fetchVersions();
   }, [user]);
 
-  // Fetch profile data
+  // Fetch profile data — keyed on user.id (stable) so tab-switch auth token
+  // refreshes don't re-run this and clobber unsaved edits.
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user) return;
@@ -227,20 +228,26 @@ const Resume = () => {
       
       if (!error && data) {
         setProfile(data as any);
-        setProfileEditData({
-          professional_title: (data as any).professional_title || "",
-          bio: data.bio || "",
-          primary_skills: data.primary_skills || "",
-          years_of_experience: data.years_of_experience?.toString() || "",
-          key_projects: (data as any).key_projects || "",
-          education_certifications: (data as any).education_certifications || "",
-          summary_statement: (data as any).summary_statement || "",
+        // Never overwrite profileEditData while the user is editing —
+        // that wipes in-progress input (e.g. Key Projects & Solutions).
+        setProfileEditData(prev => {
+          if (isEditing) return prev;
+          return {
+            professional_title: (data as any).professional_title || "",
+            bio: data.bio || "",
+            primary_skills: data.primary_skills || "",
+            years_of_experience: data.years_of_experience?.toString() || "",
+            key_projects: (data as any).key_projects || "",
+            education_certifications: (data as any).education_certifications || "",
+            summary_statement: (data as any).summary_statement || "",
+          };
         });
       }
     };
     
     fetchProfile();
-  }, [user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const handleGenerateTitle = async () => {
     if (!user) return;
