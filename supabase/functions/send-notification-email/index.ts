@@ -10,6 +10,25 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+// Simple in-memory rate limiter: max 10 sends per user per 60s window.
+const RATE_LIMIT_MAX = 10;
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const rateLimitBuckets = new Map<string, number[]>();
+
+function checkRateLimit(userId: string): { allowed: boolean; retryAfterSec: number } {
+  const now = Date.now();
+  const cutoff = now - RATE_LIMIT_WINDOW_MS;
+  const bucket = (rateLimitBuckets.get(userId) ?? []).filter((t) => t > cutoff);
+  if (bucket.length >= RATE_LIMIT_MAX) {
+    const retryAfterSec = Math.max(1, Math.ceil((bucket[0] + RATE_LIMIT_WINDOW_MS - now) / 1000));
+    rateLimitBuckets.set(userId, bucket);
+    return { allowed: false, retryAfterSec };
+  }
+  bucket.push(now);
+  rateLimitBuckets.set(userId, bucket);
+  return { allowed: true, retryAfterSec: 0 };
+}
+
 const VALID_NOTIFICATION_TYPES = [
   "onboarding_path_selected",
   "natural_role_defined",
@@ -502,6 +521,22 @@ const handler = async (req: Request): Promise<Response> => {
 
     const callerUserId = claimsData.claims.sub;
     console.log("Authenticated caller:", callerUserId);
+
+    // Rate limit per authenticated caller
+    const rl = checkRateLimit(callerUserId);
+    if (!rl.allowed) {
+      return new Response(
+        JSON.stringify({ error: "Rate limit exceeded. Please slow down." }),
+        {
+          status: 429,
+          headers: {
+            "Content-Type": "application/json",
+            "Retry-After": String(rl.retryAfterSec),
+            ...corsHeaders,
+          },
+        }
+      );
+    }
 
     // Validate input
     const body = await req.json();

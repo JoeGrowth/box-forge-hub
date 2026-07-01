@@ -1,3 +1,4 @@
+import { sanitizeError } from "@/lib/errorHandler";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -262,7 +263,7 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to send confirmation code",
+        description: sanitizeError(error) || "Failed to send confirmation code",
         variant: "destructive",
       });
     } finally {
@@ -318,7 +319,7 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to delete user",
+        description: sanitizeError(error) || "Failed to delete user",
         variant: "destructive",
       });
     } finally {
@@ -371,7 +372,7 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to delete users",
+        description: sanitizeError(error) || "Failed to delete users",
         variant: "destructive",
       });
     } finally {

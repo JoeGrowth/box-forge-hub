@@ -1,3 +1,4 @@
+import { sanitizeError } from "@/lib/errorHandler";
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Paperclip, X, FileText, Image as ImageIcon, Loader2 } from "lucide-react";
@@ -41,11 +42,13 @@ export const ChatFileUpload = ({ userId, onFileUploaded, disabled }: ChatFileUpl
 
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage
+      // Bucket is private — generate a long-lived signed URL for viewers.
+      const { data: signed, error: signedError } = await supabase.storage
         .from("chat-attachments")
-        .getPublicUrl(filePath);
+        .createSignedUrl(filePath, 60 * 60 * 24 * 365);
+      if (signedError || !signed?.signedUrl) throw signedError ?? new Error("Failed to sign URL");
 
-      const fileUrl = urlData.publicUrl;
+      const fileUrl = signed.signedUrl;
       const fileType = file.type.startsWith("image/") ? "image" : "file";
 
       setPreview({ url: fileUrl, name: file.name, type: fileType });
@@ -54,7 +57,7 @@ export const ChatFileUpload = ({ userId, onFileUploaded, disabled }: ChatFileUpl
       console.error("Upload error:", error);
       toast({
         title: "Upload failed",
-        description: error.message || "Failed to upload file",
+        description: sanitizeError(error) || "Failed to upload file",
         variant: "destructive",
       });
     } finally {

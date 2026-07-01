@@ -1,3 +1,4 @@
+import { sanitizeError } from "@/lib/errorHandler";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,7 +73,7 @@ export function AdminApplicationsTab({ applications, onRefresh }: AdminApplicati
     } catch (error: any) {
       toast({
         title: "Error approving application",
-        description: error.message,
+        description: sanitizeError(error),
         variant: "destructive",
       });
     }

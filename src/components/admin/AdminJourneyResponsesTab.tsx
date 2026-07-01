@@ -1,3 +1,4 @@
+import { sanitizeError } from "@/lib/errorHandler";
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -185,7 +186,7 @@ export function AdminJourneyResponsesTab() {
     } catch (error: any) {
       toast({
         title: "Error loading journey responses",
-        description: error.message,
+        description: sanitizeError(error),
         variant: "destructive",
       });
     } finally {
@@ -264,7 +265,7 @@ export function AdminJourneyResponsesTab() {
     } catch (error: any) {
       toast({
         title: "Export Error",
-        description: error.message,
+        description: sanitizeError(error),
         variant: "destructive",
       });
     } finally {

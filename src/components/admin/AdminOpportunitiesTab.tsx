@@ -1,3 +1,4 @@
+import { sanitizeError } from "@/lib/errorHandler";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -181,7 +182,7 @@ export function AdminOpportunitiesTab({ onRefresh }: AdminOpportunitiesTabProps)
     } catch (error: any) {
       toast({
         title: "Error approving opportunity",
-        description: error.message,
+        description: sanitizeError(error),
         variant: "destructive",
       });
     } finally {
@@ -226,7 +227,7 @@ export function AdminOpportunitiesTab({ onRefresh }: AdminOpportunitiesTabProps)
     } catch (error: any) {
       toast({
         title: "Error updating opportunity",
-        description: error.message,
+        description: sanitizeError(error),
         variant: "destructive",
       });
     } finally {
@@ -255,7 +256,7 @@ export function AdminOpportunitiesTab({ onRefresh }: AdminOpportunitiesTabProps)
     } catch (error: any) {
       toast({
         title: "Error deleting opportunity",
-        description: error.message,
+        description: sanitizeError(error),
         variant: "destructive",
       });
     } finally {
