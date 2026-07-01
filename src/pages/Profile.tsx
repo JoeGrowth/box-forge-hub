@@ -738,10 +738,11 @@ const Profile = () => {
               <GoalSelectorCard />
             </div>
 
-            <div className="mb-8 grid gap-4 md:grid-cols-2">
+            <div id="role-links" className="mb-8 grid gap-4 md:grid-cols-2 scroll-mt-24">
               <PendingRoleLinksCard />
               <VerifiedAffiliationsCard userId={user?.id} />
             </div>
+
 
 
             {/* Rejected Application - Retry Card */}
