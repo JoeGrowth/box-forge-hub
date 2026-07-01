@@ -107,6 +107,7 @@ export function DashboardProgress() {
     });
 
     setJourneys(journeyMap);
+    setHasLearningJourneys((learningJourneys?.length ?? 0) > 0);
   }, [user, onboardingState]);
 
   useEffect(() => {
