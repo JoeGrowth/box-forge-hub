@@ -736,6 +736,12 @@ const Profile = () => {
               <GoalSelectorCard />
             </div>
 
+            <div className="mb-8 grid gap-4 md:grid-cols-2">
+              <PendingRoleLinksCard />
+              <VerifiedAffiliationsCard userId={user?.id} />
+            </div>
+
+
             {/* Rejected Application - Retry Card */}
             {onboardingState?.journey_status === "rejected" && (
               <div className="bg-gradient-to-br from-b4-coral/10 to-red-500/5 rounded-3xl border border-b4-coral/20 p-8 mb-8">
