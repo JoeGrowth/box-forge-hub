@@ -8,13 +8,16 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, Briefcase, GraduationCap, CalendarDays } from "lucide-react";
+import { Plus, Trash2, Briefcase, GraduationCap, CalendarDays, Save, RefreshCw, Loader2, Lock } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
-type Task = { id: string; label: string; percent: number };
+type Task = { id: string; label: string; percent: number; locked?: boolean };
 type Charge = { id: string; label: string; amount: number };
+type Kind = "consulting" | "training" | "event";
 
 const uid = () => Math.random().toString(36).slice(2, 9);
-
 const fmt = (n: number) =>
   new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
     Number.isFinite(n) ? n : 0,
@@ -27,37 +30,82 @@ function DistributionBuilder({
   defaultTasks,
   defaultCharges,
 }: {
-  kind: "consulting" | "training" | "event";
+  kind: Kind;
   defaultTitle: string;
   defaultBudgetLabel: string;
   defaultTasks: Task[];
   defaultCharges: Charge[];
 }) {
+  const { user } = useAuth();
+  const [resetKey, setResetKey] = useState(0);
   const [title, setTitle] = useState(defaultTitle);
   const [budget, setBudget] = useState<number>(420);
   const [budgetLabel, setBudgetLabel] = useState(defaultBudgetLabel);
   const [charges, setCharges] = useState<Charge[]>(defaultCharges);
   const [tasks, setTasks] = useState<Task[]>(defaultTasks);
   const [people, setPeople] = useState<string[]>(["Person (1)", "Person (2)"]);
+  const [saving, setSaving] = useState(false);
 
   const chargesTotal = useMemo(() => charges.reduce((s, c) => s + (Number(c.amount) || 0), 0), [charges]);
   const internalPool = Math.max(0, (Number(budget) || 0) - chargesTotal);
   const totalPercent = useMemo(() => tasks.reduce((s, t) => s + (Number(t.percent) || 0), 0), [tasks]);
 
   const taskAmounts = tasks.map((t) => (internalPool * (Number(t.percent) || 0)) / 100);
-  const perPersonPerTask = taskAmounts.map((amt) => (people.length > 0 ? amt / people.length : 0));
-  const perPersonTotal = people.map((_, idx) => perPersonPerTask.reduce((s, arr) => s + arr, 0) / 1);
-  // per-person total (equal split): each person gets sum(taskAmounts)/people.length
-  const perPersonEqual = people.length > 0 ? taskAmounts.reduce((s, a) => s + a, 0) / people.length : 0;
+  const splittableTotal = tasks.reduce(
+    (s, t, i) => (t.locked ? s : s + taskAmounts[i]),
+    0,
+  );
+  const perPersonEqual = people.length > 0 ? splittableTotal / people.length : 0;
+  const perPersonPerTask = tasks.map((t, i) =>
+    t.locked || people.length === 0 ? null : taskAmounts[i] / people.length,
+  );
 
   const updateTask = (id: string, patch: Partial<Task>) =>
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
   const updateCharge = (id: string, patch: Partial<Charge>) =>
     setCharges((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
 
+  const resetForm = () => {
+    setTitle(defaultTitle);
+    setBudget(420);
+    setBudgetLabel(defaultBudgetLabel);
+    setCharges(defaultCharges.map((c) => ({ ...c, id: uid() })));
+    setTasks(defaultTasks.map((t) => ({ ...t, id: uid() })));
+    setPeople(["Person (1)", "Person (2)"]);
+    setResetKey((k) => k + 1);
+  };
+
+  const handleSave = async () => {
+    if (!user) {
+      toast.error("Sign in to save distributions.");
+      return;
+    }
+    if (totalPercent !== 100) {
+      toast.error(`Task percentages must total 100% (currently ${totalPercent}%).`);
+      return;
+    }
+    setSaving(true);
+    const { error } = await (supabase.from("distribution_records" as any) as any).insert({
+      user_id: user.id,
+      kind,
+      title,
+      budget_label: budgetLabel,
+      budget,
+      charges,
+      tasks,
+      people,
+    });
+    setSaving(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Distribution saved.");
+    resetForm();
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-6" key={resetKey}>
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Mission Setup</CardTitle>
@@ -82,7 +130,6 @@ function DistributionBuilder({
         </CardContent>
       </Card>
 
-      {/* Charges */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base">Charges</CardTitle>
@@ -143,7 +190,6 @@ function DistributionBuilder({
         </CardContent>
       </Card>
 
-      {/* People */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base">People splitting the pool</CardTitle>
@@ -178,14 +224,23 @@ function DistributionBuilder({
         </CardContent>
       </Card>
 
-      {/* Internal & Structure breakdown */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base">Internal &amp; Structure — task distribution</CardTitle>
           <Button
             size="sm"
             variant="outline"
-            onClick={() => setTasks((p) => [...p, { id: uid(), label: "New task", percent: 0 }])}
+            onClick={() =>
+              setTasks((p) => {
+                // Insert new task before the locked "rest structure" row if present
+                const lockedIdx = p.findIndex((t) => t.locked);
+                const newTask: Task = { id: uid(), label: "New task", percent: 0 };
+                if (lockedIdx === -1) return [...p, newTask];
+                const copy = [...p];
+                copy.splice(lockedIdx, 0, newTask);
+                return copy;
+              })
+            }
           >
             <Plus className="w-4 h-4 mr-1" /> Add task
           </Button>
@@ -207,9 +262,20 @@ function DistributionBuilder({
             </TableHeader>
             <TableBody>
               {tasks.map((t, idx) => (
-                <TableRow key={t.id}>
+                <TableRow key={t.id} className={t.locked ? "bg-muted/30" : ""}>
                   <TableCell>
-                    <Input value={t.label} onChange={(e) => updateTask(t.id, { label: e.target.value })} />
+                    {t.locked ? (
+                      <div className="flex items-center gap-2 px-3 py-2 text-sm font-medium">
+                        <Lock className="w-3.5 h-3.5 text-muted-foreground" />
+                        {t.label}
+                        <span className="text-xs text-muted-foreground ml-1">(not split)</span>
+                      </div>
+                    ) : (
+                      <Input
+                        value={t.label}
+                        onChange={(e) => updateTask(t.id, { label: e.target.value })}
+                      />
+                    )}
                   </TableCell>
                   <TableCell>
                     <Input
@@ -222,17 +288,19 @@ function DistributionBuilder({
                   <TableCell className="text-right font-mono">{fmt(taskAmounts[idx])}</TableCell>
                   {people.map((_, pi) => (
                     <TableCell key={pi} className="text-right font-mono">
-                      {fmt(perPersonPerTask[idx])}
+                      {perPersonPerTask[idx] === null ? "—" : fmt(perPersonPerTask[idx] as number)}
                     </TableCell>
                   ))}
                   <TableCell>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => setTasks((p) => p.filter((x) => x.id !== t.id))}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    {!t.locked && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => setTasks((p) => p.filter((x) => x.id !== t.id))}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -256,6 +324,16 @@ function DistributionBuilder({
           )}
         </CardContent>
       </Card>
+
+      <div className="flex flex-wrap gap-3 justify-end sticky bottom-4 bg-background/80 backdrop-blur p-3 rounded-xl border border-border">
+        <Button variant="outline" onClick={resetForm} disabled={saving}>
+          <RefreshCw className="w-4 h-4 mr-1" /> Start new distribution
+        </Button>
+        <Button onClick={handleSave} disabled={saving}>
+          {saving ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Save className="w-4 h-4 mr-1" />}
+          Save distribution
+        </Button>
+      </div>
     </div>
   );
 }
@@ -267,7 +345,7 @@ const consultingDefaults = {
     { id: uid(), label: "Delivery / execution", percent: 40 },
     { id: uid(), label: "Reporting & handover", percent: 15 },
     { id: uid(), label: "Follow-up & admin", percent: 10 },
-    { id: uid(), label: "Rest structure", percent: 5 },
+    { id: uid(), label: "Rest Structure Consulting", percent: 5, locked: true },
   ] as Task[],
   charges: [
     { id: uid(), label: "Tools & software", amount: 40 },
@@ -283,7 +361,7 @@ const trainingDefaults = {
     { id: uid(), label: "Live delivery", percent: 30 },
     { id: uid(), label: "Assessment & feedback", percent: 15 },
     { id: uid(), label: "Communication & promo", percent: 10 },
-    { id: uid(), label: "Rest structure", percent: 10 },
+    { id: uid(), label: "Rest Structure Training", percent: 10, locked: true },
   ] as Task[],
   charges: [
     { id: uid(), label: "Room / platform", amount: 70 },
@@ -301,7 +379,7 @@ const eventDefaults = {
     { id: uid(), label: "Nettoyage post évent", percent: 10 },
     { id: uid(), label: "Montage Reel insta", percent: 10 },
     { id: uid(), label: "Mail de remerciement", percent: 10 },
-    { id: uid(), label: "Rest Structure Event", percent: 10 },
+    { id: uid(), label: "Rest Structure Event", percent: 10, locked: true },
   ] as Task[],
   charges: [
     { id: uid(), label: "Matériels & matériaux", amount: 80 },
@@ -322,8 +400,9 @@ export default function Distribution() {
                 Distribution
               </h1>
               <p className="text-muted-foreground">
-                Split budgets fairly across charges, structure and the people doing the work — per
-                consulting mission, training mission, or event.
+                Split budgets across charges, structure and the people doing the work — per
+                consulting mission, training mission, or event. The <strong>Rest Structure</strong>{" "}
+                line is reserved for the entity and is never split between people.
               </p>
             </header>
 
