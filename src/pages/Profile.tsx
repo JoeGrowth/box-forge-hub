@@ -789,55 +789,8 @@ const Profile = () => {
             )}
 
 
-            {/* Part 1: Natural Role Section */}
-            {onboardingState?.primary_role === "cobuilder" && naturalRole && (
-              <div className="bg-card rounded-3xl border border-border p-8 mb-8">
-                <h2 className="font-display text-xl font-bold text-foreground mb-4">Natural Role</h2>
 
-                {naturalRole.description ? (
-                  <div className="bg-muted/50 rounded-xl p-4 mb-6">
-                    <p className="text-foreground italic">"{naturalRole.description}"</p>
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground mb-6">Not defined yet</p>
-                )}
 
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-3">
-                    {naturalRole.promise_check ? (
-                      <CheckCircle className="w-5 h-5 text-b4-teal" />
-                    ) : (
-                      <AlertCircle className="w-5 h-5 text-muted-foreground" />
-                    )}
-                    <span className="text-sm text-foreground">Promise</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {naturalRole.practice_check ? (
-                      <CheckCircle className="w-5 h-5 text-b4-teal" />
-                    ) : (
-                      <AlertCircle className="w-5 h-5 text-muted-foreground" />
-                    )}
-                    <span className="text-sm text-foreground">Practice</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {naturalRole.training_check ? (
-                      <CheckCircle className="w-5 h-5 text-b4-teal" />
-                    ) : (
-                      <AlertCircle className="w-5 h-5 text-muted-foreground" />
-                    )}
-                    <span className="text-sm text-foreground">Training</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {naturalRole.consulting_check ? (
-                      <CheckCircle className="w-5 h-5 text-b4-teal" />
-                    ) : (
-                      <AlertCircle className="w-5 h-5 text-muted-foreground" />
-                    )}
-                    <span className="text-sm text-foreground">Consulting</span>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* Resume Section - Available to all users with onboarding data */}
             {naturalRole && (
