@@ -1,99 +1,230 @@
+# Optional Profile Linking for Entity Roles — FROZEN
 
-# Engine Access Gating — Implementation Plan
+Establishes verified identity and reproducible attribution for entity slots (Associé 1/2, Internal Structure Handler, Internal Process Handler, and future roles) without ever writing directly into scoring graphs. Downstream graphs consume immutable, self-contained events across four separated streams.
 
-Gate the three engines off the existing graph projections (no new tables). Career stays open as the on-ramp; Consulting and Entrepreneurship show as visible-but-locked until the user earns the qualifying signals.
+## Principles
 
-## 1. Access rules (single source of truth)
+- Immutable event history.
+- Projections as derived state; graphs never mutated directly.
+- Historical reproducibility contained inside events, not relational lookups.
+- Temporal correctness via time-scoped assignments and event-time resolution.
+- **Relationship state and activity attribution are separate streams.** Ownership is relationship-state, not activity-derived.
+- Labels always visible; profile linking always optional; two-sided confirmation before any graph effect.
+
+## Four immutable streams (platform-wide)
 
 ```text
-Career
-  unlocked = signed-in (always true post-auth)
-
-Consulting
-  unlocked = ANY of:
-    - expertise_graph.verified_expertise_count >= 1
-    - expertise_graph.expertise_score >= 8
-    - revenue_graph.completed_transactions >= 1
-    - advisor_readiness.is_ready = true
-    - admin
-
-Entrepreneurship
-  unlocked = ANY of:
-    - Vaccinated Co-Builder cert
-    - Vaccinated Initiator cert
-    - ownership_graph.total_allocated_equity > 0
-    - reputation_graph.reputation_level in (recognized, expert, authority)
-    - user already owns/co-owns a startup_idea (grandfather)
-    - admin
+Identity                Activity                  Progress               Opportunity
+--------                --------                  --------               -----------
+role.link.*             contribution.*            commitment.*           opportunity.*
+affiliation.*           revenue.attributed        milestone.*            negotiation.*
+ownership.edge.*        expertise.attributed      relationship.*         application.*
+                        trust.attributed
 ```
 
-Building / Founder remain status badges *inside* Entrepreneurship — not access tiers.
+All graphs are projections over these streams. Reputation projects over multiple streams.
 
-## 2. New hook: `useEngineAccess`
+## Bounded contexts touched by this feature
 
-`src/hooks/useEngineAccess.tsx` — composes the existing hooks (`useExpertise`, `useReputation`, `useRevenue`, `useOwnership`, `useAdvisorReadiness`, `useAdmin`, plus a small query for owned `startup_ideas` and cert status). Returns:
+```text
+Entity Role Assignment          Affiliation                    Ownership (relationship state)
+        │                            │                                │
+        ├── role.link.requested      ├── affiliation.started         ├── ownership.edge.created
+        ├── role.link.accepted       └── affiliation.ended           └── ownership.edge.ended
+        ├── role.link.declined                                         (emitted from OWNER role transitions)
+        └── role.link.revoked
 
-```ts
-type EngineKey = "career" | "consulting" | "entrepreneurship";
-type EngineAccess = {
-  unlocked: boolean;
-  reasons: { met: string[]; missing: { label: string; cta: { label: string; to: string } }[] };
-};
-useEngineAccess(): { loading: boolean; engines: Record<EngineKey, EngineAccess> };
+Attribution Engine (activity)
+        │
+        ├── consumes domain events + active assignments + resolved policy
+        └── emits self-contained revenue.attributed / expertise.attributed / trust.attributed
 ```
 
-Reasons are human-readable evidence strings — never expose raw booleans.
+- Role assignments, affiliations, and ownership edges are decoupled. Today the domain service emits `role.link.accepted` + `affiliation.started` + (for OWNER) `ownership.edge.created` in one transaction; tomorrow contractor / alumni / share transfer / inheritance can emit `affiliation.*` or `ownership.edge.*` without a role row.
+- **Ownership graph projects from `ownership.edge.*` only.** It does not consume attribution events.
+- Revenue / expertise / trust graphs consume attribution events. They may reference ownership information via join at read time, but ownership itself never depends on activity.
 
-## 3. Navbar changes
+## Data model
 
-`src/components/layout/Navbar.tsx`:
-- Always render Career / Consulting / Entrepreneurship links (no hiding).
-- When `!unlocked`, append a small `Lock` icon (lucide), reduce opacity slightly, add a tooltip with the top missing signal.
-- Locked link still navigates — to the engine page, which then shows the locked panel (not a 403, no redirect to /dashboard).
-- Admins always see unlocked.
+Generalized across entity types (declaration_entity, organization, startup, box, accelerator, ...).
 
-## 4. New component: `EngineLockedPanel`
+```text
+role_types                     (reference — behavior)
+----------
+code            OWNER | OPERATOR | ADVISOR | BOARD_MEMBER | LEGAL_REPRESENTATIVE | ...
 
-`src/components/engines/EngineLockedPanel.tsx` — full-page panel rendered at the top of each engine page when locked. Props: `engine`, `reasons`. Shows:
-- Title: "Not yet unlocked" (never "forbidden")
-- "What this engine gives you" (1-line value prop)
-- "Evidence required" list with checkmarks for met signals, empty circles for missing
-- "Next actions" CTAs routing to: `/decoder`, `/resume`, `/track-record`, `/learning-journeys`, `/opportunities`, etc.
-- "Already unlocked elsewhere?" link to support (no-op for now)
+role_catalog                   (reference — presentation, versioned)
+------------
+id, role_slug, role_type, default_label, applies_to,
+effective_from, effective_until nullable, version
+UNIQUE (role_slug, version)
 
-## 5. Engine pages
+entity_role_assignments        (source of truth)
+-----------------------
+id, entity_type, entity_id, role_slug, slot, label,
+linked_user_id nullable, equity_pct nullable,
+status (pending|accepted|declined|revoked),
+linked_by, linked_at, accepted_at, revoked_at,
+effective_from (= accepted_at), effective_until (= revoked_at, nullable)
 
-`src/pages/Career.tsx` — no gating change (open).
-`src/pages/Consulting.tsx` and `src/pages/Entrepreneurship.tsx`:
-- Call `useEngineAccess()`.
-- If `loading`, show existing skeleton.
-- If `!engines[key].unlocked`, render `<EngineLockedPanel ... />` instead of the dashboard.
-- Otherwise render existing content unchanged.
+role_attribution_policy        (versioned, time-scoped)
+-----------------------
+id, role_type, ownership_weight, expertise_weight,
+revenue_weight, trust_weight,
+effective_from, effective_until nullable, version
 
-No changes to deep child routes for now (e.g. `/start`, `/scale`, `/advisory`). Those continue to use their existing checks; we can fold them into `useEngineAccess` in a follow-up.
+attribution_events             (immutable, self-contained, activity stream)
+-----------------
+id
+event_type                     revenue.attributed | expertise.attributed | trust.attributed
+source_event_id
+source_event_type
+occurred_at                    source event time
+entity_type, entity_id
+user_id
+assignment_id                  reference only
+role_slug, role_type           captured at attribution
+policy_version                 captured
+ownership_weight               resolved weights persisted
+revenue_weight
+expertise_weight
+trust_weight
+equity_pct                     captured
+amount, currency               nullable
+payload                        jsonb
+processing_state               queued | processed | failed
+failure_reason                 nullable
+idempotency_key                <source_event_id>:<assignment_id>:<event_type>:<policy_version>
+attributed_at
+UNIQUE (idempotency_key)
 
-## 6. Capability gating (kept, not changed in this pass)
+ownership_edges                (identity stream — projection of ownership.edge.*)
+---------------
+profile_id, entity_type, entity_id,
+equity_pct, effective_from, effective_until nullable, active,
+source_assignment_id nullable
 
-Inside Career we leave the existing sub-feature gates as-is (publish training, apply, etc. via `useAccessLevel`). This plan only adds engine-level gating; nothing existing gets loosened.
+verified_affiliations          (identity stream — projection of affiliation.*)
+---------------------
+profile_id, entity_type, entity_id, role_slug, role_type,
+verified_since, verified_until nullable, active
 
-## Technical notes
+entity_role_audit_log
+---------------------
+assignment_id, transition, actor_user_id, at, payload
+```
 
-- All reads come from existing tables: `expertise_graph`, `reputation_graph`, `revenue_graph`, `ownership_graph`, `advisor_readiness`, `user_certifications`, `startup_ideas`, `startup_team_members`. No migration needed.
-- Cert detection: read `user_certifications` for the two Vaccinated cert keys already used in the certification data mapping.
-- Grandfathering: `startup_ideas.created_by = user.id` OR row in `startup_team_members.member_user_id = user.id`.
-- Cache `useEngineAccess` results in component state; re-runs on auth change. No localStorage cache (graph state changes too often and we don't want stale locks).
-- Admin bypass uses existing `useAdmin`.
+### Frozen modeling choices
 
-## Files touched
+- **No `assignment_snapshots` table.** The attribution event is the snapshot — embeds `role_slug`, `role_type`, `equity_pct`, `policy_version`, and every resolved weight.
+- **Ownership is state-derived**, projected from `ownership.edge.*` events. Never carried in `attribution_events`.
+- **`processing_state`** (`queued | processed | failed`) — the event's mere existence already means attribution occurred; this field describes delivery, not domain semantics.
+- **Idempotency key includes `event_type`** so multi-output attribution (revenue + expertise from one source event) does not collide.
+- **`role_catalog` is versioned** — renaming "Internal Process Handler" → "Operations Lead" adds a new version; historical events resolve the historically correct label.
+- Policies key on `role_type`, not `role_slug` — `associe_1` and `associe_2` share one `OWNER` policy.
 
-- add `src/hooks/useEngineAccess.tsx`
-- add `src/components/engines/EngineLockedPanel.tsx`
-- edit `src/components/layout/Navbar.tsx` (lock icon + tooltip on the 3 engine links)
-- edit `src/pages/Consulting.tsx` (render locked panel when locked)
-- edit `src/pages/Entrepreneurship.tsx` (render locked panel when locked)
+## Lifecycle
 
-## Out of scope (next pass if you want)
+Domain service performs auth → validation → persistence → event emission in one transaction.
 
-- Locking sub-routes like `/scale`, `/advisory`, `/start` directly (today they're reachable via other links).
-- Tracking unlock events to `click_events` / `graph_events` for funnel analytics.
-- Email nudge when a user crosses an unlock threshold.
+```text
+requested ── role.link.requested
+    │
+    ├── accepted ── role.link.accepted
+    │       │           ├── (same tx) affiliation.started
+    │       │           └── (same tx, if role_type = OWNER) ownership.edge.created
+    │       │
+    │       └── revoked ── role.link.revoked
+    │                          ├── (same tx) affiliation.ended
+    │                          └── (same tx, if role_type = OWNER) ownership.edge.ended
+    │
+    └── declined ── role.link.declined
+```
+
+## Attribution engine (activity only)
+
+```text
+domain event (revenue declared, mission completed, ...)
+        │
+        ▼
+Attribution Engine
+   1. select accepted assignments where
+        effective_from ≤ event.occurred_at < COALESCE(effective_until, ∞)
+   2. resolve role_catalog version and policy version at event.occurred_at
+   3. per output event_type (revenue.attributed / expertise.attributed / trust.attributed):
+        compute idempotency_key = <source>:<assignment>:<event_type>:<policy_version>
+        insert attribution_event with resolved weights
+        processing_state = processed | failed
+        │
+        ▼
+Activity graphs recompute from attribution_events only
+   ├── revenue_graph
+   ├── expertise_graph
+   └── trust_graph
+
+Ownership graph recomputes from ownership.edge.* only
+   └── ownership_graph
+
+Reputation graph projects over both streams
+   └── reputation_graph
+```
+
+## Invariants
+
+- No graph effect without `status = accepted` on the assignment.
+- Ownership graph never reads `attribution_events`. Revenue / expertise / trust graphs never read `entity_role_assignments` for weights or labels.
+- Holding a role ≠ activity contribution. Activity graphs move only on attributed domain events.
+- Strict time overlap for attribution: `effective_from ≤ T < COALESCE(effective_until, ∞)`.
+- Attribution event self-contained; graphs never join back to `role_attribution_policy` / `role_catalog` for weights or labels.
+- Idempotency key uniqueness: at-most-once per (source event, assignment, event_type, policy version).
+- Revocation ≠ deletion. Historical events remain valid; `ownership.edge.ended` closes the edge going forward.
+- Unique active role per (entity, linked_user_id) where `status = accepted`; overridable by platform-admin flag.
+- Σ `equity_pct` ≤ 100 across accepted OWNER assignments per entity.
+- `equity_pct` flows into ownership via `ownership.edge.*`; not into activity attribution weights.
+
+## RLS
+
+- Entity admins: request / revoke on entities they administer.
+- Linked user: accept / decline own pending row.
+- Assignment rows readable by entity members and linked user.
+- `role_types`, `role_catalog`, `role_attribution_policy`: read to authenticated; write to platform admins.
+- `verified_affiliations`, `ownership_edges`: follow existing profile visibility.
+- `attribution_events`: readable to owning user and entity admins; write only via engine (service role).
+
+## UI (`/declaration` entity view)
+
+Labels preserved verbatim (Associé 1 (70%), Associé 2 (30%), Internal 1 – Structure Handler, Internal 2 – Process Handler).
+
+Chip per label:
+- Unlinked → "Link profile" (entity admin).
+- Pending → target user + "Awaiting acceptance".
+- Accepted → avatar + verified check + "Unlink".
+- Declined / revoked → muted status.
+
+Linking dialog: user search, optional `equity_pct` for OWNER slots.
+Notifications inbox: accept / decline.
+Public profile / `/profile`: "Verified affiliations" from `verified_affiliations`; "Ownership" from `ownership_edges`.
+
+## Delivery steps
+
+1. Migration: `role_types`, `role_catalog` (versioned), `entity_role_assignments`, `role_attribution_policy`, `attribution_events` (idempotency key includes event_type, `processing_state`), `verified_affiliations`, `ownership_edges`, `entity_role_audit_log`. Grants, RLS, triggers for `updated_at` / uniqueness / equity sum. Seed role types, initial catalog version for the four declaration slots, initial OWNER / OPERATOR policy version.
+2. Postgres helpers: `resolve_catalog(role_slug, at)`, `resolve_policy(role_type, at)`, `active_assignments(entity_id, at)`, `attribute_event(source_event_id)`.
+3. Recompute functions for `revenue_graph`, `expertise_graph`, `trust_graph`, `verified_affiliations`, `ownership_graph` — each reading exclusively from its own stream.
+4. Domain service (SECURITY DEFINER): `request_link`, `accept_link`, `decline_link`, `revoke_link` — auth, persist, audit, emit `role.link.*` + `affiliation.*` + (if OWNER) `ownership.edge.*` in one transaction.
+5. Attribution job on new domain event → invoke `attribute_event` → invalidate dependent activity projections.
+6. Hook `useEntityRoleAssignments(entityType, entityId)`.
+7. UI: role chip, linking dialog with user search, accept/decline in notifications inbox.
+8. Public profile: "Verified affiliations" and "Ownership" sections.
+9. Backfill: unlinked `entity_role_assignments` (label only) for existing entities.
+10. Ops surface: admin view over `attribution_events` filtered by `processing_state = failed` for triage.
+
+## Non-goals (frozen boundary)
+
+- No `assignment_snapshots` table.
+- No ownership attribution via `attribution_events`.
+- No fixed `+N` linking bonus.
+- No direct writes from role tables into graphs.
+- No mandatory linking.
+- No retroactive policy application.
+- No graph reads against mutable relational state for weights or labels.
+- No further core abstractions. Future work is limited to projections, UI, operational tooling, and policy calibration.

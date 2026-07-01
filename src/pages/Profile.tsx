@@ -15,6 +15,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { EntrepreneurJourney } from "@/components/entrepreneur/EntrepreneurJourney";
 import { OnboardingAnswersCard } from "@/components/profile/OnboardingAnswersCard";
 import { GoalSelectorCard } from "@/components/profile/GoalSelectorCard";
+import { PendingRoleLinksCard } from "@/components/entity-roles/PendingRoleLinksCard";
+import { VerifiedAffiliationsCard } from "@/components/entity-roles/VerifiedAffiliationsCard";
 import { IdeaApplicationsViewer } from "@/components/profile/IdeaApplicationsViewer";
 import { ScalingJourneyProgress } from "@/components/profile/ScalingJourneyProgress";
 import { LearningJourneyDashboard } from "@/components/learning/LearningJourneyDashboard";
@@ -735,6 +737,12 @@ const Profile = () => {
             <div className="mb-8">
               <GoalSelectorCard />
             </div>
+
+            <div className="mb-8 grid gap-4 md:grid-cols-2">
+              <PendingRoleLinksCard />
+              <VerifiedAffiliationsCard userId={user?.id} />
+            </div>
+
 
             {/* Rejected Application - Retry Card */}
             {onboardingState?.journey_status === "rejected" && (

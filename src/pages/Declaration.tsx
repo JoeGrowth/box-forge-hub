@@ -22,6 +22,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { EntityRoleSlots } from "@/components/entity-roles/EntityRoleSlots";
 
 type Payee = { id: string; name: string; role?: string; amount: number; paid: boolean };
 type DeliveryType = string;
@@ -593,7 +594,15 @@ export default function Declaration() {
           </div>
         </div>
 
+        {/* Role slots for the active entity (optional profile linking) */}
+        {activeEntity && (
+          <div className="mb-6">
+            <EntityRoleSlots entityType="declaration_entity" entityId={activeEntity.id} canManage={isOwner} />
+          </div>
+        )}
+
         {/* Money Box */}
+
         <Card className="mb-6 border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 via-background to-background">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
