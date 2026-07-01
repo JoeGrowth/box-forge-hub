@@ -128,39 +128,47 @@ export function DashboardAchievements() {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-4 gap-3">
-          {achievements.map((achievement, i) => (
-            <div
-              key={i}
-              className={`relative group cursor-default ${
-                achievement.earned ? "" : "opacity-40 grayscale"
-              }`}
-              title={`${achievement.title}: ${achievement.description}`}
-            >
-              <div
-                className={`w-12 h-12 mx-auto rounded-xl flex items-center justify-center transition-transform ${
-                  achievement.earned
-                    ? "bg-muted hover:scale-110"
-                    : "bg-muted/50"
-                }`}
-              >
-                <achievement.icon
-                  className={`w-6 h-6 ${
-                    achievement.earned ? achievement.color : "text-muted-foreground"
-                  }`}
-                />
-              </div>
-              {achievement.earned && (
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-b4-teal rounded-full flex items-center justify-center">
-                  <CheckCircle className="w-3 h-3 text-white" />
-                </div>
-              )}
-              <div className="text-xs text-center mt-1 font-medium truncate">
-                {achievement.title}
-              </div>
-            </div>
-          ))}
-        </div>
+        <TooltipProvider delayDuration={150}>
+          <div className="grid grid-cols-4 gap-3">
+            {achievements.map((achievement, i) => (
+              <Tooltip key={i}>
+                <TooltipTrigger asChild>
+                  <div
+                    className={`relative group cursor-default ${
+                      achievement.earned ? "" : "opacity-40 grayscale"
+                    }`}
+                  >
+                    <div
+                      className={`w-12 h-12 mx-auto rounded-xl flex items-center justify-center transition-transform ${
+                        achievement.earned
+                          ? "bg-muted hover:scale-110"
+                          : "bg-muted/50"
+                      }`}
+                    >
+                      <achievement.icon
+                        className={`w-6 h-6 ${
+                          achievement.earned ? achievement.color : "text-muted-foreground"
+                        }`}
+                      />
+                    </div>
+                    {achievement.earned && (
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-b4-teal rounded-full flex items-center justify-center">
+                        <CheckCircle className="w-3 h-3 text-white" />
+                      </div>
+                    )}
+                    <div className="text-xs text-center mt-1 font-medium truncate">
+                      {achievement.title}
+                    </div>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-xs text-center">
+                  <p className="font-medium">{achievement.title}</p>
+                  <p className="text-xs text-muted-foreground">{achievement.description}</p>
+                </TooltipContent>
+              </Tooltip>
+            ))}
+          </div>
+        </TooltipProvider>
 
         {earnedCount === achievements.length && (
           <div className="mt-4 p-3 rounded-lg bg-gradient-to-r from-b4-teal/10 to-emerald-500/10 border border-b4-teal/20 text-center">
