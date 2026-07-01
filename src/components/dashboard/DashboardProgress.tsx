@@ -212,11 +212,11 @@ export function DashboardProgress() {
     },
     {
       key: "certify",
-      title: "Start getting certified",
+      title: "Getting Certified",
       description: "Pick a certification path — Initiator, Co-Builder, Finance or Security — and earn your badges.",
       icon: Award,
       done: false,
-      cta: { label: "Explore", to: "/journey" },
+      cta: { label: hasLearningJourneys ? "Continue" : "Start", to: "/journey" },
     },
   ];
 
