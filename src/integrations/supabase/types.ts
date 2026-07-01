@@ -1321,6 +1321,48 @@ export type Database = {
           },
         ]
       }
+      distribution_records: {
+        Row: {
+          budget: number
+          budget_label: string
+          charges: Json
+          created_at: string
+          id: string
+          kind: string
+          people: Json
+          tasks: Json
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          budget?: number
+          budget_label?: string
+          charges?: Json
+          created_at?: string
+          id?: string
+          kind: string
+          people?: Json
+          tasks?: Json
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          budget?: number
+          budget_label?: string
+          charges?: Json
+          created_at?: string
+          id?: string
+          kind?: string
+          people?: Json
+          tasks?: Json
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       entrepreneur_journey_responses: {
         Row: {
           business_model: string | null
