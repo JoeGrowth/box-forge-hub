@@ -184,7 +184,7 @@ const Resume = () => {
   // Resume is now accessible to all authenticated users
 
   useEffect(() => {
-    if (naturalRole) {
+    if (naturalRole && !isEditing) {
       setEditData({
         description: naturalRole.description || "",
         services_description: (naturalRole as any).services_description || "",
@@ -194,6 +194,7 @@ const Resume = () => {
         consulting_case_studies: naturalRole.consulting_case_studies || "",
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [naturalRole]);
 
   useEffect(() => {
