@@ -734,12 +734,15 @@ const Profile = () => {
               </div>
             </div>
 
+            <div id="role-links" className="mb-8 scroll-mt-24">
+              <PendingRoleLinksCard />
+            </div>
+
             <div className="mb-8">
               <GoalSelectorCard />
             </div>
 
-            <div id="role-links" className="mb-8 grid gap-4 md:grid-cols-2 scroll-mt-24">
-              <PendingRoleLinksCard />
+            <div className="mb-8">
               <VerifiedAffiliationsCard userId={user?.id} />
             </div>
 
