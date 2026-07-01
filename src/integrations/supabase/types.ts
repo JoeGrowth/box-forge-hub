@@ -312,6 +312,95 @@ export type Database = {
         }
         Relationships: []
       }
+      attribution_events: {
+        Row: {
+          amount: number | null
+          assignment_id: string | null
+          attributed_at: string
+          currency: string | null
+          entity_id: string
+          entity_type: string
+          equity_pct: number | null
+          event_type: string
+          expertise_weight: number
+          failure_reason: string | null
+          id: string
+          idempotency_key: string
+          occurred_at: string
+          ownership_weight: number
+          payload: Json
+          policy_version: number
+          processing_state: Database["public"]["Enums"]["attribution_processing_state"]
+          revenue_weight: number
+          role_slug: string
+          role_type: string
+          source_event_id: string
+          source_event_type: string
+          trust_weight: number
+          user_id: string
+        }
+        Insert: {
+          amount?: number | null
+          assignment_id?: string | null
+          attributed_at?: string
+          currency?: string | null
+          entity_id: string
+          entity_type: string
+          equity_pct?: number | null
+          event_type: string
+          expertise_weight?: number
+          failure_reason?: string | null
+          id?: string
+          idempotency_key: string
+          occurred_at: string
+          ownership_weight?: number
+          payload?: Json
+          policy_version: number
+          processing_state?: Database["public"]["Enums"]["attribution_processing_state"]
+          revenue_weight?: number
+          role_slug: string
+          role_type: string
+          source_event_id: string
+          source_event_type: string
+          trust_weight?: number
+          user_id: string
+        }
+        Update: {
+          amount?: number | null
+          assignment_id?: string | null
+          attributed_at?: string
+          currency?: string | null
+          entity_id?: string
+          entity_type?: string
+          equity_pct?: number | null
+          event_type?: string
+          expertise_weight?: number
+          failure_reason?: string | null
+          id?: string
+          idempotency_key?: string
+          occurred_at?: string
+          ownership_weight?: number
+          payload?: Json
+          policy_version?: number
+          processing_state?: Database["public"]["Enums"]["attribution_processing_state"]
+          revenue_weight?: number
+          role_slug?: string
+          role_type?: string
+          source_event_id?: string
+          source_event_type?: string
+          trust_weight?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attribution_events_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "entity_role_assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       box_advisors: {
         Row: {
           accepting_requests: boolean
@@ -1362,6 +1451,104 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      entity_role_assignments: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          declined_at: string | null
+          effective_from: string | null
+          effective_until: string | null
+          entity_id: string
+          entity_type: string
+          equity_pct: number | null
+          id: string
+          label: string
+          linked_at: string | null
+          linked_by: string | null
+          linked_user_id: string | null
+          revoked_at: string | null
+          role_slug: string
+          slot: number
+          status: Database["public"]["Enums"]["entity_role_status"]
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          declined_at?: string | null
+          effective_from?: string | null
+          effective_until?: string | null
+          entity_id: string
+          entity_type: string
+          equity_pct?: number | null
+          id?: string
+          label: string
+          linked_at?: string | null
+          linked_by?: string | null
+          linked_user_id?: string | null
+          revoked_at?: string | null
+          role_slug: string
+          slot: number
+          status?: Database["public"]["Enums"]["entity_role_status"]
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          declined_at?: string | null
+          effective_from?: string | null
+          effective_until?: string | null
+          entity_id?: string
+          entity_type?: string
+          equity_pct?: number | null
+          id?: string
+          label?: string
+          linked_at?: string | null
+          linked_by?: string | null
+          linked_user_id?: string | null
+          revoked_at?: string | null
+          role_slug?: string
+          slot?: number
+          status?: Database["public"]["Enums"]["entity_role_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      entity_role_audit_log: {
+        Row: {
+          actor_user_id: string | null
+          assignment_id: string
+          at: string
+          id: string
+          payload: Json
+          transition: Database["public"]["Enums"]["entity_role_transition"]
+        }
+        Insert: {
+          actor_user_id?: string | null
+          assignment_id: string
+          at?: string
+          id?: string
+          payload?: Json
+          transition: Database["public"]["Enums"]["entity_role_transition"]
+        }
+        Update: {
+          actor_user_id?: string | null
+          assignment_id?: string
+          at?: string
+          id?: string
+          payload?: Json
+          transition?: Database["public"]["Enums"]["entity_role_transition"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entity_role_audit_log_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "entity_role_assignments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       entrepreneur_journey_responses: {
         Row: {
@@ -3414,6 +3601,53 @@ export type Database = {
         }
         Relationships: []
       }
+      ownership_edges: {
+        Row: {
+          active: boolean
+          created_at: string
+          effective_from: string
+          effective_until: string | null
+          entity_id: string
+          entity_type: string
+          equity_pct: number | null
+          id: string
+          profile_id: string
+          source_assignment_id: string | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          effective_from: string
+          effective_until?: string | null
+          entity_id: string
+          entity_type: string
+          equity_pct?: number | null
+          id?: string
+          profile_id: string
+          source_assignment_id?: string | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          effective_from?: string
+          effective_until?: string | null
+          entity_id?: string
+          entity_type?: string
+          equity_pct?: number | null
+          id?: string
+          profile_id?: string
+          source_assignment_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ownership_edges_source_assignment_id_fkey"
+            columns: ["source_assignment_id"]
+            isOneToOne: false
+            referencedRelation: "entity_role_assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ownership_graph: {
         Row: {
           active_allocations: number
@@ -4046,6 +4280,115 @@ export type Database = {
           score?: number
           source_event_version?: number | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      role_attribution_policy: {
+        Row: {
+          created_at: string
+          effective_from: string
+          effective_until: string | null
+          expertise_weight: number
+          id: string
+          ownership_weight: number
+          revenue_weight: number
+          role_type: string
+          trust_weight: number
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          effective_from?: string
+          effective_until?: string | null
+          expertise_weight?: number
+          id?: string
+          ownership_weight?: number
+          revenue_weight?: number
+          role_type: string
+          trust_weight?: number
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          effective_from?: string
+          effective_until?: string | null
+          expertise_weight?: number
+          id?: string
+          ownership_weight?: number
+          revenue_weight?: number
+          role_type?: string
+          trust_weight?: number
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_attribution_policy_role_type_fkey"
+            columns: ["role_type"]
+            isOneToOne: false
+            referencedRelation: "role_types"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      role_catalog: {
+        Row: {
+          applies_to: string[]
+          created_at: string
+          default_label: string
+          effective_from: string
+          effective_until: string | null
+          id: string
+          role_slug: string
+          role_type: string
+          version: number
+        }
+        Insert: {
+          applies_to?: string[]
+          created_at?: string
+          default_label: string
+          effective_from?: string
+          effective_until?: string | null
+          id?: string
+          role_slug: string
+          role_type: string
+          version?: number
+        }
+        Update: {
+          applies_to?: string[]
+          created_at?: string
+          default_label?: string
+          effective_from?: string
+          effective_until?: string | null
+          id?: string
+          role_slug?: string
+          role_type?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_catalog_role_type_fkey"
+            columns: ["role_type"]
+            isOneToOne: false
+            referencedRelation: "role_types"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      role_types: {
+        Row: {
+          code: string
+          created_at: string
+          description: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string
         }
         Relationships: []
       }
@@ -4999,6 +5342,56 @@ export type Database = {
           },
         ]
       }
+      verified_affiliations: {
+        Row: {
+          active: boolean
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          profile_id: string
+          role_slug: string
+          role_type: string
+          source_assignment_id: string | null
+          verified_since: string
+          verified_until: string | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          profile_id: string
+          role_slug: string
+          role_type: string
+          source_assignment_id?: string | null
+          verified_since: string
+          verified_until?: string | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          profile_id?: string
+          role_slug?: string
+          role_type?: string
+          source_assignment_id?: string | null
+          verified_since?: string
+          verified_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verified_affiliations_source_assignment_id_fkey"
+            columns: ["source_assignment_id"]
+            isOneToOne: false
+            referencedRelation: "entity_role_assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vesting_schedules: {
         Row: {
           cliff_months: number
@@ -5265,6 +5658,35 @@ export type Database = {
       }
     }
     Functions: {
+      accept_entity_role_link: {
+        Args: { _assignment_id: string }
+        Returns: {
+          accepted_at: string | null
+          created_at: string
+          declined_at: string | null
+          effective_from: string | null
+          effective_until: string | null
+          entity_id: string
+          entity_type: string
+          equity_pct: number | null
+          id: string
+          label: string
+          linked_at: string | null
+          linked_by: string | null
+          linked_user_id: string | null
+          revoked_at: string | null
+          role_slug: string
+          slot: number
+          status: Database["public"]["Enums"]["entity_role_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "entity_role_assignments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       activity_importance: { Args: { _event_type: string }; Returns: string }
       activity_summary: {
         Args: { _event_type: string; _payload: Json }
@@ -5330,12 +5752,45 @@ export type Database = {
         Returns: boolean
       }
       can_view_advisors_directory: { Args: never; Returns: boolean }
+      can_view_entity: {
+        Args: { _entity_id: string; _entity_type: string; _user_id: string }
+        Returns: boolean
+      }
       compute_user_state: { Args: { _user_id: string }; Returns: Json }
       compute_user_state_scores: { Args: { _user_id: string }; Returns: Json }
       current_user_email: { Args: never; Returns: string }
       declaration_entity_access: {
         Args: { _entity_id: string; _user_id: string }
         Returns: string
+      }
+      decline_entity_role_link: {
+        Args: { _assignment_id: string }
+        Returns: {
+          accepted_at: string | null
+          created_at: string
+          declined_at: string | null
+          effective_from: string | null
+          effective_until: string | null
+          entity_id: string
+          entity_type: string
+          equity_pct: number | null
+          id: string
+          label: string
+          linked_at: string | null
+          linked_by: string | null
+          linked_user_id: string | null
+          revoked_at: string | null
+          role_slug: string
+          slot: number
+          status: Database["public"]["Enums"]["entity_role_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "entity_role_assignments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       derive_professional_state: { Args: { _user_id: string }; Returns: string }
       derived_equity_role: { Args: { _percentage: number }; Returns: string }
@@ -5352,6 +5807,10 @@ export type Database = {
           _opportunity_id: string
           _payload: Json
         }
+        Returns: undefined
+      }
+      ensure_declaration_role_slots: {
+        Args: { _entity_id: string }
         Returns: undefined
       }
       get_admin_beta_health: {
@@ -5537,6 +5996,10 @@ export type Database = {
         Args: { _entity_id: string; _user_id: string }
         Returns: boolean
       }
+      is_entity_admin: {
+        Args: { _entity_id: string; _entity_type: string; _user_id: string }
+        Returns: boolean
+      }
       is_org_member: { Args: { _org: string; _user: string }; Returns: boolean }
       is_plan_shared_with_me: { Args: { _plan_id: string }; Returns: boolean }
       legacy_expertise_calc: { Args: { _user_id: string }; Returns: Json }
@@ -5622,6 +6085,110 @@ export type Database = {
         Returns: undefined
       }
       render_template: { Args: { _ctx: Json; _tpl: string }; Returns: string }
+      request_entity_role_link: {
+        Args: {
+          _assignment_id: string
+          _equity_pct?: number
+          _label?: string
+          _linked_user_id: string
+        }
+        Returns: {
+          accepted_at: string | null
+          created_at: string
+          declined_at: string | null
+          effective_from: string | null
+          effective_until: string | null
+          entity_id: string
+          entity_type: string
+          equity_pct: number | null
+          id: string
+          label: string
+          linked_at: string | null
+          linked_by: string | null
+          linked_user_id: string | null
+          revoked_at: string | null
+          role_slug: string
+          slot: number
+          status: Database["public"]["Enums"]["entity_role_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "entity_role_assignments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      resolve_role_catalog: {
+        Args: { _at: string; _role_slug: string }
+        Returns: {
+          applies_to: string[]
+          created_at: string
+          default_label: string
+          effective_from: string
+          effective_until: string | null
+          id: string
+          role_slug: string
+          role_type: string
+          version: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "role_catalog"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      resolve_role_policy: {
+        Args: { _at: string; _role_type: string }
+        Returns: {
+          created_at: string
+          effective_from: string
+          effective_until: string | null
+          expertise_weight: number
+          id: string
+          ownership_weight: number
+          revenue_weight: number
+          role_type: string
+          trust_weight: number
+          version: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "role_attribution_policy"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      revoke_entity_role_link: {
+        Args: { _assignment_id: string }
+        Returns: {
+          accepted_at: string | null
+          created_at: string
+          declined_at: string | null
+          effective_from: string | null
+          effective_until: string | null
+          entity_id: string
+          entity_type: string
+          equity_pct: number | null
+          id: string
+          label: string
+          linked_at: string | null
+          linked_by: string | null
+          linked_user_id: string | null
+          revoked_at: string | null
+          role_slug: string
+          slot: number
+          status: Database["public"]["Enums"]["entity_role_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "entity_role_assignments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       run_beta_simulation: { Args: never; Returns: Json }
       run_lifecycle_integrity_checks: { Args: never; Returns: string }
       seed_cold_start_expertise: { Args: { _user_id: string }; Returns: number }
@@ -5655,6 +6222,9 @@ export type Database = {
         | "rejected"
         | "withdrawn"
         | "completed"
+      attribution_processing_state: "queued" | "processed" | "failed"
+      entity_role_status: "pending" | "accepted" | "declined" | "revoked"
+      entity_role_transition: "requested" | "accepted" | "declined" | "revoked"
       graph_edge_type:
         | "HAS_SKILL"
         | "HAS_CERTIFICATION"
@@ -6035,6 +6605,9 @@ export const Constants = {
         "withdrawn",
         "completed",
       ],
+      attribution_processing_state: ["queued", "processed", "failed"],
+      entity_role_status: ["pending", "accepted", "declined", "revoked"],
+      entity_role_transition: ["requested", "accepted", "declined", "revoked"],
       graph_edge_type: [
         "HAS_SKILL",
         "HAS_CERTIFICATION",
