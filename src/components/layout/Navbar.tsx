@@ -33,6 +33,7 @@ import {
   Lock,
 } from "lucide-react";
 import { useEngineAccess, type EngineKey } from "@/hooks/useEngineAccess";
+import { useTalentReadiness } from "@/hooks/useTalentReadiness";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { supabase } from "@/integrations/supabase/client";
@@ -53,12 +54,18 @@ const engineLinks: Array<{ name: string; path: string; icon: typeof Briefcase; k
   { name: "Entrepreneurship", path: "/entrepreneurship", icon: Lightbulb, key: "entrepreneurship" },
 ];
 
-const publishLinks = [
-  { name: "Recruiting", path: "/publish-job", icon: Briefcase, desc: "Offer a job" },
+const publishLinks: Array<{
+  name: string;
+  path: string;
+  icon: typeof Briefcase;
+  desc: string;
+  orgAdminOnly?: boolean;
+}> = [
+  { name: "Recruiting", path: "/publish-job", icon: Briefcase, desc: "Offer a job", orgAdminOnly: true },
   { name: "Consulting", path: "/publish-consulting", icon: Handshake, desc: "Create a service" },
   { name: "Launching", path: "/create-idea", icon: Lightbulb, desc: "Start a venture" },
   { name: "Training", path: "/publish-training", icon: GraduationCap, desc: "Submit a training" },
-  { name: "Procuring", path: "/procuring", icon: FileText, desc: "Post a tender" },
+  { name: "Procuring", path: "/procuring", icon: FileText, desc: "Post a tender", orgAdminOnly: true },
 ];
 
 const moreLinks = [
@@ -93,6 +100,10 @@ export function Navbar() {
   const { canAccessBoosting, canAccessScaling, potentialRole } = useUserStatus();
 
   const { engines: engineAccess } = useEngineAccess();
+  const { talentReady, isOrgAdmin, missing: talentMissing } = useTalentReadiness();
+  const talentLockTitle = talentReady
+    ? undefined
+    : `Locked — complete: ${talentMissing.join(", ")}`;
 
   // Hydrate synchronously from localStorage (lazy initializer) so the Admin
   // button is present on first paint when cached — no flash, no layout shift.
