@@ -81,6 +81,7 @@ import JourneyTimeline from "./pages/JourneyTimeline";
 import ActivationHub from "./pages/ActivationHub";
 import AdvisorWorkQueue from "./pages/AdvisorWorkQueue";
 import ClickAnalytics from "./pages/admin/ClickAnalytics";
+import Distribution from "./pages/Distribution";
 import { ClickTracker } from "./components/analytics/ClickTracker";
 
 
@@ -146,6 +147,7 @@ const App = () => (
                   <Route path="/opsmanagement" element={<OpsManagement />} />
                   <Route path="/consultingmanagement" element={<ConsultingManagement />} />
                   <Route path="/trainingmanagement" element={<TrainingManagement />} />
+                  <Route path="/distribution" element={<Distribution />} />
                   <Route path="/publish-consulting" element={<PublishConsulting />} />
                   <Route path="/publish-training" element={<PublishTraining />} />
                   <Route path="/publish-job" element={<PublishJob />} />
