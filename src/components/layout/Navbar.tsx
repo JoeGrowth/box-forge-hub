@@ -484,12 +484,21 @@ export function Navbar() {
                 {!loading &&
                   (user ? (
                     <>
+                      {isAdmin && (
+                        <Button variant="outline" size="sm" asChild>
+                          <Link to="/admin" onClick={() => setIsOpen(false)}>
+                            <Shield size={16} className="mr-1" />
+                            Admin
+                          </Link>
+                        </Button>
+                      )}
                       <Button variant="outline" size="sm" asChild>
                         <Link to="/profile" onClick={() => setIsOpen(false)}>
                           <User size={16} className="mr-1" />
                           Profile
                         </Link>
                       </Button>
+
                       <Button
                         variant="ghost"
                         size="sm"
