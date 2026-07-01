@@ -411,31 +411,51 @@ export function Navbar() {
                     );
                   })}
                   <Link
-                    to="/opportunities"
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    to={talentReady ? "/opportunities" : "/dashboard"}
+                    onClick={(e) => {
+                      if (!talentReady) e.preventDefault();
+                      setIsOpen(false);
+                    }}
+                    aria-disabled={!talentReady}
+                    title={talentLockTitle}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
                       location.pathname === "/opportunities"
                         ? "bg-muted text-b4-teal"
                         : "text-muted-foreground hover:bg-muted"
-                    }`}
-                    onClick={() => setIsOpen(false)}
+                    } ${!talentReady ? "opacity-60 cursor-not-allowed" : ""}`}
                   >
-                    Opportunities
+                    <span className="flex-1">Opportunities</span>
+                    {!talentReady && <Lock size={12} className="text-muted-foreground" />}
                   </Link>
 
                   <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Publish
+                    Publish {!talentReady && <Lock size={12} className="inline text-muted-foreground" />}
                   </div>
                   {publishLinks.map((link) => {
                     const Icon = link.icon;
+                    const linkLocked = !talentReady || (link.orgAdminOnly && !isOrgAdmin);
+                    const lockReason = !talentReady
+                      ? talentLockTitle
+                      : link.orgAdminOnly && !isOrgAdmin
+                      ? "Locked — become admin of an organization in Organizations"
+                      : undefined;
                     return (
                       <Link
                         key={link.path}
-                        to={link.path}
-                        className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors flex items-center gap-2"
-                        onClick={() => setIsOpen(false)}
+                        to={linkLocked ? "/organizations" : link.path}
+                        onClick={(e) => {
+                          if (linkLocked) e.preventDefault();
+                          setIsOpen(false);
+                        }}
+                        aria-disabled={linkLocked}
+                        title={lockReason}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors flex items-center gap-2 ${
+                          linkLocked ? "opacity-60 cursor-not-allowed" : ""
+                        }`}
                       >
                         <Icon size={16} />
-                        {link.name}
+                        <span className="flex-1">{link.name}</span>
+                        {linkLocked && <Lock size={12} className="text-muted-foreground" />}
                       </Link>
                     );
                   })}
