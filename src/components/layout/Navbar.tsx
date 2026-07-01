@@ -207,19 +207,32 @@ export function Navbar() {
                 </DropdownMenu>
 
                 <Link
-                  to="/opportunities"
-                  className={`text-sm font-medium transition-colors hover:text-b4-teal ${
+                  to={talentReady ? "/opportunities" : "/dashboard"}
+                  onClick={(e) => {
+                    if (!talentReady) e.preventDefault();
+                  }}
+                  aria-disabled={!talentReady}
+                  title={talentLockTitle}
+                  className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 ${
                     location.pathname === "/opportunities" ? "text-b4-teal" : "text-muted-foreground"
-                  }`}
+                  } ${!talentReady ? "opacity-60 cursor-not-allowed" : ""}`}
                 >
                   Opportunities
+                  {!talentReady && <Lock size={12} className="text-muted-foreground" />}
                 </Link>
 
                 <DropdownMenu open={publishOpen} onOpenChange={setPublishOpen}>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="teal" size="sm" className="gap-1">
+                    <Button
+                      variant="teal"
+                      size="sm"
+                      className="gap-1"
+                      disabled={!talentReady}
+                      title={talentLockTitle}
+                    >
                       <Plus size={14} />
                       Publish
+                      {!talentReady && <Lock size={12} />}
                       <ChevronDown
                         size={14}
                         className={`transition-transform duration-200 ${publishOpen ? "rotate-180" : ""}`}
@@ -229,12 +242,33 @@ export function Navbar() {
                   <DropdownMenuContent align="end" className="w-56 mt-2">
                     {publishLinks.map((link) => {
                       const Icon = link.icon;
+                      const linkLocked = link.orgAdminOnly && !isOrgAdmin;
                       return (
-                        <DropdownMenuItem key={link.path} asChild>
-                          <Link to={link.path} className="flex items-start gap-3 cursor-pointer py-2">
+                        <DropdownMenuItem
+                          key={link.path}
+                          asChild
+                          disabled={linkLocked}
+                          onSelect={(e) => {
+                            if (linkLocked) e.preventDefault();
+                          }}
+                        >
+                          <Link
+                            to={linkLocked ? "/organizations" : link.path}
+                            className={`flex items-start gap-3 py-2 ${
+                              linkLocked ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+                            }`}
+                            title={
+                              linkLocked
+                                ? "Locked — become admin of an organization in Organizations"
+                                : undefined
+                            }
+                          >
                             <Icon size={18} className="mt-0.5 text-b4-teal shrink-0" />
-                            <div className="flex flex-col">
-                              <span className="text-sm font-medium text-foreground">{link.name}</span>
+                            <div className="flex flex-col flex-1">
+                              <span className="text-sm font-medium text-foreground inline-flex items-center gap-1">
+                                {link.name}
+                                {linkLocked && <Lock size={12} className="text-muted-foreground" />}
+                              </span>
                               <span className="text-xs text-muted-foreground">{link.desc}</span>
                             </div>
                           </Link>
