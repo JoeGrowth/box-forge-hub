@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
@@ -8,10 +8,13 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, Briefcase, GraduationCap, CalendarDays, Save, RefreshCw, Loader2, Lock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Plus, Trash2, Briefcase, GraduationCap, CalendarDays, Save, RefreshCw, Loader2, Lock, FolderOpen, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { formatDistanceToNow } from "date-fns";
+
 
 type Task = { id: string; label: string; percent: number; locked?: boolean };
 type Charge = { id: string; label: string; amount: number };
@@ -45,6 +48,24 @@ function DistributionBuilder({
   const [tasks, setTasks] = useState<Task[]>(defaultTasks);
   const [people, setPeople] = useState<string[]>(["Person (1)", "Person (2)"]);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState<any[]>([]);
+  const [loadingSaved, setLoadingSaved] = useState(false);
+
+  const fetchSaved = useCallback(async () => {
+    if (!user) return;
+    setLoadingSaved(true);
+    const { data } = await (supabase.from("distribution_records" as any) as any)
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("kind", kind)
+      .order("created_at", { ascending: true });
+    setSaved(data || []);
+    setLoadingSaved(false);
+  }, [user, kind]);
+
+  useEffect(() => {
+    fetchSaved();
+  }, [fetchSaved]);
 
   const chargesTotal = useMemo(() => charges.reduce((s, c) => s + (Number(c.amount) || 0), 0), [charges]);
   const internalPool = Math.max(0, (Number(budget) || 0) - chargesTotal);
@@ -75,9 +96,45 @@ function DistributionBuilder({
     setResetKey((k) => k + 1);
   };
 
+  const loadSaved = (rec: any) => {
+    setTitle(rec.title);
+    setBudget(Number(rec.budget) || 0);
+    setBudgetLabel(rec.budget_label || defaultBudgetLabel);
+    setCharges(Array.isArray(rec.charges) ? rec.charges : []);
+    setTasks(Array.isArray(rec.tasks) ? rec.tasks : []);
+    setPeople(Array.isArray(rec.people) && rec.people.length > 0 ? rec.people : ["Person (1)"]);
+    setResetKey((k) => k + 1);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    toast.info(`Loaded "${rec.title}" (read-only preview — save under a new title to keep changes).`);
+  };
+
+  const deleteSaved = async (rec: any) => {
+    if (!confirm(`Delete distribution "${rec.title}"?`)) return;
+    const { error } = await (supabase.from("distribution_records" as any) as any).delete().eq("id", rec.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Deleted.");
+    fetchSaved();
+  };
+
+  const titleTaken = useMemo(
+    () => saved.some((r) => r.title.trim().toLowerCase() === title.trim().toLowerCase()),
+    [saved, title],
+  );
+
   const handleSave = async () => {
     if (!user) {
       toast.error("Sign in to save distributions.");
+      return;
+    }
+    if (!title.trim()) {
+      toast.error("Mission title is required.");
+      return;
+    }
+    if (titleTaken) {
+      toast.error(`A ${kind} distribution called "${title}" already exists — pick a different title.`);
       return;
     }
     if (totalPercent !== 100) {
@@ -88,7 +145,7 @@ function DistributionBuilder({
     const { error } = await (supabase.from("distribution_records" as any) as any).insert({
       user_id: user.id,
       kind,
-      title,
+      title: title.trim(),
       budget_label: budgetLabel,
       budget,
       charges,
@@ -97,15 +154,73 @@ function DistributionBuilder({
     });
     setSaving(false);
     if (error) {
-      toast.error(error.message);
+      if ((error as any).code === "23505") {
+        toast.error(`A ${kind} distribution called "${title}" already exists.`);
+      } else {
+        toast.error(error.message);
+      }
       return;
     }
     toast.success("Distribution saved.");
+    await fetchSaved();
     resetForm();
   };
 
   return (
     <div className="space-y-6" key={resetKey}>
+      {/* Saved distributions */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-base flex items-center gap-2">
+            <FolderOpen className="w-4 h-4" /> Saved {kind} distributions
+            <Badge variant="secondary" className="ml-1">{saved.length}</Badge>
+          </CardTitle>
+          {loadingSaved && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+        </CardHeader>
+        <CardContent>
+          {saved.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No saved distributions yet. Fill the form below and click <strong>Save distribution</strong>.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-10">#</TableHead>
+                  <TableHead>Title</TableHead>
+                  <TableHead className="text-right">Budget</TableHead>
+                  <TableHead className="text-right">People</TableHead>
+                  <TableHead>Saved</TableHead>
+                  <TableHead className="w-32"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {saved.map((r, i) => (
+                  <TableRow key={r.id}>
+                    <TableCell className="font-mono text-muted-foreground">({i + 1})</TableCell>
+                    <TableCell className="font-medium">{r.title}</TableCell>
+                    <TableCell className="text-right font-mono">{fmt(Number(r.budget))}</TableCell>
+                    <TableCell className="text-right">{Array.isArray(r.people) ? r.people.length : 0}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {r.created_at ? formatDistanceToNow(new Date(r.created_at), { addSuffix: true }) : ""}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex justify-end gap-1">
+                        <Button size="sm" variant="ghost" onClick={() => loadSaved(r)}>
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => deleteSaved(r)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Mission Setup</CardTitle>
@@ -113,7 +228,16 @@ function DistributionBuilder({
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-1.5">
             <Label>Mission title</Label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className={titleTaken ? "border-destructive focus-visible:ring-destructive" : ""}
+            />
+            {titleTaken && (
+              <p className="text-xs text-destructive">
+                A {kind} distribution with this title already exists.
+              </p>
+            )}
           </div>
           <div className="space-y-1.5">
             <Label>{budgetLabel}</Label>
