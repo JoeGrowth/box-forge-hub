@@ -41,11 +41,13 @@ export const ChatFileUpload = ({ userId, onFileUploaded, disabled }: ChatFileUpl
 
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage
+      // Bucket is private — generate a long-lived signed URL for viewers.
+      const { data: signed, error: signedError } = await supabase.storage
         .from("chat-attachments")
-        .getPublicUrl(filePath);
+        .createSignedUrl(filePath, 60 * 60 * 24 * 365);
+      if (signedError || !signed?.signedUrl) throw signedError ?? new Error("Failed to sign URL");
 
-      const fileUrl = urlData.publicUrl;
+      const fileUrl = signed.signedUrl;
       const fileType = file.type.startsWith("image/") ? "image" : "file";
 
       setPreview({ url: fileUrl, name: file.name, type: fileType });
