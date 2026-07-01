@@ -28,6 +28,7 @@ export function DashboardProgress() {
   const [resumeComplete, setResumeComplete] = useState(false);
   const [trackRecordComplete, setTrackRecordComplete] = useState(false);
   const [proTrackComplete, setProTrackComplete] = useState(false);
+  const [hasLearningJourneys, setHasLearningJourneys] = useState(false);
 
 
   const fetchProgress = useCallback(async () => {
