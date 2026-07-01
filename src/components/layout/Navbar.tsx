@@ -370,8 +370,9 @@ export function Navbar() {
 
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="md:hidden py-4 border-t border-border animate-fade-in">
-            <div className="flex flex-col gap-3">
+          <div className="md:hidden py-4 border-t border-border animate-fade-in max-h-[calc(100vh-4rem)] overflow-y-auto overscroll-contain">
+            <div className="flex flex-col gap-3 pb-8">
+
               {!user ? (
                 guestNavLinks.map((link) => (
                   <Link
@@ -483,12 +484,21 @@ export function Navbar() {
                 {!loading &&
                   (user ? (
                     <>
+                      {isAdmin && (
+                        <Button variant="outline" size="sm" asChild>
+                          <Link to="/admin" onClick={() => setIsOpen(false)}>
+                            <Shield size={16} className="mr-1" />
+                            Admin
+                          </Link>
+                        </Button>
+                      )}
                       <Button variant="outline" size="sm" asChild>
                         <Link to="/profile" onClick={() => setIsOpen(false)}>
                           <User size={16} className="mr-1" />
                           Profile
                         </Link>
                       </Button>
+
                       <Button
                         variant="ghost"
                         size="sm"
