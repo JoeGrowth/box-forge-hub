@@ -33,6 +33,7 @@ import {
   Lock,
 } from "lucide-react";
 import { useEngineAccess, type EngineKey } from "@/hooks/useEngineAccess";
+import { useTalentReadiness } from "@/hooks/useTalentReadiness";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { supabase } from "@/integrations/supabase/client";
@@ -53,12 +54,18 @@ const engineLinks: Array<{ name: string; path: string; icon: typeof Briefcase; k
   { name: "Entrepreneurship", path: "/entrepreneurship", icon: Lightbulb, key: "entrepreneurship" },
 ];
 
-const publishLinks = [
-  { name: "Recruiting", path: "/publish-job", icon: Briefcase, desc: "Offer a job" },
+const publishLinks: Array<{
+  name: string;
+  path: string;
+  icon: typeof Briefcase;
+  desc: string;
+  orgAdminOnly?: boolean;
+}> = [
+  { name: "Recruiting", path: "/publish-job", icon: Briefcase, desc: "Offer a job", orgAdminOnly: true },
   { name: "Consulting", path: "/publish-consulting", icon: Handshake, desc: "Create a service" },
   { name: "Launching", path: "/create-idea", icon: Lightbulb, desc: "Start a venture" },
   { name: "Training", path: "/publish-training", icon: GraduationCap, desc: "Submit a training" },
-  { name: "Procuring", path: "/procuring", icon: FileText, desc: "Post a tender" },
+  { name: "Procuring", path: "/procuring", icon: FileText, desc: "Post a tender", orgAdminOnly: true },
 ];
 
 const moreLinks = [
@@ -93,6 +100,10 @@ export function Navbar() {
   const { canAccessBoosting, canAccessScaling, potentialRole } = useUserStatus();
 
   const { engines: engineAccess } = useEngineAccess();
+  const { talentReady, isOrgAdmin, missing: talentMissing } = useTalentReadiness();
+  const talentLockTitle = talentReady
+    ? undefined
+    : `Locked — complete: ${talentMissing.join(", ")}`;
 
   // Hydrate synchronously from localStorage (lazy initializer) so the Admin
   // button is present on first paint when cached — no flash, no layout shift.
@@ -196,19 +207,32 @@ export function Navbar() {
                 </DropdownMenu>
 
                 <Link
-                  to="/opportunities"
-                  className={`text-sm font-medium transition-colors hover:text-b4-teal ${
+                  to={talentReady ? "/opportunities" : "/dashboard"}
+                  onClick={(e) => {
+                    if (!talentReady) e.preventDefault();
+                  }}
+                  aria-disabled={!talentReady}
+                  title={talentLockTitle}
+                  className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 ${
                     location.pathname === "/opportunities" ? "text-b4-teal" : "text-muted-foreground"
-                  }`}
+                  } ${!talentReady ? "opacity-60 cursor-not-allowed" : ""}`}
                 >
                   Opportunities
+                  {!talentReady && <Lock size={12} className="text-muted-foreground" />}
                 </Link>
 
                 <DropdownMenu open={publishOpen} onOpenChange={setPublishOpen}>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="teal" size="sm" className="gap-1">
+                    <Button
+                      variant="teal"
+                      size="sm"
+                      className="gap-1"
+                      disabled={!talentReady}
+                      title={talentLockTitle}
+                    >
                       <Plus size={14} />
                       Publish
+                      {!talentReady && <Lock size={12} />}
                       <ChevronDown
                         size={14}
                         className={`transition-transform duration-200 ${publishOpen ? "rotate-180" : ""}`}
@@ -218,12 +242,33 @@ export function Navbar() {
                   <DropdownMenuContent align="end" className="w-56 mt-2">
                     {publishLinks.map((link) => {
                       const Icon = link.icon;
+                      const linkLocked = link.orgAdminOnly && !isOrgAdmin;
                       return (
-                        <DropdownMenuItem key={link.path} asChild>
-                          <Link to={link.path} className="flex items-start gap-3 cursor-pointer py-2">
+                        <DropdownMenuItem
+                          key={link.path}
+                          asChild
+                          disabled={linkLocked}
+                          onSelect={(e) => {
+                            if (linkLocked) e.preventDefault();
+                          }}
+                        >
+                          <Link
+                            to={linkLocked ? "/organizations" : link.path}
+                            className={`flex items-start gap-3 py-2 ${
+                              linkLocked ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+                            }`}
+                            title={
+                              linkLocked
+                                ? "Locked — become admin of an organization in Organizations"
+                                : undefined
+                            }
+                          >
                             <Icon size={18} className="mt-0.5 text-b4-teal shrink-0" />
-                            <div className="flex flex-col">
-                              <span className="text-sm font-medium text-foreground">{link.name}</span>
+                            <div className="flex flex-col flex-1">
+                              <span className="text-sm font-medium text-foreground inline-flex items-center gap-1">
+                                {link.name}
+                                {linkLocked && <Lock size={12} className="text-muted-foreground" />}
+                              </span>
                               <span className="text-xs text-muted-foreground">{link.desc}</span>
                             </div>
                           </Link>
@@ -366,31 +411,51 @@ export function Navbar() {
                     );
                   })}
                   <Link
-                    to="/opportunities"
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    to={talentReady ? "/opportunities" : "/dashboard"}
+                    onClick={(e) => {
+                      if (!talentReady) e.preventDefault();
+                      setIsOpen(false);
+                    }}
+                    aria-disabled={!talentReady}
+                    title={talentLockTitle}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
                       location.pathname === "/opportunities"
                         ? "bg-muted text-b4-teal"
                         : "text-muted-foreground hover:bg-muted"
-                    }`}
-                    onClick={() => setIsOpen(false)}
+                    } ${!talentReady ? "opacity-60 cursor-not-allowed" : ""}`}
                   >
-                    Opportunities
+                    <span className="flex-1">Opportunities</span>
+                    {!talentReady && <Lock size={12} className="text-muted-foreground" />}
                   </Link>
 
                   <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Publish
+                    Publish {!talentReady && <Lock size={12} className="inline text-muted-foreground" />}
                   </div>
                   {publishLinks.map((link) => {
                     const Icon = link.icon;
+                    const linkLocked = !talentReady || (link.orgAdminOnly && !isOrgAdmin);
+                    const lockReason = !talentReady
+                      ? talentLockTitle
+                      : link.orgAdminOnly && !isOrgAdmin
+                      ? "Locked — become admin of an organization in Organizations"
+                      : undefined;
                     return (
                       <Link
                         key={link.path}
-                        to={link.path}
-                        className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors flex items-center gap-2"
-                        onClick={() => setIsOpen(false)}
+                        to={linkLocked ? "/organizations" : link.path}
+                        onClick={(e) => {
+                          if (linkLocked) e.preventDefault();
+                          setIsOpen(false);
+                        }}
+                        aria-disabled={linkLocked}
+                        title={lockReason}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors flex items-center gap-2 ${
+                          linkLocked ? "opacity-60 cursor-not-allowed" : ""
+                        }`}
                       >
                         <Icon size={16} />
-                        {link.name}
+                        <span className="flex-1">{link.name}</span>
+                        {linkLocked && <Lock size={12} className="text-muted-foreground" />}
                       </Link>
                     );
                   })}
