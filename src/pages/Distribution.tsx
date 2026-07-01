@@ -94,19 +94,25 @@ function DistributionBuilder({
     setCharges(defaultCharges.map((c) => ({ ...c, id: uid() })));
     setTasks(defaultTasks.map((t) => ({ ...t, id: uid() })));
     setPeople(["Person (1)", "Person (2)"]);
+    setEditingId(null);
     setResetKey((k) => k + 1);
   };
 
-  const loadSaved = (rec: any) => {
+  const loadSaved = (rec: any, mode: "view" | "edit" = "view") => {
     setTitle(rec.title);
     setBudget(Number(rec.budget) || 0);
     setBudgetLabel(rec.budget_label || defaultBudgetLabel);
     setCharges(Array.isArray(rec.charges) ? rec.charges : []);
     setTasks(Array.isArray(rec.tasks) ? rec.tasks : []);
     setPeople(Array.isArray(rec.people) && rec.people.length > 0 ? rec.people : ["Person (1)"]);
+    setEditingId(mode === "edit" ? rec.id : null);
     setResetKey((k) => k + 1);
     window.scrollTo({ top: 0, behavior: "smooth" });
-    toast.info(`Loaded "${rec.title}" (read-only preview — save under a new title to keep changes).`);
+    toast.info(
+      mode === "edit"
+        ? `Editing "${rec.title}" — changes will overwrite this record.`
+        : `Loaded "${rec.title}" — save under a new title to keep changes.`,
+    );
   };
 
   const deleteSaved = async (rec: any) => {
