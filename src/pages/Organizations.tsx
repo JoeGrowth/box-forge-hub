@@ -140,8 +140,11 @@ export default function Organizations() {
               </Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
+
+
 
       {loading ? (
         <div className="text-sm text-muted-foreground">Loading…</div>
