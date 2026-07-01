@@ -370,8 +370,9 @@ export function Navbar() {
 
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="md:hidden py-4 border-t border-border animate-fade-in">
-            <div className="flex flex-col gap-3">
+          <div className="md:hidden py-4 border-t border-border animate-fade-in max-h-[calc(100vh-4rem)] overflow-y-auto overscroll-contain">
+            <div className="flex flex-col gap-3 pb-8">
+
               {!user ? (
                 guestNavLinks.map((link) => (
                   <Link
