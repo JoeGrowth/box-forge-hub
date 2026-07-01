@@ -142,6 +142,7 @@ export default function Organizations() {
           </DialogContent>
         </Dialog>
       </div>
+      </div>
 
       {loading ? (
         <div className="text-sm text-muted-foreground">Loading…</div>
