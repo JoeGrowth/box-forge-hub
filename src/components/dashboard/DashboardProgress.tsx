@@ -28,6 +28,7 @@ export function DashboardProgress() {
   const [resumeComplete, setResumeComplete] = useState(false);
   const [trackRecordComplete, setTrackRecordComplete] = useState(false);
   const [proTrackComplete, setProTrackComplete] = useState(false);
+  const [hasLearningJourneys, setHasLearningJourneys] = useState(false);
 
 
   const fetchProgress = useCallback(async () => {
@@ -106,6 +107,7 @@ export function DashboardProgress() {
     });
 
     setJourneys(journeyMap);
+    setHasLearningJourneys((learningJourneys?.length ?? 0) > 0);
   }, [user, onboardingState]);
 
   useEffect(() => {
@@ -212,11 +214,11 @@ export function DashboardProgress() {
     },
     {
       key: "certify",
-      title: "Start getting certified",
+      title: "Getting Certified",
       description: "Pick a certification path — Initiator, Co-Builder, Finance or Security — and earn your badges.",
       icon: Award,
       done: false,
-      cta: { label: "Explore", to: "/journey" },
+      cta: { label: hasLearningJourneys ? "Continue" : "Start", to: "/journey" },
     },
   ];
 
@@ -281,43 +283,6 @@ export function DashboardProgress() {
             );
           })}
 
-          {journeys.map((journey, i) => {
-            const done = journey.status === "approved";
-            return (
-              <div
-                key={i}
-                className={`group relative flex items-center gap-4 p-4 rounded-xl border transition-all ${
-                  done
-                    ? "bg-b4-teal/5 border-b4-teal/30"
-                    : "bg-muted/40 border-border/60 hover:border-b4-teal/40 hover:bg-muted/60"
-                }`}
-              >
-                <div
-                  className={`flex items-center justify-center w-9 h-9 rounded-full flex-shrink-0 transition-colors ${
-                    done
-                      ? "bg-b4-teal text-white"
-                      : "bg-background border border-border text-muted-foreground group-hover:border-b4-teal/50 group-hover:text-b4-teal"
-                  }`}
-                >
-                  {done ? <CheckCircle2 className="w-5 h-5" /> : <Award className="w-4 h-4" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium">{journey.title}</span>
-                    {getStatusBadge(journey.status)}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Phase {journey.currentPhase} of {journey.totalPhases}
-                  </div>
-                </div>
-                {!done && (
-                  <Button size="sm" variant="outline" asChild className="min-w-[110px] flex-shrink-0">
-                    <Link to={journey.link}>Continue</Link>
-                  </Button>
-                )}
-              </div>
-            );
-          })}
         </div>
 
 
