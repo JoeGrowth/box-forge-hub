@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Briefcase, GraduationCap, CalendarDays, Save, RefreshCw, Loader2, Lock, FolderOpen, Eye } from "lucide-react";
+import { Plus, Trash2, Briefcase, GraduationCap, CalendarDays, Save, RefreshCw, Loader2, Lock, FolderOpen, Eye, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -50,6 +50,7 @@ function DistributionBuilder({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState<any[]>([]);
   const [loadingSaved, setLoadingSaved] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const fetchSaved = useCallback(async () => {
     if (!user) return;
@@ -93,19 +94,25 @@ function DistributionBuilder({
     setCharges(defaultCharges.map((c) => ({ ...c, id: uid() })));
     setTasks(defaultTasks.map((t) => ({ ...t, id: uid() })));
     setPeople(["Person (1)", "Person (2)"]);
+    setEditingId(null);
     setResetKey((k) => k + 1);
   };
 
-  const loadSaved = (rec: any) => {
+  const loadSaved = (rec: any, mode: "view" | "edit" = "view") => {
     setTitle(rec.title);
     setBudget(Number(rec.budget) || 0);
     setBudgetLabel(rec.budget_label || defaultBudgetLabel);
     setCharges(Array.isArray(rec.charges) ? rec.charges : []);
     setTasks(Array.isArray(rec.tasks) ? rec.tasks : []);
     setPeople(Array.isArray(rec.people) && rec.people.length > 0 ? rec.people : ["Person (1)"]);
+    setEditingId(mode === "edit" ? rec.id : null);
     setResetKey((k) => k + 1);
     window.scrollTo({ top: 0, behavior: "smooth" });
-    toast.info(`Loaded "${rec.title}" (read-only preview — save under a new title to keep changes).`);
+    toast.info(
+      mode === "edit"
+        ? `Editing "${rec.title}" — changes will overwrite this record.`
+        : `Loaded "${rec.title}" — save under a new title to keep changes.`,
+    );
   };
 
   const deleteSaved = async (rec: any) => {
@@ -120,8 +127,13 @@ function DistributionBuilder({
   };
 
   const titleTaken = useMemo(
-    () => saved.some((r) => r.title.trim().toLowerCase() === title.trim().toLowerCase()),
-    [saved, title],
+    () =>
+      saved.some(
+        (r) =>
+          r.id !== editingId &&
+          r.title.trim().toLowerCase() === title.trim().toLowerCase(),
+      ),
+    [saved, title, editingId],
   );
 
   const handleSave = async () => {
@@ -142,7 +154,7 @@ function DistributionBuilder({
       return;
     }
     setSaving(true);
-    const { error } = await (supabase.from("distribution_records" as any) as any).insert({
+    const payload = {
       user_id: user.id,
       kind,
       title: title.trim(),
@@ -151,7 +163,12 @@ function DistributionBuilder({
       charges,
       tasks,
       people,
-    });
+    };
+    const { error } = editingId
+      ? await (supabase.from("distribution_records" as any) as any)
+          .update(payload)
+          .eq("id", editingId)
+      : await (supabase.from("distribution_records" as any) as any).insert(payload);
     setSaving(false);
     if (error) {
       if ((error as any).code === "23505") {
@@ -161,7 +178,7 @@ function DistributionBuilder({
       }
       return;
     }
-    toast.success("Distribution saved.");
+    toast.success(editingId ? "Distribution updated." : "Distribution saved.");
     await fetchSaved();
     resetForm();
   };
@@ -204,10 +221,13 @@ function DistributionBuilder({
                     </TableCell>
                     <TableCell>
                       <div className="flex justify-end gap-1">
-                        <Button size="sm" variant="ghost" onClick={() => loadSaved(r)}>
+                        <Button size="sm" variant="ghost" onClick={() => loadSaved(r, "view")} title="View">
                           <Eye className="w-4 h-4" />
                         </Button>
-                        <Button size="sm" variant="ghost" onClick={() => deleteSaved(r)}>
+                        <Button size="sm" variant="ghost" onClick={() => loadSaved(r, "edit")} title="Edit">
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => deleteSaved(r)} title="Delete">
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
@@ -449,13 +469,18 @@ function DistributionBuilder({
         </CardContent>
       </Card>
 
-      <div className="flex flex-wrap gap-3 justify-end sticky bottom-4 bg-background/80 backdrop-blur p-3 rounded-xl border border-border">
+      <div className="flex flex-wrap items-center gap-3 justify-end sticky bottom-4 bg-background/80 backdrop-blur p-3 rounded-xl border border-border">
+        {editingId && (
+          <Badge variant="outline" className="mr-auto">
+            <Pencil className="w-3 h-3 mr-1" /> Editing existing distribution
+          </Badge>
+        )}
         <Button variant="outline" onClick={resetForm} disabled={saving}>
-          <RefreshCw className="w-4 h-4 mr-1" /> Start new distribution
+          <RefreshCw className="w-4 h-4 mr-1" /> {editingId ? "Cancel edit" : "Start new distribution"}
         </Button>
         <Button onClick={handleSave} disabled={saving}>
           {saving ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Save className="w-4 h-4 mr-1" />}
-          Save distribution
+          {editingId ? "Update distribution" : "Save distribution"}
         </Button>
       </div>
     </div>
