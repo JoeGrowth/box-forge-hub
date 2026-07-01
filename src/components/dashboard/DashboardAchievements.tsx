@@ -129,7 +129,7 @@ export function DashboardAchievements() {
       </CardHeader>
       <CardContent>
         <TooltipProvider delayDuration={150}>
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
             {achievements.map((achievement, i) => (
               <Tooltip key={i}>
                 <TooltipTrigger asChild>
