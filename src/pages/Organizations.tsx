@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Building2, Plus, Shield, Eye, Pencil, ArrowRight, Trash2 } from "lucide-react";
+import { Building2, Plus, Shield, Eye, Pencil, ArrowRight, Trash2, Cog } from "lucide-react";
 
 const slugify = (s: string) =>
   s.toLowerCase().trim()
