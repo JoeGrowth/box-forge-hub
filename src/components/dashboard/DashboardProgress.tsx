@@ -225,11 +225,11 @@ export function DashboardProgress() {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-3">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
             Shape your talent
           </CardTitle>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-xs sm:text-sm text-muted-foreground flex-shrink-0">
             {overallProgress()}% ready
           </span>
         </div>
@@ -241,40 +241,47 @@ export function DashboardProgress() {
         </p>
         <Progress value={overallProgress()} className="h-2" />
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 px-3 sm:px-6">
         <div className="space-y-3">
           {steps.map((step) => {
             const Icon = step.icon;
             return (
               <div
                 key={step.key}
-                className={`group relative flex items-center gap-4 p-4 rounded-xl border transition-all ${
+                className={`group relative flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl border transition-all ${
                   step.done
                     ? "bg-b4-teal/5 border-b4-teal/30"
                     : "bg-muted/40 border-border/60 hover:border-b4-teal/40 hover:bg-muted/60"
                 }`}
               >
-                <div
-                  className={`flex items-center justify-center w-9 h-9 rounded-full flex-shrink-0 transition-colors ${
-                    step.done
-                      ? "bg-b4-teal text-white"
-                      : "bg-background border border-border text-muted-foreground group-hover:border-b4-teal/50 group-hover:text-b4-teal"
-                  }`}
-                >
-                  {step.done ? (
-                    <CheckCircle2 className="w-5 h-5" />
-                  ) : Icon ? (
-                    <Icon className="w-4 h-4" />
-                  ) : (
-                    <Circle className="w-4 h-4" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium">{step.title}</div>
-                  <div className="text-sm text-muted-foreground">{step.description}</div>
+                <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+                  <div
+                    className={`flex items-center justify-center w-9 h-9 rounded-full flex-shrink-0 transition-colors ${
+                      step.done
+                        ? "bg-b4-teal text-white"
+                        : "bg-background border border-border text-muted-foreground group-hover:border-b4-teal/50 group-hover:text-b4-teal"
+                    }`}
+                  >
+                    {step.done ? (
+                      <CheckCircle2 className="w-5 h-5" />
+                    ) : Icon ? (
+                      <Icon className="w-4 h-4" />
+                    ) : (
+                      <Circle className="w-4 h-4" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-sm sm:text-base">{step.title}</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground break-words">{step.description}</div>
+                  </div>
                 </div>
                 {!step.done && (
-                  <Button size="sm" variant="outline" asChild className="min-w-[110px] flex-shrink-0">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    asChild
+                    className="w-full sm:w-auto sm:min-w-[110px] flex-shrink-0"
+                  >
                     <Link to={step.cta.to}>{step.cta.label}</Link>
                   </Button>
                 )}
