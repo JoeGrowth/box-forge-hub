@@ -221,10 +221,13 @@ function DistributionBuilder({
                     </TableCell>
                     <TableCell>
                       <div className="flex justify-end gap-1">
-                        <Button size="sm" variant="ghost" onClick={() => loadSaved(r)}>
+                        <Button size="sm" variant="ghost" onClick={() => loadSaved(r, "view")} title="View">
                           <Eye className="w-4 h-4" />
                         </Button>
-                        <Button size="sm" variant="ghost" onClick={() => deleteSaved(r)}>
+                        <Button size="sm" variant="ghost" onClick={() => loadSaved(r, "edit")} title="Edit">
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => deleteSaved(r)} title="Delete">
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
