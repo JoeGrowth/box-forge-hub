@@ -469,13 +469,18 @@ function DistributionBuilder({
         </CardContent>
       </Card>
 
-      <div className="flex flex-wrap gap-3 justify-end sticky bottom-4 bg-background/80 backdrop-blur p-3 rounded-xl border border-border">
+      <div className="flex flex-wrap items-center gap-3 justify-end sticky bottom-4 bg-background/80 backdrop-blur p-3 rounded-xl border border-border">
+        {editingId && (
+          <Badge variant="outline" className="mr-auto">
+            <Pencil className="w-3 h-3 mr-1" /> Editing existing distribution
+          </Badge>
+        )}
         <Button variant="outline" onClick={resetForm} disabled={saving}>
-          <RefreshCw className="w-4 h-4 mr-1" /> Start new distribution
+          <RefreshCw className="w-4 h-4 mr-1" /> {editingId ? "Cancel edit" : "Start new distribution"}
         </Button>
         <Button onClick={handleSave} disabled={saving}>
           {saving ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Save className="w-4 h-4 mr-1" />}
-          Save distribution
+          {editingId ? "Update distribution" : "Save distribution"}
         </Button>
       </div>
     </div>
