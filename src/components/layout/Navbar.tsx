@@ -67,12 +67,9 @@ const moreLinks = [
   { name: "Advisory", path: "/advisory", icon: Compass },
   { name: "Organizations", path: "/organizations", icon: Building2 },
   { name: "Brand Identity", path: "/brand-identity", icon: Sparkles },
-  { name: "Track", path: "/track", icon: Activity },
   { name: "Checklist", path: "/checklist", icon: ListChecks },
-  { name: "Ops", path: "/opsmanagement", icon: Building2 },
-  { name: "Structuring", path: "/3S", icon: BarChart3 },
   { name: "Declaration", path: "/declaration", icon: FileText },
-  { name: "Distribution per Consulting Mission", path: "/consultingmanagement", icon: Handshake },
+  { name: "Distribution", path: "/distribution", icon: BarChart3 },
   { name: "Distribution per Training Mission", path: "/trainingmanagement", icon: GraduationCap },
 ];
 
