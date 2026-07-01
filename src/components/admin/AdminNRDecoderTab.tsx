@@ -1,3 +1,4 @@
+import { sanitizeError } from "@/lib/errorHandler";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -182,7 +183,7 @@ export const AdminNRDecoderTab = () => {
       console.error("Failed to update:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to update submission",
+        description: sanitizeError(error) || "Failed to update submission",
         variant: "destructive",
       });
     } finally {
@@ -238,7 +239,7 @@ export const AdminNRDecoderTab = () => {
       console.error("Failed to start chat:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to start chat",
+        description: sanitizeError(error) || "Failed to start chat",
         variant: "destructive",
       });
     }

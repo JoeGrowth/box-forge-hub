@@ -1,3 +1,4 @@
+import { sanitizeError } from "@/lib/errorHandler";
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -279,7 +280,7 @@ export function EntrepreneurJourney({
     } catch (error: any) {
       toast({
         title: "Error saving progress",
-        description: error.message,
+        description: sanitizeError(error),
         variant: "destructive",
       });
     } finally {
@@ -299,7 +300,7 @@ export function EntrepreneurJourney({
     } catch (error: any) {
       toast({
         title: "Error saving",
-        description: error.message,
+        description: sanitizeError(error),
         variant: "destructive",
       });
     } finally {

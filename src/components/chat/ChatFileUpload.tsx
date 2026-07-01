@@ -1,3 +1,4 @@
+import { sanitizeError } from "@/lib/errorHandler";
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Paperclip, X, FileText, Image as ImageIcon, Loader2 } from "lucide-react";
@@ -56,7 +57,7 @@ export const ChatFileUpload = ({ userId, onFileUploaded, disabled }: ChatFileUpl
       console.error("Upload error:", error);
       toast({
         title: "Upload failed",
-        description: error.message || "Failed to upload file",
+        description: sanitizeError(error) || "Failed to upload file",
         variant: "destructive",
       });
     } finally {
