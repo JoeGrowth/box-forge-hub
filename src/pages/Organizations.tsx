@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Building2, Plus, Shield, Eye, Pencil, ArrowRight, Trash2 } from "lucide-react";
+import { Building2, Plus, Shield, Eye, Pencil, ArrowRight, Trash2, Cog } from "lucide-react";
 
 const slugify = (s: string) =>
   s.toLowerCase().trim()
@@ -85,10 +85,14 @@ export default function Organizations() {
           </p>
         </div>
 
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button><Plus className="w-4 h-4 mr-1" /> New organization</Button>
-          </DialogTrigger>
+        <div className="flex items-center gap-2 shrink-0">
+          <Link to="/opsmanagement">
+            <Button variant="outline"><Cog className="w-4 h-4 mr-1" /> Ops management</Button>
+          </Link>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button><Plus className="w-4 h-4 mr-1" /> New organization</Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Create an organization</DialogTitle>
