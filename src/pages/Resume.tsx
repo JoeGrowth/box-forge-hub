@@ -212,7 +212,7 @@ const Resume = () => {
     };
     
     fetchVersions();
-  }, [user]);
+  }, [user?.id]);
 
   // Fetch profile data — keyed on user.id (stable) so tab-switch auth token
   // refreshes don't re-run this and clobber unsaved edits.
