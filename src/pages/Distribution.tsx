@@ -50,6 +50,7 @@ function DistributionBuilder({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState<any[]>([]);
   const [loadingSaved, setLoadingSaved] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const fetchSaved = useCallback(async () => {
     if (!user) return;
