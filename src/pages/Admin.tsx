@@ -257,45 +257,45 @@ const Admin = () => {
 
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-10 mb-8">
-                <TabsTrigger value="analytics" className="flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4" />
+              <TabsList className="mb-8 grid h-auto w-full grid-cols-2 gap-2 p-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-10">
+                <TabsTrigger value="analytics" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+                  <BarChart3 className="h-4 w-4 shrink-0" />
                   Analytics
                 </TabsTrigger>
-                <TabsTrigger value="applications" className="flex items-center gap-2">
-                  <FileText className="w-4 h-4" />
+                <TabsTrigger value="applications" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+                  <FileText className="h-4 w-4 shrink-0" />
                   Applications
                 </TabsTrigger>
-                <TabsTrigger value="approvals" className="flex items-center gap-2">
-                  <UserCheck className="w-4 h-4" />
+                <TabsTrigger value="approvals" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+                  <UserCheck className="h-4 w-4 shrink-0" />
                   To check
                 </TabsTrigger>
-                <TabsTrigger value="opportunities" className="flex items-center gap-2">
-                  <Rocket className="w-4 h-4" />
+                <TabsTrigger value="opportunities" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+                  <Rocket className="h-4 w-4 shrink-0" />
                   Opportunities
                 </TabsTrigger>
-                <TabsTrigger value="learning" className="flex items-center gap-2">
-                  <GraduationCap className="w-4 h-4" />
+                <TabsTrigger value="learning" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+                  <GraduationCap className="h-4 w-4 shrink-0" />
                   Learning
                 </TabsTrigger>
-                <TabsTrigger value="trainings" className="flex items-center gap-2">
-                  <GraduationCap className="w-4 h-4" />
+                <TabsTrigger value="trainings" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+                  <GraduationCap className="h-4 w-4 shrink-0" />
                   Trainings
                 </TabsTrigger>
-                <TabsTrigger value="journeys" className="flex items-center gap-2">
-                  <ClipboardList className="w-4 h-4" />
+                <TabsTrigger value="journeys" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+                  <ClipboardList className="h-4 w-4 shrink-0" />
                   Journeys
                 </TabsTrigger>
-                <TabsTrigger value="decoder" className="flex items-center gap-2">
-                  <Brain className="w-4 h-4" />
+                <TabsTrigger value="decoder" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+                  <Brain className="h-4 w-4 shrink-0" />
                   NR Decoder
                 </TabsTrigger>
-                <TabsTrigger value="users" className="flex items-center gap-2">
-                  <Users className="w-4 h-4" />
+                <TabsTrigger value="users" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+                  <Users className="h-4 w-4 shrink-0" />
                   Users
                 </TabsTrigger>
-                <TabsTrigger value="notifications" className="flex items-center gap-2">
-                  <Bell className="w-4 h-4" />
+                <TabsTrigger value="notifications" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+                  <Bell className="h-4 w-4 shrink-0" />
                   Notifications
                 </TabsTrigger>
               </TabsList>
