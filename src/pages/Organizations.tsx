@@ -103,58 +103,56 @@ export default function Organizations() {
             <DialogTrigger asChild>
               <Button><Plus className="w-4 h-4 mr-1" /> New organization</Button>
             </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create an organization</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-3">
-              <div>
-                <Label>Name</Label>
-                <Input
-                  value={name}
-                  onChange={(e) => { setName(e.target.value); if (!slug) setSlug(slugify(e.target.value)); }}
-                  placeholder="Elspace"
-                />
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create an organization</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3">
+                <div>
+                  <Label>Name</Label>
+                  <Input
+                    value={name}
+                    onChange={(e) => { setName(e.target.value); if (!slug) setSlug(slugify(e.target.value)); }}
+                    placeholder="Elspace"
+                  />
+                </div>
+                <div>
+                  <Label>Slug</Label>
+                  <Input value={slug} onChange={(e) => setSlug(slugify(e.target.value))} placeholder="elspace" />
+                  <p className="text-xs text-muted-foreground mt-1">Used in URLs: /org/{slug || "your-slug"}</p>
+                </div>
+                <div>
+                  <Label>Type</Label>
+                  <Select value={type} onValueChange={setType}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="company">Company</SelectItem>
+                      <SelectItem value="ministry">Ministry</SelectItem>
+                      <SelectItem value="ngo">NGO</SelectItem>
+                      <SelectItem value="startup">Startup</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Website (optional)</Label>
+                  <Input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://elspace.io" />
+                </div>
+                <div>
+                  <Label>Description (optional)</Label>
+                  <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
+                </div>
               </div>
-              <div>
-                <Label>Slug</Label>
-                <Input value={slug} onChange={(e) => setSlug(slugify(e.target.value))} placeholder="elspace" />
-                <p className="text-xs text-muted-foreground mt-1">Used in URLs: /org/{slug || "your-slug"}</p>
-              </div>
-              <div>
-                <Label>Type</Label>
-                <Select value={type} onValueChange={setType}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="company">Company</SelectItem>
-                    <SelectItem value="ministry">Ministry</SelectItem>
-                    <SelectItem value="ngo">NGO</SelectItem>
-                    <SelectItem value="startup">Startup</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Website (optional)</Label>
-                <Input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://elspace.io" />
-              </div>
-              <div>
-                <Label>Description (optional)</Label>
-                <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-              <Button onClick={create} disabled={saving || !name.trim()}>
-                {saving ? "Creating…" : "Create organization"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+                <Button onClick={create} disabled={saving || !name.trim()}>
+                  {saving ? "Creating…" : "Create organization"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
           </Dialog>
         </div>
       </div>
-
-
 
       {loading ? (
         <div className="text-sm text-muted-foreground">Loading…</div>
@@ -186,57 +184,59 @@ export default function Organizations() {
           ) : (
             <div className="grid sm:grid-cols-2 gap-4">
               {filtered.map(({ organization: o, role }) => {
-            const RoleIcon = ROLE_ICON[role];
-            const canDelete = role === "admin";
-            const handleDelete = async (e: React.MouseEvent) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (!confirm(`Delete "${o.name}"? This removes the organization, its memberships, and unlinks its opportunities. This cannot be undone.`)) return;
-              const { error } = await supabase.from("organizations").delete().eq("id", o.id);
-              if (error) {
-                toast({ title: "Could not delete organization", description: error.message, variant: "destructive" });
-                return;
-              }
-              toast({ title: `Deleted "${o.name}"` });
-              await reload();
-            };
-            return (
-              <Link
-                key={o.id}
-                to={`/org/${o.slug}`}
-                className="rounded-xl border border-border bg-card p-5 hover:border-primary/40 hover:shadow-sm transition"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <h3 className="font-semibold text-foreground truncate">{o.name}</h3>
-                    <p className="text-xs text-muted-foreground capitalize">{o.type}</p>
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <Badge className={ROLE_COLOR[role]}>
-                      <RoleIcon className="w-3 h-3 mr-1" /> {role}
-                    </Badge>
-                    {canDelete && (
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                        onClick={handleDelete}
-                        aria-label={`Delete ${o.name}`}
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
+                const RoleIcon = ROLE_ICON[role];
+                const canDelete = role === "admin";
+                const handleDelete = async (e: React.MouseEvent) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!confirm(`Delete "${o.name}"? This removes the organization, its memberships, and unlinks its opportunities. This cannot be undone.`)) return;
+                  const { error } = await supabase.from("organizations").delete().eq("id", o.id);
+                  if (error) {
+                    toast({ title: "Could not delete organization", description: error.message, variant: "destructive" });
+                    return;
+                  }
+                  toast({ title: `Deleted "${o.name}"` });
+                  await reload();
+                };
+                return (
+                  <Link
+                    key={o.id}
+                    to={`/org/${o.slug}`}
+                    className="rounded-xl border border-border bg-card p-5 hover:border-primary/40 hover:shadow-sm transition"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <h3 className="font-semibold text-foreground truncate">{o.name}</h3>
+                        <p className="text-xs text-muted-foreground capitalize">{o.type}</p>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Badge className={ROLE_COLOR[role]}>
+                          <RoleIcon className="w-3 h-3 mr-1" /> {role}
+                        </Badge>
+                        {canDelete && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                            onClick={handleDelete}
+                            aria-label={`Delete ${o.name}`}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    {o.description && (
+                      <p className="text-sm text-muted-foreground mt-3 line-clamp-2">{o.description}</p>
                     )}
-                  </div>
-                </div>
-                {o.description && (
-                  <p className="text-sm text-muted-foreground mt-3 line-clamp-2">{o.description}</p>
-                )}
-                <div className="flex items-center justify-end mt-4 text-xs text-primary">
-                  Open <ArrowRight className="w-3 h-3 ml-1" />
-                </div>
-              </Link>
-            );
-          })}
+                    <div className="flex items-center justify-end mt-4 text-xs text-primary">
+                      Open <ArrowRight className="w-3 h-3 ml-1" />
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>
