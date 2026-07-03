@@ -185,6 +185,16 @@ export default function OrganizationPage() {
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-bold">{org.name}</h1>
               <Badge variant="outline" className="capitalize">{org.type}</Badge>
+              {(() => {
+                const stage = (org.lifecycle_stage ?? "venture") as LifecycleStage;
+                const meta = STAGE_META[stage];
+                const I = meta.icon;
+                return (
+                  <Badge variant="outline" className={meta.className}>
+                    <I className="w-3 h-3 mr-1" /> {meta.label}
+                  </Badge>
+                );
+              })()}
               {role && (
                 <Badge className={ROLE_COLOR[role]}>
                   {(() => { const I = ROLE_ICON[role]; return <I className="w-3 h-3 mr-1" />; })()}
@@ -199,6 +209,31 @@ export default function OrganizationPage() {
                 {org.website} <ExternalLink className="w-3 h-3 ml-1" />
               </a>
             )}
+            {canAdmin && (
+              <div className="mt-3 flex items-center gap-2 flex-wrap">
+                <Label className="text-xs text-muted-foreground">Lifecycle stage:</Label>
+                <Select
+                  value={(org.lifecycle_stage ?? "venture") as string}
+                  onValueChange={async (v) => {
+                    const { error } = await supabase
+                      .from("organizations")
+                      .update({ lifecycle_stage: v } as any)
+                      .eq("id", org.id);
+                    if (error) toast({ title: "Update failed", description: error.message, variant: "destructive" });
+                    else { toast({ title: `Stage set to ${STAGE_META[v as LifecycleStage].label}` }); window.location.reload(); }
+                  }}
+                >
+                  <SelectTrigger className="h-8 w-44"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="venture">Venture</SelectItem>
+                    <SelectItem value="business">Business (first paying customer)</SelectItem>
+                    <SelectItem value="startup">Startup (searching repeatability)</SelectItem>
+                    <SelectItem value="mature">Mature company</SelectItem>
+                  </SelectContent>
+                </Select>
+                <span className="text-xs text-muted-foreground">Auto-upgrades to Business when a declaration mission is marked paid.</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -208,9 +243,11 @@ export default function OrganizationPage() {
           <TabsTrigger value="jobs"><Briefcase className="w-3 h-3 mr-1" /> Jobs ({jobs.length})</TabsTrigger>
           <TabsTrigger value="tenders"><FileText className="w-3 h-3 mr-1" /> Tenders ({tenders.length})</TabsTrigger>
           <TabsTrigger value="declaration"><ClipboardList className="w-3 h-3 mr-1" /> Declaration ({declarations.length})</TabsTrigger>
+          <TabsTrigger value="legal"><Scale className="w-3 h-3 mr-1" /> Legal ({legalDocs.length})</TabsTrigger>
           <TabsTrigger value="members"><Users className="w-3 h-3 mr-1" /> Members ({members.length})</TabsTrigger>
           <TabsTrigger value="distribution"><PieChart className="w-3 h-3 mr-1" /> Distribution</TabsTrigger>
         </TabsList>
+
 
         {/* JOBS */}
         <TabsContent value="jobs" className="space-y-3">
