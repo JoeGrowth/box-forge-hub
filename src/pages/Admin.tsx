@@ -262,37 +262,37 @@ const Admin = () => {
                   <BarChart3 className="h-4 w-4 shrink-0" />
                   Analytics
                 </TabsTrigger>
-                <TabsTrigger value="applications" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
-                  <FileText className="h-4 w-4 shrink-0" />
-                  Applications
-                </TabsTrigger>
-                <TabsTrigger value="approvals" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
-                  <UserCheck className="h-4 w-4 shrink-0" />
-                  To check
-                </TabsTrigger>
-                <TabsTrigger value="opportunities" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
-                  <Rocket className="h-4 w-4 shrink-0" />
-                  Opportunities
-                </TabsTrigger>
-                <TabsTrigger value="learning" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
-                  <GraduationCap className="h-4 w-4 shrink-0" />
-                  Learning
-                </TabsTrigger>
-                <TabsTrigger value="trainings" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
-                  <GraduationCap className="h-4 w-4 shrink-0" />
-                  Trainings
-                </TabsTrigger>
-                <TabsTrigger value="journeys" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
-                  <ClipboardList className="h-4 w-4 shrink-0" />
-                  Journeys
+                <TabsTrigger value="users" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+                  <Users className="h-4 w-4 shrink-0" />
+                  Users
                 </TabsTrigger>
                 <TabsTrigger value="decoder" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
                   <Brain className="h-4 w-4 shrink-0" />
                   NR Decoder
                 </TabsTrigger>
-                <TabsTrigger value="users" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
-                  <Users className="h-4 w-4 shrink-0" />
-                  Users
+                <TabsTrigger value="approvals" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+                  <UserCheck className="h-4 w-4 shrink-0" />
+                  To check
+                </TabsTrigger>
+                <TabsTrigger value="learning" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+                  <GraduationCap className="h-4 w-4 shrink-0" />
+                  Learning
+                </TabsTrigger>
+                <TabsTrigger value="opportunities" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+                  <Rocket className="h-4 w-4 shrink-0" />
+                  Opportunities
+                </TabsTrigger>
+                <TabsTrigger value="journeys" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+                  <ClipboardList className="h-4 w-4 shrink-0" />
+                  Journeys
+                </TabsTrigger>
+                <TabsTrigger value="trainings" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+                  <GraduationCap className="h-4 w-4 shrink-0" />
+                  Trainings
+                </TabsTrigger>
+                <TabsTrigger value="applications" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+                  <FileText className="h-4 w-4 shrink-0" />
+                  Applications
                 </TabsTrigger>
                 <TabsTrigger value="notifications" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
                   <Bell className="h-4 w-4 shrink-0" />
