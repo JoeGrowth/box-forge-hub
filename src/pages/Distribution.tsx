@@ -32,17 +32,20 @@ const fmt = (n: number) =>
 
 function DistributionBuilder({
   kind,
+  kindLabel,
   defaultTitle,
   defaultBudgetLabel,
   defaultTasks,
   defaultCharges,
 }: {
   kind: Kind;
+  kindLabel?: string;
   defaultTitle: string;
   defaultBudgetLabel: string;
   defaultTasks: Task[];
   defaultCharges: Charge[];
 }) {
+  const label = kindLabel ?? kind;
   const { user } = useAuth();
   const [resetKey, setResetKey] = useState(0);
   const [title, setTitle] = useState(defaultTitle);
@@ -150,7 +153,7 @@ function DistributionBuilder({
       return;
     }
     if (titleTaken) {
-      toast.error(`A ${kind} distribution called "${title}" already exists — pick a different title.`);
+      toast.error(`A ${label} distribution called "${title}" already exists — pick a different title.`);
       return;
     }
     if (totalPercent !== 100) {
@@ -176,7 +179,7 @@ function DistributionBuilder({
     setSaving(false);
     if (error) {
       if ((error as any).code === "23505") {
-        toast.error(`A ${kind} distribution called "${title}" already exists.`);
+        toast.error(`A ${label} distribution called "${title}" already exists.`);
       } else {
         toast.error(error.message);
       }
@@ -193,7 +196,7 @@ function DistributionBuilder({
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
-            <FolderOpen className="w-4 h-4" /> Saved {kind} distributions
+            <FolderOpen className="w-4 h-4" /> Saved {label} distributions
             <Badge variant="secondary" className="ml-1">{saved.length}</Badge>
           </CardTitle>
           {loadingSaved && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
@@ -259,7 +262,7 @@ function DistributionBuilder({
             />
             {titleTaken && (
               <p className="text-xs text-destructive">
-                A {kind} distribution with this title already exists.
+                A {label} distribution with this title already exists.
               </p>
             )}
           </div>
@@ -779,23 +782,59 @@ function EntityCategories({ entityId, entityName }: { entityId: string; entityNa
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <div className="inline-flex flex-wrap items-center gap-1 rounded-md bg-muted p-1">
-          {cats.map((c) => (
-            <button
-              key={c.id}
-              onClick={() => setActiveCatId(c.id)}
-              onDoubleClick={() => { setRenamingId(c.id); setRenameValue(c.name); }}
-              className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-sm text-sm font-medium transition ${
-                activeCatId === c.id ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-              }`}
-              title="Double-click to rename"
-            >
-              {c.name}
-            </button>
-          ))}
+          {cats.map((c) => {
+            const isActive = activeCatId === c.id;
+            const isRenaming = renamingId === c.id;
+            return (
+              <div
+                key={c.id}
+                className={`inline-flex items-center gap-1 px-2 py-1 rounded-sm text-sm font-medium transition ${
+                  isActive ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
+                }`}
+              >
+                {isRenaming ? (
+                  <Input
+                    autoFocus
+                    value={renameValue}
+                    onChange={(e) => setRenameValue(e.target.value)}
+                    onBlur={commitRename}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") commitRename();
+                      if (e.key === "Escape") { setRenamingId(null); setRenameValue(""); }
+                    }}
+                    className="h-7 py-0 px-2 w-40"
+                  />
+                ) : (
+                  <button
+                    onClick={() => {
+                      if (isActive) { setRenamingId(c.id); setRenameValue(c.name); }
+                      else setActiveCatId(c.id);
+                    }}
+                    className={isActive ? "cursor-text" : "hover:text-foreground"}
+                    title={isActive ? "Click to rename" : "Open category"}
+                  >
+                    {c.name}
+                  </button>
+                )}
+                {isActive && !isRenaming && (
+                  <button
+                    onClick={() => deleteCategory(c.id)}
+                    className="text-muted-foreground hover:text-destructive p-0.5"
+                    title="Delete category"
+                    aria-label="Delete category"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
         <Dialog open={addOpen} onOpenChange={setAddOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" variant="outline"><Plus className="w-4 h-4 mr-1" /> Add category</Button>
+            <Button size="icon" variant="outline" className="h-8 w-8" title="Add category" aria-label="Add category">
+              <Plus className="w-4 h-4" />
+            </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>New category</DialogTitle></DialogHeader>
@@ -811,47 +850,13 @@ function EntityCategories({ entityId, entityName }: { entityId: string; entityNa
             </div>
           </DialogContent>
         </Dialog>
-        {active && (
-          <>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => { setRenamingId(active.id); setRenameValue(active.name); }}
-            >
-              <Pencil className="w-3.5 h-3.5 mr-1" /> Rename
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="text-destructive hover:text-destructive"
-              onClick={() => deleteCategory(active.id)}
-            >
-              <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
-            </Button>
-          </>
-        )}
       </div>
-
-      {renamingId && (
-        <div className="flex gap-2 max-w-md">
-          <Input
-            autoFocus
-            value={renameValue}
-            onChange={(e) => setRenameValue(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") commitRename();
-              if (e.key === "Escape") { setRenamingId(null); setRenameValue(""); }
-            }}
-          />
-          <Button size="sm" onClick={commitRename}>Save</Button>
-          <Button size="sm" variant="ghost" onClick={() => { setRenamingId(null); setRenameValue(""); }}>Cancel</Button>
-        </div>
-      )}
 
       {active && (
         <DistributionBuilder
           key={`${entityId}:${active.id}`}
           kind={`${entityId}:${active.id}`}
+          kindLabel={active.name}
           defaultTitle={`${active.name} (1)`}
           defaultBudgetLabel="Budget"
           defaultTasks={genericTasks()}
