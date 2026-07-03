@@ -235,7 +235,19 @@ export default function Organizations() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <h3 className="font-semibold text-foreground truncate">{o.name}</h3>
-                        <p className="text-xs text-muted-foreground capitalize">{o.type}</p>
+                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                          <p className="text-xs text-muted-foreground capitalize">{o.type}</p>
+                          {(() => {
+                            const stage = (o.lifecycle_stage ?? "venture") as LifecycleStage;
+                            const meta = STAGE_META[stage];
+                            const I = meta.icon;
+                            return (
+                              <Badge variant="outline" className={`${meta.className} text-[10px] py-0 px-1.5 h-4`}>
+                                <I className="w-2.5 h-2.5 mr-0.5" /> {meta.label}
+                              </Badge>
+                            );
+                          })()}
+                        </div>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
                         <Badge className={ROLE_COLOR[role]}>
