@@ -49,12 +49,12 @@ export function ProgressionPathCard({ userId }: { userId: string | undefined | n
         Derived from your six graphs — Expertise, Trust, Opportunity, Revenue, Reputation, Ownership.
       </p>
 
-      <div className="flex items-center gap-1 mb-5 md:mb-6 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 pb-1 scrollbar-thin">
+      <div className="flex flex-wrap items-center gap-x-1 gap-y-2 mb-5 md:mb-6">
         {stageOrder.map((s, i) => {
           const reached = i <= stageIndex;
           const current = i === stageIndex;
           return (
-            <div key={s} className="flex items-center gap-1 shrink-0">
+            <div key={s} className="flex items-center gap-1">
               <div
                 className={`px-2 sm:px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-medium border whitespace-nowrap ${
                   current
