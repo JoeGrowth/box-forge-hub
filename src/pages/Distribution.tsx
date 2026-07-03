@@ -676,7 +676,7 @@ export default function Distribution() {
                 </CardContent>
               </Card>
             ) : (
-              <EntityCategories entityId={activeEntity.id} entityName={activeEntity.name} />
+              <EntityCategories scopeId={activeEntity.id} scopeLabel={activeEntity.name} />
             )}
 
           </div>
@@ -702,31 +702,47 @@ const genericCharges = (): Charge[] => [
   { id: uid(), label: "Materials", amount: 0 },
 ];
 
-function EntityCategories({ entityId, entityName }: { entityId: string; entityName: string }) {
+export function EntityCategories({
+  scopeId,
+  scopeLabel,
+  defaults,
+}: {
+  scopeId: string;
+  scopeLabel: string;
+  defaults?: string[];
+}) {
   const [cats, setCats] = useState<Category[]>([]);
   const [activeCatId, setActiveCatId] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
+  const [initialised, setInitialised] = useState(false);
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(CATS_KEY(entityId));
-      const list: Category[] = raw ? JSON.parse(raw) : [];
+      const raw = localStorage.getItem(CATS_KEY(scopeId));
+      let list: Category[] = raw ? JSON.parse(raw) : [];
+      if (list.length === 0 && defaults && defaults.length) {
+        list = defaults.map((n) => ({ id: uid(), name: n }));
+        localStorage.setItem(CATS_KEY(scopeId), JSON.stringify(list));
+      }
       setCats(list);
-      const saved = localStorage.getItem(ACTIVE_CAT_KEY(entityId));
+      const saved = localStorage.getItem(ACTIVE_CAT_KEY(scopeId));
       setActiveCatId(list.find((c) => c.id === saved)?.id ?? list[0]?.id ?? null);
     } catch {
       setCats([]);
       setActiveCatId(null);
     }
-  }, [entityId]);
+    setInitialised(true);
+  }, [scopeId, defaults]);
 
-  useEffect(() => { localStorage.setItem(CATS_KEY(entityId), JSON.stringify(cats)); }, [cats, entityId]);
   useEffect(() => {
-    if (activeCatId) localStorage.setItem(ACTIVE_CAT_KEY(entityId), activeCatId);
-  }, [activeCatId, entityId]);
+    if (initialised) localStorage.setItem(CATS_KEY(scopeId), JSON.stringify(cats));
+  }, [cats, scopeId, initialised]);
+  useEffect(() => {
+    if (activeCatId) localStorage.setItem(ACTIVE_CAT_KEY(scopeId), activeCatId);
+  }, [activeCatId, scopeId]);
 
   const addCategory = () => {
     const name = newName.trim();
@@ -756,11 +772,11 @@ function EntityCategories({ entityId, entityName }: { entityId: string; entityNa
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">First category for {entityName}</CardTitle>
+          <CardTitle className="text-base">First category for {scopeLabel}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            Name the first type of distribution for this entity (e.g. <em>Event</em>, <em>Consulting</em>, <em>Formation</em>…).
+            Name the first type of distribution (e.g. <em>Event</em>, <em>Consulting</em>, <em>Formation</em>…).
           </p>
           <div className="flex gap-2 max-w-md">
             <Input
@@ -777,6 +793,7 @@ function EntityCategories({ entityId, entityName }: { entityId: string; entityNa
       </Card>
     );
   }
+
 
   return (
     <div className="space-y-4">
@@ -854,8 +871,8 @@ function EntityCategories({ entityId, entityName }: { entityId: string; entityNa
 
       {active && (
         <DistributionBuilder
-          key={`${entityId}:${active.id}`}
-          kind={`${entityId}:${active.id}`}
+          key={`${scopeId}:${active.id}`}
+          kind={`${scopeId}:${active.id}`}
           kindLabel={active.name}
           defaultTitle={`${active.name} (1)`}
           defaultBudgetLabel="Budget"
