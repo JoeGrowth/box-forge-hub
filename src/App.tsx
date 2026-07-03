@@ -55,8 +55,6 @@ import DirectChat from "./pages/DirectChat";
 import Messages from "./pages/Messages";
 import NRDecoder from "./pages/NRDecoder";
 import Dashboard from "./pages/Dashboard";
-import ConsultingGrowth from "./pages/ConsultingGrowth";
-import BrandEntity from "./pages/BrandEntity";
 import NotFound from "./pages/NotFound";
 import ComingSoon from "./pages/ComingSoon";
 import Advisory from "./pages/Advisory";
@@ -153,8 +151,6 @@ const App = () => (
                   <Route path="/publish-consulting" element={<PublishConsulting />} />
                   <Route path="/publish-training" element={<PublishTraining />} />
                   <Route path="/publish-job" element={<PublishJob />} />
-                  <Route path="/consulting-growth" element={<ProtectedRoute><ConsultingGrowth /></ProtectedRoute>} />
-                  <Route path="/brand-entity" element={<ProtectedRoute><BrandEntity /></ProtectedRoute>} />
                   </Route>
                   <Route path="/opportunities/:category/:id" element={<OpportunityDetail />} />
                   {/* Legacy: old links pointed at startup ideas only. */}
