@@ -39,23 +39,43 @@ const SOURCES = [
 ];
 
 const MILESTONE = 10;
+const DRAFT_KEY = "consulting-growth:new-opp-draft";
+const OPEN_KEY = "consulting-growth:new-opp-open";
+
+const EMPTY_FORM = {
+  title: "",
+  client_name: "",
+  source: "LINKEDIN",
+  description: "",
+  number_of_days: "",
+  amount_per_day: "",
+  currency: "EUR",
+};
 
 export default function ConsultingGrowth() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [items, setItems] = useState<Opportunity[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({
-    title: "",
-    client_name: "",
-    source: "LINKEDIN",
-    description: "",
-    number_of_days: "",
-    amount_per_day: "",
-    currency: "EUR",
+  const [dialogOpen, setDialogOpen] = useState(() => {
+    try { return localStorage.getItem(OPEN_KEY) === "1"; } catch { return false; }
   });
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      return raw ? { ...EMPTY_FORM, ...JSON.parse(raw) } : EMPTY_FORM;
+    } catch { return EMPTY_FORM; }
+  });
+
+  useEffect(() => {
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(form)); } catch {}
+  }, [form]);
+
+  useEffect(() => {
+    try { localStorage.setItem(OPEN_KEY, dialogOpen ? "1" : "0"); } catch {}
+  }, [dialogOpen]);
+
 
   const load = async () => {
     if (!user) return;
