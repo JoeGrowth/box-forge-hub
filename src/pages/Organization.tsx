@@ -670,3 +670,209 @@ function InviteMemberRow({ orgId, onAdded }: { orgId: string; onAdded: () => voi
     </div>
   );
 }
+
+type LegalDoc = { id: string; name: string; storage_path: string; created_at: string; size_bytes: number | null };
+
+function LegalTab({
+  orgId, orgName, userId, canEdit, canDelete, docs, reload,
+}: {
+  orgId: string; orgName: string; userId: string;
+  canEdit: boolean; canDelete: boolean;
+  docs: LegalDoc[]; reload: () => void;
+}) {
+  const { toast } = useToast();
+  const [uploading, setUploading] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [pdfTitle, setPdfTitle] = useState("");
+  const [pdfBody, setPdfBody] = useState("");
+  const [generating, setGenerating] = useState(false);
+
+  const uploadFile = async (file: File) => {
+    if (!file) return;
+    if (file.type !== "application/pdf") {
+      toast({ title: "Only PDF files are allowed", variant: "destructive" });
+      return;
+    }
+    setUploading(true);
+    const path = `${orgId}/${Date.now()}_${file.name.replace(/[^\w.\-]/g, "_")}`;
+    const { error: upErr } = await supabase.storage
+      .from("organization-legal")
+      .upload(path, file, { contentType: "application/pdf", upsert: false });
+    if (upErr) {
+      setUploading(false);
+      toast({ title: "Upload failed", description: upErr.message, variant: "destructive" });
+      return;
+    }
+    const { error: dbErr } = await supabase.from("organization_legal_documents").insert({
+      organization_id: orgId,
+      name: file.name,
+      storage_path: path,
+      mime_type: "application/pdf",
+      size_bytes: file.size,
+      uploaded_by: userId,
+    });
+    setUploading(false);
+    if (dbErr) {
+      toast({ title: "Save failed", description: dbErr.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Legal document uploaded" });
+    reload();
+  };
+
+  const download = async (d: LegalDoc) => {
+    const { data, error } = await supabase.storage
+      .from("organization-legal")
+      .createSignedUrl(d.storage_path, 60);
+    if (error || !data?.signedUrl) {
+      toast({ title: "Could not open file", description: error?.message, variant: "destructive" });
+      return;
+    }
+    window.open(data.signedUrl, "_blank", "noopener");
+  };
+
+  const remove = async (d: LegalDoc) => {
+    if (!confirm(`Delete "${d.name}"?`)) return;
+    await supabase.storage.from("organization-legal").remove([d.storage_path]);
+    const { error } = await supabase.from("organization_legal_documents").delete().eq("id", d.id);
+    if (error) toast({ title: "Delete failed", description: error.message, variant: "destructive" });
+    else { toast({ title: "Deleted" }); reload(); }
+  };
+
+  const generatePdf = async () => {
+    if (!pdfTitle.trim() || !pdfBody.trim()) return;
+    setGenerating(true);
+    try {
+      const doc = new jsPDF({ unit: "pt", format: "a4" });
+      const margin = 56;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const maxWidth = pageWidth - margin * 2;
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text(orgName, margin, margin);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text(`Legal document · ${new Date().toLocaleDateString()}`, margin, margin + 16);
+      doc.setDrawColor(180);
+      doc.line(margin, margin + 26, pageWidth - margin, margin + 26);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.text(pdfTitle.trim(), margin, margin + 52);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      const lines = doc.splitTextToSize(pdfBody.trim(), maxWidth);
+      let y = margin + 76;
+      for (const line of lines) {
+        if (y > pageHeight - margin) { doc.addPage(); y = margin; }
+        doc.text(line, margin, y);
+        y += 16;
+      }
+
+      const blob = doc.output("blob");
+      const safe = pdfTitle.trim().replace(/[^\w.\-]+/g, "_").slice(0, 60) || "legal-document";
+      const filename = `${safe}.pdf`;
+      const file = new File([blob], filename, { type: "application/pdf" });
+      await uploadFile(file);
+      setCreateOpen(false);
+      setPdfTitle(""); setPdfBody("");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      {canEdit && (
+        <div className="rounded-xl border border-dashed border-border bg-card p-4 flex flex-wrap gap-2 items-center">
+          <input
+            id="legal-upload"
+            type="file"
+            accept="application/pdf"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadFile(f); e.currentTarget.value = ""; }}
+          />
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={uploading}
+            onClick={() => document.getElementById("legal-upload")?.click()}
+          >
+            <Upload className="w-3 h-3 mr-1" /> {uploading ? "Uploading…" : "Upload PDF"}
+          </Button>
+          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm"><FilePlus className="w-3 h-3 mr-1" /> Create PDF</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create a legal PDF for {orgName}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3">
+                <div>
+                  <Label>Document title</Label>
+                  <Input value={pdfTitle} onChange={(e) => setPdfTitle(e.target.value)} placeholder="Statutes / Founders agreement / NDA…" />
+                </div>
+                <div>
+                  <Label>Content</Label>
+                  <Textarea
+                    value={pdfBody}
+                    onChange={(e) => setPdfBody(e.target.value)}
+                    rows={10}
+                    placeholder="Type the legal clauses. Line breaks are preserved."
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
+                <Button onClick={generatePdf} disabled={generating || !pdfTitle.trim() || !pdfBody.trim()}>
+                  {generating ? "Generating…" : "Generate & save"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          <span className="text-xs text-muted-foreground">Store statutes, founders agreements, NDAs, contracts — PDF only.</span>
+        </div>
+      )}
+
+      {docs.length === 0 ? (
+        <EmptyState
+          icon={Scale}
+          title="No legal documents yet"
+          hint={canEdit ? "Upload a PDF or generate one from the buttons above." : "An editor needs to add one."}
+        />
+      ) : (
+        <div className="rounded-xl border border-border bg-card divide-y divide-border">
+          {docs.map((d) => (
+            <div key={d.id} className="flex items-center justify-between p-4 gap-3">
+              <div className="min-w-0 flex items-start gap-3">
+                <FileText className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="font-medium text-foreground truncate">{d.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(d.created_at).toLocaleDateString()}
+                    {d.size_bytes ? ` · ${(d.size_bytes / 1024).toFixed(1)} KB` : ""}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <Button size="sm" variant="outline" onClick={() => download(d)}>
+                  <Download className="w-3 h-3 mr-1" /> Open
+                </Button>
+                {canDelete && (
+                  <Button size="icon" variant="ghost" onClick={() => remove(d)} className="text-muted-foreground hover:text-destructive">
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
