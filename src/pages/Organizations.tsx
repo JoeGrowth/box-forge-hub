@@ -186,7 +186,7 @@ export default function Organizations() {
                     <SelectValue placeholder="All types" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All types</SelectItem>
+                    <SelectItem value="all">All types</SelectItem>
                     <SelectItem value="company">Company</SelectItem>
                     <SelectItem value="ministry">Ministry</SelectItem>
                     <SelectItem value="ngo">NGO</SelectItem>
