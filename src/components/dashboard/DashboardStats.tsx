@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { TrendingUp, Users, Award, Briefcase, Target, Zap } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useExpertise } from "@/hooks/useExpertise";
