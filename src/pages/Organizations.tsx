@@ -51,6 +51,16 @@ export default function Organizations() {
   const [description, setDescription] = useState("");
   const [website, setWebsite] = useState("");
   const [saving, setSaving] = useState(false);
+  const [filter, setFilter] = useState("");
+
+  const filtered = memberships.filter(({ organization: o }) => {
+    const q = filter.toLowerCase();
+    return (
+      o.name.toLowerCase().includes(q) ||
+      o.type.toLowerCase().includes(q) ||
+      (o.description ?? "").toLowerCase().includes(q)
+    );
+  });
 
   const create = async () => {
     if (!user || !name.trim()) return;
