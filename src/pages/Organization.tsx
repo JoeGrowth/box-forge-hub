@@ -57,6 +57,7 @@ import {
   ArrowLeft,
   ClipboardList,
   ArrowRight,
+  PieChart,
 } from "lucide-react";
 
 type JobRow = {
@@ -181,11 +182,12 @@ export default function OrganizationPage() {
       </div>
 
       <Tabs defaultValue="jobs" className="space-y-4">
-        <TabsList>
+        <TabsList className="flex-wrap h-auto justify-start">
           <TabsTrigger value="jobs"><Briefcase className="w-3 h-3 mr-1" /> Jobs ({jobs.length})</TabsTrigger>
           <TabsTrigger value="tenders"><FileText className="w-3 h-3 mr-1" /> Tenders ({tenders.length})</TabsTrigger>
           <TabsTrigger value="declaration"><ClipboardList className="w-3 h-3 mr-1" /> Declaration ({declarations.length})</TabsTrigger>
           <TabsTrigger value="members"><Users className="w-3 h-3 mr-1" /> Members ({members.length})</TabsTrigger>
+          <TabsTrigger value="distribution"><PieChart className="w-3 h-3 mr-1" /> Distribution</TabsTrigger>
         </TabsList>
 
         {/* JOBS */}
