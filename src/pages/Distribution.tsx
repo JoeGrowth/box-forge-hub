@@ -22,7 +22,7 @@ import { formatDistanceToNow } from "date-fns";
 
 type Task = { id: string; label: string; percent: number; locked?: boolean };
 type Charge = { id: string; label: string; amount: number };
-type Kind = "consulting" | "training" | "event";
+type Kind = string;
 
 const uid = () => Math.random().toString(36).slice(2, 9);
 const fmt = (n: number) =>
@@ -666,47 +666,16 @@ export default function Distribution() {
 
 
 
-            <Tabs defaultValue="consulting" className="w-full">
-              <TabsList className="grid grid-cols-3 mb-6 max-w-2xl">
-                <TabsTrigger value="consulting" className="gap-2">
-                  <Briefcase className="w-4 h-4" /> Consulting
-                </TabsTrigger>
-                <TabsTrigger value="training" className="gap-2">
-                  <GraduationCap className="w-4 h-4" /> Training
-                </TabsTrigger>
-                <TabsTrigger value="event" className="gap-2">
-                  <CalendarDays className="w-4 h-4" /> Event
-                </TabsTrigger>
-              </TabsList>
+            {!activeEntity ? (
+              <Card>
+                <CardContent className="py-12 text-center text-sm text-muted-foreground">
+                  Sélectionne ou crée une entité pour commencer à distribuer des budgets.
+                </CardContent>
+              </Card>
+            ) : (
+              <EntityCategories entityId={activeEntity.id} entityName={activeEntity.name} />
+            )}
 
-              <TabsContent value="consulting">
-                <DistributionBuilder
-                  kind="consulting"
-                  defaultTitle="Consulting Mission (1)"
-                  defaultBudgetLabel="Budget Mission"
-                  defaultTasks={consultingDefaults.tasks}
-                  defaultCharges={consultingDefaults.charges}
-                />
-              </TabsContent>
-              <TabsContent value="training">
-                <DistributionBuilder
-                  kind="training"
-                  defaultTitle="Training Mission (1)"
-                  defaultBudgetLabel="Budget Formation"
-                  defaultTasks={trainingDefaults.tasks}
-                  defaultCharges={trainingDefaults.charges}
-                />
-              </TabsContent>
-              <TabsContent value="event">
-                <DistributionBuilder
-                  kind="event"
-                  defaultTitle="Bijoux Dry Clay"
-                  defaultBudgetLabel="Budget Livraison"
-                  defaultTasks={eventDefaults.tasks}
-                  defaultCharges={eventDefaults.charges}
-                />
-              </TabsContent>
-            </Tabs>
           </div>
         </main>
       </PageTransition>
@@ -714,3 +683,182 @@ export default function Distribution() {
     </div>
   );
 }
+
+// ─── Per-entity dynamic categories ─────────────────────────────────────────
+type Category = { id: string; name: string };
+const CATS_KEY = (entityId: string) => `distribution_categories_${entityId}`;
+const ACTIVE_CAT_KEY = (entityId: string) => `distribution_active_category_${entityId}`;
+
+const genericTasks = (): Task[] => [
+  { id: uid(), label: "Preparation", percent: 30 },
+  { id: uid(), label: "Delivery", percent: 50 },
+  { id: uid(), label: "Follow-up", percent: 15 },
+  { id: uid(), label: "Rest Structure", percent: 5, locked: true },
+];
+const genericCharges = (): Charge[] => [
+  { id: uid(), label: "Materials", amount: 0 },
+];
+
+function EntityCategories({ entityId, entityName }: { entityId: string; entityName: string }) {
+  const [cats, setCats] = useState<Category[]>([]);
+  const [activeCatId, setActiveCatId] = useState<string | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(CATS_KEY(entityId));
+      const list: Category[] = raw ? JSON.parse(raw) : [];
+      setCats(list);
+      const saved = localStorage.getItem(ACTIVE_CAT_KEY(entityId));
+      setActiveCatId(list.find((c) => c.id === saved)?.id ?? list[0]?.id ?? null);
+    } catch {
+      setCats([]);
+      setActiveCatId(null);
+    }
+  }, [entityId]);
+
+  useEffect(() => { localStorage.setItem(CATS_KEY(entityId), JSON.stringify(cats)); }, [cats, entityId]);
+  useEffect(() => {
+    if (activeCatId) localStorage.setItem(ACTIVE_CAT_KEY(entityId), activeCatId);
+  }, [activeCatId, entityId]);
+
+  const addCategory = () => {
+    const name = newName.trim();
+    if (!name) return;
+    const cat: Category = { id: uid(), name };
+    setCats((p) => [...p, cat]);
+    setActiveCatId(cat.id);
+    setNewName("");
+    setAddOpen(false);
+  };
+  const deleteCategory = (id: string) => {
+    if (!confirm("Delete this category? Saved distributions in it stay in the database.")) return;
+    setCats((p) => p.filter((c) => c.id !== id));
+    if (activeCatId === id) setActiveCatId(null);
+  };
+  const commitRename = () => {
+    if (!renamingId) return;
+    const name = renameValue.trim();
+    if (name) setCats((p) => p.map((c) => (c.id === renamingId ? { ...c, name } : c)));
+    setRenamingId(null);
+    setRenameValue("");
+  };
+
+  const active = cats.find((c) => c.id === activeCatId);
+
+  if (cats.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">First category for {entityName}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Name the first type of distribution for this entity (e.g. <em>Event</em>, <em>Consulting</em>, <em>Formation</em>…).
+          </p>
+          <div className="flex gap-2 max-w-md">
+            <Input
+              placeholder="Category name"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addCategory()}
+            />
+            <Button onClick={addCategory} disabled={!newName.trim()}>
+              <Plus className="w-4 h-4 mr-1" /> Create
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="inline-flex flex-wrap items-center gap-1 rounded-md bg-muted p-1">
+          {cats.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => setActiveCatId(c.id)}
+              onDoubleClick={() => { setRenamingId(c.id); setRenameValue(c.name); }}
+              className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-sm text-sm font-medium transition ${
+                activeCatId === c.id ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+              title="Double-click to rename"
+            >
+              {c.name}
+            </button>
+          ))}
+        </div>
+        <Dialog open={addOpen} onOpenChange={setAddOpen}>
+          <DialogTrigger asChild>
+            <Button size="sm" variant="outline"><Plus className="w-4 h-4 mr-1" /> Add category</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader><DialogTitle>New category</DialogTitle></DialogHeader>
+            <div className="flex gap-2">
+              <Input
+                autoFocus
+                placeholder="e.g. Event, Consulting, Formation…"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addCategory()}
+              />
+              <Button onClick={addCategory} disabled={!newName.trim()}>Create</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+        {active && (
+          <>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => { setRenamingId(active.id); setRenameValue(active.name); }}
+            >
+              <Pencil className="w-3.5 h-3.5 mr-1" /> Rename
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-destructive hover:text-destructive"
+              onClick={() => deleteCategory(active.id)}
+            >
+              <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+            </Button>
+          </>
+        )}
+      </div>
+
+      {renamingId && (
+        <div className="flex gap-2 max-w-md">
+          <Input
+            autoFocus
+            value={renameValue}
+            onChange={(e) => setRenameValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") commitRename();
+              if (e.key === "Escape") { setRenamingId(null); setRenameValue(""); }
+            }}
+          />
+          <Button size="sm" onClick={commitRename}>Save</Button>
+          <Button size="sm" variant="ghost" onClick={() => { setRenamingId(null); setRenameValue(""); }}>Cancel</Button>
+        </div>
+      )}
+
+      {active && (
+        <DistributionBuilder
+          key={`${entityId}:${active.id}`}
+          kind={`${entityId}:${active.id}`}
+          defaultTitle={`${active.name} (1)`}
+          defaultBudgetLabel="Budget"
+          defaultTasks={genericTasks()}
+          defaultCharges={genericCharges()}
+        />
+      )}
+    </div>
+  );
+}
+
