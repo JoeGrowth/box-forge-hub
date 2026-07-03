@@ -58,7 +58,25 @@ import {
   ClipboardList,
   ArrowRight,
   PieChart,
+  Scale,
+  Upload,
+  Download,
+  FilePlus,
+  Rocket,
+  Sparkles,
+  TrendingUp,
+  Trophy,
 } from "lucide-react";
+import jsPDF from "jspdf";
+
+type LifecycleStage = "venture" | "business" | "startup" | "mature";
+const STAGE_META: Record<LifecycleStage, { label: string; icon: typeof Rocket; className: string }> = {
+  venture:  { label: "Venture",        icon: Rocket,     className: "bg-blue-500/10 text-blue-700 border-blue-200" },
+  business: { label: "Business",       icon: Sparkles,   className: "bg-emerald-500/10 text-emerald-700 border-emerald-200" },
+  startup:  { label: "Startup",        icon: TrendingUp, className: "bg-purple-500/10 text-purple-700 border-purple-200" },
+  mature:   { label: "Mature company", icon: Trophy,     className: "bg-amber-500/10 text-amber-700 border-amber-200" },
+};
+
 
 type JobRow = {
   id: string;
