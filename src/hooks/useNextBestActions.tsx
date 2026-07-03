@@ -32,6 +32,8 @@ export const progressionStageLabel: Record<string, string> = {
   monetizing: "Monetizing",
   building: "Building",
   founder: "Founder",
+  consulting_growth: "Consulting Growth",
+  brand_growth: "Brand Growth",
 };
 
 export function useNextBestActions(userId?: string | null) {
