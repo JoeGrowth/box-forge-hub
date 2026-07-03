@@ -82,6 +82,8 @@ import ActivationHub from "./pages/ActivationHub";
 import AdvisorWorkQueue from "./pages/AdvisorWorkQueue";
 import ClickAnalytics from "./pages/admin/ClickAnalytics";
 import Distribution from "./pages/Distribution";
+import ConsultingGrowth from "./pages/ConsultingGrowth";
+import BrandEntity from "./pages/BrandEntity";
 import { ClickTracker } from "./components/analytics/ClickTracker";
 
 
@@ -183,6 +185,8 @@ const App = () => (
                   <Route path="/declaration" element={<Declaration />} />
                   <Route path="/PGP" element={<PGP />} />
                   <Route path="/characters" element={<ProtectedRoute><Characters /></ProtectedRoute>} />
+                  <Route path="/consulting-growth" element={<ProtectedRoute><ConsultingGrowth /></ProtectedRoute>} />
+                  <Route path="/brand-entity" element={<ProtectedRoute><BrandEntity /></ProtectedRoute>} />
                   <Route path="/journey-timeline" element={<ProtectedRoute><JourneyTimeline /></ProtectedRoute>} />
                   <Route path="/timeline" element={<Navigate to="/journey-timeline" replace />} />
                   <Route path="/pgp" element={<Navigate to="/PGP" replace />} />
