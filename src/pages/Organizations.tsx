@@ -60,7 +60,7 @@ export default function Organizations() {
       o.name.toLowerCase().includes(q) ||
       o.type.toLowerCase().includes(q) ||
       (o.description ?? "").toLowerCase().includes(q);
-    const matchesType = !typeFilter || o.type === typeFilter;
+    const matchesType = !typeFilter || typeFilter === "all" || o.type === typeFilter;
     return matchesText && matchesType;
   });
 
