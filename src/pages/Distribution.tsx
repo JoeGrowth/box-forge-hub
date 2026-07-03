@@ -22,7 +22,7 @@ import { formatDistanceToNow } from "date-fns";
 
 type Task = { id: string; label: string; percent: number; locked?: boolean };
 type Charge = { id: string; label: string; amount: number };
-type Kind = "consulting" | "training" | "event";
+type Kind = string;
 
 const uid = () => Math.random().toString(36).slice(2, 9);
 const fmt = (n: number) =>
