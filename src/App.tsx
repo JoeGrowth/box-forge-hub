@@ -55,6 +55,8 @@ import DirectChat from "./pages/DirectChat";
 import Messages from "./pages/Messages";
 import NRDecoder from "./pages/NRDecoder";
 import Dashboard from "./pages/Dashboard";
+import ConsultingGrowth from "./pages/ConsultingGrowth";
+import BrandEntity from "./pages/BrandEntity";
 import NotFound from "./pages/NotFound";
 import ComingSoon from "./pages/ComingSoon";
 import Advisory from "./pages/Advisory";
