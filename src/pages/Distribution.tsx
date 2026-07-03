@@ -666,47 +666,16 @@ export default function Distribution() {
 
 
 
-            <Tabs defaultValue="consulting" className="w-full">
-              <TabsList className="grid grid-cols-3 mb-6 max-w-2xl">
-                <TabsTrigger value="consulting" className="gap-2">
-                  <Briefcase className="w-4 h-4" /> Consulting
-                </TabsTrigger>
-                <TabsTrigger value="training" className="gap-2">
-                  <GraduationCap className="w-4 h-4" /> Training
-                </TabsTrigger>
-                <TabsTrigger value="event" className="gap-2">
-                  <CalendarDays className="w-4 h-4" /> Event
-                </TabsTrigger>
-              </TabsList>
+            {!activeEntity ? (
+              <Card>
+                <CardContent className="py-12 text-center text-sm text-muted-foreground">
+                  Sélectionne ou crée une entité pour commencer à distribuer des budgets.
+                </CardContent>
+              </Card>
+            ) : (
+              <EntityCategories entityId={activeEntity.id} entityName={activeEntity.name} />
+            )}
 
-              <TabsContent value="consulting">
-                <DistributionBuilder
-                  kind="consulting"
-                  defaultTitle="Consulting Mission (1)"
-                  defaultBudgetLabel="Budget Mission"
-                  defaultTasks={consultingDefaults.tasks}
-                  defaultCharges={consultingDefaults.charges}
-                />
-              </TabsContent>
-              <TabsContent value="training">
-                <DistributionBuilder
-                  kind="training"
-                  defaultTitle="Training Mission (1)"
-                  defaultBudgetLabel="Budget Formation"
-                  defaultTasks={trainingDefaults.tasks}
-                  defaultCharges={trainingDefaults.charges}
-                />
-              </TabsContent>
-              <TabsContent value="event">
-                <DistributionBuilder
-                  kind="event"
-                  defaultTitle="Bijoux Dry Clay"
-                  defaultBudgetLabel="Budget Livraison"
-                  defaultTasks={eventDefaults.tasks}
-                  defaultCharges={eventDefaults.charges}
-                />
-              </TabsContent>
-            </Tabs>
           </div>
         </main>
       </PageTransition>
