@@ -11,6 +11,7 @@ import { DashboardProgress } from "@/components/dashboard/DashboardProgress";
 import { DashboardNextSteps } from "@/components/dashboard/DashboardNextSteps";
 import { DashboardOpportunities } from "@/components/dashboard/DashboardOpportunities";
 import { DashboardAchievements } from "@/components/dashboard/DashboardAchievements";
+import { ProgressionPathCard } from "@/components/profile/ProgressionPathCard";
 import { CommitmentsPanel } from "@/components/commitments/CommitmentsPanel";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -59,6 +60,7 @@ const Dashboard = () => {
                 <DashboardProgress />
                 <CommitmentsPanel />
                 <DashboardOpportunities />
+                <ProgressionPathCard userId={user?.id} />
               </div>
               <div className="space-y-6 md:space-y-8 min-w-0">
                 <DashboardNextSteps />

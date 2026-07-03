@@ -35,28 +35,28 @@ export function ProgressionPathCard({ userId }: { userId: string | undefined | n
   const unlocked = progression.recommended_actions ?? [];
 
   return (
-    <div className="bg-gradient-to-br from-primary/5 to-b4-coral/5 rounded-3xl border border-primary/20 p-8 mb-8">
-      <div className="flex items-start justify-between mb-2">
-        <div className="flex items-center gap-3">
-          <Target className="w-5 h-5 text-primary" />
-          <h2 className="font-display text-xl font-bold text-foreground">Professional Growth Path</h2>
+    <div className="bg-gradient-to-br from-primary/5 to-b4-coral/5 rounded-2xl md:rounded-3xl border border-primary/20 p-4 sm:p-6 md:p-8 mb-6 md:mb-8">
+      <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <Target className="w-5 h-5 text-primary shrink-0" />
+          <h2 className="font-display text-lg sm:text-xl font-bold text-foreground truncate">Professional Growth Path</h2>
         </div>
-        <Badge variant="outline" className="text-xs">
+        <Badge variant="outline" className="text-[10px] sm:text-xs shrink-0">
           Progression {Math.round(progression.progression_score)}
         </Badge>
       </div>
-      <p className="text-sm text-muted-foreground mb-5">
+      <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-5">
         Derived from your six graphs — Expertise, Trust, Opportunity, Revenue, Reputation, Ownership.
       </p>
 
-      <div className="flex items-center gap-1 mb-6 overflow-x-auto">
+      <div className="flex items-center gap-1 mb-5 md:mb-6 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 pb-1 scrollbar-thin">
         {stageOrder.map((s, i) => {
           const reached = i <= stageIndex;
           const current = i === stageIndex;
           return (
             <div key={s} className="flex items-center gap-1 shrink-0">
               <div
-                className={`px-2.5 py-1 rounded-full text-[11px] font-medium border ${
+                className={`px-2 sm:px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-medium border whitespace-nowrap ${
                   current
                     ? "bg-primary text-primary-foreground border-primary"
                     : reached
@@ -67,7 +67,7 @@ export function ProgressionPathCard({ userId }: { userId: string | undefined | n
                 {progressionStageLabel[s]}
               </div>
               {i < stageOrder.length - 1 && (
-                <ArrowRight className={`w-3 h-3 ${reached ? "text-primary" : "text-muted-foreground"}`} />
+                <ArrowRight className={`w-3 h-3 shrink-0 ${reached ? "text-primary" : "text-muted-foreground"}`} />
               )}
             </div>
           );
@@ -89,16 +89,18 @@ export function ProgressionPathCard({ userId }: { userId: string | undefined | n
           return (
             <div
               key={a.rule}
-              className="flex items-start gap-4 bg-card border border-border rounded-xl p-4"
+              className="flex flex-col sm:flex-row items-stretch sm:items-start gap-3 sm:gap-4 bg-card border border-border rounded-xl p-3 sm:p-4"
             >
-              <Sparkles className="w-5 h-5 text-b4-teal shrink-0 mt-0.5" />
-              <div className="flex-1 min-w-0 space-y-2">
-                <div className="text-sm font-semibold text-foreground capitalize">
-                  {actionLabel(a)}
+              <div className="flex items-start gap-3 flex-1 min-w-0">
+                <Sparkles className="w-5 h-5 text-b4-teal shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0 space-y-2">
+                  <div className="text-sm font-semibold text-foreground capitalize break-words">
+                    {actionLabel(a)}
+                  </div>
+                  <RecommendationExplanationView data={explanation} />
                 </div>
-                <RecommendationExplanationView data={explanation} />
               </div>
-              <div className="flex flex-col gap-1 shrink-0">
+              <div className="flex sm:flex-col items-center sm:items-end gap-2 sm:gap-1 shrink-0 justify-end">
                 <Button asChild size="sm" variant="outline" className="h-7 text-xs">
                   <Link to={actionLink(a)}>
                     Go <ArrowRight className="w-3 h-3 ml-1" />
