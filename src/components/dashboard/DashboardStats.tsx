@@ -128,7 +128,7 @@ export function DashboardStats() {
           <Tooltip key={i}>
             <TooltipTrigger asChild>
               <div
-                className="bg-card rounded-xl border border-border p-4 hover:border-b4-teal/30 transition-all duration-300 hover:shadow-lg hover:shadow-b4-teal/5 cursor-help text-left"
+                className="bg-card rounded-xl border border-border p-4 hover:border-b4-teal/30 transition-all duration-300 hover:shadow-lg hover:shadow-b4-teal/5 text-left"
                 tabIndex={0}
               >
                 <div className={`w-10 h-10 rounded-lg ${stat.bgColor} flex items-center justify-center mb-3`}>
