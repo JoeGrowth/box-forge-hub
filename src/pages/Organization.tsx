@@ -839,3 +839,85 @@ function LegalTab({
   );
 }
 
+function OrgDistributionsTab({ orgId, orgName, canEdit }: { orgId: string; orgName: string; canEdit: boolean }) {
+  const [entities, setEntities] = useState<DistEntity[]>([]);
+  const [newName, setNewName] = useState("");
+
+  const reload = useCallback(() => {
+    setEntities(readDistEntities().filter((e) => e.orgId === orgId));
+  }, [orgId]);
+
+  useEffect(() => { reload(); }, [reload]);
+
+  const create = () => {
+    const name = newName.trim();
+    if (!name) return;
+    addDistEntity(name, orgId);
+    setNewName("");
+    reload();
+  };
+
+  const remove = (id: string) => {
+    if (!confirm("Delete this distribution entity?")) return;
+    writeDistEntities(readDistEntities().filter((e) => e.id !== id));
+    reload();
+  };
+
+  return (
+    <>
+      {canEdit && (
+        <div className="rounded-xl border border-dashed border-border bg-card p-4 flex gap-2 flex-wrap items-end">
+          <div className="flex-1 min-w-[220px]">
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">New distribution entity</Label>
+            <Input
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder={`e.g. ${orgName} Q1 distribution`}
+              onKeyDown={(e) => e.key === "Enter" && create()}
+            />
+          </div>
+          <Button onClick={create} disabled={!newName.trim()}>
+            <Plus className="w-3 h-3 mr-1" /> Add distribution
+          </Button>
+        </div>
+      )}
+      {entities.length === 0 ? (
+        <EmptyState
+          icon={PieChart}
+          title="No distributions yet"
+          hint={canEdit ? "Create one above. It will open in the full Distribution workspace." : "An editor needs to create one."}
+        />
+      ) : (
+        <div className="rounded-xl border border-border bg-card divide-y divide-border">
+          {entities.map((d) => (
+            <div key={d.id} className="flex items-center justify-between p-4 hover:bg-muted/40 transition">
+              <div className="min-w-0">
+                <p className="font-medium text-foreground truncate">{d.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  Created {d.createdAt ? new Date(d.createdAt).toLocaleDateString() : "—"}
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                {canEdit && (
+                  <button
+                    onClick={() => remove(d.id)}
+                    className="text-muted-foreground hover:text-destructive"
+                    title="Delete"
+                    aria-label="Delete distribution"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+                <Link to={`/distribution?entity=${d.id}`} className="text-xs text-primary inline-flex items-center">
+                  Open <ArrowRight className="w-3 h-3 ml-1" />
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+
