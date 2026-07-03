@@ -167,8 +167,25 @@ export default function Organizations() {
           </p>
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 gap-4">
-          {memberships.map(({ organization: o, role }) => {
+        <div className="space-y-4">
+          {memberships.length > 3 && (
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                placeholder="Filter organizations by name, type, or description…"
+                className="pl-9"
+              />
+            </div>
+          )}
+          {filtered.length === 0 ? (
+            <div className="text-sm text-muted-foreground text-center py-8">
+              No organizations match your filter.
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 gap-4">
+              {filtered.map(({ organization: o, role }) => {
             const RoleIcon = ROLE_ICON[role];
             const canDelete = role === "admin";
             const handleDelete = async (e: React.MouseEvent) => {
