@@ -108,7 +108,8 @@ export default function ConsultingGrowth() {
     const payload = {
       user_id: user.id,
       title: form.title.trim(),
-      client_name: form.client_name.trim() || null,
+      client_name: form.client_name.trim() || "—",
+      consulting_firm: form.client_name.trim() || "—",
       source: form.source,
       description: form.description.trim() || null,
       number_of_days: days,
