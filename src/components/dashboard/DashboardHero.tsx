@@ -135,6 +135,23 @@ export function DashboardHero() {
         "You're here to grow, to build, and to take part in shaping the future. Pick your next move and let the ecosystem move with you.",
     };
 
+  const certifications = expertise?.monetizable.certifications ?? 0;
+  const teamMemberships = expertise?.monetizable.contributions ?? 0;
+  const baseEquity = teamMemberships * 5 + certifications * 2;
+  const potentialEquityNum = Math.min(baseEquity, 25);
+
+  const loading = expertiseLoading || activityLoading;
+
+  const meetsThreshold =
+    potentialEquityNum >= 10 ||
+    certifications >= 2 ||
+    teamMemberships >= 1 ||
+    activity.applications >= 2 ||
+    activity.ideas >= 2 ||
+    activity.journeysCompleted >= 1;
+
+  if (loading) return null;
+
   return (
     <>
     <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-b4-navy via-b4-navy/95 to-b4-navy/90 p-5 sm:p-8 md:p-10">
