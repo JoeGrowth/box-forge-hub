@@ -68,7 +68,7 @@ import {
   Trophy,
 } from "lucide-react";
 import jsPDF from "jspdf";
-import { EntityCategories } from "@/pages/Distribution";
+import { readDistEntities, addDistEntity, writeDistEntities, type DistEntity } from "@/pages/Distribution";
 
 type LifecycleStage = "venture" | "business" | "startup" | "mature";
 const STAGE_META: Record<LifecycleStage, { label: string; icon: typeof Rocket; className: string }> = {
@@ -454,26 +454,10 @@ export default function OrganizationPage() {
           </div>
         </TabsContent>
         {/* DISTRIBUTION */}
-        <TabsContent value="distribution" className="space-y-4">
-          <div className="rounded-2xl border border-border bg-card p-5">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                <PieChart className="w-5 h-5 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-foreground">Distributions · {org.name}</h3>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  Split budgets across the {org.name} team. Add a new distribution under any category — each one is saved with its creation date and can be reopened for edit.
-                </p>
-              </div>
-            </div>
-          </div>
-          <EntityCategories
-            scopeId={org.id}
-            scopeLabel={org.name}
-            defaults={["Consulting", "Training", "Event"]}
-          />
+        <TabsContent value="distribution" className="space-y-3">
+          <OrgDistributionsTab orgId={org.id} orgName={org.name} canEdit={canEdit} />
         </TabsContent>
+
 
       </Tabs>
     </div>
@@ -854,4 +838,86 @@ function LegalTab({
     </div>
   );
 }
+
+function OrgDistributionsTab({ orgId, orgName, canEdit }: { orgId: string; orgName: string; canEdit: boolean }) {
+  const [entities, setEntities] = useState<DistEntity[]>([]);
+  const [newName, setNewName] = useState("");
+
+  const reload = useCallback(() => {
+    setEntities(readDistEntities().filter((e) => e.orgId === orgId));
+  }, [orgId]);
+
+  useEffect(() => { reload(); }, [reload]);
+
+  const create = () => {
+    const name = newName.trim();
+    if (!name) return;
+    addDistEntity(name, orgId);
+    setNewName("");
+    reload();
+  };
+
+  const remove = (id: string) => {
+    if (!confirm("Delete this distribution entity?")) return;
+    writeDistEntities(readDistEntities().filter((e) => e.id !== id));
+    reload();
+  };
+
+  return (
+    <>
+      {canEdit && (
+        <div className="rounded-xl border border-dashed border-border bg-card p-4 flex gap-2 flex-wrap items-end">
+          <div className="flex-1 min-w-[220px]">
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">New distribution entity</Label>
+            <Input
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder={`e.g. ${orgName} Q1 distribution`}
+              onKeyDown={(e) => e.key === "Enter" && create()}
+            />
+          </div>
+          <Button onClick={create} disabled={!newName.trim()}>
+            <Plus className="w-3 h-3 mr-1" /> Add distribution
+          </Button>
+        </div>
+      )}
+      {entities.length === 0 ? (
+        <EmptyState
+          icon={PieChart}
+          title="No distributions yet"
+          hint={canEdit ? "Create one above. It will open in the full Distribution workspace." : "An editor needs to create one."}
+        />
+      ) : (
+        <div className="rounded-xl border border-border bg-card divide-y divide-border">
+          {entities.map((d) => (
+            <div key={d.id} className="flex items-center justify-between p-4 hover:bg-muted/40 transition">
+              <div className="min-w-0">
+                <p className="font-medium text-foreground truncate">{d.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  Created {d.createdAt ? new Date(d.createdAt).toLocaleDateString() : "—"}
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                {canEdit && (
+                  <button
+                    onClick={() => remove(d.id)}
+                    className="text-muted-foreground hover:text-destructive"
+                    title="Delete"
+                    aria-label="Delete distribution"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+                <Link to={`/distribution?entity=${d.id}`} className="text-xs text-primary inline-flex items-center">
+                  Open <ArrowRight className="w-3 h-3 ml-1" />
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
 

@@ -544,11 +544,29 @@ const eventDefaults = {
   ] as Charge[],
 };
 
-const DIST_ENTITIES_KEY = "distribution_entities_v1";
+export const DIST_ENTITIES_KEY = "distribution_entities_v1";
 const DIST_ACTIVE_ENTITY_KEY = "distribution_active_entity_v1";
-type DistEntity = { id: string; name: string };
+export type DistEntity = { id: string; name: string; orgId?: string; createdAt?: string };
+
+export function readDistEntities(): DistEntity[] {
+  try {
+    const raw = localStorage.getItem(DIST_ENTITIES_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+export function writeDistEntities(list: DistEntity[]) {
+  localStorage.setItem(DIST_ENTITIES_KEY, JSON.stringify(list));
+}
+export function addDistEntity(name: string, orgId?: string): DistEntity {
+  const ent: DistEntity = { id: Math.random().toString(36).slice(2, 9), name, orgId, createdAt: new Date().toISOString() };
+  const list = readDistEntities();
+  writeDistEntities([...list, ent]);
+  return ent;
+}
 
 export default function Distribution() {
+  const [searchParams] = useSearchParams();
+  const entityParam = searchParams.get("entity");
   const [entities, setEntities] = useState<DistEntity[]>([]);
   const [activeEntityId, setActiveEntityId] = useState<string | null>(null);
   const [manageOpen, setManageOpen] = useState(false);
@@ -556,13 +574,13 @@ export default function Distribution() {
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(DIST_ENTITIES_KEY);
-      const list: DistEntity[] = raw ? JSON.parse(raw) : [];
+      const list = readDistEntities();
       setEntities(list);
       const saved = localStorage.getItem(DIST_ACTIVE_ENTITY_KEY);
-      setActiveEntityId(list.find((e) => e.id === saved)?.id ?? list[0]?.id ?? null);
+      const preferred = entityParam && list.find((e) => e.id === entityParam)?.id;
+      setActiveEntityId(preferred ?? list.find((e) => e.id === saved)?.id ?? list[0]?.id ?? null);
     } catch {}
-  }, []);
+  }, [entityParam]);
 
   useEffect(() => { localStorage.setItem(DIST_ENTITIES_KEY, JSON.stringify(entities)); }, [entities]);
   useEffect(() => {
@@ -572,7 +590,7 @@ export default function Distribution() {
   const addEntity = () => {
     const name = newEntityName.trim();
     if (!name) return;
-    const ent: DistEntity = { id: uid(), name };
+    const ent: DistEntity = { id: uid(), name, createdAt: new Date().toISOString() };
     setEntities((p) => [...p, ent]);
     setActiveEntityId(ent.id);
     setNewEntityName("");
