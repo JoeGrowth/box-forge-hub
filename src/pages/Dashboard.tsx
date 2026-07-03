@@ -60,6 +60,7 @@ const Dashboard = () => {
                 <DashboardProgress />
                 <CommitmentsPanel />
                 <DashboardOpportunities />
+                <ProgressionPathCard userId={user?.id} />
               </div>
               <div className="space-y-6 md:space-y-8 min-w-0">
                 <DashboardNextSteps />
