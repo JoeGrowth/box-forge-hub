@@ -14,8 +14,11 @@ import { ctasFor } from "@/lib/dashboardCtas";
 
 export function DashboardHero() {
   const { user } = useAuth();
+  const { expertise, loading: expertiseLoading } = useExpertise(user?.id);
   const [profile, setProfile] = useState<{ full_name: string | null } | null>(null);
   const [primaryRole, setPrimaryRole] = useState<string | null>(null);
+  const [activity, setActivity] = useState<{ applications: number; ideas: number; journeysCompleted: number }>({ applications: 0, ideas: 0, journeysCompleted: 0 });
+  const [activityLoading, setActivityLoading] = useState(true);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -28,6 +31,23 @@ export function DashboardHero() {
       setPrimaryRole((state as any)?.primary_role ?? null);
     };
     fetchProfile();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const [{ count: appCount }, { count: ideaCount }, { data: journeys }] = await Promise.all([
+        supabase.from("startup_applications").select("*", { count: "exact", head: true }).eq("applicant_id", user.id),
+        supabase.from("startup_ideas").select("*", { count: "exact", head: true }).eq("creator_id", user.id),
+        supabase.from("learning_journeys").select("status").eq("user_id", user.id).eq("status", "approved"),
+      ]);
+      setActivity({
+        applications: appCount || 0,
+        ideas: ideaCount || 0,
+        journeysCompleted: journeys?.length || 0,
+      });
+      setActivityLoading(false);
+    })();
   }, [user]);
 
   const { data: goal = null } = useQuery({
