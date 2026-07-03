@@ -544,9 +544,25 @@ const eventDefaults = {
   ] as Charge[],
 };
 
-const DIST_ENTITIES_KEY = "distribution_entities_v1";
+export const DIST_ENTITIES_KEY = "distribution_entities_v1";
 const DIST_ACTIVE_ENTITY_KEY = "distribution_active_entity_v1";
-type DistEntity = { id: string; name: string };
+export type DistEntity = { id: string; name: string; orgId?: string; createdAt?: string };
+
+export function readDistEntities(): DistEntity[] {
+  try {
+    const raw = localStorage.getItem(DIST_ENTITIES_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+export function writeDistEntities(list: DistEntity[]) {
+  localStorage.setItem(DIST_ENTITIES_KEY, JSON.stringify(list));
+}
+export function addDistEntity(name: string, orgId?: string): DistEntity {
+  const ent: DistEntity = { id: Math.random().toString(36).slice(2, 9), name, orgId, createdAt: new Date().toISOString() };
+  const list = readDistEntities();
+  writeDistEntities([...list, ent]);
+  return ent;
+}
 
 export default function Distribution() {
   const [entities, setEntities] = useState<DistEntity[]>([]);
