@@ -125,7 +125,8 @@ export default function ConsultingGrowth() {
     }
     toast({ title: "Opportunity added" });
     setDialogOpen(false);
-    setForm({ title: "", client_name: "", source: "LINKEDIN", description: "", number_of_days: "", amount_per_day: "", currency: "EUR" });
+    setForm(EMPTY_FORM);
+    try { localStorage.removeItem(DRAFT_KEY); localStorage.removeItem(OPEN_KEY); } catch {}
     load();
   };
 
