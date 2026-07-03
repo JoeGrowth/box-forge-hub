@@ -153,7 +153,7 @@ function DistributionBuilder({
       return;
     }
     if (titleTaken) {
-      toast.error(`A ${kind} distribution called "${title}" already exists — pick a different title.`);
+      toast.error(`A ${label} distribution called "${title}" already exists — pick a different title.`);
       return;
     }
     if (totalPercent !== 100) {
@@ -179,7 +179,7 @@ function DistributionBuilder({
     setSaving(false);
     if (error) {
       if ((error as any).code === "23505") {
-        toast.error(`A ${kind} distribution called "${title}" already exists.`);
+        toast.error(`A ${label} distribution called "${title}" already exists.`);
       } else {
         toast.error(error.message);
       }
@@ -196,7 +196,7 @@ function DistributionBuilder({
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
-            <FolderOpen className="w-4 h-4" /> Saved {kind} distributions
+            <FolderOpen className="w-4 h-4" /> Saved {label} distributions
             <Badge variant="secondary" className="ml-1">{saved.length}</Badge>
           </CardTitle>
           {loadingSaved && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
@@ -262,7 +262,7 @@ function DistributionBuilder({
             />
             {titleTaken && (
               <p className="text-xs text-destructive">
-                A {kind} distribution with this title already exists.
+                A {label} distribution with this title already exists.
               </p>
             )}
           </div>
