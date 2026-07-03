@@ -57,6 +57,7 @@ import {
   ArrowLeft,
   ClipboardList,
   ArrowRight,
+  PieChart,
 } from "lucide-react";
 
 type JobRow = {
@@ -181,11 +182,12 @@ export default function OrganizationPage() {
       </div>
 
       <Tabs defaultValue="jobs" className="space-y-4">
-        <TabsList>
+        <TabsList className="flex-wrap h-auto justify-start">
           <TabsTrigger value="jobs"><Briefcase className="w-3 h-3 mr-1" /> Jobs ({jobs.length})</TabsTrigger>
           <TabsTrigger value="tenders"><FileText className="w-3 h-3 mr-1" /> Tenders ({tenders.length})</TabsTrigger>
           <TabsTrigger value="declaration"><ClipboardList className="w-3 h-3 mr-1" /> Declaration ({declarations.length})</TabsTrigger>
           <TabsTrigger value="members"><Users className="w-3 h-3 mr-1" /> Members ({members.length})</TabsTrigger>
+          <TabsTrigger value="distribution"><PieChart className="w-3 h-3 mr-1" /> Distribution</TabsTrigger>
         </TabsList>
 
         {/* JOBS */}
@@ -374,6 +376,50 @@ export default function OrganizationPage() {
                 </div>
               );
             })}
+          </div>
+        </TabsContent>
+        {/* DISTRIBUTION */}
+        <TabsContent value="distribution" className="space-y-3">
+          <div className="rounded-2xl border border-border bg-card p-6">
+            <div className="flex items-start gap-4 flex-wrap">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <PieChart className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1 min-w-[220px]">
+                <h3 className="font-semibold text-foreground">Revenue distribution</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Split budgets across the {org.name} team for consulting missions, trainings and events. Every scenario you save is tied to your account and reusable from the Distribution workspace.
+                </p>
+                <div className="flex flex-wrap gap-2 mt-4">
+                  <Link to={`/distribution?org=${org.slug}`}>
+                    <Button size="sm"><PieChart className="w-3 h-3 mr-1" /> Open distribution workspace</Button>
+                  </Link>
+                  <Link to={`/distribution?org=${org.slug}&kind=consulting`}>
+                    <Button size="sm" variant="outline">Consulting split</Button>
+                  </Link>
+                  <Link to={`/distribution?org=${org.slug}&kind=training`}>
+                    <Button size="sm" variant="outline">Training split</Button>
+                  </Link>
+                  <Link to={`/distribution?org=${org.slug}&kind=event`}>
+                    <Button size="sm" variant="outline">Event split</Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-3">
+            <div className="rounded-xl border border-border bg-card p-4">
+              <div className="text-xs text-muted-foreground">Jobs</div>
+              <div className="text-2xl font-bold text-foreground mt-1">{jobs.length}</div>
+            </div>
+            <div className="rounded-xl border border-border bg-card p-4">
+              <div className="text-xs text-muted-foreground">Tenders</div>
+              <div className="text-2xl font-bold text-foreground mt-1">{tenders.length}</div>
+            </div>
+            <div className="rounded-xl border border-border bg-card p-4">
+              <div className="text-xs text-muted-foreground">Members</div>
+              <div className="text-2xl font-bold text-foreground mt-1">{members.length}</div>
+            </div>
           </div>
         </TabsContent>
       </Tabs>

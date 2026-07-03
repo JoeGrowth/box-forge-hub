@@ -3571,6 +3571,7 @@ export type Database = {
           logo_url: string | null
           name: string
           slug: string
+          source_idea_id: string | null
           type: string
           updated_at: string
           website: string | null
@@ -3583,6 +3584,7 @@ export type Database = {
           logo_url?: string | null
           name: string
           slug: string
+          source_idea_id?: string | null
           type?: string
           updated_at?: string
           website?: string | null
@@ -3595,11 +3597,20 @@ export type Database = {
           logo_url?: string | null
           name?: string
           slug?: string
+          source_idea_id?: string | null
           type?: string
           updated_at?: string
           website?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "organizations_source_idea_id_fkey"
+            columns: ["source_idea_id"]
+            isOneToOne: false
+            referencedRelation: "startup_ideas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ownership_edges: {
         Row: {
@@ -5658,6 +5669,7 @@ export type Database = {
       }
     }
     Functions: {
+      _slugify: { Args: { _txt: string }; Returns: string }
       accept_entity_role_link: {
         Args: { _assignment_id: string }
         Returns: {
