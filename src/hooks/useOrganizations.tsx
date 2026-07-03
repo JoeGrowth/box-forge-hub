@@ -17,7 +17,9 @@ export interface Organization {
   website: string | null;
   created_by: string;
   created_at: string;
+  lifecycle_stage?: "venture" | "business" | "startup" | "mature";
 }
+
 
 export interface OrgMembership {
   organization: Organization;

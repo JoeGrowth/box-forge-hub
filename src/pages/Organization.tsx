@@ -58,7 +58,25 @@ import {
   ClipboardList,
   ArrowRight,
   PieChart,
+  Scale,
+  Upload,
+  Download,
+  FilePlus,
+  Rocket,
+  Sparkles,
+  TrendingUp,
+  Trophy,
 } from "lucide-react";
+import jsPDF from "jspdf";
+
+type LifecycleStage = "venture" | "business" | "startup" | "mature";
+const STAGE_META: Record<LifecycleStage, { label: string; icon: typeof Rocket; className: string }> = {
+  venture:  { label: "Venture",        icon: Rocket,     className: "bg-blue-500/10 text-blue-700 border-blue-200" },
+  business: { label: "Business",       icon: Sparkles,   className: "bg-emerald-500/10 text-emerald-700 border-emerald-200" },
+  startup:  { label: "Startup",        icon: TrendingUp, className: "bg-purple-500/10 text-purple-700 border-purple-200" },
+  mature:   { label: "Mature company", icon: Trophy,     className: "bg-amber-500/10 text-amber-700 border-amber-200" },
+};
+
 
 type JobRow = {
   id: string;
@@ -103,23 +121,27 @@ export default function OrganizationPage() {
   const [jobs, setJobs] = useState<JobRow[]>([]);
   const [tenders, setTenders] = useState<TenderRow[]>([]);
   const [declarations, setDeclarations] = useState<{ id: string; name: string; created_at: string }[]>([]);
+  const [legalDocs, setLegalDocs] = useState<{ id: string; name: string; storage_path: string; created_at: string; size_bytes: number | null }[]>([]);
   const [newDeclName, setNewDeclName] = useState("");
   const [creatingDecl, setCreatingDecl] = useState(false);
   const { members, reload: reloadMembers } = useOrgMembers(org?.id);
 
   const loadOpps = useCallback(async () => {
     if (!org) return;
-    const [{ data: js }, { data: ts }, { data: ds }] = await Promise.all([
+    const [{ data: js }, { data: ts }, { data: ds }, { data: lg }] = await Promise.all([
       supabase.from("job_opportunities").select("*").eq("organization_id", org.id).order("created_at", { ascending: false }),
       supabase.from("tenders").select("*").eq("organization_id", org.id).order("created_at", { ascending: false }),
       supabase.from("declaration_entities").select("id, name, created_at").eq("organization_id", org.id).order("created_at", { ascending: true }),
+      supabase.from("organization_legal_documents").select("id, name, storage_path, created_at, size_bytes").eq("organization_id", org.id).order("created_at", { ascending: false }),
     ]);
     setJobs((js as JobRow[]) ?? []);
     setTenders((ts as TenderRow[]) ?? []);
     setDeclarations((ds as any) ?? []);
+    setLegalDocs((lg as any) ?? []);
   }, [org]);
 
   useEffect(() => { loadOpps(); }, [loadOpps]);
+
 
   const createDeclaration = async () => {
     if (!org || !user || !newDeclName.trim()) return;
@@ -163,6 +185,16 @@ export default function OrganizationPage() {
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-bold">{org.name}</h1>
               <Badge variant="outline" className="capitalize">{org.type}</Badge>
+              {(() => {
+                const stage = (org.lifecycle_stage ?? "venture") as LifecycleStage;
+                const meta = STAGE_META[stage];
+                const I = meta.icon;
+                return (
+                  <Badge variant="outline" className={meta.className}>
+                    <I className="w-3 h-3 mr-1" /> {meta.label}
+                  </Badge>
+                );
+              })()}
               {role && (
                 <Badge className={ROLE_COLOR[role]}>
                   {(() => { const I = ROLE_ICON[role]; return <I className="w-3 h-3 mr-1" />; })()}
@@ -177,6 +209,31 @@ export default function OrganizationPage() {
                 {org.website} <ExternalLink className="w-3 h-3 ml-1" />
               </a>
             )}
+            {canAdmin && (
+              <div className="mt-3 flex items-center gap-2 flex-wrap">
+                <Label className="text-xs text-muted-foreground">Lifecycle stage:</Label>
+                <Select
+                  value={(org.lifecycle_stage ?? "venture") as string}
+                  onValueChange={async (v) => {
+                    const { error } = await supabase
+                      .from("organizations")
+                      .update({ lifecycle_stage: v } as any)
+                      .eq("id", org.id);
+                    if (error) toast({ title: "Update failed", description: error.message, variant: "destructive" });
+                    else { toast({ title: `Stage set to ${STAGE_META[v as LifecycleStage].label}` }); window.location.reload(); }
+                  }}
+                >
+                  <SelectTrigger className="h-8 w-44"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="venture">Venture</SelectItem>
+                    <SelectItem value="business">Business (first paying customer)</SelectItem>
+                    <SelectItem value="startup">Startup (searching repeatability)</SelectItem>
+                    <SelectItem value="mature">Mature company</SelectItem>
+                  </SelectContent>
+                </Select>
+                <span className="text-xs text-muted-foreground">Auto-upgrades to Business when a declaration mission is marked paid.</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -186,9 +243,11 @@ export default function OrganizationPage() {
           <TabsTrigger value="jobs"><Briefcase className="w-3 h-3 mr-1" /> Jobs ({jobs.length})</TabsTrigger>
           <TabsTrigger value="tenders"><FileText className="w-3 h-3 mr-1" /> Tenders ({tenders.length})</TabsTrigger>
           <TabsTrigger value="declaration"><ClipboardList className="w-3 h-3 mr-1" /> Declaration ({declarations.length})</TabsTrigger>
+          <TabsTrigger value="legal"><Scale className="w-3 h-3 mr-1" /> Legal ({legalDocs.length})</TabsTrigger>
           <TabsTrigger value="members"><Users className="w-3 h-3 mr-1" /> Members ({members.length})</TabsTrigger>
           <TabsTrigger value="distribution"><PieChart className="w-3 h-3 mr-1" /> Distribution</TabsTrigger>
         </TabsList>
+
 
         {/* JOBS */}
         <TabsContent value="jobs" className="space-y-3">
@@ -318,6 +377,21 @@ export default function OrganizationPage() {
             </div>
           )}
         </TabsContent>
+
+        {/* LEGAL */}
+        <TabsContent value="legal" className="space-y-3">
+          <LegalTab
+            orgId={org.id}
+            orgName={org.name}
+            userId={user?.id ?? ""}
+            canEdit={canEdit}
+            canDelete={canAdmin}
+            docs={legalDocs}
+            reload={loadOpps}
+          />
+        </TabsContent>
+
+
 
         {/* MEMBERS */}
         <TabsContent value="members" className="space-y-3">
@@ -596,3 +670,209 @@ function InviteMemberRow({ orgId, onAdded }: { orgId: string; onAdded: () => voi
     </div>
   );
 }
+
+type LegalDoc = { id: string; name: string; storage_path: string; created_at: string; size_bytes: number | null };
+
+function LegalTab({
+  orgId, orgName, userId, canEdit, canDelete, docs, reload,
+}: {
+  orgId: string; orgName: string; userId: string;
+  canEdit: boolean; canDelete: boolean;
+  docs: LegalDoc[]; reload: () => void;
+}) {
+  const { toast } = useToast();
+  const [uploading, setUploading] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [pdfTitle, setPdfTitle] = useState("");
+  const [pdfBody, setPdfBody] = useState("");
+  const [generating, setGenerating] = useState(false);
+
+  const uploadFile = async (file: File) => {
+    if (!file) return;
+    if (file.type !== "application/pdf") {
+      toast({ title: "Only PDF files are allowed", variant: "destructive" });
+      return;
+    }
+    setUploading(true);
+    const path = `${orgId}/${Date.now()}_${file.name.replace(/[^\w.\-]/g, "_")}`;
+    const { error: upErr } = await supabase.storage
+      .from("organization-legal")
+      .upload(path, file, { contentType: "application/pdf", upsert: false });
+    if (upErr) {
+      setUploading(false);
+      toast({ title: "Upload failed", description: upErr.message, variant: "destructive" });
+      return;
+    }
+    const { error: dbErr } = await supabase.from("organization_legal_documents").insert({
+      organization_id: orgId,
+      name: file.name,
+      storage_path: path,
+      mime_type: "application/pdf",
+      size_bytes: file.size,
+      uploaded_by: userId,
+    });
+    setUploading(false);
+    if (dbErr) {
+      toast({ title: "Save failed", description: dbErr.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Legal document uploaded" });
+    reload();
+  };
+
+  const download = async (d: LegalDoc) => {
+    const { data, error } = await supabase.storage
+      .from("organization-legal")
+      .createSignedUrl(d.storage_path, 60);
+    if (error || !data?.signedUrl) {
+      toast({ title: "Could not open file", description: error?.message, variant: "destructive" });
+      return;
+    }
+    window.open(data.signedUrl, "_blank", "noopener");
+  };
+
+  const remove = async (d: LegalDoc) => {
+    if (!confirm(`Delete "${d.name}"?`)) return;
+    await supabase.storage.from("organization-legal").remove([d.storage_path]);
+    const { error } = await supabase.from("organization_legal_documents").delete().eq("id", d.id);
+    if (error) toast({ title: "Delete failed", description: error.message, variant: "destructive" });
+    else { toast({ title: "Deleted" }); reload(); }
+  };
+
+  const generatePdf = async () => {
+    if (!pdfTitle.trim() || !pdfBody.trim()) return;
+    setGenerating(true);
+    try {
+      const doc = new jsPDF({ unit: "pt", format: "a4" });
+      const margin = 56;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const maxWidth = pageWidth - margin * 2;
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text(orgName, margin, margin);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text(`Legal document · ${new Date().toLocaleDateString()}`, margin, margin + 16);
+      doc.setDrawColor(180);
+      doc.line(margin, margin + 26, pageWidth - margin, margin + 26);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.text(pdfTitle.trim(), margin, margin + 52);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      const lines = doc.splitTextToSize(pdfBody.trim(), maxWidth);
+      let y = margin + 76;
+      for (const line of lines) {
+        if (y > pageHeight - margin) { doc.addPage(); y = margin; }
+        doc.text(line, margin, y);
+        y += 16;
+      }
+
+      const blob = doc.output("blob");
+      const safe = pdfTitle.trim().replace(/[^\w.\-]+/g, "_").slice(0, 60) || "legal-document";
+      const filename = `${safe}.pdf`;
+      const file = new File([blob], filename, { type: "application/pdf" });
+      await uploadFile(file);
+      setCreateOpen(false);
+      setPdfTitle(""); setPdfBody("");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      {canEdit && (
+        <div className="rounded-xl border border-dashed border-border bg-card p-4 flex flex-wrap gap-2 items-center">
+          <input
+            id="legal-upload"
+            type="file"
+            accept="application/pdf"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadFile(f); e.currentTarget.value = ""; }}
+          />
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={uploading}
+            onClick={() => document.getElementById("legal-upload")?.click()}
+          >
+            <Upload className="w-3 h-3 mr-1" /> {uploading ? "Uploading…" : "Upload PDF"}
+          </Button>
+          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm"><FilePlus className="w-3 h-3 mr-1" /> Create PDF</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create a legal PDF for {orgName}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3">
+                <div>
+                  <Label>Document title</Label>
+                  <Input value={pdfTitle} onChange={(e) => setPdfTitle(e.target.value)} placeholder="Statutes / Founders agreement / NDA…" />
+                </div>
+                <div>
+                  <Label>Content</Label>
+                  <Textarea
+                    value={pdfBody}
+                    onChange={(e) => setPdfBody(e.target.value)}
+                    rows={10}
+                    placeholder="Type the legal clauses. Line breaks are preserved."
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
+                <Button onClick={generatePdf} disabled={generating || !pdfTitle.trim() || !pdfBody.trim()}>
+                  {generating ? "Generating…" : "Generate & save"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          <span className="text-xs text-muted-foreground">Store statutes, founders agreements, NDAs, contracts — PDF only.</span>
+        </div>
+      )}
+
+      {docs.length === 0 ? (
+        <EmptyState
+          icon={Scale}
+          title="No legal documents yet"
+          hint={canEdit ? "Upload a PDF or generate one from the buttons above." : "An editor needs to add one."}
+        />
+      ) : (
+        <div className="rounded-xl border border-border bg-card divide-y divide-border">
+          {docs.map((d) => (
+            <div key={d.id} className="flex items-center justify-between p-4 gap-3">
+              <div className="min-w-0 flex items-start gap-3">
+                <FileText className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="font-medium text-foreground truncate">{d.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(d.created_at).toLocaleDateString()}
+                    {d.size_bytes ? ` · ${(d.size_bytes / 1024).toFixed(1)} KB` : ""}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <Button size="sm" variant="outline" onClick={() => download(d)}>
+                  <Download className="w-3 h-3 mr-1" /> Open
+                </Button>
+                {canDelete && (
+                  <Button size="icon" variant="ghost" onClick={() => remove(d)} className="text-muted-foreground hover:text-destructive">
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
