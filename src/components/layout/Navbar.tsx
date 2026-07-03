@@ -75,8 +75,6 @@ const moreLinks = [
   { name: "Organizations", path: "/organizations", icon: Building2 },
   { name: "Brand Identity", path: "/brand-identity", icon: Sparkles },
   { name: "Checklist", path: "/checklist", icon: ListChecks },
-  { name: "Declaration", path: "/declaration", icon: FileText },
-  { name: "Distribution", path: "/distribution", icon: BarChart3 },
 ];
 
 // Synchronous read of cached admin flag so first paint is stable.
