@@ -35,17 +35,17 @@ export function ProgressionPathCard({ userId }: { userId: string | undefined | n
   const unlocked = progression.recommended_actions ?? [];
 
   return (
-    <div className="bg-gradient-to-br from-primary/5 to-b4-coral/5 rounded-3xl border border-primary/20 p-8 mb-8">
-      <div className="flex items-start justify-between mb-2">
-        <div className="flex items-center gap-3">
-          <Target className="w-5 h-5 text-primary" />
-          <h2 className="font-display text-xl font-bold text-foreground">Professional Growth Path</h2>
+    <div className="bg-gradient-to-br from-primary/5 to-b4-coral/5 rounded-2xl md:rounded-3xl border border-primary/20 p-4 sm:p-6 md:p-8 mb-6 md:mb-8">
+      <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <Target className="w-5 h-5 text-primary shrink-0" />
+          <h2 className="font-display text-lg sm:text-xl font-bold text-foreground truncate">Professional Growth Path</h2>
         </div>
-        <Badge variant="outline" className="text-xs">
+        <Badge variant="outline" className="text-[10px] sm:text-xs shrink-0">
           Progression {Math.round(progression.progression_score)}
         </Badge>
       </div>
-      <p className="text-sm text-muted-foreground mb-5">
+      <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-5">
         Derived from your six graphs — Expertise, Trust, Opportunity, Revenue, Reputation, Ownership.
       </p>
 
