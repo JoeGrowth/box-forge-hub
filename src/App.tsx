@@ -151,6 +151,8 @@ const App = () => (
                   <Route path="/publish-consulting" element={<PublishConsulting />} />
                   <Route path="/publish-training" element={<PublishTraining />} />
                   <Route path="/publish-job" element={<PublishJob />} />
+                  <Route path="/consulting-growth" element={<ProtectedRoute><ConsultingGrowth /></ProtectedRoute>} />
+                  <Route path="/brand-entity" element={<ProtectedRoute><BrandEntity /></ProtectedRoute>} />
                   </Route>
                   <Route path="/opportunities/:category/:id" element={<OpportunityDetail />} />
                   {/* Legacy: old links pointed at startup ideas only. */}
