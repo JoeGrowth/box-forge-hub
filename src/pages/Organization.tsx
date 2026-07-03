@@ -378,6 +378,21 @@ export default function OrganizationPage() {
           )}
         </TabsContent>
 
+        {/* LEGAL */}
+        <TabsContent value="legal" className="space-y-3">
+          <LegalTab
+            orgId={org.id}
+            orgName={org.name}
+            userId={user?.id ?? ""}
+            canEdit={canEdit}
+            canDelete={canAdmin}
+            docs={legalDocs}
+            reload={loadOpps}
+          />
+        </TabsContent>
+
+
+
         {/* MEMBERS */}
         <TabsContent value="members" className="space-y-3">
           {canAdmin && <InviteMemberRow orgId={org.id} onAdded={reloadMembers} />}
