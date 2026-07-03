@@ -89,16 +89,18 @@ export function ProgressionPathCard({ userId }: { userId: string | undefined | n
           return (
             <div
               key={a.rule}
-              className="flex items-start gap-4 bg-card border border-border rounded-xl p-4"
+              className="flex flex-col sm:flex-row items-stretch sm:items-start gap-3 sm:gap-4 bg-card border border-border rounded-xl p-3 sm:p-4"
             >
-              <Sparkles className="w-5 h-5 text-b4-teal shrink-0 mt-0.5" />
-              <div className="flex-1 min-w-0 space-y-2">
-                <div className="text-sm font-semibold text-foreground capitalize">
-                  {actionLabel(a)}
+              <div className="flex items-start gap-3 flex-1 min-w-0">
+                <Sparkles className="w-5 h-5 text-b4-teal shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0 space-y-2">
+                  <div className="text-sm font-semibold text-foreground capitalize break-words">
+                    {actionLabel(a)}
+                  </div>
+                  <RecommendationExplanationView data={explanation} />
                 </div>
-                <RecommendationExplanationView data={explanation} />
               </div>
-              <div className="flex flex-col gap-1 shrink-0">
+              <div className="flex sm:flex-col items-center sm:items-end gap-2 sm:gap-1 shrink-0 justify-end">
                 <Button asChild size="sm" variant="outline" className="h-7 text-xs">
                   <Link to={actionLink(a)}>
                     Go <ArrowRight className="w-3 h-3 ml-1" />
