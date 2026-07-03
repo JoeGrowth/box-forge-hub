@@ -60,7 +60,7 @@ export default function Organizations() {
       o.name.toLowerCase().includes(q) ||
       o.type.toLowerCase().includes(q) ||
       (o.description ?? "").toLowerCase().includes(q);
-    const matchesType = !typeFilter || o.type === typeFilter;
+    const matchesType = !typeFilter || typeFilter === "all" || o.type === typeFilter;
     return matchesText && matchesType;
   });
 
@@ -186,7 +186,7 @@ export default function Organizations() {
                     <SelectValue placeholder="All types" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All types</SelectItem>
+                    <SelectItem value="all">All types</SelectItem>
                     <SelectItem value="company">Company</SelectItem>
                     <SelectItem value="ministry">Ministry</SelectItem>
                     <SelectItem value="ngo">NGO</SelectItem>
