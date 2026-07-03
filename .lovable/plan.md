@@ -1,230 +1,151 @@
-# Optional Profile Linking for Entity Roles — FROZEN
+# Growth Journey — Final Plan (v4)
 
-Establishes verified identity and reproducible attribution for entity slots (Associé 1/2, Internal Structure Handler, Internal Process Handler, and future roles) without ever writing directly into scoring graphs. Downstream graphs consume immutable, self-contained events across four separated streams.
+Incorporates all 8 refinements on top of v3, plus a concrete seed so **staging2@box4solutions.com** sees the new actions in practice on next login.
 
-## Principles
+---
 
-- Immutable event history.
-- Projections as derived state; graphs never mutated directly.
-- Historical reproducibility contained inside events, not relational lookups.
-- Temporal correctness via time-scoped assignments and event-time resolution.
-- **Relationship state and activity attribution are separate streams.** Ownership is relationship-state, not activity-derived.
-- Labels always visible; profile linking always optional; two-sided confirmation before any graph effect.
+## 1. Schema refinements (on top of v3)
 
-## Four immutable streams (platform-wide)
+### 1.1 Normalize predicates (replaces `progression_rules.predicates jsonb`)
 
 ```text
-Identity                Activity                  Progress               Opportunity
---------                --------                  --------               -----------
-role.link.*             contribution.*            commitment.*           opportunity.*
-affiliation.*           revenue.attributed        milestone.*            negotiation.*
-ownership.edge.*        expertise.attributed      relationship.*         application.*
-                        trust.attributed
+progression_rules              (metadata only)
+  id, slug, stage, title, description, priority, active
+
+progression_rule_predicates    (NEW — join table)
+  id, rule_id FK, predicate_id FK, argument text, evaluation_order int
+  UNIQUE (rule_id, evaluation_order)
 ```
 
-All graphs are projections over these streams. Reputation projects over multiple streams.
+`evaluate_rule(rule_id, user_id)` iterates predicates ordered by `evaluation_order`, AND-combined, dispatched via static `CASE handler` (no dynamic SQL). Foreign keys guarantee predicate existence.
 
-## Bounded contexts touched by this feature
+### 1.2 Status lookup tables (replace inline CHECK constraints)
 
 ```text
-Entity Role Assignment          Affiliation                    Ownership (relationship state)
-        │                            │                                │
-        ├── role.link.requested      ├── affiliation.started         ├── ownership.edge.created
-        ├── role.link.accepted       └── affiliation.ended           └── ownership.edge.ended
-        ├── role.link.declined                                         (emitted from OWNER role transitions)
-        └── role.link.revoked
-
-Attribution Engine (activity)
-        │
-        ├── consumes domain events + active assignments + resolved policy
-        └── emits self-contained revenue.attributed / expertise.attributed / trust.attributed
+consultant_opportunity_statuses (slug PK, label, color, sort_order, terminal bool)
+consultant_mission_statuses      (slug PK, label, color, sort_order, terminal bool)
 ```
 
-- Role assignments, affiliations, and ownership edges are decoupled. Today the domain service emits `role.link.accepted` + `affiliation.started` + (for OWNER) `ownership.edge.created` in one transaction; tomorrow contractor / alumni / share transfer / inheritance can emit `affiliation.*` or `ownership.edge.*` without a role row.
-- **Ownership graph projects from `ownership.edge.*` only.** It does not consume attribution events.
-- Revenue / expertise / trust graphs consume attribution events. They may reference ownership information via join at read time, but ownership itself never depends on activity.
+`consultant_opportunities.status` and `consultant_missions.status` become FKs to these tables. Legal transitions still enforced by service functions (`transition_opportunity_status`, `transition_mission_status`). Labels/colors/localization become data.
 
-## Data model
+### 1.3 Event ordering by identity
 
-Generalized across entity types (declaration_entity, organization, startup, box, accelerator, ...).
+`graph_events` already has `id bigint identity`. Replay/consumers order by `id`, not `occurred_at` (which can tie). Add index `graph_events(aggregate_id, id)`.
+
+### 1.4 Admin override audit fields
+
+`admin_overrides` gets `reason text NOT NULL, actor_id uuid NOT NULL, target_table text, target_id uuid, previous_value jsonb, new_value jsonb`. Every service function that accepts an override path (`transition_mission_status(..., p_override_reason text default null)`) writes a row when the reason is non-null.
+
+### 1.5 Milestone progress helper
+
+```sql
+create view progression_milestone_progress as
+select user_id, milestone_slug, current_value, threshold,
+       least(1.0, current_value::numeric / threshold) as percent_complete
+from ...;
+```
+
+Frontend reads this view directly — never computes percentages.
+
+### 1.6 Brand activation response contract
+
+```json
+{ "activated": false, "state": "validation", "failures": [], "warnings": [] }
+```
+
+`warnings[]` allows non-blocking recommendations (e.g., "no partner set yet — using default B4") without breaking the contract.
+
+### 1.7 RPC-only write boundary
+
+Frontend uses ONLY these RPCs (no direct table inserts/updates for the growth domain):
+
+- `create_consultant_opportunity(payload jsonb)`
+- `transition_opportunity_status(id, next_status, override_reason?)`
+- `create_consultant_mission(opportunity_id, payload)`
+- `transition_mission_status(id, next_status, override_reason?)`
+- `record_paid_mission(id)` (idempotent)
+- `create_brand_entity(payload)` / `activate_brand_entity(org_id)`
+- `assign_entity_role(org_id, user_id, role_slug, reason?)` / `deactivate_entity_role(assignment_id, reason?)`
+
+RLS on the underlying tables denies direct writes from `authenticated` (SELECT-only for owner reads); all mutations go through `SECURITY DEFINER` RPCs with owner checks.
+
+### 1.8 Explicit performance metrics
+
+`consultant_performance` view definitions (documented + tested):
 
 ```text
-role_types                     (reference — behavior)
-----------
-code            OWNER | OPERATOR | ADVISOR | BOARD_MEMBER | LEGAL_REPRESENTATIVE | ...
-
-role_catalog                   (reference — presentation, versioned)
-------------
-id, role_slug, role_type, default_label, applies_to,
-effective_from, effective_until nullable, version
-UNIQUE (role_slug, version)
-
-entity_role_assignments        (source of truth)
------------------------
-id, entity_type, entity_id, role_slug, slot, label,
-linked_user_id nullable, equity_pct nullable,
-status (pending|accepted|declined|revoked),
-linked_by, linked_at, accepted_at, revoked_at,
-effective_from (= accepted_at), effective_until (= revoked_at, nullable)
-
-role_attribution_policy        (versioned, time-scoped)
------------------------
-id, role_type, ownership_weight, expertise_weight,
-revenue_weight, trust_weight,
-effective_from, effective_until nullable, version
-
-attribution_events             (immutable, self-contained, activity stream)
------------------
-id
-event_type                     revenue.attributed | expertise.attributed | trust.attributed
-source_event_id
-source_event_type
-occurred_at                    source event time
-entity_type, entity_id
-user_id
-assignment_id                  reference only
-role_slug, role_type           captured at attribution
-policy_version                 captured
-ownership_weight               resolved weights persisted
-revenue_weight
-expertise_weight
-trust_weight
-equity_pct                     captured
-amount, currency               nullable
-payload                        jsonb
-processing_state               queued | processed | failed
-failure_reason                 nullable
-idempotency_key                <source_event_id>:<assignment_id>:<event_type>:<policy_version>
-attributed_at
-UNIQUE (idempotency_key)
-
-ownership_edges                (identity stream — projection of ownership.edge.*)
----------------
-profile_id, entity_type, entity_id,
-equity_pct, effective_from, effective_until nullable, active,
-source_assignment_id nullable
-
-verified_affiliations          (identity stream — projection of affiliation.*)
----------------------
-profile_id, entity_type, entity_id, role_slug, role_type,
-verified_since, verified_until nullable, active
-
-entity_role_audit_log
----------------------
-assignment_id, transition, actor_user_id, at, payload
+active_clients       := COUNT(DISTINCT dm.client_id)
+                        WHERE dm.paid_at IS NOT NULL
+                          AND dm.paid_at >= now() - interval '12 months'
+total_revenue        := SUM(dm.amount)         WHERE dm.paid_at IS NOT NULL
+avg_daily_rate       := AVG(cm.subtotal / NULLIF(cm.number_of_days,0))
+                        WHERE cm.billing_model='daily_rate' AND cm.status='paid'
+paid_missions_count  := COUNT(*)               WHERE cm.status='paid'
 ```
 
-### Frozen modeling choices
+Sourced entirely from `declaration_missions` (revenue) and `consultant_missions` (delivery).
 
-- **No `assignment_snapshots` table.** The attribution event is the snapshot — embeds `role_slug`, `role_type`, `equity_pct`, `policy_version`, and every resolved weight.
-- **Ownership is state-derived**, projected from `ownership.edge.*` events. Never carried in `attribution_events`.
-- **`processing_state`** (`queued | processed | failed`) — the event's mere existence already means attribution occurred; this field describes delivery, not domain semantics.
-- **Idempotency key includes `event_type`** so multi-output attribution (revenue + expertise from one source event) does not collide.
-- **`role_catalog` is versioned** — renaming "Internal Process Handler" → "Operations Lead" adds a new version; historical events resolve the historically correct label.
-- Policies key on `role_type`, not `role_slug` — `associe_1` and `associe_2` share one `OWNER` policy.
+---
 
-## Lifecycle
+## 2. Files
 
-Domain service performs auth → validation → persistence → event emission in one transaction.
+- `scripts/seed-system-principal.ts` (NEW — bootstraps system auth user + `platform_principals.slug='system'`)
+- `supabase/migrations/<ts>_growth_journey.sql` (NEW — all schema, RPCs, seed data for predicates/rules/milestones/statuses/partners, plus staging2 activation rows)
+- `src/pages/ConsultingGrowth.tsx` (NEW)
+- `src/pages/BrandEntity.tsx` (NEW)
+- `src/App.tsx` (+2 routes)
+- `src/hooks/useNextBestActions.tsx` (+2 action definitions)
+- `src/components/dashboard/DashboardNextSteps.tsx` (retitle "Your Growth Journey" + Foundation/Growth/Future grouping)
+- `src/components/profile/…` (Inspiring Advisor + Alumni chips)
 
-```text
-requested ── role.link.requested
-    │
-    ├── accepted ── role.link.accepted
-    │       │           ├── (same tx) affiliation.started
-    │       │           └── (same tx, if role_type = OWNER) ownership.edge.created
-    │       │
-    │       └── revoked ── role.link.revoked
-    │                          ├── (same tx) affiliation.ended
-    │                          └── (same tx, if role_type = OWNER) ownership.edge.ended
-    │
-    └── declined ── role.link.declined
+---
+
+## 3. Making it real for staging2@box4solutions.com
+
+The migration includes a **guarded seed block** keyed by email so it only fires for this user in staging:
+
+```sql
+DO $$
+DECLARE v_uid uuid;
+BEGIN
+  SELECT id INTO v_uid FROM auth.users WHERE email='staging2@box4solutions.com';
+  IF v_uid IS NULL THEN RETURN; END IF;
+
+  -- Ensure prerequisites recorded as milestones (intent, natural role,
+  -- track record, sharpened resume) so consulting_growth rule unlocks.
+  INSERT INTO progression_graph (user_id, milestone_slug, reached_at)
+  VALUES
+    (v_uid,'intent_defined',        now()),
+    (v_uid,'natural_role_defined',  now()),
+    (v_uid,'track_record_filled',   now()),
+    (v_uid,'resume_sharpened',      now())
+  ON CONFLICT DO NOTHING;
+
+  PERFORM recompute_progression(v_uid);
+END $$;
 ```
 
-## Attribution engine (activity only)
+After migration, on next dashboard load Houssem sees under **Your Growth Journey → Growth**:
 
-```text
-domain event (revenue declared, mission completed, ...)
-        │
-        ▼
-Attribution Engine
-   1. select accepted assignments where
-        effective_from ≤ event.occurred_at < COALESCE(effective_until, ∞)
-   2. resolve role_catalog version and policy version at event.occurred_at
-   3. per output event_type (revenue.attributed / expertise.attributed / trust.attributed):
-        compute idempotency_key = <source>:<assignment>:<event_type>:<policy_version>
-        insert attribution_event with resolved weights
-        processing_state = processed | failed
-        │
-        ▼
-Activity graphs recompute from attribution_events only
-   ├── revenue_graph
-   ├── expertise_graph
-   └── trust_graph
+1. **Grow your consulting practice** → routes to `/consulting-growth` (Pipeline · Delivery · Accounting · Performance sections; opportunity sources include LinkedIn & Tender).
+2. **Launch your brand entity** → routes to `/brand-entity` (locked with tooltip "Unlocks after 10 paid missions — 0/10").
 
-Ownership graph recomputes from ownership.edge.* only
-   └── ownership_graph
+Once he books 10 paid missions via `record_paid_mission`, the Brand card unlocks; on activation B4 is auto-assigned as **Inspiring Advisor** and the new org appears in `/organizations`.
 
-Reputation graph projects over both streams
-   └── reputation_graph
-```
+---
 
-## Invariants
+## 4. Verification (against staging2 account)
 
-- No graph effect without `status = accepted` on the assignment.
-- Ownership graph never reads `attribution_events`. Revenue / expertise / trust graphs never read `entity_role_assignments` for weights or labels.
-- Holding a role ≠ activity contribution. Activity graphs move only on attributed domain events.
-- Strict time overlap for attribution: `effective_from ≤ T < COALESCE(effective_until, ∞)`.
-- Attribution event self-contained; graphs never join back to `role_attribution_policy` / `role_catalog` for weights or labels.
-- Idempotency key uniqueness: at-most-once per (source event, assignment, event_type, policy version).
-- Revocation ≠ deletion. Historical events remain valid; `ownership.edge.ended` closes the edge going forward.
-- Unique active role per (entity, linked_user_id) where `status = accepted`; overridable by platform-admin flag.
-- Σ `equity_pct` ≤ 100 across accepted OWNER assignments per entity.
-- `equity_pct` flows into ownership via `ownership.edge.*`; not into activity attribution weights.
+1. Log in as staging2 → dashboard shows "Your Growth Journey", Foundation collapsed & checked, Growth open with "Grow your consulting practice" surfaced.
+2. `/consulting-growth`: create opportunity (source=LINKEDIN) → mission (billing_model=daily_rate, 5 days, 800/day) → transitions scheduled→in_progress→delivered→accepted → `record_paid_mission` → declaration auto-created, counter 1/10, `consulting.mission.paid` event visible.
+3. Call `record_paid_mission` twice on same mission → second call is no-op (idempotent), no duplicate declaration.
+4. Seed 10 paid missions → Brand card unlocks; consulting card still shown with cumulative metrics.
+5. `create_brand_entity('AngryPenguin & Co')` → state=`forming` → `activate_brand_entity` returns `{activated:true, warnings:[]}` → org appears in `/organizations`; B4 listed as Inspiring Advisor; declaration entity attached.
+6. Rollback test: force `_assign_partner` failure → no org, no role assignments, no graph_events.
+7. Deactivate a prior role → renders as Alumni with dates on profile.
 
-## RLS
+---
 
-- Entity admins: request / revoke on entities they administer.
-- Linked user: accept / decline own pending row.
-- Assignment rows readable by entity members and linked user.
-- `role_types`, `role_catalog`, `role_attribution_policy`: read to authenticated; write to platform admins.
-- `verified_affiliations`, `ownership_edges`: follow existing profile visibility.
-- `attribution_events`: readable to owning user and entity admins; write only via engine (service role).
+## 5. Deliberately deferred
 
-## UI (`/declaration` entity view)
-
-Labels preserved verbatim (Associé 1 (70%), Associé 2 (30%), Internal 1 – Structure Handler, Internal 2 – Process Handler).
-
-Chip per label:
-- Unlinked → "Link profile" (entity admin).
-- Pending → target user + "Awaiting acceptance".
-- Accepted → avatar + verified check + "Unlink".
-- Declined / revoked → muted status.
-
-Linking dialog: user search, optional `equity_pct` for OWNER slots.
-Notifications inbox: accept / decline.
-Public profile / `/profile`: "Verified affiliations" from `verified_affiliations`; "Ownership" from `ownership_edges`.
-
-## Delivery steps
-
-1. Migration: `role_types`, `role_catalog` (versioned), `entity_role_assignments`, `role_attribution_policy`, `attribution_events` (idempotency key includes event_type, `processing_state`), `verified_affiliations`, `ownership_edges`, `entity_role_audit_log`. Grants, RLS, triggers for `updated_at` / uniqueness / equity sum. Seed role types, initial catalog version for the four declaration slots, initial OWNER / OPERATOR policy version.
-2. Postgres helpers: `resolve_catalog(role_slug, at)`, `resolve_policy(role_type, at)`, `active_assignments(entity_id, at)`, `attribute_event(source_event_id)`.
-3. Recompute functions for `revenue_graph`, `expertise_graph`, `trust_graph`, `verified_affiliations`, `ownership_graph` — each reading exclusively from its own stream.
-4. Domain service (SECURITY DEFINER): `request_link`, `accept_link`, `decline_link`, `revoke_link` — auth, persist, audit, emit `role.link.*` + `affiliation.*` + (if OWNER) `ownership.edge.*` in one transaction.
-5. Attribution job on new domain event → invoke `attribute_event` → invalidate dependent activity projections.
-6. Hook `useEntityRoleAssignments(entityType, entityId)`.
-7. UI: role chip, linking dialog with user search, accept/decline in notifications inbox.
-8. Public profile: "Verified affiliations" and "Ownership" sections.
-9. Backfill: unlinked `entity_role_assignments` (label only) for existing entities.
-10. Ops surface: admin view over `attribution_events` filtered by `processing_state = failed` for triage.
-
-## Non-goals (frozen boundary)
-
-- No `assignment_snapshots` table.
-- No ownership attribution via `attribution_events`.
-- No fixed `+N` linking bonus.
-- No direct writes from role tables into graphs.
-- No mandatory linking.
-- No retroactive policy application.
-- No graph reads against mutable relational state for weights or labels.
-- No further core abstractions. Future work is limited to projections, UI, operational tooling, and policy calibration.
+Multi-brand per user, 70/30 profit split beyond existing wallet, sales-funnel analytics, Firm Growth (multiple advisors, products catalog), Ecosystem stage.
