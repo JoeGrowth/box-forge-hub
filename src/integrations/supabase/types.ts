@@ -3742,6 +3742,74 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_partners: {
+        Row: {
+          active: boolean
+          created_at: string
+          default_assignment_role: string
+          id: string
+          organization_id: string
+          priority: number
+          relationship_type: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          default_assignment_role: string
+          id?: string
+          organization_id: string
+          priority?: number
+          relationship_type: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          default_assignment_role?: string
+          id?: string
+          organization_id?: string
+          priority?: number
+          relationship_type?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_partners_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_principals: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          slug: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          slug: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          slug?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       professional_state_weights: {
         Row: {
           created_at: string
@@ -3906,6 +3974,105 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      progression_milestones: {
+        Row: {
+          aggregation: string
+          created_at: string
+          description: string | null
+          id: string
+          metric: string
+          scope: string
+          slug: string
+          threshold: number
+        }
+        Insert: {
+          aggregation: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          metric: string
+          scope?: string
+          slug: string
+          threshold: number
+        }
+        Update: {
+          aggregation?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          metric?: string
+          scope?: string
+          slug?: string
+          threshold?: number
+        }
+        Relationships: []
+      }
+      progression_predicates: {
+        Row: {
+          arg_type: string
+          created_at: string
+          description: string | null
+          handler: string
+          id: string
+          slug: string
+        }
+        Insert: {
+          arg_type: string
+          created_at?: string
+          description?: string | null
+          handler: string
+          id?: string
+          slug: string
+        }
+        Update: {
+          arg_type?: string
+          created_at?: string
+          description?: string | null
+          handler?: string
+          id?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      progression_rule_predicates: {
+        Row: {
+          argument: string | null
+          evaluation_order: number
+          id: string
+          predicate_id: string
+          rule_id: string
+        }
+        Insert: {
+          argument?: string | null
+          evaluation_order: number
+          id?: string
+          predicate_id: string
+          rule_id: string
+        }
+        Update: {
+          argument?: string | null
+          evaluation_order?: number
+          id?: string
+          predicate_id?: string
+          rule_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "progression_rule_predicates_predicate_id_fkey"
+            columns: ["predicate_id"]
+            isOneToOne: false
+            referencedRelation: "progression_predicates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "progression_rule_predicates_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "progression_rules"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       progression_rules: {
         Row: {
@@ -5806,6 +5973,7 @@ export type Database = {
           source: string
         }[]
       }
+      bootstrap_system_principal: { Args: { _user_id: string }; Returns: Json }
       can_access_entrepreneurial_layer: {
         Args: { _user_id: string }
         Returns: boolean
@@ -5871,6 +6039,10 @@ export type Database = {
       ensure_declaration_role_slots: {
         Args: { _entity_id: string }
         Returns: undefined
+      }
+      evaluate_predicate: {
+        Args: { _arg: string; _handler: string; _uid: string }
+        Returns: boolean
       }
       get_admin_beta_health: {
         Args: never
@@ -5947,6 +6119,26 @@ export type Database = {
           payload: Json
           user_id: string
         }[]
+      }
+      get_default_partner: {
+        Args: { _relationship_type: string }
+        Returns: {
+          active: boolean
+          created_at: string
+          default_assignment_role: string
+          id: string
+          organization_id: string
+          priority: number
+          relationship_type: string
+          slug: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "platform_partners"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       get_event_audit: { Args: never; Returns: Json }
       get_global_activity: {
@@ -6095,12 +6287,27 @@ export type Database = {
         }[]
       }
       opportunity_lifecycle_rank: { Args: { _state: string }; Returns: number }
+      p_brand_missing: { Args: { _uid: string }; Returns: boolean }
+      p_milestone_reached: {
+        Args: { _slug: string; _uid: string }
+        Returns: boolean
+      }
+      p_onboarding_completed: { Args: { _uid: string }; Returns: boolean }
+      p_paid_missions_count: { Args: { _uid: string }; Returns: number }
+      p_paid_missions_count_min: {
+        Args: { _min: number; _uid: string }
+        Returns: boolean
+      }
       pick_growth_loop_variant: {
         Args: { _loop_key: string; _user_id: string }
         Returns: {
           action_payload: Json
           variant_key: string
         }[]
+      }
+      progression_milestone_progress: {
+        Args: { _slug: string; _uid: string }
+        Returns: Json
       }
       promote_profile_draft: {
         Args: { _skills?: string[]; _summary?: string; _title?: string }
@@ -6247,6 +6454,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      rule_satisfied: {
+        Args: { _rule_id: string; _uid: string }
+        Returns: boolean
       }
       run_beta_simulation: { Args: never; Returns: Json }
       run_lifecycle_integrity_checks: { Args: never; Returns: string }
