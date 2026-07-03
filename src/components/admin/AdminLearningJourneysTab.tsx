@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle, XCircle, Clock, User, Eye, Award, Loader2, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { AdminJourneyMatrix } from "./AdminJourneyMatrix";
 
 interface LearningJourney {
   id: string;
