@@ -72,6 +72,7 @@ export function DashboardStats() {
       description: "Across active ventures",
       color: "from-emerald-500 to-teal-500",
       bgColor: "bg-emerald-500/10",
+      detail: `Weighted from ${teamMemberships} co-builder seat${teamMemberships === 1 ? "" : "s"} (×5%) + ${certifications} certification${certifications === 1 ? "" : "s"} (×2%), capped at 25%. Reflects the equity you could realistically negotiate across active ventures given your current signals.`,
     },
     {
       icon: Award,
@@ -80,6 +81,7 @@ export function DashboardStats() {
       description: "Vaccinated skills",
       color: "from-purple-500 to-pink-500",
       bgColor: "bg-purple-500/10",
+      detail: "Skills you've earned Vaccinated status on by completing the full practice → train → consult journey. Each one raises your equity ceiling and unlocks gated opportunities.",
     },
     {
       icon: Users,
@@ -88,6 +90,7 @@ export function DashboardStats() {
       description: "Ventures you're in",
       color: "from-blue-500 to-cyan-500",
       bgColor: "bg-blue-500/10",
+      detail: "Active ventures where you're a confirmed team member with an equity or role package. Each seat carries responsibility scope and vesting.",
     },
     {
       icon: Briefcase,
@@ -96,6 +99,7 @@ export function DashboardStats() {
       description: "Moves in play",
       color: "from-orange-500 to-amber-500",
       bgColor: "bg-orange-500/10",
+      detail: "Startup role applications you've submitted. Track their status in Opportunities — pending, in review, accepted, or closed.",
     },
     {
       icon: Target,
@@ -104,6 +108,7 @@ export function DashboardStats() {
       description: "Ventures you initiated",
       color: "from-rose-500 to-pink-500",
       bgColor: "bg-rose-500/10",
+      detail: "Startup ideas you've authored and pushed into the platform. Approved ones become public opportunities others can apply to.",
     },
     {
       icon: Zap,
@@ -112,6 +117,7 @@ export function DashboardStats() {
       description: "Proof of progress",
       color: "from-b4-teal to-emerald-400",
       bgColor: "bg-b4-teal/10",
+      detail: "Learning journeys you've completed and had approved. Each cleared journey is verifiable proof of a real skill or certification.",
     },
   ];
 
