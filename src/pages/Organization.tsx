@@ -454,26 +454,10 @@ export default function OrganizationPage() {
           </div>
         </TabsContent>
         {/* DISTRIBUTION */}
-        <TabsContent value="distribution" className="space-y-4">
-          <div className="rounded-2xl border border-border bg-card p-5">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                <PieChart className="w-5 h-5 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-foreground">Distributions · {org.name}</h3>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  Split budgets across the {org.name} team. Add a new distribution under any category — each one is saved with its creation date and can be reopened for edit.
-                </p>
-              </div>
-            </div>
-          </div>
-          <EntityCategories
-            scopeId={org.id}
-            scopeLabel={org.name}
-            defaults={["Consulting", "Training", "Event"]}
-          />
+        <TabsContent value="distribution" className="space-y-3">
+          <OrgDistributionsTab orgId={org.id} orgName={org.name} canEdit={canEdit} />
         </TabsContent>
+
 
       </Tabs>
     </div>
