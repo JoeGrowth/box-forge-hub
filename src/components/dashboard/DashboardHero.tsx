@@ -154,45 +154,47 @@ export function DashboardHero() {
 
   return (
     <>
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-b4-navy via-b4-navy/95 to-b4-navy/90 p-5 sm:p-8 md:p-10">
+    {meetsThreshold && (
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-b4-navy via-b4-navy/95 to-b4-navy/90 p-5 sm:p-8 md:p-10">
 
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-b4-teal/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-b4-coral/10 rounded-full blur-3xl" />
-      </div>
+        {/* Background decoration */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-b4-teal/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-b4-coral/10 rounded-full blur-3xl" />
+        </div>
 
-      <div className="relative z-10 flex flex-col gap-5 sm:gap-6">
-        <div className="max-w-3xl">
-          <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="w-5 h-5 text-b4-teal flex-shrink-0" />
-            <span className="text-b4-teal text-xs sm:text-sm font-medium">
-              {copy.eyebrow} · {format(new Date(), "EEEE, MMMM d")}
-            </span>
+        <div className="relative z-10 flex flex-col gap-5 sm:gap-6">
+          <div className="max-w-3xl">
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="w-5 h-5 text-b4-teal flex-shrink-0" />
+              <span className="text-b4-teal text-xs sm:text-sm font-medium">
+                {copy.eyebrow} · {format(new Date(), "EEEE, MMMM d")}
+              </span>
+            </div>
+            <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 leading-tight break-words">
+              {copy.headline}
+            </h1>
+            <p className="text-white/70 text-sm sm:text-base md:text-lg max-w-2xl">
+              {copy.subline}
+            </p>
           </div>
-          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 leading-tight break-words">
-            {copy.headline}
-          </h1>
-          <p className="text-white/70 text-sm sm:text-base md:text-lg max-w-2xl">
-            {copy.subline}
-          </p>
+
+          <div className="flex flex-col sm:flex-row flex-wrap gap-3 pt-1 sm:pt-2">
+            <Button size="lg" className="bg-b4-teal hover:bg-b4-teal/90 text-white w-full sm:w-auto" asChild>
+              <Link to={primaryCta.to}>
+                <PrimaryIcon className="mr-2 w-4 h-4" /> {primaryCta.label}
+              </Link>
+            </Button>
+            <Button size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10 w-full sm:w-auto" asChild>
+              <Link to={secondaryCta.to}>
+                <SecondaryIcon className="mr-2 w-4 h-4" /> {secondaryCta.label} <ArrowRight className="ml-2 w-4 h-4" />
+              </Link>
+            </Button>
+          </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row flex-wrap gap-3 pt-1 sm:pt-2">
-          <Button size="lg" className="bg-b4-teal hover:bg-b4-teal/90 text-white w-full sm:w-auto" asChild>
-            <Link to={primaryCta.to}>
-              <PrimaryIcon className="mr-2 w-4 h-4" /> {primaryCta.label}
-            </Link>
-          </Button>
-          <Button size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10 w-full sm:w-auto" asChild>
-            <Link to={secondaryCta.to}>
-              <SecondaryIcon className="mr-2 w-4 h-4" /> {secondaryCta.label} <ArrowRight className="ml-2 w-4 h-4" />
-            </Link>
-          </Button>
-        </div>
       </div>
-
-    </div>
+    )}
     <div className="mt-4">
       <AIProfileDraftCard />
     </div>
