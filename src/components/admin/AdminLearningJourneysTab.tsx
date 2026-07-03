@@ -368,6 +368,9 @@ export const AdminLearningJourneysTab = () => {
 
   return (
     <div className="space-y-6">
+      <AdminJourneyMatrix />
+
+
       {/* Pending Approval Section */}
       <div>
         <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
