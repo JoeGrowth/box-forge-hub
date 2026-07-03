@@ -32,17 +32,20 @@ const fmt = (n: number) =>
 
 function DistributionBuilder({
   kind,
+  kindLabel,
   defaultTitle,
   defaultBudgetLabel,
   defaultTasks,
   defaultCharges,
 }: {
   kind: Kind;
+  kindLabel?: string;
   defaultTitle: string;
   defaultBudgetLabel: string;
   defaultTasks: Task[];
   defaultCharges: Charge[];
 }) {
+  const label = kindLabel ?? kind;
   const { user } = useAuth();
   const [resetKey, setResetKey] = useState(0);
   const [title, setTitle] = useState(defaultTitle);
