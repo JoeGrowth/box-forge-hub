@@ -121,23 +121,27 @@ export default function OrganizationPage() {
   const [jobs, setJobs] = useState<JobRow[]>([]);
   const [tenders, setTenders] = useState<TenderRow[]>([]);
   const [declarations, setDeclarations] = useState<{ id: string; name: string; created_at: string }[]>([]);
+  const [legalDocs, setLegalDocs] = useState<{ id: string; name: string; storage_path: string; created_at: string; size_bytes: number | null }[]>([]);
   const [newDeclName, setNewDeclName] = useState("");
   const [creatingDecl, setCreatingDecl] = useState(false);
   const { members, reload: reloadMembers } = useOrgMembers(org?.id);
 
   const loadOpps = useCallback(async () => {
     if (!org) return;
-    const [{ data: js }, { data: ts }, { data: ds }] = await Promise.all([
+    const [{ data: js }, { data: ts }, { data: ds }, { data: lg }] = await Promise.all([
       supabase.from("job_opportunities").select("*").eq("organization_id", org.id).order("created_at", { ascending: false }),
       supabase.from("tenders").select("*").eq("organization_id", org.id).order("created_at", { ascending: false }),
       supabase.from("declaration_entities").select("id, name, created_at").eq("organization_id", org.id).order("created_at", { ascending: true }),
+      supabase.from("organization_legal_documents").select("id, name, storage_path, created_at, size_bytes").eq("organization_id", org.id).order("created_at", { ascending: false }),
     ]);
     setJobs((js as JobRow[]) ?? []);
     setTenders((ts as TenderRow[]) ?? []);
     setDeclarations((ds as any) ?? []);
+    setLegalDocs((lg as any) ?? []);
   }, [org]);
 
   useEffect(() => { loadOpps(); }, [loadOpps]);
+
 
   const createDeclaration = async () => {
     if (!org || !user || !newDeclName.trim()) return;
