@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
@@ -9,11 +10,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Briefcase, GraduationCap, CalendarDays, Save, RefreshCw, Loader2, Lock, FolderOpen, Eye, Pencil } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, Trash2, Briefcase, GraduationCap, CalendarDays, Save, RefreshCw, Loader2, Lock, FolderOpen, Eye, Pencil, Building2, Settings, ClipboardList } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+
 
 
 type Task = { id: string; label: string; percent: number; locked?: boolean };
@@ -537,23 +540,140 @@ const eventDefaults = {
   ] as Charge[],
 };
 
+const ACTIVE_ENTITY_KEY = "declaration_active_entity_v1";
+type DeclEntity = { id: string; owner_id: string; name: string };
+type DeclMission = { id: string; client: string; type: string; budget: number; currency: string; client_paid: boolean };
+
 export default function Distribution() {
+  const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const entityParam = searchParams.get("entity");
+  const [entities, setEntities] = useState<DeclEntity[]>([]);
+  const [activeEntityId, setActiveEntityId] = useState<string | null>(null);
+  const [entityMissions, setEntityMissions] = useState<DeclMission[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase.from("declaration_entities").select("*").order("created_at", { ascending: true });
+      const rows = (data || []) as DeclEntity[];
+      setEntities(rows);
+      const saved = localStorage.getItem(ACTIVE_ENTITY_KEY);
+      const pre = entityParam && rows.find((e) => e.id === entityParam);
+      const found = rows.find((e) => e.id === saved);
+      setActiveEntityId(pre?.id ?? found?.id ?? rows[0]?.id ?? null);
+    })();
+  }, [user, entityParam]);
+
+  useEffect(() => {
+    if (activeEntityId) localStorage.setItem(ACTIVE_ENTITY_KEY, activeEntityId);
+  }, [activeEntityId]);
+
+  useEffect(() => {
+    if (!activeEntityId) { setEntityMissions([]); return; }
+    (async () => {
+      const { data } = await supabase
+        .from("declaration_missions")
+        .select("id, client, type, budget, currency, client_paid")
+        .eq("entity_id", activeEntityId)
+        .order("sort_order", { ascending: true });
+      setEntityMissions((data || []) as any);
+    })();
+  }, [activeEntityId]);
+
+  const activeEntity = entities.find((e) => e.id === activeEntityId);
+  const missionsTotal = entityMissions.reduce((s, m) => s + (Number(m.budget) || 0), 0);
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <PageTransition>
         <main className="pt-24 pb-16">
           <div className="container mx-auto px-4 max-w-6xl">
-            <header className="mb-8">
-              <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
-                Distribution
-              </h1>
-              <p className="text-muted-foreground">
-                Split budgets across charges, structure and the people doing the work — per
-                consulting mission, training mission, or event. The <strong>Rest Structure</strong>{" "}
-                line is reserved for the entity and is never split between people.
-              </p>
-            </header>
+            {/* Header — mirrors Déclaration des Missions */}
+            <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
+              <div className="flex-1 min-w-[260px]">
+                <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground tracking-tight">
+                  Distribution des Missions
+                </h1>
+                <p className="text-muted-foreground mt-1">
+                  {activeEntity
+                    ? <>Entité active · répartition budgétaire par mission, formation ou événement.</>
+                    : <>Sélectionne une entité pour voir ses déclarations et répartir ses budgets.</>}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Select value={activeEntityId ?? ""} onValueChange={setActiveEntityId}>
+                  <SelectTrigger className="w-[240px]">
+                    <Building2 className="h-4 w-4 mr-2 text-muted-foreground" />
+                    <SelectValue placeholder="Choisir une entité" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {entities.map((e) => (
+                      <SelectItem key={e.id} value={e.id}>
+                        {e.name}{e.owner_id !== user?.id ? " (partagée)" : ""}
+                      </SelectItem>
+                    ))}
+                    {entities.length === 0 && (
+                      <div className="px-2 py-1.5 text-xs text-muted-foreground">Aucune entité — créez-en une depuis la page Déclaration.</div>
+                    )}
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" size="icon" title="Gérer les entités" asChild>
+                  <a href="/declaration"><Settings className="h-4 w-4" /></a>
+                </Button>
+              </div>
+            </div>
+
+            {/* Declarations linked to the active entity */}
+            {activeEntity && (
+              <Card className="mb-8">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <ClipboardList className="w-4 h-4" /> Déclarations · {activeEntity.name}
+                    <Badge variant="secondary" className="ml-1">{entityMissions.length}</Badge>
+                  </CardTitle>
+                  <div className="text-sm text-muted-foreground">
+                    Total budgets : <span className="font-mono font-semibold text-foreground">{fmt(missionsTotal)}</span>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {entityMissions.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      Aucune mission déclarée pour cette entité. <a href="/declaration" className="underline">Ouvrir la Déclaration</a> pour en ajouter.
+                    </p>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-10">#</TableHead>
+                          <TableHead>Client</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead className="text-right">Budget</TableHead>
+                          <TableHead className="text-right">Statut</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {entityMissions.map((m, i) => (
+                          <TableRow key={m.id}>
+                            <TableCell className="font-mono text-muted-foreground">({i + 1})</TableCell>
+                            <TableCell className="font-medium">{m.client || "—"}</TableCell>
+                            <TableCell className="capitalize">{m.type || "—"}</TableCell>
+                            <TableCell className="text-right font-mono">{fmt(Number(m.budget))} {m.currency}</TableCell>
+                            <TableCell className="text-right">
+                              <Badge variant={m.client_paid ? "default" : "outline"}>
+                                {m.client_paid ? "Payé" : "En attente"}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
 
             <Tabs defaultValue="consulting" className="w-full">
               <TabsList className="grid grid-cols-3 mb-6 max-w-2xl">
