@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useExpertise } from "@/hooks/useExpertise";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { AIProfileDraftCard } from "@/components/dashboard/AIProfileDraftCard";
