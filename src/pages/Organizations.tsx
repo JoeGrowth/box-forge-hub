@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Building2, Plus, Shield, Eye, Pencil, ArrowRight, Trash2, Cog, Search } from "lucide-react";
+import { Building2, Plus, Shield, Eye, Pencil, ArrowRight, Trash2, Cog, Search, Filter } from "lucide-react";
 
 const slugify = (s: string) =>
   s.toLowerCase().trim()
@@ -52,14 +52,16 @@ export default function Organizations() {
   const [website, setWebsite] = useState("");
   const [saving, setSaving] = useState(false);
   const [filter, setFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState("");
 
   const filtered = memberships.filter(({ organization: o }) => {
     const q = filter.toLowerCase();
-    return (
+    const matchesText =
       o.name.toLowerCase().includes(q) ||
       o.type.toLowerCase().includes(q) ||
-      (o.description ?? "").toLowerCase().includes(q)
-    );
+      (o.description ?? "").toLowerCase().includes(q);
+    const matchesType = !typeFilter || o.type === typeFilter;
+    return matchesText && matchesType;
   });
 
   const create = async () => {
@@ -167,14 +169,32 @@ export default function Organizations() {
       ) : (
         <div className="space-y-4">
           {memberships.length > 3 && (
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                placeholder="Filter organizations by name, type, or description…"
-                className="pl-9"
-              />
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  value={filter}
+                  onChange={(e) => setFilter(e.target.value)}
+                  placeholder="Filter by name, type, or description…"
+                  className="pl-9"
+                />
+              </div>
+              <div className="sm:w-44">
+                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                  <SelectTrigger className="w-full">
+                    <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+                    <SelectValue placeholder="All types" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All types</SelectItem>
+                    <SelectItem value="company">Company</SelectItem>
+                    <SelectItem value="ministry">Ministry</SelectItem>
+                    <SelectItem value="ngo">NGO</SelectItem>
+                    <SelectItem value="startup">Startup</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           )}
           {filtered.length === 0 ? (
