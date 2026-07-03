@@ -113,7 +113,6 @@ export default function ConsultingGrowth() {
       description: form.description.trim() || null,
       number_of_days: days,
       amount_per_day: perDay,
-      total_amount: total,
       currency: form.currency,
       offer_date: new Date().toISOString().slice(0, 10),
     } as never;
