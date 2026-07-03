@@ -11,6 +11,7 @@ import { DashboardProgress } from "@/components/dashboard/DashboardProgress";
 import { DashboardNextSteps } from "@/components/dashboard/DashboardNextSteps";
 import { DashboardOpportunities } from "@/components/dashboard/DashboardOpportunities";
 import { DashboardAchievements } from "@/components/dashboard/DashboardAchievements";
+import { ProgressionPathCard } from "@/components/profile/ProgressionPathCard";
 import { CommitmentsPanel } from "@/components/commitments/CommitmentsPanel";
 import { Skeleton } from "@/components/ui/skeleton";
 
