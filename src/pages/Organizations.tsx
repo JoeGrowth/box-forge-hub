@@ -52,14 +52,16 @@ export default function Organizations() {
   const [website, setWebsite] = useState("");
   const [saving, setSaving] = useState(false);
   const [filter, setFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState("");
 
   const filtered = memberships.filter(({ organization: o }) => {
     const q = filter.toLowerCase();
-    return (
+    const matchesText =
       o.name.toLowerCase().includes(q) ||
       o.type.toLowerCase().includes(q) ||
-      (o.description ?? "").toLowerCase().includes(q)
-    );
+      (o.description ?? "").toLowerCase().includes(q);
+    const matchesType = !typeFilter || o.type === typeFilter;
+    return matchesText && matchesType;
   });
 
   const create = async () => {
