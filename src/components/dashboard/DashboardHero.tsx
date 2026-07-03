@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useExpertise } from "@/hooks/useExpertise";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { AIProfileDraftCard } from "@/components/dashboard/AIProfileDraftCard";
@@ -13,8 +14,11 @@ import { ctasFor } from "@/lib/dashboardCtas";
 
 export function DashboardHero() {
   const { user } = useAuth();
+  const { expertise, loading: expertiseLoading } = useExpertise(user?.id);
   const [profile, setProfile] = useState<{ full_name: string | null } | null>(null);
   const [primaryRole, setPrimaryRole] = useState<string | null>(null);
+  const [activity, setActivity] = useState<{ applications: number; ideas: number; journeysCompleted: number }>({ applications: 0, ideas: 0, journeysCompleted: 0 });
+  const [activityLoading, setActivityLoading] = useState(true);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -27,6 +31,23 @@ export function DashboardHero() {
       setPrimaryRole((state as any)?.primary_role ?? null);
     };
     fetchProfile();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const [{ count: appCount }, { count: ideaCount }, { data: journeys }] = await Promise.all([
+        supabase.from("startup_applications").select("*", { count: "exact", head: true }).eq("applicant_id", user.id),
+        supabase.from("startup_ideas").select("*", { count: "exact", head: true }).eq("creator_id", user.id),
+        supabase.from("learning_journeys").select("status").eq("user_id", user.id).eq("status", "approved"),
+      ]);
+      setActivity({
+        applications: appCount || 0,
+        ideas: ideaCount || 0,
+        journeysCompleted: journeys?.length || 0,
+      });
+      setActivityLoading(false);
+    })();
   }, [user]);
 
   const { data: goal = null } = useQuery({
@@ -114,39 +135,66 @@ export function DashboardHero() {
         "You're here to grow, to build, and to take part in shaping the future. Pick your next move and let the ecosystem move with you.",
     };
 
+  const certifications = expertise?.monetizable.certifications ?? 0;
+  const teamMemberships = expertise?.monetizable.contributions ?? 0;
+  const baseEquity = teamMemberships * 5 + certifications * 2;
+  const potentialEquityNum = Math.min(baseEquity, 25);
+
+  const loading = expertiseLoading || activityLoading;
+
+  const meetsThreshold =
+    potentialEquityNum >= 10 ||
+    certifications >= 2 ||
+    teamMemberships >= 1 ||
+    activity.applications >= 2 ||
+    activity.ideas >= 2 ||
+    activity.journeysCompleted >= 1;
+
+  if (loading) return null;
+
   return (
     <>
-    <div className="bg-card border border-border rounded-xl p-5 sm:p-8 md:p-10">
-      <div className="flex flex-col gap-5 sm:gap-6">
-        <div className="max-w-3xl">
-          <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="w-5 h-5 text-b4-teal flex-shrink-0" />
-            <span className="text-b4-teal text-xs sm:text-sm font-medium">
-              {copy.eyebrow} · {format(new Date(), "EEEE, MMMM d")}
-            </span>
-          </div>
-          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 leading-tight break-words">
-            {copy.headline}
-          </h1>
-          <p className="text-muted-foreground text-sm sm:text-base md:text-lg max-w-2xl">
-            {copy.subline}
-          </p>
+    {meetsThreshold && (
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-b4-navy via-b4-navy/95 to-b4-navy/90 p-5 sm:p-8 md:p-10">
+
+        {/* Background decoration */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-b4-teal/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-b4-coral/10 rounded-full blur-3xl" />
         </div>
 
-        <div className="flex flex-col sm:flex-row flex-wrap gap-3 pt-1 sm:pt-2">
-          <Button size="lg" className="bg-b4-teal hover:bg-b4-teal/90 text-white w-full sm:w-auto" asChild>
-            <Link to={primaryCta.to}>
-              <PrimaryIcon className="mr-2 w-4 h-4" /> {primaryCta.label}
-            </Link>
-          </Button>
-          <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
-            <Link to={secondaryCta.to}>
-              <SecondaryIcon className="mr-2 w-4 h-4" /> {secondaryCta.label} <ArrowRight className="ml-2 w-4 h-4" />
-            </Link>
-          </Button>
+        <div className="relative z-10 flex flex-col gap-5 sm:gap-6">
+          <div className="max-w-3xl">
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="w-5 h-5 text-b4-teal flex-shrink-0" />
+              <span className="text-b4-teal text-xs sm:text-sm font-medium">
+                {copy.eyebrow} · {format(new Date(), "EEEE, MMMM d")}
+              </span>
+            </div>
+            <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 leading-tight break-words">
+              {copy.headline}
+            </h1>
+            <p className="text-white/70 text-sm sm:text-base md:text-lg max-w-2xl">
+              {copy.subline}
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row flex-wrap gap-3 pt-1 sm:pt-2">
+            <Button size="lg" className="bg-b4-teal hover:bg-b4-teal/90 text-white w-full sm:w-auto" asChild>
+              <Link to={primaryCta.to}>
+                <PrimaryIcon className="mr-2 w-4 h-4" /> {primaryCta.label}
+              </Link>
+            </Button>
+            <Button size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10 w-full sm:w-auto" asChild>
+              <Link to={secondaryCta.to}>
+                <SecondaryIcon className="mr-2 w-4 h-4" /> {secondaryCta.label} <ArrowRight className="ml-2 w-4 h-4" />
+              </Link>
+            </Button>
+          </div>
         </div>
+
       </div>
-    </div>
+    )}
     <div className="mt-4">
       <AIProfileDraftCard />
     </div>
