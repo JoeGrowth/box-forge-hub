@@ -68,6 +68,7 @@ import {
   Trophy,
 } from "lucide-react";
 import jsPDF from "jspdf";
+import { EntityCategories } from "@/pages/Distribution";
 
 type LifecycleStage = "venture" | "business" | "startup" | "mature";
 const STAGE_META: Record<LifecycleStage, { label: string; icon: typeof Rocket; className: string }> = {
