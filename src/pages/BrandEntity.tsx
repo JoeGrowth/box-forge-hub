@@ -83,7 +83,7 @@ export default function BrandEntity() {
         label: "Inspiring Advisor",
         linked_user_id: null,
         status: "verified",
-      });
+      } as never);
     }
     setSaving(false);
     toast({ title: "Brand launched", description: `${form.name} is now active.` });

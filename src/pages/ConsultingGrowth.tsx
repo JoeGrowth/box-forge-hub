@@ -85,7 +85,7 @@ export default function ConsultingGrowth() {
     const days = form.number_of_days ? parseInt(form.number_of_days) : null;
     const perDay = form.amount_per_day ? parseFloat(form.amount_per_day) : null;
     const total = days && perDay ? days * perDay : null;
-    const { error } = await supabase.from("consultant_opportunities").insert({
+    const payload = {
       user_id: user.id,
       title: form.title.trim(),
       client_name: form.client_name.trim() || null,
@@ -96,7 +96,8 @@ export default function ConsultingGrowth() {
       total_amount: total,
       currency: form.currency,
       offer_date: new Date().toISOString().slice(0, 10),
-    });
+    } as never;
+    const { error } = await supabase.from("consultant_opportunities").insert(payload);
     setSaving(false);
     if (error) {
       toast({ title: "Failed to save", description: error.message, variant: "destructive" });
