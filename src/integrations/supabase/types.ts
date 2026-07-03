@@ -3527,6 +3527,50 @@ export type Database = {
         }
         Relationships: []
       }
+      organization_legal_documents: {
+        Row: {
+          created_at: string
+          id: string
+          mime_type: string | null
+          name: string
+          organization_id: string
+          size_bytes: number | null
+          storage_path: string
+          updated_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mime_type?: string | null
+          name: string
+          organization_id: string
+          size_bytes?: number | null
+          storage_path: string
+          updated_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mime_type?: string | null
+          name?: string
+          organization_id?: string
+          size_bytes?: number | null
+          storage_path?: string
+          updated_at?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_legal_documents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           created_at: string
@@ -3568,6 +3612,7 @@ export type Database = {
           created_by: string
           description: string | null
           id: string
+          lifecycle_stage: Database["public"]["Enums"]["org_lifecycle_stage"]
           logo_url: string | null
           name: string
           slug: string
@@ -3581,6 +3626,7 @@ export type Database = {
           created_by: string
           description?: string | null
           id?: string
+          lifecycle_stage?: Database["public"]["Enums"]["org_lifecycle_stage"]
           logo_url?: string | null
           name: string
           slug: string
@@ -3594,6 +3640,7 @@ export type Database = {
           created_by?: string
           description?: string | null
           id?: string
+          lifecycle_stage?: Database["public"]["Enums"]["org_lifecycle_stage"]
           logo_url?: string | null
           name?: string
           slug?: string
@@ -6471,6 +6518,7 @@ export type Database = {
         | "sent"
         | "opened"
         | "failed"
+      org_lifecycle_stage: "venture" | "business" | "startup" | "mature"
       role_affinity_kind: "builder" | "strategist" | "operator" | "connector"
     }
     CompositeTypes: {
@@ -6860,6 +6908,7 @@ export const Constants = {
         "opened",
         "failed",
       ],
+      org_lifecycle_stage: ["venture", "business", "startup", "mature"],
       role_affinity_kind: ["builder", "strategist", "operator", "connector"],
     },
   },
