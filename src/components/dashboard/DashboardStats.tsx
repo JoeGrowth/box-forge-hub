@@ -122,22 +122,32 @@ export function DashboardStats() {
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-      {statCards.map((stat, i) => (
-        <div
-          key={i}
-          className="bg-card rounded-xl border border-border p-4 hover:border-b4-teal/30 transition-all duration-300 hover:shadow-lg hover:shadow-b4-teal/5"
-        >
-          <div className={`w-10 h-10 rounded-lg ${stat.bgColor} flex items-center justify-center mb-3`}>
-            <stat.icon className={`w-5 h-5 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`} style={{ color: stat.color.includes('emerald') ? '#10b981' : stat.color.includes('purple') ? '#a855f7' : stat.color.includes('blue') ? '#3b82f6' : stat.color.includes('orange') ? '#f97316' : stat.color.includes('rose') ? '#f43f5e' : '#14b8a6' }} />
-          </div>
-          <div className="text-2xl font-bold text-foreground mb-0.5">
-            {loading ? "..." : stat.value}
-          </div>
-          <div className="text-sm font-medium text-foreground/80">{stat.label}</div>
-          <div className="text-xs text-muted-foreground">{stat.description}</div>
-        </div>
-      ))}
-    </div>
+    <TooltipProvider delayDuration={150}>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        {statCards.map((stat, i) => (
+          <Tooltip key={i}>
+            <TooltipTrigger asChild>
+              <div
+                className="bg-card rounded-xl border border-border p-4 hover:border-b4-teal/30 transition-all duration-300 hover:shadow-lg hover:shadow-b4-teal/5 cursor-help text-left"
+                tabIndex={0}
+              >
+                <div className={`w-10 h-10 rounded-lg ${stat.bgColor} flex items-center justify-center mb-3`}>
+                  <stat.icon className={`w-5 h-5 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`} style={{ color: stat.color.includes('emerald') ? '#10b981' : stat.color.includes('purple') ? '#a855f7' : stat.color.includes('blue') ? '#3b82f6' : stat.color.includes('orange') ? '#f97316' : stat.color.includes('rose') ? '#f43f5e' : '#14b8a6' }} />
+                </div>
+                <div className="text-2xl font-bold text-foreground mb-0.5">
+                  {loading ? "..." : stat.value}
+                </div>
+                <div className="text-sm font-medium text-foreground/80">{stat.label}</div>
+                <div className="text-xs text-muted-foreground">{stat.description}</div>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="max-w-xs">
+              <p className="font-semibold mb-1">{stat.label} — {stat.value}</p>
+              <p className="text-xs leading-relaxed">{stat.detail}</p>
+            </TooltipContent>
+          </Tooltip>
+        ))}
+      </div>
+    </TooltipProvider>
   );
 }
