@@ -453,49 +453,27 @@ export default function OrganizationPage() {
           </div>
         </TabsContent>
         {/* DISTRIBUTION */}
-        <TabsContent value="distribution" className="space-y-3">
-          <div className="rounded-2xl border border-border bg-card p-6">
-            <div className="flex items-start gap-4 flex-wrap">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                <PieChart className="w-6 h-6 text-primary" />
+        <TabsContent value="distribution" className="space-y-4">
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <PieChart className="w-5 h-5 text-primary" />
               </div>
-              <div className="flex-1 min-w-[220px]">
-                <h3 className="font-semibold text-foreground">Revenue distribution</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Split budgets across the {org.name} team for consulting missions, trainings and events. Every scenario you save is tied to your account and reusable from the Distribution workspace.
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-foreground">Distributions · {org.name}</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Split budgets across the {org.name} team. Add a new distribution under any category — each one is saved with its creation date and can be reopened for edit.
                 </p>
-                <div className="flex flex-wrap gap-2 mt-4">
-                  <Link to={`/distribution?org=${org.slug}`}>
-                    <Button size="sm"><PieChart className="w-3 h-3 mr-1" /> Open distribution workspace</Button>
-                  </Link>
-                  <Link to={`/distribution?org=${org.slug}&kind=consulting`}>
-                    <Button size="sm" variant="outline">Consulting split</Button>
-                  </Link>
-                  <Link to={`/distribution?org=${org.slug}&kind=training`}>
-                    <Button size="sm" variant="outline">Training split</Button>
-                  </Link>
-                  <Link to={`/distribution?org=${org.slug}&kind=event`}>
-                    <Button size="sm" variant="outline">Event split</Button>
-                  </Link>
-                </div>
               </div>
             </div>
           </div>
-          <div className="grid sm:grid-cols-3 gap-3">
-            <div className="rounded-xl border border-border bg-card p-4">
-              <div className="text-xs text-muted-foreground">Jobs</div>
-              <div className="text-2xl font-bold text-foreground mt-1">{jobs.length}</div>
-            </div>
-            <div className="rounded-xl border border-border bg-card p-4">
-              <div className="text-xs text-muted-foreground">Tenders</div>
-              <div className="text-2xl font-bold text-foreground mt-1">{tenders.length}</div>
-            </div>
-            <div className="rounded-xl border border-border bg-card p-4">
-              <div className="text-xs text-muted-foreground">Members</div>
-              <div className="text-2xl font-bold text-foreground mt-1">{members.length}</div>
-            </div>
-          </div>
+          <EntityCategories
+            scopeId={org.id}
+            scopeLabel={org.name}
+            defaults={["Consulting", "Training", "Event"]}
+          />
         </TabsContent>
+
       </Tabs>
     </div>
   );
