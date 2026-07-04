@@ -108,7 +108,7 @@ export default function ConsultingGrowth() {
     } catch { return EMPTY_FORM; }
   });
 
-  const [activeOpp, setActiveOpp] = useState<Opportunity | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => { try { localStorage.setItem(DRAFT_KEY, JSON.stringify(form)); } catch {} }, [form]);
   useEffect(() => { try { localStorage.setItem(OPEN_KEY, dialogOpen ? "1" : "0"); } catch {} }, [dialogOpen]);
