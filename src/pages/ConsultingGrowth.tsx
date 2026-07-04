@@ -627,9 +627,10 @@ function StagePanel({
         {show("payment_distribution") && (
         <StageBlock n={5} title="Payment received & distribution" active={opp.stage === "payment_distribution"} done={opp.stage === "closed"}>
             <div className="space-y-3">
-              {opp.stage !== "closed" && (<div className="space-y-3">
-
+              {opp.stage !== "closed" ? (
+                <div className="space-y-3">
               <div className="grid grid-cols-2 gap-2">
+
                 <div>
                   <Label className="text-xs">Amount paid ({opp.currency || "EUR"})</Label>
                   <Input type="number" value={paidAmount} onChange={e => setPaidAmount(e.target.value)} />
@@ -637,7 +638,7 @@ function StagePanel({
                 <div className="flex items-end">
                   {opp.paid_at
                     ? <p className="text-xs text-muted-foreground">Paid {format(new Date(opp.paid_at), "MMM d, yyyy")}</p>
-                    : (opp.stage === "payment_distribution" || opp.stage === "closed") && (
+                    : opp.stage === "payment_distribution" && (
                       <Button size="sm" disabled={working || !paidAmount} onClick={() => patch({ paid_amount: parseFloat(paidAmount), paid_at: new Date().toISOString(), is_completed: true, completed_at: new Date().toISOString() })}>
                         Confirm budget paid
                       </Button>
@@ -818,8 +819,12 @@ function StagePanel({
                     Declare distribution & close mission
                   </Button>
                 )}
-              </div>
-              )}
+                </div>
+                </div>
+              ) : null}
+
+
+
 
                 {opp.stage === "closed" && (
 
@@ -928,7 +933,7 @@ function StagePanel({
                   </div>
                 )}
               </div>
-            </div>
+
         </StageBlock>
         )}
       </div>
