@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, CheckCircle2, Circle, FileText, Briefcase, Rocket, Compass, Target, Award } from "lucide-react";
+import { ArrowRight, CheckCircle2, Circle, FileText, Briefcase, Rocket, Compass, Target, Award, TrendingUp } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
@@ -221,6 +221,18 @@ export function DashboardProgress() {
       cta: { label: hasLearningJourneys ? "Continue" : "Start", to: "/journey" },
     },
   ];
+
+  const coreReady = isOnboardingTrulyComplete && nrDecoderComplete && proTrackComplete && resumeComplete;
+  if (coreReady) {
+    steps.push({
+      key: "consulting-growth",
+      title: "Launch your Consulting Growth",
+      description: "Track opportunities from LinkedIn or tenders through proposal, delivery and payment distribution.",
+      icon: TrendingUp,
+      done: false,
+      cta: { label: "Open", to: "/consulting-growth" },
+    });
+  }
 
   return (
     <Card>
