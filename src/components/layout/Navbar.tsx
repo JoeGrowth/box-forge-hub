@@ -372,22 +372,26 @@ export function Navbar() {
             <div className="flex flex-col gap-3 pb-8">
 
               {!user ? (
-                guestNavLinks.map((link) => (
-                  <Button
-                    key={link.path}
-                    variant="outline"
-                    size="sm"
-                    className={`mx-4 justify-center font-semibold ${
-                      location.pathname === link.path ? "text-b4-teal border-b4-teal" : ""
-                    }`}
-                    asChild
-                  >
-                    <Link to={link.path} onClick={() => setIsOpen(false)}>
+                guestNavLinks.map((link) => {
+                  const Icon = link.icon;
+                  return (
+                    <Link
+                      key={link.path}
+                      to={link.path}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                        location.pathname === link.path
+                          ? "bg-muted text-b4-teal"
+                          : "text-muted-foreground hover:bg-muted"
+                      }`}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <Icon size={16} />
                       {link.name}
                     </Link>
-                  </Button>
-                ))
+                  );
+                })
               ) : (
+
 
                 <>
                   {visibleEngineLinks.length > 0 && (
