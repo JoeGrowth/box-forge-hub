@@ -47,7 +47,7 @@ const Career = () => {
             </Button>
           </div>
 
-          <div className="flex items-center justify-between mb-12 bg-muted/40 rounded-2xl p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-12 bg-muted/40 rounded-2xl p-4 sm:p-6">
             <div>
               <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-1">
                 Career Engine
@@ -56,7 +56,7 @@ const Career = () => {
                 Build and structure your expertise
               </p>
             </div>
-            <Button className="gap-2" asChild>
+            <Button className="gap-2 w-full sm:w-auto" asChild>
               <Link to="/track-record">
                 <Plus className="w-4 h-4" /> Update Track Record
               </Link>
