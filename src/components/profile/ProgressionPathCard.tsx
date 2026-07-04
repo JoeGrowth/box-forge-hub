@@ -7,6 +7,7 @@ import { ArrowRight, Sparkles, Target, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   useNextBestActions,
   progressionStageLabel,
@@ -18,6 +19,39 @@ import {
 } from "@/components/shared/RecommendationExplanation";
 
 const stageOrder = ["novice", "emerging", "capable", "monetizing", "building", "founder"];
+
+const stageInfo: Record<string, { title: string; summary: string; unlocks: string }> = {
+  novice: {
+    title: "Novice",
+    summary: "Starting point. Building baseline expertise, trust and visibility signals.",
+    unlocks: "Foundational learning, profile setup, first credentials.",
+  },
+  emerging: {
+    title: "Emerging",
+    summary: "Verified skills and early reputation. Ready to explore consulting-style work.",
+    unlocks: "Grow your consulting practice, structured advisory prep.",
+  },
+  capable: {
+    title: "Capable",
+    summary: "Proven delivery. Trusted to lead engagements and mentor peers.",
+    unlocks: "Advisory missions, paid consulting engagements, team roles.",
+  },
+  monetizing: {
+    title: "Monetizing",
+    summary: "Consistent revenue from expertise. Recognised in your niche.",
+    unlocks: "Recurring clients, service productisation, brand identity.",
+  },
+  building: {
+    title: "Building",
+    summary: "Assembling assets, team and processes — moving from operator to owner.",
+    unlocks: "Startup formation, co-builder recruitment, equity structuring.",
+  },
+  founder: {
+    title: "Founder",
+    summary: "Full ownership stage. Running a structured, scalable entity.",
+    unlocks: "Scaling path, decentralised operations, capital rounds.",
+  },
+};
 
 function actionLabel(a: NextBestAction) {
   return (a.payload?.label as string) || a.action.replace(/_/g, " ");
