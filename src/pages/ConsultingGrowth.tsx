@@ -17,6 +17,7 @@ import {
   FileText, Upload, ArrowRight, Users, Trash2, ExternalLink, Loader2, RefreshCw, Lock,
 } from "lucide-react";
 import { format } from "date-fns";
+import { Footer } from "@/components/layout/Footer";
 
 type DistCharge = { id: string; label: string; amount: number };
 type DistTask = { id: string; label: string; percent: number; locked?: boolean };
@@ -208,6 +209,7 @@ export default function ConsultingGrowth() {
   const milestonePct = Math.min(100, (closed.length / MILESTONE) * 100);
 
   return (
+    <>
     <div className="container mx-auto px-4 pt-24 pb-8 max-w-5xl space-y-6">
       <div className="flex items-start justify-between gap-4 mb-2 flex-wrap">
         <div className="flex-1 min-w-[260px]">
@@ -385,6 +387,7 @@ export default function ConsultingGrowth() {
                           opp={o}
                           distributions={distByOpp[o.id] || []}
                           onChanged={async () => { await load(); }}
+                          onOptimisticPatch={(fields) => setItems(prev => prev.map(it => it.id === o.id ? { ...it, ...fields } : it))}
                           onStageChange={(to) => { setStageFilter(to === "closed" ? "closed" : to); setExpandedId(o.id); }}
                           userId={user?.id ?? ""}
                           onlyStage={stageFilter === "all" ? null : stageFilter}
@@ -401,6 +404,8 @@ export default function ConsultingGrowth() {
 
 
     </div>
+    <Footer />
+    </>
   );
 }
 
@@ -409,11 +414,12 @@ export default function ConsultingGrowth() {
 // =============================================================================
 
 function StagePanel({
-  opp, distributions, onChanged, onStageChange, userId, onlyStage,
+  opp, distributions, onChanged, onOptimisticPatch, onStageChange, userId, onlyStage,
 }: {
   opp: Opportunity;
   distributions: Distribution[];
   onChanged: () => Promise<void>;
+  onOptimisticPatch?: (fields: Partial<Opportunity>) => void;
   onStageChange?: (to: Stage) => void;
   userId: string;
   onlyStage: Stage | null;
@@ -462,13 +468,16 @@ function StagePanel({
 
   const patch = async (fields: Partial<Opportunity>) => {
     setWorking(true);
+    // Optimistic UI: apply immediately for smooth transition, no full re-fetch
+    onOptimisticPatch?.(fields);
     const { error } = await supabase.from("consultant_opportunities").update(fields as never).eq("id", opp.id);
     setWorking(false);
     if (error) {
       toast({ title: "Update failed", description: error.message, variant: "destructive" });
+      // Rollback via full reload
+      await onChanged();
       return false;
     }
-    await onChanged();
     return true;
   };
 
@@ -590,29 +599,44 @@ function StagePanel({
 
         {show("confirm_prepare") && (
         <StageBlock n={3} title="Confirm & prepare (process + presentation)" active={opp.stage === "confirm_prepare"} done={idx > 2}>
-            <div className="space-y-2">
-              {opp.client_confirmed_at
-                ? <p className="text-xs text-muted-foreground">Confirmed {format(new Date(opp.client_confirmed_at), "MMM d, yyyy")}</p>
-                : opp.stage === "confirm_prepare" && (
-                    <Button size="sm" variant="outline" disabled={working} onClick={() => patch({ client_confirmed_at: new Date().toISOString() })}>
-                      Confirm client acceptance
-                    </Button>
-                  )
-              }
-              <Label className="text-xs">Process & presentation PDF</Label>
-              <FileField
-                accept="application/pdf"
-                url={opp.process_file_url}
-                onOpen={() => openFile(opp.process_file_url)}
-                onPick={async (f) => {
-                  const p = await uploadFile(f, "process");
-                  if (p) await patch({ process_file_url: p });
-                }}
-              />
-              {opp.stage === "confirm_prepare" && (
-                <Button size="sm" disabled={working || !opp.client_confirmed_at || !opp.process_file_url} onClick={() => advance("deliver")}>
-                  Ready to deliver <ArrowRight className="w-3 h-3 ml-1" />
-                </Button>
+            <div className="space-y-3">
+              {/* Step A: confirm client acceptance */}
+              {!opp.client_confirmed_at && opp.stage === "confirm_prepare" && (
+                <div className="animate-in fade-in slide-in-from-top-1 duration-300">
+                  <Button size="sm" disabled={working} onClick={() => patch({ client_confirmed_at: new Date().toISOString() })}>
+                    Confirm client acceptance
+                  </Button>
+                </div>
+              )}
+              {opp.client_confirmed_at && (
+                <p className="text-xs text-muted-foreground animate-in fade-in duration-300">
+                  ✓ Client accepted {format(new Date(opp.client_confirmed_at), "MMM d, yyyy")}
+                </p>
+              )}
+
+              {/* Step B: upload PDF — appears smoothly after acceptance */}
+              {opp.client_confirmed_at && (
+                <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-300">
+                  <Label className="text-xs">Process &amp; presentation PDF</Label>
+                  <FileField
+                    accept="application/pdf,image/*"
+                    url={opp.process_file_url}
+                    onOpen={() => openFile(opp.process_file_url)}
+                    onPick={async (f) => {
+                      const p = await uploadFile(f, "process");
+                      if (p) await patch({ process_file_url: p });
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* Step C: ready to deliver — only after PDF is uploaded */}
+              {opp.stage === "confirm_prepare" && opp.client_confirmed_at && opp.process_file_url && (
+                <div className="animate-in fade-in slide-in-from-top-1 duration-300">
+                  <Button size="sm" disabled={working} onClick={() => advance("deliver")}>
+                    Ready to deliver <ArrowRight className="w-3 h-3 ml-1" />
+                  </Button>
+                </div>
               )}
             </div>
         </StageBlock>
