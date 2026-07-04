@@ -417,26 +417,27 @@ export default function ConsultingGrowth() {
                     </div>
                   )}
                   <div className="flex items-center justify-end mt-4 text-xs text-primary">
-                    <button onClick={() => setActiveOpp(o)} className="inline-flex items-center hover:underline">
-                      Manage <ArrowRight className="w-3 h-3 ml-1" />
+                    <button onClick={() => setExpandedId(expandedId === o.id ? null : o.id)} className="inline-flex items-center hover:underline">
+                      {expandedId === o.id ? "Hide" : "Manage"} <ArrowRight className="w-3 h-3 ml-1" />
                     </button>
                   </div>
+                  {expandedId === o.id && (
+                    <div className="mt-4 border-t border-border pt-4">
+                      <StagePanel
+                        opp={o}
+                        distributions={dists}
+                        onChanged={async () => { await load(); }}
+                        userId={user?.id ?? ""}
+                        onlyStage={null}
+                      />
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
         )}
       </div>
-
-      {activeOpp && (
-        <StageManager
-          opp={activeOpp}
-          distributions={distByOpp[activeOpp.id] || []}
-          onClose={() => setActiveOpp(null)}
-          onChanged={async () => { await load(); }}
-          userId={user?.id ?? ""}
-        />
-      )}
     </div>
   );
 }
