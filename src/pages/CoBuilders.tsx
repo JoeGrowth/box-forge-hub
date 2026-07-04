@@ -75,6 +75,7 @@ const CoBuilders = () => {
   })();
   const [filter, setFilterState] = useState<DirectoryFilter>(initialTab);
   const [canSeeAdvisors, setCanSeeAdvisors] = useState(false);
+  const [canSeeInitiators, setCanSeeInitiators] = useState(false);
   const [advisorUserIds, setAdvisorUserIds] = useState<Set<string>>(new Set());
 
   // Keep URL in sync with selected tab for deep-linking and refresh-persistence.
