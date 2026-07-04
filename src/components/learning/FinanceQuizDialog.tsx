@@ -482,6 +482,7 @@ export function FinanceQuizDialog({
           ? "Your Finance journey has been submitted for approval! 🎓"
           : "Great progress! Complete all 4 steps to earn your certification.",
       });
+      if (draftKey) clearQuizDraft(draftKey);
       onOpenChange(false);
       resetState();
     } catch (error) {
@@ -498,7 +499,9 @@ export function FinanceQuizDialog({
     setAnswers({});
     setShowResult(false);
     setSliderValues({});
+    setIsReviewMode(false);
   };
+
 
   const handleClose = () => {
     onOpenChange(false);
