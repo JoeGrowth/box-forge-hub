@@ -659,10 +659,11 @@ function StagePanel({
                 </Button>
               )}
             </div>
-          </StageBlock>
+        </StageBlock>
+        )}
 
-          {/* STAGE 5: Payment + distribution */}
-          <StageBlock n={5} title="Payment received & distribution" active={opp.stage === "payment_distribution"} done={opp.stage === "closed"}>
+        {show("payment_distribution") && (
+        <StageBlock n={5} title="Payment received & distribution" active={opp.stage === "payment_distribution"} done={opp.stage === "closed"}>
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-2">
                 <div>
