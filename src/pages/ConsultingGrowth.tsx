@@ -590,29 +590,44 @@ function StagePanel({
 
         {show("confirm_prepare") && (
         <StageBlock n={3} title="Confirm & prepare (process + presentation)" active={opp.stage === "confirm_prepare"} done={idx > 2}>
-            <div className="space-y-2">
-              {opp.client_confirmed_at
-                ? <p className="text-xs text-muted-foreground">Confirmed {format(new Date(opp.client_confirmed_at), "MMM d, yyyy")}</p>
-                : opp.stage === "confirm_prepare" && (
-                    <Button size="sm" variant="outline" disabled={working} onClick={() => patch({ client_confirmed_at: new Date().toISOString() })}>
-                      Confirm client acceptance
-                    </Button>
-                  )
-              }
-              <Label className="text-xs">Process & presentation PDF</Label>
-              <FileField
-                accept="application/pdf"
-                url={opp.process_file_url}
-                onOpen={() => openFile(opp.process_file_url)}
-                onPick={async (f) => {
-                  const p = await uploadFile(f, "process");
-                  if (p) await patch({ process_file_url: p });
-                }}
-              />
-              {opp.stage === "confirm_prepare" && (
-                <Button size="sm" disabled={working || !opp.client_confirmed_at || !opp.process_file_url} onClick={() => advance("deliver")}>
-                  Ready to deliver <ArrowRight className="w-3 h-3 ml-1" />
-                </Button>
+            <div className="space-y-3">
+              {/* Step A: confirm client acceptance */}
+              {!opp.client_confirmed_at && opp.stage === "confirm_prepare" && (
+                <div className="animate-in fade-in slide-in-from-top-1 duration-300">
+                  <Button size="sm" disabled={working} onClick={() => patch({ client_confirmed_at: new Date().toISOString() })}>
+                    Confirm client acceptance
+                  </Button>
+                </div>
+              )}
+              {opp.client_confirmed_at && (
+                <p className="text-xs text-muted-foreground animate-in fade-in duration-300">
+                  ✓ Client accepted {format(new Date(opp.client_confirmed_at), "MMM d, yyyy")}
+                </p>
+              )}
+
+              {/* Step B: upload PDF — appears smoothly after acceptance */}
+              {opp.client_confirmed_at && (
+                <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-300">
+                  <Label className="text-xs">Process &amp; presentation PDF</Label>
+                  <FileField
+                    accept="application/pdf,image/*"
+                    url={opp.process_file_url}
+                    onOpen={() => openFile(opp.process_file_url)}
+                    onPick={async (f) => {
+                      const p = await uploadFile(f, "process");
+                      if (p) await patch({ process_file_url: p });
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* Step C: ready to deliver — only after PDF is uploaded */}
+              {opp.stage === "confirm_prepare" && opp.client_confirmed_at && opp.process_file_url && (
+                <div className="animate-in fade-in slide-in-from-top-1 duration-300">
+                  <Button size="sm" disabled={working} onClick={() => advance("deliver")}>
+                    Ready to deliver <ArrowRight className="w-3 h-3 ml-1" />
+                  </Button>
+                </div>
               )}
             </div>
         </StageBlock>
