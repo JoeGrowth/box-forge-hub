@@ -580,11 +580,11 @@ const Entrepreneurship = () => {
 
                 {/* My Projects */}
                 <TabsContent value="my">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="font-display text-xl font-bold text-foreground">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+                    <h2 className="font-display text-lg sm:text-xl font-bold text-foreground">
                       Your Startup Projects
                     </h2>
-                    <Button size="sm" className="gap-2" onClick={() => setShowCreateDialog(true)}>
+                    <Button size="sm" className="gap-2 self-start sm:self-auto" onClick={() => setShowCreateDialog(true)}>
                       <Plus className="w-4 h-4" /> New Project
                     </Button>
                   </div>
