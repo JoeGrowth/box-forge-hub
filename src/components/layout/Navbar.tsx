@@ -154,12 +154,14 @@ export function Navbar() {
   }, [user]);
 
 
-  const isEngineActive = useMemo(() => engineLinks.some((l) => location.pathname === l.path), [location.pathname]);
-
   // Only show unlocked items in the navbar — locked routes are hidden entirely.
   const visibleEngineLinks = useMemo(
     () => engineLinks.filter((l) => engineAccess[l.key].unlocked),
     [engineAccess],
+  );
+  const isEngineActive = useMemo(
+    () => visibleEngineLinks.some((l) => location.pathname === l.path),
+    [visibleEngineLinks, location.pathname],
   );
   const visiblePublishLinks = useMemo(
     () => publishLinks.filter((l) => !(l.orgAdminOnly && !isOrgAdmin)),
