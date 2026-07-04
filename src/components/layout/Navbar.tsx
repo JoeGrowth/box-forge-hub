@@ -197,22 +197,18 @@ export function Navbar() {
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="center" className="w-48 mt-2">
-                    {engineLinks.map((link) => {
+                    {visibleEngineLinks.map((link) => {
                       const Icon = link.icon;
-                      const locked = !engineAccess[link.key].unlocked;
-                      const topMissing = engineAccess[link.key].missing[0]?.label;
                       return (
                         <DropdownMenuItem key={link.path} asChild>
                           <Link
                             to={link.path}
                             className={`flex items-center gap-2 cursor-pointer ${
                               location.pathname === link.path ? "text-b4-teal" : "text-foreground"
-                            } ${locked ? "opacity-70" : ""}`}
-                            title={locked && topMissing ? `Locked — needs: ${topMissing}` : undefined}
+                            }`}
                           >
                             <Icon size={16} />
                             <span className="flex-1">{link.name}</span>
-                            {locked && <Lock size={12} className="text-muted-foreground" />}
                           </Link>
                         </DropdownMenuItem>
                       );
@@ -220,77 +216,47 @@ export function Navbar() {
                   </DropdownMenuContent>
                 </DropdownMenu>
 
-                <Link
-                  to={talentReady ? "/opportunities" : "/dashboard"}
-                  onClick={(e) => {
-                    if (!talentReady) e.preventDefault();
-                  }}
-                  aria-disabled={!talentReady}
-                  title={talentLockTitle}
-                  className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 ${
-                    location.pathname === "/opportunities" ? "text-b4-teal" : "text-muted-foreground"
-                  } ${!talentReady ? "opacity-60 cursor-not-allowed" : ""}`}
-                >
-                  Opportunities
-                  {!talentReady && <Lock size={12} className="text-muted-foreground" />}
-                </Link>
+                {talentReady && (
+                  <Link
+                    to="/opportunities"
+                    className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 ${
+                      location.pathname === "/opportunities" ? "text-b4-teal" : "text-muted-foreground"
+                    }`}
+                  >
+                    Opportunities
+                  </Link>
+                )}
 
-                <DropdownMenu open={publishOpen} onOpenChange={setPublishOpen}>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="teal"
-                      size="sm"
-                      className="gap-1"
-                      disabled={!talentReady}
-                      title={talentLockTitle}
-                    >
-                      <Plus size={14} />
-                      Publish
-                      {!talentReady && <Lock size={12} />}
-                      <ChevronDown
-                        size={14}
-                        className={`transition-transform duration-200 ${publishOpen ? "rotate-180" : ""}`}
-                      />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 mt-2">
-                    {publishLinks.map((link) => {
-                      const Icon = link.icon;
-                      const linkLocked = link.orgAdminOnly && !isOrgAdmin;
-                      return (
-                        <DropdownMenuItem
-                          key={link.path}
-                          asChild
-                          disabled={linkLocked}
-                          onSelect={(e) => {
-                            if (linkLocked) e.preventDefault();
-                          }}
-                        >
-                          <Link
-                            to={linkLocked ? "/organizations" : link.path}
-                            className={`flex items-start gap-3 py-2 ${
-                              linkLocked ? "cursor-not-allowed opacity-60" : "cursor-pointer"
-                            }`}
-                            title={
-                              linkLocked
-                                ? "Locked — become admin of an organization in Organizations"
-                                : undefined
-                            }
-                          >
-                            <Icon size={18} className="mt-0.5 text-b4-teal shrink-0" />
-                            <div className="flex flex-col flex-1">
-                              <span className="text-sm font-medium text-foreground inline-flex items-center gap-1">
-                                {link.name}
-                                {linkLocked && <Lock size={12} className="text-muted-foreground" />}
-                              </span>
-                              <span className="text-xs text-muted-foreground">{link.desc}</span>
-                            </div>
-                          </Link>
-                        </DropdownMenuItem>
-                      );
-                    })}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                {talentReady && visiblePublishLinks.length > 0 && (
+                  <DropdownMenu open={publishOpen} onOpenChange={setPublishOpen}>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="teal" size="sm" className="gap-1">
+                        <Plus size={14} />
+                        Publish
+                        <ChevronDown
+                          size={14}
+                          className={`transition-transform duration-200 ${publishOpen ? "rotate-180" : ""}`}
+                        />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56 mt-2">
+                      {visiblePublishLinks.map((link) => {
+                        const Icon = link.icon;
+                        return (
+                          <DropdownMenuItem key={link.path} asChild>
+                            <Link to={link.path} className="flex items-start gap-3 py-2 cursor-pointer">
+                              <Icon size={18} className="mt-0.5 text-b4-teal shrink-0" />
+                              <div className="flex flex-col flex-1">
+                                <span className="text-sm font-medium text-foreground">{link.name}</span>
+                                <span className="text-xs text-muted-foreground">{link.desc}</span>
+                              </div>
+                            </Link>
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
 
                 <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
                   <DropdownMenuTrigger asChild>
@@ -302,7 +268,7 @@ export function Navbar() {
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56 mt-2">
-                    {moreLinks.map((link) => {
+                    {visibleMoreLinks.map((link) => {
                       const Icon = link.icon;
                       return (
                         <DropdownMenuItem key={link.path} asChild>
