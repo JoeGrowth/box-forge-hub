@@ -154,12 +154,14 @@ export function Navbar() {
   }, [user]);
 
 
-  const isEngineActive = useMemo(() => engineLinks.some((l) => location.pathname === l.path), [location.pathname]);
-
   // Only show unlocked items in the navbar — locked routes are hidden entirely.
   const visibleEngineLinks = useMemo(
     () => engineLinks.filter((l) => engineAccess[l.key].unlocked),
     [engineAccess],
+  );
+  const isEngineActive = useMemo(
+    () => visibleEngineLinks.some((l) => location.pathname === l.path),
+    [visibleEngineLinks, location.pathname],
   );
   const visiblePublishLinks = useMemo(
     () => publishLinks.filter((l) => !(l.orgAdminOnly && !isOrgAdmin)),
@@ -200,39 +202,41 @@ export function Navbar() {
               ))
             ) : (
               <>
-                <DropdownMenu open={engineOpen} onOpenChange={setEngineOpen}>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-b4-teal outline-none ${
-                        isEngineActive ? "text-b4-teal" : "text-muted-foreground"
-                      }`}
-                    >
-                      Engine
-                      <ChevronDown
-                        size={14}
-                        className={`transition-transform duration-200 ${engineOpen ? "rotate-180" : ""}`}
-                      />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="center" className="w-48 mt-2">
-                    {visibleEngineLinks.map((link) => {
-                      const Icon = link.icon;
-                      return (
-                        <DropdownMenuItem key={link.path} asChild>
-                          <Link
-                            to={link.path}
-                            className={`flex items-center gap-2 cursor-pointer ${
-                              location.pathname === link.path ? "text-b4-teal" : "text-foreground"
-                            }`}
-                          >
-                            <Icon size={16} />
-                            <span className="flex-1">{link.name}</span>
-                          </Link>
-                        </DropdownMenuItem>
-                      );
-                    })}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                {visibleEngineLinks.length > 0 && (
+                  <DropdownMenu open={engineOpen} onOpenChange={setEngineOpen}>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-b4-teal outline-none ${
+                          isEngineActive ? "text-b4-teal" : "text-muted-foreground"
+                        }`}
+                      >
+                        Engine
+                        <ChevronDown
+                          size={14}
+                          className={`transition-transform duration-200 ${engineOpen ? "rotate-180" : ""}`}
+                        />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="center" className="w-48 mt-2">
+                      {visibleEngineLinks.map((link) => {
+                        const Icon = link.icon;
+                        return (
+                          <DropdownMenuItem key={link.path} asChild>
+                            <Link
+                              to={link.path}
+                              className={`flex items-center gap-2 cursor-pointer ${
+                                location.pathname === link.path ? "text-b4-teal" : "text-foreground"
+                              }`}
+                            >
+                              <Icon size={16} />
+                              <span className="flex-1">{link.name}</span>
+                            </Link>
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
 
                 {talentReady && (
                   <Link
