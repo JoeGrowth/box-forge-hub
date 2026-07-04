@@ -747,6 +747,36 @@ const Journey = () => {
                     <Shield className="w-4 h-4 inline mr-2" />
                     Learn to Be Secure
                   </button>
+                  {talentFoundationSet ? (
+                    <button
+                      onClick={() => setActiveSection("consultant")}
+                      className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                        activeSection === "consultant"
+                          ? "bg-background shadow-sm text-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <Handshake className="w-4 h-4 inline mr-2" />
+                      Learn to be Consultant
+                    </button>
+                  ) : (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            disabled
+                            className="px-4 py-2.5 rounded-lg text-sm font-medium text-muted-foreground/60 cursor-not-allowed opacity-60"
+                          >
+                            <Lock className="w-4 h-4 inline mr-2" />
+                            Learn to be Consultant
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          Unlocks once your Talent Foundation is set (intent, natural role, professional track record and resume).
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                 </div>
               </div>
 
