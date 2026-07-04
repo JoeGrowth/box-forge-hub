@@ -36,9 +36,20 @@ import { useEngineAccess, type EngineKey } from "@/hooks/useEngineAccess";
 import { useTalentReadiness } from "@/hooks/useTalentReadiness";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserStatus } from "@/hooks/useUserStatus";
+import { useNextBestActions } from "@/hooks/useNextBestActions";
 import { supabase } from "@/integrations/supabase/client";
 import { NotificationBell } from "./NotificationBell";
 import { ChatBell } from "./ChatBell";
+
+// Progression stage ranking — controls stage-gated navbar items.
+const STAGE_RANK: Record<string, number> = {
+  novice: 0,
+  emerging: 1,
+  capable: 2,
+  monetizing: 3,
+  building: 4,
+  founder: 5,
+};
 
 // Links for logged-out users
 const guestNavLinks = [
