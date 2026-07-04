@@ -542,43 +542,38 @@ function StagePanel({
   };
 
   // ----- Distribution actions -----
-  const addDistribution = async () => {
-    if (!newRecipient.trim()) {
-      toast({ title: "Recipient name required", variant: "destructive" });
+  const declareDistributions = async () => {
+    if (distTotalPercent !== 100) {
+      toast({ title: `Task percentages must total 100% (currently ${distTotalPercent}%)`, variant: "destructive" });
       return;
     }
-    const payload = {
+    const now = new Date().toISOString();
+    // Reset existing rows for this mission
+    const del = await supabase.from("consultant_opportunity_distributions").delete().eq("opportunity_id", opp.id);
+    if (del.error) { toast({ title: "Failed", description: del.error.message, variant: "destructive" }); return; }
+    // Compute per-person amount from splittable tasks
+    const perPerson: Record<string, number> = {};
+    distPeople.forEach(p => { perPerson[p] = 0; });
+    distTasks.forEach((t, i) => {
+      if (t.locked || distPeople.length === 0) return;
+      const per = distTaskAmounts[i] / distPeople.length;
+      distPeople.forEach(p => { perPerson[p] += per; });
+    });
+    const rows = distPeople.map(p => ({
       opportunity_id: opp.id,
       user_id: userId,
-      recipient_name: newRecipient.trim(),
-      percent: newPercent ? parseFloat(newPercent) : null,
-      amount: newAmount ? parseFloat(newAmount) : null,
-    } as never;
-    const { error } = await supabase.from("consultant_opportunity_distributions").insert(payload);
-    if (error) { toast({ title: "Failed", description: error.message, variant: "destructive" }); return; }
-    setNewRecipient(""); setNewPercent(""); setNewAmount("");
-    await onChanged();
-  };
-
-  const removeDistribution = async (id: string) => {
-    const { error } = await supabase.from("consultant_opportunity_distributions").delete().eq("id", id);
-    if (error) { toast({ title: "Failed", description: error.message, variant: "destructive" }); return; }
-    await onChanged();
-  };
-
-  const declareDistributions = async () => {
-    const now = new Date().toISOString();
-    const { error } = await supabase
-      .from("consultant_opportunity_distributions")
-      .update({ declared_at: now } as never)
-      .eq("opportunity_id", opp.id)
-      .is("declared_at", null);
-    if (error) { toast({ title: "Failed", description: error.message, variant: "destructive" }); return; }
+      recipient_name: p,
+      amount: Number((perPerson[p] || 0).toFixed(2)),
+      percent: distBudget > 0 ? Number((((perPerson[p] || 0) / distBudget) * 100).toFixed(2)) : null,
+      declared_at: now,
+    })) as never[];
+    if (rows.length) {
+      const ins = await supabase.from("consultant_opportunity_distributions").insert(rows);
+      if (ins.error) { toast({ title: "Failed", description: ins.error.message, variant: "destructive" }); return; }
+    }
     await advance("closed");
   };
 
-  const totalPct = distributions.reduce((s, d) => s + Number(d.percent ?? 0), 0);
-  const totalAmt = distributions.reduce((s, d) => s + Number(d.amount ?? 0), 0);
   const idx = stageIndex(opp.stage);
 
   return (
