@@ -646,10 +646,11 @@ function StagePanel({
                 </Button>
               )}
             </div>
-          </StageBlock>
+        </StageBlock>
+        )}
 
-          {/* STAGE 4: Deliver */}
-          <StageBlock n={4} title="Deliver — workshop / training / consulting" active={opp.stage === "deliver"} done={idx > 3}>
+        {show("deliver") && (
+        <StageBlock n={4} title="Deliver — workshop / training / consulting" active={opp.stage === "deliver"} done={idx > 3}>
             <div className="space-y-2">
               {opp.delivered_at && <p className="text-xs text-muted-foreground">Delivered {format(new Date(opp.delivered_at), "MMM d, yyyy")}</p>}
               {opp.stage === "deliver" && (
