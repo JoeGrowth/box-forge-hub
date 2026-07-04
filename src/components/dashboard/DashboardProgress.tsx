@@ -271,7 +271,7 @@ export function DashboardProgress() {
       description: "Initiatives, products, teams, business, equity — what you've shipped as a builder.",
       icon: Rocket,
       done: trackRecordComplete,
-      cta: { label: "Unlock", to: "/track?unlock=entrepreneurial" },
+      cta: { label: "Start", to: "/track?unlock=entrepreneurial" },
     },
 
   ];
