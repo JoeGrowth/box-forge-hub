@@ -527,10 +527,10 @@ const Entrepreneurship = () => {
                       </div>
                     ))
                   : statCards.map((card) => (
-                      <div key={card.label} className="border border-border rounded-xl p-5 bg-card">
-                        <p className="text-sm text-muted-foreground mb-1">{card.label}</p>
-                        <p className="text-3xl font-bold text-foreground">{card.value}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{card.sub}</p>
+                      <div key={card.label} className="border border-border rounded-xl p-4 sm:p-5 bg-card">
+                        <p className="text-xs sm:text-sm text-muted-foreground mb-1">{card.label}</p>
+                        <p className="text-2xl sm:text-3xl font-bold text-foreground">{card.value}</p>
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{card.sub}</p>
                       </div>
                     ))}
               </div>
