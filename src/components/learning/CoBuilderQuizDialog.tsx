@@ -642,13 +642,22 @@ export function CoBuilderQuizDialog({
         </DialogHeader>
 
         {isReviewMode && (
-          <div className="rounded-lg border border-b4-teal/40 bg-b4-teal/10 p-3 text-sm text-foreground flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-b4-teal shrink-0" />
-            <span>
-              <strong>Review mode.</strong> You already completed this step —
-              your submitted answers are shown below.
-            </span>
-          </div>
+          <>
+            <div className="rounded-lg border border-b4-teal/40 bg-b4-teal/10 p-3 text-sm text-foreground flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-b4-teal shrink-0" />
+              <span>
+                <strong>Review mode.</strong> You already completed this step —
+                your submitted answers are summarized below.
+              </span>
+            </div>
+            <QuizReviewSummary
+              quizzes={stepContent.quizzes as any}
+              answers={answers}
+              sliderValues={sliderValues}
+              currentIndex={currentQuizIndex}
+              onJumpTo={(i) => setCurrentQuizIndex(i)}
+            />
+          </>
         )}
 
         {/* Progress Bar */}
