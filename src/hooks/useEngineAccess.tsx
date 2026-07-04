@@ -83,6 +83,10 @@ export function useEngineAccess() {
         certsRes,
         ownIdeasRes,
         teamRes,
+        onbRes,
+        nrRes,
+        decoderRes,
+        profileRes,
       ] = await Promise.all([
         supabase
           .from("expertise_graph")
@@ -123,6 +127,26 @@ export function useEngineAccess() {
           .select("startup_id")
           .eq("member_user_id", uid)
           .limit(1),
+        supabase
+          .from("onboarding_state")
+          .select("onboarding_completed, current_step")
+          .eq("user_id", uid)
+          .maybeSingle(),
+        supabase
+          .from("natural_roles")
+          .select("description")
+          .eq("user_id", uid)
+          .maybeSingle(),
+        supabase
+          .from("nr_decoder_submissions")
+          .select("id")
+          .eq("user_id", uid)
+          .maybeSingle(),
+        supabase
+          .from("profiles")
+          .select("professional_title, bio, primary_skills, summary_statement, key_projects, years_of_experience, education_certifications")
+          .eq("user_id", uid)
+          .maybeSingle(),
       ]);
 
       if (!alive) return;
@@ -139,6 +163,23 @@ export function useEngineAccess() {
       const hasInitiatorCert = certs.some((c) => c.certification_type === "initiator_b4");
       const ownsIdea = (ownIdeasRes.data ?? []).length > 0;
       const isOnTeam = (teamRes.data ?? []).length > 0;
+
+      const filled = (v: unknown) => v !== null && v !== undefined && String(v).trim().length > 0;
+      const intentDone = Boolean(onbRes.data?.onboarding_completed && (onbRes.data?.current_step ?? 0) >= 5);
+      const decoderDone = Boolean(decoderRes.data);
+      const proTrackDone = Boolean(nrRes.data?.description);
+      const p = (profileRes.data ?? {}) as Record<string, unknown>;
+      const resumeDone = Boolean(
+        filled(p.professional_title) &&
+          filled(p.bio) &&
+          filled(p.summary_statement) &&
+          filled(p.primary_skills) &&
+          filled(p.key_projects) &&
+          filled(p.education_certifications) &&
+          p.years_of_experience !== null &&
+          p.years_of_experience !== undefined
+      );
+      const talentFoundationSet = intentDone && decoderDone && proTrackDone && resumeDone;
 
       // ---------- Career: always open for signed-in users ----------
       const career: EngineAccess = {
@@ -187,6 +228,13 @@ export function useEngineAccess() {
 
       // ---------- Entrepreneurship ----------
       const entChecks: Array<{ ok: boolean; sig: EngineSignal }> = [
+        {
+          ok: talentFoundationSet,
+          sig: {
+            label: "Talent Foundation set (intent, natural role, track record, resume)",
+            cta: { label: "Complete your Talent Foundation", to: "/dashboard" },
+          },
+        },
         {
           ok: hasCoBuilderCert,
           sig: {
