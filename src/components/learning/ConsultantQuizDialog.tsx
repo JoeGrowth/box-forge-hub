@@ -351,6 +351,24 @@ export function ConsultantQuizDialog({
     
     getOrCreateJourney();
   }, [user, open]);
+
+  useEffect(() => {
+    if (!open || !journeyId) return;
+    (async () => {
+      const existing = await fetchExistingPhaseResponse(journeyId, stepNumber - 1);
+      if (existing?.is_completed && existing.responses) {
+        const restored = extractAnswers(existing.responses as any);
+        if (Object.keys(restored).length) setAnswers(restored);
+        setIsReviewMode(true);
+        setPhase("quiz");
+        setCurrentQuizIndex(0);
+      } else {
+        setIsReviewMode(false);
+      }
+    })();
+  }, [open, journeyId, stepNumber]);
+
+
   
   if (!stepContent) return null;
 
@@ -455,6 +473,7 @@ export function ConsultantQuizDialog({
           ? "Your Consultant journey has been submitted for approval! 🎓" 
           : "Great progress! Complete all steps to submit for approval.",
       });
+      if (draftKey) clearQuizDraft(draftKey);
       onOpenChange(false);
       resetState();
     } catch (error) {
@@ -470,7 +489,9 @@ export function ConsultantQuizDialog({
     setCurrentQuizIndex(0);
     setAnswers({});
     setShowResult(false);
+    setIsReviewMode(false);
   };
+
 
   const handleClose = () => {
     onOpenChange(false);
