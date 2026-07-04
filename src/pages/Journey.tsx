@@ -315,7 +315,7 @@ const Journey = () => {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<ActiveSection>(() => {
     const section = searchParams.get("section");
-    if (section === "initiator" || section === "cobuilder" || section === "finance" || section === "security") {
+    if (section === "initiator" || section === "cobuilder" || section === "finance" || section === "security" || section === "consultant") {
       return section;
     }
     return "initiator";
@@ -325,6 +325,7 @@ const Journey = () => {
     cobuilder: {},
     finance: {},
     security: {},
+    consultant: {},
   });
   const [quizDialogOpen, setQuizDialogOpen] = useState(false);
   const [selectedStep, setSelectedStep] = useState<number>(1);
@@ -338,6 +339,34 @@ const Journey = () => {
   const [cobuilderQuizOpen, setCobuilderQuizOpen] = useState(false);
   const [financeQuizOpen, setFinanceQuizOpen] = useState(false);
   const [securityQuizOpen, setSecurityQuizOpen] = useState(false);
+  const [consultantQuizOpen, setConsultantQuizOpen] = useState(false);
+
+  // Talent Foundation gate: onboarding done + NR decoder + professional track + resume
+  const [talentFoundationSet, setTalentFoundationSet] = useState(false);
+  useEffect(() => {
+    if (!user) { setTalentFoundationSet(false); return; }
+    let cancelled = false;
+    (async () => {
+      const [{ data: nr }, { data: dec }, { data: prof }] = await Promise.all([
+        supabase.from("natural_roles").select("description").eq("user_id", user.id).maybeSingle(),
+        supabase.from("nr_decoder_submissions").select("status").eq("user_id", user.id).maybeSingle(),
+        supabase.from("profiles")
+          .select("professional_title, bio, primary_skills, summary_statement, key_projects, years_of_experience, education_certifications")
+          .eq("user_id", user.id).maybeSingle(),
+      ]);
+      if (cancelled) return;
+      const filled = (v: any) => v !== null && v !== undefined && String(v).trim().length > 0;
+      const p: any = prof || {};
+      const resumeDone = Boolean(
+        filled(p.professional_title) && filled(p.bio) && filled(p.summary_statement) &&
+        filled(p.primary_skills) && filled(p.key_projects) && filled(p.education_certifications) &&
+        p.years_of_experience !== null && p.years_of_experience !== undefined
+      );
+      const onboardingDone = !!onboardingState?.onboarding_completed && (onboardingState?.current_step ?? 0) >= 5;
+      setTalentFoundationSet(onboardingDone && !!nr?.description && !!dec && resumeDone);
+    })();
+    return () => { cancelled = true; };
+  }, [user, onboardingState]);
 
   // Map journey types to section names
   const getJourneyTypeForSection = (section: ActiveSection): string => {
