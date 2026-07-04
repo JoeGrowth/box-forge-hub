@@ -164,9 +164,11 @@ export function Navbar() {
     () => publishLinks.filter((l) => !(l.orgAdminOnly && !isOrgAdmin)),
     [isOrgAdmin],
   );
+  const { progression } = useNextBestActions(user?.id);
+  const stageRank = STAGE_RANK[progression?.current_state ?? "novice"] ?? 0;
   const visibleMoreLinks = useMemo(
-    () => moreLinks.filter((l) => !(l.talentGate && !talentReady)),
-    [talentReady],
+    () => moreLinks.filter((l) => !l.minStage || stageRank >= STAGE_RANK[l.minStage]),
+    [stageRank],
   );
 
   return (
