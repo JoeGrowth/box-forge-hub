@@ -37,6 +37,10 @@ import { InitiatorQuizDialog } from "@/components/learning/InitiatorQuizDialog";
 import { CoBuilderQuizDialog } from "@/components/learning/CoBuilderQuizDialog";
 import { FinanceQuizDialog } from "@/components/learning/FinanceQuizDialog";
 import { SecurityQuizDialog } from "@/components/learning/SecurityQuizDialog";
+import { ConsultantQuizDialog } from "@/components/learning/ConsultantQuizDialog";
+import { Lock } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { supabase } from "@/integrations/supabase/client";
 
 
 interface JourneyStep {
