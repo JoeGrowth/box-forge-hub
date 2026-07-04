@@ -215,7 +215,7 @@ export default function ConsultingGrowth() {
         <div className="flex-1 min-w-[260px]">
           <h1 className="text-3xl font-bold tracking-tight">Consulting Growth</h1>
           <p className="text-muted-foreground mt-1">
-            5-stage pipeline: Identify → Propose → Prepare → Deliver → Payment &amp; distribution.
+            5-stage pipeline: Identify &rarr; Propose &rarr; Prepare &rarr; Deliver &rarr; Payment &amp; distribution.
           </p>
         </div>
 
@@ -227,7 +227,7 @@ export default function ConsultingGrowth() {
             <DialogContent className="max-w-lg">
               <DialogHeader><DialogTitle>New consulting / training opportunity</DialogTitle></DialogHeader>
               <div className="space-y-3">
-                <div><Label>Title *</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Digital Security Training – Bank X" /></div>
+                <div><Label>Title *</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Digital Security Training &ndash; Bank X" /></div>
                 <div><Label>Client / prospect</Label><Input value={form.client_name} onChange={e => setForm({ ...form, client_name: e.target.value })} /></div>
                 <div>
                   <Label>Source</Label>
@@ -245,7 +245,7 @@ export default function ConsultingGrowth() {
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-                <Button onClick={create} disabled={saving}>{saving ? "Saving…" : "Add opportunity"}</Button>
+                <Button onClick={create} disabled={saving}>{saving ? "Saving&hellip;" : "Add opportunity"}</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -306,7 +306,7 @@ export default function ConsultingGrowth() {
 
         {(() => {
           const filtered = stageFilter === "all" ? items : items.filter(i => i.stage === stageFilter);
-          if (loading) return <div className="text-sm text-muted-foreground">Loading…</div>;
+          if (loading) return <div className="text-sm text-muted-foreground">Loading&hellip;</div>;
           if (filtered.length === 0) {
             return (
               <div className="rounded-xl border border-dashed border-border p-12 text-center">
@@ -343,7 +343,7 @@ export default function ConsultingGrowth() {
                         <div className="min-w-0">
                           <h3 className="font-semibold text-foreground truncate">{o.title}</h3>
                           <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                            <p className="text-xs text-muted-foreground truncate">{o.client_name || "—"}</p>
+                            <p className="text-xs text-muted-foreground truncate">{o.client_name || "&mdash;"}</p>
                             <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4">{o.source}</Badge>
                           </div>
                         </div>
@@ -531,9 +531,9 @@ function StagePanel({
 
       <div className="space-y-4">
         {show("identify") && (
-        <StageBlock n={1} title="Identify — upload the driver" active={opp.stage === "identify"} done={idx > 0}>
+        <StageBlock n={1} title="Identify &mdash; upload the driver" active={opp.stage === "identify"} done={idx > 0}>
             <div className="space-y-2">
-              <Label className="text-xs">Driver PDF or screenshot (LinkedIn post, tender, email…)</Label>
+              <Label className="text-xs">Driver PDF or screenshot (LinkedIn post, tender, email&hellip;)</Label>
               <FileField
                 accept="application/pdf,image/*"
                 url={opp.driver_file_url}
@@ -544,7 +544,7 @@ function StagePanel({
                 }}
               />
               <Label className="text-xs mt-2">Note</Label>
-              <Textarea rows={2} value={driverNote} onChange={e => setDriverNote(e.target.value)} onBlur={() => driverNote !== (opp.driver_note ?? "") && patch({ driver_note: driverNote })} placeholder="Context, contact, link…" />
+              <Textarea rows={2} value={driverNote} onChange={e => setDriverNote(e.target.value)} onBlur={() => driverNote !== (opp.driver_note ?? "") && patch({ driver_note: driverNote })} placeholder="Context, contact, link&hellip;" />
               {opp.stage === "identify" && (
                 <Button size="sm" disabled={working || !opp.driver_file_url} onClick={() => advance("propose")}>
                   Next: prepare proposal <ArrowRight className="w-3 h-3 ml-1" />
@@ -555,7 +555,7 @@ function StagePanel({
         )}
 
         {show("propose") && (
-        <StageBlock n={2} title="Technical & financial proposal" active={opp.stage === "propose"} done={idx > 1}>
+        <StageBlock n={2} title="Technical &amp; financial proposal" active={opp.stage === "propose"} done={idx > 1}>
             <div className="space-y-2">
               <Label className="text-xs">Proposal PDF</Label>
               <FileField
@@ -583,7 +583,7 @@ function StagePanel({
         )}
 
         {show("confirm_prepare") && (
-        <StageBlock n={3} title="Confirm & prepare (process + presentation)" active={opp.stage === "confirm_prepare"} done={idx > 2}>
+        <StageBlock n={3} title="Confirm &amp; prepare (process + presentation)" active={opp.stage === "confirm_prepare"} done={idx > 2}>
             <div className="space-y-3">
               {/* Step A: confirm client acceptance */}
               {!opp.client_confirmed_at && opp.stage === "confirm_prepare" && (
@@ -595,11 +595,11 @@ function StagePanel({
               )}
               {opp.client_confirmed_at && (
                 <p className="text-xs text-muted-foreground animate-in fade-in duration-300">
-                  ✓ Client accepted {format(new Date(opp.client_confirmed_at), "MMM d, yyyy")}
+                  &check; Client accepted {format(new Date(opp.client_confirmed_at), "MMM d, yyyy")}
                 </p>
               )}
 
-              {/* Step B: upload PDF — appears smoothly after acceptance */}
+              {/* Step B: upload PDF &mdash; appears smoothly after acceptance */}
               {opp.client_confirmed_at && (
                 <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-300">
                   <Label className="text-xs">Process &amp; presentation PDF</Label>
@@ -615,7 +615,7 @@ function StagePanel({
                 </div>
               )}
 
-              {/* Step C: ready to deliver — only after PDF is uploaded */}
+              {/* Step C: ready to deliver &mdash; only after PDF is uploaded */}
               {opp.stage === "confirm_prepare" && opp.client_confirmed_at && opp.process_file_url && (
                 <div className="animate-in fade-in slide-in-from-top-1 duration-300">
                   <Button size="sm" disabled={working} onClick={() => advance("deliver")}>
@@ -628,12 +628,12 @@ function StagePanel({
         )}
 
         {show("deliver") && (
-        <StageBlock n={4} title="Deliver — workshop / training / consulting" active={opp.stage === "deliver"} done={idx > 3}>
+        <StageBlock n={4} title="Deliver &mdash; workshop / training / consulting" active={opp.stage === "deliver"} done={idx > 3}>
             <div className="space-y-2">
               {opp.delivered_at && <p className="text-xs text-muted-foreground">Delivered {format(new Date(opp.delivered_at), "MMM d, yyyy")}</p>}
               {opp.stage === "deliver" && (
                 <Button size="sm" disabled={working} onClick={() => advance("payment_distribution", { delivered_at: new Date().toISOString() })}>
-                  Confirm delivered — awaiting payment <ArrowRight className="w-3 h-3 ml-1" />
+                  Confirm delivered &mdash; awaiting payment <ArrowRight className="w-3 h-3 ml-1" />
                 </Button>
               )}
             </div>
@@ -641,7 +641,7 @@ function StagePanel({
         )}
 
         {show("payment_distribution") && (
-        <StageBlock n={5} title="Payment received & distribution" active={opp.stage === "payment_distribution"} done={opp.stage === "closed"}>
+        <StageBlock n={5} title="Payment received &amp; distribution" active={opp.stage === "payment_distribution"} done={opp.stage === "closed"}>
             <div className="space-y-3">
               {opp.stage !== "closed" ? (
                 <div className="space-y-3">
@@ -722,7 +722,7 @@ function StagePanel({
                         <TableCell />
                       </TableRow>
                       <TableRow className="font-semibold">
-                        <TableCell>Infra &amp; Structure (Budget − Charges)</TableCell>
+                        <TableCell>Infra &amp; Structure (Budget &minus; Charges)</TableCell>
                         <TableCell className="text-right">{distFmt(distInternalPool)}</TableCell>
                         <TableCell />
                       </TableRow>
@@ -754,7 +754,7 @@ function StagePanel({
                 {/* Task distribution */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <div className="text-sm font-semibold">Internal &amp; Structure — task distribution</div>
+                    <div className="text-sm font-semibold">Internal &amp; Structure &mdash; task distribution</div>
                     <Button size="sm" variant="outline" onClick={() => setDistTasks(p => {
                       const lockedIdx = p.findIndex(t => t.locked);
                       const newTask: DistTask = { id: distUid(), label: "New task", percent: 0 };
@@ -797,7 +797,7 @@ function StagePanel({
                           <TableCell className="text-right font-mono">{distFmt(distTaskAmounts[i])}</TableCell>
                           {distPeople.map((_, pi) => (
                             <TableCell key={pi} className="text-right font-mono">
-                              {distPerPersonPerTask[i] === null ? "—" : distFmt(distPerPersonPerTask[i] as number)}
+                              {distPerPersonPerTask[i] === null ? "&mdash;" : distFmt(distPerPersonPerTask[i] as number)}
                             </TableCell>
                           ))}
                           <TableCell>
@@ -820,39 +820,37 @@ function StagePanel({
                       </TableRow>
                     </TableBody>
                   </Table>
+                  </div>
                   {distTotalPercent !== 100 && (
                     <p className="text-xs text-amber-600 mt-2">
-                      Task percentages sum to {distTotalPercent}% — adjust to reach 100% for a full distribution.
+                      Task percentages sum to {distTotalPercent}% &mdash; adjust to reach 100% for a full distribution.
                     </p>
                   )}
                 </div>
 
                 {distributions.length > 0 && (
                   <div className="text-xs text-muted-foreground">
-                    Declared splits: {distributions.map(d => `${d.recipient_name} (${d.percent ?? 0}% · ${Number(d.amount ?? 0).toLocaleString()} ${opp.currency || "EUR"})`).join(" · ")}
+                    Declared splits: {distributions.map(d => `${d.recipient_name} (${d.percent ?? 0}% &middot; ${Number(d.amount ?? 0).toLocaleString()} ${opp.currency || "EUR"})`).join(" &middot; ")}
                   </div>
                 )}
 
                 {opp.stage === "payment_distribution" && opp.paid_at && (
                   <Button size="sm" className="w-full" disabled={working} onClick={declareDistributions}>
-                    Declare distribution & close mission
+                    Declare distribution &amp; close mission
                   </Button>
                 )}
                 </div>
               ) : null}
-
-
-
 
                 {opp.stage === "closed" && (
 
                   <div className="space-y-3 border-t pt-4">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <div className="text-sm font-semibold">Accounting — mission closed</div>
+                        <div className="text-sm font-semibold">Accounting &mdash; mission closed</div>
                         <p className="text-xs text-muted-foreground">
-                          {opp.client_name || "—"}
-                          {opp.paid_at && <> · paid {format(new Date(opp.paid_at), "MMM d, yyyy")}</>}
+                          {opp.client_name || "&mdash;"}
+                          {opp.paid_at && <> &middot; paid {format(new Date(opp.paid_at), "MMM d, yyyy")}</>}
                         </p>
                       </div>
                       <div className="text-right shrink-0">
@@ -870,7 +868,7 @@ function StagePanel({
                           <CheckCircle2 className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
                           <div className="flex-1">
                             <span className="font-medium">1. Identify</span>
-                            <span className="text-muted-foreground"> — source: {SOURCES.find(s => s.value === opp.source)?.label || opp.source}</span>
+                            <span className="text-muted-foreground"> &mdash; source: {SOURCES.find(s => s.value === opp.source)?.label || opp.source}</span>
                             {opp.driver_file_url && <button className="ml-2 text-primary underline" onClick={() => openFile(opp.driver_file_url)}>driver</button>}
                             {opp.driver_note && <div className="text-muted-foreground italic">"{opp.driver_note}"</div>}
                           </div>
@@ -880,7 +878,7 @@ function StagePanel({
                           <div className="flex-1">
                             <span className="font-medium">2. Proposal</span>
                             <span className="text-muted-foreground">
-                              {opp.proposal_sent_at ? ` — sent ${format(new Date(opp.proposal_sent_at), "MMM d, yyyy")}` : " — sent"}
+                              {opp.proposal_sent_at ? ` &mdash; sent ${format(new Date(opp.proposal_sent_at), "MMM d, yyyy")}` : " &mdash; sent"}
                             </span>
                             {opp.proposal_file_url && <button className="ml-2 text-primary underline" onClick={() => openFile(opp.proposal_file_url)}>file</button>}
                           </div>
@@ -890,7 +888,7 @@ function StagePanel({
                           <div className="flex-1">
                             <span className="font-medium">3. Confirm &amp; prepare</span>
                             <span className="text-muted-foreground">
-                              {opp.client_confirmed_at && ` — confirmed ${format(new Date(opp.client_confirmed_at), "MMM d, yyyy")}`}
+                              {opp.client_confirmed_at && ` &mdash; confirmed ${format(new Date(opp.client_confirmed_at), "MMM d, yyyy")}`}
                             </span>
                             {opp.process_file_url && <button className="ml-2 text-primary underline" onClick={() => openFile(opp.process_file_url)}>process</button>}
                           </div>
@@ -900,7 +898,7 @@ function StagePanel({
                           <div className="flex-1">
                             <span className="font-medium">4. Deliver</span>
                             <span className="text-muted-foreground">
-                              {opp.delivered_at && ` — delivered ${format(new Date(opp.delivered_at), "MMM d, yyyy")}`}
+                              {opp.delivered_at && ` &mdash; delivered ${format(new Date(opp.delivered_at), "MMM d, yyyy")}`}
                             </span>
                           </div>
                         </div>
@@ -909,10 +907,10 @@ function StagePanel({
                           <div className="flex-1">
                             <span className="font-medium">5. Payment &amp; Distribution</span>
                             <span className="text-muted-foreground">
-                              {opp.paid_at && ` — paid ${format(new Date(opp.paid_at), "MMM d, yyyy")}`}
-                              {" · "}{budgetLabel}: {distFmt(Number(opp.paid_amount ?? opp.total_amount ?? 0))} {opp.currency}
-                              {" · charges: "}{distFmt(distChargesTotal)}
-                              {" · pool: "}{distFmt(distInternalPool)}
+                              {opp.paid_at && ` &mdash; paid ${format(new Date(opp.paid_at), "MMM d, yyyy")}`}
+                              {" &middot; "}{budgetLabel}: {distFmt(Number(opp.paid_amount ?? opp.total_amount ?? 0))} {opp.currency}
+                              {" &middot; charges: "}{distFmt(distChargesTotal)}
+                              {" &middot; pool: "}{distFmt(distInternalPool)}
                             </span>
                           </div>
                         </div>
@@ -998,14 +996,14 @@ function FileField({
   };
 
   const filename = url ? url.split("/").pop() || "file" : null;
-  const shortName = filename && filename.length > 32 ? filename.slice(0, 28) + "…" + filename.slice(-6) : filename;
+  const shortName = filename && filename.length > 32 ? filename.slice(0, 28) + "&hellip;" + filename.slice(-6) : filename;
 
   return (
     <div className="rounded-md border border-border bg-background">
       <input ref={inputRef} type="file" accept={accept} className="hidden" onChange={handleChange} />
       {uploading ? (
         <div className="flex items-center gap-2 p-3 text-sm text-muted-foreground">
-          <Loader2 className="w-4 h-4 animate-spin" /> Uploading…
+          <Loader2 className="w-4 h-4 animate-spin" /> Uploading&hellip;
         </div>
       ) : url ? (
         <div className="flex items-center gap-2 p-2.5">
