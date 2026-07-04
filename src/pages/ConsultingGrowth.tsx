@@ -723,14 +723,10 @@ function StagePanel({
                 )}
               </div>
             </div>
-          </StageBlock>
-        </div>
-
-        <DialogFooter>
-          <Button variant="ghost" onClick={onClose}>Close</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </StageBlock>
+        )}
+      </div>
+    </div>
   );
 }
 
