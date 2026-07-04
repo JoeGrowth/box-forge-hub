@@ -189,7 +189,22 @@ export function useEngineAccess() {
       };
 
       // ---------- Consulting ----------
+      const consultingStartClicked = (() => {
+        try {
+          return localStorage.getItem(`b4:consulting-start-clicked:${uid}`) === "1";
+        } catch {
+          return false;
+        }
+      })();
+
       const consultingChecks: Array<{ ok: boolean; sig: EngineSignal }> = [
+        {
+          ok: consultingStartClicked,
+          sig: {
+            label: "Started “Launch your Consulting Growth” from your dashboard",
+            cta: { label: "Start on the dashboard", to: "/dashboard" },
+          },
+        },
         {
           ok: verifiedExpertise >= 1,
           sig: {
@@ -219,6 +234,7 @@ export function useEngineAccess() {
           },
         },
       ];
+
 
       const consulting: EngineAccess = {
         unlocked: consultingChecks.some((c) => c.ok),

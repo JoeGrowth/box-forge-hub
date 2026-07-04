@@ -339,15 +339,19 @@ export function DashboardProgress() {
                     <Link
                       to={step.cta.to}
                       onClick={() => {
-                        if (step.key === "venture" && user) {
-                          try {
+                        if (!user) return;
+                        try {
+                          if (step.key === "venture") {
                             localStorage.setItem(`b4:venture-start-clicked:${user.id}`, "1");
-                          } catch {}
-                        }
+                          } else if (step.key === "consulting-growth") {
+                            localStorage.setItem(`b4:consulting-start-clicked:${user.id}`, "1");
+                          }
+                        } catch {}
                       }}
                     >
                       {step.cta.label}
                     </Link>
+
                   </Button>
                 )}
 
