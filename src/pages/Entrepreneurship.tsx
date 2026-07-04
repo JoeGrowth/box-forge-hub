@@ -361,11 +361,11 @@ const Entrepreneurship = () => {
   };
 
   const MyProjectCard = ({ project, isOwner }: { project: StartupIdea; isOwner: boolean }) => (
-    <div className="border border-border rounded-2xl p-6 bg-card hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1 min-w-0">
+    <div className="border border-border rounded-2xl p-4 sm:p-6 bg-card hover:shadow-md transition-shadow">
+      <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+        <div className="flex-1 min-w-0 w-full">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <h3 className="font-display text-xl font-bold text-foreground">{project.title}</h3>
+            <h3 className="font-display text-lg sm:text-xl font-bold text-foreground break-words">{project.title}</h3>
             <Badge variant="outline" className="text-xs">{getEpisodeLabel(project.current_episode)}</Badge>
             {isOwner && project.review_status && (
               <Badge variant="secondary" className="text-xs capitalize">{project.review_status}</Badge>
