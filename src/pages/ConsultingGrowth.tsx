@@ -764,6 +764,7 @@ function StagePanel({
                       <Plus className="w-3 h-3 mr-1" /> Add task
                     </Button>
                   </div>
+                  <div className="overflow-x-auto -mx-5 px-5">
                   <Table>
                     <TableHeader>
                       <TableRow>
