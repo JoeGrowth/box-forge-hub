@@ -45,6 +45,7 @@ export default function Squares() {
       bgColor: "bg-emerald-500/10",
       iconColor: "#10b981",
       detail: `Weighted from ${teamMemberships} co-builder seat${teamMemberships === 1 ? "" : "s"} (×5%) + ${certifications} certification${certifications === 1 ? "" : "s"} (×2%), capped at 25%.`,
+      link: "/start",
     },
     {
       icon: Award,
@@ -54,6 +55,7 @@ export default function Squares() {
       bgColor: "bg-purple-500/10",
       iconColor: "#a855f7",
       detail: "Skills you've earned Vaccinated status on by completing the full practice → train → consult journey.",
+      link: "/career",
     },
     {
       icon: Users,
@@ -63,6 +65,7 @@ export default function Squares() {
       bgColor: "bg-blue-500/10",
       iconColor: "#3b82f6",
       detail: "Active ventures where you're a confirmed team member with an equity or role package.",
+      link: "/start",
     },
     {
       icon: Briefcase,
@@ -72,6 +75,7 @@ export default function Squares() {
       bgColor: "bg-orange-500/10",
       iconColor: "#f97316",
       detail: "Startup role applications you've submitted.",
+      link: "/opportunities",
     },
     {
       icon: Target,
@@ -81,6 +85,7 @@ export default function Squares() {
       bgColor: "bg-rose-500/10",
       iconColor: "#f43f5e",
       detail: "Startup ideas you've authored and pushed into the platform.",
+      link: "/entrepreneurship",
     },
     {
       icon: Zap,
@@ -90,6 +95,7 @@ export default function Squares() {
       bgColor: "bg-b4-teal/10",
       iconColor: "#14b8a6",
       detail: "Learning journeys you've completed and had approved.",
+      link: "/journey",
     },
   ];
 
