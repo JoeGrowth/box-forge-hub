@@ -273,7 +273,7 @@ export default function ConsultingGrowth() {
         </div>
 
         {/* Stage tabs */}
-        <div className="inline-flex flex-wrap items-center gap-1 rounded-lg border border-border bg-muted/40 p-1">
+        <div className="flex flex-wrap items-center gap-1 rounded-lg border border-border bg-muted/40 p-1">
           {(() => {
             const tabs: { key: Stage | "all"; label: string; icon: typeof Briefcase; count: number }[] = [
               { key: "all", label: "All", icon: Briefcase, count: items.length },
