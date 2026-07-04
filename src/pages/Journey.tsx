@@ -614,15 +614,12 @@ const Journey = () => {
     <div className="min-h-screen bg-background">
       <PageTransition>
         <main className="pt-20">
-          {/* Header */}
-          <section className="py-12 gradient-hero text-primary-foreground">
-            <div className="container mx-auto px-4">
-              <div className="flex items-center gap-3 mb-2">
-                <BookOpen className="w-8 h-8" />
-                <h1 className="font-display text-3xl font-bold">Boosting Journeys</h1>
-              </div>
-              <p className="text-primary-foreground/80 max-w-2xl">
-                Choose your learning path and master the skills needed to succeed in the startup ecosystem.
+          {/* Hero */}
+          <section className="py-12 md:py-16 gradient-hero text-primary-foreground">
+            <div className="container mx-auto px-4 text-center">
+              <h1 className="font-display text-3xl md:text-4xl font-bold mb-3">Getting Certified</h1>
+              <p className="text-primary-foreground/80 max-w-2xl mx-auto">
+                Pick a certification path and earn your badges. Start with the essentials, then add specialized credentials.
               </p>
             </div>
           </section>
