@@ -17,6 +17,7 @@ import {
   FileText, Upload, ArrowRight, Users, Trash2, ExternalLink, Loader2, RefreshCw, Lock,
 } from "lucide-react";
 import { format } from "date-fns";
+import { Footer } from "@/components/layout/Footer";
 
 type DistCharge = { id: string; label: string; amount: number };
 type DistTask = { id: string; label: string; percent: number; locked?: boolean };
