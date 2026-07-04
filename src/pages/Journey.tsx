@@ -262,7 +262,50 @@ const COBUILDER_STEPS: JourneyStep[] = [
   },
 ];
 
-type ActiveSection = "initiator" | "cobuilder" | "finance" | "security";
+const CONSULTANT_STEPS: JourneyStep[] = [
+  {
+    step: 1,
+    title: "Consulting Basics",
+    subtitle: "Foundations",
+    icon: BookOpen,
+    description:
+      "Learn the fundamentals of consulting. Understand client needs, project scoping, and engagement models.",
+    details: ["Master consulting frameworks", "Learn client engagement", "Understand project scoping"],
+    color: "from-purple-500 to-violet-500",
+  },
+  {
+    step: 2,
+    title: "Strategic Thinking",
+    subtitle: "Strategy",
+    icon: Target,
+    description:
+      "Develop strategic thinking capabilities. Analyze complex problems and create actionable solutions.",
+    details: ["Strategic analysis methods", "Problem-solving frameworks", "Solution development"],
+    color: "from-violet-500 to-purple-600",
+  },
+  {
+    step: 3,
+    title: "Client Relations",
+    subtitle: "Advisory",
+    icon: Handshake,
+    description:
+      "Build strong client relationships. Communicate effectively and manage stakeholder expectations.",
+    details: ["Client relationship management", "Stakeholder communication", "Expectation management"],
+    color: "from-purple-600 to-fuchsia-500",
+  },
+  {
+    step: 4,
+    title: "Thought Leadership",
+    subtitle: "Leadership",
+    icon: TrendingUp,
+    description:
+      "Establish yourself as a thought leader. Create content, speak at events, and build your personal brand.",
+    details: ["Content creation", "Speaking engagements", "Personal brand building"],
+    color: "from-fuchsia-500 to-pink-500",
+  },
+];
+
+type ActiveSection = "initiator" | "cobuilder" | "finance" | "security" | "consultant";
 
 const Journey = () => {
   const { user, loading: authLoading } = useAuth();
