@@ -194,7 +194,12 @@ const CoBuilders = () => {
         setBaseRows(rows as any);
 
         const me = rows.find((r) => r.user_id === user?.id);
-        if (me) setSkillsInput(me.primary_skills || "");
+        if (me) {
+          setSkillsInput(me.primary_skills || "");
+          setCanSeeInitiators(!!me.has_opportunity);
+        } else {
+          setCanSeeInitiators(false);
+        }
       } catch (error) {
         console.error("Error fetching co-builders:", error);
       } finally {
