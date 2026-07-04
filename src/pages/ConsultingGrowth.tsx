@@ -319,7 +319,7 @@ export default function ConsultingGrowth() {
         </div>
 
         {(() => {
-          const filtered = stageFilter === "all" ? pipeline : items.filter(i => i.stage === stageFilter);
+          const filtered = stageFilter === "all" ? items : items.filter(i => i.stage === stageFilter);
           if (loading) return <div className="text-sm text-muted-foreground">Loading…</div>;
           if (filtered.length === 0) {
             return (
