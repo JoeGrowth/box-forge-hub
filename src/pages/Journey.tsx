@@ -464,6 +464,8 @@ const Journey = () => {
         return certifications.some(c => c.certification_type === "finance_literacy");
       case "security":
         return certifications.some(c => c.certification_type === "security_literacy");
+      case "consultant":
+        return certifications.some(c => c.certification_type === "consultant_b4");
       default:
         return false;
     }
