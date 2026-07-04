@@ -86,8 +86,8 @@ const STAGES: { value: Stage; label: string; short: string; icon: typeof Briefca
   { value: "propose",              label: "2. Send proposal",           short: "Propose",      icon: FileText },
   { value: "confirm_prepare",      label: "3. Confirm & prepare",       short: "Prepare",      icon: CheckCircle2 },
   { value: "deliver",              label: "4. Deliver",                 short: "Deliver",      icon: ArrowRight },
-  { value: "payment_distribution", label: "5. Payment",                 short: "Payment",      icon: DollarSign },
-  { value: "closed",               label: "6. Distribution / Closed",   short: "Distribution", icon: Users },
+  { value: "payment_distribution", label: "5. Payment & Distribution",  short: "Payment & Dist", icon: DollarSign },
+  { value: "closed",               label: "6. Declaration / Closed",  short: "Declaration",    icon: Users },
 ];
 
 const MILESTONE = 10;
