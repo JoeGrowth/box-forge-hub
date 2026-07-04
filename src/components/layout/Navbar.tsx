@@ -30,7 +30,6 @@ import {
   ListChecks,
   Activity,
   BarChart3,
-  Lock,
   Users,
 } from "lucide-react";
 import { useEngineAccess, type EngineKey } from "@/hooks/useEngineAccess";
