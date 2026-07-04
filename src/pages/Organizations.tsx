@@ -97,21 +97,21 @@ export default function Organizations() {
 
   return (
     <div className="container mx-auto px-4 pt-24 pb-8 max-w-5xl space-y-6">
-      <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
-        <div className="flex-1 min-w-[260px]">
-          <h1 className="text-3xl font-bold tracking-tight">Organizations</h1>
-          <p className="text-muted-foreground mt-1">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Organizations</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Organizations own opportunities and group team members with roles (admin · editor · viewer).
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <Link to="/opsmanagement">
-            <Button variant="outline"><Cog className="w-4 h-4 mr-1" /> Ops management</Button>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 w-full sm:w-auto">
+          <Link to="/opsmanagement" className="w-full sm:w-auto">
+            <Button variant="outline" className="w-full sm:w-auto"><Cog className="w-4 h-4 mr-1" /> Ops management</Button>
           </Link>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button><Plus className="w-4 h-4 mr-1" /> New organization</Button>
+              <Button className="w-full sm:w-auto"><Plus className="w-4 h-4 mr-1" /> New organization</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
@@ -190,7 +190,7 @@ export default function Organizations() {
               <div className="sm:w-44">
                 <Select value={typeFilter} onValueChange={setTypeFilter}>
                   <SelectTrigger className="w-full">
-                    <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+                    <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground shrink-0" />
                     <SelectValue placeholder="All types" />
                   </SelectTrigger>
                   <SelectContent>
@@ -230,10 +230,10 @@ export default function Organizations() {
                   <Link
                     key={o.id}
                     to={`/org/${o.slug}`}
-                    className="rounded-xl border border-border bg-card p-5 hover:border-primary/40 hover:shadow-sm transition"
+                    className="rounded-xl border border-border bg-card p-4 sm:p-5 hover:border-primary/40 hover:shadow-sm transition"
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
                         <h3 className="font-semibold text-foreground truncate">{o.name}</h3>
                         <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                           <p className="text-xs text-muted-foreground capitalize">{o.type}</p>
@@ -249,7 +249,7 @@ export default function Organizations() {
                           })()}
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 shrink-0">
+                      <div className="flex items-center gap-1 shrink-0 self-end sm:self-start">
                         <Badge className={ROLE_COLOR[role]}>
                           <RoleIcon className="w-3 h-3 mr-1" /> {role}
                         </Badge>
