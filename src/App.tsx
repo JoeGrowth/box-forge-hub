@@ -139,13 +139,13 @@ const App = () => (
                   <Route path="/admin/click-analytics" element={<ProtectedRoute requireLevel="admin"><ClickAnalytics /></ProtectedRoute>} />
                   <Route element={<PersistentNavbarLayout />}>
                   <Route path="/opportunities" element={<GatedRoute talentGate><Opportunities /></GatedRoute>} />
-                  <Route path="/organizations" element={<GatedRoute talentGate><Organizations /></GatedRoute>} />
-                  <Route path="/org/:slug" element={<GatedRoute talentGate><OrganizationPage /></GatedRoute>} />
-                  <Route path="/people" element={<GatedRoute talentGate><CoBuilders /></GatedRoute>} />
+                  <Route path="/organizations" element={<GatedRoute minStage="emerging"><Organizations /></GatedRoute>} />
+                  <Route path="/org/:slug" element={<GatedRoute minStage="emerging"><OrganizationPage /></GatedRoute>} />
+                  <Route path="/people" element={<GatedRoute minStage="emerging"><CoBuilders /></GatedRoute>} />
                   <Route path="/journey" element={<ProtectedRoute><Journey /></ProtectedRoute>} />
                   <Route path="/start" element={<ProtectedRoute><Scale /></ProtectedRoute>} />
                   <Route path="/track" element={<ProtectedRoute><Track /></ProtectedRoute>} />
-                  <Route path="/advisory" element={<GatedRoute talentGate><Advisory /></GatedRoute>} />
+                  <Route path="/advisory" element={<GatedRoute minStage="emerging"><Advisory /></GatedRoute>} />
                   <Route path="/3S" element={<ProtectedRoute><ThreeS /></ProtectedRoute>} />
                   <Route path="/opsmanagement" element={<ProtectedRoute><OpsManagement /></ProtectedRoute>} />
                   <Route path="/consultingmanagement" element={<ProtectedRoute><ConsultingManagement /></ProtectedRoute>} />
@@ -160,7 +160,7 @@ const App = () => (
                   {/* Legacy: old links pointed at startup ideas only. */}
                   <Route path="/opportunities/:id" element={<GatedRoute talentGate><OpportunityDetail /></GatedRoute>} />
                   <Route path="/mask" element={<Mask />} />
-                  <Route path="/checklist" element={<GatedRoute talentGate><Checklist /></GatedRoute>} />
+                  <Route path="/checklist" element={<GatedRoute minStage="emerging"><Checklist /></GatedRoute>} />
                   <Route path="/resume" element={<Resume />} />
                   <Route path="/track-record" element={<TrackRecord />} />
                   <Route path="/create-idea" element={<GatedRoute talentGate><CreateIdea /></GatedRoute>} />
@@ -181,7 +181,7 @@ const App = () => (
                   <Route path="/startstructuring" element={<ProtectedRoute><StartStructuring /></ProtectedRoute>} />
                   <Route path="/startscaling" element={<ProtectedRoute><StartScaling /></ProtectedRoute>} />
                   
-                  <Route path="/brand-identity" element={<GatedRoute talentGate><Mask /></GatedRoute>} />
+                  <Route path="/brand-identity" element={<GatedRoute minStage="emerging"><Mask /></GatedRoute>} />
                   <Route path="/procuring" element={<GatedRoute talentGate orgAdminOnly><Procuring /></GatedRoute>} />
                   <Route path="/el-space" element={<ElSpace />} />
                   <Route path="/declaration" element={<Declaration />} />
