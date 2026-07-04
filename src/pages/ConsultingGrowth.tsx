@@ -923,6 +923,7 @@ function StagePanel({
                     {distributions.length > 0 && (
                       <div className="rounded-md border bg-muted/20 p-3 space-y-2">
                         <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Distribution recap</div>
+                        <div className="overflow-x-auto -mx-3 px-3">
                         <Table>
                           <TableHeader>
                             <TableRow>
@@ -946,6 +947,7 @@ function StagePanel({
                             </TableRow>
                           </TableBody>
                         </Table>
+                        </div>
                       </div>
                     )}
                   </div>
