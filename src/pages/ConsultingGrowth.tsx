@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { useToast } from "@/hooks/use-toast";
 import {
   Plus, Briefcase, CheckCircle2, TrendingUp, DollarSign,
-  FileText, Upload, ArrowRight, Users, Trash2, ExternalLink,
+  FileText, Upload, ArrowRight, Users, Trash2, ExternalLink, Loader2, RefreshCw,
 } from "lucide-react";
 import { format } from "date-fns";
 
