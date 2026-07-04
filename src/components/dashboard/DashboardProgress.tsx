@@ -169,7 +169,7 @@ export function DashboardProgress() {
     return Math.round((completed / total) * 100);
   };
 
-  const steps = [
+  const foundationSteps = [
     {
       key: "intent",
       title: "Declare your intent",
@@ -204,6 +204,23 @@ export function DashboardProgress() {
       done: resumeComplete,
       cta: { label: "Complete", to: "/resume" },
     },
+  ];
+
+  const foundationDone = foundationSteps.every((s) => s.done);
+
+  const steps = [
+    ...(foundationDone
+      ? [
+          {
+            key: "talent-foundation" as const,
+            title: "Talent Foundation set",
+            description: "Intent, natural role, professional track record and resume — all locked in.",
+            icon: CheckCircle2,
+            done: true,
+            cta: { label: "Review", to: "/profile" },
+          },
+        ]
+      : foundationSteps),
     ...(coreReady
       ? [
           {
@@ -234,6 +251,7 @@ export function DashboardProgress() {
       cta: { label: "Complete", to: "/track" },
     },
   ];
+
 
   return (
     <Card>
