@@ -6,7 +6,17 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { useAuth } from "@/hooks/useAuth";
 import { useExpertise } from "@/hooks/useExpertise";
+import { useNextBestActions } from "@/hooks/useNextBestActions";
 import { supabase } from "@/integrations/supabase/client";
+
+const STAGE_LEVEL: Record<string, number> = {
+  novice: 1,
+  emerging: 2,
+  capable: 3,
+  monetizing: 4,
+  building: 5,
+  founder: 6,
+};
 
 export default function Squares() {
   const navigate = useNavigate();
