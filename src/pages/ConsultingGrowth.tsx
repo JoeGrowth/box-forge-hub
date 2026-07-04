@@ -252,24 +252,6 @@ export default function ConsultingGrowth() {
         </div>
       </div>
 
-      {/* Performance */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { icon: Briefcase, label: "Opportunities", value: pipeline.length },
-          { icon: CheckCircle2, label: "Closed missions", value: closed.length },
-          { icon: DollarSign, label: "Total revenue", value: `${totalRevenue.toLocaleString()}`, suffix: "EUR" },
-          { icon: TrendingUp, label: "Paid clients", value: activeClients },
-        ].map((s, i) => (
-          <div key={i} className="rounded-xl border border-border bg-card p-5">
-            <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-              <s.icon className="w-4 h-4" />{s.label}
-            </div>
-            <div className="text-2xl font-bold">
-              {s.value} {s.suffix && <span className="text-sm font-normal text-muted-foreground">{s.suffix}</span>}
-            </div>
-          </div>
-        ))}
-      </div>
 
       {/* Milestone */}
       <div className="rounded-xl border border-border bg-card p-5">
@@ -287,7 +269,7 @@ export default function ConsultingGrowth() {
       <div className="space-y-3">
         <div>
           <h2 className="text-lg font-semibold tracking-tight">Opportunities</h2>
-          <p className="text-sm text-muted-foreground">Click a mission to advance it through the stages.</p>
+          <p className="text-sm text-muted-foreground">Advance it through the stages.</p>
         </div>
 
         {/* Stage tabs */}
