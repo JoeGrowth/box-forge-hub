@@ -140,6 +140,20 @@ export function Navbar() {
 
   const isEngineActive = useMemo(() => engineLinks.some((l) => location.pathname === l.path), [location.pathname]);
 
+  // Only show unlocked items in the navbar — locked routes are hidden entirely.
+  const visibleEngineLinks = useMemo(
+    () => engineLinks.filter((l) => engineAccess[l.key].unlocked),
+    [engineAccess],
+  );
+  const visiblePublishLinks = useMemo(
+    () => publishLinks.filter((l) => !(l.orgAdminOnly && !isOrgAdmin)),
+    [isOrgAdmin],
+  );
+  const visibleMoreLinks = useMemo(
+    () => moreLinks.filter((l) => !(l.talentGate && !talentReady)),
+    [talentReady],
+  );
+
   return (
     <nav data-track-kind="navbar" className="fixed top-0 left-0 right-0 z-50 glass">
       <div className="container mx-auto px-4">
