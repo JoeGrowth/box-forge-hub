@@ -604,7 +604,7 @@ const CoBuilders = () => {
                               )}
                             </div>
                             <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                              <span className={`text-sm ${certCount >= 2 ? "text-b4-purple font-medium" : certCount === 1 ? "text-b4-teal font-medium" : "text-muted-foreground"}`}>
+                              <span className={`text-sm ${talentStyle ? talentStyle.text : certCount >= 2 ? "text-b4-purple font-medium" : certCount === 1 ? "text-b4-teal font-medium" : "text-muted-foreground"}`}>
                                 {getStatusLabel()}
                               </span>
                               {certCount > 0 && (
