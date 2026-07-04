@@ -1008,7 +1008,7 @@ function FileField({
         </div>
       ) : url ? (
         <div className="flex flex-wrap items-center gap-2 p-2.5">
-          <div className="flex items-center gap-2 flex-1 min-w-0 text-sm w-full sm:w-auto">
+          <div className="flex items-center gap-2 min-w-0 text-sm basis-full sm:basis-0 sm:flex-1">
             <div className="w-7 h-7 rounded bg-primary/10 text-primary flex items-center justify-center shrink-0">
               <CheckCircle2 className="w-4 h-4" />
             </div>
