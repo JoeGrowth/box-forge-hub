@@ -372,18 +372,22 @@ export function Navbar() {
 
               {!user ? (
                 guestNavLinks.map((link) => (
-                  <Link
+                  <Button
                     key={link.path}
-                    to={link.path}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      location.pathname === link.path ? "bg-muted text-b4-teal" : "text-muted-foreground hover:bg-muted"
+                    variant="outline"
+                    size="sm"
+                    className={`mx-4 justify-center font-semibold ${
+                      location.pathname === link.path ? "text-b4-teal border-b4-teal" : ""
                     }`}
-                    onClick={() => setIsOpen(false)}
+                    asChild
                   >
-                    {link.name}
-                  </Link>
+                    <Link to={link.path} onClick={() => setIsOpen(false)}>
+                      {link.name}
+                    </Link>
+                  </Button>
                 ))
               ) : (
+
                 <>
                   {visibleEngineLinks.length > 0 && (
                     <div className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
