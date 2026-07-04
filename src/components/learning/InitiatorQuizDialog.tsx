@@ -28,6 +28,14 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  quizStorageKey,
+  loadQuizDraft,
+  saveQuizDraft,
+  clearQuizDraft,
+  fetchExistingPhaseResponse,
+  extractAnswers,
+} from "@/lib/quizPersistence";
 
 interface Quiz {
   id: string;
@@ -303,6 +311,26 @@ export function InitiatorQuizDialog({
   const [orderItems, setOrderItems] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [journeyId, setJourneyId] = useState<string | null>(null);
+  const [isReviewMode, setIsReviewMode] = useState(false);
+
+  const draftKey =
+    user && stepNumber
+      ? quizStorageKey(user.id, "idea_ptc", stepNumber)
+      : null;
+
+  // Restore in-progress draft from localStorage as soon as the dialog opens
+  useEffect(() => {
+    if (!open || !draftKey) return;
+    const draft = loadQuizDraft<any>(draftKey);
+    if (!draft) return;
+    if (draft.phase) setPhase(draft.phase);
+    if (typeof draft.currentQuizIndex === "number")
+      setCurrentQuizIndex(draft.currentQuizIndex);
+    if (draft.answers) setAnswers(draft.answers);
+    if (draft.matchingSelections) setMatchingSelections(draft.matchingSelections);
+    if (Array.isArray(draft.orderItems)) setOrderItems(draft.orderItems);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, draftKey]);
 
   const stepContent = INITIATOR_STEP_CONTENT.find((s) => s.step === stepNumber);
   
