@@ -314,15 +314,23 @@ const CoBuilders = () => {
     }
   };
 
-  // Filter co-builders based on search + Talents/Co-Builders tab.
-  // Talents = not yet certified (certCount === 0). Co-Builders = at least 1 cert.
-  // Always keep the current user pinned so they can edit their own card.
+  // Talents tab = all approved users (including co-builders and advisors),
+  // ordered by progression stage: monetizing → capable → emerging → novice.
+  // Stages "building" and "founder" are excluded from Talents.
+  const TALENTS_STAGE_RANK: Record<string, number> = {
+    monetizing: 0,
+    capable: 1,
+    emerging: 2,
+    novice: 3,
+  };
   const filteredCobuilders = cobuilders.filter((cb) => {
     if (filter === "advisors") {
       if (!advisorUserIds.has(cb.user_id)) return false;
+    } else if (filter === "talents") {
+      const stage = (cb.stage || "novice").toLowerCase();
+      if (cb.user_id !== user?.id && !(stage in TALENTS_STAGE_RANK)) return false;
     } else if (cb.user_id !== user?.id) {
       if (filter === "cobuilders" && cb.certCount < 1) return false;
-      if (filter === "talents" && cb.certCount >= 1) return false;
     }
     const searchLower = searchQuery.toLowerCase();
     const nameMatch = cb.full_name?.toLowerCase().includes(searchLower);
@@ -330,6 +338,17 @@ const CoBuilders = () => {
     const roleMatch = cb.natural_role_description?.toLowerCase().includes(searchLower);
     return nameMatch || skillsMatch || roleMatch;
   });
+
+  if (filter === "talents") {
+    filteredCobuilders.sort((a, b) => {
+      if (a.user_id === user?.id) return -1;
+      if (b.user_id === user?.id) return 1;
+      const ra = TALENTS_STAGE_RANK[(a.stage || "novice").toLowerCase()] ?? 99;
+      const rb = TALENTS_STAGE_RANK[(b.stage || "novice").toLowerCase()] ?? 99;
+      if (ra !== rb) return ra - rb;
+      return (b.certCount || 0) - (a.certCount || 0);
+    });
+  }
 
   const getInitials = (name: string | null) => {
     if (!name) return "U";
@@ -456,9 +475,38 @@ const CoBuilders = () => {
                     const isCurrentUser = cobuilder.user_id === user?.id;
                     const certCount = cobuilder.certCount;
 
+                    const stageKey = (cobuilder.stage || "novice").toLowerCase();
+
+                    // In Talents tab, tint cards slightly by progression stage.
+                    const talentStageStyle: Record<string, { card: string; avatar: string; text: string }> = {
+                      monetizing: {
+                        card: "bg-emerald-500/5 border-emerald-500/40 ring-1 ring-emerald-500/20 hover:border-emerald-500/60",
+                        avatar: "bg-emerald-500/15 text-emerald-600",
+                        text: "text-emerald-600 font-medium",
+                      },
+                      capable: {
+                        card: "bg-sky-500/5 border-sky-500/40 ring-1 ring-sky-500/20 hover:border-sky-500/60",
+                        avatar: "bg-sky-500/15 text-sky-600",
+                        text: "text-sky-600 font-medium",
+                      },
+                      emerging: {
+                        card: "bg-amber-500/5 border-amber-500/40 ring-1 ring-amber-500/20 hover:border-amber-500/60",
+                        avatar: "bg-amber-500/15 text-amber-600",
+                        text: "text-amber-600 font-medium",
+                      },
+                      novice: {
+                        card: "bg-card border-border hover:border-muted-foreground/30",
+                        avatar: "bg-muted text-muted-foreground",
+                        text: "text-muted-foreground",
+                      },
+                    };
+                    const talentStyle =
+                      filter === "talents" ? talentStageStyle[stageKey] ?? talentStageStyle.novice : null;
+
                     // Visual differentiation based on certification count
                     const getCardStyle = () => {
                       if (isCurrentUser) return "bg-b4-teal/5 border-b4-teal ring-2 ring-b4-teal/20";
+                      if (talentStyle) return talentStyle.card;
                       if (certCount >= 2) return "bg-card border-b4-purple/40 ring-1 ring-b4-purple/20 hover:border-b4-purple/60";
                       if (certCount === 1) return "bg-card border-b4-teal/40 ring-1 ring-b4-teal/20 hover:border-b4-teal/60";
                       return "bg-card border-border hover:border-muted-foreground/30";
@@ -466,12 +514,16 @@ const CoBuilders = () => {
 
                     const getAvatarStyle = () => {
                       if (isCurrentUser) return "bg-b4-teal text-white";
+                      if (talentStyle) return talentStyle.avatar;
                       if (certCount >= 2) return "bg-gradient-to-br from-b4-teal to-b4-purple text-white";
                       if (certCount === 1) return "bg-b4-teal/15 text-b4-teal";
                       return "bg-muted text-muted-foreground";
                     };
 
                     const getStatusLabel = () => {
+                      if (filter === "talents") {
+                        return stageKey.charAt(0).toUpperCase() + stageKey.slice(1);
+                      }
                       if (certCount >= 2) return "Fully Certified";
                       if (certCount === 1) return "Certified";
                       const s = cobuilder.stage || "novice";
@@ -552,7 +604,7 @@ const CoBuilders = () => {
                               )}
                             </div>
                             <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                              <span className={`text-sm ${certCount >= 2 ? "text-b4-purple font-medium" : certCount === 1 ? "text-b4-teal font-medium" : "text-muted-foreground"}`}>
+                              <span className={`text-sm ${talentStyle ? talentStyle.text : certCount >= 2 ? "text-b4-purple font-medium" : certCount === 1 ? "text-b4-teal font-medium" : "text-muted-foreground"}`}>
                                 {getStatusLabel()}
                               </span>
                               {certCount > 0 && (
