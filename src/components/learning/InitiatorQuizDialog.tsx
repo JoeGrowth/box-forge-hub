@@ -371,6 +371,46 @@ export function InitiatorQuizDialog({
     
     getOrCreateJourney();
   }, [user, open]);
+
+  // If the step is already completed, load submitted answers as read-only review
+  useEffect(() => {
+    if (!open || !journeyId) return;
+    (async () => {
+      const existing = await fetchExistingPhaseResponse(journeyId, stepNumber - 1);
+      if (existing?.is_completed && existing.responses) {
+        const restored = extractAnswers(existing.responses as any);
+        if (Object.keys(restored).length) setAnswers(restored);
+        setIsReviewMode(true);
+        setPhase("quiz");
+        setCurrentQuizIndex(0);
+      } else {
+        setIsReviewMode(false);
+      }
+    })();
+  }, [open, journeyId, stepNumber]);
+
+  // Autosave whatever the user has typed / selected
+  useEffect(() => {
+    if (!open || !draftKey || isReviewMode) return;
+    saveQuizDraft(draftKey, {
+      phase,
+      currentQuizIndex,
+      answers,
+      matchingSelections,
+      orderItems,
+    });
+  }, [
+    open,
+    draftKey,
+    isReviewMode,
+    phase,
+    currentQuizIndex,
+    answers,
+    matchingSelections,
+    orderItems,
+  ]);
+
+
   
   if (!stepContent) return null;
 
