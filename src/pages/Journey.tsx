@@ -37,6 +37,10 @@ import { InitiatorQuizDialog } from "@/components/learning/InitiatorQuizDialog";
 import { CoBuilderQuizDialog } from "@/components/learning/CoBuilderQuizDialog";
 import { FinanceQuizDialog } from "@/components/learning/FinanceQuizDialog";
 import { SecurityQuizDialog } from "@/components/learning/SecurityQuizDialog";
+import { ConsultantQuizDialog } from "@/components/learning/ConsultantQuizDialog";
+import { Lock } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { supabase } from "@/integrations/supabase/client";
 
 
 interface JourneyStep {
@@ -258,7 +262,50 @@ const COBUILDER_STEPS: JourneyStep[] = [
   },
 ];
 
-type ActiveSection = "initiator" | "cobuilder" | "finance" | "security";
+const CONSULTANT_STEPS: JourneyStep[] = [
+  {
+    step: 1,
+    title: "Consulting Basics",
+    subtitle: "Foundations",
+    icon: BookOpen,
+    description:
+      "Learn the fundamentals of consulting. Understand client needs, project scoping, and engagement models.",
+    details: ["Master consulting frameworks", "Learn client engagement", "Understand project scoping"],
+    color: "from-purple-500 to-violet-500",
+  },
+  {
+    step: 2,
+    title: "Strategic Thinking",
+    subtitle: "Strategy",
+    icon: Target,
+    description:
+      "Develop strategic thinking capabilities. Analyze complex problems and create actionable solutions.",
+    details: ["Strategic analysis methods", "Problem-solving frameworks", "Solution development"],
+    color: "from-violet-500 to-purple-600",
+  },
+  {
+    step: 3,
+    title: "Client Relations",
+    subtitle: "Advisory",
+    icon: Handshake,
+    description:
+      "Build strong client relationships. Communicate effectively and manage stakeholder expectations.",
+    details: ["Client relationship management", "Stakeholder communication", "Expectation management"],
+    color: "from-purple-600 to-fuchsia-500",
+  },
+  {
+    step: 4,
+    title: "Thought Leadership",
+    subtitle: "Leadership",
+    icon: TrendingUp,
+    description:
+      "Establish yourself as a thought leader. Create content, speak at events, and build your personal brand.",
+    details: ["Content creation", "Speaking engagements", "Personal brand building"],
+    color: "from-fuchsia-500 to-pink-500",
+  },
+];
+
+type ActiveSection = "initiator" | "cobuilder" | "finance" | "security" | "consultant";
 
 const Journey = () => {
   const { user, loading: authLoading } = useAuth();
@@ -268,7 +315,7 @@ const Journey = () => {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<ActiveSection>(() => {
     const section = searchParams.get("section");
-    if (section === "initiator" || section === "cobuilder" || section === "finance" || section === "security") {
+    if (section === "initiator" || section === "cobuilder" || section === "finance" || section === "security" || section === "consultant") {
       return section;
     }
     return "initiator";
@@ -278,6 +325,7 @@ const Journey = () => {
     cobuilder: {},
     finance: {},
     security: {},
+    consultant: {},
   });
   const [quizDialogOpen, setQuizDialogOpen] = useState(false);
   const [selectedStep, setSelectedStep] = useState<number>(1);
@@ -291,6 +339,34 @@ const Journey = () => {
   const [cobuilderQuizOpen, setCobuilderQuizOpen] = useState(false);
   const [financeQuizOpen, setFinanceQuizOpen] = useState(false);
   const [securityQuizOpen, setSecurityQuizOpen] = useState(false);
+  const [consultantQuizOpen, setConsultantQuizOpen] = useState(false);
+
+  // Talent Foundation gate: onboarding done + NR decoder + professional track + resume
+  const [talentFoundationSet, setTalentFoundationSet] = useState(false);
+  useEffect(() => {
+    if (!user) { setTalentFoundationSet(false); return; }
+    let cancelled = false;
+    (async () => {
+      const [{ data: nr }, { data: dec }, { data: prof }] = await Promise.all([
+        supabase.from("natural_roles").select("description").eq("user_id", user.id).maybeSingle(),
+        supabase.from("nr_decoder_submissions").select("status").eq("user_id", user.id).maybeSingle(),
+        supabase.from("profiles")
+          .select("professional_title, bio, primary_skills, summary_statement, key_projects, years_of_experience, education_certifications")
+          .eq("user_id", user.id).maybeSingle(),
+      ]);
+      if (cancelled) return;
+      const filled = (v: any) => v !== null && v !== undefined && String(v).trim().length > 0;
+      const p: any = prof || {};
+      const resumeDone = Boolean(
+        filled(p.professional_title) && filled(p.bio) && filled(p.summary_statement) &&
+        filled(p.primary_skills) && filled(p.key_projects) && filled(p.education_certifications) &&
+        p.years_of_experience !== null && p.years_of_experience !== undefined
+      );
+      const onboardingDone = !!onboardingState?.onboarding_completed && (onboardingState?.current_step ?? 0) >= 5;
+      setTalentFoundationSet(onboardingDone && !!nr?.description && !!dec && resumeDone);
+    })();
+    return () => { cancelled = true; };
+  }, [user, onboardingState]);
 
   // Map journey types to section names
   const getJourneyTypeForSection = (section: ActiveSection): string => {
@@ -303,6 +379,8 @@ const Journey = () => {
         return "finance_literacy";
       case "security":
         return "security_literacy";
+      case "consultant":
+        return "scaling_path";
       default:
         return "";
     }
@@ -319,6 +397,8 @@ const Journey = () => {
         return FINANCE_STEPS.length;
       case "security":
         return SECURITY_STEPS.length;
+      case "consultant":
+        return CONSULTANT_STEPS.length;
       default:
         return 0;
     }
@@ -384,6 +464,8 @@ const Journey = () => {
         return certifications.some(c => c.certification_type === "finance_literacy");
       case "security":
         return certifications.some(c => c.certification_type === "security_literacy");
+      case "consultant":
+        return certifications.some(c => c.certification_type === "consultant_b4");
       default:
         return false;
     }
@@ -420,6 +502,8 @@ const Journey = () => {
       setFinanceQuizOpen(true);
     } else if (section === "security") {
       setSecurityQuizOpen(true);
+    } else if (section === "consultant") {
+      setConsultantQuizOpen(true);
     }
   };
 
@@ -473,6 +557,8 @@ const Journey = () => {
         return FINANCE_STEPS;
       case "security":
         return SECURITY_STEPS;
+      case "consultant":
+        return CONSULTANT_STEPS;
     }
   };
 
@@ -509,6 +595,14 @@ const Journey = () => {
           icon: Shield,
           color: "from-red-500 to-orange-500",
           outcome: "You become a Certified Security Literate Professional — aware of threats, confident in securing devices, able to act securely, and capable of advising peers.",
+        };
+      case "consultant":
+        return {
+          title: "Learn to be Consultant",
+          description: "A 4-step journey to master consulting fundamentals and advisory practice",
+          icon: Handshake,
+          color: "from-purple-500 to-fuchsia-500",
+          outcome: "You become a Certified Consultant — confident in scoping engagements, structuring analysis, advising clients, and building thought leadership.",
         };
     }
   };
@@ -547,6 +641,9 @@ const Journey = () => {
                     { key: "cobuilder" as ActiveSection, title: "Learn to be a Co-Builder", icon: Users, total: COBUILDER_STEPS.length },
                     { key: "finance" as ActiveSection, title: "Learn Finance", icon: TrendingUp, total: FINANCE_STEPS.length },
                     { key: "security" as ActiveSection, title: "Learn to Be Secure", icon: Shield, total: SECURITY_STEPS.length },
+                    ...(talentFoundationSet
+                      ? [{ key: "consultant" as ActiveSection, title: "Learn to be Consultant", icon: Handshake, total: CONSULTANT_STEPS.length }]
+                      : []),
                   ]).map(({ key, title, icon: SIcon, total }) => {
                     const journeyType = getJourneyTypeForSection(key);
                     const journey = journeys.find(j => j.journey_type === journeyType);
@@ -650,6 +747,36 @@ const Journey = () => {
                     <Shield className="w-4 h-4 inline mr-2" />
                     Learn to Be Secure
                   </button>
+                  {talentFoundationSet ? (
+                    <button
+                      onClick={() => setActiveSection("consultant")}
+                      className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                        activeSection === "consultant"
+                          ? "bg-background shadow-sm text-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <Handshake className="w-4 h-4 inline mr-2" />
+                      Learn to be Consultant
+                    </button>
+                  ) : (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            disabled
+                            className="px-4 py-2.5 rounded-lg text-sm font-medium text-muted-foreground/60 cursor-not-allowed opacity-60"
+                          >
+                            <Lock className="w-4 h-4 inline mr-2" />
+                            Learn to be Consultant
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          Unlocks once your Talent Foundation is set (intent, natural role, professional track record and resume).
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                 </div>
               </div>
 
@@ -942,6 +1069,14 @@ const Journey = () => {
       <SecurityQuizDialog
         open={securityQuizOpen}
         onOpenChange={setSecurityQuizOpen}
+        stepNumber={selectedStep}
+        onComplete={handleStepComplete}
+      />
+
+      {/* Quiz Dialog for Consultant */}
+      <ConsultantQuizDialog
+        open={consultantQuizOpen}
+        onOpenChange={setConsultantQuizOpen}
         stepNumber={selectedStep}
         onComplete={handleStepComplete}
       />
