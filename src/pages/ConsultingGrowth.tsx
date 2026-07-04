@@ -817,7 +817,31 @@ function StagePanel({
                   </Button>
                 )}
                 {opp.stage === "closed" && (
-                  <Badge>Mission closed</Badge>
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="text-sm font-semibold">Mission closed</div>
+                        <p className="text-xs text-muted-foreground">
+                          {opp.client_name || "—"}
+                          {opp.paid_at && <> · paid {format(new Date(opp.paid_at), "MMM d, yyyy")}</>}
+                        </p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="font-semibold">
+                          {Number(opp.paid_amount ?? opp.total_amount ?? 0).toLocaleString()} <span className="text-xs font-normal text-muted-foreground">{opp.currency}</span>
+                        </div>
+                      </div>
+                    </div>
+                    {distributions.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {distributions.map(d => (
+                          <Badge key={d.id} variant="outline" className="text-[10px]">
+                            {d.recipient_name} · {d.percent ? `${d.percent}%` : ""}{d.amount ? ` ${Number(d.amount).toLocaleString()}` : ""}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
