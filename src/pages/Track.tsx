@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -51,12 +51,20 @@ const Track = () => {
   const [loading, setLoading] = useState(true);
   const [professionalUnlocked, setProfessionalUnlocked] = useState(false);
   const [entrepreneurialUnlocked, setEntrepreneurialUnlocked] = useState(false);
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const unlock = searchParams.get("unlock");
+    if (unlock === "entrepreneurial") setEntrepreneurialUnlocked(true);
+    if (unlock === "professional") setProfessionalUnlocked(true);
+  }, [searchParams]);
 
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/auth", { replace: true });
     }
   }, [user, authLoading, navigate]);
+
 
   useEffect(() => {
     const fetchData = async () => {
