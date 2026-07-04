@@ -385,6 +385,7 @@ export default function ConsultingGrowth() {
                           opp={o}
                           distributions={distByOpp[o.id] || []}
                           onChanged={async () => { await load(); }}
+                          onOptimisticPatch={(fields) => setItems(prev => prev.map(it => it.id === o.id ? { ...it, ...fields } : it))}
                           onStageChange={(to) => { setStageFilter(to === "closed" ? "closed" : to); setExpandedId(o.id); }}
                           userId={user?.id ?? ""}
                           onlyStage={stageFilter === "all" ? null : stageFilter}
