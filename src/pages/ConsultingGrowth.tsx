@@ -60,13 +60,13 @@ const SOURCES = [
   { value: "other", label: "Tender / Direct / Partner / Other" },
 ];
 
-const STAGES: { value: Stage; label: string; short: string }[] = [
-  { value: "identify",             label: "1. Identify opportunity",    short: "Identify" },
-  { value: "propose",              label: "2. Send proposal",           short: "Propose" },
-  { value: "confirm_prepare",      label: "3. Confirm & prepare",       short: "Prepare" },
-  { value: "deliver",              label: "4. Deliver",                 short: "Deliver" },
-  { value: "payment_distribution", label: "5. Payment & distribution",  short: "Payment" },
-  { value: "closed",               label: "Closed",                     short: "Closed" },
+const STAGES: { value: Stage; label: string; short: string; icon: typeof Briefcase }[] = [
+  { value: "identify",             label: "1. Identify opportunity",    short: "Identify",     icon: Briefcase },
+  { value: "propose",              label: "2. Send proposal",           short: "Propose",      icon: FileText },
+  { value: "confirm_prepare",      label: "3. Confirm & prepare",       short: "Prepare",      icon: CheckCircle2 },
+  { value: "deliver",              label: "4. Deliver",                 short: "Deliver",      icon: ArrowRight },
+  { value: "payment_distribution", label: "5. Payment",                 short: "Payment",      icon: DollarSign },
+  { value: "closed",               label: "6. Distribution / Closed",   short: "Distribution", icon: Users },
 ];
 
 const MILESTONE = 10;
@@ -93,6 +93,7 @@ export default function ConsultingGrowth() {
   const [items, setItems] = useState<Opportunity[]>([]);
   const [distByOpp, setDistByOpp] = useState<Record<string, Distribution[]>>({});
   const [loading, setLoading] = useState(true);
+  const [stageFilter, setStageFilter] = useState<Stage | "all">("all");
 
   const [dialogOpen, setDialogOpen] = useState(() => {
     try { return localStorage.getItem(OPEN_KEY) === "1"; } catch { return false; }
@@ -262,59 +263,104 @@ export default function ConsultingGrowth() {
       <div className="space-y-3">
         <div>
           <h2 className="text-lg font-semibold tracking-tight">Pipeline</h2>
-          <p className="text-sm text-muted-foreground">Click a mission to advance it through the 5 stages.</p>
+          <p className="text-sm text-muted-foreground">Click a mission to advance it through the stages.</p>
         </div>
-        {loading ? (
-          <div className="text-sm text-muted-foreground">Loading…</div>
-        ) : pipeline.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border p-12 text-center">
-            <Briefcase className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-            <p className="font-medium text-foreground">Nothing in the pipeline yet</p>
-            <p className="text-sm text-muted-foreground mt-1">Add your first opportunity to start the 5-stage flow.</p>
-          </div>
-        ) : (
-          <div className="grid sm:grid-cols-2 gap-4">
-            {pipeline.map(o => {
-              const idx = stageIndex(o.stage);
+
+        {/* Stage tabs */}
+        <div className="inline-flex flex-wrap items-center gap-1 rounded-lg border border-border bg-muted/40 p-1">
+          {(() => {
+            const tabs: { key: Stage | "all"; label: string; icon: typeof Briefcase; count: number }[] = [
+              { key: "all", label: "All", icon: Briefcase, count: items.length },
+              ...STAGES.map(s => ({
+                key: s.value,
+                label: s.short,
+                icon: s.icon,
+                count: items.filter(i => i.stage === s.value).length,
+              })),
+            ];
+            return tabs.map(t => {
+              const active = stageFilter === t.key;
               return (
                 <button
-                  key={o.id}
-                  onClick={() => setActiveOpp(o)}
-                  className="text-left rounded-xl border border-border bg-card p-5 hover:border-primary/40 hover:shadow-sm transition"
+                  key={t.key}
+                  onClick={() => setStageFilter(t.key)}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition ${
+                    active
+                      ? "bg-background text-foreground shadow-sm border border-border"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <h3 className="font-semibold text-foreground truncate">{o.title}</h3>
-                      <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                        <p className="text-xs text-muted-foreground truncate">{o.client_name || "—"}</p>
-                        <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4">{o.source}</Badge>
-                      </div>
-                    </div>
-                    <Badge variant="secondary" className="shrink-0">{STAGES[idx]?.short}</Badge>
-                  </div>
-                  <div className="mt-4 flex gap-1">
-                    {STAGES.slice(0, 5).map((s, i) => (
-                      <div
-                        key={s.value}
-                        className={`h-1.5 flex-1 rounded ${i <= idx ? "bg-primary" : "bg-muted"}`}
-                        title={s.short}
-                      />
-                    ))}
-                  </div>
-                  <div className="flex items-center justify-between mt-3 text-xs">
-                    <span className="text-muted-foreground">
-                      {o.total_amount ? `${Number(o.total_amount).toLocaleString()} ${o.currency}` : ""}
-                    </span>
-                    <span className="text-primary inline-flex items-center">
-                      Manage <ArrowRight className="w-3 h-3 ml-1" />
-                    </span>
-                  </div>
+                  <t.icon className="w-3.5 h-3.5" />
+                  {t.label} <span className="text-xs opacity-70">({t.count})</span>
                 </button>
               );
-            })}
-          </div>
-        )}
+            });
+          })()}
+        </div>
+
+        {(() => {
+          const filtered = stageFilter === "all" ? pipeline : items.filter(i => i.stage === stageFilter);
+          if (loading) return <div className="text-sm text-muted-foreground">Loading…</div>;
+          if (filtered.length === 0) {
+            return (
+              <div className="rounded-xl border border-dashed border-border p-12 text-center">
+                <Briefcase className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
+                <p className="font-medium text-foreground">
+                  {stageFilter === "all" ? "Nothing in the pipeline yet" : "No missions in this stage"}
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {stageFilter === "all"
+                    ? "Add your first opportunity to start the flow."
+                    : "Move a mission to this stage from another tab."}
+                </p>
+              </div>
+            );
+          }
+          return (
+            <div className="grid sm:grid-cols-2 gap-4">
+              {filtered.map(o => {
+                const idx = stageIndex(o.stage);
+                return (
+                  <button
+                    key={o.id}
+                    onClick={() => setActiveOpp(o)}
+                    className="text-left rounded-xl border border-border bg-card p-5 hover:border-primary/40 hover:shadow-sm transition"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <h3 className="font-semibold text-foreground truncate">{o.title}</h3>
+                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                          <p className="text-xs text-muted-foreground truncate">{o.client_name || "—"}</p>
+                          <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4">{o.source}</Badge>
+                        </div>
+                      </div>
+                      <Badge variant="secondary" className="shrink-0">{STAGES[idx]?.short}</Badge>
+                    </div>
+                    <div className="mt-4 flex gap-1">
+                      {STAGES.slice(0, 6).map((s, i) => (
+                        <div
+                          key={s.value}
+                          className={`h-1.5 flex-1 rounded ${i <= idx ? "bg-primary" : "bg-muted"}`}
+                          title={s.short}
+                        />
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-between mt-3 text-xs">
+                      <span className="text-muted-foreground">
+                        {o.total_amount ? `${Number(o.total_amount).toLocaleString()} ${o.currency}` : ""}
+                      </span>
+                      <span className="text-primary inline-flex items-center">
+                        Manage <ArrowRight className="w-3 h-3 ml-1" />
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          );
+        })()}
       </div>
+
 
       {/* Accounting */}
       <div className="space-y-3">
