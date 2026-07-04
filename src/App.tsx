@@ -160,7 +160,7 @@ const App = () => (
                   {/* Legacy: old links pointed at startup ideas only. */}
                   <Route path="/opportunities/:id" element={<GatedRoute talentGate><OpportunityDetail /></GatedRoute>} />
                   <Route path="/mask" element={<Mask />} />
-                  <Route path="/checklist" element={<GatedRoute talentGate><Checklist /></GatedRoute>} />
+                  <Route path="/checklist" element={<GatedRoute minStage="emerging"><Checklist /></GatedRoute>} />
                   <Route path="/resume" element={<Resume />} />
                   <Route path="/track-record" element={<TrackRecord />} />
                   <Route path="/create-idea" element={<GatedRoute talentGate><CreateIdea /></GatedRoute>} />
