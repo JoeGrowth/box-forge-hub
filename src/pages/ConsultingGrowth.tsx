@@ -685,9 +685,9 @@ function StagePanel({
 
                 {/* Charges */}
                 <div>
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
                     <div className="text-sm font-semibold">Charges</div>
-                    <Button size="sm" variant="outline" onClick={() => setDistCharges(p => [...p, { id: distUid(), label: "New charge", amount: 0 }])}>
+                    <Button size="sm" variant="outline" className="self-start sm:self-auto" onClick={() => setDistCharges(p => [...p, { id: distUid(), label: "New charge", amount: 0 }])}>
                       <Plus className="w-3 h-3 mr-1" /> Add charge
                     </Button>
                   </div>
