@@ -154,6 +154,8 @@ export function DashboardProgress() {
   const isApproved = onboardingState?.journey_status === "approved" || 
     onboardingState?.journey_status === "entrepreneur_approved";
 
+  const coreReady = isOnboardingTrulyComplete && nrDecoderComplete && proTrackComplete && resumeComplete;
+
   const overallProgress = () => {
     let completed = 0;
     const total = 5; // Intent, Decoder, Professional Track, Entrepreneurial Track, Resume
@@ -166,8 +168,6 @@ export function DashboardProgress() {
 
     return Math.round((completed / total) * 100);
   };
-
-
 
   const steps = [
     {
@@ -197,14 +197,6 @@ export function DashboardProgress() {
       cta: { label: "Complete", to: "/track" },
     },
     {
-      key: "ent-track",
-      title: "Fill your Entrepreneurial Track Record",
-      description: "Initiatives, products, teams, business, equity — what you've shipped as a builder.",
-      icon: Rocket,
-      done: trackRecordComplete,
-      cta: { label: "Complete", to: "/track" },
-    },
-    {
       key: "resume",
       title: "Sharpen your resume",
       description: "Title, summary and signature skills — the first thing recruiters and initiators see.",
@@ -212,6 +204,19 @@ export function DashboardProgress() {
       done: resumeComplete,
       cta: { label: "Complete", to: "/resume" },
     },
+    ...(coreReady
+      ? [
+          {
+            key: "consulting-growth" as const,
+            title: "Launch your Consulting Growth",
+            description:
+              "Track opportunities from LinkedIn or tenders through proposal, delivery and payment distribution.",
+            icon: TrendingUp,
+            done: false,
+            cta: { label: "Start", to: "/consulting-growth" },
+          },
+        ]
+      : []),
     {
       key: "certify",
       title: "Getting Certified",
@@ -220,19 +225,15 @@ export function DashboardProgress() {
       done: false,
       cta: { label: hasLearningJourneys ? "Continue" : "Start", to: "/journey" },
     },
+    {
+      key: "ent-track",
+      title: "Fill your Entrepreneurial Track Record",
+      description: "Initiatives, products, teams, business, equity — what you've shipped as a builder.",
+      icon: Rocket,
+      done: trackRecordComplete,
+      cta: { label: "Complete", to: "/track" },
+    },
   ];
-
-  const coreReady = isOnboardingTrulyComplete && nrDecoderComplete && proTrackComplete && resumeComplete;
-  if (coreReady) {
-    steps.push({
-      key: "consulting-growth",
-      title: "Launch your Consulting Growth",
-      description: "Track opportunities from LinkedIn or tenders through proposal, delivery and payment distribution.",
-      icon: TrendingUp,
-      done: false,
-      cta: { label: "Open", to: "/consulting-growth" },
-    });
-  }
 
   return (
     <Card>
