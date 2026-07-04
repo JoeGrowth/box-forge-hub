@@ -88,8 +88,6 @@ export function DashboardHero() {
   const rawFirst = profile?.full_name?.split(" ")[0] || "Builder";
   const firstName = rawFirst.charAt(0).toUpperCase() + rawFirst.slice(1);
   const { primary: primaryCta, secondary: secondaryCta } = ctasFor(goal, intent, primaryRole);
-  const PrimaryIcon = primaryCta.icon;
-  const SecondaryIcon = secondaryCta.icon;
 
   // Goal-aware copy. Reinforces the platform vision: decide to grow, take part
   // in shaping the future. Each onboarding goal gets its own reminder so the
