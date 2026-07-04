@@ -641,6 +641,9 @@ const Journey = () => {
                     { key: "cobuilder" as ActiveSection, title: "Learn to be a Co-Builder", icon: Users, total: COBUILDER_STEPS.length },
                     { key: "finance" as ActiveSection, title: "Learn Finance", icon: TrendingUp, total: FINANCE_STEPS.length },
                     { key: "security" as ActiveSection, title: "Learn to Be Secure", icon: Shield, total: SECURITY_STEPS.length },
+                    ...(talentFoundationSet
+                      ? [{ key: "consultant" as ActiveSection, title: "Learn to be Consultant", icon: Handshake, total: CONSULTANT_STEPS.length }]
+                      : []),
                   ]).map(({ key, title, icon: SIcon, total }) => {
                     const journeyType = getJourneyTypeForSection(key);
                     const journey = journeys.find(j => j.journey_type === journeyType);
