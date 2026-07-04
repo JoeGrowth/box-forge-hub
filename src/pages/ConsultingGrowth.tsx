@@ -753,9 +753,9 @@ function StagePanel({
 
                 {/* Task distribution */}
                 <div>
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
                     <div className="text-sm font-semibold">Internal &amp; Structure &mdash; task distribution</div>
-                    <Button size="sm" variant="outline" onClick={() => setDistTasks(p => {
+                    <Button size="sm" variant="outline" className="self-start sm:self-auto" onClick={() => setDistTasks(p => {
                       const lockedIdx = p.findIndex(t => t.locked);
                       const newTask: DistTask = { id: distUid(), label: "New task", percent: 0 };
                       if (lockedIdx === -1) return [...p, newTask];
