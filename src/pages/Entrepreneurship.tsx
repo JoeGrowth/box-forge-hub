@@ -376,7 +376,7 @@ const Entrepreneurship = () => {
           )}
           <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
         </div>
-        <div className="flex flex-wrap gap-2 shrink-0 justify-end max-w-[60%]">
+        <div className="flex flex-wrap gap-2 shrink-0 justify-start sm:justify-end w-full sm:w-auto sm:max-w-[60%]">
           {isOwner && (
             <Button
               variant="ghost"
