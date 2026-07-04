@@ -557,9 +557,9 @@ function StagePanel({
         </div>
       )}
 
-        <div className="space-y-4">
-          {/* STAGE 1: Identify + driver */}
-          <StageBlock n={1} title="Identify — upload the driver" active={opp.stage === "identify"} done={idx > 0}>
+      <div className="space-y-4">
+        {show("identify") && (
+        <StageBlock n={1} title="Identify — upload the driver" active={opp.stage === "identify"} done={idx > 0}>
             <div className="space-y-2">
               <Label className="text-xs">Driver PDF or screenshot (LinkedIn post, tender, email…)</Label>
               <div className="flex items-center gap-2">
