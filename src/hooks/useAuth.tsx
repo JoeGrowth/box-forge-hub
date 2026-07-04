@@ -44,13 +44,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Set up auth state listener for subsequent changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (isMounted) {
-          setSession(session);
-          setUser(session?.user ?? null);
-          // Only set loading to false if it's still true (first auth event)
+      (event, newSession) => {
+        if (!isMounted) return;
+        // Ignore benign token refreshes that fire on tab focus. Without
+        // this, a new `user` object reference cascades through downstream
+        // hooks (useAdmin, useUserStatus) which flip back to loading, and
+        // ProtectedRoute unmounts the current page — wiping in-page state
+        // like open dialogs / quiz progress.
+        if (event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
+          setSession(newSession);
           setLoading(false);
+          return;
         }
+        setSession(newSession);
+        setUser((prev) => {
+          const nextUser = newSession?.user ?? null;
+          if (prev?.id === nextUser?.id) return prev;
+          return nextUser;
+        });
+        setLoading(false);
       }
     );
 
