@@ -47,7 +47,7 @@ const Career = () => {
             </Button>
           </div>
 
-          <div className="flex items-center justify-between mb-12 bg-muted/40 rounded-2xl p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-12 bg-muted/40 rounded-2xl p-4 sm:p-6">
             <div>
               <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-1">
                 Career Engine
@@ -56,7 +56,7 @@ const Career = () => {
                 Build and structure your expertise
               </p>
             </div>
-            <Button className="gap-2" asChild>
+            <Button className="gap-2 w-full sm:w-auto" asChild>
               <Link to="/track-record">
                 <Plus className="w-4 h-4" /> Update Track Record
               </Link>
@@ -71,10 +71,10 @@ const Career = () => {
               { label: "Endorsements", value: "0", sub: "From colleagues" },
               { label: "Job Matches", value: "0", sub: "Available now" },
             ].map((stat) => (
-              <div key={stat.label} className="rounded-2xl border border-border bg-card p-6">
-                <p className="text-sm text-muted-foreground mb-4">{stat.label}</p>
-                <p className="font-display text-3xl font-bold text-foreground">{stat.value}</p>
-                <p className="text-xs text-muted-foreground mt-1">{stat.sub}</p>
+              <div key={stat.label} className="rounded-2xl border border-border bg-card p-4 sm:p-5">
+                <p className="text-sm text-muted-foreground mb-2 sm:mb-4">{stat.label}</p>
+                <p className="font-display text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</p>
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{stat.sub}</p>
               </div>
             ))}
           </div>
@@ -85,21 +85,21 @@ const Career = () => {
               return (
                 <div
                   key={step.number}
-                  className="flex gap-6 items-start p-6 rounded-2xl border border-border bg-card hover:border-secondary/30 transition-all"
+                  className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start p-4 sm:p-6 rounded-2xl border border-border bg-card hover:border-secondary/30 transition-all"
                 >
-                  <div className="flex flex-col items-center">
+                  <div className="flex flex-row sm:flex-col items-center gap-2 sm:gap-0 w-full sm:w-auto">
                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground font-bold text-lg shrink-0">
                       {step.number}
                     </div>
-                    {idx < steps.length - 1 && <div className="w-px h-6 bg-border mt-2" />}
+                    {idx < steps.length - 1 && <div className="hidden sm:block w-px h-6 bg-border mt-2" />}
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 w-full">
                     <div className="flex items-center gap-2 mb-1">
-                      <step.icon className="w-5 h-5 text-secondary" />
-                      <h3 className="font-display text-xl font-bold text-foreground">{step.title}</h3>
+                      <step.icon className="w-5 h-5 text-secondary shrink-0" />
+                      <h3 className="font-display text-lg sm:text-xl font-bold text-foreground">{step.title}</h3>
                     </div>
                     <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{step.description}</p>
-                    <Button variant="outline" size="sm" asChild>
+                    <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
                       <Link to={step.link}>
                         {step.cta} <ArrowRight className="w-4 h-4 ml-1" />
                       </Link>
@@ -107,7 +107,7 @@ const Career = () => {
                   </div>
                   <button
                     onClick={() => toggleFavorite(step.id)}
-                    className="p-1.5 rounded-full hover:bg-muted transition-colors shrink-0"
+                    className="p-1.5 rounded-full hover:bg-muted transition-colors shrink-0 self-end sm:self-start"
                     aria-label={isFav ? "Remove from focus" : "Add to focus"}
                   >
                     <Star className={`w-5 h-5 transition-colors ${isFav ? "fill-secondary text-secondary" : "text-muted-foreground hover:text-secondary"}`} />
