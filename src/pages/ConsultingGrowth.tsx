@@ -480,7 +480,10 @@ function StagePanel({
 
   const advance = async (to: Stage, extra: Partial<Opportunity> = {}) => {
     const ok = await patch({ stage: to, ...extra });
-    if (ok) toast({ title: `Advanced to ${STAGES.find(s => s.value === to)?.short}` });
+    if (ok) {
+      toast({ title: `Advanced to ${STAGES.find(s => s.value === to)?.short}` });
+      onStageChange?.(to);
+    }
   };
 
   // ----- Distribution actions -----
