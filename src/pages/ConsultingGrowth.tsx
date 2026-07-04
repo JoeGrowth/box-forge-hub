@@ -544,22 +544,18 @@ function StagePanel({
   const idx = stageIndex(opp.stage);
 
   return (
-    <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{opp.title}</DialogTitle>
-          <div className="text-xs text-muted-foreground">{opp.client_name || "—"} · {opp.source}</div>
-        </DialogHeader>
-
-        {/* Stage tracker */}
-        <div className="flex gap-1 my-3">
-          {STAGES.slice(0, 5).map((s, i) => (
+    <div>
+      {/* Stage tracker (hide when a single stage tab is active) */}
+      {onlyStage === null && (
+        <div className="flex gap-1 mb-4">
+          {STAGES.slice(0, 6).map((s, i) => (
             <div key={s.value} className="flex-1">
               <div className={`h-1.5 rounded ${i <= idx ? "bg-primary" : "bg-muted"}`} />
               <div className={`text-[10px] mt-1 ${i <= idx ? "text-foreground font-medium" : "text-muted-foreground"}`}>{s.short}</div>
             </div>
           ))}
         </div>
+      )}
 
         <div className="space-y-4">
           {/* STAGE 1: Identify + driver */}
