@@ -7,6 +7,7 @@ import { ArrowRight, Sparkles, Target, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   useNextBestActions,
   progressionStageLabel,
@@ -18,6 +19,39 @@ import {
 } from "@/components/shared/RecommendationExplanation";
 
 const stageOrder = ["novice", "emerging", "capable", "monetizing", "building", "founder"];
+
+const stageInfo: Record<string, { title: string; summary: string; unlocks: string }> = {
+  novice: {
+    title: "Novice",
+    summary: "Starting point. Building baseline expertise, trust and visibility signals.",
+    unlocks: "Foundational learning, profile setup, first credentials.",
+  },
+  emerging: {
+    title: "Emerging",
+    summary: "Verified skills and early reputation. Ready to explore consulting-style work.",
+    unlocks: "Grow your consulting practice, structured advisory prep.",
+  },
+  capable: {
+    title: "Capable",
+    summary: "Proven delivery. Trusted to lead engagements and mentor peers.",
+    unlocks: "Advisory missions, paid consulting engagements, team roles.",
+  },
+  monetizing: {
+    title: "Monetizing",
+    summary: "Consistent revenue from expertise. Recognised in your niche.",
+    unlocks: "Recurring clients, service productisation, brand identity.",
+  },
+  building: {
+    title: "Building",
+    summary: "Assembling assets, team and processes — moving from operator to owner.",
+    unlocks: "Startup formation, co-builder recruitment, equity structuring.",
+  },
+  founder: {
+    title: "Founder",
+    summary: "Full ownership stage. Running a structured, scalable entity.",
+    unlocks: "Scaling path, decentralised operations, capital rounds.",
+  },
+};
 
 function actionLabel(a: NextBestAction) {
   return (a.payload?.label as string) || a.action.replace(/_/g, " ");
@@ -49,30 +83,50 @@ export function ProgressionPathCard({ userId }: { userId: string | undefined | n
         Derived from your six graphs — Expertise, Trust, Opportunity, Revenue, Reputation, Ownership.
       </p>
 
-      <div className="flex flex-wrap items-center gap-x-1 gap-y-2 mb-5 md:mb-6">
-        {stageOrder.map((s, i) => {
-          const reached = i <= stageIndex;
-          const current = i === stageIndex;
-          return (
-            <div key={s} className="flex items-center gap-1">
-              <div
-                className={`px-2 sm:px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-medium border whitespace-nowrap ${
-                  current
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : reached
-                    ? "bg-primary/10 text-primary border-primary/30"
-                    : "bg-muted text-muted-foreground border-border"
-                }`}
-              >
-                {progressionStageLabel[s]}
+      <TooltipProvider delayDuration={100}>
+        <div className="flex flex-wrap items-center gap-x-1 gap-y-2 mb-5 md:mb-6">
+          {stageOrder.map((s, i) => {
+            const reached = i <= stageIndex;
+            const current = i === stageIndex;
+            const info = stageInfo[s];
+            return (
+              <div key={s} className="flex items-center gap-1">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      className={`px-2 sm:px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-medium border whitespace-nowrap cursor-help transition-colors ${
+                        current
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : reached
+                          ? "bg-primary/10 text-primary border-primary/30"
+                          : "bg-muted text-muted-foreground border-border"
+                      }`}
+                    >
+                      {progressionStageLabel[s]}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-xs">
+                    <div className="space-y-1.5">
+                      <div className="font-semibold text-sm">
+                        {info.title}
+                        {current && <span className="ml-2 text-[10px] font-normal opacity-80">(current)</span>}
+                      </div>
+                      <div className="text-xs opacity-90">{info.summary}</div>
+                      <div className="text-[11px] opacity-80">
+                        <span className="font-medium">Unlocks:</span> {info.unlocks}
+                      </div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+                {i < stageOrder.length - 1 && (
+                  <ArrowRight className={`w-3 h-3 shrink-0 ${reached ? "text-primary" : "text-muted-foreground"}`} />
+                )}
               </div>
-              {i < stageOrder.length - 1 && (
-                <ArrowRight className={`w-3 h-3 shrink-0 ${reached ? "text-primary" : "text-muted-foreground"}`} />
-              )}
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      </TooltipProvider>
 
       <div className="space-y-3">
         <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
