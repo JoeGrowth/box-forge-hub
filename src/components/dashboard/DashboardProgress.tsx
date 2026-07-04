@@ -222,6 +222,18 @@ export function DashboardProgress() {
     },
   ];
 
+  const coreReady = isOnboardingTrulyComplete && nrDecoderComplete && proTrackComplete && resumeComplete;
+  if (coreReady) {
+    steps.push({
+      key: "consulting-growth",
+      title: "Launch your Consulting Growth",
+      description: "Track opportunities from LinkedIn or tenders through proposal, delivery and payment distribution.",
+      icon: TrendingUp,
+      done: false,
+      cta: { label: "Open", to: "/consulting-growth" },
+    });
+  }
+
   return (
     <Card>
       <CardHeader>
