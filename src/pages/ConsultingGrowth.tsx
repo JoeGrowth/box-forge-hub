@@ -60,13 +60,13 @@ const SOURCES = [
   { value: "other", label: "Tender / Direct / Partner / Other" },
 ];
 
-const STAGES: { value: Stage; label: string; short: string }[] = [
-  { value: "identify",             label: "1. Identify opportunity",    short: "Identify" },
-  { value: "propose",              label: "2. Send proposal",           short: "Propose" },
-  { value: "confirm_prepare",      label: "3. Confirm & prepare",       short: "Prepare" },
-  { value: "deliver",              label: "4. Deliver",                 short: "Deliver" },
-  { value: "payment_distribution", label: "5. Payment & distribution",  short: "Payment" },
-  { value: "closed",               label: "Closed",                     short: "Closed" },
+const STAGES: { value: Stage; label: string; short: string; icon: typeof Briefcase }[] = [
+  { value: "identify",             label: "1. Identify opportunity",    short: "Identify",     icon: Briefcase },
+  { value: "propose",              label: "2. Send proposal",           short: "Propose",      icon: FileText },
+  { value: "confirm_prepare",      label: "3. Confirm & prepare",       short: "Prepare",      icon: CheckCircle2 },
+  { value: "deliver",              label: "4. Deliver",                 short: "Deliver",      icon: ArrowRight },
+  { value: "payment_distribution", label: "5. Payment",                 short: "Payment",      icon: DollarSign },
+  { value: "closed",               label: "6. Distribution / Closed",   short: "Distribution", icon: Users },
 ];
 
 const MILESTONE = 10;
