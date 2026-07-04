@@ -92,8 +92,12 @@ const CoBuilders = () => {
     if (t && VALID_TABS.includes(t) && t !== filter) {
       setFilterState(t);
     }
+    // If URL requests initiators but user isn't an initiator, fall back to talents.
+    if (t === "initiators" && !canSeeInitiators) {
+      setFilter("talents");
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [searchParams, canSeeInitiators]);
 
   // Fetch viewer's progression stage to gate the Co-Builders filter tab.
   useEffect(() => {
