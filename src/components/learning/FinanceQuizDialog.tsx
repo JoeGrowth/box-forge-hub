@@ -649,6 +649,16 @@ export function FinanceQuizDialog({
           </div>
         </DialogHeader>
 
+        {isReviewMode && (
+          <div className="rounded-lg border border-b4-teal/40 bg-b4-teal/10 p-3 text-sm text-foreground flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-b4-teal shrink-0" />
+            <span>
+              <strong>Review mode.</strong> You already completed this step —
+              your submitted answers are shown below.
+            </span>
+          </div>
+        )}
+
         {phase === "quiz" && (
           <div className="space-y-1">
             <div className="flex justify-between text-xs text-muted-foreground">
