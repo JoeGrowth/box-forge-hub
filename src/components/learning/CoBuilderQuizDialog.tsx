@@ -317,9 +317,27 @@ export function CoBuilderQuizDialog({
         }
       }
     };
-    
+
     getOrCreateJourney();
   }, [user, open]);
+
+  useEffect(() => {
+    if (!open || !journeyId) return;
+    (async () => {
+      const existing = await fetchExistingPhaseResponse(journeyId, stepNumber - 1);
+      if (existing?.is_completed && existing.responses) {
+        const restored = extractAnswers(existing.responses as any);
+        if (Object.keys(restored).length) setAnswers(restored);
+        setIsReviewMode(true);
+        setPhase("quiz");
+        setCurrentQuizIndex(0);
+      } else {
+        setIsReviewMode(false);
+      }
+    })();
+  }, [open, journeyId, stepNumber]);
+
+
   
   if (!stepContent) return null;
 
