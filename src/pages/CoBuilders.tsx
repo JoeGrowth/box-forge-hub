@@ -75,6 +75,7 @@ const CoBuilders = () => {
   })();
   const [filter, setFilterState] = useState<DirectoryFilter>(initialTab);
   const [canSeeAdvisors, setCanSeeAdvisors] = useState(false);
+  const [canSeeInitiators, setCanSeeInitiators] = useState(false);
   const [advisorUserIds, setAdvisorUserIds] = useState<Set<string>>(new Set());
 
   // Keep URL in sync with selected tab for deep-linking and refresh-persistence.
@@ -91,8 +92,12 @@ const CoBuilders = () => {
     if (t && VALID_TABS.includes(t) && t !== filter) {
       setFilterState(t);
     }
+    // If URL requests initiators but user isn't an initiator, fall back to talents.
+    if (t === "initiators" && !canSeeInitiators) {
+      setFilter("talents");
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [searchParams, canSeeInitiators]);
 
   // Fetch viewer's progression stage to gate the Co-Builders filter tab.
   useEffect(() => {
@@ -193,7 +198,12 @@ const CoBuilders = () => {
         setBaseRows(rows as any);
 
         const me = rows.find((r) => r.user_id === user?.id);
-        if (me) setSkillsInput(me.primary_skills || "");
+        if (me) {
+          setSkillsInput(me.primary_skills || "");
+          setCanSeeInitiators(!!me.has_opportunity);
+        } else {
+          setCanSeeInitiators(false);
+        }
       } catch (error) {
         console.error("Error fetching co-builders:", error);
       } finally {
@@ -435,8 +445,14 @@ const CoBuilders = () => {
                     {canSeeCobuilders ? <Users className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
                     Co-Builders
                   </TabsTrigger>
-                  <TabsTrigger value="initiators" className="gap-1.5">
-                    <Rocket className="w-3.5 h-3.5" /> Initiators
+                  <TabsTrigger
+                    value="initiators"
+                    disabled={!canSeeInitiators}
+                    className="gap-1.5"
+                    title={canSeeInitiators ? undefined : "Unlocks when you publish a startup idea"}
+                  >
+                    {canSeeInitiators ? <Rocket className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+                    Initiators
                   </TabsTrigger>
                   {canSeeAdvisors && (
                     <TabsTrigger value="advisors" className="gap-1.5">
@@ -457,6 +473,11 @@ const CoBuilders = () => {
               {!canSeeCobuilders && (
                 <p className="text-xs text-muted-foreground md:ml-auto">
                   Co-Builders unlocks at <span className="font-medium">Capable</span> stage.
+                </p>
+              )}
+              {!canSeeInitiators && (
+                <p className="text-xs text-muted-foreground md:ml-auto">
+                  Initiators unlocks when you publish a startup idea.
                 </p>
               )}
             </div>
