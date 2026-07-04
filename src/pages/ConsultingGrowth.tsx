@@ -199,7 +199,6 @@ export default function ConsultingGrowth() {
   };
 
   // ---------- Financial totals ----------
-  const paid = items.filter(i => i.stage === "closed" || i.stage === "payment_distribution" || i.paid_at);
   const closed = items.filter(i => i.stage === "closed");
   const pipeline = items.filter(i => i.stage !== "closed");
   const totalRevenue = items.reduce((sum, i) => sum + Number(i.paid_amount ?? 0), 0);
