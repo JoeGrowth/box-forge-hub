@@ -1073,6 +1073,14 @@ const Journey = () => {
         onComplete={handleStepComplete}
       />
 
+      {/* Quiz Dialog for Consultant */}
+      <ConsultantQuizDialog
+        open={consultantQuizOpen}
+        onOpenChange={setConsultantQuizOpen}
+        stepNumber={selectedStep}
+        onComplete={handleStepComplete}
+      />
+
     </div>
   );
 };
