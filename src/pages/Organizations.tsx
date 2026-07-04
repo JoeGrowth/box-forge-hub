@@ -190,7 +190,7 @@ export default function Organizations() {
               <div className="sm:w-44">
                 <Select value={typeFilter} onValueChange={setTypeFilter}>
                   <SelectTrigger className="w-full">
-                    <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+                    <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground shrink-0" />
                     <SelectValue placeholder="All types" />
                   </SelectTrigger>
                   <SelectContent>
