@@ -632,7 +632,7 @@ function StagePanel({
             <div className="space-y-2">
               {opp.delivered_at && <p className="text-xs text-muted-foreground">Delivered {format(new Date(opp.delivered_at), "MMM d, yyyy")}</p>}
               {opp.stage === "deliver" && (
-                <Button size="sm" disabled={working} onClick={() => advance("payment_distribution", { delivered_at: new Date().toISOString() })}>
+                <Button className="w-full" size="sm" disabled={working} onClick={() => advance("payment_distribution", { delivered_at: new Date().toISOString() })}>
                   Confirm delivered &mdash; awaiting payment <ArrowRight className="w-3 h-3 ml-1" />
                 </Button>
               )}
@@ -655,7 +655,7 @@ function StagePanel({
                   {opp.paid_at
                     ? <p className="text-xs text-muted-foreground">Paid {format(new Date(opp.paid_at), "MMM d, yyyy")}</p>
                     : opp.stage === "payment_distribution" && (
-                      <Button size="sm" disabled={working || !paidAmount} onClick={() => patch({ paid_amount: parseFloat(paidAmount), paid_at: new Date().toISOString(), is_completed: true, completed_at: new Date().toISOString() })}>
+                      <Button className="w-full" size="sm" disabled={working || !paidAmount} onClick={() => patch({ paid_amount: parseFloat(paidAmount), paid_at: new Date().toISOString(), is_completed: true, completed_at: new Date().toISOString() })}>
                         Confirm budget paid
                       </Button>
                     )
