@@ -481,9 +481,26 @@ function StagePanel({
   const [working, setWorking] = useState(false);
   const [driverNote, setDriverNote] = useState(opp.driver_note ?? "");
   const [paidAmount, setPaidAmount] = useState(String(opp.paid_amount ?? opp.total_amount ?? ""));
-  const [newRecipient, setNewRecipient] = useState("");
-  const [newPercent, setNewPercent] = useState("");
-  const [newAmount, setNewAmount] = useState("");
+  // Distribution builder state (Mission Setup / Charges / People / Tasks)
+  const [budgetLabel, setBudgetLabel] = useState("Budget (EUR)");
+  const [distCharges, setDistCharges] = useState<DistCharge[]>(DEFAULT_DIST_CHARGES());
+  const [distTasks, setDistTasks] = useState<DistTask[]>(DEFAULT_DIST_TASKS());
+  const [distPeople, setDistPeople] = useState<string[]>(["Person (1)", "Person (2)"]);
+
+  const distBudget = parseFloat(paidAmount) || 0;
+  const distChargesTotal = distCharges.reduce((s, c) => s + (Number(c.amount) || 0), 0);
+  const distInternalPool = Math.max(0, distBudget - distChargesTotal);
+  const distTotalPercent = distTasks.reduce((s, t) => s + (Number(t.percent) || 0), 0);
+  const distTaskAmounts = distTasks.map((t) => (distInternalPool * (Number(t.percent) || 0)) / 100);
+  const distSplittableTotal = distTasks.reduce((s, t, i) => (t.locked ? s : s + distTaskAmounts[i]), 0);
+  const distPerPersonEqual = distPeople.length > 0 ? distSplittableTotal / distPeople.length : 0;
+  const distPerPersonPerTask = distTasks.map((t, i) =>
+    t.locked || distPeople.length === 0 ? null : distTaskAmounts[i] / distPeople.length,
+  );
+  const updateDistTask = (id: string, patch: Partial<DistTask>) =>
+    setDistTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
+  const updateDistCharge = (id: string, patch: Partial<DistCharge>) =>
+    setDistCharges((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
 
   const uploadFile = async (file: File, kind: "driver" | "proposal" | "process"): Promise<string | null> => {
     const ext = file.name.split(".").pop() || "pdf";
