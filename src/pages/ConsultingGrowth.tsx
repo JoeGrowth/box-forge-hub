@@ -622,18 +622,15 @@ function StagePanel({
                   )
               }
               <Label className="text-xs">Process & presentation PDF</Label>
-              <div className="flex items-center gap-2">
-                <Input type="file" accept="application/pdf" onChange={async (e) => {
-                  const f = e.target.files?.[0]; if (!f) return;
+              <FileField
+                accept="application/pdf"
+                url={opp.process_file_url}
+                onOpen={() => openFile(opp.process_file_url)}
+                onPick={async (f) => {
                   const p = await uploadFile(f, "process");
                   if (p) await patch({ process_file_url: p });
-                }} />
-                {opp.process_file_url && (
-                  <Button size="sm" variant="ghost" onClick={() => openFile(opp.process_file_url)}>
-                    <ExternalLink className="w-3 h-3 mr-1" />View
-                  </Button>
-                )}
-              </div>
+                }}
+              />
               {opp.stage === "confirm_prepare" && (
                 <Button size="sm" disabled={working || !opp.client_confirmed_at || !opp.process_file_url} onClick={() => advance("deliver")}>
                   Ready to deliver <ArrowRight className="w-3 h-3 ml-1" />
