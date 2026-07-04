@@ -314,15 +314,23 @@ const CoBuilders = () => {
     }
   };
 
-  // Filter co-builders based on search + Talents/Co-Builders tab.
-  // Talents = not yet certified (certCount === 0). Co-Builders = at least 1 cert.
-  // Always keep the current user pinned so they can edit their own card.
+  // Talents tab = all approved users (including co-builders and advisors),
+  // ordered by progression stage: monetizing → capable → emerging → novice.
+  // Stages "building" and "founder" are excluded from Talents.
+  const TALENTS_STAGE_RANK: Record<string, number> = {
+    monetizing: 0,
+    capable: 1,
+    emerging: 2,
+    novice: 3,
+  };
   const filteredCobuilders = cobuilders.filter((cb) => {
     if (filter === "advisors") {
       if (!advisorUserIds.has(cb.user_id)) return false;
+    } else if (filter === "talents") {
+      const stage = (cb.stage || "novice").toLowerCase();
+      if (cb.user_id !== user?.id && !(stage in TALENTS_STAGE_RANK)) return false;
     } else if (cb.user_id !== user?.id) {
       if (filter === "cobuilders" && cb.certCount < 1) return false;
-      if (filter === "talents" && cb.certCount >= 1) return false;
     }
     const searchLower = searchQuery.toLowerCase();
     const nameMatch = cb.full_name?.toLowerCase().includes(searchLower);
@@ -330,6 +338,17 @@ const CoBuilders = () => {
     const roleMatch = cb.natural_role_description?.toLowerCase().includes(searchLower);
     return nameMatch || skillsMatch || roleMatch;
   });
+
+  if (filter === "talents") {
+    filteredCobuilders.sort((a, b) => {
+      if (a.user_id === user?.id) return -1;
+      if (b.user_id === user?.id) return 1;
+      const ra = TALENTS_STAGE_RANK[(a.stage || "novice").toLowerCase()] ?? 99;
+      const rb = TALENTS_STAGE_RANK[(b.stage || "novice").toLowerCase()] ?? 99;
+      if (ra !== rb) return ra - rb;
+      return (b.certCount || 0) - (a.certCount || 0);
+    });
+  }
 
   const getInitials = (name: string | null) => {
     if (!name) return "U";
