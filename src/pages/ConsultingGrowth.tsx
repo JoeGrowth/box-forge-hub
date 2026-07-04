@@ -728,6 +728,7 @@ function StagePanel({
                       </TableRow>
                     </TableBody>
                   </Table>
+                  </div>
                 </div>
 
                 {/* People */}
