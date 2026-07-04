@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Sparkles, ArrowRight } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useExpertise } from "@/hooks/useExpertise";
 import { supabase } from "@/integrations/supabase/client";
@@ -88,8 +88,6 @@ export function DashboardHero() {
   const rawFirst = profile?.full_name?.split(" ")[0] || "Builder";
   const firstName = rawFirst.charAt(0).toUpperCase() + rawFirst.slice(1);
   const { primary: primaryCta, secondary: secondaryCta } = ctasFor(goal, intent, primaryRole);
-  const PrimaryIcon = primaryCta.icon;
-  const SecondaryIcon = secondaryCta.icon;
 
   // Goal-aware copy. Reinforces the platform vision: decide to grow, take part
   // in shaping the future. Each onboarding goal gets its own reminder so the
@@ -181,14 +179,10 @@ export function DashboardHero() {
 
           <div className="flex flex-col sm:flex-row flex-wrap gap-3 pt-1 sm:pt-2">
             <Button size="lg" className="bg-b4-teal hover:bg-b4-teal/90 text-white w-full sm:w-auto" asChild>
-              <Link to={primaryCta.to}>
-                <PrimaryIcon className="mr-2 w-4 h-4" /> {primaryCta.label}
-              </Link>
+              <Link to={primaryCta.to}>{primaryCta.label}</Link>
             </Button>
             <Button size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10 w-full sm:w-auto" asChild>
-              <Link to={secondaryCta.to}>
-                <SecondaryIcon className="mr-2 w-4 h-4" /> {secondaryCta.label} <ArrowRight className="ml-2 w-4 h-4" />
-              </Link>
+              <Link to={secondaryCta.to}>{secondaryCta.label}</Link>
             </Button>
           </div>
         </div>
