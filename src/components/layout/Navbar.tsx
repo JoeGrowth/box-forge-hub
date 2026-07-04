@@ -52,12 +52,13 @@ const STAGE_RANK: Record<string, number> = {
 };
 
 // Links for logged-out users
-const guestNavLinks = [
-  { name: "About", path: "/about" },
-  { name: "Programs", path: "/programs" },
-  { name: "Join Us", path: "/join" },
-  { name: "Boxes", path: "/boxes" },
+const guestNavLinks: Array<{ name: string; path: string; icon: typeof Briefcase }> = [
+  { name: "About", path: "/about", icon: FileText },
+  { name: "Programs", path: "/programs", icon: BookOpen },
+  { name: "Join Us", path: "/join", icon: Rocket },
+  { name: "Boxes", path: "/boxes", icon: Package },
 ];
+
 
 const engineLinks: Array<{ name: string; path: string; icon: typeof Briefcase; key: EngineKey }> = [
   { name: "Career", path: "/career", icon: Briefcase, key: "career" },
