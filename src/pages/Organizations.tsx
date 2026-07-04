@@ -97,21 +97,21 @@ export default function Organizations() {
 
   return (
     <div className="container mx-auto px-4 pt-24 pb-8 max-w-5xl space-y-6">
-      <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
-        <div className="flex-1 min-w-[260px]">
-          <h1 className="text-3xl font-bold tracking-tight">Organizations</h1>
-          <p className="text-muted-foreground mt-1">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Organizations</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Organizations own opportunities and group team members with roles (admin · editor · viewer).
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <Link to="/opsmanagement">
-            <Button variant="outline"><Cog className="w-4 h-4 mr-1" /> Ops management</Button>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 w-full sm:w-auto">
+          <Link to="/opsmanagement" className="w-full sm:w-auto">
+            <Button variant="outline" className="w-full sm:w-auto"><Cog className="w-4 h-4 mr-1" /> Ops management</Button>
           </Link>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button><Plus className="w-4 h-4 mr-1" /> New organization</Button>
+              <Button className="w-full sm:w-auto"><Plus className="w-4 h-4 mr-1" /> New organization</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
