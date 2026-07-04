@@ -139,9 +139,9 @@ const App = () => (
                   <Route path="/admin/click-analytics" element={<ProtectedRoute requireLevel="admin"><ClickAnalytics /></ProtectedRoute>} />
                   <Route element={<PersistentNavbarLayout />}>
                   <Route path="/opportunities" element={<GatedRoute talentGate><Opportunities /></GatedRoute>} />
-                  <Route path="/organizations" element={<GatedRoute talentGate><Organizations /></GatedRoute>} />
-                  <Route path="/org/:slug" element={<GatedRoute talentGate><OrganizationPage /></GatedRoute>} />
-                  <Route path="/people" element={<GatedRoute talentGate><CoBuilders /></GatedRoute>} />
+                  <Route path="/organizations" element={<GatedRoute minStage="emerging"><Organizations /></GatedRoute>} />
+                  <Route path="/org/:slug" element={<GatedRoute minStage="emerging"><OrganizationPage /></GatedRoute>} />
+                  <Route path="/people" element={<GatedRoute minStage="emerging"><CoBuilders /></GatedRoute>} />
                   <Route path="/journey" element={<ProtectedRoute><Journey /></ProtectedRoute>} />
                   <Route path="/start" element={<ProtectedRoute><Scale /></ProtectedRoute>} />
                   <Route path="/track" element={<ProtectedRoute><Track /></ProtectedRoute>} />
