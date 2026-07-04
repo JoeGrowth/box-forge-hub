@@ -10,12 +10,33 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import {
   Plus, Briefcase, CheckCircle2, TrendingUp, DollarSign,
-  FileText, Upload, ArrowRight, Users, Trash2, ExternalLink, Loader2, RefreshCw,
+  FileText, Upload, ArrowRight, Users, Trash2, ExternalLink, Loader2, RefreshCw, Lock,
 } from "lucide-react";
 import { format } from "date-fns";
+
+type DistCharge = { id: string; label: string; amount: number };
+type DistTask = { id: string; label: string; percent: number; locked?: boolean };
+const distUid = () => Math.random().toString(36).slice(2, 9);
+const distFmt = (n: number) =>
+  new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
+    Number.isFinite(n) ? n : 0,
+  );
+const DEFAULT_DIST_CHARGES = (): DistCharge[] => [
+  { id: distUid(), label: "Tools & software", amount: 0 },
+  { id: distUid(), label: "Travel", amount: 0 },
+];
+const DEFAULT_DIST_TASKS = (): DistTask[] => [
+  { id: distUid(), label: "Scoping & proposal", percent: 15 },
+  { id: distUid(), label: "Client discovery", percent: 15 },
+  { id: distUid(), label: "Delivery / execution", percent: 40 },
+  { id: distUid(), label: "Reporting & handover", percent: 15 },
+  { id: distUid(), label: "Follow-up & admin", percent: 10 },
+  { id: distUid(), label: "Rest Structure Consulting", percent: 5, locked: true },
+];
 
 type Stage = "identify" | "propose" | "confirm_prepare" | "deliver" | "payment_distribution" | "closed";
 
@@ -460,9 +481,26 @@ function StagePanel({
   const [working, setWorking] = useState(false);
   const [driverNote, setDriverNote] = useState(opp.driver_note ?? "");
   const [paidAmount, setPaidAmount] = useState(String(opp.paid_amount ?? opp.total_amount ?? ""));
-  const [newRecipient, setNewRecipient] = useState("");
-  const [newPercent, setNewPercent] = useState("");
-  const [newAmount, setNewAmount] = useState("");
+  // Distribution builder state (Mission Setup / Charges / People / Tasks)
+  const [budgetLabel, setBudgetLabel] = useState("Budget (EUR)");
+  const [distCharges, setDistCharges] = useState<DistCharge[]>(DEFAULT_DIST_CHARGES());
+  const [distTasks, setDistTasks] = useState<DistTask[]>(DEFAULT_DIST_TASKS());
+  const [distPeople, setDistPeople] = useState<string[]>(["Person (1)", "Person (2)"]);
+
+  const distBudget = parseFloat(paidAmount) || 0;
+  const distChargesTotal = distCharges.reduce((s, c) => s + (Number(c.amount) || 0), 0);
+  const distInternalPool = Math.max(0, distBudget - distChargesTotal);
+  const distTotalPercent = distTasks.reduce((s, t) => s + (Number(t.percent) || 0), 0);
+  const distTaskAmounts = distTasks.map((t) => (distInternalPool * (Number(t.percent) || 0)) / 100);
+  const distSplittableTotal = distTasks.reduce((s, t, i) => (t.locked ? s : s + distTaskAmounts[i]), 0);
+  const distPerPersonEqual = distPeople.length > 0 ? distSplittableTotal / distPeople.length : 0;
+  const distPerPersonPerTask = distTasks.map((t, i) =>
+    t.locked || distPeople.length === 0 ? null : distTaskAmounts[i] / distPeople.length,
+  );
+  const updateDistTask = (id: string, patch: Partial<DistTask>) =>
+    setDistTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
+  const updateDistCharge = (id: string, patch: Partial<DistCharge>) =>
+    setDistCharges((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
 
   const uploadFile = async (file: File, kind: "driver" | "proposal" | "process"): Promise<string | null> => {
     const ext = file.name.split(".").pop() || "pdf";
@@ -504,43 +542,38 @@ function StagePanel({
   };
 
   // ----- Distribution actions -----
-  const addDistribution = async () => {
-    if (!newRecipient.trim()) {
-      toast({ title: "Recipient name required", variant: "destructive" });
+  const declareDistributions = async () => {
+    if (distTotalPercent !== 100) {
+      toast({ title: `Task percentages must total 100% (currently ${distTotalPercent}%)`, variant: "destructive" });
       return;
     }
-    const payload = {
+    const now = new Date().toISOString();
+    // Reset existing rows for this mission
+    const del = await supabase.from("consultant_opportunity_distributions").delete().eq("opportunity_id", opp.id);
+    if (del.error) { toast({ title: "Failed", description: del.error.message, variant: "destructive" }); return; }
+    // Compute per-person amount from splittable tasks
+    const perPerson: Record<string, number> = {};
+    distPeople.forEach(p => { perPerson[p] = 0; });
+    distTasks.forEach((t, i) => {
+      if (t.locked || distPeople.length === 0) return;
+      const per = distTaskAmounts[i] / distPeople.length;
+      distPeople.forEach(p => { perPerson[p] += per; });
+    });
+    const rows = distPeople.map(p => ({
       opportunity_id: opp.id,
       user_id: userId,
-      recipient_name: newRecipient.trim(),
-      percent: newPercent ? parseFloat(newPercent) : null,
-      amount: newAmount ? parseFloat(newAmount) : null,
-    } as never;
-    const { error } = await supabase.from("consultant_opportunity_distributions").insert(payload);
-    if (error) { toast({ title: "Failed", description: error.message, variant: "destructive" }); return; }
-    setNewRecipient(""); setNewPercent(""); setNewAmount("");
-    await onChanged();
-  };
-
-  const removeDistribution = async (id: string) => {
-    const { error } = await supabase.from("consultant_opportunity_distributions").delete().eq("id", id);
-    if (error) { toast({ title: "Failed", description: error.message, variant: "destructive" }); return; }
-    await onChanged();
-  };
-
-  const declareDistributions = async () => {
-    const now = new Date().toISOString();
-    const { error } = await supabase
-      .from("consultant_opportunity_distributions")
-      .update({ declared_at: now } as never)
-      .eq("opportunity_id", opp.id)
-      .is("declared_at", null);
-    if (error) { toast({ title: "Failed", description: error.message, variant: "destructive" }); return; }
+      recipient_name: p,
+      amount: Number((perPerson[p] || 0).toFixed(2)),
+      percent: distBudget > 0 ? Number((((perPerson[p] || 0) / distBudget) * 100).toFixed(2)) : null,
+      declared_at: now,
+    })) as never[];
+    if (rows.length) {
+      const ins = await supabase.from("consultant_opportunity_distributions").insert(rows);
+      if (ins.error) { toast({ title: "Failed", description: ins.error.message, variant: "destructive" }); return; }
+    }
     await advance("closed");
   };
 
-  const totalPct = distributions.reduce((s, d) => s + Number(d.percent ?? 0), 0);
-  const totalAmt = distributions.reduce((s, d) => s + Number(d.amount ?? 0), 0);
   const idx = stageIndex(opp.stage);
 
   return (
@@ -673,44 +706,180 @@ function StagePanel({
                 </div>
               </div>
 
-              <div className="border-t pt-3">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2 text-sm font-medium"><Users className="w-4 h-4" />Distribution</div>
-                  <div className="text-xs text-muted-foreground">
-                    {distributions.length === 0 ? "No splits — 100% to you"
-                      : `${totalPct}% · ${totalAmt.toLocaleString()} ${opp.currency || "EUR"}`}
+              {/* Mission Setup */}
+              <div className="border-t pt-4 space-y-4">
+                <div>
+                  <div className="text-sm font-semibold mb-2">Mission Setup</div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Mission title</Label>
+                      <Input value={opp.title} disabled />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">{budgetLabel}</Label>
+                      <Input type="number" value={paidAmount} onChange={e => setPaidAmount(e.target.value)} />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Budget label</Label>
+                      <Input value={budgetLabel} onChange={e => setBudgetLabel(e.target.value)} />
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-1">
-                  {distributions.map(d => (
-                    <div key={d.id} className="flex items-center gap-2 text-sm p-2 border rounded">
-                      <span className="flex-1 truncate">{d.recipient_name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {d.percent ? `${d.percent}%` : ""} {d.amount ? `${Number(d.amount).toLocaleString()}` : ""}
-                      </span>
-                      {d.declared_at && <Badge variant="outline" className="text-[10px]">declared</Badge>}
-                      <Button size="icon" variant="ghost" onClick={() => removeDistribution(d.id)}>
-                        <Trash2 className="w-3 h-3" />
+                {/* Charges */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm font-semibold">Charges</div>
+                    <Button size="sm" variant="outline" onClick={() => setDistCharges(p => [...p, { id: distUid(), label: "New charge", amount: 0 }])}>
+                      <Plus className="w-3 h-3 mr-1" /> Add charge
+                    </Button>
+                  </div>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Item</TableHead>
+                        <TableHead className="w-40 text-right">Amount</TableHead>
+                        <TableHead className="w-12" />
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {distCharges.map(c => (
+                        <TableRow key={c.id}>
+                          <TableCell>
+                            <Input value={c.label} onChange={e => updateDistCharge(c.id, { label: e.target.value })} />
+                          </TableCell>
+                          <TableCell>
+                            <Input type="number" className="text-right" value={c.amount} onChange={e => updateDistCharge(c.id, { amount: parseFloat(e.target.value) || 0 })} />
+                          </TableCell>
+                          <TableCell>
+                            <Button size="icon" variant="ghost" onClick={() => setDistCharges(p => p.filter(x => x.id !== c.id))}>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      <TableRow className="font-semibold bg-muted/40">
+                        <TableCell>Total charges</TableCell>
+                        <TableCell className="text-right">{distFmt(distChargesTotal)}</TableCell>
+                        <TableCell />
+                      </TableRow>
+                      <TableRow className="font-semibold">
+                        <TableCell>Infra &amp; Structure (Budget − Charges)</TableCell>
+                        <TableCell className="text-right">{distFmt(distInternalPool)}</TableCell>
+                        <TableCell />
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* People */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm font-semibold">People splitting the pool</div>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={() => setDistPeople(p => [...p, `Person (${p.length + 1})`])}>
+                        <Plus className="w-3 h-3 mr-1" /> Add person
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => setDistPeople(p => (p.length > 1 ? p.slice(0, -1) : p))}>
+                        <Trash2 className="w-3 h-3 mr-1" /> Remove last
                       </Button>
                     </div>
-                  ))}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {distPeople.map((p, i) => (
+                      <Input key={i} value={p} onChange={e => setDistPeople(prev => prev.map((v, idx) => idx === i ? e.target.value : v))} className="w-48" />
+                    ))}
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-[1fr_80px_100px_auto] gap-2 mt-2">
-                  <Input placeholder="Recipient (or yourself)" value={newRecipient} onChange={e => setNewRecipient(e.target.value)} />
-                  <Input placeholder="%" type="number" value={newPercent} onChange={e => setNewPercent(e.target.value)} />
-                  <Input placeholder="Amount" type="number" value={newAmount} onChange={e => setNewAmount(e.target.value)} />
-                  <Button size="sm" variant="outline" onClick={addDistribution}><Plus className="w-3 h-3" /></Button>
+                {/* Task distribution */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm font-semibold">Internal &amp; Structure — task distribution</div>
+                    <Button size="sm" variant="outline" onClick={() => setDistTasks(p => {
+                      const lockedIdx = p.findIndex(t => t.locked);
+                      const newTask: DistTask = { id: distUid(), label: "New task", percent: 0 };
+                      if (lockedIdx === -1) return [...p, newTask];
+                      const copy = [...p]; copy.splice(lockedIdx, 0, newTask); return copy;
+                    })}>
+                      <Plus className="w-3 h-3 mr-1" /> Add task
+                    </Button>
+                  </div>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Task</TableHead>
+                        <TableHead className="w-20 text-right">%</TableHead>
+                        <TableHead className="w-28 text-right">Amount</TableHead>
+                        {distPeople.map((p, i) => (
+                          <TableHead key={i} className="text-right bg-foreground text-background">{p}</TableHead>
+                        ))}
+                        <TableHead className="w-10" />
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {distTasks.map((t, i) => (
+                        <TableRow key={t.id} className={t.locked ? "bg-muted/30" : ""}>
+                          <TableCell>
+                            {t.locked ? (
+                              <div className="flex items-center gap-2 px-2 py-1 text-sm font-medium">
+                                <Lock className="w-3.5 h-3.5 text-muted-foreground" />
+                                {t.label}
+                                <span className="text-xs text-muted-foreground ml-1">(not split)</span>
+                              </div>
+                            ) : (
+                              <Input value={t.label} onChange={e => updateDistTask(t.id, { label: e.target.value })} />
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Input type="number" className="text-right" value={t.percent} onChange={e => updateDistTask(t.id, { percent: parseFloat(e.target.value) || 0 })} />
+                          </TableCell>
+                          <TableCell className="text-right font-mono">{distFmt(distTaskAmounts[i])}</TableCell>
+                          {distPeople.map((_, pi) => (
+                            <TableCell key={pi} className="text-right font-mono">
+                              {distPerPersonPerTask[i] === null ? "—" : distFmt(distPerPersonPerTask[i] as number)}
+                            </TableCell>
+                          ))}
+                          <TableCell>
+                            {!t.locked && (
+                              <Button size="icon" variant="ghost" onClick={() => setDistTasks(p => p.filter(x => x.id !== t.id))}>
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      <TableRow className="font-semibold bg-muted/40">
+                        <TableCell>Total</TableCell>
+                        <TableCell className="text-right">{distTotalPercent}%</TableCell>
+                        <TableCell className="text-right">{distFmt(distTaskAmounts.reduce((s, a) => s + a, 0))}</TableCell>
+                        {distPeople.map((_, i) => (
+                          <TableCell key={i} className="text-right bg-foreground text-background">{distFmt(distPerPersonEqual)}</TableCell>
+                        ))}
+                        <TableCell />
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                  {distTotalPercent !== 100 && (
+                    <p className="text-xs text-amber-600 mt-2">
+                      Task percentages sum to {distTotalPercent}% — adjust to reach 100% for a full distribution.
+                    </p>
+                  )}
                 </div>
+
+                {distributions.length > 0 && (
+                  <div className="text-xs text-muted-foreground">
+                    Declared splits: {distributions.map(d => `${d.recipient_name} (${d.percent ?? 0}% · ${Number(d.amount ?? 0).toLocaleString()} ${opp.currency || "EUR"})`).join(" · ")}
+                  </div>
+                )}
 
                 {opp.stage === "payment_distribution" && opp.paid_at && (
-                  <Button size="sm" className="w-full mt-3" disabled={working} onClick={declareDistributions}>
+                  <Button size="sm" className="w-full" disabled={working} onClick={declareDistributions}>
                     Declare distribution & close mission
                   </Button>
                 )}
                 {opp.stage === "closed" && (
-                  <Badge className="mt-2">Mission closed</Badge>
+                  <Badge>Mission closed</Badge>
                 )}
               </div>
             </div>
