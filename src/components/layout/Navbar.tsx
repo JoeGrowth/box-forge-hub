@@ -36,9 +36,20 @@ import { useEngineAccess, type EngineKey } from "@/hooks/useEngineAccess";
 import { useTalentReadiness } from "@/hooks/useTalentReadiness";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserStatus } from "@/hooks/useUserStatus";
+import { useNextBestActions } from "@/hooks/useNextBestActions";
 import { supabase } from "@/integrations/supabase/client";
 import { NotificationBell } from "./NotificationBell";
 import { ChatBell } from "./ChatBell";
+
+// Progression stage ranking — controls stage-gated navbar items.
+const STAGE_RANK: Record<string, number> = {
+  novice: 0,
+  emerging: 1,
+  capable: 2,
+  monetizing: 3,
+  building: 4,
+  founder: 5,
+};
 
 // Links for logged-out users
 const guestNavLinks = [
@@ -68,14 +79,22 @@ const publishLinks: Array<{
   { name: "Procuring", path: "/procuring", icon: FileText, desc: "Post a tender", orgAdminOnly: true },
 ];
 
-const moreLinks: Array<{ name: string; path: string; icon: typeof Briefcase; talentGate?: boolean }> = [
-  { name: "People", path: "/people", icon: Users, talentGate: true },
+// `minStage` gates a link behind the user's progression stage. Items without
+// a `minStage` are visible to all authenticated users (subject to talentGate).
+// Novice unlocks Boxes + Programs only; Emerging unlocks the full More list.
+const moreLinks: Array<{
+  name: string;
+  path: string;
+  icon: typeof Briefcase;
+  minStage?: keyof typeof STAGE_RANK;
+}> = [
+  { name: "People", path: "/people", icon: Users, minStage: "emerging" },
   { name: "Boxes", path: "/boxes", icon: Package },
   { name: "Programs", path: "/programs", icon: BookOpen },
-  { name: "Organizations", path: "/organizations", icon: Building2, talentGate: true },
-  { name: "Advisory", path: "/advisory", icon: Compass, talentGate: true },
-  { name: "Brand Identity", path: "/brand-identity", icon: Sparkles, talentGate: true },
-  { name: "Checklist", path: "/checklist", icon: ListChecks, talentGate: true },
+  { name: "Organizations", path: "/organizations", icon: Building2, minStage: "emerging" },
+  { name: "Advisory", path: "/advisory", icon: Compass, minStage: "emerging" },
+  { name: "Brand Identity", path: "/brand-identity", icon: Sparkles, minStage: "emerging" },
+  { name: "Checklist", path: "/checklist", icon: ListChecks, minStage: "emerging" },
 ];
 
 // Synchronous read of cached admin flag so first paint is stable.
@@ -145,9 +164,11 @@ export function Navbar() {
     () => publishLinks.filter((l) => !(l.orgAdminOnly && !isOrgAdmin)),
     [isOrgAdmin],
   );
+  const { progression } = useNextBestActions(user?.id);
+  const stageRank = STAGE_RANK[progression?.current_state ?? "novice"] ?? 0;
   const visibleMoreLinks = useMemo(
-    () => moreLinks.filter((l) => !(l.talentGate && !talentReady)),
-    [talentReady],
+    () => moreLinks.filter((l) => !l.minStage || stageRank >= STAGE_RANK[l.minStage]),
+    [stageRank],
   );
 
   return (
