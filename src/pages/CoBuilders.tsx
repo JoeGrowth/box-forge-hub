@@ -17,7 +17,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useExpertiseBatch, type Expertise } from "@/hooks/useExpertise";
 import { useTrustBatch, trustLevelStyle } from "@/hooks/useTrust";
 
-type DirectoryFilter = "talents" | "cobuilders" | "advisors";
+type DirectoryFilter = "talents" | "cobuilders" | "advisors" | "initiators";
 const COBUILDER_STAGES = new Set(["capable", "monetizing", "building", "founder"]);
 
 interface CoBuilder {
@@ -50,7 +50,7 @@ interface NaturalRolePreview {
   consulting_case_studies: string | null;
 }
 
-const VALID_TABS: DirectoryFilter[] = ["talents", "cobuilders", "advisors"];
+const VALID_TABS: DirectoryFilter[] = ["talents", "cobuilders", "initiators", "advisors"];
 
 const CoBuilders = () => {
   const navigate = useNavigate();
