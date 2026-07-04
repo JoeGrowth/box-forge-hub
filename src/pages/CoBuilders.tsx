@@ -475,6 +475,11 @@ const CoBuilders = () => {
                   Co-Builders unlocks at <span className="font-medium">Capable</span> stage.
                 </p>
               )}
+              {!canSeeInitiators && (
+                <p className="text-xs text-muted-foreground md:ml-auto">
+                  Initiators unlocks when you publish a startup idea.
+                </p>
+              )}
             </div>
           </section>
 
