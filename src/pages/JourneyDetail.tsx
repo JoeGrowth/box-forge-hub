@@ -417,7 +417,7 @@ const JourneyDetail = () => {
                                       variant={isStepCompleted(step.step) ? "outline" : "teal"}
                                       size="sm"
                                       onClick={() => handleOpenStep(step.step)}
-                                      className="w-full sm:w-auto"
+                                      className="w-full"
                                     >
                                       {isStepCompleted(step.step) ? (
                                         <><CheckCircle className="w-4 h-4 mr-1" />Review</>
