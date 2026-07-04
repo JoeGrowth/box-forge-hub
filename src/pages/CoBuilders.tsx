@@ -17,7 +17,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useExpertiseBatch, type Expertise } from "@/hooks/useExpertise";
 import { useTrustBatch, trustLevelStyle } from "@/hooks/useTrust";
 
-type DirectoryFilter = "talents" | "cobuilders" | "advisors";
+type DirectoryFilter = "talents" | "cobuilders" | "advisors" | "initiators";
 const COBUILDER_STAGES = new Set(["capable", "monetizing", "building", "founder"]);
 
 interface CoBuilder {
@@ -50,7 +50,7 @@ interface NaturalRolePreview {
   consulting_case_studies: string | null;
 }
 
-const VALID_TABS: DirectoryFilter[] = ["talents", "cobuilders", "advisors"];
+const VALID_TABS: DirectoryFilter[] = ["talents", "cobuilders", "initiators", "advisors"];
 
 const CoBuilders = () => {
   const navigate = useNavigate();
@@ -326,6 +326,8 @@ const CoBuilders = () => {
   const filteredCobuilders = cobuilders.filter((cb) => {
     if (filter === "advisors") {
       if (!advisorUserIds.has(cb.user_id)) return false;
+    } else if (filter === "initiators") {
+      if (!cb.has_opportunity) return false;
     } else if (filter === "talents") {
       const stage = (cb.stage || "novice").toLowerCase();
       if (cb.user_id !== user?.id && !(stage in TALENTS_STAGE_RANK)) return false;
@@ -432,6 +434,9 @@ const CoBuilders = () => {
                   >
                     {canSeeCobuilders ? <Users className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
                     Co-Builders
+                  </TabsTrigger>
+                  <TabsTrigger value="initiators" className="gap-1.5">
+                    <Rocket className="w-3.5 h-3.5" /> Initiators
                   </TabsTrigger>
                   {canSeeAdvisors && (
                     <TabsTrigger value="advisors" className="gap-1.5">
