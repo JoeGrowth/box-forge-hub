@@ -60,7 +60,9 @@ export default function ConsultingGrowth() {
   const [form, setForm] = useState(() => {
     try {
       const raw = localStorage.getItem(DRAFT_KEY);
-      return raw ? { ...EMPTY_FORM, ...JSON.parse(raw) } : EMPTY_FORM;
+      const parsed = raw ? { ...EMPTY_FORM, ...JSON.parse(raw) } : EMPTY_FORM;
+      const valid = SOURCES.some(s => s.value === parsed.source);
+      return valid ? parsed : { ...parsed, source: EMPTY_FORM.source };
     } catch { return EMPTY_FORM; }
   });
 
