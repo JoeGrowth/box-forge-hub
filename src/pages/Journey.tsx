@@ -39,7 +39,7 @@ import { FinanceQuizDialog } from "@/components/learning/FinanceQuizDialog";
 import { SecurityQuizDialog } from "@/components/learning/SecurityQuizDialog";
 import { ConsultantQuizDialog } from "@/components/learning/ConsultantQuizDialog";
 import { Lock } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
 import { supabase } from "@/integrations/supabase/client";
 
 
@@ -614,15 +614,12 @@ const Journey = () => {
     <div className="min-h-screen bg-background">
       <PageTransition>
         <main className="pt-20">
-          {/* Header */}
-          <section className="py-12 gradient-hero text-primary-foreground">
-            <div className="container mx-auto px-4">
-              <div className="flex items-center gap-3 mb-2">
-                <BookOpen className="w-8 h-8" />
-                <h1 className="font-display text-3xl font-bold">Boosting Journeys</h1>
-              </div>
-              <p className="text-primary-foreground/80 max-w-2xl">
-                Choose your learning path and master the skills needed to succeed in the startup ecosystem.
+          {/* Hero */}
+          <section className="py-12 md:py-16 gradient-hero text-primary-foreground">
+            <div className="container mx-auto px-4 text-center">
+              <h1 className="font-display text-3xl md:text-4xl font-bold mb-3">Getting Certified</h1>
+              <p className="text-primary-foreground/80 max-w-2xl mx-auto">
+                Pick a certification path and earn your badges. Start with the essentials, then add specialized credentials.
               </p>
             </div>
           </section>
@@ -631,82 +628,182 @@ const Journey = () => {
             <div className="container max-w-5xl mx-auto px-4">
 
 
-              {/* Section Toggle */}
-              <div className="flex justify-center mb-8">
-                <div className="inline-flex rounded-xl bg-muted/50 p-1 border border-border/50 flex-wrap justify-center gap-1">
-                  <button
-                    onClick={() => setActiveSection("initiator")}
-                    className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                      activeSection === "initiator"
-                        ? "bg-background shadow-sm text-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Lightbulb className="w-4 h-4 inline mr-2" />
-                    Learn to be an Initiator
-                  </button>
-                  <button
-                    onClick={() => setActiveSection("cobuilder")}
-                    className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                      activeSection === "cobuilder"
-                        ? "bg-background shadow-sm text-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Users className="w-4 h-4 inline mr-2" />
-                    Learn to be a Co-Builder
-                  </button>
-                  <button
-                    onClick={() => setActiveSection("finance")}
-                    className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                      activeSection === "finance"
-                        ? "bg-background shadow-sm text-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <TrendingUp className="w-4 h-4 inline mr-2" />
-                    Learn Finance
-                  </button>
-                  <button
-                    onClick={() => setActiveSection("security")}
-                    className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                      activeSection === "security"
-                        ? "bg-background shadow-sm text-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Shield className="w-4 h-4 inline mr-2" />
-                    Learn to Be Secure
-                  </button>
-                  {talentFoundationSet ? (
-                    <button
-                      onClick={() => setActiveSection("consultant")}
-                      className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                        activeSection === "consultant"
-                          ? "bg-background shadow-sm text-foreground"
-                          : "text-muted-foreground hover:text-foreground"
+              {/* Certification Paths */}
+              <div className="mb-10 md:mb-12">
+                {/* Needed Certifications */}
+                <div className="mb-8">
+                  <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                    Needed Certifications
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {/* Initiator */}
+                    <Card
+                      className={`cursor-pointer transition-all hover:shadow-md border-2 ${
+                        activeSection === "initiator" ? "border-amber-500/50 bg-amber-500/5" : "border-transparent"
                       }`}
+                      onClick={() => setActiveSection("initiator")}
                     >
-                      <Handshake className="w-4 h-4 inline mr-2" />
-                      Learn to be Consultant
-                    </button>
-                  ) : (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            disabled
-                            className="px-4 py-2.5 rounded-lg text-sm font-medium text-muted-foreground/60 cursor-not-allowed opacity-60"
-                          >
-                            <Lock className="w-4 h-4 inline mr-2" />
-                            Learn to be Consultant
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          Unlocks once your Talent Foundation is set (intent, natural role, professional track record and resume).
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                      <CardContent className="p-5">
+                        <div className="flex items-start gap-4">
+                          <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 shrink-0">
+                            <Lightbulb className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-semibold text-foreground text-sm">Learn to be an Initiator</h3>
+                              {isSectionCertified("initiator") && (
+                                <Award className="w-4 h-4 text-b4-teal shrink-0" />
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              Transform ideas into ventures. 4 steps to certification.
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Co-Builder */}
+                    <Card
+                      className={`cursor-pointer transition-all hover:shadow-md border-2 ${
+                        activeSection === "cobuilder" ? "border-teal-500/50 bg-teal-500/5" : "border-transparent"
+                      }`}
+                      onClick={() => setActiveSection("cobuilder")}
+                    >
+                      <CardContent className="p-5">
+                        <div className="flex items-start gap-4">
+                          <div className="p-3 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-500 shrink-0">
+                            <Users className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-semibold text-foreground text-sm">Learn to be a Co-Builder</h3>
+                              {isSectionCertified("cobuilder") && (
+                                <Award className="w-4 h-4 text-b4-teal shrink-0" />
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              Master startup collaboration. 3 steps to certification.
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Consultant */}
+                    <Card
+                      className={`cursor-pointer transition-all hover:shadow-md border-2 ${
+                        activeSection === "consultant" ? "border-purple-500/50 bg-purple-500/5" : "border-transparent"
+                      } ${!talentFoundationSet ? "opacity-60 cursor-not-allowed" : ""}`}
+                      onClick={() => talentFoundationSet && setActiveSection("consultant")}
+                    >
+                      <CardContent className="p-5">
+                        <div className="flex items-start gap-4">
+                          <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-fuchsia-500 shrink-0">
+                            <Handshake className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-semibold text-foreground text-sm">Learn to be Consultant</h3>
+                              {isSectionCertified("consultant") && (
+                                <Award className="w-4 h-4 text-b4-teal shrink-0" />
+                              )}
+                              {!talentFoundationSet && (
+                                <Lock className="w-3 h-3 text-muted-foreground shrink-0" />
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              Advisory and thought leadership. 4 steps to certification.
+                            </p>
+                            {!talentFoundationSet && (
+                              <p className="text-[10px] text-muted-foreground mt-1">
+                                Unlocks after Talent Foundation is complete
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+
+                {/* Optional Certifications */}
+                <div>
+                  <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                    Optional Certifications
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
+                    {/* Finance */}
+                    <Card
+                      className={`cursor-pointer transition-all hover:shadow-md border-2 ${
+                        activeSection === "finance" ? "border-emerald-500/50 bg-emerald-500/5" : "border-transparent"
+                      }`}
+                      onClick={() => setActiveSection("finance")}
+                    >
+                      <CardContent className="p-5">
+                        <div className="flex items-start gap-4">
+                          <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 shrink-0">
+                            <TrendingUp className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-semibold text-foreground text-sm">Learn Finance</h3>
+                              {isSectionCertified("finance") && (
+                                <Award className="w-4 h-4 text-b4-teal shrink-0" />
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              Corporate finance literacy. 4 steps to certification.
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Security */}
+                    <Card
+                      className={`cursor-pointer transition-all hover:shadow-md border-2 ${
+                        activeSection === "security" ? "border-red-500/50 bg-red-500/5" : "border-transparent"
+                      }`}
+                      onClick={() => setActiveSection("security")}
+                    >
+                      <CardContent className="p-5">
+                        <div className="flex items-start gap-4">
+                          <div className="p-3 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 shrink-0">
+                            <Shield className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-semibold text-foreground text-sm">Learn to Be Secure</h3>
+                              {isSectionCertified("security") && (
+                                <Award className="w-4 h-4 text-b4-teal shrink-0" />
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              Practical security literacy. 4 steps to certification.
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </div>
+
+              {/* Active Section Indicator */}
+              <div className="flex items-center justify-center mb-8">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted border border-border/50">
+                  {activeSection === "initiator" && <Lightbulb className="w-4 h-4 text-foreground" />}
+                  {activeSection === "cobuilder" && <Users className="w-4 h-4 text-foreground" />}
+                  {activeSection === "finance" && <TrendingUp className="w-4 h-4 text-foreground" />}
+                  {activeSection === "security" && <Shield className="w-4 h-4 text-foreground" />}
+                  {activeSection === "consultant" && <Handshake className="w-4 h-4 text-foreground" />}
+                  <span className="text-sm font-medium text-foreground">{sectionInfo.title}</span>
+                  {isSectionCertified(activeSection) && (
+                    <Badge className="bg-b4-teal text-white text-xs">
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      Certified
+                    </Badge>
                   )}
                 </div>
               </div>
