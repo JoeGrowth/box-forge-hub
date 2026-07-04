@@ -131,8 +131,9 @@ export default function Squares() {
                 <Tooltip key={i}>
                   <TooltipTrigger asChild>
                     <button
-                      onClick={() => navigate(stat.link)}
-                      className="bg-card rounded-xl border border-border p-4 hover:border-b4-teal/30 transition-all duration-300 hover:shadow-lg hover:shadow-b4-teal/5 text-left cursor-pointer w-full"
+                      onClick={() => stat.link && navigate(stat.link)}
+                      disabled={!stat.link}
+                      className={`bg-card rounded-xl border border-border p-4 transition-all duration-300 text-left w-full ${stat.link ? "hover:border-b4-teal/30 hover:shadow-lg hover:shadow-b4-teal/5 cursor-pointer" : "cursor-default"}`}
                     >
                       <div className={`w-10 h-10 rounded-lg ${stat.bgColor} flex items-center justify-center mb-3`}>
                         <stat.icon className="w-5 h-5" style={{ color: stat.iconColor }} />
