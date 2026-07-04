@@ -29,13 +29,9 @@ interface Opportunity {
 }
 
 const SOURCES = [
-  { value: "LINKEDIN", label: "LinkedIn" },
-  { value: "TENDER", label: "Tender / Platform" },
-  { value: "REFERRAL", label: "Referral" },
-  { value: "RETURNING_CLIENT", label: "Returning client" },
-  { value: "DIRECT", label: "Direct outreach" },
-  { value: "PARTNER", label: "Partner" },
-  { value: "OTHER", label: "Other" },
+  { value: "linkedin", label: "LinkedIn" },
+  { value: "word_of_mouth", label: "Word of mouth / Referral" },
+  { value: "other", label: "Other (tender, direct, partner…)" },
 ];
 
 const MILESTONE = 10;
@@ -45,7 +41,7 @@ const OPEN_KEY = "consulting-growth:new-opp-open";
 const EMPTY_FORM = {
   title: "",
   client_name: "",
-  source: "LINKEDIN",
+  source: "linkedin",
   description: "",
   number_of_days: "",
   amount_per_day: "",
