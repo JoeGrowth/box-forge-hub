@@ -9,6 +9,7 @@ import { LearningJourneysProvider } from "@/hooks/useLearningJourneys";
 import { UserStatusProvider } from "@/hooks/useUserStatus";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
+import { GatedRoute } from "@/components/layout/GatedRoute";
 import { PersistentNavbarLayout } from "@/components/layout/PersistentNavbarLayout";
 import Index from "./pages/Index";
 import Home from "./pages/Home";
@@ -137,36 +138,36 @@ const App = () => (
                   <Route path="/admin/lifecycle-integrity" element={<ProtectedRoute requireLevel="admin"><LifecycleIntegrity /></ProtectedRoute>} />
                   <Route path="/admin/click-analytics" element={<ProtectedRoute requireLevel="admin"><ClickAnalytics /></ProtectedRoute>} />
                   <Route element={<PersistentNavbarLayout />}>
-                  <Route path="/opportunities" element={<Opportunities />} />
-                  <Route path="/organizations" element={<Organizations />} />
-                  <Route path="/org/:slug" element={<OrganizationPage />} />
-                  <Route path="/people" element={<CoBuilders />} />
-                  <Route path="/journey" element={<Journey />} />
-                  <Route path="/start" element={<Scale />} />
-                  <Route path="/track" element={<Track />} />
-                  <Route path="/advisory" element={<Advisory />} />
-                  <Route path="/3S" element={<ThreeS />} />
-                  <Route path="/opsmanagement" element={<OpsManagement />} />
-                  <Route path="/consultingmanagement" element={<ConsultingManagement />} />
-                  <Route path="/trainingmanagement" element={<TrainingManagement />} />
-                  <Route path="/distribution" element={<Distribution />} />
-                  <Route path="/publish-consulting" element={<PublishConsulting />} />
-                  <Route path="/publish-training" element={<PublishTraining />} />
-                  <Route path="/publish-job" element={<PublishJob />} />
+                  <Route path="/opportunities" element={<GatedRoute talentGate><Opportunities /></GatedRoute>} />
+                  <Route path="/organizations" element={<GatedRoute talentGate><Organizations /></GatedRoute>} />
+                  <Route path="/org/:slug" element={<GatedRoute talentGate><OrganizationPage /></GatedRoute>} />
+                  <Route path="/people" element={<GatedRoute talentGate><CoBuilders /></GatedRoute>} />
+                  <Route path="/journey" element={<ProtectedRoute><Journey /></ProtectedRoute>} />
+                  <Route path="/start" element={<ProtectedRoute><Scale /></ProtectedRoute>} />
+                  <Route path="/track" element={<ProtectedRoute><Track /></ProtectedRoute>} />
+                  <Route path="/advisory" element={<GatedRoute talentGate><Advisory /></GatedRoute>} />
+                  <Route path="/3S" element={<ProtectedRoute><ThreeS /></ProtectedRoute>} />
+                  <Route path="/opsmanagement" element={<ProtectedRoute><OpsManagement /></ProtectedRoute>} />
+                  <Route path="/consultingmanagement" element={<ProtectedRoute><ConsultingManagement /></ProtectedRoute>} />
+                  <Route path="/trainingmanagement" element={<ProtectedRoute><TrainingManagement /></ProtectedRoute>} />
+                  <Route path="/distribution" element={<ProtectedRoute><Distribution /></ProtectedRoute>} />
+                  <Route path="/publish-consulting" element={<GatedRoute talentGate><PublishConsulting /></GatedRoute>} />
+                  <Route path="/publish-training" element={<GatedRoute talentGate><PublishTraining /></GatedRoute>} />
+                  <Route path="/publish-job" element={<GatedRoute talentGate orgAdminOnly><PublishJob /></GatedRoute>} />
                   <Route path="/consulting-growth" element={<ProtectedRoute><ConsultingGrowth /></ProtectedRoute>} />
                   </Route>
-                  <Route path="/opportunities/:category/:id" element={<OpportunityDetail />} />
+                  <Route path="/opportunities/:category/:id" element={<GatedRoute talentGate><OpportunityDetail /></GatedRoute>} />
                   {/* Legacy: old links pointed at startup ideas only. */}
-                  <Route path="/opportunities/:id" element={<OpportunityDetail />} />
+                  <Route path="/opportunities/:id" element={<GatedRoute talentGate><OpportunityDetail /></GatedRoute>} />
                   <Route path="/mask" element={<Mask />} />
-                  <Route path="/checklist" element={<Checklist />} />
+                  <Route path="/checklist" element={<GatedRoute talentGate><Checklist /></GatedRoute>} />
                   <Route path="/resume" element={<Resume />} />
                   <Route path="/track-record" element={<TrackRecord />} />
-                  <Route path="/create-idea" element={<CreateIdea />} />
-                  <Route path="/edit-idea/:id" element={<EditIdea />} />
-                  <Route path="/chat/:applicationId" element={<Chat />} />
-                  <Route path="/messages" element={<Messages />} />
-                  <Route path="/messages/:conversationId" element={<Messages />} />
+                  <Route path="/create-idea" element={<GatedRoute talentGate><CreateIdea /></GatedRoute>} />
+                  <Route path="/edit-idea/:id" element={<GatedRoute talentGate><EditIdea /></GatedRoute>} />
+                  <Route path="/chat/:applicationId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+                  <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+                  <Route path="/messages/:conversationId" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
                   <Route path="/stories" element={<Stories />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/privacy" element={<Privacy />} />
@@ -174,14 +175,14 @@ const App = () => (
                   <Route path="/decoder" element={<ProtectedRoute><NRDecoder /></ProtectedRoute>} />
                   <Route path="/coming-soon" element={<ComingSoon />} />
                   <Route path="/paths" element={<Paths />} />
-                  <Route path="/career" element={<Career />} />
-                  <Route path="/entrepreneurship" element={<Entrepreneurship />} />
-                  <Route path="/consulting" element={<Consulting />} />
-                  <Route path="/startstructuring" element={<StartStructuring />} />
-                  <Route path="/startscaling" element={<StartScaling />} />
+                  <Route path="/career" element={<ProtectedRoute><Career /></ProtectedRoute>} />
+                  <Route path="/entrepreneurship" element={<GatedRoute engineKey="entrepreneurship"><Entrepreneurship /></GatedRoute>} />
+                  <Route path="/consulting" element={<GatedRoute engineKey="consulting"><Consulting /></GatedRoute>} />
+                  <Route path="/startstructuring" element={<ProtectedRoute><StartStructuring /></ProtectedRoute>} />
+                  <Route path="/startscaling" element={<ProtectedRoute><StartScaling /></ProtectedRoute>} />
                   
-                  <Route path="/brand-identity" element={<Mask />} />
-                  <Route path="/procuring" element={<Procuring />} />
+                  <Route path="/brand-identity" element={<GatedRoute talentGate><Mask /></GatedRoute>} />
+                  <Route path="/procuring" element={<GatedRoute talentGate orgAdminOnly><Procuring /></GatedRoute>} />
                   <Route path="/el-space" element={<ElSpace />} />
                   <Route path="/declaration" element={<Declaration />} />
                   <Route path="/PGP" element={<PGP />} />
