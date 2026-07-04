@@ -435,6 +435,9 @@ const CoBuilders = () => {
                     {canSeeCobuilders ? <Users className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
                     Co-Builders
                   </TabsTrigger>
+                  <TabsTrigger value="initiators" className="gap-1.5">
+                    <Rocket className="w-3.5 h-3.5" /> Initiators
+                  </TabsTrigger>
                   {canSeeAdvisors && (
                     <TabsTrigger value="advisors" className="gap-1.5">
                       <ShieldCheck className="w-3.5 h-3.5" /> Advisors
