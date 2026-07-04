@@ -122,7 +122,15 @@ const JourneyDetail = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { onboardingState, loading: onboardingLoading } = useOnboarding();
-  const { journeys, phaseResponses, certifications } = useLearningJourneys();
+  const { journeys, phaseResponses, certifications, refetch: refetchLearning } = useLearningJourneys();
+
+  // Refetch learning data whenever this page mounts / the section changes, so
+  // fresh admin actions (approval, certification, reset) show up immediately
+  // without requiring a full page reload.
+  useEffect(() => {
+    refetchLearning?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sectionParam, user?.id]);
 
   const validSections: ActiveSection[] = ["initiator", "cobuilder", "finance", "security", "consultant"];
   const activeSection = (validSections.includes(sectionParam as ActiveSection) ? sectionParam : "initiator") as ActiveSection;
