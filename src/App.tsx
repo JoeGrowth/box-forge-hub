@@ -56,6 +56,7 @@ import DirectChat from "./pages/DirectChat";
 import Messages from "./pages/Messages";
 import NRDecoder from "./pages/NRDecoder";
 import Dashboard from "./pages/Dashboard";
+import Squares from "./pages/Squares";
 import NotFound from "./pages/NotFound";
 import ComingSoon from "./pages/ComingSoon";
 import Advisory from "./pages/Advisory";
@@ -129,7 +130,8 @@ const App = () => (
                   <Route path="/choose-path" element={<Navigate to="/onboarding" replace />} />
                   <Route path="/activation" element={<ProtectedRoute><ActivationHub /></ProtectedRoute>} />
                   <Route path="/advisor" element={<ProtectedRoute><AdvisorWorkQueue /></ProtectedRoute>} />
-                  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                 <Route path="/squares" element={<ProtectedRoute><Squares /></ProtectedRoute>} />
                   <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
                   <Route path="/admin" element={<ProtectedRoute requireLevel="admin"><Admin /></ProtectedRoute>} />
