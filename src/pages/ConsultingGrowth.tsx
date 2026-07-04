@@ -351,7 +351,10 @@ export default function ConsultingGrowth() {
                     className="rounded-xl border border-border bg-card overflow-hidden"
                   >
                     <button
-                      onClick={() => setExpandedId(isOpen ? null : o.id)}
+                      onClick={() => {
+                        if (stageFilter === "all") return;
+                        setExpandedId(isOpen ? null : o.id);
+                      }}
                       className="w-full text-left p-5 hover:bg-muted/30 transition"
                     >
                       <div className="flex items-start justify-between gap-2">
@@ -381,7 +384,7 @@ export default function ConsultingGrowth() {
                         ))}
                       </div>
                     </button>
-                    {isOpen && (
+                    {isOpen && stageFilter !== "all" && (
                       <div className="border-t border-border bg-muted/10 p-5">
                         <StagePanel
                           opp={o}
