@@ -273,7 +273,7 @@ export default function ConsultingGrowth() {
         </div>
 
         {/* Stage tabs */}
-        <div className="inline-flex flex-wrap items-center gap-1 rounded-lg border border-border bg-muted/40 p-1">
+        <div className="flex flex-wrap items-center gap-1 rounded-lg border border-border bg-muted/40 p-1">
           {(() => {
             const tabs: { key: Stage | "all"; label: string; icon: typeof Briefcase; count: number }[] = [
               { key: "all", label: "All", icon: Briefcase, count: items.length },
@@ -569,7 +569,7 @@ function StagePanel({
               />
               {opp.proposal_sent_at && <p className="text-xs text-muted-foreground">Sent {format(new Date(opp.proposal_sent_at), "MMM d, yyyy")}</p>}
               {opp.stage === "propose" && (
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button size="sm" disabled={working || !opp.proposal_file_url} onClick={() => advance("propose", { proposal_sent_at: new Date().toISOString() })}>
                     Mark proposal sent
                   </Button>
@@ -645,7 +645,7 @@ function StagePanel({
             <div className="space-y-3">
               {opp.stage !== "closed" ? (
                 <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
 
                 <div>
                   <Label className="text-xs">Amount paid ({opp.currency || "EUR"})</Label>
@@ -1007,22 +1007,24 @@ function FileField({
           <Loader2 className="w-4 h-4 animate-spin" /> Uploading&hellip;
         </div>
       ) : url ? (
-        <div className="flex items-center gap-2 p-2.5">
-          <div className="flex items-center gap-2 flex-1 min-w-0 text-sm">
+        <div className="flex flex-wrap items-center gap-2 p-2.5">
+          <div className="flex items-center gap-2 flex-1 min-w-0 text-sm w-full sm:w-auto">
             <div className="w-7 h-7 rounded bg-primary/10 text-primary flex items-center justify-center shrink-0">
               <CheckCircle2 className="w-4 h-4" />
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="font-medium truncate">File uploaded</div>
               <div className="text-xs text-muted-foreground truncate">{shortName}</div>
             </div>
           </div>
-          <Button size="sm" variant="ghost" onClick={onOpen}>
-            <ExternalLink className="w-3.5 h-3.5 mr-1" />View
-          </Button>
-          <Button size="sm" variant="outline" onClick={() => inputRef.current?.click()}>
-            <RefreshCw className="w-3.5 h-3.5 mr-1" />Replace
-          </Button>
+          <div className="flex items-center gap-2 ml-auto">
+            <Button size="sm" variant="ghost" onClick={onOpen}>
+              <ExternalLink className="w-3.5 h-3.5 mr-1" />View
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => inputRef.current?.click()}>
+              <RefreshCw className="w-3.5 h-3.5 mr-1" />Replace
+            </Button>
+          </div>
         </div>
       ) : (
         <button
