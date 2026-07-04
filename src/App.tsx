@@ -181,7 +181,7 @@ const App = () => (
                   <Route path="/startstructuring" element={<ProtectedRoute><StartStructuring /></ProtectedRoute>} />
                   <Route path="/startscaling" element={<ProtectedRoute><StartScaling /></ProtectedRoute>} />
                   
-                  <Route path="/brand-identity" element={<GatedRoute talentGate><Mask /></GatedRoute>} />
+                  <Route path="/brand-identity" element={<GatedRoute minStage="emerging"><Mask /></GatedRoute>} />
                   <Route path="/procuring" element={<GatedRoute talentGate orgAdminOnly><Procuring /></GatedRoute>} />
                   <Route path="/el-space" element={<ElSpace />} />
                   <Route path="/declaration" element={<Declaration />} />
