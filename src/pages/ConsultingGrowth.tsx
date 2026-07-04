@@ -546,7 +546,7 @@ function StagePanel({
               <Label className="text-xs mt-2">Note</Label>
               <Textarea rows={2} value={driverNote} onChange={e => setDriverNote(e.target.value)} onBlur={() => driverNote !== (opp.driver_note ?? "") && patch({ driver_note: driverNote })} placeholder="Context, contact, link&hellip;" />
               {opp.stage === "identify" && (
-                <Button size="sm" disabled={working || !opp.driver_file_url} onClick={() => advance("propose")}>
+                <Button className="w-full" size="sm" disabled={working || !opp.driver_file_url} onClick={() => advance("propose")}>
                   Next: prepare proposal <ArrowRight className="w-3 h-3 ml-1" />
                 </Button>
               )}
@@ -569,11 +569,11 @@ function StagePanel({
               />
               {opp.proposal_sent_at && <p className="text-xs text-muted-foreground">Sent {format(new Date(opp.proposal_sent_at), "MMM d, yyyy")}</p>}
               {opp.stage === "propose" && (
-                <div className="flex flex-wrap gap-2">
-                  <Button size="sm" disabled={working || !opp.proposal_file_url} onClick={() => advance("propose", { proposal_sent_at: new Date().toISOString() })}>
+                <div className="flex flex-col gap-2">
+                  <Button className="w-full" size="sm" disabled={working || !opp.proposal_file_url} onClick={() => advance("propose", { proposal_sent_at: new Date().toISOString() })}>
                     Mark proposal sent
                   </Button>
-                  <Button size="sm" variant="outline" disabled={working || !opp.proposal_sent_at} onClick={() => advance("confirm_prepare")}>
+                  <Button className="w-full" size="sm" variant="outline" disabled={working || !opp.proposal_sent_at} onClick={() => advance("confirm_prepare")}>
                     Client accepted <ArrowRight className="w-3 h-3 ml-1" />
                   </Button>
                 </div>
@@ -588,7 +588,7 @@ function StagePanel({
               {/* Step A: confirm client acceptance */}
               {!opp.client_confirmed_at && opp.stage === "confirm_prepare" && (
                 <div className="animate-in fade-in slide-in-from-top-1 duration-300">
-                  <Button size="sm" disabled={working} onClick={() => patch({ client_confirmed_at: new Date().toISOString() })}>
+                  <Button className="w-full" size="sm" disabled={working} onClick={() => patch({ client_confirmed_at: new Date().toISOString() })}>
                     Confirm client acceptance
                   </Button>
                 </div>
@@ -618,7 +618,7 @@ function StagePanel({
               {/* Step C: ready to deliver &mdash; only after PDF is uploaded */}
               {opp.stage === "confirm_prepare" && opp.client_confirmed_at && opp.process_file_url && (
                 <div className="animate-in fade-in slide-in-from-top-1 duration-300">
-                  <Button size="sm" disabled={working} onClick={() => advance("deliver")}>
+                  <Button className="w-full" size="sm" disabled={working} onClick={() => advance("deliver")}>
                     Ready to deliver <ArrowRight className="w-3 h-3 ml-1" />
                   </Button>
                 </div>
@@ -632,7 +632,7 @@ function StagePanel({
             <div className="space-y-2">
               {opp.delivered_at && <p className="text-xs text-muted-foreground">Delivered {format(new Date(opp.delivered_at), "MMM d, yyyy")}</p>}
               {opp.stage === "deliver" && (
-                <Button size="sm" disabled={working} onClick={() => advance("payment_distribution", { delivered_at: new Date().toISOString() })}>
+                <Button className="w-full" size="sm" disabled={working} onClick={() => advance("payment_distribution", { delivered_at: new Date().toISOString() })}>
                   Confirm delivered &mdash; awaiting payment <ArrowRight className="w-3 h-3 ml-1" />
                 </Button>
               )}
@@ -655,7 +655,7 @@ function StagePanel({
                   {opp.paid_at
                     ? <p className="text-xs text-muted-foreground">Paid {format(new Date(opp.paid_at), "MMM d, yyyy")}</p>
                     : opp.stage === "payment_distribution" && (
-                      <Button size="sm" disabled={working || !paidAmount} onClick={() => patch({ paid_amount: parseFloat(paidAmount), paid_at: new Date().toISOString(), is_completed: true, completed_at: new Date().toISOString() })}>
+                      <Button className="w-full" size="sm" disabled={working || !paidAmount} onClick={() => patch({ paid_amount: parseFloat(paidAmount), paid_at: new Date().toISOString(), is_completed: true, completed_at: new Date().toISOString() })}>
                         Confirm budget paid
                       </Button>
                     )
