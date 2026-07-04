@@ -582,10 +582,11 @@ function StagePanel({
                 </Button>
               )}
             </div>
-          </StageBlock>
+        </StageBlock>
+        )}
 
-          {/* STAGE 2: Propose */}
-          <StageBlock n={2} title="Technical & financial proposal" active={opp.stage === "propose"} done={idx > 1}>
+        {show("propose") && (
+        <StageBlock n={2} title="Technical & financial proposal" active={opp.stage === "propose"} done={idx > 1}>
             <div className="space-y-2">
               <Label className="text-xs">Proposal PDF</Label>
               <div className="flex items-center gap-2">
