@@ -379,6 +379,8 @@ const Journey = () => {
         return "finance_literacy";
       case "security":
         return "security_literacy";
+      case "consultant":
+        return "scaling_path";
       default:
         return "";
     }
@@ -395,6 +397,8 @@ const Journey = () => {
         return FINANCE_STEPS.length;
       case "security":
         return SECURITY_STEPS.length;
+      case "consultant":
+        return CONSULTANT_STEPS.length;
       default:
         return 0;
     }
