@@ -31,6 +31,7 @@ import {
   Activity,
   BarChart3,
   Lock,
+  Users,
 } from "lucide-react";
 import { useEngineAccess, type EngineKey } from "@/hooks/useEngineAccess";
 import { useTalentReadiness } from "@/hooks/useTalentReadiness";
@@ -69,6 +70,7 @@ const publishLinks: Array<{
 ];
 
 const moreLinks = [
+  { name: "People", path: "/people", icon: Users },
   { name: "Boxes", path: "/boxes", icon: Package },
   { name: "Programs", path: "/programs", icon: BookOpen },
   { name: "Organizations", path: "/organizations", icon: Building2 },
