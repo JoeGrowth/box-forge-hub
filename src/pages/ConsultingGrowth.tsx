@@ -933,7 +933,7 @@ function StagePanel({
                   </div>
                 )}
               </div>
-            </div>
+
         </StageBlock>
         )}
       </div>
