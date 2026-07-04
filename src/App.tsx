@@ -156,18 +156,18 @@ const App = () => (
                   <Route path="/publish-job" element={<GatedRoute talentGate orgAdminOnly><PublishJob /></GatedRoute>} />
                   <Route path="/consulting-growth" element={<ProtectedRoute><ConsultingGrowth /></ProtectedRoute>} />
                   </Route>
-                  <Route path="/opportunities/:category/:id" element={<OpportunityDetail />} />
+                  <Route path="/opportunities/:category/:id" element={<GatedRoute talentGate><OpportunityDetail /></GatedRoute>} />
                   {/* Legacy: old links pointed at startup ideas only. */}
-                  <Route path="/opportunities/:id" element={<OpportunityDetail />} />
+                  <Route path="/opportunities/:id" element={<GatedRoute talentGate><OpportunityDetail /></GatedRoute>} />
                   <Route path="/mask" element={<Mask />} />
-                  <Route path="/checklist" element={<Checklist />} />
+                  <Route path="/checklist" element={<GatedRoute talentGate><Checklist /></GatedRoute>} />
                   <Route path="/resume" element={<Resume />} />
                   <Route path="/track-record" element={<TrackRecord />} />
-                  <Route path="/create-idea" element={<CreateIdea />} />
-                  <Route path="/edit-idea/:id" element={<EditIdea />} />
-                  <Route path="/chat/:applicationId" element={<Chat />} />
-                  <Route path="/messages" element={<Messages />} />
-                  <Route path="/messages/:conversationId" element={<Messages />} />
+                  <Route path="/create-idea" element={<GatedRoute talentGate><CreateIdea /></GatedRoute>} />
+                  <Route path="/edit-idea/:id" element={<GatedRoute talentGate><EditIdea /></GatedRoute>} />
+                  <Route path="/chat/:applicationId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+                  <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+                  <Route path="/messages/:conversationId" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
                   <Route path="/stories" element={<Stories />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/privacy" element={<Privacy />} />
@@ -175,14 +175,14 @@ const App = () => (
                   <Route path="/decoder" element={<ProtectedRoute><NRDecoder /></ProtectedRoute>} />
                   <Route path="/coming-soon" element={<ComingSoon />} />
                   <Route path="/paths" element={<Paths />} />
-                  <Route path="/career" element={<Career />} />
-                  <Route path="/entrepreneurship" element={<Entrepreneurship />} />
-                  <Route path="/consulting" element={<Consulting />} />
-                  <Route path="/startstructuring" element={<StartStructuring />} />
-                  <Route path="/startscaling" element={<StartScaling />} />
+                  <Route path="/career" element={<ProtectedRoute><Career /></ProtectedRoute>} />
+                  <Route path="/entrepreneurship" element={<GatedRoute engineKey="entrepreneurship"><Entrepreneurship /></GatedRoute>} />
+                  <Route path="/consulting" element={<GatedRoute engineKey="consulting"><Consulting /></GatedRoute>} />
+                  <Route path="/startstructuring" element={<ProtectedRoute><StartStructuring /></ProtectedRoute>} />
+                  <Route path="/startscaling" element={<ProtectedRoute><StartScaling /></ProtectedRoute>} />
                   
-                  <Route path="/brand-identity" element={<Mask />} />
-                  <Route path="/procuring" element={<Procuring />} />
+                  <Route path="/brand-identity" element={<GatedRoute talentGate><Mask /></GatedRoute>} />
+                  <Route path="/procuring" element={<GatedRoute talentGate orgAdminOnly><Procuring /></GatedRoute>} />
                   <Route path="/el-space" element={<ElSpace />} />
                   <Route path="/declaration" element={<Declaration />} />
                   <Route path="/PGP" element={<PGP />} />
