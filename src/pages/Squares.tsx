@@ -1,4 +1,3 @@
-import { TrendingUp, Users, Award, Briefcase, Target, Zap } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
