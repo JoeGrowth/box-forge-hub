@@ -22,6 +22,7 @@ export default function Squares() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { expertise } = useExpertise(user?.id);
+  const { progression } = useNextBestActions(user?.id);
   const [activity, setActivity] = useState({ applications: 0, ideas: 0, journeysCompleted: 0 });
 
   useEffect(() => {
