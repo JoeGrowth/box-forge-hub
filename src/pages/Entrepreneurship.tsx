@@ -537,10 +537,10 @@ const Entrepreneurship = () => {
 
               {/* Tabs */}
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="mb-6">
-                  <TabsTrigger value="browse">Browse Projects</TabsTrigger>
-                  <TabsTrigger value="my">My Projects</TabsTrigger>
-                  <TabsTrigger value="collaborations">Collaborations</TabsTrigger>
+                <TabsList className="mb-6 w-full sm:w-auto grid grid-cols-3 sm:inline-flex">
+                  <TabsTrigger value="browse" className="text-xs sm:text-sm">Browse</TabsTrigger>
+                  <TabsTrigger value="my" className="text-xs sm:text-sm">My Projects</TabsTrigger>
+                  <TabsTrigger value="collaborations" className="text-xs sm:text-sm">Collabs</TabsTrigger>
                 </TabsList>
 
                 {/* Browse Projects */}
