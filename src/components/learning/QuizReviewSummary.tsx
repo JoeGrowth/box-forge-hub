@@ -12,7 +12,7 @@ interface ReviewQuiz {
 
 interface QuizReviewSummaryProps {
   quizzes: ReviewQuiz[];
-  answers: Record<string, string | string[]>;
+  answers: Record<string, any>;
   sliderValues?: Record<string, number>;
   currentIndex?: number;
   onJumpTo?: (index: number) => void;
@@ -21,10 +21,9 @@ interface QuizReviewSummaryProps {
 
 function formatAnswer(
   quiz: ReviewQuiz,
-  answers: Record<string, string | string[]>,
+  answers: Record<string, any>,
   sliderValues?: Record<string, number>
 ): string {
-  // Slider / self-assessment
   if (sliderValues && sliderValues[quiz.id] !== undefined) {
     return `${sliderValues[quiz.id]} / 10`;
   }
@@ -43,7 +42,12 @@ function formatAnswer(
   };
 
   if (Array.isArray(raw)) {
-    return raw.map(resolveOne).join(" → ");
+    return raw.map((v) => resolveOne(String(v))).join(" → ");
+  }
+  if (typeof raw === "object") {
+    return Object.entries(raw)
+      .map(([k, v]) => `${k}: ${v}`)
+      .join(", ");
   }
   return resolveOne(String(raw));
 }
