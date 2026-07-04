@@ -706,44 +706,180 @@ function StagePanel({
                 </div>
               </div>
 
-              <div className="border-t pt-3">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2 text-sm font-medium"><Users className="w-4 h-4" />Distribution</div>
-                  <div className="text-xs text-muted-foreground">
-                    {distributions.length === 0 ? "No splits — 100% to you"
-                      : `${totalPct}% · ${totalAmt.toLocaleString()} ${opp.currency || "EUR"}`}
+              {/* Mission Setup */}
+              <div className="border-t pt-4 space-y-4">
+                <div>
+                  <div className="text-sm font-semibold mb-2">Mission Setup</div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Mission title</Label>
+                      <Input value={opp.title} disabled />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">{budgetLabel}</Label>
+                      <Input type="number" value={paidAmount} onChange={e => setPaidAmount(e.target.value)} />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Budget label</Label>
+                      <Input value={budgetLabel} onChange={e => setBudgetLabel(e.target.value)} />
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-1">
-                  {distributions.map(d => (
-                    <div key={d.id} className="flex items-center gap-2 text-sm p-2 border rounded">
-                      <span className="flex-1 truncate">{d.recipient_name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {d.percent ? `${d.percent}%` : ""} {d.amount ? `${Number(d.amount).toLocaleString()}` : ""}
-                      </span>
-                      {d.declared_at && <Badge variant="outline" className="text-[10px]">declared</Badge>}
-                      <Button size="icon" variant="ghost" onClick={() => removeDistribution(d.id)}>
-                        <Trash2 className="w-3 h-3" />
+                {/* Charges */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm font-semibold">Charges</div>
+                    <Button size="sm" variant="outline" onClick={() => setDistCharges(p => [...p, { id: distUid(), label: "New charge", amount: 0 }])}>
+                      <Plus className="w-3 h-3 mr-1" /> Add charge
+                    </Button>
+                  </div>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Item</TableHead>
+                        <TableHead className="w-40 text-right">Amount</TableHead>
+                        <TableHead className="w-12" />
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {distCharges.map(c => (
+                        <TableRow key={c.id}>
+                          <TableCell>
+                            <Input value={c.label} onChange={e => updateDistCharge(c.id, { label: e.target.value })} />
+                          </TableCell>
+                          <TableCell>
+                            <Input type="number" className="text-right" value={c.amount} onChange={e => updateDistCharge(c.id, { amount: parseFloat(e.target.value) || 0 })} />
+                          </TableCell>
+                          <TableCell>
+                            <Button size="icon" variant="ghost" onClick={() => setDistCharges(p => p.filter(x => x.id !== c.id))}>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      <TableRow className="font-semibold bg-muted/40">
+                        <TableCell>Total charges</TableCell>
+                        <TableCell className="text-right">{distFmt(distChargesTotal)}</TableCell>
+                        <TableCell />
+                      </TableRow>
+                      <TableRow className="font-semibold">
+                        <TableCell>Infra &amp; Structure (Budget − Charges)</TableCell>
+                        <TableCell className="text-right">{distFmt(distInternalPool)}</TableCell>
+                        <TableCell />
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* People */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm font-semibold">People splitting the pool</div>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={() => setDistPeople(p => [...p, `Person (${p.length + 1})`])}>
+                        <Plus className="w-3 h-3 mr-1" /> Add person
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => setDistPeople(p => (p.length > 1 ? p.slice(0, -1) : p))}>
+                        <Trash2 className="w-3 h-3 mr-1" /> Remove last
                       </Button>
                     </div>
-                  ))}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {distPeople.map((p, i) => (
+                      <Input key={i} value={p} onChange={e => setDistPeople(prev => prev.map((v, idx) => idx === i ? e.target.value : v))} className="w-48" />
+                    ))}
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-[1fr_80px_100px_auto] gap-2 mt-2">
-                  <Input placeholder="Recipient (or yourself)" value={newRecipient} onChange={e => setNewRecipient(e.target.value)} />
-                  <Input placeholder="%" type="number" value={newPercent} onChange={e => setNewPercent(e.target.value)} />
-                  <Input placeholder="Amount" type="number" value={newAmount} onChange={e => setNewAmount(e.target.value)} />
-                  <Button size="sm" variant="outline" onClick={addDistribution}><Plus className="w-3 h-3" /></Button>
+                {/* Task distribution */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm font-semibold">Internal &amp; Structure — task distribution</div>
+                    <Button size="sm" variant="outline" onClick={() => setDistTasks(p => {
+                      const lockedIdx = p.findIndex(t => t.locked);
+                      const newTask: DistTask = { id: distUid(), label: "New task", percent: 0 };
+                      if (lockedIdx === -1) return [...p, newTask];
+                      const copy = [...p]; copy.splice(lockedIdx, 0, newTask); return copy;
+                    })}>
+                      <Plus className="w-3 h-3 mr-1" /> Add task
+                    </Button>
+                  </div>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Task</TableHead>
+                        <TableHead className="w-20 text-right">%</TableHead>
+                        <TableHead className="w-28 text-right">Amount</TableHead>
+                        {distPeople.map((p, i) => (
+                          <TableHead key={i} className="text-right bg-foreground text-background">{p}</TableHead>
+                        ))}
+                        <TableHead className="w-10" />
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {distTasks.map((t, i) => (
+                        <TableRow key={t.id} className={t.locked ? "bg-muted/30" : ""}>
+                          <TableCell>
+                            {t.locked ? (
+                              <div className="flex items-center gap-2 px-2 py-1 text-sm font-medium">
+                                <Lock className="w-3.5 h-3.5 text-muted-foreground" />
+                                {t.label}
+                                <span className="text-xs text-muted-foreground ml-1">(not split)</span>
+                              </div>
+                            ) : (
+                              <Input value={t.label} onChange={e => updateDistTask(t.id, { label: e.target.value })} />
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Input type="number" className="text-right" value={t.percent} onChange={e => updateDistTask(t.id, { percent: parseFloat(e.target.value) || 0 })} />
+                          </TableCell>
+                          <TableCell className="text-right font-mono">{distFmt(distTaskAmounts[i])}</TableCell>
+                          {distPeople.map((_, pi) => (
+                            <TableCell key={pi} className="text-right font-mono">
+                              {distPerPersonPerTask[i] === null ? "—" : distFmt(distPerPersonPerTask[i] as number)}
+                            </TableCell>
+                          ))}
+                          <TableCell>
+                            {!t.locked && (
+                              <Button size="icon" variant="ghost" onClick={() => setDistTasks(p => p.filter(x => x.id !== t.id))}>
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      <TableRow className="font-semibold bg-muted/40">
+                        <TableCell>Total</TableCell>
+                        <TableCell className="text-right">{distTotalPercent}%</TableCell>
+                        <TableCell className="text-right">{distFmt(distTaskAmounts.reduce((s, a) => s + a, 0))}</TableCell>
+                        {distPeople.map((_, i) => (
+                          <TableCell key={i} className="text-right bg-foreground text-background">{distFmt(distPerPersonEqual)}</TableCell>
+                        ))}
+                        <TableCell />
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                  {distTotalPercent !== 100 && (
+                    <p className="text-xs text-amber-600 mt-2">
+                      Task percentages sum to {distTotalPercent}% — adjust to reach 100% for a full distribution.
+                    </p>
+                  )}
                 </div>
+
+                {distributions.length > 0 && (
+                  <div className="text-xs text-muted-foreground">
+                    Declared splits: {distributions.map(d => `${d.recipient_name} (${d.percent ?? 0}% · ${Number(d.amount ?? 0).toLocaleString()} ${opp.currency || "EUR"})`).join(" · ")}
+                  </div>
+                )}
 
                 {opp.stage === "payment_distribution" && opp.paid_at && (
-                  <Button size="sm" className="w-full mt-3" disabled={working} onClick={declareDistributions}>
+                  <Button size="sm" className="w-full" disabled={working} onClick={declareDistributions}>
                     Declare distribution & close mission
                   </Button>
                 )}
                 {opp.stage === "closed" && (
-                  <Badge className="mt-2">Mission closed</Badge>
+                  <Badge>Mission closed</Badge>
                 )}
               </div>
             </div>
