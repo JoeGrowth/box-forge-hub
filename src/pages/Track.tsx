@@ -51,12 +51,20 @@ const Track = () => {
   const [loading, setLoading] = useState(true);
   const [professionalUnlocked, setProfessionalUnlocked] = useState(false);
   const [entrepreneurialUnlocked, setEntrepreneurialUnlocked] = useState(false);
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const unlock = searchParams.get("unlock");
+    if (unlock === "entrepreneurial") setEntrepreneurialUnlocked(true);
+    if (unlock === "professional") setProfessionalUnlocked(true);
+  }, [searchParams]);
 
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/auth", { replace: true });
     }
   }, [user, authLoading, navigate]);
+
 
   useEffect(() => {
     const fetchData = async () => {
