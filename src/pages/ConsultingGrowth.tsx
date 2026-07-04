@@ -586,18 +586,15 @@ function StagePanel({
         <StageBlock n={2} title="Technical & financial proposal" active={opp.stage === "propose"} done={idx > 1}>
             <div className="space-y-2">
               <Label className="text-xs">Proposal PDF</Label>
-              <div className="flex items-center gap-2">
-                <Input type="file" accept="application/pdf" onChange={async (e) => {
-                  const f = e.target.files?.[0]; if (!f) return;
+              <FileField
+                accept="application/pdf"
+                url={opp.proposal_file_url}
+                onOpen={() => openFile(opp.proposal_file_url)}
+                onPick={async (f) => {
                   const p = await uploadFile(f, "proposal");
                   if (p) await patch({ proposal_file_url: p });
-                }} />
-                {opp.proposal_file_url && (
-                  <Button size="sm" variant="ghost" onClick={() => openFile(opp.proposal_file_url)}>
-                    <ExternalLink className="w-3 h-3 mr-1" />View
-                  </Button>
-                )}
-              </div>
+                }}
+              />
               {opp.proposal_sent_at && <p className="text-xs text-muted-foreground">Sent {format(new Date(opp.proposal_sent_at), "MMM d, yyyy")}</p>}
               {opp.stage === "propose" && (
                 <div className="flex gap-2">
