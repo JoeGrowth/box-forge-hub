@@ -398,67 +398,6 @@ export default function ConsultingGrowth() {
       </div>
 
 
-      {/* Accounting */}
-      <div className="space-y-3">
-        <div>
-          <h2 className="text-lg font-semibold tracking-tight">Accounting</h2>
-          <p className="text-sm text-muted-foreground">Paid missions and distributions.</p>
-        </div>
-        {paid.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border p-8 text-center">
-            <p className="text-sm text-muted-foreground">No paid missions yet.</p>
-          </div>
-        ) : (
-          <div className="grid sm:grid-cols-2 gap-4">
-            {paid.map(o => {
-              const dists = distByOpp[o.id] || [];
-              return (
-                <div key={o.id} className="rounded-xl border border-border bg-card p-5">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <h3 className="font-semibold text-foreground truncate">{o.title}</h3>
-                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                        {o.client_name || "—"}
-                        {o.paid_at && <> · paid {format(new Date(o.paid_at), "MMM d, yyyy")}</>}
-                      </p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <div className="font-semibold">
-                        {Number(o.paid_amount ?? o.total_amount ?? 0).toLocaleString()} <span className="text-xs font-normal text-muted-foreground">{o.currency}</span>
-                      </div>
-                    </div>
-                  </div>
-                  {dists.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-1">
-                      {dists.map(d => (
-                        <Badge key={d.id} variant="outline" className="text-[10px]">
-                          {d.recipient_name} · {d.percent ? `${d.percent}%` : ""}{d.amount ? ` ${Number(d.amount).toLocaleString()}` : ""}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                  <div className="flex items-center justify-end mt-4 text-xs text-primary">
-                    <button onClick={() => setExpandedId(expandedId === o.id ? null : o.id)} className="inline-flex items-center hover:underline">
-                      {expandedId === o.id ? "Hide" : "Manage"} <ArrowRight className="w-3 h-3 ml-1" />
-                    </button>
-                  </div>
-                  {expandedId === o.id && (
-                    <div className="mt-4 border-t border-border pt-4">
-                      <StagePanel
-                        opp={o}
-                        distributions={dists}
-                        onChanged={async () => { await load(); }}
-                        userId={user?.id ?? ""}
-                        onlyStage={null}
-                      />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
     </div>
   );
 }
