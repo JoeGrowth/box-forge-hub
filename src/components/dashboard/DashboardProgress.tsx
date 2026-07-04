@@ -258,14 +258,6 @@ export function DashboardProgress() {
         ]
       : []),
     {
-      key: "certify",
-      title: "Getting Certified",
-      description: "Pick a certification path — Initiator, Co-Builder, Finance or Security — and earn your badges.",
-      icon: Award,
-      done: false,
-      cta: { label: hasLearningJourneys ? "Continue" : "Start", to: "/journey" },
-    },
-    {
       key: "ent-track",
       title: "Fill your Entrepreneurial Track Record",
       description: "Initiatives, products, teams, business, equity — what you've shipped as a builder.",
