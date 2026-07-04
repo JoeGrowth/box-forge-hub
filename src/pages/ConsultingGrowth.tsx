@@ -108,7 +108,7 @@ export default function ConsultingGrowth() {
     } catch { return EMPTY_FORM; }
   });
 
-  const [activeOpp, setActiveOpp] = useState<Opportunity | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => { try { localStorage.setItem(DRAFT_KEY, JSON.stringify(form)); } catch {} }, [form]);
   useEffect(() => { try { localStorage.setItem(OPEN_KEY, dialogOpen ? "1" : "0"); } catch {} }, [dialogOpen]);
@@ -317,43 +317,58 @@ export default function ConsultingGrowth() {
             );
           }
           return (
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="space-y-3">
               {filtered.map(o => {
                 const idx = stageIndex(o.stage);
+                const isOpen = expandedId === o.id;
                 return (
-                  <button
+                  <div
                     key={o.id}
-                    onClick={() => setActiveOpp(o)}
-                    className="text-left rounded-xl border border-border bg-card p-5 hover:border-primary/40 hover:shadow-sm transition"
+                    className="rounded-xl border border-border bg-card overflow-hidden"
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <h3 className="font-semibold text-foreground truncate">{o.title}</h3>
-                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                          <p className="text-xs text-muted-foreground truncate">{o.client_name || "—"}</p>
-                          <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4">{o.source}</Badge>
+                    <button
+                      onClick={() => setExpandedId(isOpen ? null : o.id)}
+                      className="w-full text-left p-5 hover:bg-muted/30 transition"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <h3 className="font-semibold text-foreground truncate">{o.title}</h3>
+                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                            <p className="text-xs text-muted-foreground truncate">{o.client_name || "—"}</p>
+                            <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4">{o.source}</Badge>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {o.total_amount && (
+                            <span className="text-xs text-muted-foreground">
+                              {Number(o.total_amount).toLocaleString()} {o.currency}
+                            </span>
+                          )}
+                          <Badge variant="secondary">{STAGES[idx]?.short}</Badge>
                         </div>
                       </div>
-                      <Badge variant="secondary" className="shrink-0">{STAGES[idx]?.short}</Badge>
-                    </div>
-                    <div className="mt-4 flex gap-1">
-                      {STAGES.slice(0, 6).map((s, i) => (
-                        <div
-                          key={s.value}
-                          className={`h-1.5 flex-1 rounded ${i <= idx ? "bg-primary" : "bg-muted"}`}
-                          title={s.short}
+                      <div className="mt-4 flex gap-1">
+                        {STAGES.slice(0, 6).map((s, i) => (
+                          <div
+                            key={s.value}
+                            className={`h-1.5 flex-1 rounded ${i <= idx ? "bg-primary" : "bg-muted"}`}
+                            title={s.short}
+                          />
+                        ))}
+                      </div>
+                    </button>
+                    {isOpen && (
+                      <div className="border-t border-border bg-muted/10 p-5">
+                        <StagePanel
+                          opp={o}
+                          distributions={distByOpp[o.id] || []}
+                          onChanged={async () => { await load(); }}
+                          userId={user?.id ?? ""}
+                          onlyStage={stageFilter === "all" ? null : stageFilter}
                         />
-                      ))}
-                    </div>
-                    <div className="flex items-center justify-between mt-3 text-xs">
-                      <span className="text-muted-foreground">
-                        {o.total_amount ? `${Number(o.total_amount).toLocaleString()} ${o.currency}` : ""}
-                      </span>
-                      <span className="text-primary inline-flex items-center">
-                        Manage <ArrowRight className="w-3 h-3 ml-1" />
-                      </span>
-                    </div>
-                  </button>
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -402,43 +417,45 @@ export default function ConsultingGrowth() {
                     </div>
                   )}
                   <div className="flex items-center justify-end mt-4 text-xs text-primary">
-                    <button onClick={() => setActiveOpp(o)} className="inline-flex items-center hover:underline">
-                      Manage <ArrowRight className="w-3 h-3 ml-1" />
+                    <button onClick={() => setExpandedId(expandedId === o.id ? null : o.id)} className="inline-flex items-center hover:underline">
+                      {expandedId === o.id ? "Hide" : "Manage"} <ArrowRight className="w-3 h-3 ml-1" />
                     </button>
                   </div>
+                  {expandedId === o.id && (
+                    <div className="mt-4 border-t border-border pt-4">
+                      <StagePanel
+                        opp={o}
+                        distributions={dists}
+                        onChanged={async () => { await load(); }}
+                        userId={user?.id ?? ""}
+                        onlyStage={null}
+                      />
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
         )}
       </div>
-
-      {activeOpp && (
-        <StageManager
-          opp={activeOpp}
-          distributions={distByOpp[activeOpp.id] || []}
-          onClose={() => setActiveOpp(null)}
-          onChanged={async () => { await load(); }}
-          userId={user?.id ?? ""}
-        />
-      )}
     </div>
   );
 }
 
 // =============================================================================
-// Stage manager dialog
+// Inline stage panel (rendered inside expanded pipeline cards)
 // =============================================================================
 
-function StageManager({
-  opp, distributions, onClose, onChanged, userId,
+function StagePanel({
+  opp, distributions, onChanged, userId, onlyStage,
 }: {
   opp: Opportunity;
   distributions: Distribution[];
-  onClose: () => void;
   onChanged: () => Promise<void>;
   userId: string;
+  onlyStage: Stage | null;
 }) {
+  const show = (s: Stage) => onlyStage === null || onlyStage === s || (onlyStage === "closed" && s === "payment_distribution");
   const { toast } = useToast();
   const [working, setWorking] = useState(false);
   const [driverNote, setDriverNote] = useState(opp.driver_note ?? "");
@@ -527,26 +544,22 @@ function StageManager({
   const idx = stageIndex(opp.stage);
 
   return (
-    <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{opp.title}</DialogTitle>
-          <div className="text-xs text-muted-foreground">{opp.client_name || "—"} · {opp.source}</div>
-        </DialogHeader>
-
-        {/* Stage tracker */}
-        <div className="flex gap-1 my-3">
-          {STAGES.slice(0, 5).map((s, i) => (
+    <div>
+      {/* Stage tracker (hide when a single stage tab is active) */}
+      {onlyStage === null && (
+        <div className="flex gap-1 mb-4">
+          {STAGES.slice(0, 6).map((s, i) => (
             <div key={s.value} className="flex-1">
               <div className={`h-1.5 rounded ${i <= idx ? "bg-primary" : "bg-muted"}`} />
               <div className={`text-[10px] mt-1 ${i <= idx ? "text-foreground font-medium" : "text-muted-foreground"}`}>{s.short}</div>
             </div>
           ))}
         </div>
+      )}
 
-        <div className="space-y-4">
-          {/* STAGE 1: Identify + driver */}
-          <StageBlock n={1} title="Identify — upload the driver" active={opp.stage === "identify"} done={idx > 0}>
+      <div className="space-y-4">
+        {show("identify") && (
+        <StageBlock n={1} title="Identify — upload the driver" active={opp.stage === "identify"} done={idx > 0}>
             <div className="space-y-2">
               <Label className="text-xs">Driver PDF or screenshot (LinkedIn post, tender, email…)</Label>
               <div className="flex items-center gap-2">
@@ -569,10 +582,11 @@ function StageManager({
                 </Button>
               )}
             </div>
-          </StageBlock>
+        </StageBlock>
+        )}
 
-          {/* STAGE 2: Propose */}
-          <StageBlock n={2} title="Technical & financial proposal" active={opp.stage === "propose"} done={idx > 1}>
+        {show("propose") && (
+        <StageBlock n={2} title="Technical & financial proposal" active={opp.stage === "propose"} done={idx > 1}>
             <div className="space-y-2">
               <Label className="text-xs">Proposal PDF</Label>
               <div className="flex items-center gap-2">
@@ -599,10 +613,11 @@ function StageManager({
                 </div>
               )}
             </div>
-          </StageBlock>
+        </StageBlock>
+        )}
 
-          {/* STAGE 3: Confirm & Prepare */}
-          <StageBlock n={3} title="Confirm & prepare (process + presentation)" active={opp.stage === "confirm_prepare"} done={idx > 2}>
+        {show("confirm_prepare") && (
+        <StageBlock n={3} title="Confirm & prepare (process + presentation)" active={opp.stage === "confirm_prepare"} done={idx > 2}>
             <div className="space-y-2">
               {opp.client_confirmed_at
                 ? <p className="text-xs text-muted-foreground">Confirmed {format(new Date(opp.client_confirmed_at), "MMM d, yyyy")}</p>
@@ -631,10 +646,11 @@ function StageManager({
                 </Button>
               )}
             </div>
-          </StageBlock>
+        </StageBlock>
+        )}
 
-          {/* STAGE 4: Deliver */}
-          <StageBlock n={4} title="Deliver — workshop / training / consulting" active={opp.stage === "deliver"} done={idx > 3}>
+        {show("deliver") && (
+        <StageBlock n={4} title="Deliver — workshop / training / consulting" active={opp.stage === "deliver"} done={idx > 3}>
             <div className="space-y-2">
               {opp.delivered_at && <p className="text-xs text-muted-foreground">Delivered {format(new Date(opp.delivered_at), "MMM d, yyyy")}</p>}
               {opp.stage === "deliver" && (
@@ -643,10 +659,11 @@ function StageManager({
                 </Button>
               )}
             </div>
-          </StageBlock>
+        </StageBlock>
+        )}
 
-          {/* STAGE 5: Payment + distribution */}
-          <StageBlock n={5} title="Payment received & distribution" active={opp.stage === "payment_distribution"} done={opp.stage === "closed"}>
+        {show("payment_distribution") && (
+        <StageBlock n={5} title="Payment received & distribution" active={opp.stage === "payment_distribution"} done={opp.stage === "closed"}>
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-2">
                 <div>
@@ -706,14 +723,10 @@ function StageManager({
                 )}
               </div>
             </div>
-          </StageBlock>
-        </div>
-
-        <DialogFooter>
-          <Button variant="ghost" onClick={onClose}>Close</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </StageBlock>
+        )}
+      </div>
+    </div>
   );
 }
 
