@@ -410,11 +410,12 @@ export default function ConsultingGrowth() {
 // =============================================================================
 
 function StagePanel({
-  opp, distributions, onChanged, onStageChange, userId, onlyStage,
+  opp, distributions, onChanged, onOptimisticPatch, onStageChange, userId, onlyStage,
 }: {
   opp: Opportunity;
   distributions: Distribution[];
   onChanged: () => Promise<void>;
+  onOptimisticPatch?: (fields: Partial<Opportunity>) => void;
   onStageChange?: (to: Stage) => void;
   userId: string;
   onlyStage: Stage | null;
