@@ -317,43 +317,58 @@ export default function ConsultingGrowth() {
             );
           }
           return (
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="space-y-3">
               {filtered.map(o => {
                 const idx = stageIndex(o.stage);
+                const isOpen = expandedId === o.id;
                 return (
-                  <button
+                  <div
                     key={o.id}
-                    onClick={() => setActiveOpp(o)}
-                    className="text-left rounded-xl border border-border bg-card p-5 hover:border-primary/40 hover:shadow-sm transition"
+                    className="rounded-xl border border-border bg-card overflow-hidden"
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <h3 className="font-semibold text-foreground truncate">{o.title}</h3>
-                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                          <p className="text-xs text-muted-foreground truncate">{o.client_name || "—"}</p>
-                          <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4">{o.source}</Badge>
+                    <button
+                      onClick={() => setExpandedId(isOpen ? null : o.id)}
+                      className="w-full text-left p-5 hover:bg-muted/30 transition"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <h3 className="font-semibold text-foreground truncate">{o.title}</h3>
+                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                            <p className="text-xs text-muted-foreground truncate">{o.client_name || "—"}</p>
+                            <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4">{o.source}</Badge>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {o.total_amount && (
+                            <span className="text-xs text-muted-foreground">
+                              {Number(o.total_amount).toLocaleString()} {o.currency}
+                            </span>
+                          )}
+                          <Badge variant="secondary">{STAGES[idx]?.short}</Badge>
                         </div>
                       </div>
-                      <Badge variant="secondary" className="shrink-0">{STAGES[idx]?.short}</Badge>
-                    </div>
-                    <div className="mt-4 flex gap-1">
-                      {STAGES.slice(0, 6).map((s, i) => (
-                        <div
-                          key={s.value}
-                          className={`h-1.5 flex-1 rounded ${i <= idx ? "bg-primary" : "bg-muted"}`}
-                          title={s.short}
+                      <div className="mt-4 flex gap-1">
+                        {STAGES.slice(0, 6).map((s, i) => (
+                          <div
+                            key={s.value}
+                            className={`h-1.5 flex-1 rounded ${i <= idx ? "bg-primary" : "bg-muted"}`}
+                            title={s.short}
+                          />
+                        ))}
+                      </div>
+                    </button>
+                    {isOpen && (
+                      <div className="border-t border-border bg-muted/10 p-5">
+                        <StagePanel
+                          opp={o}
+                          distributions={distByOpp[o.id] || []}
+                          onChanged={async () => { await load(); }}
+                          userId={user?.id ?? ""}
+                          onlyStage={stageFilter === "all" ? null : stageFilter}
                         />
-                      ))}
-                    </div>
-                    <div className="flex items-center justify-between mt-3 text-xs">
-                      <span className="text-muted-foreground">
-                        {o.total_amount ? `${Number(o.total_amount).toLocaleString()} ${o.currency}` : ""}
-                      </span>
-                      <span className="text-primary inline-flex items-center">
-                        Manage <ArrowRight className="w-3 h-3 ml-1" />
-                      </span>
-                    </div>
-                  </button>
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </div>
