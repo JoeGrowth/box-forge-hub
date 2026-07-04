@@ -284,11 +284,11 @@ const Entrepreneurship = () => {
   ];
 
   const ProjectCard = ({ project }: { project: StartupIdea }) => (
-    <div className="border border-border rounded-2xl p-6 bg-card hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-display text-xl font-bold text-foreground">{project.title}</h3>
+    <div className="border border-border rounded-2xl p-4 sm:p-6 bg-card hover:shadow-md transition-shadow">
+      <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+        <div className="flex-1 min-w-0 w-full">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <h3 className="font-display text-lg sm:text-xl font-bold text-foreground break-words">{project.title}</h3>
             <Badge variant="outline" className="text-xs">{getEpisodeLabel(project.current_episode)}</Badge>
           </div>
           {project.sector && (
@@ -296,10 +296,10 @@ const Entrepreneurship = () => {
           )}
           <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{project.description}</p>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4 text-sm">
             <div>
               <p className="text-muted-foreground">Founder</p>
-              <p className="font-semibold text-foreground">{creatorNames[project.creator_id] || "—"}</p>
+              <p className="font-semibold text-foreground truncate">{creatorNames[project.creator_id] || "—"}</p>
             </div>
             <div>
               <p className="text-muted-foreground">Team Size</p>
@@ -307,7 +307,7 @@ const Entrepreneurship = () => {
             </div>
             <div>
               <p className="text-muted-foreground">Industry</p>
-              <p className="font-semibold text-foreground">{project.sector || "General"}</p>
+              <p className="font-semibold text-foreground truncate">{project.sector || "General"}</p>
             </div>
             <div>
               <p className="text-muted-foreground">Equity Offer</p>
@@ -329,12 +329,12 @@ const Entrepreneurship = () => {
           )}
         </div>
 
-        <div className="flex flex-col gap-2 shrink-0">
-          <Rocket className="w-8 h-8 text-primary mx-auto mb-1" />
-          <Button size="sm" onClick={() => setApplyProject(project)}>
+        <div className="flex flex-row sm:flex-col gap-2 shrink-0 w-full sm:w-auto">
+          <Rocket className="w-8 h-8 text-primary mx-auto mb-1 hidden sm:block" />
+          <Button size="sm" className="flex-1 sm:flex-none" onClick={() => setApplyProject(project)}>
               Express Interest
           </Button>
-          <Button variant="outline" size="sm" asChild>
+          <Button variant="outline" size="sm" className="flex-1 sm:flex-none" asChild>
             <Link to={`/opportunities/${project.id}`}>
               <Eye className="w-3 h-3 mr-1" /> View Details
             </Link>
@@ -361,11 +361,11 @@ const Entrepreneurship = () => {
   };
 
   const MyProjectCard = ({ project, isOwner }: { project: StartupIdea; isOwner: boolean }) => (
-    <div className="border border-border rounded-2xl p-6 bg-card hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1 min-w-0">
+    <div className="border border-border rounded-2xl p-4 sm:p-6 bg-card hover:shadow-md transition-shadow">
+      <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+        <div className="flex-1 min-w-0 w-full">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <h3 className="font-display text-xl font-bold text-foreground">{project.title}</h3>
+            <h3 className="font-display text-lg sm:text-xl font-bold text-foreground break-words">{project.title}</h3>
             <Badge variant="outline" className="text-xs">{getEpisodeLabel(project.current_episode)}</Badge>
             {isOwner && project.review_status && (
               <Badge variant="secondary" className="text-xs capitalize">{project.review_status}</Badge>
@@ -376,7 +376,7 @@ const Entrepreneurship = () => {
           )}
           <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
         </div>
-        <div className="flex flex-wrap gap-2 shrink-0 justify-end max-w-[60%]">
+        <div className="flex flex-wrap gap-2 shrink-0 justify-start sm:justify-end w-full sm:w-auto sm:max-w-[60%]">
           {isOwner && (
             <Button
               variant="ghost"
@@ -502,16 +502,16 @@ const Entrepreneurship = () => {
               </div>
 
               {/* Header */}
-              <div className="flex items-center justify-between mb-12 bg-muted/40 rounded-2xl p-6">
-                <div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 md:mb-12 bg-muted/40 rounded-2xl p-4 sm:p-6">
+                <div className="min-w-0">
                   <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-1">
                     Entrepreneurship Engine
                   </h1>
-                  <p className="text-muted-foreground">
+                  <p className="text-sm sm:text-base text-muted-foreground">
                     Launch ventures or join exciting startup projects
                   </p>
                 </div>
-                <Button className="gap-2" onClick={() => setShowCreateDialog(true)}>
+                <Button className="gap-2 w-full sm:w-auto shrink-0" onClick={() => setShowCreateDialog(true)}>
                   <Plus className="w-4 h-4" /> Start New Project
                 </Button>
               </div>
@@ -527,29 +527,29 @@ const Entrepreneurship = () => {
                       </div>
                     ))
                   : statCards.map((card) => (
-                      <div key={card.label} className="border border-border rounded-xl p-5 bg-card">
-                        <p className="text-sm text-muted-foreground mb-1">{card.label}</p>
-                        <p className="text-3xl font-bold text-foreground">{card.value}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{card.sub}</p>
+                      <div key={card.label} className="border border-border rounded-xl p-4 sm:p-5 bg-card">
+                        <p className="text-xs sm:text-sm text-muted-foreground mb-1">{card.label}</p>
+                        <p className="text-2xl sm:text-3xl font-bold text-foreground">{card.value}</p>
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{card.sub}</p>
                       </div>
                     ))}
               </div>
 
               {/* Tabs */}
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="mb-6">
-                  <TabsTrigger value="browse">Browse Projects</TabsTrigger>
-                  <TabsTrigger value="my">My Projects</TabsTrigger>
-                  <TabsTrigger value="collaborations">Collaborations</TabsTrigger>
+                <TabsList className="mb-6 w-full sm:w-auto grid grid-cols-3 sm:inline-flex">
+                  <TabsTrigger value="browse" className="text-xs sm:text-sm">Browse</TabsTrigger>
+                  <TabsTrigger value="my" className="text-xs sm:text-sm">My Projects</TabsTrigger>
+                  <TabsTrigger value="collaborations" className="text-xs sm:text-sm">Collabs</TabsTrigger>
                 </TabsList>
 
                 {/* Browse Projects */}
                 <TabsContent value="browse">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="font-display text-xl font-bold text-foreground">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+                    <h2 className="font-display text-lg sm:text-xl font-bold text-foreground">
                       Startup Projects Seeking Co-Builders
                     </h2>
-                    <Button variant="outline" size="sm" asChild>
+                    <Button variant="outline" size="sm" asChild className="self-start sm:self-auto">
                       <Link to="/opportunities">View All</Link>
                     </Button>
                   </div>
@@ -580,11 +580,11 @@ const Entrepreneurship = () => {
 
                 {/* My Projects */}
                 <TabsContent value="my">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="font-display text-xl font-bold text-foreground">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+                    <h2 className="font-display text-lg sm:text-xl font-bold text-foreground">
                       Your Startup Projects
                     </h2>
-                    <Button size="sm" className="gap-2" onClick={() => setShowCreateDialog(true)}>
+                    <Button size="sm" className="gap-2 self-start sm:self-auto" onClick={() => setShowCreateDialog(true)}>
                       <Plus className="w-4 h-4" /> New Project
                     </Button>
                   </div>
