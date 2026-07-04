@@ -336,7 +336,18 @@ export function DashboardProgress() {
                     asChild
                     className="w-full sm:w-auto sm:min-w-[110px] flex-shrink-0"
                   >
-                    <Link to={step.cta.to}>{step.cta.label}</Link>
+                    <Link
+                      to={step.cta.to}
+                      onClick={() => {
+                        if (step.key === "venture" && user) {
+                          try {
+                            localStorage.setItem(`b4:venture-start-clicked:${user.id}`, "1");
+                          } catch {}
+                        }
+                      }}
+                    >
+                      {step.cta.label}
+                    </Link>
                   </Button>
                 )}
 
