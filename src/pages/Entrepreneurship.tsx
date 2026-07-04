@@ -545,11 +545,11 @@ const Entrepreneurship = () => {
 
                 {/* Browse Projects */}
                 <TabsContent value="browse">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="font-display text-xl font-bold text-foreground">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+                    <h2 className="font-display text-lg sm:text-xl font-bold text-foreground">
                       Startup Projects Seeking Co-Builders
                     </h2>
-                    <Button variant="outline" size="sm" asChild>
+                    <Button variant="outline" size="sm" asChild className="self-start sm:self-auto">
                       <Link to="/opportunities">View All</Link>
                     </Button>
                   </div>
