@@ -185,7 +185,7 @@ export default function ConsultingGrowth() {
       offer_date: new Date().toISOString().slice(0, 10),
       stage: "identify" as Stage,
     } as never;
-    const { error } = await supabase.from("consultant_opportunities").insert(payload);
+    const { data: inserted, error } = await supabase.from("consultant_opportunities").insert(payload).select("id").single();
     setSaving(false);
     if (error) {
       toast({ title: "Failed to save", description: error.message, variant: "destructive" });
@@ -195,6 +195,8 @@ export default function ConsultingGrowth() {
     setDialogOpen(false);
     setForm(EMPTY_FORM);
     try { localStorage.removeItem(DRAFT_KEY); localStorage.removeItem(OPEN_KEY); } catch {}
+    setStageFilter("identify");
+    if (inserted?.id) setExpandedId(inserted.id);
     load();
   };
 
@@ -383,6 +385,7 @@ export default function ConsultingGrowth() {
                           opp={o}
                           distributions={distByOpp[o.id] || []}
                           onChanged={async () => { await load(); }}
+                          onStageChange={(to) => { setStageFilter(to === "closed" ? "closed" : to); setExpandedId(o.id); }}
                           userId={user?.id ?? ""}
                           onlyStage={stageFilter === "all" ? null : stageFilter}
                         />
@@ -406,11 +409,12 @@ export default function ConsultingGrowth() {
 // =============================================================================
 
 function StagePanel({
-  opp, distributions, onChanged, userId, onlyStage,
+  opp, distributions, onChanged, onStageChange, userId, onlyStage,
 }: {
   opp: Opportunity;
   distributions: Distribution[];
   onChanged: () => Promise<void>;
+  onStageChange?: (to: Stage) => void;
   userId: string;
   onlyStage: Stage | null;
 }) {
@@ -476,7 +480,10 @@ function StagePanel({
 
   const advance = async (to: Stage, extra: Partial<Opportunity> = {}) => {
     const ok = await patch({ stage: to, ...extra });
-    if (ok) toast({ title: `Advanced to ${STAGES.find(s => s.value === to)?.short}` });
+    if (ok) {
+      toast({ title: `Advanced to ${STAGES.find(s => s.value === to)?.short}` });
+      onStageChange?.(to);
+    }
   };
 
   // ----- Distribution actions -----
