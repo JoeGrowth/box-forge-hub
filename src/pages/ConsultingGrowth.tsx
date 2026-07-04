@@ -817,10 +817,10 @@ function StagePanel({
                   </Button>
                 )}
                 {opp.stage === "closed" && (
-                  <div className="space-y-3">
+                  <div className="space-y-3 border-t pt-4">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <div className="text-sm font-semibold">Mission closed</div>
+                        <div className="text-sm font-semibold">Accounting — mission closed</div>
                         <p className="text-xs text-muted-foreground">
                           {opp.client_name || "—"}
                           {opp.paid_at && <> · paid {format(new Date(opp.paid_at), "MMM d, yyyy")}</>}
@@ -832,13 +832,91 @@ function StagePanel({
                         </div>
                       </div>
                     </div>
+
+                    {/* Steps preview */}
+                    <div className="rounded-md border bg-muted/20 p-3 space-y-2">
+                      <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Steps recap</div>
+                      <div className="grid grid-cols-1 gap-1.5 text-xs">
+                        <div className="flex items-start gap-2">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
+                          <div className="flex-1">
+                            <span className="font-medium">1. Identify</span>
+                            <span className="text-muted-foreground"> — source: {SOURCES.find(s => s.value === opp.source)?.label || opp.source}</span>
+                            {opp.driver_file_url && <button className="ml-2 text-primary underline" onClick={() => openFile(opp.driver_file_url)}>driver</button>}
+                            {opp.driver_note && <div className="text-muted-foreground italic">"{opp.driver_note}"</div>}
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
+                          <div className="flex-1">
+                            <span className="font-medium">2. Proposal</span>
+                            <span className="text-muted-foreground">
+                              {opp.proposal_sent_at ? ` — sent ${format(new Date(opp.proposal_sent_at), "MMM d, yyyy")}` : " — sent"}
+                            </span>
+                            {opp.proposal_file_url && <button className="ml-2 text-primary underline" onClick={() => openFile(opp.proposal_file_url)}>file</button>}
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
+                          <div className="flex-1">
+                            <span className="font-medium">3. Confirm &amp; prepare</span>
+                            <span className="text-muted-foreground">
+                              {opp.client_confirmed_at && ` — confirmed ${format(new Date(opp.client_confirmed_at), "MMM d, yyyy")}`}
+                            </span>
+                            {opp.process_file_url && <button className="ml-2 text-primary underline" onClick={() => openFile(opp.process_file_url)}>process</button>}
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
+                          <div className="flex-1">
+                            <span className="font-medium">4. Deliver</span>
+                            <span className="text-muted-foreground">
+                              {opp.delivered_at && ` — delivered ${format(new Date(opp.delivered_at), "MMM d, yyyy")}`}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
+                          <div className="flex-1">
+                            <span className="font-medium">5. Payment &amp; Distribution</span>
+                            <span className="text-muted-foreground">
+                              {opp.paid_at && ` — paid ${format(new Date(opp.paid_at), "MMM d, yyyy")}`}
+                              {" · "}{budgetLabel}: {distFmt(Number(opp.paid_amount ?? opp.total_amount ?? 0))} {opp.currency}
+                              {" · charges: "}{distFmt(distChargesTotal)}
+                              {" · pool: "}{distFmt(distInternalPool)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Distribution recap table */}
                     {distributions.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {distributions.map(d => (
-                          <Badge key={d.id} variant="outline" className="text-[10px]">
-                            {d.recipient_name} · {d.percent ? `${d.percent}%` : ""}{d.amount ? ` ${Number(d.amount).toLocaleString()}` : ""}
-                          </Badge>
-                        ))}
+                      <div className="rounded-md border bg-muted/20 p-3 space-y-2">
+                        <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Distribution recap</div>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Recipient</TableHead>
+                              <TableHead className="text-right">%</TableHead>
+                              <TableHead className="text-right">Amount ({opp.currency || "EUR"})</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {distributions.map(d => (
+                              <TableRow key={d.id}>
+                                <TableCell className="font-medium">{d.recipient_name}</TableCell>
+                                <TableCell className="text-right">{d.percent ?? 0}%</TableCell>
+                                <TableCell className="text-right font-mono">{distFmt(Number(d.amount ?? 0))}</TableCell>
+                              </TableRow>
+                            ))}
+                            <TableRow className="font-semibold bg-muted/40">
+                              <TableCell>Total distributed</TableCell>
+                              <TableCell className="text-right">{distributions.reduce((s, d) => s + (d.percent ?? 0), 0)}%</TableCell>
+                              <TableCell className="text-right font-mono">{distFmt(distributions.reduce((s, d) => s + Number(d.amount ?? 0), 0))}</TableCell>
+                            </TableRow>
+                          </TableBody>
+                        </Table>
                       </div>
                     )}
                   </div>
