@@ -185,149 +185,187 @@ export default function ConsultingGrowth() {
   const milestonePct = Math.min(100, (closed.length / MILESTONE) * 100);
 
   return (
-    <div className="container mx-auto max-w-6xl py-8 px-4 space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="font-display text-3xl font-bold">Consulting Growth</h1>
+    <div className="container mx-auto px-4 pt-24 pb-8 max-w-5xl space-y-6">
+      <div className="flex items-start justify-between gap-4 mb-2 flex-wrap">
+        <div className="flex-1 min-w-[260px]">
+          <h1 className="text-3xl font-bold tracking-tight">Consulting Growth</h1>
           <p className="text-muted-foreground mt-1">
             5-stage pipeline: Identify → Propose → Prepare → Deliver → Payment &amp; distribution.
           </p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="teal"><Plus className="w-4 h-4 mr-2" />New opportunity</Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-lg">
-            <DialogHeader><DialogTitle>New consulting / training opportunity</DialogTitle></DialogHeader>
-            <div className="space-y-3">
-              <div><Label>Title *</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Digital Security Training – Bank X" /></div>
-              <div><Label>Client / prospect</Label><Input value={form.client_name} onChange={e => setForm({ ...form, client_name: e.target.value })} /></div>
-              <div>
-                <Label>Source</Label>
-                <Select value={form.source} onValueChange={v => setForm({ ...form, source: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{SOURCES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
-                </Select>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button><Plus className="w-4 h-4 mr-1" /> New opportunity</Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-lg">
+              <DialogHeader><DialogTitle>New consulting / training opportunity</DialogTitle></DialogHeader>
+              <div className="space-y-3">
+                <div><Label>Title *</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Digital Security Training – Bank X" /></div>
+                <div><Label>Client / prospect</Label><Input value={form.client_name} onChange={e => setForm({ ...form, client_name: e.target.value })} /></div>
+                <div>
+                  <Label>Source</Label>
+                  <Select value={form.source} onValueChange={v => setForm({ ...form, source: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>{SOURCES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div><Label>Days</Label><Input type="number" value={form.number_of_days} onChange={e => setForm({ ...form, number_of_days: e.target.value })} /></div>
+                  <div><Label>Per day</Label><Input type="number" value={form.amount_per_day} onChange={e => setForm({ ...form, amount_per_day: e.target.value })} /></div>
+                  <div><Label>Currency</Label><Input value={form.currency} onChange={e => setForm({ ...form, currency: e.target.value })} maxLength={3} /></div>
+                </div>
+                <div><Label>Description</Label><Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} placeholder="What is this opportunity about?" /></div>
               </div>
-              <div className="grid grid-cols-3 gap-2">
-                <div><Label>Days</Label><Input type="number" value={form.number_of_days} onChange={e => setForm({ ...form, number_of_days: e.target.value })} /></div>
-                <div><Label>Per day</Label><Input type="number" value={form.amount_per_day} onChange={e => setForm({ ...form, amount_per_day: e.target.value })} /></div>
-                <div><Label>Currency</Label><Input value={form.currency} onChange={e => setForm({ ...form, currency: e.target.value })} maxLength={3} /></div>
-              </div>
-              <div><Label>Description</Label><Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} placeholder="What is this opportunity about?" /></div>
-              <Button onClick={create} disabled={saving} className="w-full">{saving ? "Saving…" : "Add opportunity"}</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+                <Button onClick={create} disabled={saving}>{saving ? "Saving…" : "Add opportunity"}</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {/* Performance */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card><CardContent className="pt-6"><div className="flex items-center gap-2 text-muted-foreground text-sm mb-1"><Briefcase className="w-4 h-4" />Pipeline</div><div className="text-2xl font-bold">{pipeline.length}</div></CardContent></Card>
-        <Card><CardContent className="pt-6"><div className="flex items-center gap-2 text-muted-foreground text-sm mb-1"><CheckCircle2 className="w-4 h-4" />Closed missions</div><div className="text-2xl font-bold">{closed.length}</div></CardContent></Card>
-        <Card><CardContent className="pt-6"><div className="flex items-center gap-2 text-muted-foreground text-sm mb-1"><DollarSign className="w-4 h-4" />Total revenue</div><div className="text-2xl font-bold">{totalRevenue.toLocaleString()} <span className="text-sm font-normal text-muted-foreground">EUR</span></div></CardContent></Card>
-        <Card><CardContent className="pt-6"><div className="flex items-center gap-2 text-muted-foreground text-sm mb-1"><TrendingUp className="w-4 h-4" />Paid clients</div><div className="text-2xl font-bold">{activeClients}</div></CardContent></Card>
+        {[
+          { icon: Briefcase, label: "Pipeline", value: pipeline.length },
+          { icon: CheckCircle2, label: "Closed missions", value: closed.length },
+          { icon: DollarSign, label: "Total revenue", value: `${totalRevenue.toLocaleString()}`, suffix: "EUR" },
+          { icon: TrendingUp, label: "Paid clients", value: activeClients },
+        ].map((s, i) => (
+          <div key={i} className="rounded-xl border border-border bg-card p-5">
+            <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
+              <s.icon className="w-4 h-4" />{s.label}
+            </div>
+            <div className="text-2xl font-bold">
+              {s.value} {s.suffix && <span className="text-sm font-normal text-muted-foreground">{s.suffix}</span>}
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Milestone */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-base">Brand entity unlock</CardTitle>
-              <CardDescription>Reach {MILESTONE} closed missions to launch your own brand</CardDescription>
-            </div>
-            <Badge variant={closed.length >= MILESTONE ? "default" : "outline"}>{closed.length}/{MILESTONE}</Badge>
+      <div className="rounded-xl border border-border bg-card p-5">
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <div>
+            <h3 className="font-semibold text-foreground">Brand entity unlock</h3>
+            <p className="text-sm text-muted-foreground mt-0.5">Reach {MILESTONE} closed missions to launch your own brand.</p>
           </div>
-        </CardHeader>
-        <CardContent><Progress value={milestonePct} /></CardContent>
-      </Card>
+          <Badge variant={closed.length >= MILESTONE ? "default" : "outline"}>{closed.length}/{MILESTONE}</Badge>
+        </div>
+        <Progress value={milestonePct} />
+      </div>
 
       {/* Pipeline */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Pipeline</CardTitle>
-          <CardDescription>Click a mission to advance it through the 5 stages.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {loading ? <p className="text-sm text-muted-foreground">Loading…</p> :
-            pipeline.length === 0 ? <p className="text-sm text-muted-foreground">Nothing in pipeline. Add your first opportunity above.</p> :
-            <div className="space-y-2">
-              {pipeline.map(o => {
-                const idx = stageIndex(o.stage);
-                return (
-                  <button
-                    key={o.id}
-                    onClick={() => setActiveOpp(o)}
-                    className="w-full text-left p-3 border rounded-lg hover:bg-muted/40 transition"
-                  >
-                    <div className="flex items-center justify-between gap-3 flex-wrap">
-                      <div className="min-w-0 flex-1">
-                        <div className="font-medium truncate">{o.title}</div>
-                        <div className="text-xs text-muted-foreground flex gap-2 flex-wrap items-center mt-1">
-                          <span>{o.client_name || "—"}</span>
-                          <Badge variant="outline" className="text-[10px]">{o.source}</Badge>
-                          {o.total_amount && <span>{Number(o.total_amount).toLocaleString()} {o.currency}</span>}
-                        </div>
+      <div className="space-y-3">
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight">Pipeline</h2>
+          <p className="text-sm text-muted-foreground">Click a mission to advance it through the 5 stages.</p>
+        </div>
+        {loading ? (
+          <div className="text-sm text-muted-foreground">Loading…</div>
+        ) : pipeline.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border p-12 text-center">
+            <Briefcase className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
+            <p className="font-medium text-foreground">Nothing in the pipeline yet</p>
+            <p className="text-sm text-muted-foreground mt-1">Add your first opportunity to start the 5-stage flow.</p>
+          </div>
+        ) : (
+          <div className="grid sm:grid-cols-2 gap-4">
+            {pipeline.map(o => {
+              const idx = stageIndex(o.stage);
+              return (
+                <button
+                  key={o.id}
+                  onClick={() => setActiveOpp(o)}
+                  className="text-left rounded-xl border border-border bg-card p-5 hover:border-primary/40 hover:shadow-sm transition"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-foreground truncate">{o.title}</h3>
+                      <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                        <p className="text-xs text-muted-foreground truncate">{o.client_name || "—"}</p>
+                        <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4">{o.source}</Badge>
                       </div>
-                      <Badge variant="secondary">{STAGES[idx]?.short}</Badge>
                     </div>
-                    <div className="mt-3 flex gap-1">
-                      {STAGES.slice(0, 5).map((s, i) => (
-                        <div
-                          key={s.value}
-                          className={`h-1.5 flex-1 rounded ${i <= idx ? "bg-primary" : "bg-muted"}`}
-                          title={s.short}
-                        />
-                      ))}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          }
-        </CardContent>
-      </Card>
+                    <Badge variant="secondary" className="shrink-0">{STAGES[idx]?.short}</Badge>
+                  </div>
+                  <div className="mt-4 flex gap-1">
+                    {STAGES.slice(0, 5).map((s, i) => (
+                      <div
+                        key={s.value}
+                        className={`h-1.5 flex-1 rounded ${i <= idx ? "bg-primary" : "bg-muted"}`}
+                        title={s.short}
+                      />
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between mt-3 text-xs">
+                    <span className="text-muted-foreground">
+                      {o.total_amount ? `${Number(o.total_amount).toLocaleString()} ${o.currency}` : ""}
+                    </span>
+                    <span className="text-primary inline-flex items-center">
+                      Manage <ArrowRight className="w-3 h-3 ml-1" />
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* Accounting */}
-      <Card>
-        <CardHeader><CardTitle className="text-base">Accounting</CardTitle><CardDescription>Paid missions and distributions</CardDescription></CardHeader>
-        <CardContent>
-          {paid.length === 0 ? <p className="text-sm text-muted-foreground">No paid missions yet.</p> :
-            <div className="space-y-2">
-              {paid.map(o => {
-                const dists = distByOpp[o.id] || [];
-                return (
-                  <div key={o.id} className="p-3 border rounded-lg bg-muted/30">
-                    <div className="flex items-center justify-between gap-3 flex-wrap">
-                      <div className="min-w-0 flex-1">
-                        <div className="font-medium truncate">{o.title}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {o.client_name || "—"}
-                          {o.paid_at && <> · paid {format(new Date(o.paid_at), "MMM d, yyyy")}</>}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-semibold">{Number(o.paid_amount ?? o.total_amount ?? 0).toLocaleString()} {o.currency}</div>
-                        <Button size="sm" variant="ghost" onClick={() => setActiveOpp(o)}>Manage</Button>
+      <div className="space-y-3">
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight">Accounting</h2>
+          <p className="text-sm text-muted-foreground">Paid missions and distributions.</p>
+        </div>
+        {paid.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border p-8 text-center">
+            <p className="text-sm text-muted-foreground">No paid missions yet.</p>
+          </div>
+        ) : (
+          <div className="grid sm:grid-cols-2 gap-4">
+            {paid.map(o => {
+              const dists = distByOpp[o.id] || [];
+              return (
+                <div key={o.id} className="rounded-xl border border-border bg-card p-5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-foreground truncate">{o.title}</h3>
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                        {o.client_name || "—"}
+                        {o.paid_at && <> · paid {format(new Date(o.paid_at), "MMM d, yyyy")}</>}
+                      </p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <div className="font-semibold">
+                        {Number(o.paid_amount ?? o.total_amount ?? 0).toLocaleString()} <span className="text-xs font-normal text-muted-foreground">{o.currency}</span>
                       </div>
                     </div>
-                    {dists.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1 text-xs">
-                        {dists.map(d => (
-                          <Badge key={d.id} variant="outline">
-                            {d.recipient_name} · {d.percent ? `${d.percent}%` : ""}{d.amount ? ` ${Number(d.amount).toLocaleString()}` : ""}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
                   </div>
-                );
-              })}
-            </div>
-          }
-        </CardContent>
-      </Card>
+                  {dists.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-1">
+                      {dists.map(d => (
+                        <Badge key={d.id} variant="outline" className="text-[10px]">
+                          {d.recipient_name} · {d.percent ? `${d.percent}%` : ""}{d.amount ? ` ${Number(d.amount).toLocaleString()}` : ""}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex items-center justify-end mt-4 text-xs text-primary">
+                    <button onClick={() => setActiveOpp(o)} className="inline-flex items-center hover:underline">
+                      Manage <ArrowRight className="w-3 h-3 ml-1" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {activeOpp && (
         <StageManager
