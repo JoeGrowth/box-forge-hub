@@ -9,6 +9,7 @@ import { useExpertise } from "@/hooks/useExpertise";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Squares() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { expertise } = useExpertise(user?.id);
   const [activity, setActivity] = useState({ applications: 0, ideas: 0, journeysCompleted: 0 });
