@@ -898,14 +898,40 @@ export function InitiatorQuizDialog({
 
             {/* Action Buttons */}
             <div className="flex gap-3">
-              {!showResult ? (
+              {isReviewMode ? (
+                <>
+                  {currentQuizIndex > 0 && (
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentQuizIndex((i) => i - 1)}
+                      className="flex-1"
+                    >
+                      <ArrowLeft className="w-4 h-4 mr-2" />
+                      Previous
+                    </Button>
+                  )}
+                  {currentQuizIndex < totalQuizzes - 1 ? (
+                    <Button
+                      onClick={() => setCurrentQuizIndex((i) => i + 1)}
+                      className="flex-1"
+                    >
+                      Next
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  ) : (
+                    <Button onClick={handleClose} className="flex-1">
+                      Close Review
+                    </Button>
+                  )}
+                </>
+              ) : !showResult ? (
                 <Button
                   onClick={handleCheckAnswer}
                   disabled={!canProceed()}
                   className="flex-1"
                 >
-                  {currentQuiz.type === "fill-blank" || currentQuiz.type === "reflection" 
-                    ? "Submit Answer" 
+                  {currentQuiz.type === "fill-blank" || currentQuiz.type === "reflection"
+                    ? "Submit Answer"
                     : "Check Answer"}
                 </Button>
               ) : (
@@ -913,8 +939,8 @@ export function InitiatorQuizDialog({
                   onClick={handleNextQuiz}
                   disabled={isSubmitting}
                   className={`flex-1 ${
-                    currentQuizIndex === totalQuizzes - 1 
-                      ? `bg-gradient-to-r ${stepContent.color}` 
+                    currentQuizIndex === totalQuizzes - 1
+                      ? `bg-gradient-to-r ${stepContent.color}`
                       : ""
                   }`}
                 >
@@ -934,6 +960,7 @@ export function InitiatorQuizDialog({
                 </Button>
               )}
             </div>
+
           </div>
         )}
       </DialogContent>
