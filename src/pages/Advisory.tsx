@@ -234,9 +234,6 @@ const Advisory = () => {
     if (!authLoading && !user) navigate("/auth", { replace: true });
   }, [user, authLoading, navigate]);
 
-  useEffect(() => {
-    if (!authLoading && !onboardingLoading && user && !isApproved) navigate("/dashboard", { replace: true });
-  }, [authLoading, onboardingLoading, user, isApproved, navigate]);
 
   const [individualPhaseCompletion, setIndividualPhaseCompletion] = useState<Record<number, boolean>>({});
 
