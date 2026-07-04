@@ -638,7 +638,7 @@ function StagePanel({
                 <div className="flex items-end">
                   {opp.paid_at
                     ? <p className="text-xs text-muted-foreground">Paid {format(new Date(opp.paid_at), "MMM d, yyyy")}</p>
-                    : (opp.stage === "payment_distribution" || opp.stage === "closed") && (
+                    : opp.stage === "payment_distribution" && (
                       <Button size="sm" disabled={working || !paidAmount} onClick={() => patch({ paid_amount: parseFloat(paidAmount), paid_at: new Date().toISOString(), is_completed: true, completed_at: new Date().toISOString() })}>
                         Confirm budget paid
                       </Button>
