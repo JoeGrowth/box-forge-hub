@@ -818,7 +818,9 @@ function StagePanel({
                     Declare distribution & close mission
                   </Button>
                 )}
-              </div>)}
+              </div>
+              )}
+
                 {opp.stage === "closed" && (
 
                   <div className="space-y-3 border-t pt-4">
