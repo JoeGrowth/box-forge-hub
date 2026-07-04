@@ -452,6 +452,7 @@ export function CoBuilderQuizDialog({
           ? "Your Co-Builder journey has been submitted for approval! 🎓" 
           : "Great progress! Complete all steps to submit for approval.",
       });
+      if (draftKey) clearQuizDraft(draftKey);
       onOpenChange(false);
       resetState();
     } catch (error) {
@@ -468,6 +469,8 @@ export function CoBuilderQuizDialog({
     setAnswers({});
     setShowResult(false);
     setSliderValues({});
+    setIsReviewMode(false);
+
   };
 
   const handleClose = () => {
