@@ -10,12 +10,33 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import {
   Plus, Briefcase, CheckCircle2, TrendingUp, DollarSign,
-  FileText, Upload, ArrowRight, Users, Trash2, ExternalLink, Loader2, RefreshCw,
+  FileText, Upload, ArrowRight, Users, Trash2, ExternalLink, Loader2, RefreshCw, Lock,
 } from "lucide-react";
 import { format } from "date-fns";
+
+type DistCharge = { id: string; label: string; amount: number };
+type DistTask = { id: string; label: string; percent: number; locked?: boolean };
+const distUid = () => Math.random().toString(36).slice(2, 9);
+const distFmt = (n: number) =>
+  new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
+    Number.isFinite(n) ? n : 0,
+  );
+const DEFAULT_DIST_CHARGES = (): DistCharge[] => [
+  { id: distUid(), label: "Tools & software", amount: 0 },
+  { id: distUid(), label: "Travel", amount: 0 },
+];
+const DEFAULT_DIST_TASKS = (): DistTask[] => [
+  { id: distUid(), label: "Scoping & proposal", percent: 15 },
+  { id: distUid(), label: "Client discovery", percent: 15 },
+  { id: distUid(), label: "Delivery / execution", percent: 40 },
+  { id: distUid(), label: "Reporting & handover", percent: 15 },
+  { id: distUid(), label: "Follow-up & admin", percent: 10 },
+  { id: distUid(), label: "Rest Structure Consulting", percent: 5, locked: true },
+];
 
 type Stage = "identify" | "propose" | "confirm_prepare" | "deliver" | "payment_distribution" | "closed";
 
