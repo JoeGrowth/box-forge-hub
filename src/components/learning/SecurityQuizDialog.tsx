@@ -358,6 +358,24 @@ export function SecurityQuizDialog({
     getOrCreateJourney();
   }, [user, open]);
 
+  useEffect(() => {
+    if (!open || !journeyId) return;
+    (async () => {
+      const existing = await fetchExistingPhaseResponse(journeyId, stepNumber - 1);
+      if (existing?.is_completed && existing.responses) {
+        const restored = extractAnswers(existing.responses as any);
+        if (Object.keys(restored).length) setAnswers(restored);
+        setIsReviewMode(true);
+        setPhase("quiz");
+        setCurrentQuizIndex(0);
+      } else {
+        setIsReviewMode(false);
+      }
+    })();
+  }, [open, journeyId, stepNumber]);
+
+
+
   if (!stepContent) return null;
 
   const currentQuiz = stepContent.quizzes[currentQuizIndex];
@@ -458,6 +476,7 @@ export function SecurityQuizDialog({
           ? "Your Security journey has been submitted for approval! 🎓"
           : "Great progress! Complete all 4 steps to earn your certification.",
       });
+      if (draftKey) clearQuizDraft(draftKey);
       onOpenChange(false);
       resetState();
     } catch (error) {
@@ -474,7 +493,9 @@ export function SecurityQuizDialog({
     setAnswers({});
     setShowResult(false);
     setSliderValues({});
+    setIsReviewMode(false);
   };
+
 
   const handleClose = () => {
     onOpenChange(false);
