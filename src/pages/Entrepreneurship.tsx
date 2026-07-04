@@ -502,16 +502,16 @@ const Entrepreneurship = () => {
               </div>
 
               {/* Header */}
-              <div className="flex items-center justify-between mb-12 bg-muted/40 rounded-2xl p-6">
-                <div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 md:mb-12 bg-muted/40 rounded-2xl p-4 sm:p-6">
+                <div className="min-w-0">
                   <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-1">
                     Entrepreneurship Engine
                   </h1>
-                  <p className="text-muted-foreground">
+                  <p className="text-sm sm:text-base text-muted-foreground">
                     Launch ventures or join exciting startup projects
                   </p>
                 </div>
-                <Button className="gap-2" onClick={() => setShowCreateDialog(true)}>
+                <Button className="gap-2 w-full sm:w-auto shrink-0" onClick={() => setShowCreateDialog(true)}>
                   <Plus className="w-4 h-4" /> Start New Project
                 </Button>
               </div>
