@@ -554,6 +554,7 @@ export function InitiatorQuizDialog({
           ? "Your Initiator journey has been submitted for approval! 🎓" 
           : "Great progress! Complete all steps to submit for approval.",
       });
+      if (draftKey) clearQuizDraft(draftKey);
       onOpenChange(false);
       resetState();
     } catch (error) {
@@ -571,12 +572,14 @@ export function InitiatorQuizDialog({
     setShowResult(false);
     setMatchingSelections({});
     setOrderItems([]);
+    setIsReviewMode(false);
   };
 
   const handleClose = () => {
     onOpenChange(false);
     resetState();
   };
+
 
   const canProceed = () => {
     if (!currentQuiz) return false;
