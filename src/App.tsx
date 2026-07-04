@@ -56,6 +56,7 @@ import DirectChat from "./pages/DirectChat";
 import Messages from "./pages/Messages";
 import NRDecoder from "./pages/NRDecoder";
 import Dashboard from "./pages/Dashboard";
+import Squares from "./pages/Squares";
 import NotFound from "./pages/NotFound";
 import ComingSoon from "./pages/ComingSoon";
 import Advisory from "./pages/Advisory";
