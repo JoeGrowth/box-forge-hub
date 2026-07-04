@@ -385,6 +385,7 @@ export default function ConsultingGrowth() {
                           opp={o}
                           distributions={distByOpp[o.id] || []}
                           onChanged={async () => { await load(); }}
+                          onStageChange={(to) => { setStageFilter(to === "closed" ? "closed" : to); setExpandedId(o.id); }}
                           userId={user?.id ?? ""}
                           onlyStage={stageFilter === "all" ? null : stageFilter}
                         />
