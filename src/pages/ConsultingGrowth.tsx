@@ -93,6 +93,7 @@ export default function ConsultingGrowth() {
   const [items, setItems] = useState<Opportunity[]>([]);
   const [distByOpp, setDistByOpp] = useState<Record<string, Distribution[]>>({});
   const [loading, setLoading] = useState(true);
+  const [stageFilter, setStageFilter] = useState<Stage | "all">("all");
 
   const [dialogOpen, setDialogOpen] = useState(() => {
     try { return localStorage.getItem(OPEN_KEY) === "1"; } catch { return false; }
