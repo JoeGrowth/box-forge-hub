@@ -613,10 +613,11 @@ function StagePanel({
                 </div>
               )}
             </div>
-          </StageBlock>
+        </StageBlock>
+        )}
 
-          {/* STAGE 3: Confirm & Prepare */}
-          <StageBlock n={3} title="Confirm & prepare (process + presentation)" active={opp.stage === "confirm_prepare"} done={idx > 2}>
+        {show("confirm_prepare") && (
+        <StageBlock n={3} title="Confirm & prepare (process + presentation)" active={opp.stage === "confirm_prepare"} done={idx > 2}>
             <div className="space-y-2">
               {opp.client_confirmed_at
                 ? <p className="text-xs text-muted-foreground">Confirmed {format(new Date(opp.client_confirmed_at), "MMM d, yyyy")}</p>
