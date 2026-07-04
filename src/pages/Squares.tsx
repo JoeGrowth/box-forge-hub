@@ -1,6 +1,7 @@
 import { TrendingUp, Users, Award, Briefcase, Target, Zap } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { useAuth } from "@/hooks/useAuth";
@@ -8,6 +9,7 @@ import { useExpertise } from "@/hooks/useExpertise";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Squares() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { expertise } = useExpertise(user?.id);
   const [activity, setActivity] = useState({ applications: 0, ideas: 0, journeysCompleted: 0 });
@@ -43,6 +45,7 @@ export default function Squares() {
       bgColor: "bg-emerald-500/10",
       iconColor: "#10b981",
       detail: `Weighted from ${teamMemberships} co-builder seat${teamMemberships === 1 ? "" : "s"} (×5%) + ${certifications} certification${certifications === 1 ? "" : "s"} (×2%), capped at 25%.`,
+      link: "/start",
     },
     {
       icon: Award,
@@ -52,6 +55,7 @@ export default function Squares() {
       bgColor: "bg-purple-500/10",
       iconColor: "#a855f7",
       detail: "Skills you've earned Vaccinated status on by completing the full practice → train → consult journey.",
+      link: "/career",
     },
     {
       icon: Users,
@@ -61,6 +65,7 @@ export default function Squares() {
       bgColor: "bg-blue-500/10",
       iconColor: "#3b82f6",
       detail: "Active ventures where you're a confirmed team member with an equity or role package.",
+      link: "/start",
     },
     {
       icon: Briefcase,
@@ -70,6 +75,7 @@ export default function Squares() {
       bgColor: "bg-orange-500/10",
       iconColor: "#f97316",
       detail: "Startup role applications you've submitted.",
+      link: "/opportunities",
     },
     {
       icon: Target,
@@ -79,6 +85,7 @@ export default function Squares() {
       bgColor: "bg-rose-500/10",
       iconColor: "#f43f5e",
       detail: "Startup ideas you've authored and pushed into the platform.",
+      link: "/entrepreneurship",
     },
     {
       icon: Zap,
@@ -88,6 +95,7 @@ export default function Squares() {
       bgColor: "bg-b4-teal/10",
       iconColor: "#14b8a6",
       detail: "Learning journeys you've completed and had approved.",
+      link: "/journey",
     },
   ];
 
@@ -110,9 +118,9 @@ export default function Squares() {
               {statCards.map((stat, i) => (
                 <Tooltip key={i}>
                   <TooltipTrigger asChild>
-                    <div
-                      className="bg-card rounded-xl border border-border p-4 hover:border-b4-teal/30 transition-all duration-300 hover:shadow-lg hover:shadow-b4-teal/5 text-left"
-                      tabIndex={0}
+                    <button
+                      onClick={() => navigate(stat.link)}
+                      className="bg-card rounded-xl border border-border p-4 hover:border-b4-teal/30 transition-all duration-300 hover:shadow-lg hover:shadow-b4-teal/5 text-left cursor-pointer w-full"
                     >
                       <div className={`w-10 h-10 rounded-lg ${stat.bgColor} flex items-center justify-center mb-3`}>
                         <stat.icon className="w-5 h-5" style={{ color: stat.iconColor }} />
@@ -120,7 +128,7 @@ export default function Squares() {
                       <div className="text-2xl font-bold text-foreground mb-0.5">{stat.value}</div>
                       <div className="text-sm font-medium text-foreground/80">{stat.label}</div>
                       <div className="text-xs text-muted-foreground">{stat.description}</div>
-                    </div>
+                    </button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="max-w-xs">
                     <p className="font-semibold mb-1">{stat.label} — {stat.value}</p>
