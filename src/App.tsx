@@ -39,6 +39,7 @@ import Opportunities from "./pages/Opportunities";
 import OpportunityDetail from "./pages/OpportunityDetail";
 import CoBuilders from "./pages/CoBuilders";
 import Journey from "./pages/Journey";
+import JourneyDetail from "./pages/JourneyDetail";
 import Mask from "./pages/Mask";
 import Scale from "./pages/Scale";
 import Checklist from "./pages/Checklist";
@@ -145,6 +146,7 @@ const App = () => (
                   <Route path="/org/:slug" element={<GatedRoute minStage="emerging"><OrganizationPage /></GatedRoute>} />
                   <Route path="/people" element={<GatedRoute minStage="emerging"><CoBuilders /></GatedRoute>} />
                   <Route path="/journey" element={<ProtectedRoute><Journey /></ProtectedRoute>} />
+                  <Route path="/journey/:section" element={<ProtectedRoute><JourneyDetail /></ProtectedRoute>} />
                   <Route path="/start" element={<ProtectedRoute><Scale /></ProtectedRoute>} />
                   <Route path="/track" element={<ProtectedRoute><Track /></ProtectedRoute>} />
                   <Route path="/advisory" element={<GatedRoute minStage="emerging"><Advisory /></GatedRoute>} />
