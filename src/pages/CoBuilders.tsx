@@ -533,12 +533,12 @@ const CoBuilders = () => {
                     return (
                       <div
                         key={cobuilder.id}
-                        className={`rounded-2xl border p-6 transition-all relative flex flex-col h-full ${getCardStyle()}`}
+                        className={`group rounded-2xl border p-6 transition-all duration-300 relative flex flex-col h-full shadow-sm hover:shadow-xl hover:-translate-y-1 ${getCardStyle()}`}
                       >
                         {/* Preview Button - top right */}
                         <button
                           onClick={() => handlePreview(cobuilder)}
-                          className="absolute top-3 right-3 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                          className="absolute top-3 right-3 p-1.5 rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-foreground hover:bg-muted transition-all"
                           title="Preview"
                         >
                           <Eye className="w-4 h-4" />
@@ -553,7 +553,7 @@ const CoBuilders = () => {
                         {/* Avatar and Name */}
                         <div className="flex items-center gap-4 mb-4">
                           <div
-                            className={`w-14 h-14 rounded-full flex items-center justify-center font-semibold text-lg ${getAvatarStyle()}`}
+                            className={`w-16 h-16 rounded-full flex items-center justify-center font-semibold text-lg ring-2 ring-background shadow-md overflow-hidden shrink-0 ${getAvatarStyle()}`}
                           >
                             {cobuilder.avatar_url ? (
                               <img
@@ -698,24 +698,41 @@ const CoBuilders = () => {
                               </div>
                             </div>
                           ) : cobuilder.primary_skills ? (
-                            <div className="flex flex-wrap gap-2">
-                              {parseSkills(cobuilder.primary_skills)
-                                .slice(0, 5)
-                                .map((skill, idx) => (
-                                  <Badge
-                                    key={idx}
-                                    variant="secondary"
-                                    className="bg-b4-teal/10 text-b4-teal border-none"
-                                  >
-                                    {skill}
-                                  </Badge>
-                                ))}
-                              {parseSkills(cobuilder.primary_skills).length > 5 && (
-                                <Badge variant="outline" className="text-muted-foreground">
-                                  +{parseSkills(cobuilder.primary_skills).length - 5} more
-                                </Badge>
-                              )}
-                            </div>
+                            (() => {
+                              const allSkills = parseSkills(cobuilder.primary_skills);
+                              const visible = allSkills.slice(0, 5);
+                              const hidden = allSkills.slice(5);
+                              return (
+                                <div className="flex flex-wrap gap-1.5">
+                                  {visible.map((skill, idx) => (
+                                    <Badge
+                                      key={idx}
+                                      variant="secondary"
+                                      className="bg-b4-teal/10 text-b4-teal border border-b4-teal/20 hover:bg-b4-teal/15 transition-colors font-medium text-xs px-2.5 py-0.5"
+                                    >
+                                      {skill}
+                                    </Badge>
+                                  ))}
+                                  {hidden.length > 0 && (
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Badge
+                                            variant="outline"
+                                            className="text-muted-foreground border-dashed cursor-help text-xs px-2.5 py-0.5"
+                                          >
+                                            +{hidden.length} more
+                                          </Badge>
+                                        </TooltipTrigger>
+                                        <TooltipContent className="max-w-xs">
+                                          <p className="text-xs">{hidden.join(", ")}</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                  )}
+                                </div>
+                              );
+                            })()
                           ) : (
                             <p className="text-sm text-muted-foreground italic">
                               {isCurrentUser ? "Click Edit to add your skills" : "No skills added yet"}
