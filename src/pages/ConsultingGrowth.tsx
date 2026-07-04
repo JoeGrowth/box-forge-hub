@@ -41,7 +41,7 @@ const OPEN_KEY = "consulting-growth:new-opp-open";
 const EMPTY_FORM = {
   title: "",
   client_name: "",
-  source: "LINKEDIN",
+  source: "linkedin",
   description: "",
   number_of_days: "",
   amount_per_day: "",
