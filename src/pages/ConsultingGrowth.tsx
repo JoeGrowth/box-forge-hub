@@ -809,8 +809,8 @@ function StagePanel({
                     <TableHeader>
                       <TableRow>
                         <TableHead>Task</TableHead>
-                        <TableHead className="w-20 text-right">%</TableHead>
-                        <TableHead className="w-28 text-right">Amount</TableHead>
+                        <TableHead className="w-32 text-right">%</TableHead>
+                        <TableHead className="w-36 text-right">Amount</TableHead>
                         {distPeople.map((p, i) => (
                           <TableHead key={i} className="text-right bg-foreground text-background">{p}</TableHead>
                         ))}
