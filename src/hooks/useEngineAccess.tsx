@@ -227,7 +227,22 @@ export function useEngineAccess() {
       };
 
       // ---------- Entrepreneurship ----------
+      const ventureStartClicked = (() => {
+        try {
+          return localStorage.getItem(`b4:venture-start-clicked:${uid}`) === "1";
+        } catch {
+          return false;
+        }
+      })();
+
       const entChecks: Array<{ ok: boolean; sig: EngineSignal }> = [
+        {
+          ok: ventureStartClicked,
+          sig: {
+            label: "Started “Launch or join a venture” from your dashboard",
+            cta: { label: "Start on the dashboard", to: "/dashboard" },
+          },
+        },
         {
           ok: talentFoundationSet,
           sig: {
