@@ -181,14 +181,10 @@ export function DashboardHero() {
 
           <div className="flex flex-col sm:flex-row flex-wrap gap-3 pt-1 sm:pt-2">
             <Button size="lg" className="bg-b4-teal hover:bg-b4-teal/90 text-white w-full sm:w-auto" asChild>
-              <Link to={primaryCta.to}>
-                <PrimaryIcon className="mr-2 w-4 h-4" /> {primaryCta.label}
-              </Link>
+              <Link to={primaryCta.to}>{primaryCta.label}</Link>
             </Button>
             <Button size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10 w-full sm:w-auto" asChild>
-              <Link to={secondaryCta.to}>
-                <SecondaryIcon className="mr-2 w-4 h-4" /> {secondaryCta.label} <ArrowRight className="ml-2 w-4 h-4" />
-              </Link>
+              <Link to={secondaryCta.to}>{secondaryCta.label}</Link>
             </Button>
           </div>
         </div>
