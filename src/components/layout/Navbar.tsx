@@ -90,6 +90,7 @@ const moreLinks: Array<{
   icon: typeof Briefcase;
   minStage?: keyof typeof STAGE_RANK;
 }> = [
+  { name: "Squares", path: "/squares", icon: LayoutGrid },
   { name: "People", path: "/people", icon: Users, minStage: "emerging" },
   { name: "Boxes", path: "/boxes", icon: Package },
   { name: "Programs", path: "/programs", icon: BookOpen },
