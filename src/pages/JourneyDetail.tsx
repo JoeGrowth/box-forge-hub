@@ -306,7 +306,7 @@ const JourneyDetail = () => {
                         </div>
                       </div>
                       {activeSection === "initiator" && (
-                        <Button onClick={() => navigate("/create-idea")} className="bg-b4-teal hover:bg-b4-teal/90 text-white shrink-0">
+                        <Button onClick={() => navigate("/entrepreneurship?new=1")} className="bg-b4-teal hover:bg-b4-teal/90 text-white shrink-0">
                           Add Idea
                         </Button>
                       )}
