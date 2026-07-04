@@ -71,10 +71,10 @@ const Career = () => {
               { label: "Endorsements", value: "0", sub: "From colleagues" },
               { label: "Job Matches", value: "0", sub: "Available now" },
             ].map((stat) => (
-              <div key={stat.label} className="rounded-2xl border border-border bg-card p-6">
-                <p className="text-sm text-muted-foreground mb-4">{stat.label}</p>
-                <p className="font-display text-3xl font-bold text-foreground">{stat.value}</p>
-                <p className="text-xs text-muted-foreground mt-1">{stat.sub}</p>
+              <div key={stat.label} className="rounded-2xl border border-border bg-card p-4 sm:p-5">
+                <p className="text-sm text-muted-foreground mb-2 sm:mb-4">{stat.label}</p>
+                <p className="font-display text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</p>
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{stat.sub}</p>
               </div>
             ))}
           </div>
