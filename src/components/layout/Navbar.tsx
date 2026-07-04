@@ -507,17 +507,20 @@ export function Navbar() {
                     </>
                   ) : (
                     <>
-                      <Button variant="outline" size="sm" className="flex-1" asChild>
+                      <Button variant="outline" size="sm" asChild>
                         <Link to="/login" onClick={() => setIsOpen(false)}>
+                          <User size={16} className="mr-1" />
                           Log In
                         </Link>
                       </Button>
-                      <Button variant="teal" size="sm" className="flex-1" asChild>
+                      <Button variant="ghost" size="sm" asChild>
                         <Link to="/auth?mode=signup" onClick={() => setIsOpen(false)}>
+                          <Rocket size={16} className="mr-1" />
                           Get Started
                         </Link>
                       </Button>
                     </>
+
                   ))}
               </div>
             </div>
