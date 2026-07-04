@@ -253,7 +253,7 @@ export function DashboardProgress() {
               "Kick off your own idea or apply to a co-builder role — get skin in the game.",
             icon: Lightbulb,
             done: false,
-            cta: { label: ventureStarted ? "Continue" : "Start", to: "/entrepreneurship" },
+            cta: { label: ventureStarted ? "Continue" : "Start", to: "/opportunities?v=discover&kind=startup" },
           },
         ]
       : []),
