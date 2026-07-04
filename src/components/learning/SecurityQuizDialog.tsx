@@ -29,6 +29,14 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  quizStorageKey,
+  loadQuizDraft,
+  saveQuizDraft,
+  clearQuizDraft,
+  fetchExistingPhaseResponse,
+  extractAnswers,
+} from "@/lib/quizPersistence";
 
 interface Quiz {
   id: string;
@@ -292,6 +300,26 @@ export function SecurityQuizDialog({
   const [sliderValues, setSliderValues] = useState<Record<string, number>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [journeyId, setJourneyId] = useState<string | null>(null);
+  const [isReviewMode, setIsReviewMode] = useState(false);
+
+  const draftKey =
+    user && stepNumber ? quizStorageKey(user.id, "security_literacy", stepNumber) : null;
+
+  useEffect(() => {
+    if (!open || !draftKey) return;
+    const draft = loadQuizDraft<any>(draftKey);
+    if (!draft) return;
+    if (draft.phase) setPhase(draft.phase);
+    if (typeof draft.currentQuizIndex === "number") setCurrentQuizIndex(draft.currentQuizIndex);
+    if (draft.answers) setAnswers(draft.answers);
+    if (draft.sliderValues) setSliderValues(draft.sliderValues);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, draftKey]);
+
+  useEffect(() => {
+    if (!open || !draftKey || isReviewMode) return;
+    saveQuizDraft(draftKey, { phase, currentQuizIndex, answers, sliderValues });
+  }, [open, draftKey, isReviewMode, phase, currentQuizIndex, answers, sliderValues]);
 
   const stepContent = SECURITY_STEP_CONTENT.find((s) => s.step === stepNumber);
 
@@ -329,6 +357,24 @@ export function SecurityQuizDialog({
 
     getOrCreateJourney();
   }, [user, open]);
+
+  useEffect(() => {
+    if (!open || !journeyId) return;
+    (async () => {
+      const existing = await fetchExistingPhaseResponse(journeyId, stepNumber - 1);
+      if (existing?.is_completed && existing.responses) {
+        const restored = extractAnswers(existing.responses as any);
+        if (Object.keys(restored).length) setAnswers(restored);
+        setIsReviewMode(true);
+        setPhase("quiz");
+        setCurrentQuizIndex(0);
+      } else {
+        setIsReviewMode(false);
+      }
+    })();
+  }, [open, journeyId, stepNumber]);
+
+
 
   if (!stepContent) return null;
 
@@ -430,6 +476,7 @@ export function SecurityQuizDialog({
           ? "Your Security journey has been submitted for approval! 🎓"
           : "Great progress! Complete all 4 steps to earn your certification.",
       });
+      if (draftKey) clearQuizDraft(draftKey);
       onOpenChange(false);
       resetState();
     } catch (error) {
@@ -446,7 +493,9 @@ export function SecurityQuizDialog({
     setAnswers({});
     setShowResult(false);
     setSliderValues({});
+    setIsReviewMode(false);
   };
+
 
   const handleClose = () => {
     onOpenChange(false);
@@ -593,6 +642,16 @@ export function SecurityQuizDialog({
             </div>
           </div>
         </DialogHeader>
+
+        {isReviewMode && (
+          <div className="rounded-lg border border-b4-teal/40 bg-b4-teal/10 p-3 text-sm text-foreground flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-b4-teal shrink-0" />
+            <span>
+              <strong>Review mode.</strong> You already completed this step —
+              your submitted answers are shown below.
+            </span>
+          </div>
+        )}
 
         {phase === "quiz" && (
           <div className="space-y-1">

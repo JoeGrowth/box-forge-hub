@@ -28,6 +28,14 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  quizStorageKey,
+  loadQuizDraft,
+  saveQuizDraft,
+  clearQuizDraft,
+  fetchExistingPhaseResponse,
+  extractAnswers,
+} from "@/lib/quizPersistence";
 
 interface Quiz {
   id: string;
@@ -303,6 +311,26 @@ export function InitiatorQuizDialog({
   const [orderItems, setOrderItems] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [journeyId, setJourneyId] = useState<string | null>(null);
+  const [isReviewMode, setIsReviewMode] = useState(false);
+
+  const draftKey =
+    user && stepNumber
+      ? quizStorageKey(user.id, "idea_ptc", stepNumber)
+      : null;
+
+  // Restore in-progress draft from localStorage as soon as the dialog opens
+  useEffect(() => {
+    if (!open || !draftKey) return;
+    const draft = loadQuizDraft<any>(draftKey);
+    if (!draft) return;
+    if (draft.phase) setPhase(draft.phase);
+    if (typeof draft.currentQuizIndex === "number")
+      setCurrentQuizIndex(draft.currentQuizIndex);
+    if (draft.answers) setAnswers(draft.answers);
+    if (draft.matchingSelections) setMatchingSelections(draft.matchingSelections);
+    if (Array.isArray(draft.orderItems)) setOrderItems(draft.orderItems);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, draftKey]);
 
   const stepContent = INITIATOR_STEP_CONTENT.find((s) => s.step === stepNumber);
   
@@ -343,6 +371,46 @@ export function InitiatorQuizDialog({
     
     getOrCreateJourney();
   }, [user, open]);
+
+  // If the step is already completed, load submitted answers as read-only review
+  useEffect(() => {
+    if (!open || !journeyId) return;
+    (async () => {
+      const existing = await fetchExistingPhaseResponse(journeyId, stepNumber - 1);
+      if (existing?.is_completed && existing.responses) {
+        const restored = extractAnswers(existing.responses as any);
+        if (Object.keys(restored).length) setAnswers(restored);
+        setIsReviewMode(true);
+        setPhase("quiz");
+        setCurrentQuizIndex(0);
+      } else {
+        setIsReviewMode(false);
+      }
+    })();
+  }, [open, journeyId, stepNumber]);
+
+  // Autosave whatever the user has typed / selected
+  useEffect(() => {
+    if (!open || !draftKey || isReviewMode) return;
+    saveQuizDraft(draftKey, {
+      phase,
+      currentQuizIndex,
+      answers,
+      matchingSelections,
+      orderItems,
+    });
+  }, [
+    open,
+    draftKey,
+    isReviewMode,
+    phase,
+    currentQuizIndex,
+    answers,
+    matchingSelections,
+    orderItems,
+  ]);
+
+
   
   if (!stepContent) return null;
 
@@ -486,6 +554,7 @@ export function InitiatorQuizDialog({
           ? "Your Initiator journey has been submitted for approval! 🎓" 
           : "Great progress! Complete all steps to submit for approval.",
       });
+      if (draftKey) clearQuizDraft(draftKey);
       onOpenChange(false);
       resetState();
     } catch (error) {
@@ -503,12 +572,14 @@ export function InitiatorQuizDialog({
     setShowResult(false);
     setMatchingSelections({});
     setOrderItems([]);
+    setIsReviewMode(false);
   };
 
   const handleClose = () => {
     onOpenChange(false);
     resetState();
   };
+
 
   const canProceed = () => {
     if (!currentQuiz) return false;
@@ -547,6 +618,17 @@ export function InitiatorQuizDialog({
             </div>
           </div>
         </DialogHeader>
+
+        {isReviewMode && (
+          <div className="rounded-lg border border-b4-teal/40 bg-b4-teal/10 p-3 text-sm text-foreground flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-b4-teal shrink-0" />
+            <span>
+              <strong>Review mode.</strong> You already completed this step —
+              your submitted answers are shown below.
+            </span>
+          </div>
+        )}
+
 
         {/* Progress Bar */}
         {phase === "quiz" && (
@@ -816,14 +898,40 @@ export function InitiatorQuizDialog({
 
             {/* Action Buttons */}
             <div className="flex gap-3">
-              {!showResult ? (
+              {isReviewMode ? (
+                <>
+                  {currentQuizIndex > 0 && (
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentQuizIndex((i) => i - 1)}
+                      className="flex-1"
+                    >
+                      <ArrowLeft className="w-4 h-4 mr-2" />
+                      Previous
+                    </Button>
+                  )}
+                  {currentQuizIndex < totalQuizzes - 1 ? (
+                    <Button
+                      onClick={() => setCurrentQuizIndex((i) => i + 1)}
+                      className="flex-1"
+                    >
+                      Next
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  ) : (
+                    <Button onClick={handleClose} className="flex-1">
+                      Close Review
+                    </Button>
+                  )}
+                </>
+              ) : !showResult ? (
                 <Button
                   onClick={handleCheckAnswer}
                   disabled={!canProceed()}
                   className="flex-1"
                 >
-                  {currentQuiz.type === "fill-blank" || currentQuiz.type === "reflection" 
-                    ? "Submit Answer" 
+                  {currentQuiz.type === "fill-blank" || currentQuiz.type === "reflection"
+                    ? "Submit Answer"
                     : "Check Answer"}
                 </Button>
               ) : (
@@ -831,8 +939,8 @@ export function InitiatorQuizDialog({
                   onClick={handleNextQuiz}
                   disabled={isSubmitting}
                   className={`flex-1 ${
-                    currentQuizIndex === totalQuizzes - 1 
-                      ? `bg-gradient-to-r ${stepContent.color}` 
+                    currentQuizIndex === totalQuizzes - 1
+                      ? `bg-gradient-to-r ${stepContent.color}`
                       : ""
                   }`}
                 >
@@ -852,6 +960,7 @@ export function InitiatorQuizDialog({
                 </Button>
               )}
             </div>
+
           </div>
         )}
       </DialogContent>

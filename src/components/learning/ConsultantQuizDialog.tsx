@@ -28,6 +28,14 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  quizStorageKey,
+  loadQuizDraft,
+  saveQuizDraft,
+  clearQuizDraft,
+  fetchExistingPhaseResponse,
+  extractAnswers,
+} from "@/lib/quizPersistence";
 
 interface Quiz {
   id: string;
@@ -284,6 +292,25 @@ export function ConsultantQuizDialog({
   const [showResult, setShowResult] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [journeyId, setJourneyId] = useState<string | null>(null);
+  const [isReviewMode, setIsReviewMode] = useState(false);
+
+  const draftKey =
+    user && stepNumber ? quizStorageKey(user.id, "scaling_path", stepNumber) : null;
+
+  useEffect(() => {
+    if (!open || !draftKey) return;
+    const draft = loadQuizDraft<any>(draftKey);
+    if (!draft) return;
+    if (draft.phase) setPhase(draft.phase);
+    if (typeof draft.currentQuizIndex === "number") setCurrentQuizIndex(draft.currentQuizIndex);
+    if (draft.answers) setAnswers(draft.answers);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, draftKey]);
+
+  useEffect(() => {
+    if (!open || !draftKey || isReviewMode) return;
+    saveQuizDraft(draftKey, { phase, currentQuizIndex, answers });
+  }, [open, draftKey, isReviewMode, phase, currentQuizIndex, answers]);
 
   const stepContent = CONSULTANT_STEP_CONTENT.find((s) => s.step === stepNumber);
   
@@ -324,6 +351,24 @@ export function ConsultantQuizDialog({
     
     getOrCreateJourney();
   }, [user, open]);
+
+  useEffect(() => {
+    if (!open || !journeyId) return;
+    (async () => {
+      const existing = await fetchExistingPhaseResponse(journeyId, stepNumber - 1);
+      if (existing?.is_completed && existing.responses) {
+        const restored = extractAnswers(existing.responses as any);
+        if (Object.keys(restored).length) setAnswers(restored);
+        setIsReviewMode(true);
+        setPhase("quiz");
+        setCurrentQuizIndex(0);
+      } else {
+        setIsReviewMode(false);
+      }
+    })();
+  }, [open, journeyId, stepNumber]);
+
+
   
   if (!stepContent) return null;
 
@@ -428,6 +473,7 @@ export function ConsultantQuizDialog({
           ? "Your Consultant journey has been submitted for approval! 🎓" 
           : "Great progress! Complete all steps to submit for approval.",
       });
+      if (draftKey) clearQuizDraft(draftKey);
       onOpenChange(false);
       resetState();
     } catch (error) {
@@ -443,7 +489,9 @@ export function ConsultantQuizDialog({
     setCurrentQuizIndex(0);
     setAnswers({});
     setShowResult(false);
+    setIsReviewMode(false);
   };
+
 
   const handleClose = () => {
     onOpenChange(false);
@@ -594,6 +642,16 @@ export function ConsultantQuizDialog({
             <Progress value={progress} className="h-2 mt-2" />
           )}
         </DialogHeader>
+
+        {isReviewMode && (
+          <div className="rounded-lg border border-b4-teal/40 bg-b4-teal/10 p-3 text-sm text-foreground flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-b4-teal shrink-0" />
+            <span>
+              <strong>Review mode.</strong> You already completed this step —
+              your submitted answers are shown below.
+            </span>
+          </div>
+        )}
 
         {phase === "learning" ? (
           <div className="space-y-6">
