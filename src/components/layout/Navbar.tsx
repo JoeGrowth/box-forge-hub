@@ -368,12 +368,13 @@ export function Navbar() {
                 ))
               ) : (
                 <>
-                  <div className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Engine
-                  </div>
-                  {engineLinks.map((link) => {
+                  {visibleEngineLinks.length > 0 && (
+                    <div className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Engine
+                    </div>
+                  )}
+                  {visibleEngineLinks.map((link) => {
                     const Icon = link.icon;
-                    const locked = !engineAccess[link.key].unlocked;
                     return (
                       <Link
                         key={link.path}
@@ -382,69 +383,56 @@ export function Navbar() {
                           location.pathname === link.path
                             ? "bg-muted text-b4-teal"
                             : "text-muted-foreground hover:bg-muted"
-                        } ${locked ? "opacity-70" : ""}`}
+                        }`}
                         onClick={() => setIsOpen(false)}
                       >
                         <Icon size={16} />
                         <span className="flex-1">{link.name}</span>
-                        {locked && <Lock size={12} className="text-muted-foreground" />}
                       </Link>
                     );
                   })}
-                  <Link
-                    to={talentReady ? "/opportunities" : "/dashboard"}
-                    onClick={(e) => {
-                      if (!talentReady) e.preventDefault();
-                      setIsOpen(false);
-                    }}
-                    aria-disabled={!talentReady}
-                    title={talentLockTitle}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                      location.pathname === "/opportunities"
-                        ? "bg-muted text-b4-teal"
-                        : "text-muted-foreground hover:bg-muted"
-                    } ${!talentReady ? "opacity-60 cursor-not-allowed" : ""}`}
-                  >
-                    <span className="flex-1">Opportunities</span>
-                    {!talentReady && <Lock size={12} className="text-muted-foreground" />}
-                  </Link>
+                  {talentReady && (
+                    <Link
+                      to="/opportunities"
+                      onClick={() => setIsOpen(false)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                        location.pathname === "/opportunities"
+                          ? "bg-muted text-b4-teal"
+                          : "text-muted-foreground hover:bg-muted"
+                      }`}
+                    >
+                      <span className="flex-1">Opportunities</span>
+                    </Link>
+                  )}
 
-                  <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Publish {!talentReady && <Lock size={12} className="inline text-muted-foreground" />}
-                  </div>
-                  {publishLinks.map((link) => {
-                    const Icon = link.icon;
-                    const linkLocked = !talentReady || (link.orgAdminOnly && !isOrgAdmin);
-                    const lockReason = !talentReady
-                      ? talentLockTitle
-                      : link.orgAdminOnly && !isOrgAdmin
-                      ? "Locked — become admin of an organization in Organizations"
-                      : undefined;
-                    return (
-                      <Link
-                        key={link.path}
-                        to={linkLocked ? "/organizations" : link.path}
-                        onClick={(e) => {
-                          if (linkLocked) e.preventDefault();
-                          setIsOpen(false);
-                        }}
-                        aria-disabled={linkLocked}
-                        title={lockReason}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors flex items-center gap-2 ${
-                          linkLocked ? "opacity-60 cursor-not-allowed" : ""
-                        }`}
-                      >
-                        <Icon size={16} />
-                        <span className="flex-1">{link.name}</span>
-                        {linkLocked && <Lock size={12} className="text-muted-foreground" />}
-                      </Link>
-                    );
-                  })}
+                  {talentReady && visiblePublishLinks.length > 0 && (
+                    <>
+                      <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Publish
+                      </div>
+                      {visiblePublishLinks.map((link) => {
+                        const Icon = link.icon;
+                        return (
+                          <Link
+                            key={link.path}
+                            to={link.path}
+                            onClick={() => setIsOpen(false)}
+                            className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors flex items-center gap-2"
+                          >
+                            <Icon size={16} />
+                            <span className="flex-1">{link.name}</span>
+                          </Link>
+                        );
+                      })}
+                    </>
+                  )}
 
-                  <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    More
-                  </div>
-                  {moreLinks.map((link) => {
+                  {visibleMoreLinks.length > 0 && (
+                    <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      More
+                    </div>
+                  )}
+                  {visibleMoreLinks.map((link) => {
                     const Icon = link.icon;
                     return (
                       <Link
