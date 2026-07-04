@@ -859,12 +859,11 @@ const Journey = () => {
                                       size="sm"
                                       onClick={() => handleOpenStep(activeSection, step.step)}
                                       className="shrink-0"
-                                      disabled={isStepCompleted(activeSection, step.step)}
                                     >
                                       {isStepCompleted(activeSection, step.step) ? (
                                         <>
                                           <CheckCircle className="w-4 h-4 mr-1" />
-                                          Done
+                                          Review
                                         </>
                                       ) : (
                                         <>
@@ -874,6 +873,7 @@ const Journey = () => {
                                       )}
                                     </Button>
                                   )}
+
                                 </div>
                                 <p className="text-sm text-muted-foreground">{step.description}</p>
                                 
