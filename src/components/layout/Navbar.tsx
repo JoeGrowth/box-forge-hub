@@ -100,10 +100,7 @@ export function Navbar() {
   const { canAccessBoosting, canAccessScaling, potentialRole } = useUserStatus();
 
   const { engines: engineAccess } = useEngineAccess();
-  const { talentReady, isOrgAdmin, missing: talentMissing } = useTalentReadiness();
-  const talentLockTitle = talentReady
-    ? undefined
-    : `Locked — complete: ${talentMissing.join(", ")}`;
+  const { talentReady, isOrgAdmin } = useTalentReadiness();
 
   // Hydrate synchronously from localStorage (lazy initializer) so the Admin
   // button is present on first paint when cached — no flash, no layout shift.
