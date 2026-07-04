@@ -244,7 +244,16 @@ export function DashboardProgress() {
               "Track opportunities from LinkedIn or tenders through proposal, delivery and payment distribution.",
             icon: TrendingUp,
             done: false,
-            cta: { label: "Start", to: "/consulting-growth" },
+            cta: { label: consultingStarted ? "Continue" : "Start", to: "/consulting-growth" },
+          },
+          {
+            key: "venture" as const,
+            title: "Launch or join a venture",
+            description:
+              "Kick off your own idea or apply to a co-builder role — get skin in the game.",
+            icon: Lightbulb,
+            done: false,
+            cta: { label: ventureStarted ? "Continue" : "Start", to: "/entrepreneurship" },
           },
         ]
       : []),
