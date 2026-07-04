@@ -349,37 +349,32 @@ const JourneyDetail = () => {
                                 <step.icon className="w-6 h-6 text-foreground" />
                               </div>
                               <div className="flex-1 space-y-3 min-w-0">
-                                <div className="flex items-start justify-between gap-3 flex-wrap">
-                                  <div>
-                                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                        Step {step.step}
-                                      </span>
-                                      <Badge variant="outline" className="text-xs">{step.subtitle}</Badge>
-                                      {isSectionCertified && (
-                                        <Badge className="bg-b4-teal text-white text-xs">
-                                          <CheckCircle className="w-3 h-3 mr-1" /> Certified
-                                        </Badge>
-                                      )}
-                                    </div>
-                                    <h3 className="text-lg font-display font-bold text-foreground">{step.title}</h3>
+                                <div>
+                                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                      Step {step.step}
+                                    </span>
+                                    <Badge variant="outline" className="text-xs">{step.subtitle}</Badge>
+                                    {isSectionCertified && (
+                                      <Badge className="bg-b4-teal text-white text-xs">
+                                        <CheckCircle className="w-3 h-3 mr-1" /> Certified
+                                      </Badge>
+                                    )}
                                   </div>
-                                  {!isSectionCertified && (
-                                    <Button
-                                      variant={isStepCompleted(step.step) ? "outline" : "teal"}
-                                      size="sm"
-                                      onClick={() => handleOpenStep(step.step)}
-                                      className="shrink-0"
-                                    >
-                                      {isStepCompleted(step.step) ? (
-                                        <><CheckCircle className="w-4 h-4 mr-1" />Review</>
-                                      ) : (
-                                        <><Play className="w-4 h-4 mr-1" />Begin</>
-                                      )}
-                                    </Button>
-                                  )}
+                                  <h3 className="text-lg font-display font-bold text-foreground">{step.title}</h3>
                                 </div>
                                 <p className="text-sm text-muted-foreground">{step.description}</p>
+
+                                {!isSectionCertified && (
+                                  <ul className="space-y-2">
+                                    {step.details.map((detail, i) => (
+                                      <li key={i} className="flex items-start gap-2 text-sm">
+                                        <CheckCircle className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+                                        <span className="text-muted-foreground">{detail}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
 
                                 {isSectionCertified && getStepResponses(step.step) && (
                                   <div className="mt-4 p-4 bg-muted/50 rounded-lg border border-border/50">
@@ -417,15 +412,22 @@ const JourneyDetail = () => {
                                 )}
 
                                 {!isSectionCertified && (
-                                  <ul className="space-y-2">
-                                    {step.details.map((detail, i) => (
-                                      <li key={i} className="flex items-start gap-2 text-sm">
-                                        <CheckCircle className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
-                                        <span className="text-muted-foreground">{detail}</span>
-                                      </li>
-                                    ))}
-                                  </ul>
+                                  <div className="pt-2">
+                                    <Button
+                                      variant={isStepCompleted(step.step) ? "outline" : "teal"}
+                                      size="sm"
+                                      onClick={() => handleOpenStep(step.step)}
+                                      className="w-full sm:w-auto"
+                                    >
+                                      {isStepCompleted(step.step) ? (
+                                        <><CheckCircle className="w-4 h-4 mr-1" />Review</>
+                                      ) : (
+                                        <><Play className="w-4 h-4 mr-1" />Begin</>
+                                      )}
+                                    </Button>
+                                  </div>
                                 )}
+
                               </div>
                             </div>
                           </CardContent>
