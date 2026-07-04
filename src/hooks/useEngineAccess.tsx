@@ -229,6 +229,13 @@ export function useEngineAccess() {
       // ---------- Entrepreneurship ----------
       const entChecks: Array<{ ok: boolean; sig: EngineSignal }> = [
         {
+          ok: talentFoundationSet,
+          sig: {
+            label: "Talent Foundation set (intent, natural role, track record, resume)",
+            cta: { label: "Complete your Talent Foundation", to: "/dashboard" },
+          },
+        },
+        {
           ok: hasCoBuilderCert,
           sig: {
             label: "Vaccinated Co-Builder certification",
