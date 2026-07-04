@@ -58,30 +58,37 @@ const Consulting = () => {
     return (
       <div
         key={step.id}
-        className="flex gap-6 items-start p-6 rounded-2xl border border-border bg-card hover:border-secondary/30 transition-all"
+        className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start p-4 sm:p-6 rounded-2xl border border-border bg-card hover:border-secondary/30 transition-all"
       >
-        <div className="flex flex-col items-center">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-primary flex items-center justify-center text-primary-foreground font-bold text-lg shrink-0">
+        <div className="flex sm:flex-col items-center w-full sm:w-auto">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-accent to-primary flex items-center justify-center text-primary-foreground font-bold text-base sm:text-lg shrink-0">
             {step.number}
           </div>
-          {!isLast && <div className="w-px h-6 bg-border mt-2" />}
+          {!isLast && <div className="hidden sm:block w-px h-6 bg-border mt-2" />}
+          <button
+            onClick={() => toggleFavorite(step.id)}
+            className="ml-auto sm:hidden p-1.5 rounded-full hover:bg-muted transition-colors shrink-0"
+            aria-label={isFav ? "Remove from focus" : "Add to focus"}
+          >
+            <Star className={`w-5 h-5 transition-colors ${isFav ? "fill-secondary text-secondary" : "text-muted-foreground hover:text-secondary"}`} />
+          </button>
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 w-full">
           <div className="flex items-center gap-2 mb-1">
-            <step.icon className="w-5 h-5 text-accent" />
-            <h3 className="font-display text-xl font-bold text-foreground">{step.title}</h3>
+            <step.icon className="w-5 h-5 text-accent shrink-0" />
+            <h3 className="font-display text-lg sm:text-xl font-bold text-foreground">{step.title}</h3>
           </div>
           <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{step.description}</p>
           {"isDialog" in step && step.isDialog ? (
-            <Button variant="outline" size="sm" onClick={() => setShowTrainDialog(true)}>
+            <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => setShowTrainDialog(true)}>
               {step.cta} <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           ) : "isServiceDialog" in step && step.isServiceDialog ? (
-            <Button variant="outline" size="sm" onClick={() => setShowServiceDialog(true)}>
+            <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => setShowServiceDialog(true)}>
               {step.cta} <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           ) : (
-            <Button variant="outline" size="sm" asChild>
+            <Button variant="outline" size="sm" className="w-full sm:w-auto" asChild>
               <Link to={step.link}>
                 {step.cta} <ArrowRight className="w-4 h-4 ml-1" />
               </Link>
@@ -90,7 +97,7 @@ const Consulting = () => {
         </div>
         <button
           onClick={() => toggleFavorite(step.id)}
-          className="p-1.5 rounded-full hover:bg-muted transition-colors shrink-0"
+          className="hidden sm:block p-1.5 rounded-full hover:bg-muted transition-colors shrink-0"
           aria-label={isFav ? "Remove from focus" : "Add to focus"}
         >
           <Star className={`w-5 h-5 transition-colors ${isFav ? "fill-secondary text-secondary" : "text-muted-foreground hover:text-secondary"}`} />
@@ -98,6 +105,7 @@ const Consulting = () => {
       </div>
     );
   };
+
 
   return (
     <div className="min-h-screen bg-background">
