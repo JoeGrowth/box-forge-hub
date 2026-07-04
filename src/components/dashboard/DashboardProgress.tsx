@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, CheckCircle2, Circle, FileText, Briefcase, Rocket, Compass, Target, Award, TrendingUp, Lightbulb } from "lucide-react";
+import { ArrowRight, CheckCircle2, Circle, FileText, Briefcase, Rocket, Compass, Target, TrendingUp, Lightbulb } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
@@ -257,14 +257,6 @@ export function DashboardProgress() {
           },
         ]
       : []),
-    {
-      key: "certify",
-      title: "Getting Certified",
-      description: "Pick a certification path — Initiator, Co-Builder, Finance or Security — and earn your badges.",
-      icon: Award,
-      done: false,
-      cta: { label: hasLearningJourneys ? "Continue" : "Start", to: "/journey" },
-    },
     {
       key: "ent-track",
       title: "Fill your Entrepreneurial Track Record",
