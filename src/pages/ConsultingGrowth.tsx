@@ -562,18 +562,15 @@ function StagePanel({
         <StageBlock n={1} title="Identify — upload the driver" active={opp.stage === "identify"} done={idx > 0}>
             <div className="space-y-2">
               <Label className="text-xs">Driver PDF or screenshot (LinkedIn post, tender, email…)</Label>
-              <div className="flex items-center gap-2">
-                <Input type="file" accept="application/pdf,image/*" onChange={async (e) => {
-                  const f = e.target.files?.[0]; if (!f) return;
+              <FileField
+                accept="application/pdf,image/*"
+                url={opp.driver_file_url}
+                onOpen={() => openFile(opp.driver_file_url)}
+                onPick={async (f) => {
                   const p = await uploadFile(f, "driver");
                   if (p) await patch({ driver_file_url: p });
-                }} />
-                {opp.driver_file_url && (
-                  <Button size="sm" variant="ghost" onClick={() => openFile(opp.driver_file_url)}>
-                    <ExternalLink className="w-3 h-3 mr-1" />View
-                  </Button>
-                )}
-              </div>
+                }}
+              />
               <Label className="text-xs mt-2">Note</Label>
               <Textarea rows={2} value={driverNote} onChange={e => setDriverNote(e.target.value)} onBlur={() => driverNote !== (opp.driver_note ?? "") && patch({ driver_note: driverNote })} placeholder="Context, contact, link…" />
               {opp.stage === "identify" && (
