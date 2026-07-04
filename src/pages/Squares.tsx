@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useExpertise } from "@/hooks/useExpertise";
 import { useNextBestActions } from "@/hooks/useNextBestActions";
 import { supabase } from "@/integrations/supabase/client";
+import { TrendingUp, Zap, Target, Award, Briefcase, Users } from "lucide-react";
 
 const STAGE_LEVEL: Record<string, number> = {
   novice: 1,
