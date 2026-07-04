@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
@@ -14,17 +14,79 @@ import { DashboardAchievements } from "@/components/dashboard/DashboardAchieveme
 import { ProgressionPathCard } from "@/components/profile/ProgressionPathCard";
 import { CommitmentsPanel } from "@/components/commitments/CommitmentsPanel";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "@/hooks/use-toast";
+
+const GATE_MESSAGES: Record<string, { title: string; description: string }> = {
+  talent: {
+    title: "Complete your Talent Foundation",
+    description:
+      "Finish onboarding (intent, role decoder, professional track, resume) to unlock this page.",
+  },
+  "org-admin": {
+    title: "Organization admins only",
+    description: "You need to be an admin or owner of an organization to access this page.",
+  },
+  "stage-emerging": {
+    title: "Unlocks at Emerging stage",
+    description:
+      "Keep progressing — this page opens once you reach the Emerging stage. Novices have access to Boxes and Programs.",
+  },
+  "stage-capable": {
+    title: "Unlocks at Capable stage",
+    description: "Reach the Capable stage to access this page.",
+  },
+  "stage-monetizing": {
+    title: "Unlocks at Monetizing stage",
+    description: "Reach the Monetizing stage to access this page.",
+  },
+  "stage-building": {
+    title: "Unlocks at Building stage",
+    description: "Reach the Building stage to access this page.",
+  },
+  "stage-founder": {
+    title: "Unlocks at Founder stage",
+    description: "Reach the Founder stage to access this page.",
+  },
+};
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const { onboardingState, loading: onboardingLoading } = useOnboarding();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/auth");
     }
   }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    const gated = searchParams.get("gated");
+    if (!gated) return;
+    const from = searchParams.get("from");
+    const preset = GATE_MESSAGES[gated];
+    const engineMatch = gated.startsWith("engine-") ? gated.slice(7) : null;
+    const msg = preset ?? (engineMatch
+      ? {
+          title: `${engineMatch.charAt(0).toUpperCase()}${engineMatch.slice(1)} engine locked`,
+          description: "Unlock this engine from your dashboard to access the page.",
+        }
+      : {
+          title: "This page is locked",
+          description: "Keep progressing to unlock it.",
+        });
+    toast({
+      title: msg.title,
+      description: from ? `${msg.description} (Tried to open ${from})` : msg.description,
+    });
+    // Clear the params so the toast doesn't re-fire on refresh.
+    const next = new URLSearchParams(searchParams);
+    next.delete("gated");
+    next.delete("from");
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
+
 
   if (authLoading || onboardingLoading) {
     return (
