@@ -733,9 +733,9 @@ function StagePanel({
 
                 {/* People */}
                 <div>
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
                     <div className="text-sm font-semibold">People splitting the pool</div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <Button size="sm" variant="outline" onClick={() => setDistPeople(p => [...p, `Person (${p.length + 1})`])}>
                         <Plus className="w-3 h-3 mr-1" /> Add person
                       </Button>
