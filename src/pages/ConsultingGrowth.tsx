@@ -255,7 +255,7 @@ export default function ConsultingGrowth() {
       {/* Performance */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { icon: Briefcase, label: "Pipeline", value: pipeline.length },
+          { icon: Briefcase, label: "Opportunities", value: pipeline.length },
           { icon: CheckCircle2, label: "Closed missions", value: closed.length },
           { icon: DollarSign, label: "Total revenue", value: `${totalRevenue.toLocaleString()}`, suffix: "EUR" },
           { icon: TrendingUp, label: "Paid clients", value: activeClients },
@@ -283,10 +283,10 @@ export default function ConsultingGrowth() {
         <Progress value={milestonePct} />
       </div>
 
-      {/* Pipeline */}
+      {/* Opportunities */}
       <div className="space-y-3">
         <div>
-          <h2 className="text-lg font-semibold tracking-tight">Pipeline</h2>
+          <h2 className="text-lg font-semibold tracking-tight">Opportunities</h2>
           <p className="text-sm text-muted-foreground">Click a mission to advance it through the stages.</p>
         </div>
 
