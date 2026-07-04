@@ -404,6 +404,8 @@ export default function ConsultingGrowth() {
 
 
     </div>
+    <Footer />
+    </>
   );
 }
 
