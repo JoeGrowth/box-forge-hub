@@ -37,6 +37,7 @@ import {
   fetchExistingPhaseResponse,
   extractAnswers,
 } from "@/lib/quizPersistence";
+import { QuizReviewSummary } from "./QuizReviewSummary";
 
 interface Quiz {
   id: string;
