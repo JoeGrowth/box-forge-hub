@@ -101,9 +101,9 @@ export default function Squares() {
     },
     {
       icon: Zap,
-      label: "Journeys cleared",
-      value: stageLevel.toString(),
-      description: "Stages unlocked",
+      label: "Stages unlocked",
+      value: `${stageLevel}/6`,
+      description: "Proof of progress",
       bgColor: "bg-b4-teal/10",
       iconColor: "#14b8a6",
       detail: `Current stage: ${progression?.current_state ?? "novice"} (${stageLevel}/6). Novice (1), Emerging (2), Capable (3), Monetizing (4), Building (5), Founder (6).`,
