@@ -595,9 +595,6 @@ const Entrepreneurship = () => {
                   ) : myProjects.length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground">
                       <p>You haven't created any projects yet.</p>
-                      <Button className="mt-3 gap-2" onClick={() => setShowCreateDialog(true)}>
-                        <Plus className="w-4 h-4" /> Create Your First Project
-                      </Button>
                     </div>
                   ) : (
                     <div className="space-y-4">
