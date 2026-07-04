@@ -125,6 +125,53 @@ export default function Squares() {
             </p>
           </header>
 
+          <TooltipProvider delayDuration={150}>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {statCards.map((card) => {
+                const Icon = card.icon;
+                const content = (
+                  <div className="border border-border rounded-2xl p-5 bg-card h-full flex flex-col gap-3 hover:shadow-md transition-shadow text-left">
+                    <div
+                      className={`w-10 h-10 rounded-xl ${card.bgColor} flex items-center justify-center`}
+                    >
+                      <Icon className="w-5 h-5" style={{ color: card.iconColor }} />
+                    </div>
+                    <div>
+                      <div className="text-2xl font-display font-bold text-foreground leading-tight">
+                        {card.value}
+                      </div>
+                      <div className="text-sm font-medium text-foreground mt-1">
+                        {card.label}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        {card.description}
+                      </div>
+                    </div>
+                  </div>
+                );
+                return (
+                  <Tooltip key={card.label}>
+                    <TooltipTrigger asChild>
+                      {card.link ? (
+                        <button
+                          type="button"
+                          onClick={() => navigate(card.link!)}
+                          className="text-left"
+                        >
+                          {content}
+                        </button>
+                      ) : (
+                        <div>{content}</div>
+                      )}
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs text-xs">
+                      {card.detail}
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })}
+            </div>
+          </TooltipProvider>
         </div>
       </main>
       <Footer />
