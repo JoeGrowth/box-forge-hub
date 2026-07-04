@@ -326,6 +326,8 @@ const CoBuilders = () => {
   const filteredCobuilders = cobuilders.filter((cb) => {
     if (filter === "advisors") {
       if (!advisorUserIds.has(cb.user_id)) return false;
+    } else if (filter === "initiators") {
+      if (!cb.has_opportunity) return false;
     } else if (filter === "talents") {
       const stage = (cb.stage || "novice").toLowerCase();
       if (cb.user_id !== user?.id && !(stage in TALENTS_STAGE_RANK)) return false;
