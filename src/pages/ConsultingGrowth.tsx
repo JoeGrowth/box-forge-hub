@@ -1007,22 +1007,24 @@ function FileField({
           <Loader2 className="w-4 h-4 animate-spin" /> Uploading&hellip;
         </div>
       ) : url ? (
-        <div className="flex items-center gap-2 p-2.5">
-          <div className="flex items-center gap-2 flex-1 min-w-0 text-sm">
+        <div className="flex flex-wrap items-center gap-2 p-2.5">
+          <div className="flex items-center gap-2 flex-1 min-w-0 text-sm w-full sm:w-auto">
             <div className="w-7 h-7 rounded bg-primary/10 text-primary flex items-center justify-center shrink-0">
               <CheckCircle2 className="w-4 h-4" />
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="font-medium truncate">File uploaded</div>
               <div className="text-xs text-muted-foreground truncate">{shortName}</div>
             </div>
           </div>
-          <Button size="sm" variant="ghost" onClick={onOpen}>
-            <ExternalLink className="w-3.5 h-3.5 mr-1" />View
-          </Button>
-          <Button size="sm" variant="outline" onClick={() => inputRef.current?.click()}>
-            <RefreshCw className="w-3.5 h-3.5 mr-1" />Replace
-          </Button>
+          <div className="flex items-center gap-2 ml-auto">
+            <Button size="sm" variant="ghost" onClick={onOpen}>
+              <ExternalLink className="w-3.5 h-3.5 mr-1" />View
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => inputRef.current?.click()}>
+              <RefreshCw className="w-3.5 h-3.5 mr-1" />Replace
+            </Button>
+          </div>
         </div>
       ) : (
         <button
