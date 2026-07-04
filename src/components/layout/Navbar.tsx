@@ -52,12 +52,13 @@ const STAGE_RANK: Record<string, number> = {
 };
 
 // Links for logged-out users
-const guestNavLinks = [
-  { name: "About", path: "/about" },
-  { name: "Programs", path: "/programs" },
-  { name: "Join Us", path: "/join" },
-  { name: "Boxes", path: "/boxes" },
+const guestNavLinks: Array<{ name: string; path: string; icon: typeof Briefcase }> = [
+  { name: "About", path: "/about", icon: FileText },
+  { name: "Programs", path: "/programs", icon: BookOpen },
+  { name: "Join Us", path: "/join", icon: Rocket },
+  { name: "Boxes", path: "/boxes", icon: Package },
 ];
+
 
 const engineLinks: Array<{ name: string; path: string; icon: typeof Briefcase; key: EngineKey }> = [
   { name: "Career", path: "/career", icon: Briefcase, key: "career" },
@@ -371,22 +372,26 @@ export function Navbar() {
             <div className="flex flex-col gap-3 pb-8">
 
               {!user ? (
-                guestNavLinks.map((link) => (
-                  <Button
-                    key={link.path}
-                    variant="outline"
-                    size="sm"
-                    className={`mx-4 justify-center font-semibold ${
-                      location.pathname === link.path ? "text-b4-teal border-b4-teal" : ""
-                    }`}
-                    asChild
-                  >
-                    <Link to={link.path} onClick={() => setIsOpen(false)}>
+                guestNavLinks.map((link) => {
+                  const Icon = link.icon;
+                  return (
+                    <Link
+                      key={link.path}
+                      to={link.path}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                        location.pathname === link.path
+                          ? "bg-muted text-b4-teal"
+                          : "text-muted-foreground hover:bg-muted"
+                      }`}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <Icon size={16} />
                       {link.name}
                     </Link>
-                  </Button>
-                ))
+                  );
+                })
               ) : (
+
 
                 <>
                   {visibleEngineLinks.length > 0 && (
