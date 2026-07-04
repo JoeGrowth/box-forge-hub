@@ -9,6 +9,7 @@ import { LearningJourneysProvider } from "@/hooks/useLearningJourneys";
 import { UserStatusProvider } from "@/hooks/useUserStatus";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
+import { GatedRoute } from "@/components/layout/GatedRoute";
 import { PersistentNavbarLayout } from "@/components/layout/PersistentNavbarLayout";
 import Index from "./pages/Index";
 import Home from "./pages/Home";
