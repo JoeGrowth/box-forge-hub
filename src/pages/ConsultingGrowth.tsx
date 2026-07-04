@@ -820,7 +820,8 @@ function StagePanel({
                   </Button>
                 )}
               </div>
-              )}
+              ) : null}
+
 
                 {opp.stage === "closed" && (
 
