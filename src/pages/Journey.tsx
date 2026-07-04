@@ -502,6 +502,8 @@ const Journey = () => {
       setFinanceQuizOpen(true);
     } else if (section === "security") {
       setSecurityQuizOpen(true);
+    } else if (section === "consultant") {
+      setConsultantQuizOpen(true);
     }
   };
 
