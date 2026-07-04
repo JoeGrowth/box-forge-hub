@@ -185,7 +185,7 @@ export default function ConsultingGrowth() {
       offer_date: new Date().toISOString().slice(0, 10),
       stage: "identify" as Stage,
     } as never;
-    const { error } = await supabase.from("consultant_opportunities").insert(payload);
+    const { data: inserted, error } = await supabase.from("consultant_opportunities").insert(payload).select("id").single();
     setSaving(false);
     if (error) {
       toast({ title: "Failed to save", description: error.message, variant: "destructive" });
@@ -195,6 +195,8 @@ export default function ConsultingGrowth() {
     setDialogOpen(false);
     setForm(EMPTY_FORM);
     try { localStorage.removeItem(DRAFT_KEY); localStorage.removeItem(OPEN_KEY); } catch {}
+    setStageFilter("identify");
+    if (inserted?.id) setExpandedId(inserted.id);
     load();
   };
 
