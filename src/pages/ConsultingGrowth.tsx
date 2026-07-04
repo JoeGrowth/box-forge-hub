@@ -283,10 +283,10 @@ export default function ConsultingGrowth() {
         <Progress value={milestonePct} />
       </div>
 
-      {/* Pipeline */}
+      {/* Opportunities */}
       <div className="space-y-3">
         <div>
-          <h2 className="text-lg font-semibold tracking-tight">Pipeline</h2>
+          <h2 className="text-lg font-semibold tracking-tight">Opportunities</h2>
           <p className="text-sm text-muted-foreground">Click a mission to advance it through the stages.</p>
         </div>
 
