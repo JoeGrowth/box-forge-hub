@@ -627,6 +627,8 @@ function StagePanel({
         {show("payment_distribution") && (
         <StageBlock n={5} title="Payment received & distribution" active={opp.stage === "payment_distribution"} done={opp.stage === "closed"}>
             <div className="space-y-3">
+              {opp.stage !== "closed" && (<div className="space-y-3">
+
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <Label className="text-xs">Amount paid ({opp.currency || "EUR"})</Label>
@@ -816,7 +818,11 @@ function StagePanel({
                     Declare distribution & close mission
                   </Button>
                 )}
+              </div>
+              )}
+
                 {opp.stage === "closed" && (
+
                   <div className="space-y-3 border-t pt-4">
                     <div className="flex items-start justify-between gap-2">
                       <div>
