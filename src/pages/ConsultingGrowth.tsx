@@ -464,13 +464,16 @@ function StagePanel({
 
   const patch = async (fields: Partial<Opportunity>) => {
     setWorking(true);
+    // Optimistic UI: apply immediately for smooth transition, no full re-fetch
+    onOptimisticPatch?.(fields);
     const { error } = await supabase.from("consultant_opportunities").update(fields as never).eq("id", opp.id);
     setWorking(false);
     if (error) {
       toast({ title: "Update failed", description: error.message, variant: "destructive" });
+      // Rollback via full reload
+      await onChanged();
       return false;
     }
-    await onChanged();
     return true;
   };
 
