@@ -734,7 +734,7 @@ const CoBuilders = () => {
                                     <Badge
                                       key={idx}
                                       variant="secondary"
-                                      className="bg-b4-teal/10 text-b4-teal border border-b4-teal/20 hover:bg-b4-teal/15 transition-colors font-medium text-xs px-2.5 py-0.5"
+                                      className="bg-b4-teal/10 text-b4-navy border border-b4-teal/30 hover:bg-b4-teal/20 transition-colors font-semibold text-xs px-2.5 py-0.5"
                                     >
                                       {skill}
                                     </Badge>
