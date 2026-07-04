@@ -393,7 +393,7 @@ export default function ConsultingGrowth() {
                           onOptimisticPatch={(fields) => setItems(prev => prev.map(it => it.id === o.id ? { ...it, ...fields } : it))}
                           onStageChange={(to) => { setStageFilter(to === "closed" ? "closed" : to); setExpandedId(o.id); }}
                           userId={user?.id ?? ""}
-                          onlyStage={stageFilter === "all" ? null : stageFilter}
+                          onlyStage={stageFilter}
                         />
                       </div>
                     )}
