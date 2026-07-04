@@ -949,19 +949,29 @@ export type Database = {
       }
       consultant_opportunities: {
         Row: {
-          amount_per_day: number
-          client_name: string
+          amount_per_day: number | null
+          client_confirmed_at: string | null
+          client_name: string | null
           completed_at: string | null
-          consulting_firm: string
+          consulting_firm: string | null
           created_at: string
           currency: string
+          delivered_at: string | null
           description: string | null
+          driver_file_url: string | null
+          driver_note: string | null
           id: string
           is_completed: boolean
-          number_of_days: number
-          offer_date: string
+          number_of_days: number | null
+          offer_date: string | null
+          paid_amount: number | null
+          paid_at: string | null
+          process_file_url: string | null
+          proposal_file_url: string | null
+          proposal_sent_at: string | null
           source: string
           source_other: string | null
+          stage: Database["public"]["Enums"]["consulting_stage"]
           technical_offer_url: string | null
           title: string
           total_amount: number | null
@@ -969,19 +979,29 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          amount_per_day?: number
-          client_name: string
+          amount_per_day?: number | null
+          client_confirmed_at?: string | null
+          client_name?: string | null
           completed_at?: string | null
-          consulting_firm: string
+          consulting_firm?: string | null
           created_at?: string
           currency?: string
+          delivered_at?: string | null
           description?: string | null
+          driver_file_url?: string | null
+          driver_note?: string | null
           id?: string
           is_completed?: boolean
-          number_of_days?: number
-          offer_date: string
+          number_of_days?: number | null
+          offer_date?: string | null
+          paid_amount?: number | null
+          paid_at?: string | null
+          process_file_url?: string | null
+          proposal_file_url?: string | null
+          proposal_sent_at?: string | null
           source: string
           source_other?: string | null
+          stage?: Database["public"]["Enums"]["consulting_stage"]
           technical_offer_url?: string | null
           title: string
           total_amount?: number | null
@@ -989,19 +1009,29 @@ export type Database = {
           user_id: string
         }
         Update: {
-          amount_per_day?: number
-          client_name?: string
+          amount_per_day?: number | null
+          client_confirmed_at?: string | null
+          client_name?: string | null
           completed_at?: string | null
-          consulting_firm?: string
+          consulting_firm?: string | null
           created_at?: string
           currency?: string
+          delivered_at?: string | null
           description?: string | null
+          driver_file_url?: string | null
+          driver_note?: string | null
           id?: string
           is_completed?: boolean
-          number_of_days?: number
-          offer_date?: string
+          number_of_days?: number | null
+          offer_date?: string | null
+          paid_amount?: number | null
+          paid_at?: string | null
+          process_file_url?: string | null
+          proposal_file_url?: string | null
+          proposal_sent_at?: string | null
           source?: string
           source_other?: string | null
+          stage?: Database["public"]["Enums"]["consulting_stage"]
           technical_offer_url?: string | null
           title?: string
           total_amount?: number | null
@@ -1009,6 +1039,56 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      consultant_opportunity_distributions: {
+        Row: {
+          amount: number | null
+          created_at: string
+          declared_at: string | null
+          id: string
+          note: string | null
+          opportunity_id: string
+          percent: number | null
+          recipient_name: string
+          recipient_user_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          declared_at?: string | null
+          id?: string
+          note?: string | null
+          opportunity_id: string
+          percent?: number | null
+          recipient_name: string
+          recipient_user_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          declared_at?: string | null
+          id?: string
+          note?: string | null
+          opportunity_id?: string
+          percent?: number | null
+          recipient_name?: string
+          recipient_user_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consultant_opportunity_distributions_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "consultant_opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       consulting_service_proposals: {
         Row: {
@@ -6493,6 +6573,13 @@ export type Database = {
         | "withdrawn"
         | "completed"
       attribution_processing_state: "queued" | "processed" | "failed"
+      consulting_stage:
+        | "identify"
+        | "propose"
+        | "confirm_prepare"
+        | "deliver"
+        | "payment_distribution"
+        | "closed"
       entity_role_status: "pending" | "accepted" | "declined" | "revoked"
       entity_role_transition: "requested" | "accepted" | "declined" | "revoked"
       graph_edge_type:
@@ -6877,6 +6964,14 @@ export const Constants = {
         "completed",
       ],
       attribution_processing_state: ["queued", "processed", "failed"],
+      consulting_stage: [
+        "identify",
+        "propose",
+        "confirm_prepare",
+        "deliver",
+        "payment_distribution",
+        "closed",
+      ],
       entity_role_status: ["pending", "accepted", "declined", "revoked"],
       entity_role_transition: ["requested", "accepted", "declined", "revoked"],
       graph_edge_type: [
