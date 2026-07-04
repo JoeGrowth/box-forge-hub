@@ -6,12 +6,23 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { useAuth } from "@/hooks/useAuth";
 import { useExpertise } from "@/hooks/useExpertise";
+import { useNextBestActions } from "@/hooks/useNextBestActions";
 import { supabase } from "@/integrations/supabase/client";
+
+const STAGE_LEVEL: Record<string, number> = {
+  novice: 1,
+  emerging: 2,
+  capable: 3,
+  monetizing: 4,
+  building: 5,
+  founder: 6,
+};
 
 export default function Squares() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { expertise } = useExpertise(user?.id);
+  const { progression } = useNextBestActions(user?.id);
   const [activity, setActivity] = useState({ applications: 0, ideas: 0, journeysCompleted: 0 });
 
   useEffect(() => {
@@ -35,6 +46,7 @@ export default function Squares() {
   const baseEquity = teamMemberships * 5 + certifications * 2;
   const potentialEquityNum = Math.min(baseEquity, 25);
   const potentialEquity = baseEquity > 0 ? `${potentialEquityNum}%` : "0%";
+  const stageLevel = STAGE_LEVEL[progression?.current_state ?? "novice"] ?? 1;
 
   const statCards = [
     {
@@ -45,7 +57,7 @@ export default function Squares() {
       bgColor: "bg-emerald-500/10",
       iconColor: "#10b981",
       detail: `Weighted from ${teamMemberships} co-builder seat${teamMemberships === 1 ? "" : "s"} (×5%) + ${certifications} certification${certifications === 1 ? "" : "s"} (×2%), capped at 25%.`,
-      link: "/start",
+      link: null,
     },
     {
       icon: Award,
@@ -55,27 +67,7 @@ export default function Squares() {
       bgColor: "bg-purple-500/10",
       iconColor: "#a855f7",
       detail: "Skills you've earned Vaccinated status on by completing the full practice → train → consult journey.",
-      link: "/career",
-    },
-    {
-      icon: Users,
-      label: "Co-builder seats",
-      value: teamMemberships.toString(),
-      description: "Ventures you're in",
-      bgColor: "bg-blue-500/10",
-      iconColor: "#3b82f6",
-      detail: "Active ventures where you're a confirmed team member with an equity or role package.",
-      link: "/start",
-    },
-    {
-      icon: Briefcase,
-      label: "Applications sent",
-      value: activity.applications.toString(),
-      description: "Moves in play",
-      bgColor: "bg-orange-500/10",
-      iconColor: "#f97316",
-      detail: "Startup role applications you've submitted.",
-      link: "/opportunities",
+      link: "/journey",
     },
     {
       icon: Target,
@@ -88,14 +80,34 @@ export default function Squares() {
       link: "/entrepreneurship",
     },
     {
+      icon: Briefcase,
+      label: "Applications sent",
+      value: activity.applications.toString(),
+      description: "Moves in play",
+      bgColor: "bg-orange-500/10",
+      iconColor: "#f97316",
+      detail: "Startup role applications you've submitted.",
+      link: "/entrepreneurship",
+    },
+    {
+      icon: Users,
+      label: "Co-builder seats",
+      value: teamMemberships.toString(),
+      description: "Ventures you're in",
+      bgColor: "bg-blue-500/10",
+      iconColor: "#3b82f6",
+      detail: "Active ventures where you're a confirmed team member with an equity or role package.",
+      link: "/entrepreneurship",
+    },
+    {
       icon: Zap,
       label: "Journeys cleared",
-      value: activity.journeysCompleted.toString(),
-      description: "Proof of progress",
+      value: stageLevel.toString(),
+      description: "Stages unlocked",
       bgColor: "bg-b4-teal/10",
       iconColor: "#14b8a6",
-      detail: "Learning journeys you've completed and had approved.",
-      link: "/journey",
+      detail: `Current stage: ${progression?.current_state ?? "novice"} (${stageLevel}/6). Novice (1), Emerging (2), Capable (3), Monetizing (4), Building (5), Founder (6).`,
+      link: null,
     },
   ];
 
@@ -119,8 +131,9 @@ export default function Squares() {
                 <Tooltip key={i}>
                   <TooltipTrigger asChild>
                     <button
-                      onClick={() => navigate(stat.link)}
-                      className="bg-card rounded-xl border border-border p-4 hover:border-b4-teal/30 transition-all duration-300 hover:shadow-lg hover:shadow-b4-teal/5 text-left cursor-pointer w-full"
+                      onClick={() => stat.link && navigate(stat.link)}
+                      disabled={!stat.link}
+                      className={`bg-card rounded-xl border border-border p-4 transition-all duration-300 text-left w-full ${stat.link ? "hover:border-b4-teal/30 hover:shadow-lg hover:shadow-b4-teal/5 cursor-pointer" : "cursor-default"}`}
                     >
                       <div className={`w-10 h-10 rounded-lg ${stat.bgColor} flex items-center justify-center mb-3`}>
                         <stat.icon className="w-5 h-5" style={{ color: stat.iconColor }} />
