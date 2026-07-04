@@ -443,18 +443,19 @@ export default function ConsultingGrowth() {
 }
 
 // =============================================================================
-// Stage manager dialog
+// Inline stage panel (rendered inside expanded pipeline cards)
 // =============================================================================
 
-function StageManager({
-  opp, distributions, onClose, onChanged, userId,
+function StagePanel({
+  opp, distributions, onChanged, userId, onlyStage,
 }: {
   opp: Opportunity;
   distributions: Distribution[];
-  onClose: () => void;
   onChanged: () => Promise<void>;
   userId: string;
+  onlyStage: Stage | null;
 }) {
+  const show = (s: Stage) => onlyStage === null || onlyStage === s || (onlyStage === "closed" && s === "payment_distribution");
   const { toast } = useToast();
   const [working, setWorking] = useState(false);
   const [driverNote, setDriverNote] = useState(opp.driver_note ?? "");
