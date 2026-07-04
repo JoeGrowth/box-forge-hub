@@ -596,6 +596,14 @@ const Journey = () => {
           color: "from-red-500 to-orange-500",
           outcome: "You become a Certified Security Literate Professional — aware of threats, confident in securing devices, able to act securely, and capable of advising peers.",
         };
+      case "consultant":
+        return {
+          title: "Learn to be Consultant",
+          description: "A 4-step journey to master consulting fundamentals and advisory practice",
+          icon: Handshake,
+          color: "from-purple-500 to-fuchsia-500",
+          outcome: "You become a Certified Consultant — confident in scoping engagements, structuring analysis, advising clients, and building thought leadership.",
+        };
     }
   };
 
