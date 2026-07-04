@@ -819,8 +819,9 @@ function StagePanel({
                     Declare distribution & close mission
                   </Button>
                 )}
-              </div>
+                </div>
               ) : null}
+
 
 
                 {opp.stage === "closed" && (
