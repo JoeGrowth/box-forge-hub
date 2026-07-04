@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, CheckCircle2, Circle, FileText, Briefcase, Rocket, Compass, Target, Award, TrendingUp } from "lucide-react";
+import { ArrowRight, CheckCircle2, Circle, FileText, Briefcase, Rocket, Compass, Target, Award, TrendingUp, Lightbulb } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,6 +29,8 @@ export function DashboardProgress() {
   const [trackRecordComplete, setTrackRecordComplete] = useState(false);
   const [proTrackComplete, setProTrackComplete] = useState(false);
   const [hasLearningJourneys, setHasLearningJourneys] = useState(false);
+  const [consultingStarted, setConsultingStarted] = useState(false);
+  const [ventureStarted, setVentureStarted] = useState(false);
 
 
   const fetchProgress = useCallback(async () => {
@@ -40,6 +42,9 @@ export function DashboardProgress() {
       { data: nrDecoder },
       { data: profile },
       { data: entOnboarding },
+      { count: consultingCount },
+      { count: ideasCount },
+      { count: applicationsCount },
     ] = await Promise.all([
       supabase.from("learning_journeys").select("*").eq("user_id", user.id),
       supabase.from("natural_roles").select("*").eq("user_id", user.id).maybeSingle(),
@@ -50,7 +55,13 @@ export function DashboardProgress() {
         .eq("user_id", user.id)
         .maybeSingle(),
       supabase.from("entrepreneurial_onboarding").select("is_completed").eq("user_id", user.id).maybeSingle(),
+      supabase.from("consultant_opportunities").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+      supabase.from("startup_ideas").select("id", { count: "exact", head: true }).eq("creator_id", user.id),
+      supabase.from("startup_applications").select("id", { count: "exact", head: true }).eq("applicant_id", user.id),
     ]);
+
+    setConsultingStarted((consultingCount ?? 0) > 0);
+    setVentureStarted(((ideasCount ?? 0) + (applicationsCount ?? 0)) > 0);
 
     setNaturalRoleComplete(!!naturalRole?.description);
     setNrDecoderComplete(!!nrDecoder);
@@ -124,6 +135,9 @@ export function DashboardProgress() {
       .on("postgres_changes", { event: "*", schema: "public", table: "nr_decoder_submissions", filter: `user_id=eq.${user.id}` }, fetchProgress)
       .on("postgres_changes", { event: "*", schema: "public", table: "entrepreneurial_onboarding", filter: `user_id=eq.${user.id}` }, fetchProgress)
       .on("postgres_changes", { event: "*", schema: "public", table: "learning_journeys", filter: `user_id=eq.${user.id}` }, fetchProgress)
+      .on("postgres_changes", { event: "*", schema: "public", table: "consultant_opportunities", filter: `user_id=eq.${user.id}` }, fetchProgress)
+      .on("postgres_changes", { event: "*", schema: "public", table: "startup_ideas", filter: `creator_id=eq.${user.id}` }, fetchProgress)
+      .on("postgres_changes", { event: "*", schema: "public", table: "startup_applications", filter: `applicant_id=eq.${user.id}` }, fetchProgress)
       .subscribe();
 
     return () => {
@@ -230,7 +244,16 @@ export function DashboardProgress() {
               "Track opportunities from LinkedIn or tenders through proposal, delivery and payment distribution.",
             icon: TrendingUp,
             done: false,
-            cta: { label: "Start", to: "/consulting-growth" },
+            cta: { label: consultingStarted ? "Continue" : "Start", to: "/consulting-growth" },
+          },
+          {
+            key: "venture" as const,
+            title: "Launch or join a venture",
+            description:
+              "Kick off your own idea or apply to a co-builder role — get skin in the game.",
+            icon: Lightbulb,
+            done: false,
+            cta: { label: ventureStarted ? "Continue" : "Start", to: "/entrepreneurship" },
           },
         ]
       : []),
