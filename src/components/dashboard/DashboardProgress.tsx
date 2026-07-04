@@ -42,6 +42,9 @@ export function DashboardProgress() {
       { data: nrDecoder },
       { data: profile },
       { data: entOnboarding },
+      { count: consultingCount },
+      { count: ideasCount },
+      { count: applicationsCount },
     ] = await Promise.all([
       supabase.from("learning_journeys").select("*").eq("user_id", user.id),
       supabase.from("natural_roles").select("*").eq("user_id", user.id).maybeSingle(),
@@ -52,7 +55,13 @@ export function DashboardProgress() {
         .eq("user_id", user.id)
         .maybeSingle(),
       supabase.from("entrepreneurial_onboarding").select("is_completed").eq("user_id", user.id).maybeSingle(),
+      supabase.from("consultant_opportunities").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+      supabase.from("startup_ideas").select("id", { count: "exact", head: true }).eq("creator_id", user.id),
+      supabase.from("startup_applications").select("id", { count: "exact", head: true }).eq("applicant_id", user.id),
     ]);
+
+    setConsultingStarted((consultingCount ?? 0) > 0);
+    setVentureStarted(((ideasCount ?? 0) + (applicationsCount ?? 0)) > 0);
 
     setNaturalRoleComplete(!!naturalRole?.description);
     setNrDecoderComplete(!!nrDecoder);
