@@ -569,7 +569,7 @@ function StagePanel({
               />
               {opp.proposal_sent_at && <p className="text-xs text-muted-foreground">Sent {format(new Date(opp.proposal_sent_at), "MMM d, yyyy")}</p>}
               {opp.stage === "propose" && (
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button size="sm" disabled={working || !opp.proposal_file_url} onClick={() => advance("propose", { proposal_sent_at: new Date().toISOString() })}>
                     Mark proposal sent
                   </Button>
