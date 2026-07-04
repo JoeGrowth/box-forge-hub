@@ -557,6 +557,8 @@ const Journey = () => {
         return FINANCE_STEPS;
       case "security":
         return SECURITY_STEPS;
+      case "consultant":
+        return CONSULTANT_STEPS;
     }
   };
 
