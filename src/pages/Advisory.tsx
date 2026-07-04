@@ -362,7 +362,7 @@ const Advisory = () => {
     );
   }
 
-  if (!user || !isApproved) return null;
+  if (!user) return null;
 
   // The actively-viewed learning step details
   const activeViewStep = CONSULTANT_LEARNING_STEPS.find((s) => s.step === viewingStep);
