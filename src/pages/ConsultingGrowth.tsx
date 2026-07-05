@@ -502,6 +502,8 @@ function StagePanel({
   const { toast } = useToast();
   const [working, setWorking] = useState(false);
   const [driverNote, setDriverNote] = useState(opp.driver_note ?? "");
+  const [driverLink, setDriverLink] = useState(opp.driver_link ?? "");
+  const [driverMode, setDriverMode] = useState<"file" | "link">(opp.driver_link ? "link" : "file");
   const [paidAmount, setPaidAmount] = useState(String(opp.paid_amount ?? opp.total_amount ?? ""));
   // Distribution builder state (Mission Setup / Charges / People / Tasks)
   const [budgetLabel, setBudgetLabel] = useState("Budget (EUR)");
