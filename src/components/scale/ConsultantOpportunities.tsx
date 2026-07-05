@@ -204,13 +204,15 @@ export const ConsultantOpportunities = () => {
       source_other: opportunity.source_other || "",
       title: opportunity.title,
       client_name: opportunity.client_name,
-      consulting_firm: opportunity.consulting_firm,
+      consulting_firm: opportunity.consulting_firm || "",
       offer_date: opportunity.offer_date,
       description: opportunity.description || "",
+      opportunity_type: (((opportunity as any).opportunity_type as OpportunityType) || "consultancy"),
       number_of_days: opportunity.number_of_days,
       amount_per_day: Number(opportunity.amount_per_day),
-      currency: ((opportunity as any).currency as Currency) || "TND",
+      currency: (["TND","EUR","USD"].includes((opportunity as any).currency) ? (opportunity as any).currency : "TND") as Currency,
     });
+
     setDialogOpen(true);
   };
 
