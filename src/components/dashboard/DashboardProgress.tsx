@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, CheckCircle2, Circle, FileText, Briefcase, Rocket, Compass, Target, TrendingUp, Lightbulb, Handshake, Send, Share2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, Circle, FileText, Briefcase, Rocket, Compass, Target, TrendingUp, Lightbulb } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,9 +31,6 @@ export function DashboardProgress() {
   const [hasLearningJourneys, setHasLearningJourneys] = useState(false);
   const [consultingStarted, setConsultingStarted] = useState(false);
   const [ventureStarted, setVentureStarted] = useState(false);
-  const [serviceTrialDone, setServiceTrialDone] = useState(false);
-  const [tenderAppliedDone, setTenderAppliedDone] = useState(false);
-  const [advisorPublishedDone, setAdvisorPublishedDone] = useState(false);
 
 
   const fetchProgress = useCallback(async () => {
@@ -63,19 +60,8 @@ export function DashboardProgress() {
       supabase.from("startup_applications").select("id", { count: "exact", head: true }).eq("applicant_id", user.id),
     ]);
 
-    const sb: any = supabase;
-    const servicesRes = await sb.from("consulting_services").select("id", { count: "exact", head: true }).eq("user_id", user.id);
-    const tenderRes = await sb.from("opportunity_applications").select("id", { count: "exact", head: true }).eq("user_id", user.id);
-    const servicesCount: number = servicesRes.count ?? 0;
-    const tenderApplyCount: number = tenderRes.count ?? 0;
-
     setConsultingStarted((consultingCount ?? 0) > 0);
     setVentureStarted(((ideasCount ?? 0) + (applicationsCount ?? 0)) > 0);
-    setServiceTrialDone((servicesCount ?? 0) >= 1);
-    setTenderAppliedDone((tenderApplyCount ?? 0) >= 1);
-    try {
-      setAdvisorPublishedDone(localStorage.getItem(`b4:advisor-published:${user.id}`) === "1");
-    } catch { setAdvisorPublishedDone(false); }
 
     setNaturalRoleComplete(!!naturalRole?.description);
     setNrDecoderComplete(!!nrDecoder);
@@ -152,8 +138,6 @@ export function DashboardProgress() {
       .on("postgres_changes", { event: "*", schema: "public", table: "consultant_opportunities", filter: `user_id=eq.${user.id}` }, fetchProgress)
       .on("postgres_changes", { event: "*", schema: "public", table: "startup_ideas", filter: `creator_id=eq.${user.id}` }, fetchProgress)
       .on("postgres_changes", { event: "*", schema: "public", table: "startup_applications", filter: `applicant_id=eq.${user.id}` }, fetchProgress)
-      .on("postgres_changes", { event: "*", schema: "public", table: "consulting_services", filter: `user_id=eq.${user.id}` }, fetchProgress)
-      .on("postgres_changes", { event: "*", schema: "public", table: "opportunity_applications", filter: `user_id=eq.${user.id}` }, fetchProgress)
       .subscribe();
 
     return () => {
@@ -252,47 +236,17 @@ export function DashboardProgress() {
         ]
       : foundationSteps),
     ...(coreReady
-      ? (() => {
-          const monetizationSubs = [
-            {
-              key: "service-trial" as const,
-              title: "Service Trial — publish your offer",
-              description:
-                "Trial up to 2 trainings, 2 consulting services and 2 workshops linked to your resume.",
-              icon: Handshake,
-              done: serviceTrialDone,
-              cta: { label: serviceTrialDone ? "Review" : "Publish", to: "/publish-consulting" },
-            },
-            {
-              key: "tender-apply" as const,
-              title: "Apply for a tender",
-              description:
-                "Find consulting and project tenders that match your talent and apply with your resume.",
-              icon: Send,
-              done: tenderAppliedDone,
-              cta: { label: tenderAppliedDone ? "See applications" : "Browse tenders", to: "/opportunities?tab=consulting" },
-            },
-            {
-              key: "advisor-publish" as const,
-              title: "Publish your Advisor profile",
-              description:
-                "Make your consulting profile public so tenders and clients can find you.",
-              icon: Share2,
-              done: advisorPublishedDone,
-              cta: { label: advisorPublishedDone ? "View" : "Publish", to: "/publish-talent" },
-            },
-            {
-              key: "consulting-growth" as const,
-              title: "Launch your Consulting Growth",
-              description:
-                "Track opportunities from LinkedIn or tenders through proposal, delivery and payment distribution.",
-              icon: TrendingUp,
-              done: consultingStarted,
-              cta: { label: consultingStarted ? "Continue" : "Start", to: "/consulting-growth" },
-            },
-          ];
-          const monetizationDone = monetizationSubs.every((s) => s.done);
-          const ventureStep = {
+      ? [
+          {
+            key: "consulting-growth" as const,
+            title: "Launch your Consulting Growth",
+            description:
+              "Track opportunities from LinkedIn or tenders through proposal, delivery and payment distribution.",
+            icon: TrendingUp,
+            done: false,
+            cta: { label: consultingStarted ? "Continue" : "Start", to: "/consulting-growth" },
+          },
+          {
             key: "venture" as const,
             title: "Launch or join a venture",
             description:
@@ -300,22 +254,8 @@ export function DashboardProgress() {
             icon: Lightbulb,
             done: false,
             cta: { label: ventureStarted ? "Continue" : "Start", to: "/entrepreneurship" },
-          };
-          if (monetizationDone) {
-            return [
-              {
-                key: "talent-monetization" as const,
-                title: "Talent Monetization set",
-                description: "Services trialed, tender applied, advisor profile published and consulting growth live.",
-                icon: CheckCircle2,
-                done: true,
-                cta: { label: "Review", to: "/consulting-growth" },
-              },
-              ventureStep,
-            ];
-          }
-          return [...monetizationSubs, ventureStep];
-        })()
+          },
+        ]
       : []),
     {
       key: "ent-track",
@@ -398,9 +338,6 @@ export function DashboardProgress() {
                             localStorage.setItem(`b4:venture-start-clicked:${user.id}`, "1");
                           } else if (step.key === "consulting-growth") {
                             localStorage.setItem(`b4:consulting-start-clicked:${user.id}`, "1");
-                          } else if (step.key === "advisor-publish") {
-                            localStorage.setItem(`b4:advisor-published:${user.id}`, "1");
-                            setAdvisorPublishedDone(true);
                           }
                         } catch {}
                       }}
