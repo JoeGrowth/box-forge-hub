@@ -225,46 +225,69 @@ export default function ConsultingGrowth() {
 
       {/* Opportunities */}
       <div className="space-y-3">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold tracking-tight">Opportunities</h2>
-            <p className="text-sm text-muted-foreground">Advance it through the stages.</p>
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="min-w-0">
+            <h2 className="text-lg font-semibold tracking-tight">Your opportunities</h2>
+            <p className="text-sm text-muted-foreground">
+              Track each mission and move it forward, one stage at a time.
+            </p>
           </div>
-          <Button size="sm" onClick={() => setDialogOpen(true)} className="shrink-0">
-            <Plus className="w-4 h-4 mr-1" /> add opportunity
+          <Button
+            size="sm"
+            onClick={() => setDialogOpen(true)}
+            className="shrink-0 w-full sm:w-auto"
+          >
+            <Plus className="w-4 h-4 mr-1" /> Add opportunity
           </Button>
         </div>
 
-        {/* Stage tabs */}
-        <div className="flex flex-wrap items-center gap-1 rounded-lg border border-border bg-muted/40 p-1">
-          {(() => {
-            const tabs: { key: Stage | "all"; label: string; icon: typeof Briefcase; count: number }[] = [
-              { key: "all", label: "Prospects", icon: Briefcase, count: items.length },
-              ...STAGES.map(s => ({
-                key: s.value,
-                label: s.short,
-                icon: s.icon,
-                count: items.filter(i => i.stage === s.value).length,
-              })),
-            ];
-            return tabs.map(t => {
-              const active = stageFilter === t.key;
-              return (
-                <button
-                  key={t.key}
-                  onClick={() => setStageFilter(t.key)}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition ${
-                    active
-                      ? "bg-background text-foreground shadow-sm border border-border"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <t.icon className="w-3.5 h-3.5" />
-                  {t.label} <span className="text-xs opacity-70">({t.count})</span>
-                </button>
-              );
-            });
-          })()}
+        {/* Stage tabs — horizontal pipeline */}
+        {(() => {
+          const allTab = { key: "all" as const, label: "All", icon: Briefcase, count: items.length };
+          const stageTabs = STAGES.map(s => ({
+            key: s.value,
+            label: s.short,
+            icon: s.icon,
+            count: items.filter(i => i.stage === s.value).length,
+          }));
+          const renderBtn = (t: { key: Stage | "all"; label: string; icon: typeof Briefcase; count: number }) => {
+            const active = stageFilter === t.key;
+            return (
+              <button
+                key={t.key}
+                onClick={() => setStageFilter(t.key)}
+                aria-pressed={active}
+                className={`inline-flex shrink-0 items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition ${
+                  active
+                    ? "bg-background text-foreground shadow-sm border border-border font-medium"
+                    : "text-muted-foreground hover:text-foreground hover:bg-background/60"
+                }`}
+              >
+                <t.icon className="w-3.5 h-3.5" />
+                <span>{t.label}</span>
+                <span className={`text-xs rounded-full px-1.5 py-0.5 ${active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
+                  {t.count}
+                </span>
+              </button>
+            );
+          };
+          return (
+            <div className="rounded-lg border border-border bg-muted/40 p-1 overflow-x-auto">
+              <div className="flex items-center gap-1 min-w-max">
+                {renderBtn(allTab)}
+                <span className="mx-1 h-5 w-px bg-border shrink-0" aria-hidden />
+                {stageTabs.map((t, idx) => (
+                  <div key={t.key} className="flex items-center gap-1">
+                    {renderBtn(t)}
+                    {idx < stageTabs.length - 1 && (
+                      <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/50 shrink-0" aria-hidden />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
         </div>
 
         {(() => {
