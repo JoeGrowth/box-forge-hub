@@ -444,6 +444,9 @@ const Opportunities = () => {
     if (kindFilter !== "all" && (tab === "discover" || tab === "recommended" || tab === "created")) {
       base = base.filter((o) => o.category === kindFilter);
     }
+    if (tab === "discover" && kindFilter === "startup") {
+      base = base.filter((o) => !createdIds.has(o.id) && !mineIds.has(o.id));
+    }
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       base = base.filter(
