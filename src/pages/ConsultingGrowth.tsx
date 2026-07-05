@@ -1046,11 +1046,27 @@ function StagePanel({
                             <Input type="number" className="text-right" value={t.percent} onChange={e => updateDistTask(t.id, { percent: parseFloat(e.target.value) || 0 })} />
                           </TableCell>
                           <TableCell className="text-right font-mono">{distFmt(distTaskAmounts[i])}</TableCell>
-                          {distPeople.map((_, pi) => (
-                            <TableCell key={pi} className="text-right font-mono">
-                              {distPerPersonPerTask[i] === null ? "&mdash;" : distFmt(distPerPersonPerTask[i] as number)}
-                            </TableCell>
-                          ))}
+                          {distPeople.map((_, pi) => {
+                            const cell = distPerPersonPerTask[i][pi];
+                            if (cell === null) {
+                              return <TableCell key={pi} className="text-right text-muted-foreground">&mdash;</TableCell>;
+                            }
+                            const share = getShares(t)[pi] ?? 0;
+                            return (
+                              <TableCell key={pi} className="text-right align-top">
+                                <div className="flex items-center justify-end gap-1">
+                                  <Input
+                                    type="number"
+                                    className="h-8 w-16 text-right px-1"
+                                    value={share}
+                                    onChange={e => updateTaskShare(t.id, pi, parseFloat(e.target.value) || 0)}
+                                  />
+                                  <span className="text-xs text-muted-foreground">%</span>
+                                </div>
+                                <div className="text-[11px] text-muted-foreground font-mono mt-0.5">{distFmt(cell)}</div>
+                              </TableCell>
+                            );
+                          })}
                           <TableCell>
                             {!t.locked && (
                               <Button size="icon" variant="ghost" onClick={() => setDistTasks(p => p.filter(x => x.id !== t.id))}>
