@@ -67,18 +67,21 @@ interface ConsultantOpportunity {
   updated_at: string;
 }
 
-type Currency = "TND" | "USD" | "EUR" | "GBP" | "MAD" | "DZD" | "EGP" | "SAR" | "AED";
+type Currency = "TND" | "EUR" | "USD";
 
 const CURRENCIES: { value: Currency; label: string; symbol: string }[] = [
   { value: "TND", label: "TND - Tunisian Dinar", symbol: "TND" },
-  { value: "USD", label: "USD - US Dollar", symbol: "$" },
   { value: "EUR", label: "EUR - Euro", symbol: "€" },
-  { value: "GBP", label: "GBP - British Pound", symbol: "£" },
-  { value: "MAD", label: "MAD - Moroccan Dirham", symbol: "MAD" },
-  { value: "DZD", label: "DZD - Algerian Dinar", symbol: "DZD" },
-  { value: "EGP", label: "EGP - Egyptian Pound", symbol: "EGP" },
-  { value: "SAR", label: "SAR - Saudi Riyal", symbol: "SAR" },
-  { value: "AED", label: "AED - UAE Dirham", symbol: "AED" },
+  { value: "USD", label: "USD - US Dollar", symbol: "$" },
+];
+
+type OpportunityType = "workshop" | "capacity_building" | "audit" | "consultancy";
+
+const OPPORTUNITY_TYPES: { value: OpportunityType; label: string; description: string }[] = [
+  { value: "workshop", label: "Workshop", description: "Short interactive session to transfer skills or align teams." },
+  { value: "capacity_building", label: "Capacity Building", description: "Structured program to strengthen an organization's abilities." },
+  { value: "audit", label: "Audit", description: "Assessment of processes, systems, or performance against a standard." },
+  { value: "consultancy", label: "Consultancy", description: "Advisory engagement to solve a specific business problem." },
 ];
 
 interface FormData {
@@ -89,10 +92,12 @@ interface FormData {
   consulting_firm: string;
   offer_date: string;
   description: string;
+  opportunity_type: OpportunityType;
   number_of_days: number;
   amount_per_day: number;
   currency: Currency;
 }
+
 
 const MAX_OPPORTUNITIES = 20;
 
