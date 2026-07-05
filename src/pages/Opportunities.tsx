@@ -615,22 +615,39 @@ const Opportunities = () => {
                 <div className="flex justify-center py-12">
                   <Loader2 className="w-6 h-6 animate-spin text-primary" />
                 </div>
-              ) : tab === "my-projects" || tab === "collabs" ? (
+              ) : tab === "my-projects" ? (
                 (() => {
-                  const projects = tab === "my-projects" ? myProjects : collabProjects;
-                  const isOwner = tab === "my-projects";
+                  const owned = myProjects.map((p) => ({ ...p, _ownership: "owner" as const }));
+                  const ownedIds = new Set(owned.map((p) => p.id));
+                  const collab = collabProjects
+                    .filter((p) => !ownedIds.has(p.id))
+                    .map((p) => ({ ...p, _ownership: "collab" as const }));
+                  const projects = [...owned, ...collab];
                   if (projects.length === 0) {
-                    return <EmptyState tab={tab} onPost={() => navigate("/entrepreneurship?new=1")} onDiscover={() => setParam("v", null)} />;
+                    return <EmptyState tab="my-projects" onPost={() => navigate("/entrepreneurship?new=1")} onDiscover={() => setParam("v", null)} />;
                   }
                   return (
                     <div className="space-y-3">
                       {projects.map((project) => {
+                        const isOwner = project._ownership === "owner";
                         const episodeLabel = project.current_episode === "validation" ? "MVP" : project.current_episode === "growth" ? "Growth" : "Idea";
+                        const cardTint = isOwner
+                          ? "border-b4-teal/40 bg-b4-teal/5"
+                          : "border-secondary/40 bg-secondary/5";
                         return (
-                          <div key={project.id} className="border border-border rounded-2xl p-4 sm:p-6 bg-card hover:shadow-md transition-shadow">
+                          <div key={project.id} className={`border rounded-2xl p-4 sm:p-6 hover:shadow-md transition-shadow ${cardTint}`}>
                             <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                               <div className="flex-1 min-w-0 w-full">
                                 <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                  <Badge
+                                    className={
+                                      isOwner
+                                        ? "bg-b4-teal text-white text-[10px]"
+                                        : "bg-secondary text-secondary-foreground text-[10px]"
+                                    }
+                                  >
+                                    {isOwner ? "Initiator" : "Equity co-builder"}
+                                  </Badge>
                                   <h3 className="font-display text-base sm:text-lg font-bold text-foreground break-words">{project.title}</h3>
                                   <Badge variant="outline" className="text-[10px]">{episodeLabel}</Badge>
                                   {isOwner && project.review_status && (
