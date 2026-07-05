@@ -269,9 +269,14 @@ export default function ConsultingGrowth() {
 
       {/* Opportunities */}
       <div className="space-y-3">
-        <div>
-          <h2 className="text-lg font-semibold tracking-tight">Opportunities</h2>
-          <p className="text-sm text-muted-foreground">Advance it through the stages.</p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold tracking-tight">Opportunities</h2>
+            <p className="text-sm text-muted-foreground">Advance it through the stages.</p>
+          </div>
+          <Button size="sm" onClick={() => setDialogOpen(true)} className="shrink-0">
+            <Plus className="w-4 h-4 mr-1" /> New opportunity
+          </Button>
         </div>
 
         {/* Stage tabs */}
