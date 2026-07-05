@@ -61,6 +61,7 @@ const Opportunities = () => {
   const { user, loading: authLoading } = useAuth();
   const { loading: onboardingLoading } = useOnboarding();
   const persona = useOpportunityPersona();
+  const { talentFoundationSet, talentMonetized } = useEngineAccess();
 
   // Legacy `?tab=job` (kind) is now `?kind=job`. Backward-compat shim below.
   const tab = (searchParams.get("v") as Tab) || "discover";
