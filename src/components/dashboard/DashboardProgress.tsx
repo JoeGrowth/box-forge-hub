@@ -63,10 +63,11 @@ export function DashboardProgress() {
       supabase.from("startup_applications").select("id", { count: "exact", head: true }).eq("applicant_id", user.id),
     ]);
 
-    const servicesRes: any = await supabase.from("consulting_services").select("id", { count: "exact", head: true }).eq("user_id", user.id);
-    const tenderRes: any = await supabase.from("opportunity_applications").select("id", { count: "exact", head: true }).eq("user_id", user.id);
-    const servicesCount: number | null = servicesRes.count ?? 0;
-    const tenderApplyCount: number | null = tenderRes.count ?? 0;
+    const sb: any = supabase;
+    const servicesRes = await sb.from("consulting_services").select("id", { count: "exact", head: true }).eq("user_id", user.id);
+    const tenderRes = await sb.from("opportunity_applications").select("id", { count: "exact", head: true }).eq("user_id", user.id);
+    const servicesCount: number = servicesRes.count ?? 0;
+    const tenderApplyCount: number = tenderRes.count ?? 0;
 
     setConsultingStarted((consultingCount ?? 0) > 0);
     setVentureStarted(((ideasCount ?? 0) + (applicationsCount ?? 0)) > 0);
