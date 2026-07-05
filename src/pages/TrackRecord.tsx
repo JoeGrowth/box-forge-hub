@@ -486,7 +486,7 @@ const TrackRecord = () => {
                     <Download className="w-4 h-4" />
                     Export PDF
                   </Button>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 min-w-[200px]">
+                  <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 w-full sm:min-w-[200px] sm:w-auto">
                     <div className="flex items-center gap-2 mb-2">
                       <TrendingUp className="w-4 h-4" />
                       <span className="text-sm font-medium">Experience</span>
@@ -595,8 +595,8 @@ const TrackRecord = () => {
                         }`}
                       >
                         <CardHeader>
-                          <div className="flex items-center justify-between">
-                            <CardTitle className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center justify-between gap-y-2 gap-x-3">
+                            <CardTitle className="flex flex-wrap items-center gap-2">
                               <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${hasExp ? "bg-b4-teal/10" : "bg-muted"}`}>
                                 <s.icon className={`w-4 h-4 ${hasExp ? "text-b4-teal" : "text-muted-foreground"}`} />
                               </div>
