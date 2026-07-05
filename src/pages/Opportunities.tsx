@@ -201,6 +201,29 @@ const Opportunities = () => {
     })();
   }, [user, authLoading, expertise?.tags.length]);
 
+  // My Projects / Collabs (mirrors /entrepreneurship)
+  useEffect(() => {
+    if (!user) {
+      setMyProjects([]);
+      setCollabProjects([]);
+      return;
+    }
+    (async () => {
+      const [myRes, teamRes] = await Promise.all([
+        supabase.from("startup_ideas").select("*").eq("creator_id", user.id).order("created_at", { ascending: false }),
+        sb.from("startup_team_members").select("startup_id, role_type").eq("member_user_id", user.id),
+      ]);
+      setMyProjects(myRes.data || []);
+      const ids = ((teamRes.data as any[]) || []).map((m) => m.startup_id).filter(Boolean);
+      if (ids.length > 0) {
+        const { data } = await supabase.from("startup_ideas").select("*").in("id", ids).order("created_at", { ascending: false });
+        setCollabProjects(data || []);
+      } else {
+        setCollabProjects([]);
+      }
+    })();
+  }, [user]);
+
   const allOpportunities = useMemo<
     (Opportunity & { match_score: number; recommendation?: OpportunityRecommendation })[]
   >(() => {
