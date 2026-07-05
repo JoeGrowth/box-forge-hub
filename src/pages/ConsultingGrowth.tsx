@@ -369,7 +369,7 @@ export default function ConsultingGrowth() {
                         <div className="min-w-0 flex-1">
                           <h3 className="font-semibold text-foreground">{o.title}</h3>
                           <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                            <p className="text-xs text-muted-foreground">{o.client_name || "&mdash;"}</p>
+                            <p className="text-xs text-muted-foreground">{o.client_name || "—"}</p>
                             <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4">{o.source}</Badge>
                           </div>
                         </div>
@@ -661,7 +661,7 @@ function StagePanel({
 
       <div className="space-y-4">
         {show("identify") && (
-        <StageBlock n={1} title="Catched &mdash; capture the driver" description="Capture the driver (screenshot, PDF, or external link). This is your mission's origin story — the raw signal that sparked the opportunity. It acts as a permanent prompt for any AI or team member who needs context on how this mission started." active={opp.stage === "identify"} done={idx > 0}>
+        <StageBlock n={1} title="Catched — capture the driver" description="Capture the driver (screenshot, PDF, or external link). This is your mission's origin story — the raw signal that sparked the opportunity. It acts as a permanent prompt for any AI or team member who needs context on how this mission started." active={opp.stage === "identify"} done={idx > 0}>
             <div className="space-y-2">
               <div className="flex gap-2">
                 <Button type="button" size="sm" variant={driverMode === "file" ? "default" : "outline"} className="flex-1" onClick={() => setDriverMode("file")}>
@@ -709,7 +709,7 @@ function StagePanel({
         )}
 
         {show("propose") && (
-        <StageBlock n={2} title="Propose &mdash; technical &amp; financial proposal" description="Upload the Technical & Financial Proposal validated by the client. This document is the negotiated contract of intent — an auditable reference for scope, pricing, and client agreement." active={opp.stage === "propose"} done={idx > 1}>
+        <StageBlock n={2} title="Propose — technical &amp; financial proposal" description="Upload the Technical & Financial Proposal validated by the client. This document is the negotiated contract of intent — an auditable reference for scope, pricing, and client agreement." active={opp.stage === "propose"} done={idx > 1}>
             <div className="space-y-2">
               <Label className="text-xs">Validated Technical &amp; Financial Proposal (PDF)</Label>
               <FileField
@@ -784,7 +784,7 @@ function StagePanel({
 
 
         {show("deliver") && (
-        <StageBlock n={4} title="Deliver &mdash; workshop / training / consulting" description="Deliver the mission, then upload the Mission Report and Invoice (file or link) sent to the client. This locks in the delivery record before revenue recognition and distribution begin." active={opp.stage === "deliver"} done={idx > 3}>
+        <StageBlock n={4} title="Deliver — workshop / training / consulting" description="Deliver the mission, then upload the Mission Report and Invoice (file or link) sent to the client. This locks in the delivery record before revenue recognition and distribution begin." active={opp.stage === "deliver"} done={idx > 3}>
             <div className="space-y-4">
               {/* Mission Report */}
               <div className="space-y-2">
@@ -890,7 +890,7 @@ function StagePanel({
 
 
         {show("payment_distribution") && (
-        <StageBlock n={5} title="Distribute &mdash; payment received &amp; distribution" description="Record payment received and define the distribution. This is where mission economics are finalized — charges, task allocations, and team compensation are settled based on the actual budget collected." active={opp.stage === "payment_distribution"} done={opp.stage === "closed"}>
+        <StageBlock n={5} title="Distribute — payment received &amp; distribution" description="Record payment received and define the distribution. This is where mission economics are finalized — charges, task allocations, and team compensation are settled based on the actual budget collected." active={opp.stage === "payment_distribution"} done={opp.stage === "closed"}>
             <div className="space-y-3">
               {opp.stage !== "closed" ? (
                 <div className="space-y-3">
@@ -1005,7 +1005,7 @@ function StagePanel({
                 {/* Task distribution */}
                 <div>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
-                    <div className="text-sm font-semibold">Internal &amp; Structure &mdash; task distribution</div>
+                    <div className="text-sm font-semibold">Internal &amp; Structure — task distribution</div>
                     <Button size="sm" variant="outline" className="self-start sm:self-auto" onClick={() => setDistTasks(p => {
                       const lockedIdx = p.findIndex(t => t.locked);
                       const newTask: DistTask = { id: distUid(), label: "New task", percent: 0 };
@@ -1049,7 +1049,7 @@ function StagePanel({
                           {distPeople.map((_, pi) => {
                             const cell = distPerPersonPerTask[i][pi];
                             if (cell === null) {
-                              return <TableCell key={pi} className="text-right text-muted-foreground">&mdash;</TableCell>;
+                              return <TableCell key={pi} className="text-right text-muted-foreground">—</TableCell>;
                             }
                             const share = getShares(t)[pi] ?? 0;
                             return (
@@ -1090,7 +1090,7 @@ function StagePanel({
                   </div>
                   {distTotalPercent !== 100 && (
                     <p className="text-xs text-amber-600 mt-2">
-                      Task percentages sum to {distTotalPercent}% &mdash; adjust to reach 100% for a full distribution.
+                      Task percentages sum to {distTotalPercent}% — adjust to reach 100% for a full distribution.
                     </p>
                   )}
                   {taskShareErrors.some(e => e !== null && Math.abs(e - 100) > 0.01) && (
@@ -1109,7 +1109,7 @@ function StagePanel({
 
                 {distributions.length > 0 && (
                   <div className="text-xs text-muted-foreground">
-                    Declared splits: {distributions.map(d => `${d.recipient_name} (${d.percent ?? 0}% &middot; ${Number(d.amount ?? 0).toLocaleString()} ${opp.currency || "EUR"})`).join(" &middot; ")}
+                    Declared splits: {distributions.map(d => `${d.recipient_name} (${d.percent ?? 0}% · ${Number(d.amount ?? 0).toLocaleString()} ${opp.currency || "EUR"})`).join(" · ")}
                   </div>
                 )}
 
@@ -1128,13 +1128,13 @@ function StagePanel({
                   <div className="space-y-3 border-t pt-4">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <div className="text-sm font-semibold">Accounting &mdash; mission closed</div>
+                        <div className="text-sm font-semibold">Accounting — mission closed</div>
                         <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">
                           Mission closed and archived. All financial and operational records are consolidated here, creating a complete data room entry for reporting, auditing, and future reference.
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {opp.client_name || "&mdash;"}
-                          {opp.paid_at && <> &middot; paid {format(new Date(opp.paid_at), "MMM d, yyyy")}</>}
+                          {opp.client_name || "—"}
+                          {opp.paid_at && <> · paid {format(new Date(opp.paid_at), "MMM d, yyyy")}</>}
                         </p>
                       </div>
                       <div className="text-right shrink-0">
@@ -1152,7 +1152,7 @@ function StagePanel({
                           <CheckCircle2 className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
                           <div className="flex-1">
                             <span className="font-medium">1. Catched</span>
-                            <span className="text-muted-foreground"> &mdash; source: {SOURCES.find(s => s.value === opp.source)?.label || opp.source}</span>
+                            <span className="text-muted-foreground"> — source: {SOURCES.find(s => s.value === opp.source)?.label || opp.source}</span>
                             {opp.driver_file_url && <button className="ml-2 text-primary underline" onClick={() => openFile(opp.driver_file_url)}>driver</button>}
                             {opp.driver_link && <a className="ml-2 text-primary underline" href={opp.driver_link} target="_blank" rel="noreferrer">driver link</a>}
                             {opp.driver_note && <div className="text-muted-foreground italic">"{opp.driver_note}"</div>}
@@ -1163,7 +1163,7 @@ function StagePanel({
                           <div className="flex-1">
                             <span className="font-medium">2. Proposal</span>
                             <span className="text-muted-foreground">
-                              {opp.proposal_sent_at ? ` &mdash; sent ${format(new Date(opp.proposal_sent_at), "MMM d, yyyy")}` : " &mdash; sent"}
+                              {opp.proposal_sent_at ? ` — sent ${format(new Date(opp.proposal_sent_at), "MMM d, yyyy")}` : " — sent"}
                             </span>
                             {opp.proposal_file_url && <button className="ml-2 text-primary underline" onClick={() => openFile(opp.proposal_file_url)}>file</button>}
                           </div>
@@ -1173,7 +1173,7 @@ function StagePanel({
                           <div className="flex-1">
                             <span className="font-medium">3. Confirm &amp; prepare</span>
                             <span className="text-muted-foreground">
-                              {opp.client_confirmed_at && ` &mdash; confirmed ${format(new Date(opp.client_confirmed_at), "MMM d, yyyy")}`}
+                              {opp.client_confirmed_at && ` — confirmed ${format(new Date(opp.client_confirmed_at), "MMM d, yyyy")}`}
                             </span>
                             {opp.process_file_url && <button className="ml-2 text-primary underline" onClick={() => openFile(opp.process_file_url)}>process</button>}
                           </div>
@@ -1183,7 +1183,7 @@ function StagePanel({
                           <div className="flex-1">
                             <span className="font-medium">4. Deliver</span>
                             <span className="text-muted-foreground">
-                              {opp.delivered_at && ` &mdash; delivered ${format(new Date(opp.delivered_at), "MMM d, yyyy")}`}
+                              {opp.delivered_at && ` — delivered ${format(new Date(opp.delivered_at), "MMM d, yyyy")}`}
                             </span>
                           </div>
                         </div>
@@ -1192,10 +1192,10 @@ function StagePanel({
                           <div className="flex-1">
                             <span className="font-medium">5. receive and distribute</span>
                             <span className="text-muted-foreground">
-                              {opp.paid_at && ` &mdash; paid ${format(new Date(opp.paid_at), "MMM d, yyyy")}`}
-                              {" &middot; "}{budgetLabel}: {distFmt(Number(opp.paid_amount ?? opp.total_amount ?? 0))} {opp.currency}
-                              {" &middot; charges: "}{distFmt(distChargesTotal)}
-                              {" &middot; pool: "}{distFmt(distInternalPool)}
+                              {opp.paid_at && ` — paid ${format(new Date(opp.paid_at), "MMM d, yyyy")}`}
+                              {" · "}{budgetLabel}: {distFmt(Number(opp.paid_amount ?? opp.total_amount ?? 0))} {opp.currency}
+                              {" · charges: "}{distFmt(distChargesTotal)}
+                              {" · pool: "}{distFmt(distInternalPool)}
                             </span>
                           </div>
                         </div>
