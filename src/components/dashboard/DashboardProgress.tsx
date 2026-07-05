@@ -333,6 +333,26 @@ export function DashboardProgress() {
   ];
 
 
+  if (!loaded) {
+    return (
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between gap-3">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              Shape your talent
+            </CardTitle>
+          </div>
+          <Progress value={0} className="h-2" />
+        </CardHeader>
+        <CardContent className="space-y-3 px-3 sm:px-6">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="h-16 rounded-xl bg-muted/40 animate-pulse" />
+          ))}
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
