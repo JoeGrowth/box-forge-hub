@@ -47,6 +47,8 @@ export function useEngineAccess() {
   const { isAdmin, loading: adminLoading } = useAdmin();
   const [engines, setEngines] = useState<EngineAccessMap>(DEFAULT_MAP);
   const [loading, setLoading] = useState(true);
+  const [talentFoundationSet, setTalentFoundationSet] = useState(false);
+  const [talentMonetized, setTalentMonetized] = useState(false);
 
   useEffect(() => {
     let alive = true;
