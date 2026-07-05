@@ -89,7 +89,8 @@ interface Distribution {
 const SOURCES = [
   { value: "linkedin", label: "LinkedIn" },
   { value: "word_of_mouth", label: "Word of mouth / Referral" },
-  { value: "other", label: "Tender / Direct / Partner / Other" },
+  { value: "tender_direct_partner", label: "Tender / Direct / Partner" },
+  { value: "custom", label: "Other (specify)…" },
 ];
 
 const STAGES: { value: Stage; label: string; short: string; icon: typeof Briefcase }[] = [
