@@ -77,12 +77,46 @@ const initialData: EntrepreneurialData = {
   board_equity_details: "",
 };
 
+const STORAGE_PREFIX = "entrepreneurialOnboarding:";
+
 const EntrepreneurialOnboarding = () => {
   const { user, loading: authLoading } = useAuth();
   const { onboardingState, updateOnboardingState, loading: onboardingLoading } = useOnboarding();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [data, setData] = useState<EntrepreneurialData>(initialData);
+  const [hydrated, setHydrated] = useState(false);
+
+  const storageKey = user ? `${STORAGE_PREFIX}${user.id}` : null;
+
+  // Hydrate persisted step + answers on mount / user change
+  useEffect(() => {
+    if (!storageKey) return;
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.data) setData({ ...initialData, ...parsed.data });
+        if (typeof parsed?.currentStep === "number" && parsed.currentStep >= 1 && parsed.currentStep <= 7) {
+          setCurrentStep(parsed.currentStep);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to restore onboarding progress:", e);
+    } finally {
+      setHydrated(true);
+    }
+  }, [storageKey]);
+
+  // Persist step + answers whenever they change
+  useEffect(() => {
+    if (!storageKey || !hydrated) return;
+    try {
+      localStorage.setItem(storageKey, JSON.stringify({ currentStep, data }));
+    } catch (e) {
+      console.error("Failed to persist onboarding progress:", e);
+    }
+  }, [storageKey, hydrated, currentStep, data]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -377,7 +411,11 @@ const EntrepreneurialOnboarding = () => {
       return (
         <EntrepreneurialReviewStep
           data={data}
-          onSubmit={async () => {}}
+          onSubmit={async () => {
+            if (storageKey) {
+              try { localStorage.removeItem(storageKey); } catch {}
+            }
+          }}
         />
       );
     }
