@@ -31,12 +31,17 @@ const sb = supabase as any;
 
 type Tab = "discover" | "recommended" | "mine" | "applications" | "created";
 
-const TABS: { key: Tab; label: string; icon: React.ReactNode; hint: string }[] = [
+const TABS: { key: Tab; label: string; icon: React.ReactNode; hint: string; dividerBefore?: boolean }[] = [
   { key: "discover",     label: "Discover",        icon: <Sparkles className="w-4 h-4" />,    hint: "Every open opportunity in the graph." },
   { key: "recommended",  label: "Recommended",     icon: <Sparkles className="w-4 h-4" />,    hint: "Ranked for you by skill, trust, and intent." },
-  { key: "mine",         label: "My opportunities", icon: <Users className="w-4 h-4" />,      hint: "Relationships you're already in." },
+  { key: "mine",         label: "My opportunities", icon: <Users className="w-4 h-4" />,      hint: "Relationships you're already in.", dividerBefore: true },
   { key: "applications", label: "My applications", icon: <Inbox className="w-4 h-4" />,       hint: "Pending and historical applications." },
   { key: "created",      label: "Created by me",   icon: <FilePlus2 className="w-4 h-4" />,    hint: "Opportunities you posted." },
+];
+
+const PROJECT_LINKS: { key: string; label: string; icon: React.ReactNode; to: string }[] = [
+  { key: "my-projects",  label: "My Projects", icon: <Lightbulb className="w-4 h-4" />, to: "/entrepreneurship?tab=my" },
+  { key: "collabs",      label: "Collabs",     icon: <Users className="w-4 h-4" />,     to: "/entrepreneurship?tab=collaborations" },
 ];
 
 const KINDS: { key: OpportunityCategory; label: string }[] = [
@@ -312,18 +317,33 @@ const Opportunities = () => {
             <div className="container mx-auto px-4">
               <div className="flex items-center gap-1 overflow-x-auto border-b border-border">
                 {TABS.map((t) => (
-                  <button
-                    key={t.key}
-                    onClick={() => setParam("v", t.key === "discover" ? null : t.key)}
-                    className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
-                      tab === t.key
-                        ? "border-primary text-foreground"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
-                    }`}
+                  <div key={t.key} className="flex items-center">
+                    {t.dividerBefore && (
+                      <span aria-hidden className="mx-2 h-5 w-px bg-border/70 shrink-0" />
+                    )}
+                    <button
+                      onClick={() => setParam("v", t.key === "discover" ? null : t.key)}
+                      className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
+                        tab === t.key
+                          ? "border-primary text-foreground"
+                          : "border-transparent text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {t.icon}
+                      {t.label}
+                    </button>
+                  </div>
+                ))}
+                <span aria-hidden className="mx-2 h-5 w-px bg-border/70 shrink-0" />
+                {PROJECT_LINKS.map((p) => (
+                  <Link
+                    key={p.key}
+                    to={p.to}
+                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium border-b-2 border-transparent text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    {t.icon}
-                    {t.label}
-                  </button>
+                    {p.icon}
+                    {p.label}
+                  </Link>
                 ))}
               </div>
             </div>
