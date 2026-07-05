@@ -774,6 +774,7 @@ function EmptyState({ tab, onPost, onDiscover }: { tab: Tab; onPost: () => void;
     mine:         { title: "You're not in any opportunities yet.", body: "Once an application is accepted, the resulting relationship shows up here.", cta: { label: "Discover opportunities", onClick: onDiscover } },
     applications: { title: "No applications yet.", body: "Apply from any opportunity detail page.", cta: { label: "Discover opportunities", onClick: onDiscover } },
     created:      { title: "You haven't posted any opportunities.", body: "Post a job, training, or open a startup role.", cta: { label: "Post one", onClick: onPost } },
+    ecosystem:    { title: "No projects seeking co-builders right now.", body: "Check back soon or start your own!", cta: { label: "Start a venture", onClick: onPost } },
     "my-projects": { title: "You haven't created any ventures yet.", body: "Start a project to see it here.", cta: { label: "Start a venture", onClick: onPost } },
     collabs:      { title: "You're not collaborating on any ventures yet.", body: "Apply to a co-builder role to join a team.", cta: { label: "Discover ventures", onClick: onDiscover } },
   };
