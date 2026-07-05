@@ -1081,7 +1081,7 @@ function StagePanel({
                         <TableCell className="text-right">{distTotalPercent}%</TableCell>
                         <TableCell className="text-right">{distFmt(distTaskAmounts.reduce((s, a) => s + a, 0))}</TableCell>
                         {distPeople.map((_, i) => (
-                          <TableCell key={i} className="text-right bg-foreground text-background">{distFmt(distPerPersonEqual)}</TableCell>
+                          <TableCell key={i} className="text-right bg-foreground text-background font-mono">{distFmt(distPerPersonTotal[i] || 0)}</TableCell>
                         ))}
                         <TableCell />
                       </TableRow>
