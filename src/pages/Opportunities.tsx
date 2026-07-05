@@ -622,7 +622,8 @@ const Opportunities = () => {
                   const collab = collabProjects
                     .filter((p) => !ownedIds.has(p.id))
                     .map((p) => ({ ...p, _ownership: "collab" as const }));
-                  const projects = [...owned, ...collab];
+                  // Joined ventures first, then user's own initiated
+                  const projects = [...collab, ...owned];
                   if (projects.length === 0) {
                     return <EmptyState tab="my-projects" onPost={() => navigate("/entrepreneurship?new=1")} onDiscover={() => setParam("v", null)} />;
                   }
