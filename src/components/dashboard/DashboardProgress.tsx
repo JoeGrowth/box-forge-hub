@@ -250,17 +250,47 @@ export function DashboardProgress() {
         ]
       : foundationSteps),
     ...(coreReady
-      ? [
-          {
-            key: "consulting-growth" as const,
-            title: "Launch your Consulting Growth",
-            description:
-              "Track opportunities from LinkedIn or tenders through proposal, delivery and payment distribution.",
-            icon: TrendingUp,
-            done: false,
-            cta: { label: consultingStarted ? "Continue" : "Start", to: "/consulting-growth" },
-          },
-          {
+      ? (() => {
+          const monetizationSubs = [
+            {
+              key: "service-trial" as const,
+              title: "Service Trial — publish your offer",
+              description:
+                "Trial up to 2 trainings, 2 consulting services and 2 workshops linked to your resume.",
+              icon: Handshake,
+              done: serviceTrialDone,
+              cta: { label: serviceTrialDone ? "Review" : "Publish", to: "/publish-consulting" },
+            },
+            {
+              key: "tender-apply" as const,
+              title: "Apply for a tender",
+              description:
+                "Find consulting and project tenders that match your talent and apply with your resume.",
+              icon: Send,
+              done: tenderAppliedDone,
+              cta: { label: tenderAppliedDone ? "See applications" : "Browse tenders", to: "/opportunities?tab=consulting" },
+            },
+            {
+              key: "advisor-publish" as const,
+              title: "Publish your Advisor profile",
+              description:
+                "Make your consulting profile public so tenders and clients can find you.",
+              icon: Share2,
+              done: advisorPublishedDone,
+              cta: { label: advisorPublishedDone ? "View" : "Publish", to: "/publish-talent" },
+            },
+            {
+              key: "consulting-growth" as const,
+              title: "Launch your Consulting Growth",
+              description:
+                "Track opportunities from LinkedIn or tenders through proposal, delivery and payment distribution.",
+              icon: TrendingUp,
+              done: consultingStarted,
+              cta: { label: consultingStarted ? "Continue" : "Start", to: "/consulting-growth" },
+            },
+          ];
+          const monetizationDone = monetizationSubs.every((s) => s.done);
+          const ventureStep = {
             key: "venture" as const,
             title: "Launch or join a venture",
             description:
@@ -268,8 +298,22 @@ export function DashboardProgress() {
             icon: Lightbulb,
             done: false,
             cta: { label: ventureStarted ? "Continue" : "Start", to: "/entrepreneurship" },
-          },
-        ]
+          };
+          if (monetizationDone) {
+            return [
+              {
+                key: "talent-monetization" as const,
+                title: "Talent Monetization set",
+                description: "Services trialed, tender applied, advisor profile published and consulting growth live.",
+                icon: CheckCircle2,
+                done: true,
+                cta: { label: "Review", to: "/consulting-growth" },
+              },
+              ventureStep,
+            ];
+          }
+          return [...monetizationSubs, ventureStep];
+        })()
       : []),
     {
       key: "ent-track",
