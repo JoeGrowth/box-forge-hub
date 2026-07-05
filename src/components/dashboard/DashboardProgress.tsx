@@ -97,13 +97,6 @@ export function DashboardProgress() {
     setContractorsDelivered(contractors);
     setEquityDelivered(equity);
 
-    const { count: txCount } = await supabase
-      .from("transactions")
-      .select("id", { count: "exact", head: true })
-      .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`);
-    setTransactionsCount(txCount ?? 0);
-
-
     setNaturalRoleComplete(!!naturalRole?.description);
     setNrDecoderComplete(!!nrDecoder);
 
