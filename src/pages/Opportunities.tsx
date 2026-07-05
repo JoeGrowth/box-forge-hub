@@ -644,7 +644,7 @@ const Opportunities = () => {
                                     className={
                                       isOwner
                                         ? "bg-b4-teal text-white text-[10px]"
-                                        : "bg-secondary text-secondary-foreground text-[10px]"
+                                        : "bg-b4-coral text-white text-[10px]"
                                     }
                                   >
                                     {isOwner ? "Initiator" : "Equity co-builder"}
