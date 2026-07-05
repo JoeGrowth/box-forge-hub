@@ -48,11 +48,19 @@ export function useProgressionLadder(): ProgressionLadder {
   const { isAdmin, loading: adminLoading } = useAdmin();
   const { talentReady, talentCompleted, talentTotal, loading: talentLoading } = useTalentReadiness();
   const [state, setState] = useState<ProgressionLadder>(EMPTY_LADDER);
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    const handler = () => setTick((t) => t + 1);
+    window.addEventListener("ladder:refresh", handler);
+    return () => window.removeEventListener("ladder:refresh", handler);
+  }, []);
 
   useEffect(() => {
     if (authLoading || adminLoading || talentLoading) return;
     if (!user) { setState({ ...EMPTY_LADDER, loading: false }); return; }
     let alive = true;
+
 
     (async () => {
       const uid = user.id;
@@ -139,7 +147,7 @@ export function useProgressionLadder(): ProgressionLadder {
     })();
 
     return () => { alive = false; };
-  }, [user, authLoading, isAdmin, adminLoading, talentReady, talentLoading]);
+  }, [user, authLoading, isAdmin, adminLoading, talentReady, talentLoading, tick]);
 
   return state;
 }
