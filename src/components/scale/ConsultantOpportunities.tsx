@@ -669,7 +669,7 @@ export const ConsultantOpportunities = () => {
             {/* Client & Consulting Firm */}
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="client">Client Name *</Label>
+                <Label htmlFor="client">Client *</Label>
                 <Input
                   id="client"
                   placeholder="e.g., Association Calam Tunisia"
@@ -678,15 +678,41 @@ export const ConsultantOpportunities = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="firm">Consulting Firm *</Label>
+                <Label htmlFor="firm">Consulting Firm</Label>
                 <Input
                   id="firm"
-                  placeholder="e.g., Angry Penguin"
+                  placeholder="e.g., Angry Penguin (optional)"
                   value={formData.consulting_firm}
                   onChange={(e) => setFormData({ ...formData, consulting_firm: e.target.value })}
                 />
               </div>
             </div>
+
+            {/* Type */}
+            <div className="space-y-2">
+              <Label htmlFor="opp-type">Type *</Label>
+              <Select
+                value={formData.opportunity_type}
+                onValueChange={(value: OpportunityType) =>
+                  setFormData({ ...formData, opportunity_type: value })
+                }
+              >
+                <SelectTrigger id="opp-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {OPPORTUNITY_TYPES.map((t) => (
+                    <SelectItem key={t.value} value={t.value}>
+                      {t.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {OPPORTUNITY_TYPES.find((t) => t.value === formData.opportunity_type)?.description}
+              </p>
+            </div>
+
             
             {/* Date */}
             <div className="space-y-2">
