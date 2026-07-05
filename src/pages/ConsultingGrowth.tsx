@@ -622,22 +622,48 @@ function StagePanel({
 
       <div className="space-y-4">
         {show("identify") && (
-        <StageBlock n={1} title="Catched &mdash; upload the driver" description="Upload the driver (screenshot or PDF). This is your mission's origin story — the raw signal that sparked the opportunity. It acts as a permanent prompt for any AI or team member who needs context on how this mission started." active={opp.stage === "identify"} done={idx > 0}>
+        <StageBlock n={1} title="Catched &mdash; capture the driver" description="Capture the driver (screenshot, PDF, or external link). This is your mission's origin story — the raw signal that sparked the opportunity. It acts as a permanent prompt for any AI or team member who needs context on how this mission started." active={opp.stage === "identify"} done={idx > 0}>
             <div className="space-y-2">
-              <Label className="text-xs">Driver PDF or screenshot (LinkedIn post, tender, email&hellip;)</Label>
-              <FileField
-                accept="application/pdf,image/*"
-                url={opp.driver_file_url}
-                onOpen={() => openFile(opp.driver_file_url)}
-                onPick={async (f) => {
-                  const p = await uploadFile(f, "driver");
-                  if (p) await patch({ driver_file_url: p });
-                }}
-              />
+              <div className="flex gap-2">
+                <Button type="button" size="sm" variant={driverMode === "file" ? "default" : "outline"} className="flex-1" onClick={() => setDriverMode("file")}>
+                  <Upload className="w-3.5 h-3.5 mr-1" /> Upload file
+                </Button>
+                <Button type="button" size="sm" variant={driverMode === "link" ? "default" : "outline"} className="flex-1" onClick={() => setDriverMode("link")}>
+                  <ExternalLink className="w-3.5 h-3.5 mr-1" /> Paste link
+                </Button>
+              </div>
+
+              {driverMode === "file" ? (
+                <>
+                  <Label className="text-xs">Driver PDF or screenshot (LinkedIn post, tender, email&hellip;)</Label>
+                  <FileField
+                    accept="application/pdf,image/*"
+                    url={opp.driver_file_url}
+                    onOpen={() => openFile(opp.driver_file_url)}
+                    onPick={async (f) => {
+                      const p = await uploadFile(f, "driver");
+                      if (p) await patch({ driver_file_url: p });
+                    }}
+                  />
+                </>
+              ) : (
+                <>
+                  <Label className="text-xs">Driver link (Google Drive, Dropbox, shared doc&hellip;)</Label>
+                  <div className="flex gap-2">
+                    <Input value={driverLink} onChange={e => setDriverLink(e.target.value)} onBlur={() => driverLink !== (opp.driver_link ?? "") && patch({ driver_link: driverLink || null })} placeholder="https://drive.google.com/..." />
+                    {opp.driver_link && (
+                      <Button size="sm" variant="ghost" onClick={() => window.open(opp.driver_link!, "_blank")}>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                </>
+              )}
+
               <Label className="text-xs mt-2">Note</Label>
               <Textarea rows={2} value={driverNote} onChange={e => setDriverNote(e.target.value)} onBlur={() => driverNote !== (opp.driver_note ?? "") && patch({ driver_note: driverNote })} placeholder="Context, contact, link&hellip;" />
               {opp.stage === "identify" && (
-                <Button className="w-full" size="sm" disabled={working || !opp.driver_file_url} onClick={() => advance("propose")}>
+                <Button className="w-full" size="sm" disabled={working || (!opp.driver_file_url && !opp.driver_link)} onClick={() => advance("propose")}>
                   Next: prepare proposal <ArrowRight className="w-3 h-3 ml-1" />
                 </Button>
               )}
