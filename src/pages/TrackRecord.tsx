@@ -417,8 +417,8 @@ const TrackRecord = () => {
     return (
       <div className="mt-3 space-y-1.5">
         {extras.map((e, i) => (
-          <div key={i} className="flex gap-2">
-            <span className="text-xs font-medium text-muted-foreground min-w-[80px]">{e.label}:</span>
+          <div key={i} className="flex flex-col sm:flex-row gap-0.5 sm:gap-2">
+            <span className="text-xs font-medium text-muted-foreground sm:min-w-[80px]">{e.label}:</span>
             <span className="text-xs text-foreground">{e.value}</span>
           </div>
         ))}
@@ -437,14 +437,14 @@ const TrackRecord = () => {
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <FileText className="w-8 h-8" />
-                  <h1 className="font-display text-3xl font-bold">Your Track Record</h1>
+                  <h1 className="font-display text-2xl md:text-3xl font-bold">Your Track Record</h1>
                 </div>
                 <p className="text-primary-foreground/80 max-w-xl">
                   Review and update your entrepreneurial achievements across initiatives, products, teams, business, and value contributions.
                 </p>
               </div>
               {data && (
-                <div className="flex items-start gap-4">
+                <div className="flex flex-col sm:flex-row items-start gap-4 w-full sm:w-auto">
                   <Button
                     variant="hero-outline"
                     onClick={async () => {
@@ -486,7 +486,7 @@ const TrackRecord = () => {
                     <Download className="w-4 h-4" />
                     Export PDF
                   </Button>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 min-w-[200px]">
+                  <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 w-full sm:min-w-[200px] sm:w-auto">
                     <div className="flex items-center gap-2 mb-2">
                       <TrendingUp className="w-4 h-4" />
                       <span className="text-sm font-medium">Experience</span>
@@ -595,8 +595,8 @@ const TrackRecord = () => {
                         }`}
                       >
                         <CardHeader>
-                          <div className="flex items-center justify-between">
-                            <CardTitle className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center justify-between gap-y-2 gap-x-3">
+                            <CardTitle className="flex flex-wrap items-center gap-2">
                               <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${hasExp ? "bg-b4-teal/10" : "bg-muted"}`}>
                                 <s.icon className={`w-4 h-4 ${hasExp ? "text-b4-teal" : "text-muted-foreground"}`} />
                               </div>

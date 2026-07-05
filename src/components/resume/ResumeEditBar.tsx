@@ -19,7 +19,7 @@ export default function ResumeEditBar({
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container max-w-5xl mx-auto px-4 py-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">
             Editing mode — make your changes above
           </p>
