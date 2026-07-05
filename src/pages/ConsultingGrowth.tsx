@@ -716,7 +716,7 @@ function StagePanel({
         )}
 
         {show("deliver") && (
-        <StageBlock n={4} title="Deliver &mdash; workshop / training / consulting" active={opp.stage === "deliver"} done={idx > 3}>
+        <StageBlock n={4} title="Deliver &mdash; workshop / training / consulting" description="Confirm mission completion. This timestamp marks the transition from execution to accountability. It locks in the delivery record before revenue recognition and distribution begin." active={opp.stage === "deliver"} done={idx > 3}>
             <div className="space-y-2">
               {opp.delivered_at && <p className="text-xs text-muted-foreground">Delivered {format(new Date(opp.delivered_at), "MMM d, yyyy")}</p>}
               {opp.stage === "deliver" && (
