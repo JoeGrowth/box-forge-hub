@@ -1248,7 +1248,7 @@ function StageBlock({
   n, title, description, active, done, children,
 }: { n: number; title: string; description?: string; active: boolean; done: boolean; children: React.ReactNode }) {
   return (
-    <div className={`border rounded-lg p-3 ${active ? "border-primary bg-primary/5" : done ? "opacity-80" : "opacity-60"}`}>
+    <div className={`border rounded-lg p-3 sm:p-4 overflow-hidden ${active ? "border-primary bg-primary/5" : done ? "opacity-80" : "opacity-60"}`}>
       <div className="flex items-center gap-2 mb-1">
         <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${done ? "bg-primary text-primary-foreground" : active ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}>
           {done ? <CheckCircle2 className="w-3 h-3" /> : n}
