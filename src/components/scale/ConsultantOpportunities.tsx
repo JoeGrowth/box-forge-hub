@@ -67,18 +67,21 @@ interface ConsultantOpportunity {
   updated_at: string;
 }
 
-type Currency = "TND" | "USD" | "EUR" | "GBP" | "MAD" | "DZD" | "EGP" | "SAR" | "AED";
+type Currency = "TND" | "EUR" | "USD";
 
 const CURRENCIES: { value: Currency; label: string; symbol: string }[] = [
   { value: "TND", label: "TND - Tunisian Dinar", symbol: "TND" },
-  { value: "USD", label: "USD - US Dollar", symbol: "$" },
   { value: "EUR", label: "EUR - Euro", symbol: "€" },
-  { value: "GBP", label: "GBP - British Pound", symbol: "£" },
-  { value: "MAD", label: "MAD - Moroccan Dirham", symbol: "MAD" },
-  { value: "DZD", label: "DZD - Algerian Dinar", symbol: "DZD" },
-  { value: "EGP", label: "EGP - Egyptian Pound", symbol: "EGP" },
-  { value: "SAR", label: "SAR - Saudi Riyal", symbol: "SAR" },
-  { value: "AED", label: "AED - UAE Dirham", symbol: "AED" },
+  { value: "USD", label: "USD - US Dollar", symbol: "$" },
+];
+
+type OpportunityType = "workshop" | "capacity_building" | "audit" | "consultancy";
+
+const OPPORTUNITY_TYPES: { value: OpportunityType; label: string; description: string }[] = [
+  { value: "workshop", label: "Workshop", description: "Short interactive session to transfer skills or align teams." },
+  { value: "capacity_building", label: "Capacity Building", description: "Structured program to strengthen an organization's abilities." },
+  { value: "audit", label: "Audit", description: "Assessment of processes, systems, or performance against a standard." },
+  { value: "consultancy", label: "Consultancy", description: "Advisory engagement to solve a specific business problem." },
 ];
 
 interface FormData {
@@ -89,10 +92,12 @@ interface FormData {
   consulting_firm: string;
   offer_date: string;
   description: string;
+  opportunity_type: OpportunityType;
   number_of_days: number;
   amount_per_day: number;
   currency: Currency;
 }
+
 
 const MAX_OPPORTUNITIES = 20;
 
@@ -120,10 +125,12 @@ export const ConsultantOpportunities = () => {
     consulting_firm: "",
     offer_date: "",
     description: "",
+    opportunity_type: "consultancy",
     number_of_days: 1,
     amount_per_day: 0,
     currency: "TND",
   });
+
 
   const fetchOpportunities = useCallback(async () => {
     if (!user) return;
@@ -167,6 +174,7 @@ export const ConsultantOpportunities = () => {
       consulting_firm: "",
       offer_date: "",
       description: "",
+      opportunity_type: "consultancy",
       number_of_days: 1,
       amount_per_day: 0,
       currency: "TND",
@@ -174,6 +182,7 @@ export const ConsultantOpportunities = () => {
     setTechnicalOfferFile(null);
     setEditingId(null);
   };
+
 
   const openAddDialog = () => {
     if (opportunities.length >= MAX_OPPORTUNITIES) {
@@ -195,13 +204,15 @@ export const ConsultantOpportunities = () => {
       source_other: opportunity.source_other || "",
       title: opportunity.title,
       client_name: opportunity.client_name,
-      consulting_firm: opportunity.consulting_firm,
+      consulting_firm: opportunity.consulting_firm || "",
       offer_date: opportunity.offer_date,
       description: opportunity.description || "",
+      opportunity_type: (((opportunity as any).opportunity_type as OpportunityType) || "consultancy"),
       number_of_days: opportunity.number_of_days,
       amount_per_day: Number(opportunity.amount_per_day),
-      currency: ((opportunity as any).currency as Currency) || "TND",
+      currency: (["TND","EUR","USD"].includes((opportunity as any).currency) ? (opportunity as any).currency : "TND") as Currency,
     });
+
     setDialogOpen(true);
   };
 
@@ -239,14 +250,11 @@ export const ConsultantOpportunities = () => {
       toast({ title: "Error", description: "Client name is required.", variant: "destructive" });
       return;
     }
-    if (!formData.consulting_firm.trim()) {
-      toast({ title: "Error", description: "Consulting firm name is required.", variant: "destructive" });
-      return;
-    }
     if (!formData.offer_date) {
       toast({ title: "Error", description: "Offer date is required.", variant: "destructive" });
       return;
     }
+
     if (formData.source === "other" && !formData.source_other.trim()) {
       toast({ title: "Error", description: "Please specify the source.", variant: "destructive" });
       return;
@@ -280,12 +288,14 @@ export const ConsultantOpportunities = () => {
         source_other: formData.source === "other" ? formData.source_other : null,
         title: formData.title.trim(),
         client_name: formData.client_name.trim(),
-        consulting_firm: formData.consulting_firm.trim(),
+        consulting_firm: formData.consulting_firm.trim() || null,
         offer_date: formData.offer_date,
         description: formData.description.trim() || null,
+        opportunity_type: formData.opportunity_type,
         number_of_days: formData.number_of_days,
         amount_per_day: formData.amount_per_day,
         currency: formData.currency,
+
         ...(technicalOfferUrl && { technical_offer_url: technicalOfferUrl }),
       };
       
@@ -659,7 +669,7 @@ export const ConsultantOpportunities = () => {
             {/* Client & Consulting Firm */}
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="client">Client Name *</Label>
+                <Label htmlFor="client">Client *</Label>
                 <Input
                   id="client"
                   placeholder="e.g., Association Calam Tunisia"
@@ -668,15 +678,41 @@ export const ConsultantOpportunities = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="firm">Consulting Firm *</Label>
+                <Label htmlFor="firm">Consulting Firm</Label>
                 <Input
                   id="firm"
-                  placeholder="e.g., Angry Penguin"
+                  placeholder="e.g., Angry Penguin (optional)"
                   value={formData.consulting_firm}
                   onChange={(e) => setFormData({ ...formData, consulting_firm: e.target.value })}
                 />
               </div>
             </div>
+
+            {/* Type */}
+            <div className="space-y-2">
+              <Label htmlFor="opp-type">Type *</Label>
+              <Select
+                value={formData.opportunity_type}
+                onValueChange={(value: OpportunityType) =>
+                  setFormData({ ...formData, opportunity_type: value })
+                }
+              >
+                <SelectTrigger id="opp-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {OPPORTUNITY_TYPES.map((t) => (
+                    <SelectItem key={t.value} value={t.value}>
+                      {t.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {OPPORTUNITY_TYPES.find((t) => t.value === formData.opportunity_type)?.description}
+              </p>
+            </div>
+
             
             {/* Date */}
             <div className="space-y-2">
@@ -729,7 +765,7 @@ export const ConsultantOpportunities = () => {
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                 <div className="space-y-2">
                   <Label htmlFor="days" className="text-xs text-muted-foreground">
-                    Number of Days
+                    Number of Days (Estimated)
                   </Label>
                   <Input
                     id="days"
@@ -741,8 +777,9 @@ export const ConsultantOpportunities = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="rate" className="text-xs text-muted-foreground">
-                    Amount per Day
+                    Amount per Day (Estimated)
                   </Label>
+
                   <Input
                     id="rate"
                     type="number"
