@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
-import { useEngineAccess } from "@/hooks/useEngineAccess";
 import { supabase } from "@/integrations/supabase/client";
 import { Search, Loader2, ArrowRight, Sparkles, Briefcase, Inbox, FilePlus2, Users, Handshake, Lightbulb, GraduationCap, ChevronRight } from "lucide-react";
 import { OpportunityCardV2 } from "@/components/opportunities/OpportunityCardV2";
@@ -61,7 +60,6 @@ const Opportunities = () => {
   const { user, loading: authLoading } = useAuth();
   const { loading: onboardingLoading } = useOnboarding();
   const persona = useOpportunityPersona();
-  const { talentFoundationSet, talentMonetized } = useEngineAccess();
 
   // Legacy `?tab=job` (kind) is now `?kind=job`. Backward-compat shim below.
   const tab = (searchParams.get("v") as Tab) || "discover";
@@ -78,22 +76,6 @@ const Opportunities = () => {
       setSearchParams(next, { replace: true });
     }
   }, [searchParams, setSearchParams]);
-
-  const hideJobsAndTenders = talentFoundationSet && talentMonetized;
-
-  useEffect(() => {
-    if (hideJobsAndTenders && (kindFilter === "job" || kindFilter === "tender")) {
-      setSearchParams((prev) => {
-        const next = new URLSearchParams(prev);
-        next.delete("kind");
-        return next;
-      }, { replace: true });
-    }
-  }, [hideJobsAndTenders, kindFilter, setSearchParams]);
-
-  const visibleKinds = hideJobsAndTenders
-    ? KINDS.filter((k) => k.key !== "job" && k.key !== "tender")
-    : KINDS;
 
   const setParam = (key: string, value: string | null) => {
     setSearchParams((prev) => {
@@ -360,7 +342,7 @@ const Opportunities = () => {
                   >
                     All kinds
                   </button>
-                  {visibleKinds.map((k) => (
+                  {KINDS.map((k) => (
                     <button
                       key={k.key}
                       onClick={() => setParam("kind", kindFilter === k.key ? null : k.key)}

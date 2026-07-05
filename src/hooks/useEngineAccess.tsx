@@ -47,8 +47,6 @@ export function useEngineAccess() {
   const { isAdmin, loading: adminLoading } = useAdmin();
   const [engines, setEngines] = useState<EngineAccessMap>(DEFAULT_MAP);
   const [loading, setLoading] = useState(true);
-  const [talentFoundationSet, setTalentFoundationSet] = useState(false);
-  const [talentMonetized, setTalentMonetized] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -312,38 +310,6 @@ export function useEngineAccess() {
       };
 
       setEngines({ career, consulting, entrepreneurship });
-      setTalentFoundationSet(talentFoundationSet);
-
-      // ---------- Talent Monetized (consulting delivery counts) ----------
-      const { data: closedOpps } = await supabase
-        .from("consultant_opportunities")
-        .select("id")
-        .eq("user_id", uid)
-        .eq("stage", "closed");
-      if (!alive) return;
-      const closedIds = (closedOpps ?? []).map((o: any) => o.id);
-      let solo = 0;
-      let contractors = 0;
-      if (closedIds.length > 0) {
-        const { data: dists } = await supabase
-          .from("consultant_opportunity_distributions")
-          .select("opportunity_id, recipient_name, note")
-          .in("opportunity_id", closedIds);
-        if (!alive) return;
-        const byOpp: Record<string, { name: string; note: string | null }[]> = {};
-        (dists ?? []).forEach((d: any) => {
-          (byOpp[d.opportunity_id] ||= []).push({ name: d.recipient_name || "", note: d.note });
-        });
-        for (const id of closedIds) {
-          const list = byOpp[id] || [];
-          const hasEquity = list.some((r) =>
-            /associé|associe|equity|partner|co[- ]?builder/i.test(`${r.name} ${r.note ?? ""}`)
-          );
-          if (list.length <= 1) solo++;
-          else if (!hasEquity) contractors++;
-        }
-      }
-      setTalentMonetized(solo >= 3 && contractors >= 7);
       setLoading(false);
     })();
 
@@ -352,8 +318,5 @@ export function useEngineAccess() {
     };
   }, [user, isAdmin, authLoading, adminLoading]);
 
-  return useMemo(
-    () => ({ engines, loading, isAdmin, talentFoundationSet, talentMonetized }),
-    [engines, loading, isAdmin, talentFoundationSet, talentMonetized]
-  );
+  return useMemo(() => ({ engines, loading, isAdmin }), [engines, loading, isAdmin]);
 }
