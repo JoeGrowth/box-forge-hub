@@ -296,21 +296,12 @@ export function DashboardProgress() {
                 },
                 {
                   key: "consulting-contractors" as const,
-                  title: `Deliver 7 missions in Solo + Contractors mode (${Math.min(contractorsDelivered, 7)}/7)`,
+                  title: `Structure your Consulting Growth (${Math.min(contractorsDelivered, 7)}/7)`,
                   description:
-                    "Close 7 paid missions where the distribution pool is split between you and one or more contractors.",
+                    "Track opportunities from LinkedIn or tenders through proposal, delivery and payment distribution with contractors.",
                   icon: Users,
                   done: contractorsDelivered >= 7,
                   cta: { label: contractorsDelivered > 0 ? "Continue" : "Start", to: "/consulting-growth" },
-                },
-                {
-                  key: "consulting-equity" as const,
-                  title: `Deliver 5 missions with Equity Partner (Co-Builder) + Contractors (${Math.min(equityDelivered, 5)}/5)`,
-                  description:
-                    "Close 5 paid missions where the pool is split with an equity partner (Associé 2 / Co-Builder) alongside contractors.",
-                  icon: Handshake,
-                  done: equityDelivered >= 5,
-                  cta: { label: equityDelivered > 0 ? "Continue" : "Start", to: "/consulting-growth" },
                 },
               ]),
           {
