@@ -4,7 +4,7 @@
 //
 // The 4-question card (OpportunityCardV2) is mounted in every tab.
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
@@ -13,9 +13,20 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Loader2, ArrowRight, Sparkles, Briefcase, Inbox, FilePlus2, Users, Handshake, Lightbulb, GraduationCap, ChevronRight } from "lucide-react";
+import { Search, Loader2, ArrowRight, Sparkles, Briefcase, Inbox, FilePlus2, Users, Handshake, Lightbulb, GraduationCap, ChevronRight, Trash2, Eye, Layers, Film, Shield, TrendingUp, CheckCircle } from "lucide-react";
 import { OpportunityCardV2 } from "@/components/opportunities/OpportunityCardV2";
+import { IdeaDevelopDialog } from "@/components/idea/IdeaDevelopDialog";
+import { IdeaValidationDialog } from "@/components/idea/IdeaValidationDialog";
+import { IdeaGrowthDialog } from "@/components/idea/IdeaGrowthDialog";
+import { IdeaEpisodesDialog } from "@/components/idea/IdeaEpisodesDialog";
+import { TeamManagementDialog } from "@/components/idea/TeamManagementDialog";
+import { FiveElementsDialog } from "@/components/idea/FiveElementsDialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 import type { Opportunity } from "@/components/opportunities/OpportunityCard";
 import { SEEDED_OPPORTUNITIES } from "@/data/seededOpportunities";
