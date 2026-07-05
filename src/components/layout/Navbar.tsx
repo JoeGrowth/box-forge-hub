@@ -60,11 +60,6 @@ const guestNavLinks: Array<{ name: string; path: string; icon: typeof Briefcase 
 ];
 
 
-const engineLinks: Array<{ name: string; path: string; icon: typeof Briefcase; key: EngineKey }> = [
-  { name: "Career", path: "/career", icon: Briefcase, key: "career" },
-  { name: "Consulting", path: "/consulting", icon: Handshake, key: "consulting" },
-  { name: "Entrepreneurship", path: "/entrepreneurship", icon: Lightbulb, key: "entrepreneurship" },
-];
 
 const publishLinks: Array<{
   name: string;
