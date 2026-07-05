@@ -571,19 +571,6 @@ const Opportunities = () => {
               <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <Link
-                    to="/publish-consulting"
-                    className="group flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:border-b4-teal/50 transition-colors"
-                  >
-                    <div className="w-10 h-10 rounded-lg bg-b4-teal/10 flex items-center justify-center shrink-0">
-                      <Handshake className="w-5 h-5 text-b4-teal" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground">Consulting</p>
-                      <p className="text-xs text-muted-foreground">Create a service</p>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-b4-teal transition-colors" />
-                  </Link>
-                  <Link
                     to="/create-idea"
                     className="group flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:border-b4-teal/50 transition-colors"
                   >
@@ -606,6 +593,19 @@ const Opportunities = () => {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground">Training</p>
                       <p className="text-xs text-muted-foreground">Submit a training</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-b4-teal transition-colors" />
+                  </Link>
+                  <Link
+                    to="/publish-consulting"
+                    className="group flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:border-b4-teal/50 transition-colors"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-b4-teal/10 flex items-center justify-center shrink-0">
+                      <Handshake className="w-5 h-5 text-b4-teal" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">Consulting</p>
+                      <p className="text-xs text-muted-foreground">Create a service</p>
                     </div>
                     <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-b4-teal transition-colors" />
                   </Link>
