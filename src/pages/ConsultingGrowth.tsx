@@ -620,13 +620,13 @@ function StagePanel({
     // Reset existing rows for this mission
     const del = await supabase.from("consultant_opportunity_distributions").delete().eq("opportunity_id", opp.id);
     if (del.error) { toast({ title: "Failed", description: del.error.message, variant: "destructive" }); return; }
-    // Compute per-person amount from splittable tasks
+    // Compute per-person amount from splittable tasks using custom shares
     const perPerson: Record<string, number> = {};
     distPeople.forEach(p => { perPerson[p] = 0; });
     distTasks.forEach((t, i) => {
       if (t.locked || distPeople.length === 0) return;
-      const per = distTaskAmounts[i] / distPeople.length;
-      distPeople.forEach(p => { perPerson[p] += per; });
+      const shares = getShares(t);
+      distPeople.forEach((p, pi) => { perPerson[p] += (distTaskAmounts[i] * (shares[pi] || 0)) / 100; });
     });
     const rows = distPeople.map(p => ({
       opportunity_id: opp.id,
