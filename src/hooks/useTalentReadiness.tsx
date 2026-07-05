@@ -46,7 +46,7 @@ export function useTalentReadiness(): TalentReadiness {
 
     // Platform admins bypass every gate.
     if (isAdmin) {
-      setState({ loading: false, talentReady: true, isOrgAdmin: true, missing: [] });
+      setState({ loading: false, talentReady: true, isOrgAdmin: true, missing: [], talentCompleted: TALENT_TOTAL, talentTotal: TALENT_TOTAL });
       return;
     }
 
