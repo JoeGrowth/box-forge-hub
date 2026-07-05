@@ -141,6 +141,7 @@ const Opportunities = () => {
   const [deleteType, setDeleteType] = useState<"archive" | "permanent" | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [ecosystemTeamCounts, setEcosystemTeamCounts] = useState<Record<string, number>>({});
+  const [ecosystemStartups, setEcosystemStartups] = useState<any[]>([]);
   const [applyProject, setApplyProject] = useState<any>(null);
 
   const { expertise } = useExpertise(user?.id);
