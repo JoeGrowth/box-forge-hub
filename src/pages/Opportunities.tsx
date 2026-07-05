@@ -132,6 +132,8 @@ const Opportunities = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteType, setDeleteType] = useState<"archive" | "permanent" | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [ecosystemTeamCounts, setEcosystemTeamCounts] = useState<Record<string, number>>({});
+  const [applyProject, setApplyProject] = useState<any>(null);
 
   const { expertise } = useExpertise(user?.id);
   const userSkillNames = expertise?.tags ?? [];
