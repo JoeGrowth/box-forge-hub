@@ -850,6 +850,15 @@ const Opportunities = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {applyProject && (
+        <ApplyToJoinDialog
+          open={!!applyProject}
+          onOpenChange={(open) => { if (!open) setApplyProject(null); }}
+          idea={applyProject}
+          onApplicationSubmitted={refreshMyAndCollabs}
+        />
+      )}
     </div>
   );
 };
