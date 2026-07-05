@@ -253,7 +253,7 @@ const Opportunities = () => {
     } else if (tab === "created") {
       base = base.filter((o) => createdIds.has(o.id));
     }
-    if (kindFilter !== "all" && (tab === "discover" || tab === "recommended")) {
+    if (kindFilter !== "all" && (tab === "discover" || tab === "recommended" || tab === "created")) {
       base = base.filter((o) => o.category === kindFilter);
     }
     if (searchQuery) {
