@@ -499,7 +499,9 @@ const Opportunities = () => {
           <section className="pb-3">
             <div className="container mx-auto px-4">
               <div className="flex items-center gap-1 overflow-x-auto border-b border-border">
-                {TABS.map((t) => (
+                {TABS.filter((t) => !t.requiresFoundation || talentFoundationSet).map((t) => {
+                  const dim = t.dimWhenMonetized && talentFoundationSet && talentMonetized;
+                  return (
                   <div key={t.key} className="flex items-center">
                     {t.dividerBefore && (
                       <span aria-hidden className="mx-2 h-5 w-px bg-border/70 shrink-0" />
@@ -510,13 +512,14 @@ const Opportunities = () => {
                         tab === t.key
                           ? "border-primary text-foreground"
                           : "border-transparent text-muted-foreground hover:text-foreground"
-                      }`}
+                      } ${dim ? "opacity-10 hover:opacity-100" : ""}`}
                     >
                       {t.icon}
                       {t.label}
                     </button>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </section>
