@@ -29,7 +29,7 @@ import { useOpportunityPersona, type OpportunityCategory } from "@/hooks/useOppo
 
 const sb = supabase as any;
 
-type Tab = "discover" | "recommended" | "mine" | "applications" | "created";
+type Tab = "discover" | "recommended" | "mine" | "applications" | "created" | "my-projects" | "collabs";
 
 const TABS: { key: Tab; label: string; icon: React.ReactNode; hint: string; dividerBefore?: boolean }[] = [
   { key: "discover",     label: "Discover",        icon: <Sparkles className="w-4 h-4" />,    hint: "Every open opportunity in the graph." },
@@ -37,11 +37,8 @@ const TABS: { key: Tab; label: string; icon: React.ReactNode; hint: string; divi
   { key: "mine",         label: "My opportunities", icon: <Users className="w-4 h-4" />,      hint: "Relationships you're already in.", dividerBefore: true },
   { key: "applications", label: "My applications", icon: <Inbox className="w-4 h-4" />,       hint: "Pending and historical applications." },
   { key: "created",      label: "Created by me",   icon: <FilePlus2 className="w-4 h-4" />,    hint: "Opportunities you posted." },
-];
-
-const PROJECT_LINKS: { key: string; label: string; icon: React.ReactNode; to: string }[] = [
-  { key: "my-projects",  label: "My Projects", icon: <Lightbulb className="w-4 h-4" />, to: "/entrepreneurship?tab=my" },
-  { key: "collabs",      label: "Collabs",     icon: <Users className="w-4 h-4" />,     to: "/entrepreneurship?tab=collaborations" },
+  { key: "my-projects",  label: "My Projects",     icon: <Lightbulb className="w-4 h-4" />,   hint: "Startup ventures you created.", dividerBefore: true },
+  { key: "collabs",      label: "Collabs",         icon: <Users className="w-4 h-4" />,       hint: "Ventures you're contributing to as a co-builder." },
 ];
 
 const KINDS: { key: OpportunityCategory; label: string }[] = [
@@ -100,6 +97,8 @@ const Opportunities = () => {
   const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
   const [createdIds, setCreatedIds] = useState<Set<string>>(new Set());
   const [mineIds, setMineIds] = useState<Set<string>>(new Set());
+  const [myProjects, setMyProjects] = useState<any[]>([]);
+  const [collabProjects, setCollabProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const { expertise } = useExpertise(user?.id);
@@ -201,6 +200,29 @@ const Opportunities = () => {
       setLoading(false);
     })();
   }, [user, authLoading, expertise?.tags.length]);
+
+  // My Projects / Collabs (mirrors /entrepreneurship)
+  useEffect(() => {
+    if (!user) {
+      setMyProjects([]);
+      setCollabProjects([]);
+      return;
+    }
+    (async () => {
+      const [myRes, teamRes] = await Promise.all([
+        supabase.from("startup_ideas").select("*").eq("creator_id", user.id).order("created_at", { ascending: false }),
+        sb.from("startup_team_members").select("startup_id, role_type").eq("member_user_id", user.id),
+      ]);
+      setMyProjects(myRes.data || []);
+      const ids = ((teamRes.data as any[]) || []).map((m) => m.startup_id).filter(Boolean);
+      if (ids.length > 0) {
+        const { data } = await supabase.from("startup_ideas").select("*").in("id", ids).order("created_at", { ascending: false });
+        setCollabProjects(data || []);
+      } else {
+        setCollabProjects([]);
+      }
+    })();
+  }, [user]);
 
   const allOpportunities = useMemo<
     (Opportunity & { match_score: number; recommendation?: OpportunityRecommendation })[]
@@ -334,17 +356,6 @@ const Opportunities = () => {
                     </button>
                   </div>
                 ))}
-                <span aria-hidden className="mx-2 h-5 w-px bg-border/70 shrink-0" />
-                {PROJECT_LINKS.map((p) => (
-                  <Link
-                    key={p.key}
-                    to={p.to}
-                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium border-b-2 border-transparent text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {p.icon}
-                    {p.label}
-                  </Link>
-                ))}
               </div>
             </div>
           </section>
@@ -443,6 +454,20 @@ const Opportunities = () => {
                 <div className="flex justify-center py-12">
                   <Loader2 className="w-6 h-6 animate-spin text-primary" />
                 </div>
+              ) : tab === "my-projects" || tab === "collabs" ? (
+                (() => {
+                  const projects = tab === "my-projects" ? myProjects : collabProjects;
+                  if (projects.length === 0) {
+                    return <EmptyState tab={tab} onPost={() => navigate("/entrepreneurship?new=1")} onDiscover={() => setParam("v", null)} />;
+                  }
+                  return (
+                    <div className="space-y-3">
+                      {projects.map((p) => (
+                        <ProjectRow key={p.id} project={p} isOwner={tab === "my-projects"} />
+                      ))}
+                    </div>
+                  );
+                })()
               ) : filtered.length === 0 ? (
                 <EmptyState tab={tab} onPost={() => navigate("/publish-job")} onDiscover={() => setParam("v", null)} />
               ) : (
@@ -466,6 +491,40 @@ const Opportunities = () => {
   );
 };
 
+function ProjectRow({ project, isOwner }: { project: any; isOwner: boolean }) {
+  const episodeLabel = project.current_episode === "validation" ? "MVP" : project.current_episode === "growth" ? "Growth" : "Idea";
+  return (
+    <div className="border border-border rounded-2xl p-5 bg-card hover:border-b4-teal/40 transition-colors">
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap mb-1">
+            <h3 className="font-semibold text-foreground text-base">{project.title}</h3>
+            <Badge variant="outline" className="text-[10px]">{episodeLabel}</Badge>
+            {project.sector && <Badge variant="secondary" className="text-[10px]">{project.sector}</Badge>}
+            {isOwner && project.status && (
+              <Badge variant="outline" className="text-[10px] capitalize">{project.status}</Badge>
+            )}
+          </div>
+          {project.description && (
+            <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
+          )}
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button asChild variant="outline" size="sm">
+            <Link to={`/opportunities/startup/${project.id}`}>Open</Link>
+          </Button>
+          {isOwner && (
+            <Button asChild size="sm">
+              <Link to={`/edit-idea/${project.id}`}>Manage</Link>
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 function EmptyState({ tab, onPost, onDiscover }: { tab: Tab; onPost: () => void; onDiscover: () => void }) {
   const copy: Record<Tab, { title: string; body: string; cta?: { label: string; onClick: () => void } }> = {
     discover:     { title: "No opportunities match your filters.", body: "Try removing kind filters or clearing your search." },
@@ -473,6 +532,8 @@ function EmptyState({ tab, onPost, onDiscover }: { tab: Tab; onPost: () => void;
     mine:         { title: "You're not in any opportunities yet.", body: "Once an application is accepted, the resulting relationship shows up here.", cta: { label: "Discover opportunities", onClick: onDiscover } },
     applications: { title: "No applications yet.", body: "Apply from any opportunity detail page.", cta: { label: "Discover opportunities", onClick: onDiscover } },
     created:      { title: "You haven't posted any opportunities.", body: "Post a job, training, or open a startup role.", cta: { label: "Post one", onClick: onPost } },
+    "my-projects": { title: "You haven't created any ventures yet.", body: "Start a project to see it here.", cta: { label: "Start a venture", onClick: onPost } },
+    collabs:      { title: "You're not collaborating on any ventures yet.", body: "Apply to a co-builder role to join a team.", cta: { label: "Discover ventures", onClick: onDiscover } },
   };
   const c = copy[tab];
   return (
