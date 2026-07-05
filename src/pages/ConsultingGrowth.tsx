@@ -58,6 +58,7 @@ interface Opportunity {
   offer_date: string | null;
   stage: Stage;
   driver_file_url: string | null;
+  driver_link: string | null;
   driver_note: string | null;
   proposal_file_url: string | null;
   proposal_sent_at: string | null;
