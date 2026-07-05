@@ -663,8 +663,6 @@ function StagePanel({
                 </>
               )}
 
-              <Label className="text-xs mt-2">Note</Label>
-              <Textarea rows={2} value={driverNote} onChange={e => setDriverNote(e.target.value)} onBlur={() => driverNote !== (opp.driver_note ?? "") && patch({ driver_note: driverNote })} placeholder="Context, contact, link&hellip;" />
               {opp.stage === "identify" && (
                 <Button className="w-full" size="sm" disabled={working || (!opp.driver_file_url && !opp.driver_link)} onClick={() => advance("propose")}>
                   Next: prepare proposal <ArrowRight className="w-3 h-3 ml-1" />
