@@ -89,7 +89,8 @@ interface Distribution {
 const SOURCES = [
   { value: "linkedin", label: "LinkedIn" },
   { value: "word_of_mouth", label: "Word of mouth / Referral" },
-  { value: "other", label: "Tender / Direct / Partner / Other" },
+  { value: "tender_direct_partner", label: "Tender / Direct / Partner" },
+  { value: "custom", label: "Other (specify)…" },
 ];
 
 const STAGES: { value: Stage; label: string; short: string; icon: typeof Briefcase }[] = [
@@ -134,6 +135,7 @@ const EMPTY_FORM = {
   title: "",
   client_name: "",
   source: "linkedin",
+  source_custom: "",
   opportunity_type: "",
   description: "",
   number_of_days: "",
@@ -210,6 +212,12 @@ export default function ConsultingGrowth() {
       toast({ title: "Type required", description: "Select a mission type.", variant: "destructive" });
       return;
     }
+    const isCustomSrc = form.source === "custom";
+    const customLabel = form.source_custom.trim();
+    if (isCustomSrc && !customLabel) {
+      toast({ title: "Source required", description: "Enter where the opportunity came from.", variant: "destructive" });
+      return;
+    }
     setSaving(true);
     const days = form.number_of_days ? parseInt(form.number_of_days) : null;
     const perDay = form.amount_per_day ? parseFloat(form.amount_per_day) : null;
@@ -218,7 +226,7 @@ export default function ConsultingGrowth() {
       title: form.title.trim(),
       client_name: form.client_name.trim() || null,
       consulting_firm: form.client_name.trim() || null,
-      source: form.source,
+      source: isCustomSrc ? customLabel : form.source,
       opportunity_type: form.opportunity_type || null,
       description: form.description.trim() || null,
       number_of_days: days,
@@ -461,6 +469,14 @@ export default function ConsultingGrowth() {
                 {SOURCES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
               </SelectContent>
             </Select>
+            {form.source === "custom" && (
+              <Input
+                autoFocus
+                value={form.source_custom}
+                onChange={e => setForm({ ...form, source_custom: e.target.value })}
+                placeholder="e.g. Upwork, Malt, cold email, conference…"
+              />
+            )}
           </div>
           <div className="space-y-1">
             <Label htmlFor="opp-client">Client</Label>
