@@ -47,6 +47,7 @@ interface Opportunity {
   title: string;
   client_name: string | null;
   source: string;
+  opportunity_type: string | null;
   description: string | null;
   number_of_days: number | null;
   amount_per_day: number | null;
