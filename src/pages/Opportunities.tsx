@@ -5,7 +5,7 @@
 // The 4-question card (OpportunityCardV2) is mounted in every tab.
 
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Loader2, ArrowRight, Sparkles, Briefcase, Inbox, FilePlus2, Users } from "lucide-react";
+import { Search, Loader2, ArrowRight, Sparkles, Briefcase, Inbox, FilePlus2, Users, Handshake, Lightbulb, GraduationCap, ChevronRight } from "lucide-react";
 import { OpportunityCardV2 } from "@/components/opportunities/OpportunityCardV2";
 import { NextGoalBanner } from "@/components/progression/NextGoalBanner";
 import type { Opportunity } from "@/components/opportunities/OpportunityCard";
