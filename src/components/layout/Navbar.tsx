@@ -59,29 +59,6 @@ const guestNavLinks: Array<{ name: string; path: string; icon: typeof Briefcase 
 
 
 
-const publishLinks: Array<{
-  name: string;
-  path: string;
-  icon: typeof Briefcase;
-  desc: string;
-  orgAdminOnly?: boolean;
-}> = [
-  { name: "Recruiting", path: "/publish-job", icon: Briefcase, desc: "Offer a job", orgAdminOnly: true },
-  { name: "Consulting", path: "/publish-consulting", icon: Handshake, desc: "Create a service" },
-  { name: "Launching", path: "/create-idea", icon: Lightbulb, desc: "Start a venture" },
-  { name: "Training", path: "/publish-training", icon: GraduationCap, desc: "Submit a training" },
-  { name: "Procuring", path: "/procuring", icon: FileText, desc: "Post a tender", orgAdminOnly: true },
-];
-
-const createdByMeLinks: Array<{
-  name: string;
-  path: string;
-  icon: typeof Briefcase;
-}> = [
-  { name: "Consulting", path: "/publish-consulting", icon: Handshake },
-  { name: "Launching", path: "/create-idea", icon: Lightbulb },
-  { name: "Training", path: "/publish-training", icon: GraduationCap },
-];
 
 // `minStage` gates a link behind the user's progression stage. Items without
 // a `minStage` are visible to all authenticated users (subject to talentGate).
