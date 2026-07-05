@@ -97,6 +97,8 @@ const Opportunities = () => {
   const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
   const [createdIds, setCreatedIds] = useState<Set<string>>(new Set());
   const [mineIds, setMineIds] = useState<Set<string>>(new Set());
+  const [myProjects, setMyProjects] = useState<any[]>([]);
+  const [collabProjects, setCollabProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const { expertise } = useExpertise(user?.id);
