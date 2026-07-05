@@ -912,8 +912,10 @@ function StagePanel({
                 </div>
               </div>
 
-              {/* Mission Setup */}
+              {/* Mission Setup — appears only after "Confirm budget paid" */}
+              {opp.paid_at && (
               <div className="border-t pt-4 space-y-4">
+                <div className="text-xs text-muted-foreground -mb-2">Full payment received — configure the distribution below.</div>
                 <div>
                   <div className="text-sm font-semibold mb-2">Mission Setup</div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
