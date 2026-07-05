@@ -729,7 +729,7 @@ function StagePanel({
         )}
 
         {show("payment_distribution") && (
-        <StageBlock n={5} title="Payment received &amp; distribution" active={opp.stage === "payment_distribution"} done={opp.stage === "closed"}>
+        <StageBlock n={5} title="Distribute &mdash; payment received &amp; distribution" description="Record payment received and define the distribution. This is where mission economics are finalized — charges, task allocations, and team compensation are settled based on the actual budget collected." active={opp.stage === "payment_distribution"} done={opp.stage === "closed"}>
             <div className="space-y-3">
               {opp.stage !== "closed" ? (
                 <div className="space-y-3">
