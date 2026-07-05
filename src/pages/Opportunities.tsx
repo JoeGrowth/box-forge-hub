@@ -41,7 +41,7 @@ import { useOpportunityPersona, type OpportunityCategory } from "@/hooks/useOppo
 
 const sb = supabase as any;
 
-type Tab = "discover" | "recommended" | "mine" | "applications" | "created" | "my-projects" | "collabs";
+type Tab = "discover" | "recommended" | "mine" | "applications" | "created" | "ecosystem" | "my-projects" | "collabs";
 
 const TABS: { key: Tab; label: string; icon: React.ReactNode; hint: string; dividerBefore?: boolean }[] = [
   { key: "discover",     label: "Discover",        icon: <Sparkles className="w-4 h-4" />,    hint: "Every open opportunity in the graph." },
@@ -49,7 +49,8 @@ const TABS: { key: Tab; label: string; icon: React.ReactNode; hint: string; divi
   { key: "mine",         label: "My opportunities", icon: <Users className="w-4 h-4" />,      hint: "Relationships you're already in.", dividerBefore: true },
   { key: "applications", label: "My applications", icon: <Inbox className="w-4 h-4" />,       hint: "Pending and historical applications." },
   { key: "created",      label: "Created by me",   icon: <FilePlus2 className="w-4 h-4" />,    hint: "Opportunities you posted." },
-  { key: "my-projects",  label: "My Projects",     icon: <Lightbulb className="w-4 h-4" />,   hint: "Startup ventures you created.", dividerBefore: true },
+  { key: "ecosystem",    label: "Ecosystem",       icon: <Rocket className="w-4 h-4" />,      hint: "Browse startup ventures seeking co-builders.", dividerBefore: true },
+  { key: "my-projects",  label: "My Projects",     icon: <Lightbulb className="w-4 h-4" />,   hint: "Startup ventures you created." },
   { key: "collabs",      label: "Collabs",         icon: <Users className="w-4 h-4" />,       hint: "Ventures you're contributing to as a co-builder." },
 ];
 
