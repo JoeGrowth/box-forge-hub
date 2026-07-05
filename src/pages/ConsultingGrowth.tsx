@@ -74,10 +74,6 @@ interface Opportunity {
   paid_amount: number | null;
   paid_at: string | null;
 }
-  delivered_at: string | null;
-  paid_amount: number | null;
-  paid_at: string | null;
-}
 
 interface Distribution {
   id: string;
