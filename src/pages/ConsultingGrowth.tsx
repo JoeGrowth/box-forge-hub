@@ -1380,3 +1380,61 @@ function FileField({
     </div>
   );
 }
+
+function DistributionRecap({ distributions, currency }: { distributions: Distribution[]; currency: string }) {
+  const [open, setOpen] = useState(false);
+  const totalPct = distributions.reduce((s, d) => s + (d.percent ?? 0), 0);
+  const totalAmt = distributions.reduce((s, d) => s + Number(d.amount ?? 0), 0);
+  return (
+    <div className="rounded-md border bg-muted/20">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between gap-2 p-3 text-left hover:bg-muted/30 transition"
+      >
+        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Distribution recap</span>
+        <span className="flex items-center gap-2 text-xs text-muted-foreground">
+          {distributions.length > 0
+            ? `${distributions.length} recipient${distributions.length > 1 ? "s" : ""}`
+            : "no split declared"}
+          <ChevronRight className={`w-3.5 h-3.5 transition-transform ${open ? "rotate-90" : ""}`} />
+        </span>
+      </button>
+      {open && (
+        <div className="border-t p-3 space-y-2">
+          {distributions.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              No distribution was declared for this mission (step skipped or mission closed without a split).
+            </p>
+          ) : (
+            <div className="overflow-x-auto -mx-3 px-3">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Recipient</TableHead>
+                    <TableHead className="text-right">%</TableHead>
+                    <TableHead className="text-right">Amount ({currency})</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {distributions.map(d => (
+                    <TableRow key={d.id}>
+                      <TableCell className="font-medium">{d.recipient_name}</TableCell>
+                      <TableCell className="text-right">{d.percent ?? 0}%</TableCell>
+                      <TableCell className="text-right font-mono">{distFmt(Number(d.amount ?? 0))}</TableCell>
+                    </TableRow>
+                  ))}
+                  <TableRow className="font-semibold bg-muted/40">
+                    <TableCell>Total distributed</TableCell>
+                    <TableCell className="text-right">{totalPct}%</TableCell>
+                    <TableCell className="text-right font-mono">{distFmt(totalAmt)}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
