@@ -414,6 +414,21 @@ export function Navbar() {
 
 
                 <>
+                  {stageRank >= STAGE_RANK.emerging && (
+                    <Link
+                      to="/people"
+                      onClick={() => setIsOpen(false)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                        location.pathname === "/people"
+                          ? "bg-muted text-b4-teal"
+                          : "text-muted-foreground hover:bg-muted"
+                      }`}
+                    >
+                      <Users size={16} />
+                      <span className="flex-1">People</span>
+                    </Link>
+                  )}
+
                   {talentReady && (
                     <Link
                       to="/opportunities"
