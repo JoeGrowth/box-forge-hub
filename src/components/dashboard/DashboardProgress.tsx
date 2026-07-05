@@ -255,6 +255,7 @@ export function DashboardProgress() {
   ];
 
   const foundationDone = foundationSteps.every((s) => s.done);
+  const talentMonetized = soloDelivered >= 3 && contractorsDelivered >= 7 && equityDelivered >= 5;
 
   const steps = [
     ...(foundationDone
