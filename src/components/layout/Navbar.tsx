@@ -90,7 +90,7 @@ const moreLinks: Array<{
   { name: "Consulting", path: "/consulting", icon: Handshake, engineKey: "consulting" },
   { name: "Entrepreneurship", path: "/entrepreneurship", icon: Lightbulb, engineKey: "entrepreneurship" },
   { name: "Squares", path: "/squares", icon: LayoutGrid },
-  { name: "People", path: "/people", icon: Users, minStage: "emerging" },
+  
   { name: "Boxes", path: "/boxes", icon: Package },
   { name: "Programs", path: "/programs", icon: BookOpen },
   { name: "Organizations", path: "/organizations", icon: Building2, minStage: "emerging" },
