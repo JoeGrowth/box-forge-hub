@@ -56,12 +56,7 @@ export function GatedRoute({
         (minStage && progressionLoading)));
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background p-8">
-        <Skeleton className="h-48 w-full rounded-2xl mb-6" />
-        <Skeleton className="h-96 w-full rounded-2xl" />
-      </div>
-    );
+    return <div className="min-h-screen bg-background" aria-hidden />;
   }
 
   if (!user) {
