@@ -784,17 +784,110 @@ function StagePanel({
 
 
         {show("deliver") && (
-        <StageBlock n={4} title="Deliver &mdash; workshop / training / consulting" description="Confirm mission completion. This timestamp marks the transition from execution to accountability. It locks in the delivery record before revenue recognition and distribution begin." active={opp.stage === "deliver"} done={idx > 3}>
-            <div className="space-y-2">
-              {opp.delivered_at && <p className="text-xs text-muted-foreground">Delivered {format(new Date(opp.delivered_at), "MMM d, yyyy")}</p>}
+        <StageBlock n={4} title="Deliver &mdash; workshop / training / consulting" description="Deliver the mission, then upload the Mission Report and Invoice (file or link) sent to the client. This locks in the delivery record before revenue recognition and distribution begin." active={opp.stage === "deliver"} done={idx > 3}>
+            <div className="space-y-4">
+              {/* Mission Report */}
+              <div className="space-y-2">
+                <div className="text-sm font-semibold">Mission Report</div>
+                <div className="flex gap-2">
+                  <Button type="button" size="sm" variant={reportMode === "file" ? "default" : "outline"} className="flex-1" onClick={() => setReportMode("file")}>
+                    <Upload className="w-3.5 h-3.5 mr-1" /> Upload file
+                  </Button>
+                  <Button type="button" size="sm" variant={reportMode === "link" ? "default" : "outline"} className="flex-1" onClick={() => setReportMode("link")}>
+                    <ExternalLink className="w-3.5 h-3.5 mr-1" /> Paste link
+                  </Button>
+                </div>
+                {reportMode === "file" ? (
+                  <FileField
+                    accept="application/pdf,image/*"
+                    url={opp.report_file_url}
+                    onOpen={() => openFile(opp.report_file_url)}
+                    onPick={async (f) => {
+                      const p = await uploadFile(f, "report");
+                      if (p) await patch({ report_file_url: p });
+                    }}
+                  />
+                ) : (
+                  <div className="flex gap-2">
+                    <Input value={reportLink} onChange={e => setReportLink(e.target.value)} onBlur={() => reportLink !== (opp.report_link ?? "") && patch({ report_link: reportLink || null })} placeholder="https://drive.google.com/..." />
+                    {opp.report_link && (
+                      <Button size="sm" variant="ghost" onClick={() => window.open(opp.report_link!, "_blank")}>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Invoice */}
+              <div className="space-y-2">
+                <div className="text-sm font-semibold">Invoice</div>
+                <div className="flex gap-2">
+                  <Button type="button" size="sm" variant={invoiceMode === "file" ? "default" : "outline"} className="flex-1" onClick={() => setInvoiceMode("file")}>
+                    <Upload className="w-3.5 h-3.5 mr-1" /> Upload file
+                  </Button>
+                  <Button type="button" size="sm" variant={invoiceMode === "link" ? "default" : "outline"} className="flex-1" onClick={() => setInvoiceMode("link")}>
+                    <ExternalLink className="w-3.5 h-3.5 mr-1" /> Paste link
+                  </Button>
+                </div>
+                {invoiceMode === "file" ? (
+                  <FileField
+                    accept="application/pdf,image/*"
+                    url={opp.invoice_file_url}
+                    onOpen={() => openFile(opp.invoice_file_url)}
+                    onPick={async (f) => {
+                      const p = await uploadFile(f, "invoice");
+                      if (p) await patch({ invoice_file_url: p });
+                    }}
+                  />
+                ) : (
+                  <div className="flex gap-2">
+                    <Input value={invoiceLink} onChange={e => setInvoiceLink(e.target.value)} onBlur={() => invoiceLink !== (opp.invoice_link ?? "") && patch({ invoice_link: invoiceLink || null })} placeholder="https://drive.google.com/..." />
+                    {opp.invoice_link && (
+                      <Button size="sm" variant="ghost" onClick={() => window.open(opp.invoice_link!, "_blank")}>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {opp.report_invoice_sent_at && (
+                <p className="text-xs text-muted-foreground">
+                  Report &amp; Invoice sent {format(new Date(opp.report_invoice_sent_at), "MMM d, yyyy")}
+                </p>
+              )}
+              {opp.delivered_at && (
+                <p className="text-xs text-muted-foreground">Delivered {format(new Date(opp.delivered_at), "MMM d, yyyy")}</p>
+              )}
+
               {opp.stage === "deliver" && (
-                <Button className="w-full" size="sm" disabled={working} onClick={() => advance("payment_distribution", { delivered_at: new Date().toISOString() })}>
-                  Confirm delivered &mdash; awaiting payment <ArrowRight className="w-3 h-3 ml-1" />
-                </Button>
+                <div className="flex flex-col gap-2">
+                  <Button
+                    className="w-full"
+                    size="sm"
+                    disabled={working || (!opp.report_file_url && !opp.report_link) || (!opp.invoice_file_url && !opp.invoice_link)}
+                    onClick={() => patch({ report_invoice_sent_at: new Date().toISOString() })}
+                  >
+                    Report &amp; Invoice Sent
+                  </Button>
+                  {opp.report_invoice_sent_at && (
+                    <Button
+                      className="w-full"
+                      size="sm"
+                      variant="outline"
+                      disabled={working}
+                      onClick={() => advance("payment_distribution", { delivered_at: opp.delivered_at ?? new Date().toISOString() })}
+                    >
+                      Awaiting payment <ArrowRight className="w-3 h-3 ml-1" />
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
         </StageBlock>
         )}
+
 
         {show("payment_distribution") && (
         <StageBlock n={5} title="Distribute &mdash; payment received &amp; distribution" description="Record payment received and define the distribution. This is where mission economics are finalized — charges, task allocations, and team compensation are settled based on the actual budget collected." active={opp.stage === "payment_distribution"} done={opp.stage === "closed"}>
