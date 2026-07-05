@@ -736,7 +736,7 @@ function StagePanel({
               {opp.stage === "identify" && (
                 <div className="flex flex-col gap-2">
                   <Button className="w-full" size="sm" disabled={working || (!opp.driver_file_url && !opp.driver_link)} onClick={() => advance("propose")}>
-                    Next: prepare proposal <ArrowRight className="w-3 h-3 ml-1" />
+                    Next <ArrowRight className="w-3 h-3 ml-1" />
                   </Button>
                   {canSkip && (
                     <Button variant="ghost" size="sm" className="w-full text-muted-foreground" disabled={working} onClick={() => advance("propose")}>
@@ -955,21 +955,10 @@ function StagePanel({
                     className="w-full"
                     size="sm"
                     disabled={working || (!opp.report_file_url && !opp.report_link) || (!opp.invoice_file_url && !opp.invoice_link)}
-                    onClick={() => patch({ report_invoice_sent_at: new Date().toISOString() })}
+                    onClick={() => advance("payment_distribution", { report_invoice_sent_at: opp.report_invoice_sent_at ?? new Date().toISOString(), delivered_at: opp.delivered_at ?? new Date().toISOString() })}
                   >
-                    Report &amp; Invoice Sent
+                    Report &amp; Invoice Sent <ArrowRight className="w-3 h-3 ml-1" />
                   </Button>
-                  {opp.report_invoice_sent_at && (
-                    <Button
-                      className="w-full"
-                      size="sm"
-                      variant="outline"
-                      disabled={working}
-                      onClick={() => advance("payment_distribution", { delivered_at: opp.delivered_at ?? new Date().toISOString() })}
-                    >
-                      Awaiting payment <ArrowRight className="w-3 h-3 ml-1" />
-                    </Button>
-                  )}
                   {canSkip && (
                     <Button variant="ghost" size="sm" className="w-full text-muted-foreground" disabled={working} onClick={() => advance("payment_distribution", { delivered_at: opp.delivered_at ?? new Date().toISOString() })}>
                       Skip this step
