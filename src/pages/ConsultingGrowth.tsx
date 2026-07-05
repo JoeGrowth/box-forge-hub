@@ -135,6 +135,7 @@ const EMPTY_FORM = {
   title: "",
   client_name: "",
   source: "linkedin",
+  source_custom: "",
   opportunity_type: "",
   description: "",
   number_of_days: "",
