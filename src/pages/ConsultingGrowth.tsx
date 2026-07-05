@@ -849,10 +849,19 @@ function StagePanel({
                 </>
               )}
 
-              {opp.stage === "confirm_prepare" && (opp.process_file_url || opp.process_link) && (
-                <Button className="w-full" size="sm" disabled={working} onClick={() => advance("deliver", opp.client_confirmed_at ? {} : { client_confirmed_at: new Date().toISOString() })}>
-                  Confirm Client Acceptance <ArrowRight className="w-3 h-3 ml-1" />
-                </Button>
+              {opp.stage === "confirm_prepare" && (
+                <div className="flex flex-col gap-2">
+                  {(opp.process_file_url || opp.process_link) && (
+                    <Button className="w-full" size="sm" disabled={working} onClick={() => advance("deliver", opp.client_confirmed_at ? {} : { client_confirmed_at: new Date().toISOString() })}>
+                      Confirm Client Acceptance <ArrowRight className="w-3 h-3 ml-1" />
+                    </Button>
+                  )}
+                  {canSkip && (
+                    <Button variant="ghost" size="sm" className="w-full text-muted-foreground" disabled={working} onClick={() => advance("deliver", opp.client_confirmed_at ? {} : { client_confirmed_at: new Date().toISOString() })}>
+                      Skip this step
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
         </StageBlock>
