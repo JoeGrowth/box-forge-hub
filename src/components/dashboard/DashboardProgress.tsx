@@ -272,15 +272,6 @@ export function DashboardProgress() {
       : foundationSteps),
     ...(coreReady
       ? [
-          {
-            key: "consulting-growth" as const,
-            title: "Launch your Consulting Growth",
-            description:
-              "Track opportunities from LinkedIn or tenders through proposal, delivery and payment distribution.",
-            icon: TrendingUp,
-            done: false,
-            cta: { label: consultingStarted ? "Continue" : "Start", to: "/consulting-growth" },
-          },
           ...(talentMonetized
             ? [
                 {
