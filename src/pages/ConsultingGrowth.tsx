@@ -937,7 +937,10 @@ function StagePanel({
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <div className="text-sm font-semibold">Accounting &mdash; mission closed</div>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">
+                          Mission closed and archived. All financial and operational records are consolidated here, creating a complete data room entry for reporting, auditing, and future reference.
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
                           {opp.client_name || "&mdash;"}
                           {opp.paid_at && <> &middot; paid {format(new Date(opp.paid_at), "MMM d, yyyy")}</>}
                         </p>
