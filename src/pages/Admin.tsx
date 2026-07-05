@@ -165,11 +165,7 @@ const Admin = () => {
   }, [isAdmin]);
 
   if (authLoading || adminLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
-      </div>
-    );
+    return <div className="min-h-screen bg-background" aria-hidden />;
   }
 
   if (!isAdmin) {

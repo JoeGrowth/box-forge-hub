@@ -214,6 +214,13 @@ const Auth = () => {
     }
   };
 
+  // If we already have a session, hold a neutral background while the
+  // redirect effect above fires — prevents the login form from flashing
+  // for signed-in users who land on /auth.
+  if (user) {
+    return <div className="min-h-screen bg-background" aria-hidden />;
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
