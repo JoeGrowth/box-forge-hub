@@ -61,6 +61,7 @@ interface Opportunity {
   driver_link: string | null;
   driver_note: string | null;
   proposal_file_url: string | null;
+  proposal_link: string | null;
   proposal_sent_at: string | null;
   client_confirmed_at: string | null;
   process_file_url: string | null;
