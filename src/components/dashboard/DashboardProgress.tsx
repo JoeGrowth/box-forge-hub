@@ -396,6 +396,9 @@ export function DashboardProgress() {
                             localStorage.setItem(`b4:venture-start-clicked:${user.id}`, "1");
                           } else if (step.key === "consulting-growth") {
                             localStorage.setItem(`b4:consulting-start-clicked:${user.id}`, "1");
+                          } else if (step.key === "advisor-publish") {
+                            localStorage.setItem(`b4:advisor-published:${user.id}`, "1");
+                            setAdvisorPublishedDone(true);
                           }
                         } catch {}
                       }}
