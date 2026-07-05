@@ -287,7 +287,7 @@ export default function ConsultingGrowth() {
 
 
       {/* Opportunities */}
-      <div className="space-y-3">
+      <div className={`space-y-3 ${advisorGraduated ? "opacity-50 pointer-events-none" : ""}`}>
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="min-w-0">
             <h2 className="text-lg font-semibold tracking-tight">Your Consultancy</h2>
