@@ -288,12 +288,14 @@ export const ConsultantOpportunities = () => {
         source_other: formData.source === "other" ? formData.source_other : null,
         title: formData.title.trim(),
         client_name: formData.client_name.trim(),
-        consulting_firm: formData.consulting_firm.trim(),
+        consulting_firm: formData.consulting_firm.trim() || null,
         offer_date: formData.offer_date,
         description: formData.description.trim() || null,
+        opportunity_type: formData.opportunity_type,
         number_of_days: formData.number_of_days,
         amount_per_day: formData.amount_per_day,
         currency: formData.currency,
+
         ...(technicalOfferUrl && { technical_offer_url: technicalOfferUrl }),
       };
       
