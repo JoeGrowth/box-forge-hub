@@ -198,7 +198,11 @@ export default function PublicProfile() {
               <p className="text-white/80 mb-4">{title}</p>
               <div className="flex flex-wrap gap-2">
                 {trustStyle && <Badge variant="outline" className={`gap-1 ${trustStyle.className}`}><ShieldCheck className="w-3 h-3" /> Trust: {trustStyle.label}</Badge>}
-                {repStyle && <Badge variant="outline" className={repStyle.className}><Award className="w-3 h-3 mr-1" /> {repStyle.label}</Badge>}
+                {repStyle && reputation && (
+                  <Badge variant="outline" className={repStyle.className}>
+                    <Award className="w-3 h-3 mr-1" /> {repStyle.label} · {Math.round(reputation.reputation_score)}
+                  </Badge>
+                )}
                 {ownStyle && <Badge variant="outline" className={ownStyle.className}>Ownership: {ownStyle.label}</Badge>}
                 {profile.preferred_sector && (
                   <Badge variant="outline" className="bg-white/10 text-white border-white/20">
