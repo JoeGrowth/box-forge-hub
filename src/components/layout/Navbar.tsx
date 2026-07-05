@@ -32,6 +32,7 @@ import {
   BarChart3,
   Users,
   LayoutGrid,
+  FolderOpen,
 } from "lucide-react";
 import { useEngineAccess, type EngineKey } from "@/hooks/useEngineAccess";
 import { useTalentReadiness } from "@/hooks/useTalentReadiness";
