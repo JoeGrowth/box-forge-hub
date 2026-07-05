@@ -634,7 +634,7 @@ const Opportunities = () => {
                         const episodeLabel = project.current_episode === "validation" ? "MVP" : project.current_episode === "growth" ? "Growth" : "Idea";
                         const cardTint = isOwner
                           ? "border-b4-teal/40 bg-b4-teal/5"
-                          : "border-secondary/40 bg-secondary/5";
+                          : "border-b4-coral/40 bg-b4-coral/10";
                         return (
                           <div key={project.id} className={`border rounded-2xl p-4 sm:p-6 hover:shadow-md transition-shadow ${cardTint}`}>
                             <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
