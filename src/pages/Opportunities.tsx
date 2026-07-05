@@ -512,7 +512,7 @@ const Opportunities = () => {
                         tab === t.key
                           ? "border-primary text-foreground"
                           : "border-transparent text-muted-foreground hover:text-foreground"
-                      } ${dim ? "opacity-10 hover:opacity-100" : ""}`}
+                      } ${dim ? "bg-muted/10" : ""}`}
                     >
                       {t.icon}
                       {t.label}
