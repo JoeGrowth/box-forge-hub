@@ -34,6 +34,7 @@ export function DashboardProgress() {
   const [contractorsDelivered, setContractorsDelivered] = useState(0);
   const [equityDelivered, setEquityDelivered] = useState(0);
   const [ventureStarted, setVentureStarted] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
 
   const fetchProgress = useCallback(async () => {
