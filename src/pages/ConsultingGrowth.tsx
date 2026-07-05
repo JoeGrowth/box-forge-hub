@@ -1091,6 +1091,7 @@ function StagePanel({
                   </Button>
                 )}
                 </div>
+              )}
                 </div>
               ) : null}
 
