@@ -125,10 +125,12 @@ export const ConsultantOpportunities = () => {
     consulting_firm: "",
     offer_date: "",
     description: "",
+    opportunity_type: "consultancy",
     number_of_days: 1,
     amount_per_day: 0,
     currency: "TND",
   });
+
 
   const fetchOpportunities = useCallback(async () => {
     if (!user) return;
