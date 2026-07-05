@@ -512,6 +512,10 @@ function StagePanel({
   const [driverMode, setDriverMode] = useState<"file" | "link">(opp.driver_link ? "link" : "file");
   const [processLink, setProcessLink] = useState(opp.process_link ?? "");
   const [processMode, setProcessMode] = useState<"file" | "link">(opp.process_link ? "link" : "file");
+  const [reportLink, setReportLink] = useState(opp.report_link ?? "");
+  const [reportMode, setReportMode] = useState<"file" | "link">(opp.report_link ? "link" : "file");
+  const [invoiceLink, setInvoiceLink] = useState(opp.invoice_link ?? "");
+  const [invoiceMode, setInvoiceMode] = useState<"file" | "link">(opp.invoice_link ? "link" : "file");
   const [paidAmount, setPaidAmount] = useState(String(opp.paid_amount ?? opp.total_amount ?? ""));
   // Distribution builder state (Mission Setup / Charges / People / Tasks)
   const [budgetLabel, setBudgetLabel] = useState("Budget (EUR)");
@@ -524,17 +528,44 @@ function StagePanel({
   const distInternalPool = Math.max(0, distBudget - distChargesTotal);
   const distTotalPercent = distTasks.reduce((s, t) => s + (Number(t.percent) || 0), 0);
   const distTaskAmounts = distTasks.map((t) => (distInternalPool * (Number(t.percent) || 0)) / 100);
-  const distSplittableTotal = distTasks.reduce((s, t, i) => (t.locked ? s : s + distTaskAmounts[i]), 0);
-  const distPerPersonEqual = distPeople.length > 0 ? distSplittableTotal / distPeople.length : 0;
-  const distPerPersonPerTask = distTasks.map((t, i) =>
-    t.locked || distPeople.length === 0 ? null : distTaskAmounts[i] / distPeople.length,
+
+  // Per-task share per person (defaults to equal split when not customized)
+  const getShares = (t: DistTask): number[] => {
+    const n = distPeople.length;
+    if (n === 0) return [];
+    const eq = 100 / n;
+    return Array.from({ length: n }, (_, i) => {
+      const v = t.personShares?.[i];
+      return v === undefined || v === null || Number.isNaN(v) ? eq : Number(v);
+    });
+  };
+  const taskShareSum = (t: DistTask) => getShares(t).reduce((s, v) => s + v, 0);
+  // Amount per person per task = taskAmount * share / 100 (null if task is locked / no people)
+  const distPerPersonPerTask: (number | null)[][] = distTasks.map((t, i) => {
+    if (t.locked || distPeople.length === 0) return distPeople.map(() => null);
+    const shares = getShares(t);
+    return shares.map((s) => (distTaskAmounts[i] * s) / 100);
+  });
+  // Column totals (per person across all tasks)
+  const distPerPersonTotal = distPeople.map((_, pi) =>
+    distPerPersonPerTask.reduce((s, row) => s + (typeof row[pi] === "number" ? (row[pi] as number) : 0), 0),
   );
+  // Validation: each unlocked task's shares should sum to 100
+  const taskShareErrors = distTasks.map((t) => (t.locked ? null : Math.round(taskShareSum(t) * 100) / 100));
+
   const updateDistTask = (id: string, patch: Partial<DistTask>) =>
     setDistTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
+  const updateTaskShare = (id: string, personIdx: number, value: number) =>
+    setDistTasks((prev) => prev.map((t) => {
+      if (t.id !== id) return t;
+      const shares = getShares(t);
+      shares[personIdx] = Number.isFinite(value) ? value : 0;
+      return { ...t, personShares: shares };
+    }));
   const updateDistCharge = (id: string, patch: Partial<DistCharge>) =>
     setDistCharges((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
 
-  const uploadFile = async (file: File, kind: "driver" | "proposal" | "process"): Promise<string | null> => {
+  const uploadFile = async (file: File, kind: "driver" | "proposal" | "process" | "report" | "invoice"): Promise<string | null> => {
     const ext = file.name.split(".").pop() || "pdf";
     const path = `${userId}/${opp.id}/${kind}-${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from(BUCKET).upload(path, file, { upsert: true });
