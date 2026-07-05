@@ -329,8 +329,8 @@ const Opportunities = () => {
             </div>
           </section>
 
-          {/* Kind chips + search (Discover / Recommended only) */}
-          {(tab === "discover" || tab === "recommended") && (
+          {/* Kind chips + search (Discover / Recommended / Created) */}
+          {(tab === "discover" || tab === "recommended" || tab === "created") && (
             <section className="pb-3">
               <div className="container mx-auto px-4 space-y-3">
                 <div className="flex items-center gap-2 overflow-x-auto pb-1">
