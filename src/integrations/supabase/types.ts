@@ -973,6 +973,7 @@ export type Database = {
           process_file_url: string | null
           process_link: string | null
           proposal_file_url: string | null
+          proposal_link: string | null
           proposal_sent_at: string | null
           report_file_url: string | null
           report_invoice_sent_at: string | null
@@ -1011,6 +1012,7 @@ export type Database = {
           process_file_url?: string | null
           process_link?: string | null
           proposal_file_url?: string | null
+          proposal_link?: string | null
           proposal_sent_at?: string | null
           report_file_url?: string | null
           report_invoice_sent_at?: string | null
@@ -1049,6 +1051,7 @@ export type Database = {
           process_file_url?: string | null
           process_link?: string | null
           proposal_file_url?: string | null
+          proposal_link?: string | null
           proposal_sent_at?: string | null
           report_file_url?: string | null
           report_invoice_sent_at?: string | null

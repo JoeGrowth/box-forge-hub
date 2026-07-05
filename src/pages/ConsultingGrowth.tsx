@@ -61,6 +61,7 @@ interface Opportunity {
   driver_link: string | null;
   driver_note: string | null;
   proposal_file_url: string | null;
+  proposal_link: string | null;
   proposal_sent_at: string | null;
   client_confirmed_at: string | null;
   process_file_url: string | null;
@@ -247,6 +248,14 @@ export default function ConsultingGrowth() {
   const activeClients = new Set(items.filter(i => i.paid_at).map(i => i.client_name).filter(Boolean)).size;
   const milestonePct = Math.min(100, (closed.length / MILESTONE) * 100);
 
+  // First 3 opportunities (by created order — the earliest) can skip steps.
+  // `items` is ordered by created_at DESC, so the last three are the earliest.
+  const skippableIds = new Set(items.slice(-3).map(i => i.id));
+
+  // After MILESTONE closed missions, the consultant graduates to "advisor" and
+  // must operate through /organizations instead of this personal pipeline.
+  const advisorGraduated = closed.length >= MILESTONE;
+
   return (
     <>
     <div className="container mx-auto px-4 pt-24 pb-8 max-w-5xl space-y-6">
@@ -258,8 +267,27 @@ export default function ConsultingGrowth() {
 
       <NextGoalBanner pageStage="advisor" />
 
+      {advisorGraduated && (
+        <Card className="border-primary/40 bg-primary/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Lock className="w-4 h-4 text-primary" /> You've graduated — status: Advisor
+            </CardTitle>
+            <CardDescription>
+              You've closed {closed.length} paid missions. Solo consulting is capped here.
+              Open your organization and continue mission follow-up from the Organizations workspace.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild size="sm"><a href="/organizations">Go to Organizations <ArrowRight className="w-3.5 h-3.5 ml-1" /></a></Button>
+          </CardContent>
+        </Card>
+      )}
+
+
+
       {/* Opportunities */}
-      <div className="space-y-3">
+      <div className={`space-y-3 ${advisorGraduated ? "opacity-50 pointer-events-none" : ""}`}>
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="min-w-0">
             <h2 className="text-lg font-semibold tracking-tight">Your Consultancy</h2>
@@ -402,6 +430,7 @@ export default function ConsultingGrowth() {
                           onStageChange={(to) => { setStageFilter(to === "closed" ? "closed" : to); setExpandedId(o.id); }}
                           userId={user?.id ?? ""}
                           onlyStage={stageFilter}
+                          canSkip={skippableIds.has(o.id)}
                         />
                       </div>
                     )}
@@ -494,7 +523,7 @@ export default function ConsultingGrowth() {
 // =============================================================================
 
 function StagePanel({
-  opp, distributions, onChanged, onOptimisticPatch, onStageChange, userId, onlyStage,
+  opp, distributions, onChanged, onOptimisticPatch, onStageChange, userId, onlyStage, canSkip,
 }: {
   opp: Opportunity;
   distributions: Distribution[];
@@ -503,6 +532,7 @@ function StagePanel({
   onStageChange?: (to: Stage) => void;
   userId: string;
   onlyStage: Stage | null;
+  canSkip?: boolean;
 }) {
   const show = (s: Stage) => onlyStage === null || onlyStage === s || (onlyStage === "closed" && s === "payment_distribution");
   const { toast } = useToast();
@@ -510,6 +540,8 @@ function StagePanel({
   const [driverNote, setDriverNote] = useState(opp.driver_note ?? "");
   const [driverLink, setDriverLink] = useState(opp.driver_link ?? "");
   const [driverMode, setDriverMode] = useState<"file" | "link">(opp.driver_link ? "link" : "file");
+  const [proposalLink, setProposalLink] = useState(opp.proposal_link ?? "");
+  const [proposalMode, setProposalMode] = useState<"file" | "link">(opp.proposal_link ? "link" : "file");
   const [processLink, setProcessLink] = useState(opp.process_link ?? "");
   const [processMode, setProcessMode] = useState<"file" | "link">(opp.process_link ? "link" : "file");
   const [reportLink, setReportLink] = useState(opp.report_link ?? "");
@@ -700,9 +732,16 @@ function StagePanel({
               )}
 
               {opp.stage === "identify" && (
-                <Button className="w-full" size="sm" disabled={working || (!opp.driver_file_url && !opp.driver_link)} onClick={() => advance("propose")}>
-                  Next: prepare proposal <ArrowRight className="w-3 h-3 ml-1" />
-                </Button>
+                <div className="flex flex-col gap-2">
+                  <Button className="w-full" size="sm" disabled={working || (!opp.driver_file_url && !opp.driver_link)} onClick={() => advance("propose")}>
+                    Next: prepare proposal <ArrowRight className="w-3 h-3 ml-1" />
+                  </Button>
+                  {canSkip && (
+                    <Button variant="ghost" size="sm" className="w-full text-muted-foreground" disabled={working} onClick={() => advance("propose")}>
+                      Skip this step
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
         </StageBlock>
@@ -711,20 +750,58 @@ function StagePanel({
         {show("propose") && (
         <StageBlock n={2} title="Propose — technical &amp; financial proposal" description="Upload the Technical & Financial Proposal validated by the client. This document is the negotiated contract of intent — an auditable reference for scope, pricing, and client agreement." active={opp.stage === "propose"} done={idx > 1}>
             <div className="space-y-2">
-              <Label className="text-xs">Validated Technical &amp; Financial Proposal (PDF)</Label>
-              <FileField
-                accept="application/pdf"
-                url={opp.proposal_file_url}
-                onOpen={() => openFile(opp.proposal_file_url)}
-                onPick={async (f) => {
-                  const p = await uploadFile(f, "proposal");
-                  if (p) await patch({ proposal_file_url: p, proposal_sent_at: opp.proposal_sent_at ?? new Date().toISOString() });
-                }}
-              />
+              <div className="inline-flex w-full rounded-lg bg-muted p-1 gap-1" role="tablist">
+                <button type="button" role="tab" aria-selected={proposalMode === "file"} onClick={() => setProposalMode("file")} className={`flex-1 inline-flex items-center justify-center gap-1.5 h-8 px-2 rounded-md text-xs sm:text-sm font-medium transition-all min-w-0 ${proposalMode === "file" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+                  <Upload className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Upload file</span>
+                </button>
+                <button type="button" role="tab" aria-selected={proposalMode === "link"} onClick={() => setProposalMode("link")} className={`flex-1 inline-flex items-center justify-center gap-1.5 h-8 px-2 rounded-md text-xs sm:text-sm font-medium transition-all min-w-0 ${proposalMode === "link" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+                  <ExternalLink className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Paste link</span>
+                </button>
+              </div>
+
+              {proposalMode === "file" ? (
+                <>
+                  <Label className="text-xs">Validated Technical &amp; Financial Proposal (PDF)</Label>
+                  <FileField
+                    accept="application/pdf"
+                    url={opp.proposal_file_url}
+                    onOpen={() => openFile(opp.proposal_file_url)}
+                    onPick={async (f) => {
+                      const p = await uploadFile(f, "proposal");
+                      if (p) await patch({ proposal_file_url: p, proposal_sent_at: opp.proposal_sent_at ?? new Date().toISOString() });
+                    }}
+                  />
+                </>
+              ) : (
+                <>
+                  <Label className="text-xs">Validated Technical &amp; Financial Proposal link (Google Drive, Dropbox&hellip;)</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={proposalLink}
+                      onChange={e => setProposalLink(e.target.value)}
+                      onBlur={() => proposalLink !== (opp.proposal_link ?? "") && patch({ proposal_link: proposalLink || null, proposal_sent_at: opp.proposal_sent_at ?? (proposalLink ? new Date().toISOString() : null) })}
+                      placeholder="https://drive.google.com/..."
+                    />
+                    {opp.proposal_link && (
+                      <Button size="sm" variant="ghost" onClick={() => window.open(opp.proposal_link!, "_blank")}>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                </>
+              )}
+
               {opp.stage === "propose" && (
-                <Button className="w-full" size="sm" disabled={working || !opp.proposal_file_url} onClick={() => advance("confirm_prepare", { client_confirmed_at: new Date().toISOString() })}>
-                  Confirm Client Acceptance <ArrowRight className="w-3 h-3 ml-1" />
-                </Button>
+                <div className="flex flex-col gap-2">
+                  <Button className="w-full" size="sm" disabled={working || (!opp.proposal_file_url && !opp.proposal_link)} onClick={() => advance("confirm_prepare", { client_confirmed_at: new Date().toISOString() })}>
+                    Confirm Client Acceptance <ArrowRight className="w-3 h-3 ml-1" />
+                  </Button>
+                  {canSkip && (
+                    <Button variant="ghost" size="sm" className="w-full text-muted-foreground" disabled={working} onClick={() => advance("confirm_prepare")}>
+                      Skip this step
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
         </StageBlock>
@@ -772,10 +849,19 @@ function StagePanel({
                 </>
               )}
 
-              {opp.stage === "confirm_prepare" && (opp.process_file_url || opp.process_link) && (
-                <Button className="w-full" size="sm" disabled={working} onClick={() => advance("deliver", opp.client_confirmed_at ? {} : { client_confirmed_at: new Date().toISOString() })}>
-                  Confirm Client Acceptance <ArrowRight className="w-3 h-3 ml-1" />
-                </Button>
+              {opp.stage === "confirm_prepare" && (
+                <div className="flex flex-col gap-2">
+                  {(opp.process_file_url || opp.process_link) && (
+                    <Button className="w-full" size="sm" disabled={working} onClick={() => advance("deliver", opp.client_confirmed_at ? {} : { client_confirmed_at: new Date().toISOString() })}>
+                      Confirm Client Acceptance <ArrowRight className="w-3 h-3 ml-1" />
+                    </Button>
+                  )}
+                  {canSkip && (
+                    <Button variant="ghost" size="sm" className="w-full text-muted-foreground" disabled={working} onClick={() => advance("deliver", opp.client_confirmed_at ? {} : { client_confirmed_at: new Date().toISOString() })}>
+                      Skip this step
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
         </StageBlock>
@@ -880,6 +966,11 @@ function StagePanel({
                       onClick={() => advance("payment_distribution", { delivered_at: opp.delivered_at ?? new Date().toISOString() })}
                     >
                       Awaiting payment <ArrowRight className="w-3 h-3 ml-1" />
+                    </Button>
+                  )}
+                  {canSkip && (
+                    <Button variant="ghost" size="sm" className="w-full text-muted-foreground" disabled={working} onClick={() => advance("payment_distribution", { delivered_at: opp.delivered_at ?? new Date().toISOString() })}>
+                      Skip this step
                     </Button>
                   )}
                 </div>
