@@ -523,7 +523,7 @@ export default function ConsultingGrowth() {
 // =============================================================================
 
 function StagePanel({
-  opp, distributions, onChanged, onOptimisticPatch, onStageChange, userId, onlyStage,
+  opp, distributions, onChanged, onOptimisticPatch, onStageChange, userId, onlyStage, canSkip,
 }: {
   opp: Opportunity;
   distributions: Distribution[];
@@ -532,6 +532,7 @@ function StagePanel({
   onStageChange?: (to: Stage) => void;
   userId: string;
   onlyStage: Stage | null;
+  canSkip?: boolean;
 }) {
   const show = (s: Stage) => onlyStage === null || onlyStage === s || (onlyStage === "closed" && s === "payment_distribution");
   const { toast } = useToast();
