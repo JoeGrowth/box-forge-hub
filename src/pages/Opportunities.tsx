@@ -308,8 +308,25 @@ const Opportunities = () => {
       for (const c of consultingData) if (c.user_id === user.id) created.add(c.id);
       setCreatedIds(created);
 
+      // Ecosystem: all approved active ideas (directory), regardless of cobuilder flag
+      const { data: allIdeas } = await supabase
+        .from("startup_ideas")
+        .select("*")
+        .eq("status", "active")
+        .eq("review_status", "approved")
+        .order("created_at", { ascending: false });
+      const ideaUserIds = [...new Set((allIdeas || []).map((s: any) => s.creator_id).filter(Boolean))];
+      let ideaProfileMap = profileMap;
+      const missing = ideaUserIds.filter((id) => !ideaProfileMap.has(id));
+      if (missing.length > 0) {
+        const { data: extraProfiles } = await supabase.from("profiles").select("user_id, full_name").in("user_id", missing);
+        ideaProfileMap = new Map(profileMap);
+        (extraProfiles || []).forEach((p: any) => ideaProfileMap.set(p.user_id, p.full_name));
+      }
+      setEcosystemStartups((allIdeas || []).map((s: any) => ({ ...s, _author: ideaProfileMap.get(s.creator_id) || "Unknown" })));
+
       // Team counts for ecosystem view
-      const allStartupIds = startupData.map((s: any) => s.id);
+      const allStartupIds = (allIdeas || []).map((s: any) => s.id);
       if (allStartupIds.length > 0) {
         const { data: teamData } = await sb.from("startup_team_members").select("startup_id").in("startup_id", allStartupIds);
         const counts: Record<string, number> = {};
