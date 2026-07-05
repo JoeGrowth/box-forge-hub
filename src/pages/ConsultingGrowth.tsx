@@ -991,6 +991,7 @@ function StagePanel({
                             <span className="font-medium">1. Catched</span>
                             <span className="text-muted-foreground"> &mdash; source: {SOURCES.find(s => s.value === opp.source)?.label || opp.source}</span>
                             {opp.driver_file_url && <button className="ml-2 text-primary underline" onClick={() => openFile(opp.driver_file_url)}>driver</button>}
+                            {opp.driver_link && <a className="ml-2 text-primary underline" href={opp.driver_link} target="_blank" rel="noreferrer">driver link</a>}
                             {opp.driver_note && <div className="text-muted-foreground italic">"{opp.driver_note}"</div>}
                           </div>
                         </div>
