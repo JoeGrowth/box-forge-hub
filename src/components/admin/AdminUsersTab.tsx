@@ -127,6 +127,44 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
       );
     });
 
+  // Ranks for text/badge columns so sort order matches visible progression.
+  const statusRank: Record<string, number> = { joined: 0, resume: 1, boost: 2, scale: 3 };
+  const visionRank = (u: UserWithDetails) => {
+    const r = u.onboarding?.potential_role;
+    if (r === "potential_entrepreneur") return 2;
+    if (r === "potential_co_builder") return 1;
+    return 0;
+  };
+  const boostValue = (u: UserWithDetails) => {
+    const lvl = getUserStatusLevel(u);
+    return lvl === "boost" || lvl === "scale" ? u.certificationCount : 0;
+  };
+  const scalingValue = (u: UserWithDetails) => {
+    if (getUserStatusLevel(u) !== "scale") return 0;
+    return u.ideasAsInitiator + u.ideasAsCoBuilder + (u.hasConsultantScaling ? 1 : 0);
+  };
+  const getSortValue = (u: UserWithDetails, key: SortKey): number | string => {
+    switch (key) {
+      case "name": return (u.profile?.full_name || "").toLowerCase();
+      case "vision": return visionRank(u);
+      case "status": return statusRank[getUserStatusLevel(u)] ?? 0;
+      case "boost": return boostValue(u);
+      case "scaling": return scalingValue(u);
+      case "pr": return u.progressionScore || 0;
+      case "joined": return new Date(u.created_at).getTime();
+    }
+  };
+  const sortedUsers = sortKey
+    ? [...filteredUsers].sort((a, b) => {
+        const av = getSortValue(a, sortKey);
+        const bv = getSortValue(b, sortKey);
+        let cmp = 0;
+        if (typeof av === "number" && typeof bv === "number") cmp = av - bv;
+        else cmp = String(av).localeCompare(String(bv));
+        return sortDir === "asc" ? cmp : -cmp;
+      })
+    : filteredUsers;
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -134,6 +172,7 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
       day: "numeric",
     });
   };
+
 
   const getVisionLabel = (user: UserWithDetails) => {
     const potentialRole = user.onboarding?.potential_role;
