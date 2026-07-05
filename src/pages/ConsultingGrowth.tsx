@@ -626,6 +626,7 @@ function StagePanel({
       await onChanged();
       return false;
     }
+    if ("stage" in fields) window.dispatchEvent(new Event("ladder:refresh"));
     return true;
   };
 
