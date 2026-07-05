@@ -248,6 +248,14 @@ export default function ConsultingGrowth() {
   const activeClients = new Set(items.filter(i => i.paid_at).map(i => i.client_name).filter(Boolean)).size;
   const milestonePct = Math.min(100, (closed.length / MILESTONE) * 100);
 
+  // First 3 opportunities (by created order — the earliest) can skip steps.
+  // `items` is ordered by created_at DESC, so the last three are the earliest.
+  const skippableIds = new Set(items.slice(-3).map(i => i.id));
+
+  // After MILESTONE closed missions, the consultant graduates to "advisor" and
+  // must operate through /organizations instead of this personal pipeline.
+  const advisorGraduated = closed.length >= MILESTONE;
+
   return (
     <>
     <div className="container mx-auto px-4 pt-24 pb-8 max-w-5xl space-y-6">
@@ -258,6 +266,25 @@ export default function ConsultingGrowth() {
       </div>
 
       <NextGoalBanner pageStage="advisor" />
+
+      {advisorGraduated && (
+        <Card className="border-primary/40 bg-primary/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Lock className="w-4 h-4 text-primary" /> You've graduated — status: Advisor
+            </CardTitle>
+            <CardDescription>
+              You've closed {closed.length} paid missions. Solo consulting is capped here.
+              Open your organization and continue mission follow-up from the Organizations workspace.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild size="sm"><a href="/organizations">Go to Organizations <ArrowRight className="w-3.5 h-3.5 ml-1" /></a></Button>
+          </CardContent>
+        </Card>
+      )}
+
+
 
       {/* Opportunities */}
       <div className="space-y-3">
