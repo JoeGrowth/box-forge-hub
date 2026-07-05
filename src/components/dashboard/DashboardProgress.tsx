@@ -152,6 +152,8 @@ export function DashboardProgress() {
       .on("postgres_changes", { event: "*", schema: "public", table: "consultant_opportunities", filter: `user_id=eq.${user.id}` }, fetchProgress)
       .on("postgres_changes", { event: "*", schema: "public", table: "startup_ideas", filter: `creator_id=eq.${user.id}` }, fetchProgress)
       .on("postgres_changes", { event: "*", schema: "public", table: "startup_applications", filter: `applicant_id=eq.${user.id}` }, fetchProgress)
+      .on("postgres_changes", { event: "*", schema: "public", table: "consulting_services", filter: `user_id=eq.${user.id}` }, fetchProgress)
+      .on("postgres_changes", { event: "*", schema: "public", table: "opportunity_applications", filter: `user_id=eq.${user.id}` }, fetchProgress)
       .subscribe();
 
     return () => {
