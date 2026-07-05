@@ -63,6 +63,20 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Column sort state — click a header to sort asc, click again to sort desc.
+  type SortKey = "name" | "vision" | "status" | "boost" | "scaling" | "pr" | "joined";
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  };
+
   
   // Bulk selection state
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
@@ -113,6 +127,44 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
       );
     });
 
+  // Ranks for text/badge columns so sort order matches visible progression.
+  const statusRank: Record<string, number> = { joined: 0, resume: 1, boost: 2, scale: 3 };
+  const visionRank = (u: UserWithDetails) => {
+    const r = u.onboarding?.potential_role;
+    if (r === "potential_entrepreneur") return 2;
+    if (r === "potential_co_builder") return 1;
+    return 0;
+  };
+  const boostValue = (u: UserWithDetails) => {
+    const lvl = getUserStatusLevel(u);
+    return lvl === "boost" || lvl === "scale" ? u.certificationCount : 0;
+  };
+  const scalingValue = (u: UserWithDetails) => {
+    if (getUserStatusLevel(u) !== "scale") return 0;
+    return u.ideasAsInitiator + u.ideasAsCoBuilder + (u.hasConsultantScaling ? 1 : 0);
+  };
+  const getSortValue = (u: UserWithDetails, key: SortKey): number | string => {
+    switch (key) {
+      case "name": return (u.profile?.full_name || "").toLowerCase();
+      case "vision": return visionRank(u);
+      case "status": return statusRank[getUserStatusLevel(u)] ?? 0;
+      case "boost": return boostValue(u);
+      case "scaling": return scalingValue(u);
+      case "pr": return u.progressionScore || 0;
+      case "joined": return new Date(u.created_at).getTime();
+    }
+  };
+  const sortedUsers = sortKey
+    ? [...filteredUsers].sort((a, b) => {
+        const av = getSortValue(a, sortKey);
+        const bv = getSortValue(b, sortKey);
+        let cmp = 0;
+        if (typeof av === "number" && typeof bv === "number") cmp = av - bv;
+        else cmp = String(av).localeCompare(String(bv));
+        return sortDir === "asc" ? cmp : -cmp;
+      })
+    : filteredUsers;
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -120,6 +172,7 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
       day: "numeric",
     });
   };
+
 
   const getVisionLabel = (user: UserWithDetails) => {
     const potentialRole = user.onboarding?.potential_role;
@@ -483,25 +536,25 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
                     className={isSomeSelected ? "data-[state=checked]:bg-primary/50" : ""}
                   />
                 </TableHead>
-                <TableHead>User Name</TableHead>
-                <TableHead>Vision</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Boost</TableHead>
-                <TableHead>Scaling</TableHead>
-                <TableHead>PR</TableHead>
-                <TableHead>Joined</TableHead>
+                <TableHead onClick={() => toggleSort("name")} className="cursor-pointer select-none hover:text-foreground">User Name</TableHead>
+                <TableHead onClick={() => toggleSort("vision")} className="cursor-pointer select-none hover:text-foreground">Vision</TableHead>
+                <TableHead onClick={() => toggleSort("status")} className="cursor-pointer select-none hover:text-foreground">Status</TableHead>
+                <TableHead onClick={() => toggleSort("boost")} className="cursor-pointer select-none hover:text-foreground">Boost</TableHead>
+                <TableHead onClick={() => toggleSort("scaling")} className="cursor-pointer select-none hover:text-foreground">Scaling</TableHead>
+                <TableHead onClick={() => toggleSort("pr")} className="cursor-pointer select-none hover:text-foreground">PR</TableHead>
+                <TableHead onClick={() => toggleSort("joined")} className="cursor-pointer select-none hover:text-foreground">Joined</TableHead>
                 <TableHead className="w-[80px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredUsers.length === 0 ? (
+              {sortedUsers.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={9} className="text-center text-muted-foreground py-12">
                     No users found
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredUsers.map((user) => {
+                sortedUsers.map((user) => {
                   const statusLevel = getUserStatusLevel(user);
                   const showBoost = statusLevel === "boost" || statusLevel === "scale";
                   const showScaling = statusLevel === "scale";
