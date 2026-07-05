@@ -174,6 +174,7 @@ export const ConsultantOpportunities = () => {
       consulting_firm: "",
       offer_date: "",
       description: "",
+      opportunity_type: "consultancy",
       number_of_days: 1,
       amount_per_day: 0,
       currency: "TND",
@@ -181,6 +182,7 @@ export const ConsultantOpportunities = () => {
     setTechnicalOfferFile(null);
     setEditingId(null);
   };
+
 
   const openAddDialog = () => {
     if (opportunities.length >= MAX_OPPORTUNITIES) {
