@@ -1,0 +1,1 @@
+ALTER TABLE public.consultant_opportunities DROP CONSTRAINT IF EXISTS consultant_opportunities_source_check;
