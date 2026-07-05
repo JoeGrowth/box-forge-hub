@@ -352,5 +352,8 @@ export function useEngineAccess() {
     };
   }, [user, isAdmin, authLoading, adminLoading]);
 
-  return useMemo(() => ({ engines, loading, isAdmin }), [engines, loading, isAdmin]);
+  return useMemo(
+    () => ({ engines, loading, isAdmin, talentFoundationSet, talentMonetized }),
+    [engines, loading, isAdmin, talentFoundationSet, talentMonetized]
+  );
 }
