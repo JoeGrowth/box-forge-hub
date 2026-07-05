@@ -32,6 +32,7 @@ import {
   BarChart3,
   Users,
   LayoutGrid,
+  FolderOpen,
 } from "lucide-react";
 import { useEngineAccess, type EngineKey } from "@/hooks/useEngineAccess";
 import { useTalentReadiness } from "@/hooks/useTalentReadiness";
@@ -75,6 +76,16 @@ const publishLinks: Array<{
   { name: "Procuring", path: "/procuring", icon: FileText, desc: "Post a tender", orgAdminOnly: true },
 ];
 
+const createdByMeLinks: Array<{
+  name: string;
+  path: string;
+  icon: typeof Briefcase;
+}> = [
+  { name: "Consulting", path: "/publish-consulting", icon: Handshake },
+  { name: "Launching", path: "/create-idea", icon: Lightbulb },
+  { name: "Training", path: "/publish-training", icon: GraduationCap },
+];
+
 // `minStage` gates a link behind the user's progression stage. Items without
 // a `minStage` are visible to all authenticated users (subject to talentGate).
 // Novice unlocks Boxes + Programs only; Emerging unlocks the full More list.
@@ -89,7 +100,7 @@ const moreLinks: Array<{
   { name: "Consulting", path: "/consulting", icon: Handshake, engineKey: "consulting" },
   { name: "Entrepreneurship", path: "/entrepreneurship", icon: Lightbulb, engineKey: "entrepreneurship" },
   { name: "Squares", path: "/squares", icon: LayoutGrid },
-  { name: "People", path: "/people", icon: Users, minStage: "emerging" },
+  
   { name: "Boxes", path: "/boxes", icon: Package },
   { name: "Programs", path: "/programs", icon: BookOpen },
   { name: "Organizations", path: "/organizations", icon: Building2, minStage: "emerging" },
@@ -112,6 +123,7 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
+  const [createdByMeOpen, setCreatedByMeOpen] = useState(false);
 
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
@@ -199,6 +211,17 @@ export function Navbar() {
             ) : (
               <>
 
+                {stageRank >= STAGE_RANK.emerging && (
+                  <Link
+                    to="/people"
+                    className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 ${
+                      location.pathname === "/people" ? "text-b4-teal" : "text-muted-foreground"
+                    }`}
+                  >
+                    People
+                  </Link>
+                )}
+
                 {talentReady && (
                   <Link
                     to="/opportunities"
@@ -233,6 +256,38 @@ export function Navbar() {
                                 <span className="text-sm font-medium text-foreground">{link.name}</span>
                                 <span className="text-xs text-muted-foreground">{link.desc}</span>
                               </div>
+                            </Link>
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+
+                {talentReady && (
+                  <DropdownMenu open={createdByMeOpen} onOpenChange={setCreatedByMeOpen}>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className="flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-b4-teal outline-none"
+                        aria-label="Created by me"
+                      >
+                        <FolderOpen size={18} />
+                        <span className="hidden lg:inline">Created by me</span>
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56 mt-2">
+                      {createdByMeLinks.map((link) => {
+                        const Icon = link.icon;
+                        return (
+                          <DropdownMenuItem key={link.path} asChild>
+                            <Link
+                              to={link.path}
+                              className={`flex items-center gap-2 cursor-pointer ${
+                                location.pathname === link.path ? "text-b4-teal" : "text-foreground"
+                              }`}
+                            >
+                              <Icon size={16} />
+                              {link.name}
                             </Link>
                           </DropdownMenuItem>
                         );
@@ -359,6 +414,21 @@ export function Navbar() {
 
 
                 <>
+                  {stageRank >= STAGE_RANK.emerging && (
+                    <Link
+                      to="/people"
+                      onClick={() => setIsOpen(false)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                        location.pathname === "/people"
+                          ? "bg-muted text-b4-teal"
+                          : "text-muted-foreground hover:bg-muted"
+                      }`}
+                    >
+                      <Users size={16} />
+                      <span className="flex-1">People</span>
+                    </Link>
+                  )}
+
                   {talentReady && (
                     <Link
                       to="/opportunities"
@@ -379,6 +449,28 @@ export function Navbar() {
                         Publish
                       </div>
                       {visiblePublishLinks.map((link) => {
+                        const Icon = link.icon;
+                        return (
+                          <Link
+                            key={link.path}
+                            to={link.path}
+                            onClick={() => setIsOpen(false)}
+                            className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors flex items-center gap-2"
+                          >
+                            <Icon size={16} />
+                            <span className="flex-1">{link.name}</span>
+                          </Link>
+                        );
+                      })}
+                    </>
+                  )}
+
+                  {talentReady && (
+                    <>
+                      <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Created by me
+                      </div>
+                      {createdByMeLinks.map((link) => {
                         const Icon = link.icon;
                         return (
                           <Link
