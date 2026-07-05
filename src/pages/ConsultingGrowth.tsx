@@ -540,6 +540,8 @@ function StagePanel({
   const [driverNote, setDriverNote] = useState(opp.driver_note ?? "");
   const [driverLink, setDriverLink] = useState(opp.driver_link ?? "");
   const [driverMode, setDriverMode] = useState<"file" | "link">(opp.driver_link ? "link" : "file");
+  const [proposalLink, setProposalLink] = useState(opp.proposal_link ?? "");
+  const [proposalMode, setProposalMode] = useState<"file" | "link">(opp.proposal_link ? "link" : "file");
   const [processLink, setProcessLink] = useState(opp.process_link ?? "");
   const [processMode, setProcessMode] = useState<"file" | "link">(opp.process_link ? "link" : "file");
   const [reportLink, setReportLink] = useState(opp.report_link ?? "");
