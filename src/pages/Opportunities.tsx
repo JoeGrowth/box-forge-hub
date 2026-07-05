@@ -111,6 +111,22 @@ const Opportunities = () => {
   const [myProjects, setMyProjects] = useState<any[]>([]);
   const [collabProjects, setCollabProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  // Project action dialog state
+  const [selectedIdea, setSelectedIdea] = useState<{ id: string; title: string; currentEpisode: string } | null>(null);
+  const [developDialogOpen, setDevelopDialogOpen] = useState(false);
+  const [validationDialogOpen, setValidationDialogOpen] = useState(false);
+  const [growthDialogOpen, setGrowthDialogOpen] = useState(false);
+  const [episodesDialogOpen, setEpisodesDialogOpen] = useState(false);
+  const [teamDialogIdea, setTeamDialogIdea] = useState<{ id: string; title: string } | null>(null);
+  const [teamDialogOpen, setTeamDialogOpen] = useState(false);
+  const [fiveElementsDialogOpen, setFiveElementsDialogOpen] = useState(false);
+  const [fiveElementsIdea, setFiveElementsIdea] = useState<{ id: string; title: string; description: string } | null>(null);
+  const [ideaToDelete, setIdeaToDelete] = useState<{ id: string; title: string } | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteType, setDeleteType] = useState<"archive" | "permanent" | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const { expertise } = useExpertise(user?.id);
   const userSkillNames = expertise?.tags ?? [];
