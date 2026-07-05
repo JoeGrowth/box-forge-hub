@@ -224,7 +224,7 @@ export default function ConsultingGrowth() {
       <div className="space-y-3">
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="min-w-0">
-            <h2 className="text-lg font-semibold tracking-tight">Your opportunities</h2>
+            <h2 className="text-lg font-semibold tracking-tight">Your Consultancy</h2>
             <p className="text-sm text-muted-foreground">
               Track each mission and move it forward, one stage at a time.
             </p>
