@@ -299,6 +299,15 @@ const Opportunities = () => {
       for (const c of consultingData) if (c.user_id === user.id) created.add(c.id);
       setCreatedIds(created);
 
+      // Team counts for ecosystem view
+      const allStartupIds = startupData.map((s: any) => s.id);
+      if (allStartupIds.length > 0) {
+        const { data: teamData } = await sb.from("startup_team_members").select("startup_id").in("startup_id", allStartupIds);
+        const counts: Record<string, number> = {};
+        (teamData || []).forEach((t: any) => { counts[t.startup_id] = (counts[t.startup_id] || 0) + 1; });
+        setEcosystemTeamCounts(counts);
+      }
+
       setLoading(false);
     })();
   }, [user, authLoading, expertise?.tags.length]);
