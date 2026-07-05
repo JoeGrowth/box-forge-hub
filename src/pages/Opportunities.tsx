@@ -615,42 +615,87 @@ const Opportunities = () => {
         </main>
       </PageTransition>
       <Footer />
+
+      {/* Project action dialogs */}
+      {selectedIdea && (
+        <>
+          <IdeaDevelopDialog
+            open={developDialogOpen}
+            onOpenChange={setDevelopDialogOpen}
+            ideaId={selectedIdea.id}
+            ideaTitle={selectedIdea.title}
+            onEpisodeComplete={refreshMyAndCollabs}
+          />
+          <IdeaValidationDialog
+            open={validationDialogOpen}
+            onOpenChange={setValidationDialogOpen}
+            ideaId={selectedIdea.id}
+            ideaTitle={selectedIdea.title}
+            onEpisodeComplete={refreshMyAndCollabs}
+          />
+          <IdeaGrowthDialog
+            open={growthDialogOpen}
+            onOpenChange={setGrowthDialogOpen}
+            ideaId={selectedIdea.id}
+            ideaTitle={selectedIdea.title}
+            onEpisodeComplete={refreshMyAndCollabs}
+          />
+          <IdeaEpisodesDialog
+            open={episodesDialogOpen}
+            onOpenChange={setEpisodesDialogOpen}
+            ideaId={selectedIdea.id}
+            ideaTitle={selectedIdea.title}
+            currentEpisode={selectedIdea.currentEpisode}
+          />
+        </>
+      )}
+      {teamDialogIdea && (
+        <TeamManagementDialog
+          open={teamDialogOpen}
+          onOpenChange={setTeamDialogOpen}
+          ideaId={teamDialogIdea.id}
+          ideaTitle={teamDialogIdea.title}
+        />
+      )}
+      {fiveElementsIdea && (
+        <FiveElementsDialog
+          open={fiveElementsDialogOpen}
+          onOpenChange={setFiveElementsDialogOpen}
+          ideaId={fiveElementsIdea.id}
+          ideaTitle={fiveElementsIdea.title}
+          ideaDescription={fiveElementsIdea.description}
+          onCompleted={refreshMyAndCollabs}
+        />
+      )}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete "{ideaToDelete?.title}"?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Choose "Archive" to hide it but keep the data, or "Permanent" to delete it forever.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); setDeleteType("archive"); handleDeleteIdea(); }}
+              disabled={isDeleting}
+            >
+              Archive
+            </AlertDialogAction>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); setDeleteType("permanent"); handleDeleteIdea(); }}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Permanent
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
-
-function ProjectRow({ project, isOwner }: { project: any; isOwner: boolean }) {
-  const episodeLabel = project.current_episode === "validation" ? "MVP" : project.current_episode === "growth" ? "Growth" : "Idea";
-  return (
-    <div className="border border-border rounded-2xl p-5 bg-card hover:border-b4-teal/40 transition-colors">
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap mb-1">
-            <h3 className="font-semibold text-foreground text-base">{project.title}</h3>
-            <Badge variant="outline" className="text-[10px]">{episodeLabel}</Badge>
-            {project.sector && <Badge variant="secondary" className="text-[10px]">{project.sector}</Badge>}
-            {isOwner && project.status && (
-              <Badge variant="outline" className="text-[10px] capitalize">{project.status}</Badge>
-            )}
-          </div>
-          {project.description && (
-            <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
-          )}
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <Button asChild variant="outline" size="sm">
-            <Link to={`/opportunities/startup/${project.id}`}>Open</Link>
-          </Button>
-          {isOwner && (
-            <Button asChild size="sm">
-              <Link to={`/edit-idea/${project.id}`}>Manage</Link>
-            </Button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 
 function EmptyState({ tab, onPost, onDiscover }: { tab: Tab; onPost: () => void; onDiscover: () => void }) {
