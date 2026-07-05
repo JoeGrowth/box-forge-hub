@@ -198,7 +198,11 @@ export default function PublicProfile() {
               <p className="text-white/80 mb-4">{title}</p>
               <div className="flex flex-wrap gap-2">
                 {trustStyle && <Badge variant="outline" className={`gap-1 ${trustStyle.className}`}><ShieldCheck className="w-3 h-3" /> Trust: {trustStyle.label}</Badge>}
-                {repStyle && <Badge variant="outline" className={repStyle.className}><Award className="w-3 h-3 mr-1" /> {repStyle.label}</Badge>}
+                {repStyle && reputation && (
+                  <Badge variant="outline" className={repStyle.className}>
+                    <Award className="w-3 h-3 mr-1" /> {repStyle.label} · {Math.round(reputation.reputation_score)}
+                  </Badge>
+                )}
                 {ownStyle && <Badge variant="outline" className={ownStyle.className}>Ownership: {ownStyle.label}</Badge>}
                 {profile.preferred_sector && (
                   <Badge variant="outline" className="bg-white/10 text-white border-white/20">
@@ -225,6 +229,42 @@ export default function PublicProfile() {
 
           {/* Overview answers the four trust questions */}
           <TabsContent value="overview" className="space-y-6 mt-6">
+            {reputation && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Award className="w-4 h-4" /> Reputation
+                    {repStyle && <Badge variant="outline" className={`ml-auto ${repStyle.className}`}>{repStyle.label}</Badge>}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-baseline gap-2 mb-3">
+                    <span className="text-4xl font-bold text-foreground">{Math.round(reputation.reputation_score)}</span>
+                    <span className="text-sm text-muted-foreground">/ 100</span>
+                    <Link to={`/calcul?user=${profile.user_id}`} className="ml-auto text-xs text-primary hover:underline">How is this computed?</Link>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-muted overflow-hidden mb-4">
+                    <div className="h-full bg-primary transition-all" style={{ width: `${Math.min(100, reputation.reputation_score)}%` }} />
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+                    {(["expertise","trust","impact","community"] as const).map((k) => {
+                      const row = reputation.reputation_breakdown?.[k];
+                      const raw = k === "impact"
+                        ? reputation.revenue_score
+                        : (reputation as any)[`${k}_score`];
+                      return (
+                        <div key={k} className="rounded-lg border border-border p-3">
+                          <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{k}</div>
+                          <div className="text-lg font-semibold text-foreground">+{Math.round(row?.points ?? 0)}</div>
+                          <div className="text-[10px] text-muted-foreground">raw {Math.round(raw ?? 0)}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <div className="grid md:grid-cols-2 gap-4">
               <Card>
                 <CardHeader><CardTitle className="text-base flex items-center gap-2"><ShieldCheck className="w-4 h-4" /> Why trust this person?</CardTitle></CardHeader>
