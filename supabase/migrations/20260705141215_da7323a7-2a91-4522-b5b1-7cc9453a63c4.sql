@@ -1,0 +1,1 @@
+ALTER TABLE public.consultant_opportunities ADD COLUMN IF NOT EXISTS process_link text;

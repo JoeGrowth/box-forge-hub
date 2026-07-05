@@ -969,6 +969,7 @@ export type Database = {
           paid_amount: number | null
           paid_at: string | null
           process_file_url: string | null
+          process_link: string | null
           proposal_file_url: string | null
           proposal_sent_at: string | null
           source: string
@@ -1001,6 +1002,7 @@ export type Database = {
           paid_amount?: number | null
           paid_at?: string | null
           process_file_url?: string | null
+          process_link?: string | null
           proposal_file_url?: string | null
           proposal_sent_at?: string | null
           source: string
@@ -1033,6 +1035,7 @@ export type Database = {
           paid_amount?: number | null
           paid_at?: string | null
           process_file_url?: string | null
+          process_link?: string | null
           proposal_file_url?: string | null
           proposal_sent_at?: string | null
           source?: string
