@@ -743,20 +743,58 @@ function StagePanel({
         {show("propose") && (
         <StageBlock n={2} title="Propose — technical &amp; financial proposal" description="Upload the Technical & Financial Proposal validated by the client. This document is the negotiated contract of intent — an auditable reference for scope, pricing, and client agreement." active={opp.stage === "propose"} done={idx > 1}>
             <div className="space-y-2">
-              <Label className="text-xs">Validated Technical &amp; Financial Proposal (PDF)</Label>
-              <FileField
-                accept="application/pdf"
-                url={opp.proposal_file_url}
-                onOpen={() => openFile(opp.proposal_file_url)}
-                onPick={async (f) => {
-                  const p = await uploadFile(f, "proposal");
-                  if (p) await patch({ proposal_file_url: p, proposal_sent_at: opp.proposal_sent_at ?? new Date().toISOString() });
-                }}
-              />
+              <div className="inline-flex w-full rounded-lg bg-muted p-1 gap-1" role="tablist">
+                <button type="button" role="tab" aria-selected={proposalMode === "file"} onClick={() => setProposalMode("file")} className={`flex-1 inline-flex items-center justify-center gap-1.5 h-8 px-2 rounded-md text-xs sm:text-sm font-medium transition-all min-w-0 ${proposalMode === "file" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+                  <Upload className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Upload file</span>
+                </button>
+                <button type="button" role="tab" aria-selected={proposalMode === "link"} onClick={() => setProposalMode("link")} className={`flex-1 inline-flex items-center justify-center gap-1.5 h-8 px-2 rounded-md text-xs sm:text-sm font-medium transition-all min-w-0 ${proposalMode === "link" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+                  <ExternalLink className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Paste link</span>
+                </button>
+              </div>
+
+              {proposalMode === "file" ? (
+                <>
+                  <Label className="text-xs">Validated Technical &amp; Financial Proposal (PDF)</Label>
+                  <FileField
+                    accept="application/pdf"
+                    url={opp.proposal_file_url}
+                    onOpen={() => openFile(opp.proposal_file_url)}
+                    onPick={async (f) => {
+                      const p = await uploadFile(f, "proposal");
+                      if (p) await patch({ proposal_file_url: p, proposal_sent_at: opp.proposal_sent_at ?? new Date().toISOString() });
+                    }}
+                  />
+                </>
+              ) : (
+                <>
+                  <Label className="text-xs">Validated Technical &amp; Financial Proposal link (Google Drive, Dropbox&hellip;)</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={proposalLink}
+                      onChange={e => setProposalLink(e.target.value)}
+                      onBlur={() => proposalLink !== (opp.proposal_link ?? "") && patch({ proposal_link: proposalLink || null, proposal_sent_at: opp.proposal_sent_at ?? (proposalLink ? new Date().toISOString() : null) })}
+                      placeholder="https://drive.google.com/..."
+                    />
+                    {opp.proposal_link && (
+                      <Button size="sm" variant="ghost" onClick={() => window.open(opp.proposal_link!, "_blank")}>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                </>
+              )}
+
               {opp.stage === "propose" && (
-                <Button className="w-full" size="sm" disabled={working || !opp.proposal_file_url} onClick={() => advance("confirm_prepare", { client_confirmed_at: new Date().toISOString() })}>
-                  Confirm Client Acceptance <ArrowRight className="w-3 h-3 ml-1" />
-                </Button>
+                <div className="flex flex-col gap-2">
+                  <Button className="w-full" size="sm" disabled={working || (!opp.proposal_file_url && !opp.proposal_link)} onClick={() => advance("confirm_prepare", { client_confirmed_at: new Date().toISOString() })}>
+                    Confirm Client Acceptance <ArrowRight className="w-3 h-3 ml-1" />
+                  </Button>
+                  {canSkip && (
+                    <Button variant="ghost" size="sm" className="w-full text-muted-foreground" disabled={working} onClick={() => advance("confirm_prepare")}>
+                      Skip this step
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
         </StageBlock>
