@@ -98,10 +98,35 @@ const BUCKET = "consulting-opportunities";
 const DRAFT_KEY = "consulting-growth:new-opp-draft";
 const OPEN_KEY = "consulting-growth:new-opp-open";
 
+const OPPORTUNITY_TYPES = [
+  {
+    value: "workshop",
+    label: "Workshop",
+    description: "Short interactive session designed for group engagement and immediate output.",
+  },
+  {
+    value: "capacity_building",
+    label: "Capacity Building",
+    description: "Long-term skills transfer and institutional strengthening program.",
+  },
+  {
+    value: "audit_consultancy",
+    label: "Audit or Consultancy",
+    description: "Diagnostic review or expert advisory mission on a specific scope.",
+  },
+];
+
+const CURRENCIES = [
+  { value: "TND", label: "TND" },
+  { value: "EUR", label: "EUR" },
+  { value: "USD", label: "USD" },
+];
+
 const EMPTY_FORM = {
   title: "",
   client_name: "",
   source: "linkedin",
+  opportunity_type: "",
   description: "",
   number_of_days: "",
   amount_per_day: "",
