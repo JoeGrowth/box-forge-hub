@@ -87,6 +87,8 @@ import Distribution from "./pages/Distribution";
 import ConsultingGrowth from "./pages/ConsultingGrowth";
 import BrandEntity from "./pages/BrandEntity";
 import Calcul from "./pages/Calcul";
+import PublishTalent from "./pages/PublishTalent";
+
 import { ClickTracker } from "./components/analytics/ClickTracker";
 
 
@@ -195,6 +197,8 @@ const App = () => (
                   <Route path="/consulting-growth" element={<ProtectedRoute><ConsultingGrowth /></ProtectedRoute>} />
                   <Route path="/brand-entity" element={<ProtectedRoute><BrandEntity /></ProtectedRoute>} />
                   <Route path="/calcul" element={<ProtectedRoute><Calcul /></ProtectedRoute>} />
+                  <Route path="/publish-talent" element={<ProtectedRoute><PublishTalent /></ProtectedRoute>} />
+                  <Route path="/talent" element={<Navigate to="/publish-talent" replace />} />
                   <Route path="/journey-timeline" element={<ProtectedRoute><JourneyTimeline /></ProtectedRoute>} />
                   <Route path="/timeline" element={<Navigate to="/journey-timeline" replace />} />
                   <Route path="/pgp" element={<Navigate to="/PGP" replace />} />
