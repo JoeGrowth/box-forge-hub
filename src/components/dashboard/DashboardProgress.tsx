@@ -208,7 +208,7 @@ export function DashboardProgress() {
       description: "Promise, practice, training, consulting — the receipts behind your natural role.",
       icon: Briefcase,
       done: proTrackComplete,
-      cta: { label: "Complete", to: "/track" },
+      cta: { label: "Complete", to: "/track?unlock=professional" },
     },
     {
       key: "resume",

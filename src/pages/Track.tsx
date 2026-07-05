@@ -365,27 +365,31 @@ const Track = () => {
         <section className="py-10">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
-              {renderSection(
-                "Professional",
-                "Your natural role, skills & consulting experience",
-                Briefcase,
-                professionalItems,
-                !showProfessional,
-                () => setProfessionalUnlocked(true),
-                "/resume",
-                hasProfessional,
-              )}
+              <div className={searchParams.get("unlock") === "entrepreneurial" ? "order-2 lg:order-1" : "order-1"}>
+                {renderSection(
+                  "Professional",
+                  "Your natural role, skills & consulting experience",
+                  Briefcase,
+                  professionalItems,
+                  !showProfessional,
+                  () => setProfessionalUnlocked(true),
+                  "/resume",
+                  hasProfessional,
+                )}
+              </div>
 
-              {renderSection(
-                "Entrepreneurial",
-                "Your ventures, products & business achievements",
-                Rocket,
-                entrepreneurialItems,
-                !showEntrepreneurial,
-                () => setEntrepreneurialUnlocked(true),
-                "/track-record",
-                hasEntrepreneurial,
-              )}
+              <div className={searchParams.get("unlock") === "entrepreneurial" ? "order-1 lg:order-2" : "order-2"}>
+                {renderSection(
+                  "Entrepreneurial",
+                  "Your ventures, products & business achievements",
+                  Rocket,
+                  entrepreneurialItems,
+                  !showEntrepreneurial,
+                  () => setEntrepreneurialUnlocked(true),
+                  "/track-record",
+                  hasEntrepreneurial,
+                )}
+              </div>
             </div>
           </div>
         </section>
