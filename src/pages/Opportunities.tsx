@@ -643,30 +643,26 @@ const Opportunities = () => {
           <IdeaEpisodesDialog
             open={episodesDialogOpen}
             onOpenChange={setEpisodesDialogOpen}
-            ideaId={selectedIdea.id}
-            ideaTitle={selectedIdea.title}
+            startupId={selectedIdea.id}
+            startupTitle={selectedIdea.title}
             currentEpisode={selectedIdea.currentEpisode}
           />
         </>
       )}
-      {teamDialogIdea && (
+      {teamDialogIdea && user && (
         <TeamManagementDialog
           open={teamDialogOpen}
           onOpenChange={setTeamDialogOpen}
-          ideaId={teamDialogIdea.id}
-          ideaTitle={teamDialogIdea.title}
+          startupId={teamDialogIdea.id}
+          startupTitle={teamDialogIdea.title}
+          currentUserId={user.id}
         />
       )}
-      {fiveElementsIdea && (
-        <FiveElementsDialog
-          open={fiveElementsDialogOpen}
-          onOpenChange={setFiveElementsDialogOpen}
-          ideaId={fiveElementsIdea.id}
-          ideaTitle={fiveElementsIdea.title}
-          ideaDescription={fiveElementsIdea.description}
-          onCompleted={refreshMyAndCollabs}
-        />
-      )}
+      <FiveElementsDialog
+        open={fiveElementsDialogOpen}
+        onOpenChange={setFiveElementsDialogOpen}
+        idea={fiveElementsIdea}
+      />
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
