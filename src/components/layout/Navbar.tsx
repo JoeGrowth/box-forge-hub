@@ -7,7 +7,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-// DropdownMenu is still used for the "More" menu
 import {
   Menu,
   X,
