@@ -250,14 +250,11 @@ export const ConsultantOpportunities = () => {
       toast({ title: "Error", description: "Client name is required.", variant: "destructive" });
       return;
     }
-    if (!formData.consulting_firm.trim()) {
-      toast({ title: "Error", description: "Consulting firm name is required.", variant: "destructive" });
-      return;
-    }
     if (!formData.offer_date) {
       toast({ title: "Error", description: "Offer date is required.", variant: "destructive" });
       return;
     }
+
     if (formData.source === "other" && !formData.source_other.trim()) {
       toast({ title: "Error", description: "Please specify the source.", variant: "destructive" });
       return;
