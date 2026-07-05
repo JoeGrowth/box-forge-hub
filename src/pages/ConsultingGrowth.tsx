@@ -65,7 +65,6 @@ interface Opportunity {
   client_confirmed_at: string | null;
   process_file_url: string | null;
   process_link: string | null;
-  opportunity_type: string | null;
   delivered_at: string | null;
   paid_amount: number | null;
   paid_at: string | null;
