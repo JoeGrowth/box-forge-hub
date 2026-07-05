@@ -15,7 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Loader2, ArrowRight, Sparkles, Briefcase, Inbox, FilePlus2, Users, Handshake, Lightbulb, GraduationCap, ChevronRight, Trash2, Eye, Layers, Film, Shield, TrendingUp, CheckCircle } from "lucide-react";
+import { Search, Loader2, ArrowRight, Sparkles, Briefcase, Inbox, FilePlus2, Users, Handshake, Lightbulb, GraduationCap, ChevronRight, Trash2, Eye, Layers, Film, Shield, TrendingUp, CheckCircle, Rocket } from "lucide-react";
 import { OpportunityCardV2 } from "@/components/opportunities/OpportunityCardV2";
 import { IdeaDevelopDialog } from "@/components/idea/IdeaDevelopDialog";
 import { IdeaValidationDialog } from "@/components/idea/IdeaValidationDialog";
@@ -23,6 +23,7 @@ import { IdeaGrowthDialog } from "@/components/idea/IdeaGrowthDialog";
 import { IdeaEpisodesDialog } from "@/components/idea/IdeaEpisodesDialog";
 import { TeamManagementDialog } from "@/components/idea/TeamManagementDialog";
 import { FiveElementsDialog } from "@/components/idea/FiveElementsDialog";
+import { ApplyToJoinDialog } from "@/components/idea/ApplyToJoinDialog";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -40,7 +41,7 @@ import { useOpportunityPersona, type OpportunityCategory } from "@/hooks/useOppo
 
 const sb = supabase as any;
 
-type Tab = "discover" | "recommended" | "mine" | "applications" | "created" | "my-projects" | "collabs";
+type Tab = "discover" | "recommended" | "mine" | "applications" | "created" | "ecosystem" | "my-projects" | "collabs";
 
 const TABS: { key: Tab; label: string; icon: React.ReactNode; hint: string; dividerBefore?: boolean }[] = [
   { key: "discover",     label: "Discover",        icon: <Sparkles className="w-4 h-4" />,    hint: "Every open opportunity in the graph." },
@@ -48,7 +49,8 @@ const TABS: { key: Tab; label: string; icon: React.ReactNode; hint: string; divi
   { key: "mine",         label: "My opportunities", icon: <Users className="w-4 h-4" />,      hint: "Relationships you're already in.", dividerBefore: true },
   { key: "applications", label: "My applications", icon: <Inbox className="w-4 h-4" />,       hint: "Pending and historical applications." },
   { key: "created",      label: "Created by me",   icon: <FilePlus2 className="w-4 h-4" />,    hint: "Opportunities you posted." },
-  { key: "my-projects",  label: "My Projects",     icon: <Lightbulb className="w-4 h-4" />,   hint: "Startup ventures you created.", dividerBefore: true },
+  { key: "ecosystem",    label: "Ecosystem",       icon: <Rocket className="w-4 h-4" />,      hint: "Browse startup ventures seeking co-builders.", dividerBefore: true },
+  { key: "my-projects",  label: "My Projects",     icon: <Lightbulb className="w-4 h-4" />,   hint: "Startup ventures you created." },
   { key: "collabs",      label: "Collabs",         icon: <Users className="w-4 h-4" />,       hint: "Ventures you're contributing to as a co-builder." },
 ];
 
@@ -66,6 +68,15 @@ function computeMatchScore(userSkillNames: string[], oppSkills: string[]): numbe
   const matches = oppSkills.filter((s) => userSet.has(s.toLowerCase()));
   return Math.round((matches.length / oppSkills.length) * 100);
 }
+
+const getEpisodeLabel = (episode: string) => {
+  switch (episode) {
+    case "development": return "Idea";
+    case "validation": return "MVP";
+    case "growth": return "Growth";
+    default: return "Idea";
+  }
+};
 
 const Opportunities = () => {
   const navigate = useNavigate();
@@ -130,6 +141,8 @@ const Opportunities = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteType, setDeleteType] = useState<"archive" | "permanent" | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [ecosystemTeamCounts, setEcosystemTeamCounts] = useState<Record<string, number>>({});
+  const [applyProject, setApplyProject] = useState<any>(null);
 
   const { expertise } = useExpertise(user?.id);
   const userSkillNames = expertise?.tags ?? [];
@@ -294,6 +307,15 @@ const Opportunities = () => {
       for (const j of jobData) if (j.user_id === user.id) created.add(j.id);
       for (const c of consultingData) if (c.user_id === user.id) created.add(c.id);
       setCreatedIds(created);
+
+      // Team counts for ecosystem view
+      const allStartupIds = startupData.map((s: any) => s.id);
+      if (allStartupIds.length > 0) {
+        const { data: teamData } = await sb.from("startup_team_members").select("startup_id").in("startup_id", allStartupIds);
+        const counts: Record<string, number> = {};
+        (teamData || []).forEach((t: any) => { counts[t.startup_id] = (counts[t.startup_id] || 0) + 1; });
+        setEcosystemTeamCounts(counts);
+      }
 
       setLoading(false);
     })();
@@ -667,6 +689,74 @@ const Opportunities = () => {
                     </div>
                   );
                 })()
+              ) : tab === "ecosystem" ? (
+                (() => {
+                  const projects = rawStartups.filter((s: any) => s.creator_id !== user?.id);
+                  if (projects.length === 0) {
+                    return <EmptyState tab="ecosystem" onPost={() => navigate("/entrepreneurship?new=1")} onDiscover={() => setParam("v", null)} />;
+                  }
+                  return (
+                    <div className="space-y-4">
+                      {projects.map((project: any) => (
+                        <div key={project.id} className="border border-border rounded-2xl p-4 sm:p-6 bg-card hover:shadow-md transition-shadow">
+                          <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0 w-full">
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                <h3 className="font-display text-lg sm:text-xl font-bold text-foreground break-words">{project.title}</h3>
+                                <Badge variant="outline" className="text-xs">{getEpisodeLabel(project.current_episode)}</Badge>
+                              </div>
+                              {project.sector && (
+                                <p className="text-sm text-muted-foreground italic mb-2">{project.sector}</p>
+                              )}
+                              <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{project.description}</p>
+
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4 text-sm">
+                                <div>
+                                  <p className="text-muted-foreground">Founder</p>
+                                  <p className="font-semibold text-foreground truncate">{project._author || "—"}</p>
+                                </div>
+                                <div>
+                                  <p className="text-muted-foreground">Team Size</p>
+                                  <p className="font-semibold text-foreground">{(ecosystemTeamCounts[project.id] || 0) + 1} members</p>
+                                </div>
+                                <div>
+                                  <p className="text-muted-foreground">Industry</p>
+                                  <p className="font-semibold text-foreground truncate">{project.sector || "General"}</p>
+                                </div>
+                                <div>
+                                  <p className="text-muted-foreground">Equity Offer</p>
+                                  <p className="font-semibold text-secondary">5-15%</p>
+                                </div>
+                              </div>
+
+                              {project.roles_needed && project.roles_needed.length > 0 && (
+                                <div>
+                                  <p className="text-xs text-muted-foreground mb-1">Seeking roles:</p>
+                                  <div className="flex flex-wrap gap-1">
+                                    {project.roles_needed.map((role: string) => (
+                                      <Badge key={role} variant="secondary" className="text-xs">{role}</Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="flex flex-row sm:flex-col gap-2 shrink-0 w-full sm:w-auto">
+                              <Button size="sm" className="flex-1 sm:flex-none" onClick={() => setApplyProject(project)}>
+                                Express Interest
+                              </Button>
+                              <Button variant="outline" size="sm" className="flex-1 sm:flex-none" asChild>
+                                <Link to={`/opportunities/startup/${project.id}`}>
+                                  <Eye className="w-3 h-3 mr-1" /> View Details
+                                </Link>
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()
               ) : filtered.length === 0 ? (
                 <EmptyState tab={tab} onPost={() => navigate("/publish-job")} onDiscover={() => setParam("v", null)} />
               ) : (
@@ -760,6 +850,15 @@ const Opportunities = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {applyProject && (
+        <ApplyToJoinDialog
+          open={!!applyProject}
+          onOpenChange={(open) => { if (!open) setApplyProject(null); }}
+          idea={applyProject}
+          onApplicationSubmitted={refreshMyAndCollabs}
+        />
+      )}
     </div>
   );
 };
@@ -772,6 +871,7 @@ function EmptyState({ tab, onPost, onDiscover }: { tab: Tab; onPost: () => void;
     mine:         { title: "You're not in any opportunities yet.", body: "Once an application is accepted, the resulting relationship shows up here.", cta: { label: "Discover opportunities", onClick: onDiscover } },
     applications: { title: "No applications yet.", body: "Apply from any opportunity detail page.", cta: { label: "Discover opportunities", onClick: onDiscover } },
     created:      { title: "You haven't posted any opportunities.", body: "Post a job, training, or open a startup role.", cta: { label: "Post one", onClick: onPost } },
+    ecosystem:    { title: "No projects seeking co-builders right now.", body: "Check back soon or start your own!", cta: { label: "Start a venture", onClick: onPost } },
     "my-projects": { title: "You haven't created any ventures yet.", body: "Start a project to see it here.", cta: { label: "Start a venture", onClick: onPost } },
     collabs:      { title: "You're not collaborating on any ventures yet.", body: "Apply to a co-builder role to join a team.", cta: { label: "Discover ventures", onClick: onDiscover } },
   };
