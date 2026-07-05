@@ -725,19 +725,24 @@ const Opportunities = () => {
                 })()
               ) : tab === "ecosystem" ? (
                 (() => {
-                  const projects = rawStartups.filter((s: any) => s.creator_id !== user?.id);
+                  const withFlag = ecosystemStartups.map((s: any) => ({ ...s, _isOwn: s.creator_id === user?.id }));
+                  // Non-owned (with Express Interest) first, then user's own
+                  const projects = withFlag.sort((a: any, b: any) => Number(a._isOwn) - Number(b._isOwn));
                   if (projects.length === 0) {
                     return <EmptyState tab="ecosystem" onPost={() => navigate("/entrepreneurship?new=1")} onDiscover={() => setParam("v", null)} />;
                   }
                   return (
                     <div className="space-y-4">
                       {projects.map((project: any) => (
-                        <div key={project.id} className="border border-border rounded-2xl p-4 sm:p-6 bg-card hover:shadow-md transition-shadow">
+                        <div key={project.id} className={`border rounded-2xl p-4 sm:p-6 hover:shadow-md transition-shadow ${project._isOwn ? "border-b4-teal/40 bg-b4-teal/5" : "border-border bg-card"}`}>
                           <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                             <div className="flex-1 min-w-0 w-full">
                               <div className="flex items-center gap-2 mb-1 flex-wrap">
                                 <h3 className="font-display text-lg sm:text-xl font-bold text-foreground break-words">{project.title}</h3>
                                 <Badge variant="outline" className="text-xs">{getEpisodeLabel(project.current_episode)}</Badge>
+                                {project._isOwn && (
+                                  <Badge className="bg-b4-teal text-white text-[10px]">Your project</Badge>
+                                )}
                               </div>
                               {project.sector && (
                                 <p className="text-sm text-muted-foreground italic mb-2">{project.sector}</p>
@@ -776,9 +781,11 @@ const Opportunities = () => {
                             </div>
 
                             <div className="flex flex-row sm:flex-col gap-2 shrink-0 w-full sm:w-auto">
-                              <Button size="sm" className="flex-1 sm:flex-none" onClick={() => setApplyProject(project)}>
-                                Express Interest
-                              </Button>
+                              {!project._isOwn && (
+                                <Button size="sm" className="flex-1 sm:flex-none" onClick={() => setApplyProject(project)}>
+                                  Express Interest
+                                </Button>
+                              )}
                               <Button variant="outline" size="sm" className="flex-1 sm:flex-none" asChild>
                                 <Link to={`/opportunities/startup/${project.id}`}>
                                   <Eye className="w-3 h-3 mr-1" /> View Details
