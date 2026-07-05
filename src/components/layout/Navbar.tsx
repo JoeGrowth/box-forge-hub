@@ -83,7 +83,11 @@ const moreLinks: Array<{
   path: string;
   icon: typeof Briefcase;
   minStage?: keyof typeof STAGE_RANK;
+  engineKey?: EngineKey;
 }> = [
+  { name: "Career", path: "/career", icon: Briefcase, engineKey: "career" },
+  { name: "Consulting", path: "/consulting", icon: Handshake, engineKey: "consulting" },
+  { name: "Entrepreneurship", path: "/entrepreneurship", icon: Lightbulb, engineKey: "entrepreneurship" },
   { name: "Squares", path: "/squares", icon: LayoutGrid },
   { name: "People", path: "/people", icon: Users, minStage: "emerging" },
   { name: "Boxes", path: "/boxes", icon: Package },
