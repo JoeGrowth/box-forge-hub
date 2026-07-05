@@ -211,6 +211,17 @@ export function Navbar() {
             ) : (
               <>
 
+                {stageRank >= STAGE_RANK.emerging && (
+                  <Link
+                    to="/people"
+                    className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 ${
+                      location.pathname === "/people" ? "text-b4-teal" : "text-muted-foreground"
+                    }`}
+                  >
+                    People
+                  </Link>
+                )}
+
                 {talentReady && (
                   <Link
                     to="/opportunities"
