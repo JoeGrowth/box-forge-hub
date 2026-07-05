@@ -643,7 +643,7 @@ function StagePanel({
         )}
 
         {show("propose") && (
-        <StageBlock n={2} title="Technical &amp; financial proposal" active={opp.stage === "propose"} done={idx > 1}>
+        <StageBlock n={2} title="Propose &mdash; technical &amp; financial proposal" description="Upload your proposal. This document is the negotiated contract of intent. Keeping it here creates an auditable reference for scope, pricing, and client agreement." active={opp.stage === "propose"} done={idx > 1}>
             <div className="space-y-2">
               <Label className="text-xs">Proposal PDF</Label>
               <FileField
