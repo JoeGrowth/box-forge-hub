@@ -968,6 +968,11 @@ function StagePanel({
                       Awaiting payment <ArrowRight className="w-3 h-3 ml-1" />
                     </Button>
                   )}
+                  {canSkip && (
+                    <Button variant="ghost" size="sm" className="w-full text-muted-foreground" disabled={working} onClick={() => advance("payment_distribution", { delivered_at: opp.delivered_at ?? new Date().toISOString() })}>
+                      Skip this step
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
