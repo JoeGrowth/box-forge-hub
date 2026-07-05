@@ -212,7 +212,6 @@ export default function ConsultingGrowth() {
   return (
     <>
     <div className="container mx-auto px-4 pt-24 pb-8 max-w-5xl space-y-6">
-      <NextGoalBanner pageStage="advisor" />
       <div className="flex items-start justify-between gap-4 mb-2 flex-wrap">
         <div className="flex-1 min-w-[260px]">
           <h1 className="text-3xl font-bold tracking-tight">Consulting Growth</h1>
@@ -220,52 +219,9 @@ export default function ConsultingGrowth() {
             5-stage pipeline: Identify &rarr; Propose &rarr; Prepare &rarr; Deliver &rarr; Payment &amp; distribution.
           </p>
         </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button><Plus className="w-4 h-4 mr-1" /> New opportunity</Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-lg">
-              <DialogHeader><DialogTitle>New consulting / training opportunity</DialogTitle></DialogHeader>
-              <div className="space-y-3">
-                <div><Label>Title *</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Digital Security Training &ndash; Bank X" /></div>
-                <div><Label>Client / prospect</Label><Input value={form.client_name} onChange={e => setForm({ ...form, client_name: e.target.value })} /></div>
-                <div>
-                  <Label>Source</Label>
-                  <Select value={form.source} onValueChange={v => setForm({ ...form, source: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{SOURCES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div><Label>Days</Label><Input type="number" value={form.number_of_days} onChange={e => setForm({ ...form, number_of_days: e.target.value })} /></div>
-                  <div><Label>Per day</Label><Input type="number" value={form.amount_per_day} onChange={e => setForm({ ...form, amount_per_day: e.target.value })} /></div>
-                  <div><Label>Currency</Label><Input value={form.currency} onChange={e => setForm({ ...form, currency: e.target.value })} maxLength={3} /></div>
-                </div>
-                <div><Label>Description</Label><Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} placeholder="What is this opportunity about?" /></div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-                <Button onClick={create} disabled={saving}>{saving ? "Saving&hellip;" : "Add opportunity"}</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
       </div>
 
-
-      {/* Milestone */}
-      <div className="rounded-xl border border-border bg-card p-5">
-        <div className="flex items-center justify-between gap-2 mb-3">
-          <div>
-            <h3 className="font-semibold text-foreground">Brand entity unlock</h3>
-            <p className="text-sm text-muted-foreground mt-0.5">Reach {MILESTONE} closed missions to launch your own brand.</p>
-          </div>
-          <Badge variant={closed.length >= MILESTONE ? "default" : "outline"}>{closed.length}/{MILESTONE}</Badge>
-        </div>
-        <Progress value={milestonePct} />
-      </div>
+      <NextGoalBanner pageStage="advisor" />
 
       {/* Opportunities */}
       <div className="space-y-3">

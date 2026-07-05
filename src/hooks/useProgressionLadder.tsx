@@ -56,17 +56,9 @@ export function useProgressionLadder(): ProgressionLadder {
 
     (async () => {
       const uid = user.id;
-      // Paid missions: count declaration_missions.client_paid=true across entities owned by user.
-      const { data: entities } = await supabase
-        .from("declaration_entities")
-        .select("id")
-        .eq("owner_id", uid);
-      const entityIds = (entities ?? []).map((e: any) => e.id);
-
+      // Paid missions: count closed consultant_opportunities for this user.
       const [paidRes, teamRes, ideasRes, boxRes] = await Promise.all([
-        entityIds.length
-          ? supabase.from("declaration_missions").select("id", { count: "exact", head: true }).in("entity_id", entityIds).eq("client_paid", true)
-          : Promise.resolve({ count: 0 } as any),
+        supabase.from("consultant_opportunities").select("id", { count: "exact", head: true }).eq("user_id", uid).eq("stage", "closed"),
         supabase.from("startup_team_members").select("id", { count: "exact", head: true }).eq("member_user_id", uid),
         supabase.from("startup_ideas").select("id", { count: "exact", head: true }).eq("creator_id", uid).eq("review_status", "approved"),
         supabase.from("box_ecosystem_admins").select("id", { count: "exact", head: true }).eq("user_id", uid),
