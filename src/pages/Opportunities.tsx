@@ -43,14 +43,14 @@ const sb = supabase as any;
 
 type Tab = "discover" | "recommended" | "mine" | "applications" | "created" | "ecosystem" | "my-projects";
 
-const TABS: { key: Tab; label: string; icon: React.ReactNode; hint: string; dividerBefore?: boolean }[] = [
+const TABS: { key: Tab; label: string; icon: React.ReactNode; hint: string; dividerBefore?: boolean; requiresFoundation?: boolean; dimWhenMonetized?: boolean }[] = [
+  { key: "created",      label: "Create",          icon: <FilePlus2 className="w-4 h-4" />,   hint: "Opportunities you posted.", requiresFoundation: true },
   { key: "discover",     label: "Discover",        icon: <Sparkles className="w-4 h-4" />,    hint: "Every open opportunity in the graph." },
   { key: "recommended",  label: "Recommended",     icon: <Sparkles className="w-4 h-4" />,    hint: "Ranked for you by skill, trust, and intent." },
-  { key: "mine",         label: "My opportunities", icon: <Users className="w-4 h-4" />,      hint: "Relationships you're already in.", dividerBefore: true },
   { key: "applications", label: "My applications", icon: <Inbox className="w-4 h-4" />,       hint: "Pending and historical applications." },
-  { key: "created",      label: "Created by me",   icon: <FilePlus2 className="w-4 h-4" />,    hint: "Opportunities you posted." },
-  { key: "ecosystem",    label: "Ecosystem",       icon: <Rocket className="w-4 h-4" />,      hint: "Browse every startup idea in the directory.", dividerBefore: true },
-  { key: "my-projects",  label: "Legacy",          icon: <Lightbulb className="w-4 h-4" />,   hint: "Ventures you initiated and ones you've gained equity in." },
+  { key: "mine",         label: "Accepted",        icon: <Users className="w-4 h-4" />,       hint: "Relationships you're already in." },
+  { key: "ecosystem",    label: "Ecosystem",       icon: <Rocket className="w-4 h-4" />,      hint: "Browse every startup idea in the directory.", dividerBefore: true, requiresFoundation: true, dimWhenMonetized: true },
+  { key: "my-projects",  label: "Legacy",          icon: <Lightbulb className="w-4 h-4" />,   hint: "Ventures you initiated and ones you've gained equity in.", requiresFoundation: true, dimWhenMonetized: true },
 ];
 
 const KINDS: { key: OpportunityCategory; label: string }[] = [
@@ -499,7 +499,9 @@ const Opportunities = () => {
           <section className="pb-3">
             <div className="container mx-auto px-4">
               <div className="flex items-center gap-1 overflow-x-auto border-b border-border">
-                {TABS.map((t) => (
+                {TABS.filter((t) => !t.requiresFoundation || talentFoundationSet).map((t) => {
+                  const dim = t.dimWhenMonetized && talentFoundationSet && talentMonetized;
+                  return (
                   <div key={t.key} className="flex items-center">
                     {t.dividerBefore && (
                       <span aria-hidden className="mx-2 h-5 w-px bg-border/70 shrink-0" />
@@ -510,13 +512,14 @@ const Opportunities = () => {
                         tab === t.key
                           ? "border-primary text-foreground"
                           : "border-transparent text-muted-foreground hover:text-foreground"
-                      }`}
+                      } ${dim ? "opacity-10 hover:opacity-100" : ""}`}
                     >
                       {t.icon}
                       {t.label}
                     </button>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </section>
