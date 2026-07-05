@@ -288,7 +288,8 @@ export default function ConsultingGrowth() {
             </div>
           );
         })()}
-        </div>
+
+
 
         {(() => {
           const filtered = stageFilter === "all" ? items : items.filter(i => i.stage === stageFilter);
