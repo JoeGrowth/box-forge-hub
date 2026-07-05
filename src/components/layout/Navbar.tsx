@@ -60,11 +60,6 @@ const guestNavLinks: Array<{ name: string; path: string; icon: typeof Briefcase 
 ];
 
 
-const engineLinks: Array<{ name: string; path: string; icon: typeof Briefcase; key: EngineKey }> = [
-  { name: "Career", path: "/career", icon: Briefcase, key: "career" },
-  { name: "Consulting", path: "/consulting", icon: Handshake, key: "consulting" },
-  { name: "Entrepreneurship", path: "/entrepreneurship", icon: Lightbulb, key: "entrepreneurship" },
-];
 
 const publishLinks: Array<{
   name: string;
@@ -88,7 +83,11 @@ const moreLinks: Array<{
   path: string;
   icon: typeof Briefcase;
   minStage?: keyof typeof STAGE_RANK;
+  engineKey?: EngineKey;
 }> = [
+  { name: "Career", path: "/career", icon: Briefcase, engineKey: "career" },
+  { name: "Consulting", path: "/consulting", icon: Handshake, engineKey: "consulting" },
+  { name: "Entrepreneurship", path: "/entrepreneurship", icon: Lightbulb, engineKey: "entrepreneurship" },
   { name: "Squares", path: "/squares", icon: LayoutGrid },
   { name: "People", path: "/people", icon: Users, minStage: "emerging" },
   { name: "Boxes", path: "/boxes", icon: Package },
@@ -111,7 +110,6 @@ function readCachedAdmin(userId: string | undefined): boolean {
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [engineOpen, setEngineOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
 
@@ -156,14 +154,6 @@ export function Navbar() {
 
 
   // Only show unlocked items in the navbar — locked routes are hidden entirely.
-  const visibleEngineLinks = useMemo(
-    () => engineLinks.filter((l) => engineAccess[l.key].unlocked),
-    [engineAccess],
-  );
-  const isEngineActive = useMemo(
-    () => visibleEngineLinks.some((l) => location.pathname === l.path),
-    [visibleEngineLinks, location.pathname],
-  );
   const visiblePublishLinks = useMemo(
     () => publishLinks.filter((l) => !(l.orgAdminOnly && !isOrgAdmin)),
     [isOrgAdmin],
@@ -171,8 +161,13 @@ export function Navbar() {
   const { progression } = useNextBestActions(user?.id);
   const stageRank = STAGE_RANK[progression?.current_state ?? "novice"] ?? 0;
   const visibleMoreLinks = useMemo(
-    () => moreLinks.filter((l) => !l.minStage || stageRank >= STAGE_RANK[l.minStage]),
-    [stageRank],
+    () =>
+      moreLinks.filter(
+        (l) =>
+          (!l.minStage || stageRank >= STAGE_RANK[l.minStage]) &&
+          (!l.engineKey || engineAccess[l.engineKey].unlocked),
+      ),
+    [stageRank, engineAccess],
   );
 
   return (
@@ -203,41 +198,6 @@ export function Navbar() {
               ))
             ) : (
               <>
-                {visibleEngineLinks.length > 0 && (
-                  <DropdownMenu open={engineOpen} onOpenChange={setEngineOpen}>
-                    <DropdownMenuTrigger asChild>
-                      <button
-                        className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-b4-teal outline-none ${
-                          isEngineActive ? "text-b4-teal" : "text-muted-foreground"
-                        }`}
-                      >
-                        Engine
-                        <ChevronDown
-                          size={14}
-                          className={`transition-transform duration-200 ${engineOpen ? "rotate-180" : ""}`}
-                        />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="center" className="w-48 mt-2">
-                      {visibleEngineLinks.map((link) => {
-                        const Icon = link.icon;
-                        return (
-                          <DropdownMenuItem key={link.path} asChild>
-                            <Link
-                              to={link.path}
-                              className={`flex items-center gap-2 cursor-pointer ${
-                                location.pathname === link.path ? "text-b4-teal" : "text-foreground"
-                              }`}
-                            >
-                              <Icon size={16} />
-                              <span className="flex-1">{link.name}</span>
-                            </Link>
-                          </DropdownMenuItem>
-                        );
-                      })}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
 
                 {talentReady && (
                   <Link
@@ -399,29 +359,6 @@ export function Navbar() {
 
 
                 <>
-                  {visibleEngineLinks.length > 0 && (
-                    <div className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Engine
-                    </div>
-                  )}
-                  {visibleEngineLinks.map((link) => {
-                    const Icon = link.icon;
-                    return (
-                      <Link
-                        key={link.path}
-                        to={link.path}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                          location.pathname === link.path
-                            ? "bg-muted text-b4-teal"
-                            : "text-muted-foreground hover:bg-muted"
-                        }`}
-                        onClick={() => setIsOpen(false)}
-                      >
-                        <Icon size={16} />
-                        <span className="flex-1">{link.name}</span>
-                      </Link>
-                    );
-                  })}
                   {talentReady && (
                     <Link
                       to="/opportunities"
