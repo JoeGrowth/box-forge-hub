@@ -154,6 +154,7 @@ export function DashboardProgress() {
 
     setJourneys(journeyMap);
     setHasLearningJourneys((learningJourneys?.length ?? 0) > 0);
+    setLoaded(true);
   }, [user, onboardingState]);
 
   useEffect(() => {
