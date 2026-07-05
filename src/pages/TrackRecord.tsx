@@ -437,14 +437,14 @@ const TrackRecord = () => {
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <FileText className="w-8 h-8" />
-                  <h1 className="font-display text-3xl font-bold">Your Track Record</h1>
+                  <h1 className="font-display text-2xl md:text-3xl font-bold">Your Track Record</h1>
                 </div>
                 <p className="text-primary-foreground/80 max-w-xl">
                   Review and update your entrepreneurial achievements across initiatives, products, teams, business, and value contributions.
                 </p>
               </div>
               {data && (
-                <div className="flex items-start gap-4">
+                <div className="flex flex-col sm:flex-row items-start gap-4 w-full sm:w-auto">
                   <Button
                     variant="hero-outline"
                     onClick={async () => {
