@@ -508,14 +508,91 @@ const Opportunities = () => {
               ) : tab === "my-projects" || tab === "collabs" ? (
                 (() => {
                   const projects = tab === "my-projects" ? myProjects : collabProjects;
+                  const isOwner = tab === "my-projects";
                   if (projects.length === 0) {
                     return <EmptyState tab={tab} onPost={() => navigate("/entrepreneurship?new=1")} onDiscover={() => setParam("v", null)} />;
                   }
                   return (
                     <div className="space-y-3">
-                      {projects.map((p) => (
-                        <ProjectRow key={p.id} project={p} isOwner={tab === "my-projects"} />
-                      ))}
+                      {projects.map((project) => {
+                        const episodeLabel = project.current_episode === "validation" ? "MVP" : project.current_episode === "growth" ? "Growth" : "Idea";
+                        return (
+                          <div key={project.id} className="border border-border rounded-2xl p-4 sm:p-6 bg-card hover:shadow-md transition-shadow">
+                            <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                              <div className="flex-1 min-w-0 w-full">
+                                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                  <h3 className="font-display text-base sm:text-lg font-bold text-foreground break-words">{project.title}</h3>
+                                  <Badge variant="outline" className="text-[10px]">{episodeLabel}</Badge>
+                                  {isOwner && project.review_status && (
+                                    <Badge variant="secondary" className="text-[10px] capitalize">{project.review_status}</Badge>
+                                  )}
+                                </div>
+                                {project.sector && (
+                                  <p className="text-xs sm:text-sm text-muted-foreground italic mb-1">{project.sector}</p>
+                                )}
+                                {project.description && (
+                                  <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
+                                )}
+                              </div>
+                              <div className="flex flex-wrap gap-2 shrink-0 w-full sm:w-auto sm:max-w-[65%] justify-start sm:justify-end">
+                                {isOwner && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                    onClick={() => { setIdeaToDelete({ id: project.id, title: project.title }); setDeleteDialogOpen(true); }}
+                                    title="Delete idea"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                )}
+                                <Button variant="outline" size="sm" asChild>
+                                  <Link to={`/opportunities/startup/${project.id}`}>
+                                    <Eye className="w-3 h-3 mr-1" /> View
+                                  </Link>
+                                </Button>
+                                {(isOwner ? project.review_status === "approved" : true) && (
+                                  <>
+                                    <Button variant="outline" size="sm" onClick={() => { setTeamDialogIdea({ id: project.id, title: project.title }); setTeamDialogOpen(true); }}>
+                                      <Users className="w-4 h-4 mr-1" /> Team
+                                    </Button>
+                                    {isOwner && !project.development_completed_at && (
+                                      <Button variant="outline" size="sm" onClick={() => { setFiveElementsIdea({ id: project.id, title: project.title, description: project.description }); setFiveElementsDialogOpen(true); }}>
+                                        <Layers className="w-4 h-4 mr-1" /> 5 Elements
+                                      </Button>
+                                    )}
+                                    {project.development_completed_at && (
+                                      <Button variant="outline" size="sm" onClick={() => { setSelectedIdea({ id: project.id, title: project.title, currentEpisode: project.current_episode }); setEpisodesDialogOpen(true); }}>
+                                        <Film className="w-4 h-4 mr-1" /> Episodes
+                                      </Button>
+                                    )}
+                                    {isOwner && project.current_episode === "development" && (
+                                      <Button size="sm" onClick={() => { setSelectedIdea({ id: project.id, title: project.title, currentEpisode: project.current_episode }); setDevelopDialogOpen(true); }}>
+                                        Develop
+                                      </Button>
+                                    )}
+                                    {isOwner && project.current_episode === "validation" && (
+                                      <Button size="sm" onClick={() => { setSelectedIdea({ id: project.id, title: project.title, currentEpisode: project.current_episode }); setValidationDialogOpen(true); }}>
+                                        <Shield className="w-4 h-4 mr-1" /> Validate
+                                      </Button>
+                                    )}
+                                    {isOwner && project.current_episode === "growth" && (
+                                      <Button size="sm" onClick={() => { setSelectedIdea({ id: project.id, title: project.title, currentEpisode: project.current_episode }); setGrowthDialogOpen(true); }}>
+                                        <TrendingUp className="w-4 h-4 mr-1" /> Grow
+                                      </Button>
+                                    )}
+                                    {project.current_episode === "completed" && (
+                                      <Badge className="bg-b4-teal text-white">
+                                        <CheckCircle className="w-3 h-3 mr-1" /> Journey Complete
+                                      </Badge>
+                                    )}
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   );
                 })()
