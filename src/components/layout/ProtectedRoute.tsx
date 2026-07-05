@@ -25,12 +25,10 @@ export function ProtectedRoute({
   const location = useLocation();
 
   if (authLoading || loading) {
-    return (
-      <div className="min-h-screen bg-background p-8">
-        <Skeleton className="h-48 w-full rounded-2xl mb-6" />
-        <Skeleton className="h-96 w-full rounded-2xl" />
-      </div>
-    );
+    // Neutral placeholder — no skeleton cards. Skeletons that render then
+    // immediately unmount (because auth resolves synchronously most of the
+    // time) create a visible flash before the real page paints.
+    return <div className="min-h-screen bg-background" aria-hidden />;
   }
 
   if (!user) {
