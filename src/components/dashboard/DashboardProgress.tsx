@@ -66,6 +66,37 @@ export function DashboardProgress() {
     setConsultingStarted((consultingCount ?? 0) > 0);
     setVentureStarted(((ideasCount ?? 0) + (applicationsCount ?? 0)) > 0);
 
+    // Categorize closed missions by delivery mode
+    const { data: closedOpps } = await supabase
+      .from("consultant_opportunities")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("stage", "closed");
+    const closedIds = (closedOpps ?? []).map((o: any) => o.id);
+    let solo = 0, contractors = 0, equity = 0;
+    if (closedIds.length > 0) {
+      const { data: dists } = await supabase
+        .from("consultant_opportunity_distributions")
+        .select("opportunity_id, recipient_name, note")
+        .in("opportunity_id", closedIds);
+      const byOpp: Record<string, { name: string; note: string | null }[]> = {};
+      (dists ?? []).forEach((d: any) => {
+        (byOpp[d.opportunity_id] ||= []).push({ name: d.recipient_name || "", note: d.note });
+      });
+      for (const id of closedIds) {
+        const list = byOpp[id] || [];
+        const hasEquity = list.some((r) =>
+          /associé|associe|equity|partner|co[- ]?builder/i.test(`${r.name} ${r.note ?? ""}`)
+        );
+        if (list.length <= 1) solo++;
+        else if (hasEquity) equity++;
+        else contractors++;
+      }
+    }
+    setSoloDelivered(solo);
+    setContractorsDelivered(contractors);
+    setEquityDelivered(equity);
+
     setNaturalRoleComplete(!!naturalRole?.description);
     setNrDecoderComplete(!!nrDecoder);
 
