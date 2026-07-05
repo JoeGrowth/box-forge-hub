@@ -1284,37 +1284,9 @@ function StagePanel({
                       </div>
                     </div>
 
-                    {/* Distribution recap table */}
-                    {distributions.length > 0 && (
-                      <div className="rounded-md border bg-muted/20 p-3 space-y-2">
-                        <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Distribution recap</div>
-                        <div className="overflow-x-auto -mx-3 px-3">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Recipient</TableHead>
-                              <TableHead className="text-right">%</TableHead>
-                              <TableHead className="text-right">Amount ({opp.currency || "EUR"})</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {distributions.map(d => (
-                              <TableRow key={d.id}>
-                                <TableCell className="font-medium">{d.recipient_name}</TableCell>
-                                <TableCell className="text-right">{d.percent ?? 0}%</TableCell>
-                                <TableCell className="text-right font-mono">{distFmt(Number(d.amount ?? 0))}</TableCell>
-                              </TableRow>
-                            ))}
-                            <TableRow className="font-semibold bg-muted/40">
-                              <TableCell>Total distributed</TableCell>
-                              <TableCell className="text-right">{distributions.reduce((s, d) => s + (d.percent ?? 0), 0)}%</TableCell>
-                              <TableCell className="text-right font-mono">{distFmt(distributions.reduce((s, d) => s + Number(d.amount ?? 0), 0))}</TableCell>
-                            </TableRow>
-                          </TableBody>
-                        </Table>
-                        </div>
-                      </div>
-                    )}
+                    {/* Distribution recap — collapsible, always available */}
+                    <DistributionRecap distributions={distributions} currency={opp.currency || "EUR"} />
+
                   </div>
                 )}
               </div>
