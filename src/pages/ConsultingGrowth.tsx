@@ -84,11 +84,11 @@ const SOURCES = [
 ];
 
 const STAGES: { value: Stage; label: string; short: string; icon: typeof Briefcase }[] = [
-  { value: "identify",             label: "1. catched opportunity",    short: "catched",     icon: Briefcase },
+  { value: "identify",             label: "1. Catched opportunity",    short: "Catched",     icon: Briefcase },
   { value: "propose",              label: "2. Send proposal",           short: "Propose",      icon: FileText },
   { value: "confirm_prepare",      label: "3. Confirm & prepare",       short: "Prepare",      icon: CheckCircle2 },
   { value: "deliver",              label: "4. Deliver",                 short: "Deliver",      icon: ArrowRight },
-  { value: "payment_distribution", label: "5. Payment & Distribution",  short: "Payment & Distribution", icon: DollarSign },
+  { value: "payment_distribution", label: "5. receive and distribute",  short: "receive and distribute", icon: DollarSign },
   { value: "closed",               label: "6. Accounting",              short: "Accounting",     icon: Users },
 ];
 
@@ -216,7 +216,7 @@ export default function ConsultingGrowth() {
         <div className="flex-1 min-w-[260px]">
           <h1 className="text-3xl font-bold tracking-tight">Consulting Growth</h1>
           <p className="text-muted-foreground mt-1">
-            5-stage pipeline: catched &rarr; Propose &rarr; Prepare &rarr; Deliver &rarr; Payment &amp; distribution.
+            5-stage pipeline: Catched &rarr; Propose &rarr; Prepare &rarr; Deliver &rarr; receive and distribute.
           </p>
         </div>
       </div>
@@ -494,7 +494,7 @@ function StagePanel({
 
       <div className="space-y-4">
         {show("identify") && (
-        <StageBlock n={1} title="catched &mdash; upload the driver" active={opp.stage === "identify"} done={idx > 0}>
+        <StageBlock n={1} title="Catched &mdash; upload the driver" active={opp.stage === "identify"} done={idx > 0}>
             <div className="space-y-2">
               <Label className="text-xs">Driver PDF or screenshot (LinkedIn post, tender, email&hellip;)</Label>
               <FileField
@@ -831,7 +831,7 @@ function StagePanel({
                         <div className="flex items-start gap-2">
                           <CheckCircle2 className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
                           <div className="flex-1">
-                            <span className="font-medium">1. catched</span>
+                            <span className="font-medium">1. Catched</span>
                             <span className="text-muted-foreground"> &mdash; source: {SOURCES.find(s => s.value === opp.source)?.label || opp.source}</span>
                             {opp.driver_file_url && <button className="ml-2 text-primary underline" onClick={() => openFile(opp.driver_file_url)}>driver</button>}
                             {opp.driver_note && <div className="text-muted-foreground italic">"{opp.driver_note}"</div>}
@@ -869,7 +869,7 @@ function StagePanel({
                         <div className="flex items-start gap-2">
                           <CheckCircle2 className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
                           <div className="flex-1">
-                            <span className="font-medium">5. Payment &amp; Distribution</span>
+                            <span className="font-medium">5. receive and distribute</span>
                             <span className="text-muted-foreground">
                               {opp.paid_at && ` &mdash; paid ${format(new Date(opp.paid_at), "MMM d, yyyy")}`}
                               {" &middot; "}{budgetLabel}: {distFmt(Number(opp.paid_amount ?? opp.total_amount ?? 0))} {opp.currency}
