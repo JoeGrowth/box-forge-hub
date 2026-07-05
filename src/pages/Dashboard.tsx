@@ -89,22 +89,10 @@ const Dashboard = () => {
 
 
   if (authLoading || onboardingLoading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <main className="container mx-auto px-4 py-8 pt-24">
-          <div className="space-y-8">
-            <Skeleton className="h-48 w-full rounded-2xl" />
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map((i) => (
-                <Skeleton key={i} className="h-32 rounded-xl" />
-              ))}
-            </div>
-            <Skeleton className="h-64 w-full rounded-2xl" />
-          </div>
-        </main>
-      </div>
-    );
+    // Match ProtectedRoute's placeholder so the two hold the same background
+    // instead of swapping layouts (which caused the "skeleton flash" between
+    // the guard clearing and the real dashboard painting).
+    return <div className="min-h-screen bg-background" aria-hidden />;
   }
 
   if (!user) return null;

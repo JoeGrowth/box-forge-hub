@@ -539,11 +539,7 @@ const Profile = () => {
   const isEmailVerified = user?.email_confirmed_at != null;
 
   if (authLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
-      </div>
-    );
+    return <div className="min-h-screen bg-background" aria-hidden />;
   }
 
   const getInitials = (name: string | null) => {
