@@ -622,7 +622,8 @@ const Opportunities = () => {
                   const collab = collabProjects
                     .filter((p) => !ownedIds.has(p.id))
                     .map((p) => ({ ...p, _ownership: "collab" as const }));
-                  const projects = [...owned, ...collab];
+                  // Joined ventures first, then user's own initiated
+                  const projects = [...collab, ...owned];
                   if (projects.length === 0) {
                     return <EmptyState tab="my-projects" onPost={() => navigate("/entrepreneurship?new=1")} onDiscover={() => setParam("v", null)} />;
                   }
@@ -633,7 +634,7 @@ const Opportunities = () => {
                         const episodeLabel = project.current_episode === "validation" ? "MVP" : project.current_episode === "growth" ? "Growth" : "Idea";
                         const cardTint = isOwner
                           ? "border-b4-teal/40 bg-b4-teal/5"
-                          : "border-secondary/40 bg-secondary/5";
+                          : "border-b4-coral/40 bg-b4-coral/10";
                         return (
                           <div key={project.id} className={`border rounded-2xl p-4 sm:p-6 hover:shadow-md transition-shadow ${cardTint}`}>
                             <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
@@ -643,7 +644,7 @@ const Opportunities = () => {
                                     className={
                                       isOwner
                                         ? "bg-b4-teal text-white text-[10px]"
-                                        : "bg-secondary text-secondary-foreground text-[10px]"
+                                        : "bg-b4-coral text-white text-[10px]"
                                     }
                                   >
                                     {isOwner ? "Initiator" : "Equity co-builder"}
