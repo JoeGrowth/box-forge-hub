@@ -33,6 +33,7 @@ export function DashboardProgress() {
   const [soloDelivered, setSoloDelivered] = useState(0);
   const [contractorsDelivered, setContractorsDelivered] = useState(0);
   const [equityDelivered, setEquityDelivered] = useState(0);
+  const [transactionsCount, setTransactionsCount] = useState(0);
   const [ventureStarted, setVentureStarted] = useState(false);
 
 
