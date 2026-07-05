@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
+import { useEngineAccess } from "@/hooks/useEngineAccess";
 import { supabase } from "@/integrations/supabase/client";
 import { Search, Loader2, ArrowRight, Sparkles, Briefcase, Inbox, FilePlus2, Users, Handshake, Lightbulb, GraduationCap, ChevronRight } from "lucide-react";
 import { OpportunityCardV2 } from "@/components/opportunities/OpportunityCardV2";
