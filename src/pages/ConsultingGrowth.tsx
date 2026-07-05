@@ -47,6 +47,7 @@ interface Opportunity {
   title: string;
   client_name: string | null;
   source: string;
+  opportunity_type: string | null;
   description: string | null;
   number_of_days: number | null;
   amount_per_day: number | null;
@@ -97,10 +98,35 @@ const BUCKET = "consulting-opportunities";
 const DRAFT_KEY = "consulting-growth:new-opp-draft";
 const OPEN_KEY = "consulting-growth:new-opp-open";
 
+const OPPORTUNITY_TYPES = [
+  {
+    value: "workshop",
+    label: "Workshop",
+    description: "Short interactive session designed for group engagement and immediate output.",
+  },
+  {
+    value: "capacity_building",
+    label: "Capacity Building",
+    description: "Long-term skills transfer and institutional strengthening program.",
+  },
+  {
+    value: "audit_consultancy",
+    label: "Audit or Consultancy",
+    description: "Diagnostic review or expert advisory mission on a specific scope.",
+  },
+];
+
+const CURRENCIES = [
+  { value: "TND", label: "TND" },
+  { value: "EUR", label: "EUR" },
+  { value: "USD", label: "USD" },
+];
+
 const EMPTY_FORM = {
   title: "",
   client_name: "",
   source: "linkedin",
+  opportunity_type: "",
   description: "",
   number_of_days: "",
   amount_per_day: "",
@@ -171,6 +197,10 @@ export default function ConsultingGrowth() {
       toast({ title: "Title required", variant: "destructive" });
       return;
     }
+    if (!form.opportunity_type) {
+      toast({ title: "Type required", description: "Select a mission type.", variant: "destructive" });
+      return;
+    }
     setSaving(true);
     const days = form.number_of_days ? parseInt(form.number_of_days) : null;
     const perDay = form.amount_per_day ? parseFloat(form.amount_per_day) : null;
@@ -180,6 +210,7 @@ export default function ConsultingGrowth() {
       client_name: form.client_name.trim() || null,
       consulting_firm: form.client_name.trim() || null,
       source: form.source,
+      opportunity_type: form.opportunity_type || null,
       description: form.description.trim() || null,
       number_of_days: days,
       amount_per_day: perDay,
@@ -386,14 +417,6 @@ export default function ConsultingGrowth() {
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1">
-            <Label htmlFor="opp-title">Title</Label>
-            <Input id="opp-title" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Mission title" />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="opp-client">Client / Organization</Label>
-            <Input id="opp-client" value={form.client_name} onChange={e => setForm({ ...form, client_name: e.target.value })} placeholder="Client name" />
-          </div>
-          <div className="space-y-1">
             <Label>Source</Label>
             <Select value={form.source} onValueChange={v => setForm({ ...form, source: v })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
@@ -403,22 +426,45 @@ export default function ConsultingGrowth() {
             </Select>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="opp-desc">Description</Label>
-            <Textarea id="opp-desc" rows={3} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Context, scope, notes..." />
+            <Label htmlFor="opp-client">Client</Label>
+            <Input id="opp-client" value={form.client_name} onChange={e => setForm({ ...form, client_name: e.target.value })} placeholder="Client name" />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="opp-title">Title</Label>
+            <Input id="opp-title" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Mission title" />
+          </div>
+          <div className="space-y-1">
+            <Label>Type</Label>
+            <Select value={form.opportunity_type} onValueChange={v => setForm({ ...form, opportunity_type: v })}>
+              <SelectTrigger><SelectValue placeholder="Select a type" /></SelectTrigger>
+              <SelectContent>
+                {OPPORTUNITY_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            {form.opportunity_type && (
+              <p className="text-xs text-muted-foreground">
+                {OPPORTUNITY_TYPES.find(t => t.value === form.opportunity_type)?.description}
+              </p>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label htmlFor="opp-days">Number of days</Label>
+              <Label htmlFor="opp-days">Number of days <span className="text-muted-foreground font-normal">(Estimated)</span></Label>
               <Input id="opp-days" type="number" value={form.number_of_days} onChange={e => setForm({ ...form, number_of_days: e.target.value })} />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="opp-rate">Amount per day</Label>
+              <Label htmlFor="opp-rate">Amount per day <span className="text-muted-foreground font-normal">(Estimated)</span></Label>
               <Input id="opp-rate" type="number" value={form.amount_per_day} onChange={e => setForm({ ...form, amount_per_day: e.target.value })} />
             </div>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="opp-currency">Currency</Label>
-            <Input id="opp-currency" value={form.currency} onChange={e => setForm({ ...form, currency: e.target.value })} />
+            <Label>Currency</Label>
+            <Select value={form.currency} onValueChange={v => setForm({ ...form, currency: v })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {CURRENCIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
         </div>
         <DialogFooter className="mt-4">
