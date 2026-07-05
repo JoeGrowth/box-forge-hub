@@ -46,7 +46,7 @@ const EMPTY_LADDER: ProgressionLadder = {
 export function useProgressionLadder(): ProgressionLadder {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdmin();
-  const { talentReady, loading: talentLoading } = useTalentReadiness();
+  const { talentReady, talentCompleted, talentTotal, loading: talentLoading } = useTalentReadiness();
   const [state, setState] = useState<ProgressionLadder>(EMPTY_LADDER);
 
   useEffect(() => {
