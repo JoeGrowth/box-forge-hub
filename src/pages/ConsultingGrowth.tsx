@@ -318,7 +318,11 @@ export default function ConsultingGrowth() {
                   >
                     <button
                       onClick={() => {
-                        if (stageFilter === "all") return;
+                        if (stageFilter === "all") {
+                          setStageFilter(o.stage);
+                          setExpandedId(o.id);
+                          return;
+                        }
                         setExpandedId(isOpen ? null : o.id);
                       }}
                       className="w-full text-left p-5 hover:bg-muted/30 transition"
