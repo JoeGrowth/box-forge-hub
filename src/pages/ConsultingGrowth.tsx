@@ -732,9 +732,16 @@ function StagePanel({
               )}
 
               {opp.stage === "identify" && (
-                <Button className="w-full" size="sm" disabled={working || (!opp.driver_file_url && !opp.driver_link)} onClick={() => advance("propose")}>
-                  Next: prepare proposal <ArrowRight className="w-3 h-3 ml-1" />
-                </Button>
+                <div className="flex flex-col gap-2">
+                  <Button className="w-full" size="sm" disabled={working || (!opp.driver_file_url && !opp.driver_link)} onClick={() => advance("propose")}>
+                    Next: prepare proposal <ArrowRight className="w-3 h-3 ml-1" />
+                  </Button>
+                  {canSkip && (
+                    <Button variant="ghost" size="sm" className="w-full text-muted-foreground" disabled={working} onClick={() => advance("propose")}>
+                      Skip this step
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
         </StageBlock>
