@@ -495,7 +495,7 @@ const Opportunities = () => {
                   >
                     All kinds
                   </button>
-                  {KINDS.map((k) => (
+                  {visibleKinds.map((k) => (
                     <button
                       key={k.key}
                       onClick={() => setParam("kind", kindFilter === k.key ? null : k.key)}
