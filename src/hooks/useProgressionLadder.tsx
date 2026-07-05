@@ -147,7 +147,7 @@ export function useProgressionLadder(): ProgressionLadder {
     })();
 
     return () => { alive = false; };
-  }, [user, authLoading, isAdmin, adminLoading, talentReady, talentLoading]);
+  }, [user, authLoading, isAdmin, adminLoading, talentReady, talentLoading, tick]);
 
   return state;
 }
