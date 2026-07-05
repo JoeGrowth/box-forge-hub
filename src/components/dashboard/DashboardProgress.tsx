@@ -30,6 +30,9 @@ export function DashboardProgress() {
   const [proTrackComplete, setProTrackComplete] = useState(false);
   const [hasLearningJourneys, setHasLearningJourneys] = useState(false);
   const [consultingStarted, setConsultingStarted] = useState(false);
+  const [soloDelivered, setSoloDelivered] = useState(0);
+  const [contractorsDelivered, setContractorsDelivered] = useState(0);
+  const [equityDelivered, setEquityDelivered] = useState(0);
   const [ventureStarted, setVentureStarted] = useState(false);
 
 
