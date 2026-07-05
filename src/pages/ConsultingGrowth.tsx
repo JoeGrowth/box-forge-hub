@@ -231,7 +231,7 @@ export default function ConsultingGrowth() {
             <p className="text-sm text-muted-foreground">Advance it through the stages.</p>
           </div>
           <Button size="sm" onClick={() => setDialogOpen(true)} className="shrink-0">
-            <Plus className="w-4 h-4 mr-1" /> New opportunity
+            <Plus className="w-4 h-4 mr-1" /> add opportunity
           </Button>
         </div>
 
