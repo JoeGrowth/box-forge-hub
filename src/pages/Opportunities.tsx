@@ -50,7 +50,7 @@ const TABS: { key: Tab; label: string; icon: React.ReactNode; hint: string; divi
   { key: "applications", label: "My applications", icon: <Inbox className="w-4 h-4" />,       hint: "Pending and historical applications." },
   { key: "created",      label: "Created by me",   icon: <FilePlus2 className="w-4 h-4" />,    hint: "Opportunities you posted." },
   { key: "ecosystem",    label: "Ecosystem",       icon: <Rocket className="w-4 h-4" />,      hint: "Browse every startup idea in the directory.", dividerBefore: true },
-  { key: "my-projects",  label: "My Projects",     icon: <Lightbulb className="w-4 h-4" />,   hint: "Ventures you initiated and ones you've gained equity in." },
+  { key: "my-projects",  label: "Legacy",          icon: <Lightbulb className="w-4 h-4" />,   hint: "Ventures you initiated and ones you've gained equity in." },
 ];
 
 const KINDS: { key: OpportunityCategory; label: string }[] = [
