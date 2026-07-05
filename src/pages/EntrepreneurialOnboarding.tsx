@@ -411,7 +411,11 @@ const EntrepreneurialOnboarding = () => {
       return (
         <EntrepreneurialReviewStep
           data={data}
-          onSubmit={async () => {}}
+          onSubmit={async () => {
+            if (storageKey) {
+              try { localStorage.removeItem(storageKey); } catch {}
+            }
+          }}
         />
       );
     }
