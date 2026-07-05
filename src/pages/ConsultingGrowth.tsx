@@ -691,6 +691,7 @@ function StagePanel({
       if (ins.error) { toast({ title: "Failed", description: ins.error.message, variant: "destructive" }); return; }
     }
     await advance("closed");
+    await onChanged();
   };
 
   const idx = stageIndex(opp.stage);
