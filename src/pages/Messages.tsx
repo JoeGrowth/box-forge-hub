@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Send, Loader2, MessageSquare, Search } from "lucide-react";
+import { Send, Loader2, MessageSquare, Search, ArrowLeft } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { ChatFileUpload } from "@/components/chat/ChatFileUpload";
 import { ChatMessageBubble } from "@/components/chat/ChatMessageBubble";
@@ -439,7 +439,7 @@ const Messages = () => {
       
       <div className="flex-1 flex pt-16 h-[calc(100vh-64px)]">
         {/* Sidebar */}
-        <div className="w-80 border-r border-border flex flex-col bg-card">
+        <div className={`${selectedConversation ? "hidden md:flex" : "flex"} w-full md:w-80 border-r border-border flex-col bg-card`}>
           {/* Sidebar Header */}
           <div className="p-4 border-b border-border">
             <h2 className="text-xl font-semibold text-foreground mb-3">Messages</h2>
@@ -521,24 +521,35 @@ const Messages = () => {
         </div>
 
         {/* Chat Area */}
-        <div className="flex-1 flex flex-col">
+        <div className={`${selectedConversation ? "flex" : "hidden md:flex"} flex-1 flex-col`}>
           {selectedConversation ? (
             <>
               {/* Chat Header */}
-              <div className="border-b border-border bg-card px-6 py-4 shadow-sm z-10">
-                <div className="flex items-center gap-4">
+              <div className="border-b border-border bg-card px-3 sm:px-6 py-3 sm:py-4 shadow-sm z-10">
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="md:hidden -ml-1"
+                    onClick={() => {
+                      setSelectedConversation(null);
+                      navigate("/messages");
+                    }}
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                  </Button>
                   <Avatar className="w-10 h-10">
                     <AvatarImage src={otherUser?.avatar_url || undefined} />
                     <AvatarFallback className="bg-primary/10 text-primary">
                       {getInitials(otherUser?.full_name || null)}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-foreground">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-foreground truncate">
                       {otherUser?.full_name || "Loading..."}
                     </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {selectedConversation.type === "application" 
+                    <p className="text-sm text-muted-foreground truncate">
+                      {selectedConversation.type === "application"
                         ? `Re: ${selectedConversation.startupTitle || "Application"}`
                         : "Direct message"}
                     </p>
@@ -547,7 +558,7 @@ const Messages = () => {
               </div>
 
               {/* Messages */}
-              <ScrollArea className="flex-1 p-6">
+              <ScrollArea className="flex-1 p-3 sm:p-6">
                 {/* Application cover message - always visible */}
                 {selectedConversation.type === "application" && selectedConversation.coverMessage && (
                   <div className="bg-muted/50 rounded-xl p-4 text-center mb-4 sticky top-0 z-10 border border-border/50 shadow-sm">
@@ -588,7 +599,7 @@ const Messages = () => {
               </ScrollArea>
 
               {/* Input */}
-              <div className="border-t-2 border-border bg-card p-4 shadow-[0_-4px_12px_-4px_rgba(0,0,0,0.08)]">
+              <div className="border-t-2 border-border bg-card p-2 sm:p-4 shadow-[0_-4px_12px_-4px_rgba(0,0,0,0.08)]">
                 <div className="flex items-end gap-2">
                   <ChatFileUpload
                     userId={user?.id || ""}
@@ -606,7 +617,7 @@ const Messages = () => {
                   <Button
                     onClick={handleSendMessage}
                     disabled={(!newMessage.trim() && !pendingFile) || sending}
-                    className="px-6"
+                    className="px-4 sm:px-6"
                   >
                     {sending ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
