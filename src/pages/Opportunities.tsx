@@ -53,11 +53,11 @@ const TABS: { key: Tab; label: string; icon: React.ReactNode; hint: string; divi
 ];
 
 const KINDS: { key: OpportunityCategory; label: string }[] = [
-  { key: "job", label: "Jobs" },
-  { key: "startup", label: "Startups" },
-  { key: "training", label: "Training" },
-  { key: "consulting", label: "Consulting" },
-  { key: "tender", label: "Tenders" },
+  { key: "job", label: "Jobs for Novice" },
+  { key: "startup", label: "Startups for co builders" },
+  { key: "training", label: "Training For Emerging" },
+  { key: "consulting", label: "Consulting for Emerging" },
+  { key: "tender", label: "Tenders for talents" },
 ];
 
 function computeMatchScore(userSkillNames: string[], oppSkills: string[]): number {
