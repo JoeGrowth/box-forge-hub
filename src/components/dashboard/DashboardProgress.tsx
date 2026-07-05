@@ -257,14 +257,18 @@ export function DashboardProgress() {
           },
         ]
       : []),
-    {
-      key: "ent-track",
-      title: "Fill your Entrepreneurial Track Record",
-      description: "Initiatives, products, teams, business, equity — what you've shipped as a builder.",
-      icon: Rocket,
-      done: trackRecordComplete,
-      cta: { label: "Start", to: "/track?unlock=entrepreneurial" },
-    },
+    ...(!foundationDone
+      ? [
+          {
+            key: "ent-track" as const,
+            title: "Fill your Entrepreneurial Track Record",
+            description: "Initiatives, products, teams, business, equity — what you've shipped as a builder.",
+            icon: Rocket,
+            done: trackRecordComplete,
+            cta: { label: "Start", to: "/track?unlock=entrepreneurial" },
+          },
+        ]
+      : []),
 
   ];
 
