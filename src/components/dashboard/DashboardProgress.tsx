@@ -255,9 +255,7 @@ export function DashboardProgress() {
   ];
 
   const foundationDone = foundationSteps.every((s) => s.done);
-  const talentMonetized =
-    (soloDelivered >= 3 && contractorsDelivered >= 7) ||
-    (transactionsCount >= 10 && contractorsDelivered >= 7);
+  const talentMonetized = soloDelivered >= 3 && contractorsDelivered >= 7;
 
   const steps = [
     ...(foundationDone
@@ -308,9 +306,9 @@ export function DashboardProgress() {
               ]),
           {
             key: "venture" as const,
-            title: "Launch or join a venture",
+            title: "Get skin in the game",
             description:
-              "Kick off your own idea or apply to a co-builder role — get skin in the game.",
+              "Kick off your own venture idea or join a venture by applying to a co-builder role.",
             icon: Lightbulb,
             done: false,
             cta: { label: ventureStarted ? "Continue" : "Start", to: "/entrepreneurship" },

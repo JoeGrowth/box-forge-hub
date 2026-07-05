@@ -169,7 +169,7 @@ const pathsData = [
     key: "entrepreneurship" as PathKey,
     icon: Lightbulb,
     title: "Entrepreneurship",
-    subtitle: "Launch or join a venture",
+    subtitle: "Get skin in the game",
     description: "Create your own startup project or join an existing one as a co-builder with equity.",
     link: "/entrepreneurship",
     gradient: "from-secondary to-accent",
