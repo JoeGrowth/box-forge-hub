@@ -71,8 +71,11 @@ const Opportunities = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, loading: authLoading } = useAuth();
-  const { loading: onboardingLoading } = useOnboarding();
+  const { onboardingState, naturalRole, loading: onboardingLoading } = useOnboarding();
   const persona = useOpportunityPersona();
+
+  const [talentFoundationSet, setTalentFoundationSet] = useState(false);
+  const [talentMonetized, setTalentMonetized] = useState(false);
 
   // Legacy `?tab=job` (kind) is now `?kind=job`. Backward-compat shim below.
   const tab = (searchParams.get("v") as Tab) || "discover";
