@@ -229,27 +229,51 @@ const Opportunities = () => {
   }, [user, authLoading, expertise?.tags.length]);
 
   // My Projects / Collabs (mirrors /entrepreneurship)
-  useEffect(() => {
+  const refreshMyAndCollabs = useCallback(async () => {
     if (!user) {
       setMyProjects([]);
       setCollabProjects([]);
       return;
     }
-    (async () => {
-      const [myRes, teamRes] = await Promise.all([
-        supabase.from("startup_ideas").select("*").eq("creator_id", user.id).order("created_at", { ascending: false }),
-        sb.from("startup_team_members").select("startup_id, role_type").eq("member_user_id", user.id),
-      ]);
-      setMyProjects(myRes.data || []);
-      const ids = ((teamRes.data as any[]) || []).map((m) => m.startup_id).filter(Boolean);
-      if (ids.length > 0) {
-        const { data } = await supabase.from("startup_ideas").select("*").in("id", ids).order("created_at", { ascending: false });
-        setCollabProjects(data || []);
-      } else {
-        setCollabProjects([]);
-      }
-    })();
+    const [myRes, teamRes] = await Promise.all([
+      supabase.from("startup_ideas").select("*").eq("creator_id", user.id).order("created_at", { ascending: false }),
+      sb.from("startup_team_members").select("startup_id, role_type").eq("member_user_id", user.id),
+    ]);
+    setMyProjects(myRes.data || []);
+    const ids = ((teamRes.data as any[]) || []).map((m) => m.startup_id).filter(Boolean);
+    if (ids.length > 0) {
+      const { data } = await supabase.from("startup_ideas").select("*").in("id", ids).order("created_at", { ascending: false });
+      setCollabProjects(data || []);
+    } else {
+      setCollabProjects([]);
+    }
   }, [user]);
+
+  useEffect(() => { refreshMyAndCollabs(); }, [refreshMyAndCollabs]);
+
+  const handleDeleteIdea = async () => {
+    if (!ideaToDelete || !user || !deleteType) return;
+    setIsDeleting(true);
+    try {
+      if (deleteType === "archive") {
+        const { error } = await supabase.from("startup_ideas").update({ status: "archived" }).eq("id", ideaToDelete.id).eq("creator_id", user.id);
+        if (error) throw error;
+        toast({ title: "Idea archived", description: `"${ideaToDelete.title}" was archived.` });
+      } else {
+        const { error } = await supabase.from("startup_ideas").delete().eq("id", ideaToDelete.id).eq("creator_id", user.id);
+        if (error) throw error;
+        toast({ title: "Idea deleted", description: `"${ideaToDelete.title}" was permanently deleted.` });
+      }
+      setMyProjects((prev) => prev.filter((p) => p.id !== ideaToDelete.id));
+    } catch (err: any) {
+      toast({ title: "Action failed", description: err.message ?? "Try again.", variant: "destructive" });
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+      setIdeaToDelete(null);
+      setDeleteType(null);
+    }
+  };
 
   const allOpportunities = useMemo<
     (Opportunity & { match_score: number; recommendation?: OpportunityRecommendation })[]
