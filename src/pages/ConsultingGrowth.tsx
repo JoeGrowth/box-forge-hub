@@ -663,13 +663,13 @@ function StagePanel({
         {show("identify") && (
         <StageBlock n={1} title="Catched — capture the driver" description="Capture the driver (screenshot, PDF, or external link). This is your mission's origin story — the raw signal that sparked the opportunity. It acts as a permanent prompt for any AI or team member who needs context on how this mission started." active={opp.stage === "identify"} done={idx > 0}>
             <div className="space-y-2">
-              <div className="grid grid-cols-2 gap-2">
-                <Button type="button" size="sm" variant={driverMode === "file" ? "default" : "outline"} className="w-full h-9 px-2 text-xs sm:text-sm gap-1.5 min-w-0" onClick={() => setDriverMode("file")}>
+              <div className="inline-flex w-full rounded-lg bg-muted p-1 gap-1" role="tablist">
+                <button type="button" role="tab" aria-selected={driverMode === "file"} onClick={() => setDriverMode("file")} className={`flex-1 inline-flex items-center justify-center gap-1.5 h-8 px-2 rounded-md text-xs sm:text-sm font-medium transition-all min-w-0 ${driverMode === "file" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
                   <Upload className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Upload file</span>
-                </Button>
-                <Button type="button" size="sm" variant={driverMode === "link" ? "default" : "outline"} className="w-full h-9 px-2 text-xs sm:text-sm gap-1.5 min-w-0" onClick={() => setDriverMode("link")}>
+                </button>
+                <button type="button" role="tab" aria-selected={driverMode === "link"} onClick={() => setDriverMode("link")} className={`flex-1 inline-flex items-center justify-center gap-1.5 h-8 px-2 rounded-md text-xs sm:text-sm font-medium transition-all min-w-0 ${driverMode === "link" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
                   <ExternalLink className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Paste link</span>
-                </Button>
+                </button>
               </div>
 
               {driverMode === "file" ? (
@@ -736,13 +736,13 @@ function StagePanel({
           return (
         <StageBlock n={3} title={`Prepare — ${prepLabel.toLowerCase()}`} description={`Upload the ${prepLabel} (file or link). This becomes your mission's operating manual — a structured baseline that keeps delivery aligned with what was promised.`} active={opp.stage === "confirm_prepare"} done={idx > 2}>
             <div className="space-y-2">
-              <div className="grid grid-cols-2 gap-2">
-                <Button type="button" size="sm" variant={processMode === "file" ? "default" : "outline"} className="w-full h-9 px-2 text-xs sm:text-sm gap-1.5 min-w-0" onClick={() => setProcessMode("file")}>
+              <div className="inline-flex w-full rounded-lg bg-muted p-1 gap-1" role="tablist">
+                <button type="button" role="tab" aria-selected={processMode === "file"} onClick={() => setProcessMode("file")} className={`flex-1 inline-flex items-center justify-center gap-1.5 h-8 px-2 rounded-md text-xs sm:text-sm font-medium transition-all min-w-0 ${processMode === "file" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
                   <Upload className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Upload file</span>
-                </Button>
-                <Button type="button" size="sm" variant={processMode === "link" ? "default" : "outline"} className="w-full h-9 px-2 text-xs sm:text-sm gap-1.5 min-w-0" onClick={() => setProcessMode("link")}>
+                </button>
+                <button type="button" role="tab" aria-selected={processMode === "link"} onClick={() => setProcessMode("link")} className={`flex-1 inline-flex items-center justify-center gap-1.5 h-8 px-2 rounded-md text-xs sm:text-sm font-medium transition-all min-w-0 ${processMode === "link" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
                   <ExternalLink className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Paste link</span>
-                </Button>
+                </button>
               </div>
 
               {processMode === "file" ? (
@@ -789,13 +789,13 @@ function StagePanel({
               {/* Mission Report */}
               <div className="space-y-2">
                 <div className="text-sm font-semibold">Mission Report</div>
-                <div className="grid grid-cols-2 gap-2">
-                <Button type="button" size="sm" variant={reportMode === "file" ? "default" : "outline"} className="w-full h-9 px-2 text-xs sm:text-sm gap-1.5 min-w-0" onClick={() => setReportMode("file")}>
+                <div className="inline-flex w-full rounded-lg bg-muted p-1 gap-1" role="tablist">
+                <button type="button" role="tab" aria-selected={reportMode === "file"} onClick={() => setReportMode("file")} className={`flex-1 inline-flex items-center justify-center gap-1.5 h-8 px-2 rounded-md text-xs sm:text-sm font-medium transition-all min-w-0 ${reportMode === "file" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
                   <Upload className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Upload file</span>
-                </Button>
-                <Button type="button" size="sm" variant={reportMode === "link" ? "default" : "outline"} className="w-full h-9 px-2 text-xs sm:text-sm gap-1.5 min-w-0" onClick={() => setReportMode("link")}>
+                </button>
+                <button type="button" role="tab" aria-selected={reportMode === "link"} onClick={() => setReportMode("link")} className={`flex-1 inline-flex items-center justify-center gap-1.5 h-8 px-2 rounded-md text-xs sm:text-sm font-medium transition-all min-w-0 ${reportMode === "link" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
                   <ExternalLink className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Paste link</span>
-                </Button>
+                </button>
               </div>
                 {reportMode === "file" ? (
                   <FileField
@@ -822,13 +822,13 @@ function StagePanel({
               {/* Invoice */}
               <div className="space-y-2">
                 <div className="text-sm font-semibold">Invoice</div>
-                <div className="grid grid-cols-2 gap-2">
-                <Button type="button" size="sm" variant={invoiceMode === "file" ? "default" : "outline"} className="w-full h-9 px-2 text-xs sm:text-sm gap-1.5 min-w-0" onClick={() => setInvoiceMode("file")}>
+                <div className="inline-flex w-full rounded-lg bg-muted p-1 gap-1" role="tablist">
+                <button type="button" role="tab" aria-selected={invoiceMode === "file"} onClick={() => setInvoiceMode("file")} className={`flex-1 inline-flex items-center justify-center gap-1.5 h-8 px-2 rounded-md text-xs sm:text-sm font-medium transition-all min-w-0 ${invoiceMode === "file" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
                   <Upload className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Upload file</span>
-                </Button>
-                <Button type="button" size="sm" variant={invoiceMode === "link" ? "default" : "outline"} className="w-full h-9 px-2 text-xs sm:text-sm gap-1.5 min-w-0" onClick={() => setInvoiceMode("link")}>
+                </button>
+                <button type="button" role="tab" aria-selected={invoiceMode === "link"} onClick={() => setInvoiceMode("link")} className={`flex-1 inline-flex items-center justify-center gap-1.5 h-8 px-2 rounded-md text-xs sm:text-sm font-medium transition-all min-w-0 ${invoiceMode === "link" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
                   <ExternalLink className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Paste link</span>
-                </Button>
+                </button>
               </div>
                 {invoiceMode === "file" ? (
                   <FileField
