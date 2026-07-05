@@ -352,6 +352,60 @@ export default function ConsultingGrowth() {
 
 
     </div>
+
+    {/* New opportunity dialog */}
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>add opportunity</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-1">
+            <Label htmlFor="opp-title">Title</Label>
+            <Input id="opp-title" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Mission title" />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="opp-client">Client / Organization</Label>
+            <Input id="opp-client" value={form.client_name} onChange={e => setForm({ ...form, client_name: e.target.value })} placeholder="Client name" />
+          </div>
+          <div className="space-y-1">
+            <Label>Source</Label>
+            <Select value={form.source} onValueChange={v => setForm({ ...form, source: v })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {SOURCES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="opp-desc">Description</Label>
+            <Textarea id="opp-desc" rows={3} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Context, scope, notes..." />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label htmlFor="opp-days">Number of days</Label>
+              <Input id="opp-days" type="number" value={form.number_of_days} onChange={e => setForm({ ...form, number_of_days: e.target.value })} />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="opp-rate">Amount per day</Label>
+              <Input id="opp-rate" type="number" value={form.amount_per_day} onChange={e => setForm({ ...form, amount_per_day: e.target.value })} />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="opp-currency">Currency</Label>
+            <Input id="opp-currency" value={form.currency} onChange={e => setForm({ ...form, currency: e.target.value })} />
+          </div>
+        </div>
+        <DialogFooter className="mt-4">
+          <Button variant="ghost" onClick={() => setDialogOpen(false)}>Cancel</Button>
+          <Button onClick={create} disabled={saving}>
+            {saving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Plus className="w-4 h-4 mr-1" />}
+            Save
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
     <Footer />
     </>
   );
