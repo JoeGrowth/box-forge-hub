@@ -33,7 +33,6 @@ export function DashboardProgress() {
   const [soloDelivered, setSoloDelivered] = useState(0);
   const [contractorsDelivered, setContractorsDelivered] = useState(0);
   const [equityDelivered, setEquityDelivered] = useState(0);
-  const [transactionsCount, setTransactionsCount] = useState(0);
   const [ventureStarted, setVentureStarted] = useState(false);
 
 
@@ -97,13 +96,6 @@ export function DashboardProgress() {
     setSoloDelivered(solo);
     setContractorsDelivered(contractors);
     setEquityDelivered(equity);
-
-    const { count: txCount } = await supabase
-      .from("transactions")
-      .select("id", { count: "exact", head: true })
-      .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`);
-    setTransactionsCount(txCount ?? 0);
-
 
     setNaturalRoleComplete(!!naturalRole?.description);
     setNrDecoderComplete(!!nrDecoder);
@@ -263,9 +255,7 @@ export function DashboardProgress() {
   ];
 
   const foundationDone = foundationSteps.every((s) => s.done);
-  const talentMonetized =
-    (soloDelivered >= 3 && contractorsDelivered >= 7) ||
-    (transactionsCount >= 10 && contractorsDelivered >= 7);
+  const talentMonetized = soloDelivered >= 3 && contractorsDelivered >= 7;
 
   const steps = [
     ...(foundationDone
@@ -316,9 +306,9 @@ export function DashboardProgress() {
               ]),
           {
             key: "venture" as const,
-            title: "Launch or join a venture",
+            title: "Get skin in the game",
             description:
-              "Kick off your own idea or apply to a co-builder role — get skin in the game.",
+              "Kick off your own venture idea or join a venture by applying to a co-builder role.",
             icon: Lightbulb,
             done: false,
             cta: { label: ventureStarted ? "Continue" : "Start", to: "/entrepreneurship" },
