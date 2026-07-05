@@ -430,6 +430,7 @@ export default function ConsultingGrowth() {
                           onStageChange={(to) => { setStageFilter(to === "closed" ? "closed" : to); setExpandedId(o.id); }}
                           userId={user?.id ?? ""}
                           onlyStage={stageFilter}
+                          canSkip={skippableIds.has(o.id)}
                         />
                       </div>
                     )}
