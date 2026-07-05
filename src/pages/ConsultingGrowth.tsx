@@ -619,7 +619,7 @@ function StagePanel({
 
       <div className="space-y-4">
         {show("identify") && (
-        <StageBlock n={1} title="Catched &mdash; upload the driver" active={opp.stage === "identify"} done={idx > 0}>
+        <StageBlock n={1} title="Catched &mdash; upload the driver" description="Upload the driver (screenshot or PDF). This is your mission's origin story — the raw signal that sparked the opportunity. It acts as a permanent prompt for any AI or team member who needs context on how this mission started." active={opp.stage === "identify"} done={idx > 0}>
             <div className="space-y-2">
               <Label className="text-xs">Driver PDF or screenshot (LinkedIn post, tender, email&hellip;)</Label>
               <FileField
@@ -643,7 +643,7 @@ function StagePanel({
         )}
 
         {show("propose") && (
-        <StageBlock n={2} title="Technical &amp; financial proposal" active={opp.stage === "propose"} done={idx > 1}>
+        <StageBlock n={2} title="Propose &mdash; technical &amp; financial proposal" description="Upload your proposal. This document is the negotiated contract of intent. Keeping it here creates an auditable reference for scope, pricing, and client agreement." active={opp.stage === "propose"} done={idx > 1}>
             <div className="space-y-2">
               <Label className="text-xs">Proposal PDF</Label>
               <FileField
@@ -671,7 +671,7 @@ function StagePanel({
         )}
 
         {show("confirm_prepare") && (
-        <StageBlock n={3} title="Confirm &amp; prepare (process + presentation)" active={opp.stage === "confirm_prepare"} done={idx > 2}>
+        <StageBlock n={3} title="Prepare &mdash; confirm &amp; process + presentation" description="Confirm client acceptance and upload your process and presentation. These materials become your mission's operating manual — a structured baseline that ensures delivery stays aligned with what was promised." active={opp.stage === "confirm_prepare"} done={idx > 2}>
             <div className="space-y-3">
               {/* Step A: confirm client acceptance */}
               {!opp.client_confirmed_at && opp.stage === "confirm_prepare" && (
@@ -716,7 +716,7 @@ function StagePanel({
         )}
 
         {show("deliver") && (
-        <StageBlock n={4} title="Deliver &mdash; workshop / training / consulting" active={opp.stage === "deliver"} done={idx > 3}>
+        <StageBlock n={4} title="Deliver &mdash; workshop / training / consulting" description="Confirm mission completion. This timestamp marks the transition from execution to accountability. It locks in the delivery record before revenue recognition and distribution begin." active={opp.stage === "deliver"} done={idx > 3}>
             <div className="space-y-2">
               {opp.delivered_at && <p className="text-xs text-muted-foreground">Delivered {format(new Date(opp.delivered_at), "MMM d, yyyy")}</p>}
               {opp.stage === "deliver" && (
@@ -729,7 +729,7 @@ function StagePanel({
         )}
 
         {show("payment_distribution") && (
-        <StageBlock n={5} title="Payment received &amp; distribution" active={opp.stage === "payment_distribution"} done={opp.stage === "closed"}>
+        <StageBlock n={5} title="Distribute &mdash; payment received &amp; distribution" description="Record payment received and define the distribution. This is where mission economics are finalized — charges, task allocations, and team compensation are settled based on the actual budget collected." active={opp.stage === "payment_distribution"} done={opp.stage === "closed"}>
             <div className="space-y-3">
               {opp.stage !== "closed" ? (
                 <div className="space-y-3">
@@ -937,7 +937,10 @@ function StagePanel({
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <div className="text-sm font-semibold">Accounting &mdash; mission closed</div>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">
+                          Mission closed and archived. All financial and operational records are consolidated here, creating a complete data room entry for reporting, auditing, and future reference.
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
                           {opp.client_name || "&mdash;"}
                           {opp.paid_at && <> &middot; paid {format(new Date(opp.paid_at), "MMM d, yyyy")}</>}
                         </p>
@@ -1049,16 +1052,19 @@ function StagePanel({
 }
 
 function StageBlock({
-  n, title, active, done, children,
-}: { n: number; title: string; active: boolean; done: boolean; children: React.ReactNode }) {
+  n, title, description, active, done, children,
+}: { n: number; title: string; description?: string; active: boolean; done: boolean; children: React.ReactNode }) {
   return (
     <div className={`border rounded-lg p-3 ${active ? "border-primary bg-primary/5" : done ? "opacity-80" : "opacity-60"}`}>
-      <div className="flex items-center gap-2 mb-2">
+      <div className="flex items-center gap-2 mb-1">
         <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${done ? "bg-primary text-primary-foreground" : active ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}>
           {done ? <CheckCircle2 className="w-3 h-3" /> : n}
         </div>
         <div className="text-sm font-medium flex items-center gap-1"><FileText className="w-3 h-3" />{title}</div>
       </div>
+      {description && (
+        <p className="text-xs text-muted-foreground mb-2 ml-8 leading-relaxed">{description}</p>
+      )}
       {children}
     </div>
   );
