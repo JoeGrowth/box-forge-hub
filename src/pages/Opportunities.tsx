@@ -331,17 +331,6 @@ const Opportunities = () => {
                     </button>
                   </div>
                 ))}
-                <span aria-hidden className="mx-2 h-5 w-px bg-border/70 shrink-0" />
-                {PROJECT_LINKS.map((p) => (
-                  <Link
-                    key={p.key}
-                    to={p.to}
-                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium border-b-2 border-transparent text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {p.icon}
-                    {p.label}
-                  </Link>
-                ))}
               </div>
             </div>
           </section>
