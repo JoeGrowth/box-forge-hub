@@ -765,7 +765,7 @@ export const ConsultantOpportunities = () => {
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                 <div className="space-y-2">
                   <Label htmlFor="days" className="text-xs text-muted-foreground">
-                    Number of Days
+                    Number of Days (Estimated)
                   </Label>
                   <Input
                     id="days"
@@ -777,8 +777,9 @@ export const ConsultantOpportunities = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="rate" className="text-xs text-muted-foreground">
-                    Amount per Day
+                    Amount per Day (Estimated)
                   </Label>
+
                   <Input
                     id="rate"
                     type="number"
