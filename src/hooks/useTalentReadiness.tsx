@@ -120,11 +120,15 @@ export function useTalentReadiness(): TalentReadiness {
       const isOrgAdmin =
         (orgMemberRes.data?.length ?? 0) > 0 || (ownedOrgRes.data?.length ?? 0) > 0;
 
+      const completed = [intentDone, decoderDone, proTrackDone, resumeDone].filter(Boolean).length;
+
       setState({
         loading: false,
         talentReady: missing.length === 0,
         isOrgAdmin,
         missing,
+        talentCompleted: completed,
+        talentTotal: TALENT_TOTAL,
       });
     })();
 
