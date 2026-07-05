@@ -297,7 +297,6 @@ const Opportunities = () => {
         <main className="pt-20">
           <section className="py-8">
             <div className="container mx-auto px-4">
-              <NextGoalBanner pageStage="cobuilder" className="mb-4" />
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
                   <h1 className="font-display text-3xl font-bold text-foreground mb-2">Opportunities</h1>
