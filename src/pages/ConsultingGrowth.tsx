@@ -469,6 +469,14 @@ export default function ConsultingGrowth() {
                 {SOURCES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
               </SelectContent>
             </Select>
+            {form.source === "custom" && (
+              <Input
+                autoFocus
+                value={form.source_custom}
+                onChange={e => setForm({ ...form, source_custom: e.target.value })}
+                placeholder="e.g. Upwork, Malt, cold email, conference…"
+              />
+            )}
           </div>
           <div className="space-y-1">
             <Label htmlFor="opp-client">Client</Label>
