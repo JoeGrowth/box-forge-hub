@@ -21,7 +21,7 @@ import { Footer } from "@/components/layout/Footer";
 import { NextGoalBanner } from "@/components/progression/NextGoalBanner";
 
 type DistCharge = { id: string; label: string; amount: number };
-type DistTask = { id: string; label: string; percent: number; locked?: boolean };
+type DistTask = { id: string; label: string; percent: number; locked?: boolean; personShares?: number[] };
 const distUid = () => Math.random().toString(36).slice(2, 9);
 const distFmt = (n: number) =>
   new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
@@ -65,6 +65,11 @@ interface Opportunity {
   client_confirmed_at: string | null;
   process_file_url: string | null;
   process_link: string | null;
+  report_file_url: string | null;
+  report_link: string | null;
+  invoice_file_url: string | null;
+  invoice_link: string | null;
+  report_invoice_sent_at: string | null;
   delivered_at: string | null;
   paid_amount: number | null;
   paid_at: string | null;
@@ -507,6 +512,10 @@ function StagePanel({
   const [driverMode, setDriverMode] = useState<"file" | "link">(opp.driver_link ? "link" : "file");
   const [processLink, setProcessLink] = useState(opp.process_link ?? "");
   const [processMode, setProcessMode] = useState<"file" | "link">(opp.process_link ? "link" : "file");
+  const [reportLink, setReportLink] = useState(opp.report_link ?? "");
+  const [reportMode, setReportMode] = useState<"file" | "link">(opp.report_link ? "link" : "file");
+  const [invoiceLink, setInvoiceLink] = useState(opp.invoice_link ?? "");
+  const [invoiceMode, setInvoiceMode] = useState<"file" | "link">(opp.invoice_link ? "link" : "file");
   const [paidAmount, setPaidAmount] = useState(String(opp.paid_amount ?? opp.total_amount ?? ""));
   // Distribution builder state (Mission Setup / Charges / People / Tasks)
   const [budgetLabel, setBudgetLabel] = useState("Budget (EUR)");
@@ -519,17 +528,44 @@ function StagePanel({
   const distInternalPool = Math.max(0, distBudget - distChargesTotal);
   const distTotalPercent = distTasks.reduce((s, t) => s + (Number(t.percent) || 0), 0);
   const distTaskAmounts = distTasks.map((t) => (distInternalPool * (Number(t.percent) || 0)) / 100);
-  const distSplittableTotal = distTasks.reduce((s, t, i) => (t.locked ? s : s + distTaskAmounts[i]), 0);
-  const distPerPersonEqual = distPeople.length > 0 ? distSplittableTotal / distPeople.length : 0;
-  const distPerPersonPerTask = distTasks.map((t, i) =>
-    t.locked || distPeople.length === 0 ? null : distTaskAmounts[i] / distPeople.length,
+
+  // Per-task share per person (defaults to equal split when not customized)
+  const getShares = (t: DistTask): number[] => {
+    const n = distPeople.length;
+    if (n === 0) return [];
+    const eq = 100 / n;
+    return Array.from({ length: n }, (_, i) => {
+      const v = t.personShares?.[i];
+      return v === undefined || v === null || Number.isNaN(v) ? eq : Number(v);
+    });
+  };
+  const taskShareSum = (t: DistTask) => getShares(t).reduce((s, v) => s + v, 0);
+  // Amount per person per task = taskAmount * share / 100 (null if task is locked / no people)
+  const distPerPersonPerTask: (number | null)[][] = distTasks.map((t, i) => {
+    if (t.locked || distPeople.length === 0) return distPeople.map(() => null);
+    const shares = getShares(t);
+    return shares.map((s) => (distTaskAmounts[i] * s) / 100);
+  });
+  // Column totals (per person across all tasks)
+  const distPerPersonTotal = distPeople.map((_, pi) =>
+    distPerPersonPerTask.reduce((s, row) => s + (typeof row[pi] === "number" ? (row[pi] as number) : 0), 0),
   );
+  // Validation: each unlocked task's shares should sum to 100
+  const taskShareErrors = distTasks.map((t) => (t.locked ? null : Math.round(taskShareSum(t) * 100) / 100));
+
   const updateDistTask = (id: string, patch: Partial<DistTask>) =>
     setDistTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
+  const updateTaskShare = (id: string, personIdx: number, value: number) =>
+    setDistTasks((prev) => prev.map((t) => {
+      if (t.id !== id) return t;
+      const shares = getShares(t);
+      shares[personIdx] = Number.isFinite(value) ? value : 0;
+      return { ...t, personShares: shares };
+    }));
   const updateDistCharge = (id: string, patch: Partial<DistCharge>) =>
     setDistCharges((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
 
-  const uploadFile = async (file: File, kind: "driver" | "proposal" | "process"): Promise<string | null> => {
+  const uploadFile = async (file: File, kind: "driver" | "proposal" | "process" | "report" | "invoice"): Promise<string | null> => {
     const ext = file.name.split(".").pop() || "pdf";
     const path = `${userId}/${opp.id}/${kind}-${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from(BUCKET).upload(path, file, { upsert: true });
@@ -584,13 +620,13 @@ function StagePanel({
     // Reset existing rows for this mission
     const del = await supabase.from("consultant_opportunity_distributions").delete().eq("opportunity_id", opp.id);
     if (del.error) { toast({ title: "Failed", description: del.error.message, variant: "destructive" }); return; }
-    // Compute per-person amount from splittable tasks
+    // Compute per-person amount from splittable tasks using custom shares
     const perPerson: Record<string, number> = {};
     distPeople.forEach(p => { perPerson[p] = 0; });
     distTasks.forEach((t, i) => {
       if (t.locked || distPeople.length === 0) return;
-      const per = distTaskAmounts[i] / distPeople.length;
-      distPeople.forEach(p => { perPerson[p] += per; });
+      const shares = getShares(t);
+      distPeople.forEach((p, pi) => { perPerson[p] += (distTaskAmounts[i] * (shares[pi] || 0)) / 100; });
     });
     const rows = distPeople.map(p => ({
       opportunity_id: opp.id,
@@ -748,17 +784,110 @@ function StagePanel({
 
 
         {show("deliver") && (
-        <StageBlock n={4} title="Deliver &mdash; workshop / training / consulting" description="Confirm mission completion. This timestamp marks the transition from execution to accountability. It locks in the delivery record before revenue recognition and distribution begin." active={opp.stage === "deliver"} done={idx > 3}>
-            <div className="space-y-2">
-              {opp.delivered_at && <p className="text-xs text-muted-foreground">Delivered {format(new Date(opp.delivered_at), "MMM d, yyyy")}</p>}
+        <StageBlock n={4} title="Deliver &mdash; workshop / training / consulting" description="Deliver the mission, then upload the Mission Report and Invoice (file or link) sent to the client. This locks in the delivery record before revenue recognition and distribution begin." active={opp.stage === "deliver"} done={idx > 3}>
+            <div className="space-y-4">
+              {/* Mission Report */}
+              <div className="space-y-2">
+                <div className="text-sm font-semibold">Mission Report</div>
+                <div className="flex gap-2">
+                  <Button type="button" size="sm" variant={reportMode === "file" ? "default" : "outline"} className="flex-1" onClick={() => setReportMode("file")}>
+                    <Upload className="w-3.5 h-3.5 mr-1" /> Upload file
+                  </Button>
+                  <Button type="button" size="sm" variant={reportMode === "link" ? "default" : "outline"} className="flex-1" onClick={() => setReportMode("link")}>
+                    <ExternalLink className="w-3.5 h-3.5 mr-1" /> Paste link
+                  </Button>
+                </div>
+                {reportMode === "file" ? (
+                  <FileField
+                    accept="application/pdf,image/*"
+                    url={opp.report_file_url}
+                    onOpen={() => openFile(opp.report_file_url)}
+                    onPick={async (f) => {
+                      const p = await uploadFile(f, "report");
+                      if (p) await patch({ report_file_url: p });
+                    }}
+                  />
+                ) : (
+                  <div className="flex gap-2">
+                    <Input value={reportLink} onChange={e => setReportLink(e.target.value)} onBlur={() => reportLink !== (opp.report_link ?? "") && patch({ report_link: reportLink || null })} placeholder="https://drive.google.com/..." />
+                    {opp.report_link && (
+                      <Button size="sm" variant="ghost" onClick={() => window.open(opp.report_link!, "_blank")}>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Invoice */}
+              <div className="space-y-2">
+                <div className="text-sm font-semibold">Invoice</div>
+                <div className="flex gap-2">
+                  <Button type="button" size="sm" variant={invoiceMode === "file" ? "default" : "outline"} className="flex-1" onClick={() => setInvoiceMode("file")}>
+                    <Upload className="w-3.5 h-3.5 mr-1" /> Upload file
+                  </Button>
+                  <Button type="button" size="sm" variant={invoiceMode === "link" ? "default" : "outline"} className="flex-1" onClick={() => setInvoiceMode("link")}>
+                    <ExternalLink className="w-3.5 h-3.5 mr-1" /> Paste link
+                  </Button>
+                </div>
+                {invoiceMode === "file" ? (
+                  <FileField
+                    accept="application/pdf,image/*"
+                    url={opp.invoice_file_url}
+                    onOpen={() => openFile(opp.invoice_file_url)}
+                    onPick={async (f) => {
+                      const p = await uploadFile(f, "invoice");
+                      if (p) await patch({ invoice_file_url: p });
+                    }}
+                  />
+                ) : (
+                  <div className="flex gap-2">
+                    <Input value={invoiceLink} onChange={e => setInvoiceLink(e.target.value)} onBlur={() => invoiceLink !== (opp.invoice_link ?? "") && patch({ invoice_link: invoiceLink || null })} placeholder="https://drive.google.com/..." />
+                    {opp.invoice_link && (
+                      <Button size="sm" variant="ghost" onClick={() => window.open(opp.invoice_link!, "_blank")}>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {opp.report_invoice_sent_at && (
+                <p className="text-xs text-muted-foreground">
+                  Report &amp; Invoice sent {format(new Date(opp.report_invoice_sent_at), "MMM d, yyyy")}
+                </p>
+              )}
+              {opp.delivered_at && (
+                <p className="text-xs text-muted-foreground">Delivered {format(new Date(opp.delivered_at), "MMM d, yyyy")}</p>
+              )}
+
               {opp.stage === "deliver" && (
-                <Button className="w-full" size="sm" disabled={working} onClick={() => advance("payment_distribution", { delivered_at: new Date().toISOString() })}>
-                  Confirm delivered &mdash; awaiting payment <ArrowRight className="w-3 h-3 ml-1" />
-                </Button>
+                <div className="flex flex-col gap-2">
+                  <Button
+                    className="w-full"
+                    size="sm"
+                    disabled={working || (!opp.report_file_url && !opp.report_link) || (!opp.invoice_file_url && !opp.invoice_link)}
+                    onClick={() => patch({ report_invoice_sent_at: new Date().toISOString() })}
+                  >
+                    Report &amp; Invoice Sent
+                  </Button>
+                  {opp.report_invoice_sent_at && (
+                    <Button
+                      className="w-full"
+                      size="sm"
+                      variant="outline"
+                      disabled={working}
+                      onClick={() => advance("payment_distribution", { delivered_at: opp.delivered_at ?? new Date().toISOString() })}
+                    >
+                      Awaiting payment <ArrowRight className="w-3 h-3 ml-1" />
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
         </StageBlock>
         )}
+
 
         {show("payment_distribution") && (
         <StageBlock n={5} title="Distribute &mdash; payment received &amp; distribution" description="Record payment received and define the distribution. This is where mission economics are finalized — charges, task allocations, and team compensation are settled based on the actual budget collected." active={opp.stage === "payment_distribution"} done={opp.stage === "closed"}>
@@ -783,8 +912,10 @@ function StagePanel({
                 </div>
               </div>
 
-              {/* Mission Setup */}
+              {/* Mission Setup — appears only after "Confirm budget paid" */}
+              {opp.paid_at && (
               <div className="border-t pt-4 space-y-4">
+                <div className="text-xs text-muted-foreground -mb-2">Full payment received — configure the distribution below.</div>
                 <div>
                   <div className="text-sm font-semibold mb-2">Mission Setup</div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -915,11 +1046,27 @@ function StagePanel({
                             <Input type="number" className="text-right" value={t.percent} onChange={e => updateDistTask(t.id, { percent: parseFloat(e.target.value) || 0 })} />
                           </TableCell>
                           <TableCell className="text-right font-mono">{distFmt(distTaskAmounts[i])}</TableCell>
-                          {distPeople.map((_, pi) => (
-                            <TableCell key={pi} className="text-right font-mono">
-                              {distPerPersonPerTask[i] === null ? "&mdash;" : distFmt(distPerPersonPerTask[i] as number)}
-                            </TableCell>
-                          ))}
+                          {distPeople.map((_, pi) => {
+                            const cell = distPerPersonPerTask[i][pi];
+                            if (cell === null) {
+                              return <TableCell key={pi} className="text-right text-muted-foreground">&mdash;</TableCell>;
+                            }
+                            const share = getShares(t)[pi] ?? 0;
+                            return (
+                              <TableCell key={pi} className="text-right align-top">
+                                <div className="flex items-center justify-end gap-1">
+                                  <Input
+                                    type="number"
+                                    className="h-8 w-16 text-right px-1"
+                                    value={share}
+                                    onChange={e => updateTaskShare(t.id, pi, parseFloat(e.target.value) || 0)}
+                                  />
+                                  <span className="text-xs text-muted-foreground">%</span>
+                                </div>
+                                <div className="text-[11px] text-muted-foreground font-mono mt-0.5">{distFmt(cell)}</div>
+                              </TableCell>
+                            );
+                          })}
                           <TableCell>
                             {!t.locked && (
                               <Button size="icon" variant="ghost" onClick={() => setDistTasks(p => p.filter(x => x.id !== t.id))}>
@@ -934,7 +1081,7 @@ function StagePanel({
                         <TableCell className="text-right">{distTotalPercent}%</TableCell>
                         <TableCell className="text-right">{distFmt(distTaskAmounts.reduce((s, a) => s + a, 0))}</TableCell>
                         {distPeople.map((_, i) => (
-                          <TableCell key={i} className="text-right bg-foreground text-background">{distFmt(distPerPersonEqual)}</TableCell>
+                          <TableCell key={i} className="text-right bg-foreground text-background font-mono">{distFmt(distPerPersonTotal[i] || 0)}</TableCell>
                         ))}
                         <TableCell />
                       </TableRow>
@@ -946,7 +1093,19 @@ function StagePanel({
                       Task percentages sum to {distTotalPercent}% &mdash; adjust to reach 100% for a full distribution.
                     </p>
                   )}
+                  {taskShareErrors.some(e => e !== null && Math.abs(e - 100) > 0.01) && (
+                    <p className="text-xs text-amber-600 mt-1">
+                      Each task&rsquo;s per-person shares must total 100%. Rows off target:
+                      {" "}
+                      {distTasks
+                        .map((t, i) => ({ t, sum: taskShareErrors[i] }))
+                        .filter(x => x.sum !== null && Math.abs((x.sum as number) - 100) > 0.01)
+                        .map(x => `${x.t.label} (${x.sum}%)`)
+                        .join(", ")}
+                    </p>
+                  )}
                 </div>
+
 
                 {distributions.length > 0 && (
                   <div className="text-xs text-muted-foreground">
@@ -960,6 +1119,7 @@ function StagePanel({
                   </Button>
                 )}
                 </div>
+              )}
                 </div>
               ) : null}
 
