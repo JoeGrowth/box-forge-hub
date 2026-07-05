@@ -69,6 +69,15 @@ function computeMatchScore(userSkillNames: string[], oppSkills: string[]): numbe
   return Math.round((matches.length / oppSkills.length) * 100);
 }
 
+const getEpisodeLabel = (episode: string) => {
+  switch (episode) {
+    case "development": return "Idea";
+    case "validation": return "MVP";
+    case "growth": return "Growth";
+    default: return "Idea";
+  }
+};
+
 const Opportunities = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
