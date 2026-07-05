@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { buildDemoBox, type DemoBoxListing } from "@/data/boxDemoTemplate";
 import { fetchBoxLiveStats } from "@/lib/boxAffinity";
+import { NextGoalBanner } from "@/components/progression/NextGoalBanner";
 import {
   Heart,
   Leaf,
@@ -228,6 +229,8 @@ const Boxes = () => {
       <Navbar />
       <PageTransition>
         <main className="pt-20">
+        <div className="container mx-auto px-4 pt-6"><NextGoalBanner pageStage="box_admin" /></div>
+
 
         {/* Hero */}
         <section className="py-24 gradient-hero text-primary-foreground">

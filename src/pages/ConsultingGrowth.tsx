@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { Footer } from "@/components/layout/Footer";
+import { NextGoalBanner } from "@/components/progression/NextGoalBanner";
 
 type DistCharge = { id: string; label: string; amount: number };
 type DistTask = { id: string; label: string; percent: number; locked?: boolean };
@@ -211,6 +212,7 @@ export default function ConsultingGrowth() {
   return (
     <>
     <div className="container mx-auto px-4 pt-24 pb-8 max-w-5xl space-y-6">
+      <NextGoalBanner pageStage="advisor" />
       <div className="flex items-start justify-between gap-4 mb-2 flex-wrap">
         <div className="flex-1 min-w-[260px]">
           <h1 className="text-3xl font-bold tracking-tight">Consulting Growth</h1>
