@@ -671,7 +671,7 @@ function StagePanel({
         )}
 
         {show("confirm_prepare") && (
-        <StageBlock n={3} title="Confirm &amp; prepare (process + presentation)" active={opp.stage === "confirm_prepare"} done={idx > 2}>
+        <StageBlock n={3} title="Prepare &mdash; confirm &amp; process + presentation" description="Confirm client acceptance and upload your process and presentation. These materials become your mission's operating manual — a structured baseline that ensures delivery stays aligned with what was promised." active={opp.stage === "confirm_prepare"} done={idx > 2}>
             <div className="space-y-3">
               {/* Step A: confirm client acceptance */}
               {!opp.client_confirmed_at && opp.stage === "confirm_prepare" && (
