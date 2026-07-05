@@ -1093,7 +1093,19 @@ function StagePanel({
                       Task percentages sum to {distTotalPercent}% &mdash; adjust to reach 100% for a full distribution.
                     </p>
                   )}
+                  {taskShareErrors.some(e => e !== null && Math.abs(e - 100) > 0.01) && (
+                    <p className="text-xs text-amber-600 mt-1">
+                      Each task&rsquo;s per-person shares must total 100%. Rows off target:
+                      {" "}
+                      {distTasks
+                        .map((t, i) => ({ t, sum: taskShareErrors[i] }))
+                        .filter(x => x.sum !== null && Math.abs((x.sum as number) - 100) > 0.01)
+                        .map(x => `${x.t.label} (${x.sum}%)`)
+                        .join(", ")}
+                    </p>
+                  )}
                 </div>
+
 
                 {distributions.length > 0 && (
                   <div className="text-xs text-muted-foreground">
