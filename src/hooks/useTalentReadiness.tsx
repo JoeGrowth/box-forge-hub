@@ -14,13 +14,21 @@ export interface TalentReadiness {
   /** User is admin/owner of at least one organization in /organizations. */
   isOrgAdmin: boolean;
   missing: string[];
+  /** Sub-tasks completed toward talent foundation. */
+  talentCompleted: number;
+  /** Total sub-tasks for talent foundation. */
+  talentTotal: number;
 }
+
+const TALENT_TOTAL = 4;
 
 const DEFAULT: TalentReadiness = {
   loading: true,
   talentReady: false,
   isOrgAdmin: false,
   missing: [],
+  talentCompleted: 0,
+  talentTotal: TALENT_TOTAL,
 };
 
 export function useTalentReadiness(): TalentReadiness {
