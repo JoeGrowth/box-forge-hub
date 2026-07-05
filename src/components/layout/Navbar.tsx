@@ -110,7 +110,6 @@ function readCachedAdmin(userId: string | undefined): boolean {
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [engineOpen, setEngineOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
 
@@ -155,14 +154,6 @@ export function Navbar() {
 
 
   // Only show unlocked items in the navbar — locked routes are hidden entirely.
-  const visibleEngineLinks = useMemo(
-    () => engineLinks.filter((l) => engineAccess[l.key].unlocked),
-    [engineAccess],
-  );
-  const isEngineActive = useMemo(
-    () => visibleEngineLinks.some((l) => location.pathname === l.path),
-    [visibleEngineLinks, location.pathname],
-  );
   const visiblePublishLinks = useMemo(
     () => publishLinks.filter((l) => !(l.orgAdminOnly && !isOrgAdmin)),
     [isOrgAdmin],
@@ -170,8 +161,13 @@ export function Navbar() {
   const { progression } = useNextBestActions(user?.id);
   const stageRank = STAGE_RANK[progression?.current_state ?? "novice"] ?? 0;
   const visibleMoreLinks = useMemo(
-    () => moreLinks.filter((l) => !l.minStage || stageRank >= STAGE_RANK[l.minStage]),
-    [stageRank],
+    () =>
+      moreLinks.filter(
+        (l) =>
+          (!l.minStage || stageRank >= STAGE_RANK[l.minStage]) &&
+          (!l.engineKey || engineAccess[l.engineKey].unlocked),
+      ),
+    [stageRank, engineAccess],
   );
 
   return (
