@@ -328,10 +328,10 @@ export default function ConsultingGrowth() {
                       className="w-full text-left p-5 hover:bg-muted/30 transition"
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <h3 className="font-semibold text-foreground truncate">{o.title}</h3>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-semibold text-foreground">{o.title}</h3>
                           <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                            <p className="text-xs text-muted-foreground truncate">{o.client_name || "&mdash;"}</p>
+                            <p className="text-xs text-muted-foreground">{o.client_name || "&mdash;"}</p>
                             <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4">{o.source}</Badge>
                           </div>
                         </div>
