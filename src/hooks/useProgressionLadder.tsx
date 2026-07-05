@@ -83,7 +83,7 @@ export function useProgressionLadder(): ProgressionLadder {
         {
           key: "talent", index: 1, label: "Talent Foundation",
           intent: "Natural Role + Expertise + Skills → Resume + Public Profile",
-          current: talentDone ? 1 : 0, target: 1,
+          current: talentCompleted, target: talentTotal,
           unlocked: true, achieved: talentDone,
           ctaLabel: talentDone ? "View public profile" : "Complete foundation",
           ctaHref: "/publish-talent",
