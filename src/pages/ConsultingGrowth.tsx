@@ -197,6 +197,10 @@ export default function ConsultingGrowth() {
       toast({ title: "Title required", variant: "destructive" });
       return;
     }
+    if (!form.opportunity_type) {
+      toast({ title: "Type required", description: "Select a mission type.", variant: "destructive" });
+      return;
+    }
     setSaving(true);
     const days = form.number_of_days ? parseInt(form.number_of_days) : null;
     const perDay = form.amount_per_day ? parseFloat(form.amount_per_day) : null;
@@ -206,6 +210,7 @@ export default function ConsultingGrowth() {
       client_name: form.client_name.trim() || null,
       consulting_firm: form.client_name.trim() || null,
       source: form.source,
+      opportunity_type: form.opportunity_type || null,
       description: form.description.trim() || null,
       number_of_days: days,
       amount_per_day: perDay,
