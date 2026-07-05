@@ -317,18 +317,33 @@ const Opportunities = () => {
             <div className="container mx-auto px-4">
               <div className="flex items-center gap-1 overflow-x-auto border-b border-border">
                 {TABS.map((t) => (
-                  <button
-                    key={t.key}
-                    onClick={() => setParam("v", t.key === "discover" ? null : t.key)}
-                    className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
-                      tab === t.key
-                        ? "border-primary text-foreground"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
-                    }`}
+                  <div key={t.key} className="flex items-center">
+                    {t.dividerBefore && (
+                      <span aria-hidden className="mx-2 h-5 w-px bg-border/70 shrink-0" />
+                    )}
+                    <button
+                      onClick={() => setParam("v", t.key === "discover" ? null : t.key)}
+                      className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
+                        tab === t.key
+                          ? "border-primary text-foreground"
+                          : "border-transparent text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {t.icon}
+                      {t.label}
+                    </button>
+                  </div>
+                ))}
+                <span aria-hidden className="mx-2 h-5 w-px bg-border/70 shrink-0" />
+                {PROJECT_LINKS.map((p) => (
+                  <Link
+                    key={p.key}
+                    to={p.to}
+                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium border-b-2 border-transparent text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    {t.icon}
-                    {t.label}
-                  </button>
+                    {p.icon}
+                    {p.label}
+                  </Link>
                 ))}
               </div>
             </div>
