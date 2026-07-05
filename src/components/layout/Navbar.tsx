@@ -465,6 +465,28 @@ export function Navbar() {
                     </>
                   )}
 
+                  {talentReady && (
+                    <>
+                      <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Created by me
+                      </div>
+                      {createdByMeLinks.map((link) => {
+                        const Icon = link.icon;
+                        return (
+                          <Link
+                            key={link.path}
+                            to={link.path}
+                            onClick={() => setIsOpen(false)}
+                            className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors flex items-center gap-2"
+                          >
+                            <Icon size={16} />
+                            <span className="flex-1">{link.name}</span>
+                          </Link>
+                        );
+                      })}
+                    </>
+                  )}
+
                   {visibleMoreLinks.length > 0 && (
                     <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       More
