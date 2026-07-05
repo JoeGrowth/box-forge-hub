@@ -959,6 +959,7 @@ export type Database = {
           delivered_at: string | null
           description: string | null
           driver_file_url: string | null
+          driver_link: string | null
           driver_note: string | null
           id: string
           is_completed: boolean
@@ -990,6 +991,7 @@ export type Database = {
           delivered_at?: string | null
           description?: string | null
           driver_file_url?: string | null
+          driver_link?: string | null
           driver_note?: string | null
           id?: string
           is_completed?: boolean
@@ -1021,6 +1023,7 @@ export type Database = {
           delivered_at?: string | null
           description?: string | null
           driver_file_url?: string | null
+          driver_link?: string | null
           driver_note?: string | null
           id?: string
           is_completed?: boolean

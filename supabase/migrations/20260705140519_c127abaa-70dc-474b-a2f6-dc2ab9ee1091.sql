@@ -1,0 +1,1 @@
+ALTER TABLE public.consultant_opportunities ADD COLUMN IF NOT EXISTS driver_link text;
