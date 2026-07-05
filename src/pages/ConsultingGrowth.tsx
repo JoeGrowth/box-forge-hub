@@ -14,7 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast";
 import {
   Plus, Briefcase, CheckCircle2, TrendingUp, DollarSign,
-  FileText, Upload, ArrowRight, Users, Trash2, ExternalLink, Loader2, RefreshCw, Lock,
+  FileText, Upload, ArrowRight, Users, Trash2, ExternalLink, Loader2, RefreshCw, Lock, ChevronRight,
 } from "lucide-react";
 import { format } from "date-fns";
 import { Footer } from "@/components/layout/Footer";
