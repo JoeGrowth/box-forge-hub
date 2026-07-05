@@ -418,7 +418,7 @@ const TrackRecord = () => {
       <div className="mt-3 space-y-1.5">
         {extras.map((e, i) => (
           <div key={i} className="flex flex-col sm:flex-row gap-0.5 sm:gap-2">
-            <span className="text-xs font-medium text-muted-foreground min-w-[80px]">{e.label}:</span>
+            <span className="text-xs font-medium text-muted-foreground sm:min-w-[80px]">{e.label}:</span>
             <span className="text-xs text-foreground">{e.value}</span>
           </div>
         ))}
