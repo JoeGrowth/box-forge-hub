@@ -133,6 +133,74 @@ const Opportunities = () => {
 
   const { expertise } = useExpertise(user?.id);
   const userSkillNames = expertise?.tags ?? [];
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const [
+        { data: nrDecoder },
+        { data: profile },
+        { data: closedOpps },
+      ] = await Promise.all([
+        supabase.from("nr_decoder_submissions").select("status").eq("user_id", user.id).maybeSingle(),
+        supabase.from("profiles").select("professional_title, bio, primary_skills, summary_statement, key_projects, years_of_experience, education_certifications").eq("user_id", user.id).maybeSingle(),
+        supabase.from("consultant_opportunities").select("id").eq("user_id", user.id).eq("stage", "closed"),
+      ]);
+
+      const isOnboardingTrulyComplete = onboardingState?.onboarding_completed && (onboardingState?.current_step ?? 0) >= 5;
+      const nrDecoderComplete = !!nrDecoder;
+      const proTrackComplete = !!naturalRole?.description;
+
+      const p: any = profile || {};
+      const filled = (v: any) => v !== null && v !== undefined && String(v).trim().length > 0;
+      const resumeDone = Boolean(
+        filled(p.professional_title) &&
+        filled(p.bio) &&
+        filled(p.summary_statement) &&
+        filled(p.primary_skills) &&
+        filled(p.key_projects) &&
+        filled(p.education_certifications) &&
+        p.years_of_experience !== null && p.years_of_experience !== undefined
+      );
+
+      setTalentFoundationSet(isOnboardingTrulyComplete && nrDecoderComplete && proTrackComplete && resumeDone);
+
+      const closedIds = (closedOpps || []).map((o: any) => o.id);
+      let solo = 0, contractors = 0;
+      if (closedIds.length > 0) {
+        const { data: dists } = await supabase
+          .from("consultant_opportunity_distributions")
+          .select("opportunity_id, recipient_name, note")
+          .in("opportunity_id", closedIds);
+        const byOpp: Record<string, { name: string; note: string | null }[]> = {};
+        (dists || []).forEach((d: any) => {
+          (byOpp[d.opportunity_id] ||= []).push({ name: d.recipient_name || "", note: d.note });
+        });
+        for (const id of closedIds) {
+          const list = byOpp[id] || [];
+          const hasEquity = list.some((r) =>
+            /associé|associe|equity|partner|co[- ]?builder/i.test(`${r.name} ${r.note ?? ""}`)
+          );
+          if (list.length <= 1) solo++;
+          else if (!hasEquity) contractors++;
+        }
+      }
+      setTalentMonetized(solo >= 3 && contractors >= 7);
+    })();
+  }, [user, onboardingState, naturalRole]);
+
+  const visibleKinds = useMemo(() => {
+    if (talentFoundationSet && talentMonetized) {
+      return KINDS.filter((k) => k.key !== "job" && k.key !== "tender");
+    }
+    return KINDS;
+  }, [talentFoundationSet, talentMonetized]);
+
+  useEffect(() => {
+    if (talentFoundationSet && talentMonetized && (kindFilter === "job" || kindFilter === "tender")) {
+      setParam("kind", null);
+    }
+  }, [talentFoundationSet, talentMonetized, kindFilter]);
   const { scoreById } = useOpportunityScoreMap(user?.id);
 
   useEffect(() => {
