@@ -65,6 +65,15 @@ interface Opportunity {
   client_confirmed_at: string | null;
   process_file_url: string | null;
   process_link: string | null;
+  report_file_url: string | null;
+  report_link: string | null;
+  invoice_file_url: string | null;
+  invoice_link: string | null;
+  report_invoice_sent_at: string | null;
+  delivered_at: string | null;
+  paid_amount: number | null;
+  paid_at: string | null;
+}
   delivered_at: string | null;
   paid_amount: number | null;
   paid_at: string | null;
