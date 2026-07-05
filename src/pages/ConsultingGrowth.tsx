@@ -663,12 +663,12 @@ function StagePanel({
         {show("identify") && (
         <StageBlock n={1} title="Catched — capture the driver" description="Capture the driver (screenshot, PDF, or external link). This is your mission's origin story — the raw signal that sparked the opportunity. It acts as a permanent prompt for any AI or team member who needs context on how this mission started." active={opp.stage === "identify"} done={idx > 0}>
             <div className="space-y-2">
-              <div className="flex gap-2">
-                <Button type="button" size="sm" variant={driverMode === "file" ? "default" : "outline"} className="flex-1" onClick={() => setDriverMode("file")}>
-                  <Upload className="w-3.5 h-3.5 mr-1" /> Upload file
+              <div className="grid grid-cols-2 gap-2">
+                <Button type="button" size="sm" variant={driverMode === "file" ? "default" : "outline"} className="w-full h-9 px-2 text-xs sm:text-sm gap-1.5 min-w-0" onClick={() => setDriverMode("file")}>
+                  <Upload className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Upload file</span>
                 </Button>
-                <Button type="button" size="sm" variant={driverMode === "link" ? "default" : "outline"} className="flex-1" onClick={() => setDriverMode("link")}>
-                  <ExternalLink className="w-3.5 h-3.5 mr-1" /> Paste link
+                <Button type="button" size="sm" variant={driverMode === "link" ? "default" : "outline"} className="w-full h-9 px-2 text-xs sm:text-sm gap-1.5 min-w-0" onClick={() => setDriverMode("link")}>
+                  <ExternalLink className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Paste link</span>
                 </Button>
               </div>
 
@@ -736,12 +736,12 @@ function StagePanel({
           return (
         <StageBlock n={3} title={`Prepare — ${prepLabel.toLowerCase()}`} description={`Upload the ${prepLabel} (file or link). This becomes your mission's operating manual — a structured baseline that keeps delivery aligned with what was promised.`} active={opp.stage === "confirm_prepare"} done={idx > 2}>
             <div className="space-y-2">
-              <div className="flex gap-2">
-                <Button type="button" size="sm" variant={processMode === "file" ? "default" : "outline"} className="flex-1" onClick={() => setProcessMode("file")}>
-                  <Upload className="w-3.5 h-3.5 mr-1" /> Upload file
+              <div className="grid grid-cols-2 gap-2">
+                <Button type="button" size="sm" variant={processMode === "file" ? "default" : "outline"} className="w-full h-9 px-2 text-xs sm:text-sm gap-1.5 min-w-0" onClick={() => setProcessMode("file")}>
+                  <Upload className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Upload file</span>
                 </Button>
-                <Button type="button" size="sm" variant={processMode === "link" ? "default" : "outline"} className="flex-1" onClick={() => setProcessMode("link")}>
-                  <ExternalLink className="w-3.5 h-3.5 mr-1" /> Paste link
+                <Button type="button" size="sm" variant={processMode === "link" ? "default" : "outline"} className="w-full h-9 px-2 text-xs sm:text-sm gap-1.5 min-w-0" onClick={() => setProcessMode("link")}>
+                  <ExternalLink className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Paste link</span>
                 </Button>
               </div>
 
@@ -789,14 +789,14 @@ function StagePanel({
               {/* Mission Report */}
               <div className="space-y-2">
                 <div className="text-sm font-semibold">Mission Report</div>
-                <div className="flex gap-2">
-                  <Button type="button" size="sm" variant={reportMode === "file" ? "default" : "outline"} className="flex-1" onClick={() => setReportMode("file")}>
-                    <Upload className="w-3.5 h-3.5 mr-1" /> Upload file
-                  </Button>
-                  <Button type="button" size="sm" variant={reportMode === "link" ? "default" : "outline"} className="flex-1" onClick={() => setReportMode("link")}>
-                    <ExternalLink className="w-3.5 h-3.5 mr-1" /> Paste link
-                  </Button>
-                </div>
+                <div className="grid grid-cols-2 gap-2">
+                <Button type="button" size="sm" variant={reportMode === "file" ? "default" : "outline"} className="w-full h-9 px-2 text-xs sm:text-sm gap-1.5 min-w-0" onClick={() => setReportMode("file")}>
+                  <Upload className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Upload file</span>
+                </Button>
+                <Button type="button" size="sm" variant={reportMode === "link" ? "default" : "outline"} className="w-full h-9 px-2 text-xs sm:text-sm gap-1.5 min-w-0" onClick={() => setReportMode("link")}>
+                  <ExternalLink className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Paste link</span>
+                </Button>
+              </div>
                 {reportMode === "file" ? (
                   <FileField
                     accept="application/pdf,image/*"
@@ -822,14 +822,14 @@ function StagePanel({
               {/* Invoice */}
               <div className="space-y-2">
                 <div className="text-sm font-semibold">Invoice</div>
-                <div className="flex gap-2">
-                  <Button type="button" size="sm" variant={invoiceMode === "file" ? "default" : "outline"} className="flex-1" onClick={() => setInvoiceMode("file")}>
-                    <Upload className="w-3.5 h-3.5 mr-1" /> Upload file
-                  </Button>
-                  <Button type="button" size="sm" variant={invoiceMode === "link" ? "default" : "outline"} className="flex-1" onClick={() => setInvoiceMode("link")}>
-                    <ExternalLink className="w-3.5 h-3.5 mr-1" /> Paste link
-                  </Button>
-                </div>
+                <div className="grid grid-cols-2 gap-2">
+                <Button type="button" size="sm" variant={invoiceMode === "file" ? "default" : "outline"} className="w-full h-9 px-2 text-xs sm:text-sm gap-1.5 min-w-0" onClick={() => setInvoiceMode("file")}>
+                  <Upload className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Upload file</span>
+                </Button>
+                <Button type="button" size="sm" variant={invoiceMode === "link" ? "default" : "outline"} className="w-full h-9 px-2 text-xs sm:text-sm gap-1.5 min-w-0" onClick={() => setInvoiceMode("link")}>
+                  <ExternalLink className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Paste link</span>
+                </Button>
+              </div>
                 {invoiceMode === "file" ? (
                   <FileField
                     accept="application/pdf,image/*"
