@@ -536,25 +536,25 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
                     className={isSomeSelected ? "data-[state=checked]:bg-primary/50" : ""}
                   />
                 </TableHead>
-                <TableHead>User Name</TableHead>
-                <TableHead>Vision</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Boost</TableHead>
-                <TableHead>Scaling</TableHead>
-                <TableHead>PR</TableHead>
-                <TableHead>Joined</TableHead>
+                <TableHead onClick={() => toggleSort("name")} className="cursor-pointer select-none hover:text-foreground">User Name</TableHead>
+                <TableHead onClick={() => toggleSort("vision")} className="cursor-pointer select-none hover:text-foreground">Vision</TableHead>
+                <TableHead onClick={() => toggleSort("status")} className="cursor-pointer select-none hover:text-foreground">Status</TableHead>
+                <TableHead onClick={() => toggleSort("boost")} className="cursor-pointer select-none hover:text-foreground">Boost</TableHead>
+                <TableHead onClick={() => toggleSort("scaling")} className="cursor-pointer select-none hover:text-foreground">Scaling</TableHead>
+                <TableHead onClick={() => toggleSort("pr")} className="cursor-pointer select-none hover:text-foreground">PR</TableHead>
+                <TableHead onClick={() => toggleSort("joined")} className="cursor-pointer select-none hover:text-foreground">Joined</TableHead>
                 <TableHead className="w-[80px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredUsers.length === 0 ? (
+              {sortedUsers.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={9} className="text-center text-muted-foreground py-12">
                     No users found
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredUsers.map((user) => {
+                sortedUsers.map((user) => {
                   const statusLevel = getUserStatusLevel(user);
                   const showBoost = statusLevel === "boost" || statusLevel === "scale";
                   const showScaling = statusLevel === "scale";
