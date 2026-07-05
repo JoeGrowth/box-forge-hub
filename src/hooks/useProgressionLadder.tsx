@@ -46,7 +46,7 @@ const EMPTY_LADDER: ProgressionLadder = {
 export function useProgressionLadder(): ProgressionLadder {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdmin();
-  const { talentReady, loading: talentLoading } = useTalentReadiness();
+  const { talentReady, talentCompleted, talentTotal, loading: talentLoading } = useTalentReadiness();
   const [state, setState] = useState<ProgressionLadder>(EMPTY_LADDER);
 
   useEffect(() => {
@@ -83,7 +83,7 @@ export function useProgressionLadder(): ProgressionLadder {
         {
           key: "talent", index: 1, label: "Talent Foundation",
           intent: "Natural Role + Expertise + Skills → Resume + Public Profile",
-          current: talentDone ? 1 : 0, target: 1,
+          current: talentCompleted, target: talentTotal,
           unlocked: true, achieved: talentDone,
           ctaLabel: talentDone ? "View public profile" : "Complete foundation",
           ctaHref: "/publish-talent",

@@ -14,13 +14,21 @@ export interface TalentReadiness {
   /** User is admin/owner of at least one organization in /organizations. */
   isOrgAdmin: boolean;
   missing: string[];
+  /** Sub-tasks completed toward talent foundation. */
+  talentCompleted: number;
+  /** Total sub-tasks for talent foundation. */
+  talentTotal: number;
 }
+
+const TALENT_TOTAL = 4;
 
 const DEFAULT: TalentReadiness = {
   loading: true,
   talentReady: false,
   isOrgAdmin: false,
   missing: [],
+  talentCompleted: 0,
+  talentTotal: TALENT_TOTAL,
 };
 
 export function useTalentReadiness(): TalentReadiness {
@@ -38,7 +46,7 @@ export function useTalentReadiness(): TalentReadiness {
 
     // Platform admins bypass every gate.
     if (isAdmin) {
-      setState({ loading: false, talentReady: true, isOrgAdmin: true, missing: [] });
+      setState({ loading: false, talentReady: true, isOrgAdmin: true, missing: [], talentCompleted: TALENT_TOTAL, talentTotal: TALENT_TOTAL });
       return;
     }
 
@@ -112,11 +120,15 @@ export function useTalentReadiness(): TalentReadiness {
       const isOrgAdmin =
         (orgMemberRes.data?.length ?? 0) > 0 || (ownedOrgRes.data?.length ?? 0) > 0;
 
+      const completed = [intentDone, decoderDone, proTrackDone, resumeDone].filter(Boolean).length;
+
       setState({
         loading: false,
         talentReady: missing.length === 0,
         isOrgAdmin,
         missing,
+        talentCompleted: completed,
+        talentTotal: TALENT_TOTAL,
       });
     })();
 
