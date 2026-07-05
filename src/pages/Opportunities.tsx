@@ -454,6 +454,20 @@ const Opportunities = () => {
                 <div className="flex justify-center py-12">
                   <Loader2 className="w-6 h-6 animate-spin text-primary" />
                 </div>
+              ) : tab === "my-projects" || tab === "collabs" ? (
+                (() => {
+                  const projects = tab === "my-projects" ? myProjects : collabProjects;
+                  if (projects.length === 0) {
+                    return <EmptyState tab={tab} onPost={() => navigate("/entrepreneurship?new=1")} onDiscover={() => setParam("v", null)} />;
+                  }
+                  return (
+                    <div className="space-y-3">
+                      {projects.map((p) => (
+                        <ProjectRow key={p.id} project={p} isOwner={tab === "my-projects"} />
+                      ))}
+                    </div>
+                  );
+                })()
               ) : filtered.length === 0 ? (
                 <EmptyState tab={tab} onPost={() => navigate("/publish-job")} onDiscover={() => setParam("v", null)} />
               ) : (
@@ -476,6 +490,40 @@ const Opportunities = () => {
     </div>
   );
 };
+
+function ProjectRow({ project, isOwner }: { project: any; isOwner: boolean }) {
+  const episodeLabel = project.current_episode === "validation" ? "MVP" : project.current_episode === "growth" ? "Growth" : "Idea";
+  return (
+    <div className="border border-border rounded-2xl p-5 bg-card hover:border-b4-teal/40 transition-colors">
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap mb-1">
+            <h3 className="font-semibold text-foreground text-base">{project.title}</h3>
+            <Badge variant="outline" className="text-[10px]">{episodeLabel}</Badge>
+            {project.sector && <Badge variant="secondary" className="text-[10px]">{project.sector}</Badge>}
+            {isOwner && project.status && (
+              <Badge variant="outline" className="text-[10px] capitalize">{project.status}</Badge>
+            )}
+          </div>
+          {project.description && (
+            <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
+          )}
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button asChild variant="outline" size="sm">
+            <Link to={`/opportunities/startup/${project.id}`}>Open</Link>
+          </Button>
+          {isOwner && (
+            <Button asChild size="sm">
+              <Link to={`/edit-idea/${project.id}`}>Manage</Link>
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 function EmptyState({ tab, onPost, onDiscover }: { tab: Tab; onPost: () => void; onDiscover: () => void }) {
   const copy: Record<Tab, { title: string; body: string; cta?: { label: string; onClick: () => void } }> = {
