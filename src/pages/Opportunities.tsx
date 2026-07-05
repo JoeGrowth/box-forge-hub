@@ -41,7 +41,7 @@ import { useOpportunityPersona, type OpportunityCategory } from "@/hooks/useOppo
 
 const sb = supabase as any;
 
-type Tab = "discover" | "recommended" | "mine" | "applications" | "created" | "ecosystem" | "my-projects" | "collabs";
+type Tab = "discover" | "recommended" | "mine" | "applications" | "created" | "ecosystem" | "my-projects";
 
 const TABS: { key: Tab; label: string; icon: React.ReactNode; hint: string; dividerBefore?: boolean }[] = [
   { key: "discover",     label: "Discover",        icon: <Sparkles className="w-4 h-4" />,    hint: "Every open opportunity in the graph." },
@@ -49,9 +49,8 @@ const TABS: { key: Tab; label: string; icon: React.ReactNode; hint: string; divi
   { key: "mine",         label: "My opportunities", icon: <Users className="w-4 h-4" />,      hint: "Relationships you're already in.", dividerBefore: true },
   { key: "applications", label: "My applications", icon: <Inbox className="w-4 h-4" />,       hint: "Pending and historical applications." },
   { key: "created",      label: "Created by me",   icon: <FilePlus2 className="w-4 h-4" />,    hint: "Opportunities you posted." },
-  { key: "ecosystem",    label: "Ecosystem",       icon: <Rocket className="w-4 h-4" />,      hint: "Browse startup ventures seeking co-builders.", dividerBefore: true },
-  { key: "my-projects",  label: "My Projects",     icon: <Lightbulb className="w-4 h-4" />,   hint: "Startup ventures you created." },
-  { key: "collabs",      label: "Collabs",         icon: <Users className="w-4 h-4" />,       hint: "Ventures you're contributing to as a co-builder." },
+  { key: "ecosystem",    label: "Ecosystem",       icon: <Rocket className="w-4 h-4" />,      hint: "Browse every startup idea in the directory.", dividerBefore: true },
+  { key: "my-projects",  label: "My Projects",     icon: <Lightbulb className="w-4 h-4" />,   hint: "Ventures you initiated and ones you've gained equity in." },
 ];
 
 const KINDS: { key: OpportunityCategory; label: string }[] = [
@@ -142,6 +141,7 @@ const Opportunities = () => {
   const [deleteType, setDeleteType] = useState<"archive" | "permanent" | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [ecosystemTeamCounts, setEcosystemTeamCounts] = useState<Record<string, number>>({});
+  const [ecosystemStartups, setEcosystemStartups] = useState<any[]>([]);
   const [applyProject, setApplyProject] = useState<any>(null);
 
   const { expertise } = useExpertise(user?.id);
@@ -308,8 +308,25 @@ const Opportunities = () => {
       for (const c of consultingData) if (c.user_id === user.id) created.add(c.id);
       setCreatedIds(created);
 
+      // Ecosystem: all approved active ideas (directory), regardless of cobuilder flag
+      const { data: allIdeas } = await supabase
+        .from("startup_ideas")
+        .select("*")
+        .eq("status", "active")
+        .eq("review_status", "approved")
+        .order("created_at", { ascending: false });
+      const ideaUserIds = [...new Set((allIdeas || []).map((s: any) => s.creator_id).filter(Boolean))];
+      let ideaProfileMap = profileMap;
+      const missing = ideaUserIds.filter((id) => !ideaProfileMap.has(id));
+      if (missing.length > 0) {
+        const { data: extraProfiles } = await supabase.from("profiles").select("user_id, full_name").in("user_id", missing);
+        ideaProfileMap = new Map(profileMap);
+        (extraProfiles || []).forEach((p: any) => ideaProfileMap.set(p.user_id, p.full_name));
+      }
+      setEcosystemStartups((allIdeas || []).map((s: any) => ({ ...s, _author: ideaProfileMap.get(s.creator_id) || "Unknown" })));
+
       // Team counts for ecosystem view
-      const allStartupIds = startupData.map((s: any) => s.id);
+      const allStartupIds = (allIdeas || []).map((s: any) => s.id);
       if (allStartupIds.length > 0) {
         const { data: teamData } = await sb.from("startup_team_members").select("startup_id").in("startup_id", allStartupIds);
         const counts: Record<string, number> = {};
@@ -598,22 +615,39 @@ const Opportunities = () => {
                 <div className="flex justify-center py-12">
                   <Loader2 className="w-6 h-6 animate-spin text-primary" />
                 </div>
-              ) : tab === "my-projects" || tab === "collabs" ? (
+              ) : tab === "my-projects" ? (
                 (() => {
-                  const projects = tab === "my-projects" ? myProjects : collabProjects;
-                  const isOwner = tab === "my-projects";
+                  const owned = myProjects.map((p) => ({ ...p, _ownership: "owner" as const }));
+                  const ownedIds = new Set(owned.map((p) => p.id));
+                  const collab = collabProjects
+                    .filter((p) => !ownedIds.has(p.id))
+                    .map((p) => ({ ...p, _ownership: "collab" as const }));
+                  const projects = [...owned, ...collab];
                   if (projects.length === 0) {
-                    return <EmptyState tab={tab} onPost={() => navigate("/entrepreneurship?new=1")} onDiscover={() => setParam("v", null)} />;
+                    return <EmptyState tab="my-projects" onPost={() => navigate("/entrepreneurship?new=1")} onDiscover={() => setParam("v", null)} />;
                   }
                   return (
                     <div className="space-y-3">
                       {projects.map((project) => {
+                        const isOwner = project._ownership === "owner";
                         const episodeLabel = project.current_episode === "validation" ? "MVP" : project.current_episode === "growth" ? "Growth" : "Idea";
+                        const cardTint = isOwner
+                          ? "border-b4-teal/40 bg-b4-teal/5"
+                          : "border-secondary/40 bg-secondary/5";
                         return (
-                          <div key={project.id} className="border border-border rounded-2xl p-4 sm:p-6 bg-card hover:shadow-md transition-shadow">
+                          <div key={project.id} className={`border rounded-2xl p-4 sm:p-6 hover:shadow-md transition-shadow ${cardTint}`}>
                             <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                               <div className="flex-1 min-w-0 w-full">
                                 <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                  <Badge
+                                    className={
+                                      isOwner
+                                        ? "bg-b4-teal text-white text-[10px]"
+                                        : "bg-secondary text-secondary-foreground text-[10px]"
+                                    }
+                                  >
+                                    {isOwner ? "Initiator" : "Equity co-builder"}
+                                  </Badge>
                                   <h3 className="font-display text-base sm:text-lg font-bold text-foreground break-words">{project.title}</h3>
                                   <Badge variant="outline" className="text-[10px]">{episodeLabel}</Badge>
                                   {isOwner && project.review_status && (
@@ -691,19 +725,24 @@ const Opportunities = () => {
                 })()
               ) : tab === "ecosystem" ? (
                 (() => {
-                  const projects = rawStartups.filter((s: any) => s.creator_id !== user?.id);
+                  const withFlag = ecosystemStartups.map((s: any) => ({ ...s, _isOwn: s.creator_id === user?.id }));
+                  // Non-owned (with Express Interest) first, then user's own
+                  const projects = withFlag.sort((a: any, b: any) => Number(a._isOwn) - Number(b._isOwn));
                   if (projects.length === 0) {
                     return <EmptyState tab="ecosystem" onPost={() => navigate("/entrepreneurship?new=1")} onDiscover={() => setParam("v", null)} />;
                   }
                   return (
                     <div className="space-y-4">
                       {projects.map((project: any) => (
-                        <div key={project.id} className="border border-border rounded-2xl p-4 sm:p-6 bg-card hover:shadow-md transition-shadow">
+                        <div key={project.id} className={`border rounded-2xl p-4 sm:p-6 hover:shadow-md transition-shadow ${project._isOwn ? "border-b4-teal/40 bg-b4-teal/5" : "border-border bg-card"}`}>
                           <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                             <div className="flex-1 min-w-0 w-full">
                               <div className="flex items-center gap-2 mb-1 flex-wrap">
                                 <h3 className="font-display text-lg sm:text-xl font-bold text-foreground break-words">{project.title}</h3>
                                 <Badge variant="outline" className="text-xs">{getEpisodeLabel(project.current_episode)}</Badge>
+                                {project._isOwn && (
+                                  <Badge className="bg-b4-teal text-white text-[10px]">Your project</Badge>
+                                )}
                               </div>
                               {project.sector && (
                                 <p className="text-sm text-muted-foreground italic mb-2">{project.sector}</p>
@@ -742,9 +781,11 @@ const Opportunities = () => {
                             </div>
 
                             <div className="flex flex-row sm:flex-col gap-2 shrink-0 w-full sm:w-auto">
-                              <Button size="sm" className="flex-1 sm:flex-none" onClick={() => setApplyProject(project)}>
-                                Express Interest
-                              </Button>
+                              {!project._isOwn && (
+                                <Button size="sm" className="flex-1 sm:flex-none" onClick={() => setApplyProject(project)}>
+                                  Express Interest
+                                </Button>
+                              )}
                               <Button variant="outline" size="sm" className="flex-1 sm:flex-none" asChild>
                                 <Link to={`/opportunities/startup/${project.id}`}>
                                   <Eye className="w-3 h-3 mr-1" /> View Details
@@ -872,8 +913,7 @@ function EmptyState({ tab, onPost, onDiscover }: { tab: Tab; onPost: () => void;
     applications: { title: "No applications yet.", body: "Apply from any opportunity detail page.", cta: { label: "Discover opportunities", onClick: onDiscover } },
     created:      { title: "You haven't posted any opportunities.", body: "Post a job, training, or open a startup role.", cta: { label: "Post one", onClick: onPost } },
     ecosystem:    { title: "No projects seeking co-builders right now.", body: "Check back soon or start your own!", cta: { label: "Start a venture", onClick: onPost } },
-    "my-projects": { title: "You haven't created any ventures yet.", body: "Start a project to see it here.", cta: { label: "Start a venture", onClick: onPost } },
-    collabs:      { title: "You're not collaborating on any ventures yet.", body: "Apply to a co-builder role to join a team.", cta: { label: "Discover ventures", onClick: onDiscover } },
+    "my-projects": { title: "No ventures yet.", body: "Start your own or join one as an equity co-builder.", cta: { label: "Start a venture", onClick: onPost } },
   };
   const c = copy[tab];
   return (
