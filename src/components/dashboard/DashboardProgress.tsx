@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, CheckCircle2, Circle, FileText, Briefcase, Rocket, Compass, Target, TrendingUp, Lightbulb } from "lucide-react";
+import { ArrowRight, CheckCircle2, Circle, FileText, Briefcase, Rocket, Compass, Target, TrendingUp, Lightbulb, User, Users, Handshake } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +30,9 @@ export function DashboardProgress() {
   const [proTrackComplete, setProTrackComplete] = useState(false);
   const [hasLearningJourneys, setHasLearningJourneys] = useState(false);
   const [consultingStarted, setConsultingStarted] = useState(false);
+  const [soloDelivered, setSoloDelivered] = useState(0);
+  const [contractorsDelivered, setContractorsDelivered] = useState(0);
+  const [equityDelivered, setEquityDelivered] = useState(0);
   const [ventureStarted, setVentureStarted] = useState(false);
 
 
@@ -62,6 +65,37 @@ export function DashboardProgress() {
 
     setConsultingStarted((consultingCount ?? 0) > 0);
     setVentureStarted(((ideasCount ?? 0) + (applicationsCount ?? 0)) > 0);
+
+    // Categorize closed missions by delivery mode
+    const { data: closedOpps } = await supabase
+      .from("consultant_opportunities")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("stage", "closed");
+    const closedIds = (closedOpps ?? []).map((o: any) => o.id);
+    let solo = 0, contractors = 0, equity = 0;
+    if (closedIds.length > 0) {
+      const { data: dists } = await supabase
+        .from("consultant_opportunity_distributions")
+        .select("opportunity_id, recipient_name, note")
+        .in("opportunity_id", closedIds);
+      const byOpp: Record<string, { name: string; note: string | null }[]> = {};
+      (dists ?? []).forEach((d: any) => {
+        (byOpp[d.opportunity_id] ||= []).push({ name: d.recipient_name || "", note: d.note });
+      });
+      for (const id of closedIds) {
+        const list = byOpp[id] || [];
+        const hasEquity = list.some((r) =>
+          /associé|associe|equity|partner|co[- ]?builder/i.test(`${r.name} ${r.note ?? ""}`)
+        );
+        if (list.length <= 1) solo++;
+        else if (hasEquity) equity++;
+        else contractors++;
+      }
+    }
+    setSoloDelivered(solo);
+    setContractorsDelivered(contractors);
+    setEquityDelivered(equity);
 
     setNaturalRoleComplete(!!naturalRole?.description);
     setNrDecoderComplete(!!nrDecoder);
@@ -245,6 +279,33 @@ export function DashboardProgress() {
             icon: TrendingUp,
             done: false,
             cta: { label: consultingStarted ? "Continue" : "Start", to: "/consulting-growth" },
+          },
+          {
+            key: "consulting-solo" as const,
+            title: `Deliver 3 missions in Solo mode (${Math.min(soloDelivered, 3)}/3)`,
+            description:
+              "Close 3 paid missions where you're the only person splitting the pool — full ownership, no contractors.",
+            icon: User,
+            done: soloDelivered >= 3,
+            cta: { label: soloDelivered > 0 ? "Continue" : "Start", to: "/consulting-growth" },
+          },
+          {
+            key: "consulting-contractors" as const,
+            title: `Deliver 7 missions in Solo + Contractors mode (${Math.min(contractorsDelivered, 7)}/7)`,
+            description:
+              "Close 7 paid missions where the distribution pool is split between you and one or more contractors.",
+            icon: Users,
+            done: contractorsDelivered >= 7,
+            cta: { label: contractorsDelivered > 0 ? "Continue" : "Start", to: "/consulting-growth" },
+          },
+          {
+            key: "consulting-equity" as const,
+            title: `Deliver 5 missions with Equity Partner (Co-Builder) + Contractors (${Math.min(equityDelivered, 5)}/5)`,
+            description:
+              "Close 5 paid missions where the pool is split with an equity partner (Associé 2 / Co-Builder) alongside contractors.",
+            icon: Handshake,
+            done: equityDelivered >= 5,
+            cta: { label: equityDelivered > 0 ? "Continue" : "Start", to: "/consulting-growth" },
           },
           {
             key: "venture" as const,
