@@ -64,6 +64,7 @@ interface Opportunity {
   proposal_sent_at: string | null;
   client_confirmed_at: string | null;
   process_file_url: string | null;
+  process_link: string | null;
   delivered_at: string | null;
   paid_amount: number | null;
   paid_at: string | null;
@@ -504,6 +505,8 @@ function StagePanel({
   const [driverNote, setDriverNote] = useState(opp.driver_note ?? "");
   const [driverLink, setDriverLink] = useState(opp.driver_link ?? "");
   const [driverMode, setDriverMode] = useState<"file" | "link">(opp.driver_link ? "link" : "file");
+  const [processLink, setProcessLink] = useState(opp.process_link ?? "");
+  const [processMode, setProcessMode] = useState<"file" | "link">(opp.process_link ? "link" : "file");
   const [paidAmount, setPaidAmount] = useState(String(opp.paid_amount ?? opp.total_amount ?? ""));
   // Distribution builder state (Mission Setup / Charges / People / Tasks)
   const [budgetLabel, setBudgetLabel] = useState("Budget (EUR)");
@@ -660,8 +663,6 @@ function StagePanel({
                 </>
               )}
 
-              <Label className="text-xs mt-2">Note</Label>
-              <Textarea rows={2} value={driverNote} onChange={e => setDriverNote(e.target.value)} onBlur={() => driverNote !== (opp.driver_note ?? "") && patch({ driver_note: driverNote })} placeholder="Context, contact, link&hellip;" />
               {opp.stage === "identify" && (
                 <Button className="w-full" size="sm" disabled={working || (!opp.driver_file_url && !opp.driver_link)} onClick={() => advance("propose")}>
                   Next: prepare proposal <ArrowRight className="w-3 h-3 ml-1" />
@@ -672,54 +673,45 @@ function StagePanel({
         )}
 
         {show("propose") && (
-        <StageBlock n={2} title="Propose &mdash; technical &amp; financial proposal" description="Upload your proposal. This document is the negotiated contract of intent. Keeping it here creates an auditable reference for scope, pricing, and client agreement." active={opp.stage === "propose"} done={idx > 1}>
+        <StageBlock n={2} title="Propose &mdash; technical &amp; financial proposal" description="Upload the Technical & Financial Proposal validated by the client. This document is the negotiated contract of intent — an auditable reference for scope, pricing, and client agreement." active={opp.stage === "propose"} done={idx > 1}>
             <div className="space-y-2">
-              <Label className="text-xs">Proposal PDF</Label>
+              <Label className="text-xs">Validated Technical &amp; Financial Proposal (PDF)</Label>
               <FileField
                 accept="application/pdf"
                 url={opp.proposal_file_url}
                 onOpen={() => openFile(opp.proposal_file_url)}
                 onPick={async (f) => {
                   const p = await uploadFile(f, "proposal");
-                  if (p) await patch({ proposal_file_url: p });
+                  if (p) await patch({ proposal_file_url: p, proposal_sent_at: opp.proposal_sent_at ?? new Date().toISOString() });
                 }}
               />
-              {opp.proposal_sent_at && <p className="text-xs text-muted-foreground">Sent {format(new Date(opp.proposal_sent_at), "MMM d, yyyy")}</p>}
               {opp.stage === "propose" && (
-                <div className="flex flex-col gap-2">
-                  <Button className="w-full" size="sm" disabled={working || !opp.proposal_file_url} onClick={() => advance("propose", { proposal_sent_at: new Date().toISOString() })}>
-                    Mark proposal sent
-                  </Button>
-                  <Button className="w-full" size="sm" variant="outline" disabled={working || !opp.proposal_sent_at} onClick={() => advance("confirm_prepare")}>
-                    Client accepted <ArrowRight className="w-3 h-3 ml-1" />
-                  </Button>
-                </div>
+                <Button className="w-full" size="sm" disabled={working || !opp.proposal_file_url} onClick={() => advance("confirm_prepare", { client_confirmed_at: new Date().toISOString() })}>
+                  Confirm Client Acceptance <ArrowRight className="w-3 h-3 ml-1" />
+                </Button>
               )}
             </div>
         </StageBlock>
         )}
 
-        {show("confirm_prepare") && (
-        <StageBlock n={3} title="Prepare &mdash; confirm &amp; process + presentation" description="Confirm client acceptance and upload your process and presentation. These materials become your mission's operating manual — a structured baseline that ensures delivery stays aligned with what was promised." active={opp.stage === "confirm_prepare"} done={idx > 2}>
-            <div className="space-y-3">
-              {/* Step A: confirm client acceptance */}
-              {!opp.client_confirmed_at && opp.stage === "confirm_prepare" && (
-                <div className="animate-in fade-in slide-in-from-top-1 duration-300">
-                  <Button className="w-full" size="sm" disabled={working} onClick={() => patch({ client_confirmed_at: new Date().toISOString() })}>
-                    Confirm client acceptance
-                  </Button>
-                </div>
-              )}
-              {opp.client_confirmed_at && (
-                <p className="text-xs text-muted-foreground animate-in fade-in duration-300">
-                  &check; Client accepted {format(new Date(opp.client_confirmed_at), "MMM d, yyyy")}
-                </p>
-              )}
+        {show("confirm_prepare") && (() => {
+          const isConsultancy = opp.opportunity_type === "audit_consultancy";
+          const prepLabel = isConsultancy ? "Mission Plan" : "Presentation";
+          return (
+        <StageBlock n={3} title={`Prepare — ${prepLabel.toLowerCase()}`} description={`Upload the ${prepLabel} (file or link). This becomes your mission's operating manual — a structured baseline that keeps delivery aligned with what was promised.`} active={opp.stage === "confirm_prepare"} done={idx > 2}>
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <Button type="button" size="sm" variant={processMode === "file" ? "default" : "outline"} className="flex-1" onClick={() => setProcessMode("file")}>
+                  <Upload className="w-3.5 h-3.5 mr-1" /> Upload file
+                </Button>
+                <Button type="button" size="sm" variant={processMode === "link" ? "default" : "outline"} className="flex-1" onClick={() => setProcessMode("link")}>
+                  <ExternalLink className="w-3.5 h-3.5 mr-1" /> Paste link
+                </Button>
+              </div>
 
-              {/* Step B: upload PDF &mdash; appears smoothly after acceptance */}
-              {opp.client_confirmed_at && (
-                <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-300">
-                  <Label className="text-xs">Process &amp; presentation PDF</Label>
+              {processMode === "file" ? (
+                <>
+                  <Label className="text-xs">{prepLabel} PDF</Label>
                   <FileField
                     accept="application/pdf,image/*"
                     url={opp.process_file_url}
@@ -729,20 +721,31 @@ function StagePanel({
                       if (p) await patch({ process_file_url: p });
                     }}
                   />
-                </div>
+                </>
+              ) : (
+                <>
+                  <Label className="text-xs">{prepLabel} link (Google Drive, Dropbox, shared doc…)</Label>
+                  <div className="flex gap-2">
+                    <Input value={processLink} onChange={e => setProcessLink(e.target.value)} onBlur={() => processLink !== (opp.process_link ?? "") && patch({ process_link: processLink || null })} placeholder="https://drive.google.com/..." />
+                    {opp.process_link && (
+                      <Button size="sm" variant="ghost" onClick={() => window.open(opp.process_link!, "_blank")}>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                </>
               )}
 
-              {/* Step C: ready to deliver &mdash; only after PDF is uploaded */}
-              {opp.stage === "confirm_prepare" && opp.client_confirmed_at && opp.process_file_url && (
-                <div className="animate-in fade-in slide-in-from-top-1 duration-300">
-                  <Button className="w-full" size="sm" disabled={working} onClick={() => advance("deliver")}>
-                    Ready to deliver <ArrowRight className="w-3 h-3 ml-1" />
-                  </Button>
-                </div>
+              {opp.stage === "confirm_prepare" && (opp.process_file_url || opp.process_link) && (
+                <Button className="w-full" size="sm" disabled={working} onClick={() => advance("deliver", opp.client_confirmed_at ? {} : { client_confirmed_at: new Date().toISOString() })}>
+                  Confirm Client Acceptance <ArrowRight className="w-3 h-3 ml-1" />
+                </Button>
               )}
             </div>
         </StageBlock>
-        )}
+          );
+        })()}
+
 
         {show("deliver") && (
         <StageBlock n={4} title="Deliver &mdash; workshop / training / consulting" description="Confirm mission completion. This timestamp marks the transition from execution to accountability. It locks in the delivery record before revenue recognition and distribution begin." active={opp.stage === "deliver"} done={idx > 3}>
