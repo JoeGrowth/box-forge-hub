@@ -13,11 +13,9 @@ import {
   LogOut,
   User,
   Shield,
-  ChevronDown,
   Briefcase,
   Lightbulb,
   Handshake,
-  Plus,
   GraduationCap,
   FileText,
   Rocket,
@@ -32,7 +30,6 @@ import {
   BarChart3,
   Users,
   LayoutGrid,
-  FolderOpen,
 } from "lucide-react";
 import { useEngineAccess, type EngineKey } from "@/hooks/useEngineAccess";
 import { useTalentReadiness } from "@/hooks/useTalentReadiness";
@@ -58,32 +55,6 @@ const guestNavLinks: Array<{ name: string; path: string; icon: typeof Briefcase 
   { name: "About", path: "/about", icon: FileText },
   { name: "Programs", path: "/programs", icon: BookOpen },
   { name: "Join Us", path: "/join", icon: Rocket },
-];
-
-
-
-const publishLinks: Array<{
-  name: string;
-  path: string;
-  icon: typeof Briefcase;
-  desc: string;
-  orgAdminOnly?: boolean;
-}> = [
-  { name: "Recruiting", path: "/publish-job", icon: Briefcase, desc: "Offer a job", orgAdminOnly: true },
-  { name: "Consulting", path: "/publish-consulting", icon: Handshake, desc: "Create a service" },
-  { name: "Launching", path: "/create-idea", icon: Lightbulb, desc: "Start a venture" },
-  { name: "Training", path: "/publish-training", icon: GraduationCap, desc: "Submit a training" },
-  { name: "Procuring", path: "/procuring", icon: FileText, desc: "Post a tender", orgAdminOnly: true },
-];
-
-const createdByMeLinks: Array<{
-  name: string;
-  path: string;
-  icon: typeof Briefcase;
-}> = [
-  { name: "Consulting", path: "/publish-consulting", icon: Handshake },
-  { name: "Launching", path: "/create-idea", icon: Lightbulb },
-  { name: "Training", path: "/publish-training", icon: GraduationCap },
 ];
 
 // `minStage` gates a link behind the user's progression stage. Items without
@@ -121,16 +92,14 @@ function readCachedAdmin(userId: string | undefined): boolean {
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [publishOpen, setPublishOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
-  const [createdByMeOpen, setCreatedByMeOpen] = useState(false);
 
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
   const { canAccessBoosting, canAccessScaling, potentialRole } = useUserStatus();
 
   const { engines: engineAccess } = useEngineAccess();
-  const { talentReady, isOrgAdmin } = useTalentReadiness();
+  const { talentReady } = useTalentReadiness();
 
   // Hydrate synchronously from localStorage (lazy initializer) so the Admin
   // button is present on first paint when cached — no flash, no layout shift.
@@ -164,12 +133,6 @@ export function Navbar() {
     };
   }, [user]);
 
-
-  // Only show unlocked items in the navbar — locked routes are hidden entirely.
-  const visiblePublishLinks = useMemo(
-    () => publishLinks.filter((l) => !(l.orgAdminOnly && !isOrgAdmin)),
-    [isOrgAdmin],
-  );
   const { progression } = useNextBestActions(user?.id);
   const stageRank = STAGE_RANK[progression?.current_state ?? "novice"] ?? 0;
   const visibleMoreLinks = useMemo(
@@ -231,69 +194,6 @@ export function Navbar() {
                   >
                     Opportunities
                   </Link>
-                )}
-
-                {talentReady && visiblePublishLinks.length > 0 && (
-                  <DropdownMenu open={publishOpen} onOpenChange={setPublishOpen}>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="teal" size="sm" className="gap-1">
-                        <Plus size={14} />
-                        Publish
-                        <ChevronDown
-                          size={14}
-                          className={`transition-transform duration-200 ${publishOpen ? "rotate-180" : ""}`}
-                        />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56 mt-2">
-                      {visiblePublishLinks.map((link) => {
-                        const Icon = link.icon;
-                        return (
-                          <DropdownMenuItem key={link.path} asChild>
-                            <Link to={link.path} className="flex items-start gap-3 py-2 cursor-pointer">
-                              <Icon size={18} className="mt-0.5 text-b4-teal shrink-0" />
-                              <div className="flex flex-col flex-1">
-                                <span className="text-sm font-medium text-foreground">{link.name}</span>
-                                <span className="text-xs text-muted-foreground">{link.desc}</span>
-                              </div>
-                            </Link>
-                          </DropdownMenuItem>
-                        );
-                      })}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-
-                {talentReady && (
-                  <DropdownMenu open={createdByMeOpen} onOpenChange={setCreatedByMeOpen}>
-                    <DropdownMenuTrigger asChild>
-                      <button
-                        className="flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-b4-teal outline-none"
-                        aria-label="Created by me"
-                      >
-                        <FolderOpen size={18} />
-                        <span className="hidden lg:inline">Created by me</span>
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56 mt-2">
-                      {createdByMeLinks.map((link) => {
-                        const Icon = link.icon;
-                        return (
-                          <DropdownMenuItem key={link.path} asChild>
-                            <Link
-                              to={link.path}
-                              className={`flex items-center gap-2 cursor-pointer ${
-                                location.pathname === link.path ? "text-b4-teal" : "text-foreground"
-                              }`}
-                            >
-                              <Icon size={16} />
-                              {link.name}
-                            </Link>
-                          </DropdownMenuItem>
-                        );
-                      })}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
                 )}
 
                 <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
@@ -441,50 +341,6 @@ export function Navbar() {
                     >
                       <span className="flex-1">Opportunities</span>
                     </Link>
-                  )}
-
-                  {talentReady && visiblePublishLinks.length > 0 && (
-                    <>
-                      <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Publish
-                      </div>
-                      {visiblePublishLinks.map((link) => {
-                        const Icon = link.icon;
-                        return (
-                          <Link
-                            key={link.path}
-                            to={link.path}
-                            onClick={() => setIsOpen(false)}
-                            className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors flex items-center gap-2"
-                          >
-                            <Icon size={16} />
-                            <span className="flex-1">{link.name}</span>
-                          </Link>
-                        );
-                      })}
-                    </>
-                  )}
-
-                  {talentReady && (
-                    <>
-                      <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Created by me
-                      </div>
-                      {createdByMeLinks.map((link) => {
-                        const Icon = link.icon;
-                        return (
-                          <Link
-                            key={link.path}
-                            to={link.path}
-                            onClick={() => setIsOpen(false)}
-                            className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors flex items-center gap-2"
-                          >
-                            <Icon size={16} />
-                            <span className="flex-1">{link.name}</span>
-                          </Link>
-                        );
-                      })}
-                    </>
                   )}
 
                   {visibleMoreLinks.length > 0 && (

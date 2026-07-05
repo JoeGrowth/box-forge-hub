@@ -5,7 +5,7 @@
 // The 4-question card (OpportunityCardV2) is mounted in every tab.
 
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Loader2, ArrowRight, Sparkles, Briefcase, Inbox, FilePlus2, Users } from "lucide-react";
+import { Search, Loader2, ArrowRight, Sparkles, Briefcase, Inbox, FilePlus2, Users, Handshake, Lightbulb, GraduationCap, ChevronRight } from "lucide-react";
 import { OpportunityCardV2 } from "@/components/opportunities/OpportunityCardV2";
 import { NextGoalBanner } from "@/components/progression/NextGoalBanner";
 import type { Opportunity } from "@/components/opportunities/OpportunityCard";
@@ -363,6 +363,55 @@ const Opportunities = () => {
                     onChange={(e) => setParam("q", e.target.value)}
                     className="pl-10"
                   />
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Created by me CTAs */}
+          {tab === "created" && !loading && (
+            <section className="pb-4">
+              <div className="container mx-auto px-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <Link
+                    to="/publish-consulting"
+                    className="group flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:border-b4-teal/50 transition-colors"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-b4-teal/10 flex items-center justify-center shrink-0">
+                      <Handshake className="w-5 h-5 text-b4-teal" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">Consulting</p>
+                      <p className="text-xs text-muted-foreground">Create a service</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-b4-teal transition-colors" />
+                  </Link>
+                  <Link
+                    to="/create-idea"
+                    className="group flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:border-b4-teal/50 transition-colors"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-b4-teal/10 flex items-center justify-center shrink-0">
+                      <Lightbulb className="w-5 h-5 text-b4-teal" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">Launching</p>
+                      <p className="text-xs text-muted-foreground">Start a venture</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-b4-teal transition-colors" />
+                  </Link>
+                  <Link
+                    to="/publish-training"
+                    className="group flex items-center gap-3 p-4 rounded-xl border border-border bg-card hover:border-b4-teal/50 transition-colors"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-b4-teal/10 flex items-center justify-center shrink-0">
+                      <GraduationCap className="w-5 h-5 text-b4-teal" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">Training</p>
+                      <p className="text-xs text-muted-foreground">Submit a training</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-b4-teal transition-colors" />
+                  </Link>
                 </div>
               </div>
             </section>
