@@ -964,7 +964,6 @@ export type Database = {
           is_completed: boolean
           number_of_days: number | null
           offer_date: string | null
-          opportunity_type: string | null
           paid_amount: number | null
           paid_at: string | null
           process_file_url: string | null
@@ -995,7 +994,6 @@ export type Database = {
           is_completed?: boolean
           number_of_days?: number | null
           offer_date?: string | null
-          opportunity_type?: string | null
           paid_amount?: number | null
           paid_at?: string | null
           process_file_url?: string | null
@@ -1026,7 +1024,6 @@ export type Database = {
           is_completed?: boolean
           number_of_days?: number | null
           offer_date?: string | null
-          opportunity_type?: string | null
           paid_amount?: number | null
           paid_at?: string | null
           process_file_url?: string | null
