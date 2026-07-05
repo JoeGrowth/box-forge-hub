@@ -90,7 +90,7 @@ const SOURCES = [
   { value: "linkedin", label: "LinkedIn" },
   { value: "word_of_mouth", label: "Word of mouth / Referral" },
   { value: "tender_direct_partner", label: "Tender / Direct / Partner" },
-  { value: "custom", label: "Other (specify)…" },
+  { value: "custom", label: "Other" },
 ];
 
 const STAGES: { value: Stage; label: string; short: string; icon: typeof Briefcase }[] = [
