@@ -15,32 +15,53 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Synchronously hydrate session from localStorage so the first render already
+// knows whether the user is signed in — eliminates the "guest → skeleton →
+// dashboard" flash on every page load.
+const readCachedSession = (): Session | null => {
+  try {
+    const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+    if (!url || typeof window === "undefined") return null;
+    const ref = url.match(/https?:\/\/([^.]+)\./)?.[1];
+    if (!ref) return null;
+    const raw = window.localStorage.getItem(`sb-${ref}-auth-token`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    const session: Session | null = parsed?.currentSession ?? parsed ?? null;
+    if (!session?.access_token) return null;
+    if (session.expires_at && session.expires_at * 1000 < Date.now()) return null;
+    return session;
+  } catch {
+    return null;
+  }
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const cached = typeof window !== "undefined" ? readCachedSession() : null;
+  const [user, setUser] = useState<User | null>(cached?.user ?? null);
+  const [session, setSession] = useState<Session | null>(cached);
+  // If we have a cached session (or definitively no token), we can render
+  // immediately without a loading flash. Only stay in loading state if we
+  // truly don't know yet (shouldn't happen with the sync read above).
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
 
-    // Get initial session FIRST
-    const initializeAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (isMounted) {
-          setSession(session);
-          setUser(session?.user ?? null);
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error("Error getting session:", error);
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    initializeAuth();
+    // Reconcile with the real session in the background.
+    supabase.auth.getSession().then(({ data: { session: fresh } }) => {
+      if (!isMounted) return;
+      setSession(fresh);
+      setUser((prev) => {
+        const next = fresh?.user ?? null;
+        if (prev?.id === next?.id) return prev;
+        return next;
+      });
+      setLoading(false);
+    }).catch((error) => {
+      console.error("Error getting session:", error);
+      if (isMounted) setLoading(false);
+    });
 
     // Set up auth state listener for subsequent changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
