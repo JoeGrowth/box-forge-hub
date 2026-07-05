@@ -264,6 +264,38 @@ export function Navbar() {
                   </DropdownMenu>
                 )}
 
+                {talentReady && (
+                  <DropdownMenu open={createdByMeOpen} onOpenChange={setCreatedByMeOpen}>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className="flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-b4-teal outline-none"
+                        aria-label="Created by me"
+                      >
+                        <FolderOpen size={18} />
+                        <span className="hidden lg:inline">Created by me</span>
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56 mt-2">
+                      {createdByMeLinks.map((link) => {
+                        const Icon = link.icon;
+                        return (
+                          <DropdownMenuItem key={link.path} asChild>
+                            <Link
+                              to={link.path}
+                              className={`flex items-center gap-2 cursor-pointer ${
+                                location.pathname === link.path ? "text-b4-teal" : "text-foreground"
+                              }`}
+                            >
+                              <Icon size={16} />
+                              {link.name}
+                            </Link>
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+
                 <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
                   <DropdownMenuTrigger asChild>
                     <button
