@@ -21,7 +21,7 @@ import { Footer } from "@/components/layout/Footer";
 import { NextGoalBanner } from "@/components/progression/NextGoalBanner";
 
 type DistCharge = { id: string; label: string; amount: number };
-type DistTask = { id: string; label: string; percent: number; locked?: boolean };
+type DistTask = { id: string; label: string; percent: number; locked?: boolean; personShares?: number[] };
 const distUid = () => Math.random().toString(36).slice(2, 9);
 const distFmt = (n: number) =>
   new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
