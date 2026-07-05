@@ -48,6 +48,8 @@ export function DashboardProgress() {
       { count: consultingCount },
       { count: ideasCount },
       { count: applicationsCount },
+      { count: servicesCount },
+      { count: tenderApplyCount },
     ] = await Promise.all([
       supabase.from("learning_journeys").select("*").eq("user_id", user.id),
       supabase.from("natural_roles").select("*").eq("user_id", user.id).maybeSingle(),
@@ -61,10 +63,17 @@ export function DashboardProgress() {
       supabase.from("consultant_opportunities").select("id", { count: "exact", head: true }).eq("user_id", user.id),
       supabase.from("startup_ideas").select("id", { count: "exact", head: true }).eq("creator_id", user.id),
       supabase.from("startup_applications").select("id", { count: "exact", head: true }).eq("applicant_id", user.id),
+      supabase.from("consulting_services").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+      supabase.from("opportunity_applications").select("id", { count: "exact", head: true }).eq("applicant_user_id", user.id),
     ]);
 
     setConsultingStarted((consultingCount ?? 0) > 0);
     setVentureStarted(((ideasCount ?? 0) + (applicationsCount ?? 0)) > 0);
+    setServiceTrialDone((servicesCount ?? 0) >= 1);
+    setTenderAppliedDone((tenderApplyCount ?? 0) >= 1);
+    try {
+      setAdvisorPublishedDone(localStorage.getItem(`b4:advisor-published:${user.id}`) === "1");
+    } catch { setAdvisorPublishedDone(false); }
 
     setNaturalRoleComplete(!!naturalRole?.description);
     setNrDecoderComplete(!!nrDecoder);
