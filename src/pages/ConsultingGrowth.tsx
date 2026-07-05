@@ -195,6 +195,7 @@ export default function ConsultingGrowth() {
     });
     setDistByOpp(grouped);
     setLoading(false);
+    window.dispatchEvent(new Event("ladder:refresh"));
   };
 
   useEffect(() => { load(); }, [user?.id]);
