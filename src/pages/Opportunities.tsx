@@ -253,7 +253,7 @@ const Opportunities = () => {
     } else if (tab === "created") {
       base = base.filter((o) => createdIds.has(o.id));
     }
-    if (kindFilter !== "all" && (tab === "discover" || tab === "recommended")) {
+    if (kindFilter !== "all" && (tab === "discover" || tab === "recommended" || tab === "created")) {
       base = base.filter((o) => o.category === kindFilter);
     }
     if (searchQuery) {
@@ -329,8 +329,8 @@ const Opportunities = () => {
             </div>
           </section>
 
-          {/* Kind chips + search (Discover / Recommended only) */}
-          {(tab === "discover" || tab === "recommended") && (
+          {/* Kind chips + search (Discover / Recommended / Created) */}
+          {(tab === "discover" || tab === "recommended" || tab === "created") && (
             <section className="pb-3">
               <div className="container mx-auto px-4 space-y-3">
                 <div className="flex items-center gap-2 overflow-x-auto pb-1">
