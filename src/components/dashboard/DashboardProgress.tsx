@@ -281,6 +281,33 @@ export function DashboardProgress() {
             cta: { label: consultingStarted ? "Continue" : "Start", to: "/consulting-growth" },
           },
           {
+            key: "consulting-solo" as const,
+            title: `Deliver 3 missions in Solo mode (${Math.min(soloDelivered, 3)}/3)`,
+            description:
+              "Close 3 paid missions where you're the only person splitting the pool — full ownership, no contractors.",
+            icon: User,
+            done: soloDelivered >= 3,
+            cta: { label: soloDelivered > 0 ? "Continue" : "Start", to: "/consulting-growth" },
+          },
+          {
+            key: "consulting-contractors" as const,
+            title: `Deliver 7 missions in Solo + Contractors mode (${Math.min(contractorsDelivered, 7)}/7)`,
+            description:
+              "Close 7 paid missions where the distribution pool is split between you and one or more contractors.",
+            icon: Users,
+            done: contractorsDelivered >= 7,
+            cta: { label: contractorsDelivered > 0 ? "Continue" : "Start", to: "/consulting-growth" },
+          },
+          {
+            key: "consulting-equity" as const,
+            title: `Deliver 5 missions with Equity Partner (Co-Builder) + Contractors (${Math.min(equityDelivered, 5)}/5)`,
+            description:
+              "Close 5 paid missions where the pool is split with an equity partner (Associé 2 / Co-Builder) alongside contractors.",
+            icon: Handshake,
+            done: equityDelivered >= 5,
+            cta: { label: equityDelivered > 0 ? "Continue" : "Start", to: "/consulting-growth" },
+          },
+          {
             key: "venture" as const,
             title: "Launch or join a venture",
             description:
