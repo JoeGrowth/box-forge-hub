@@ -619,7 +619,7 @@ function StagePanel({
 
       <div className="space-y-4">
         {show("identify") && (
-        <StageBlock n={1} title="Catched &mdash; upload the driver" active={opp.stage === "identify"} done={idx > 0}>
+        <StageBlock n={1} title="Catched &mdash; upload the driver" description="Upload the driver (screenshot or PDF). This is your mission's origin story — the raw signal that sparked the opportunity. It acts as a permanent prompt for any AI or team member who needs context on how this mission started." active={opp.stage === "identify"} done={idx > 0}>
             <div className="space-y-2">
               <Label className="text-xs">Driver PDF or screenshot (LinkedIn post, tender, email&hellip;)</Label>
               <FileField
