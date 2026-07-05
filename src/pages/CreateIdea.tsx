@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { NextGoalBanner } from "@/components/progression/NextGoalBanner";
 import { 
   Lightbulb, 
   ArrowRight,
@@ -240,6 +241,7 @@ const CreateIdea = () => {
         {/* Form */}
         <section className="py-12">
           <div className="container mx-auto px-4 max-w-2xl">
+            <NextGoalBanner pageStage="founder" className="mb-4" />
             <Button
               variant="ghost"
               size="sm"

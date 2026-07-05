@@ -16,6 +16,7 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
 import { Search, Loader2, ArrowRight, Sparkles, Briefcase, Inbox, FilePlus2, Users } from "lucide-react";
 import { OpportunityCardV2 } from "@/components/opportunities/OpportunityCardV2";
+import { NextGoalBanner } from "@/components/progression/NextGoalBanner";
 import type { Opportunity } from "@/components/opportunities/OpportunityCard";
 import { SEEDED_OPPORTUNITIES } from "@/data/seededOpportunities";
 import { useExpertise } from "@/hooks/useExpertise";
@@ -296,6 +297,7 @@ const Opportunities = () => {
         <main className="pt-20">
           <section className="py-8">
             <div className="container mx-auto px-4">
+              <NextGoalBanner pageStage="cobuilder" className="mb-4" />
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
                   <h1 className="font-display text-3xl font-bold text-foreground mb-2">Opportunities</h1>
