@@ -79,6 +79,22 @@ const Opportunities = () => {
     }
   }, [searchParams, setSearchParams]);
 
+  const hideJobsAndTenders = talentFoundationSet && talentMonetized;
+
+  useEffect(() => {
+    if (hideJobsAndTenders && (kindFilter === "job" || kindFilter === "tender")) {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete("kind");
+        return next;
+      }, { replace: true });
+    }
+  }, [hideJobsAndTenders, kindFilter, setSearchParams]);
+
+  const visibleKinds = hideJobsAndTenders
+    ? KINDS.filter((k) => k.key !== "job" && k.key !== "tender")
+    : KINDS;
+
   const setParam = (key: string, value: string | null) => {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
