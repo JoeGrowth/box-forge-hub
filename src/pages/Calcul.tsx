@@ -102,31 +102,49 @@ const Calcul = () => {
             </div>
             <Progress value={reputation?.reputation_score ?? 0} className="h-2" />
 
-            <div className="rounded-lg bg-muted/40 p-4 font-mono text-xs sm:text-sm overflow-x-auto">
-              reputation = expertise × {weights.expertise} + trust × {weights.trust} + revenue × {weights.revenue} + community × {weights.community}
-              <br />
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= {eScore.toFixed(1)} × {weights.expertise} + {tScore.toFixed(1)} × {weights.trust} + {rScore.toFixed(1)} × {weights.revenue} + {cScore.toFixed(1)} × {weights.community}
-              <br />
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span className="text-primary font-semibold">{(reputation?.reputation_score ?? 0).toFixed(1)}</span>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {[
-                { label: "Expertise", value: eScore, weight: weights.expertise, icon: Brain },
-                { label: "Trust", value: tScore, weight: weights.trust, icon: ShieldCheck },
-                { label: "Revenue", value: rScore, weight: weights.revenue, icon: Coins },
-                { label: "Community", value: cScore, weight: weights.community, icon: Users },
-              ].map(({ label, value, weight, icon: Icon }) => (
-                <div key={label} className="rounded-lg border border-border p-3">
-                  <div className="flex items-center gap-2 text-muted-foreground text-xs">
-                    <Icon className="w-3.5 h-3.5" />
-                    {label}
+            {(() => {
+              const parts = [
+                { key: "expertise", label: "Expertise", raw: eScore, icon: Brain, b: (breakdown as any).expertise },
+                { key: "trust",     label: "Trust",     raw: tScore, icon: ShieldCheck, b: (breakdown as any).trust },
+                { key: "impact",    label: "Revenue / Impact", raw: rScore, icon: Coins, b: (breakdown as any).impact },
+                { key: "community", label: "Community", raw: cScore, icon: Users, b: (breakdown as any).community },
+              ];
+              const totalPoints = parts.reduce((s, p) => s + Number(p.b?.points ?? 0), 0);
+              return (
+                <>
+                  <div className="rounded-lg bg-muted/40 p-4 font-mono text-xs sm:text-sm overflow-x-auto space-y-1">
+                    <div className="text-muted-foreground">
+                      reputation = expertise_pts + trust_pts + impact_pts + community_pts
+                    </div>
+                    {parts.map((p) => (
+                      <div key={p.key}>
+                        {p.label.toLowerCase().split(" ")[0]}_pts&nbsp;= <span className="text-foreground">{Number(p.b?.points ?? 0).toFixed(2)}</span>
+                        <span className="text-muted-foreground"> &nbsp;(weight {(weights as any)[p.key] ?? "—"}%, raw score {p.raw.toFixed(1)}/100)</span>
+                      </div>
+                    ))}
+                    <div className="pt-1">
+                      total = {parts.map((p) => Number(p.b?.points ?? 0).toFixed(2)).join(" + ")} = <span className="text-primary font-semibold">{totalPoints.toFixed(2)}</span>
+                    </div>
                   </div>
-                  <p className="text-xl font-bold text-foreground mt-1">{value.toFixed(0)}</p>
-                  <p className="text-xs text-muted-foreground">weight × {weight}</p>
-                </div>
-              ))}
-            </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {parts.map(({ key, label, raw, b, icon: Icon }) => (
+                      <div key={key} className="rounded-lg border border-border p-3">
+                        <div className="flex items-center gap-2 text-muted-foreground text-xs">
+                          <Icon className="w-3.5 h-3.5" />
+                          {label}
+                        </div>
+                        <p className="text-xl font-bold text-foreground mt-1">
+                          +{Number(b?.points ?? 0).toFixed(1)} <span className="text-xs font-normal text-muted-foreground">pts</span>
+                        </p>
+                        <p className="text-xs text-muted-foreground">raw {raw.toFixed(0)}/100 · weight {(weights as any)[key] ?? "—"}%</p>
+                        {b?.reason && <p className="text-[11px] text-muted-foreground mt-1 leading-tight">{b.reason}</p>}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              );
+            })()}
           </CardContent>
         </Card>
 
