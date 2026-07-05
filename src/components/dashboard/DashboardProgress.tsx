@@ -272,15 +272,6 @@ export function DashboardProgress() {
       : foundationSteps),
     ...(coreReady
       ? [
-          {
-            key: "consulting-growth" as const,
-            title: "Launch your Consulting Growth",
-            description:
-              "Track opportunities from LinkedIn or tenders through proposal, delivery and payment distribution.",
-            icon: TrendingUp,
-            done: false,
-            cta: { label: consultingStarted ? "Continue" : "Start", to: "/consulting-growth" },
-          },
           ...(talentMonetized
             ? [
                 {
@@ -296,9 +287,9 @@ export function DashboardProgress() {
             : [
                 {
                   key: "consulting-solo" as const,
-                  title: `Deliver 3 missions in Solo mode (${Math.min(soloDelivered, 3)}/3)`,
+                  title: `Launch your Consulting Growth (${Math.min(soloDelivered, 3)}/3)`,
                   description:
-                    "Close 3 paid missions where you're the only person splitting the pool — full ownership, no contractors.",
+                    "Track opportunities from LinkedIn or tenders through proposal, delivery and payment distribution with no contractors.",
                   icon: User,
                   done: soloDelivered >= 3,
                   cta: { label: soloDelivered > 0 ? "Continue" : "Start", to: "/consulting-growth" },
