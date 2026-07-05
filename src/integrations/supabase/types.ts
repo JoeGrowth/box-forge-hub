@@ -962,6 +962,8 @@ export type Database = {
           driver_link: string | null
           driver_note: string | null
           id: string
+          invoice_file_url: string | null
+          invoice_link: string | null
           is_completed: boolean
           number_of_days: number | null
           offer_date: string | null
@@ -972,6 +974,9 @@ export type Database = {
           process_link: string | null
           proposal_file_url: string | null
           proposal_sent_at: string | null
+          report_file_url: string | null
+          report_invoice_sent_at: string | null
+          report_link: string | null
           source: string
           source_other: string | null
           stage: Database["public"]["Enums"]["consulting_stage"]
@@ -995,6 +1000,8 @@ export type Database = {
           driver_link?: string | null
           driver_note?: string | null
           id?: string
+          invoice_file_url?: string | null
+          invoice_link?: string | null
           is_completed?: boolean
           number_of_days?: number | null
           offer_date?: string | null
@@ -1005,6 +1012,9 @@ export type Database = {
           process_link?: string | null
           proposal_file_url?: string | null
           proposal_sent_at?: string | null
+          report_file_url?: string | null
+          report_invoice_sent_at?: string | null
+          report_link?: string | null
           source: string
           source_other?: string | null
           stage?: Database["public"]["Enums"]["consulting_stage"]
@@ -1028,6 +1038,8 @@ export type Database = {
           driver_link?: string | null
           driver_note?: string | null
           id?: string
+          invoice_file_url?: string | null
+          invoice_link?: string | null
           is_completed?: boolean
           number_of_days?: number | null
           offer_date?: string | null
@@ -1038,6 +1050,9 @@ export type Database = {
           process_link?: string | null
           proposal_file_url?: string | null
           proposal_sent_at?: string | null
+          report_file_url?: string | null
+          report_invoice_sent_at?: string | null
+          report_link?: string | null
           source?: string
           source_other?: string | null
           stage?: Database["public"]["Enums"]["consulting_stage"]
