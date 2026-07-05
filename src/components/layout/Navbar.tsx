@@ -123,6 +123,7 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
+  const [createdByMeOpen, setCreatedByMeOpen] = useState(false);
 
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
