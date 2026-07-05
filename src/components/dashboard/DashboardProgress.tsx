@@ -288,7 +288,7 @@ export function DashboardProgress() {
                   key: "talent-monetized" as const,
                   title: "Talent Monetized",
                   description:
-                    "Solo, contractor and equity-partner missions delivered — your consulting engine is monetized.",
+                    "Solo and contractor missions delivered — your consulting engine is monetized.",
                   icon: CheckCircle2,
                   done: true,
                   cta: { label: "Review", to: "/consulting-growth" },
