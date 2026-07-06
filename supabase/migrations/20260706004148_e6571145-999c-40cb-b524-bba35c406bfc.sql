@@ -1,0 +1,1 @@
+ALTER TABLE public.distribution_records ADD COLUMN IF NOT EXISTS currency TEXT DEFAULT 'TND';

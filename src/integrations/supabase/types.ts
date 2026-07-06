@@ -1523,6 +1523,7 @@ export type Database = {
           budget_label: string
           charges: Json
           created_at: string
+          currency: string | null
           id: string
           kind: string
           people: Json
@@ -1536,6 +1537,7 @@ export type Database = {
           budget_label?: string
           charges?: Json
           created_at?: string
+          currency?: string | null
           id?: string
           kind: string
           people?: Json
@@ -1549,6 +1551,7 @@ export type Database = {
           budget_label?: string
           charges?: Json
           created_at?: string
+          currency?: string | null
           id?: string
           kind?: string
           people?: Json
