@@ -5,7 +5,7 @@ import { ScrollToTopButton } from "@/components/layout/ScrollToTopButton";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Rocket, Eye, Users, Layers, Film, Shield, TrendingUp, Trash2, CheckCircle, Loader2, Lightbulb } from "lucide-react";
+import { Rocket, Eye, Users, Layers, Film, Shield, TrendingUp, Trash2, CheckCircle, Loader2, Lightbulb, Plus } from "lucide-react";
 import { NextGoalBanner } from "@/components/progression/NextGoalBanner";
 import { CreateIdeaDialog } from "@/components/idea/CreateIdeaDialog";
 import { ApplyToJoinDialog } from "@/components/idea/ApplyToJoinDialog";
@@ -531,6 +531,9 @@ const Entrepreneurship = () => {
                           <p className="text-sm text-muted-foreground mt-1">
                             Add your first project to start the flow.
                           </p>
+                          <Button className="mt-4" onClick={() => setShowCreateDialog(true)}>
+                            <Plus className="w-4 h-4 mr-1" /> Add First Project
+                          </Button>
                         </div>
                       ) : (
                         <div className="space-y-4">
