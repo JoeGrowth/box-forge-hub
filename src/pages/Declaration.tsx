@@ -738,11 +738,11 @@ export default function Declaration() {
         </Card>
 
 
-        {/* Shared settings — réutilisée sur toutes les missions */}
+        {/* Shared settings — reused for all missions linked to the organization */}
         <Card className="mb-8">
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <Settings className="h-4 w-4" /> (réutilisée sur toutes les missions)
+              <Settings className="h-4 w-4" /> (reused for all missions linked to the organization)
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
