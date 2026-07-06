@@ -10,6 +10,7 @@ import { useNextBestActions } from "@/hooks/useNextBestActions";
 import { STAGE_RANK, type Stage } from "@/components/layout/GatedRoute";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardHero } from "@/components/dashboard/DashboardHero";
+import { AIProfileDraftCard } from "@/components/dashboard/AIProfileDraftCard";
 import { NextGoalBanner } from "@/components/progression/NextGoalBanner";
 import { DashboardProgress } from "@/components/dashboard/DashboardProgress";
 import { DashboardNextSteps } from "@/components/dashboard/DashboardNextSteps";
@@ -19,6 +20,8 @@ import { ProgressionPathCard } from "@/components/profile/ProgressionPathCard";
 import { CommitmentsPanel } from "@/components/commitments/CommitmentsPanel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+
 
 
 const GATE_MESSAGES: Record<string, { title: string; description: string }> = {
