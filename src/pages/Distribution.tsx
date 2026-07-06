@@ -158,32 +158,24 @@ function DistributionBuilder({
     fetchSaved();
   };
 
-  const duplicateSaved = async (rec: any) => {
-    if (!user) return;
+  const duplicateSaved = (rec: any) => {
     let n = 1;
     let newTitle = `${rec.title} (${n})`;
     while (saved.some((r) => r.title.trim().toLowerCase() === newTitle.trim().toLowerCase())) {
       n++;
       newTitle = `${rec.title} (${n})`;
     }
-    const payload = {
-      user_id: user.id,
-      kind,
-      title: newTitle,
-      budget_label: rec.budget_label || defaultBudgetLabel,
-      budget: Number(rec.budget) || 0,
-      currency: rec.currency || "TND",
-      charges: Array.isArray(rec.charges) ? rec.charges.map((c: any) => ({ ...c, id: uid() })) : [],
-      tasks: Array.isArray(rec.tasks) ? rec.tasks.map((t: any) => ({ ...t, id: uid() })) : [],
-      people: Array.isArray(rec.people) && rec.people.length > 0 ? rec.people : ["Person (1)"],
-    };
-    const { error } = await (supabase.from("distribution_records" as any) as any).insert(payload);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    toast.success(`Duplicated as "${newTitle}".`);
-    await fetchSaved();
+    setTitle(newTitle);
+    setBudget(Number(rec.budget) || 0);
+    setBudgetLabel(rec.budget_label || defaultBudgetLabel);
+    setCurrency(rec.currency || "TND");
+    setCharges(Array.isArray(rec.charges) ? rec.charges.map((c: any) => ({ ...c, id: uid() })) : []);
+    setTasks(Array.isArray(rec.tasks) ? rec.tasks.map((t: any) => ({ ...t, id: uid() })) : []);
+    setPeople(Array.isArray(rec.people) && rec.people.length > 0 ? rec.people : ["Person (1)"]);
+    setEditingId(null);
+    setResetKey((k) => k + 1);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    toast.info(`Loaded duplicate as "${newTitle}" — edit and save.`);
   };
 
   const titleTaken = useMemo(
@@ -425,7 +417,7 @@ function DistributionBuilder({
                 <TableCell />
               </TableRow>
               <TableRow className="font-semibold">
-                <TableCell>Infra &amp; Structure (Budget − Charges)</TableCell>
+                <TableCell>Total Reste structure</TableCell>
                 <TableCell className="text-right">{fmt(internalPool)}</TableCell>
                 <TableCell />
               </TableRow>
