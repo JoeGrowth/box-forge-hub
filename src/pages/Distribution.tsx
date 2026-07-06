@@ -477,7 +477,18 @@ function DistributionBuilder({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {tasks.map((t, idx) => (
+              {tasks.map((t, idx) => {
+                const isLastNonLocked = !t.locked && tasks.slice(idx + 1).every((x) => x.locked);
+                const addTask = () =>
+                  setTasks((p) => {
+                    const lockedIdx = p.findIndex((x) => x.locked);
+                    const newTask: Task = { id: uid(), label: "New task", percent: 0 };
+                    if (lockedIdx === -1) return [...p, newTask];
+                    const copy = [...p];
+                    copy.splice(lockedIdx, 0, newTask);
+                    return copy;
+                  });
+                return (
                 <TableRow key={t.id} className={t.locked ? "bg-muted/30" : ""}>
                   <TableCell>
                     {t.locked ? (
@@ -490,6 +501,7 @@ function DistributionBuilder({
                       <Input
                         value={t.label}
                         onChange={(e) => updateTask(t.id, { label: e.target.value })}
+                        onKeyDown={(e) => e.key === "Enter" && isLastNonLocked && addTask()}
                       />
                     )}
                   </TableCell>
@@ -499,6 +511,7 @@ function DistributionBuilder({
                       className="text-right"
                       value={t.percent}
                       onChange={(e) => updateTask(t.id, { percent: parseFloat(e.target.value) || 0 })}
+                      onKeyDown={(e) => e.key === "Enter" && isLastNonLocked && addTask()}
                     />
                   </TableCell>
                   <TableCell className="text-right font-mono">{fmt(taskAmounts[idx])}</TableCell>
