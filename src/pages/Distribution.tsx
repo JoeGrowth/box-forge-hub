@@ -333,6 +333,7 @@ function DistributionBuilder({
                       <TableCell className="font-mono text-muted-foreground">({i + 1})</TableCell>
                       <TableCell className="font-medium">{r.title}</TableCell>
                       <TableCell className="text-right font-mono">{fmt(Number(r.budget))}</TableCell>
+                      <TableCell className="text-right font-mono">{fmt((Number(r.budget) || 0) - (Array.isArray(r.charges) ? r.charges.reduce((s: number, c: any) => s + (Number(c.amount) || 0), 0) : 0))}</TableCell>
                       <TableCell className="text-right">{Array.isArray(r.people) ? r.people.length : 0}</TableCell>
                       <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                         {r.created_at ? formatDistanceToNow(new Date(r.created_at), { addSuffix: true }) : ""}
