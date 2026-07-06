@@ -417,7 +417,7 @@ function DistributionBuilder({
                 <TableCell />
               </TableRow>
               <TableRow className="font-semibold">
-                <TableCell>Infra &amp; Structure (Budget − Charges)</TableCell>
+                <TableCell>Total Reste structure</TableCell>
                 <TableCell className="text-right">{fmt(internalPool)}</TableCell>
                 <TableCell />
               </TableRow>
