@@ -381,11 +381,12 @@ function DistributionBuilder({
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <CardTitle className="text-base">Internal &amp; Structure — task distribution</CardTitle>
           <Button
             size="sm"
             variant="outline"
+            className="self-start sm:self-auto"
             onClick={() =>
               setTasks((p) => {
                 // Insert new task before the locked "rest structure" row if present
@@ -402,6 +403,7 @@ function DistributionBuilder({
           </Button>
         </CardHeader>
         <CardContent>
+          <div className="overflow-x-auto -mx-6 px-6">
           <Table>
             <TableHeader>
               <TableRow>
