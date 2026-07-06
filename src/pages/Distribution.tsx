@@ -363,7 +363,7 @@ function DistributionBuilder({
       </Card>
 
 
-      <Card>
+      <Card ref={missionRef}>
         <CardHeader>
           <CardTitle className="text-base">Mission Setup</CardTitle>
         </CardHeader>
