@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Loader2, Target } from "lucide-react";
+import { Loader2, Target, ChevronDown } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -28,6 +29,7 @@ export function GoalSelectorCard() {
   const [selected, setSelected] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const load = async () => {
     if (!user) return;
@@ -79,54 +81,62 @@ export function GoalSelectorCard() {
   const currentLabel = GOAL_OPTIONS.find((g) => g.value === currentGoal)?.label;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Target className="w-5 h-5 text-b4-teal" /> What do you want next?
-        </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Pick the direction that fits you today. Your dashboard messages and CTAs will adapt instantly.
-        </p>
-        <div className="mt-3 space-y-2">
-          {onboardingIntent && (
-            <div className="rounded-lg border border-b4-teal/30 bg-b4-teal/5 px-3 py-2 text-sm">
-              <span className="text-muted-foreground">Your onboarding answer: </span>
-              <span className="font-semibold text-foreground">{onboardingIntent}</span>
-            </div>
-          )}
-          <div className="rounded-lg bg-muted/60 px-3 py-2 text-sm">
-            <span className="text-muted-foreground">Current direction: </span>
-            <span className="font-semibold text-foreground">
-              {currentLabel ?? "Not set yet — pick one below"}
-            </span>
-          </div>
-        </div>
-      </CardHeader>
-
-
-      <CardContent className="space-y-4">
-        <RadioGroup value={selected} onValueChange={setSelected} className="space-y-2">
-          {GOAL_OPTIONS.map((g) => (
-            <Label
-              key={g.value}
-              htmlFor={`goal-${g.value}`}
-              className="flex items-start gap-3 rounded-lg border border-border p-3 cursor-pointer hover:bg-muted/50"
-            >
-              <RadioGroupItem value={g.value} id={`goal-${g.value}`} className="mt-1" />
-              <div>
-                <div className="font-medium text-foreground">{g.label}</div>
-                <div className="text-xs text-muted-foreground">{g.desc}</div>
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <Card>
+        <CollapsibleTrigger asChild>
+          <CardHeader className="cursor-pointer select-none">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Target className="w-5 h-5 text-b4-teal" /> What do you want next?
+              <ChevronDown
+                className={`w-4 h-4 ml-auto text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`}
+              />
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Pick the direction that fits you today. Your dashboard messages and CTAs will adapt instantly.
+            </p>
+            <div className="mt-3 space-y-2">
+              {onboardingIntent && (
+                <div className="rounded-lg border border-b4-teal/30 bg-b4-teal/5 px-3 py-2 text-sm">
+                  <span className="text-muted-foreground">Your onboarding answer: </span>
+                  <span className="font-semibold text-foreground">{onboardingIntent}</span>
+                </div>
+              )}
+              <div className="rounded-lg bg-muted/60 px-3 py-2 text-sm">
+                <span className="text-muted-foreground">Current direction: </span>
+                <span className="font-semibold text-foreground">
+                  {currentLabel ?? "Not set yet — pick one below"}
+                </span>
               </div>
-            </Label>
-          ))}
-        </RadioGroup>
-        <div className="flex justify-end">
-          <Button onClick={handleSave} disabled={saving || !selected || selected === currentGoal}>
-            {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            Save direction
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+            </div>
+          </CardHeader>
+        </CollapsibleTrigger>
+
+        <CollapsibleContent>
+          <CardContent className="space-y-4">
+            <RadioGroup value={selected} onValueChange={setSelected} className="space-y-2">
+              {GOAL_OPTIONS.map((g) => (
+                <Label
+                  key={g.value}
+                  htmlFor={`goal-${g.value}`}
+                  className="flex items-start gap-3 rounded-lg border border-border p-3 cursor-pointer hover:bg-muted/50"
+                >
+                  <RadioGroupItem value={g.value} id={`goal-${g.value}`} className="mt-1" />
+                  <div>
+                    <div className="font-medium text-foreground">{g.label}</div>
+                    <div className="text-xs text-muted-foreground">{g.desc}</div>
+                  </div>
+                </Label>
+              ))}
+            </RadioGroup>
+            <div className="flex justify-end">
+              <Button onClick={handleSave} disabled={saving || !selected || selected === currentGoal}>
+                {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Save direction
+              </Button>
+            </div>
+          </CardContent>
+        </CollapsibleContent>
+      </Card>
+    </Collapsible>
   );
 }
