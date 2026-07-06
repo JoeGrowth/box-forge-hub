@@ -351,10 +351,18 @@ function DistributionBuilder({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {charges.map((c) => (
+              {charges.map((c, idx) => (
                 <TableRow key={c.id}>
                   <TableCell>
-                    <Input value={c.label} onChange={(e) => updateCharge(c.id, { label: e.target.value })} />
+                    <Input
+                      value={c.label}
+                      onChange={(e) => updateCharge(c.id, { label: e.target.value })}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && idx === charges.length - 1) {
+                          setCharges((p) => [...p, { id: uid(), label: "New charge", amount: 0 }]);
+                        }
+                      }}
+                    />
                   </TableCell>
                   <TableCell>
                     <Input
@@ -362,6 +370,11 @@ function DistributionBuilder({
                       className="text-right"
                       value={c.amount}
                       onChange={(e) => updateCharge(c.id, { amount: parseFloat(e.target.value) || 0 })}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && idx === charges.length - 1) {
+                          setCharges((p) => [...p, { id: uid(), label: "New charge", amount: 0 }]);
+                        }
+                      }}
                     />
                   </TableCell>
                   <TableCell>
