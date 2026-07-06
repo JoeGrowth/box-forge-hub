@@ -548,7 +548,8 @@ function DistributionBuilder({
                     )}
                   </TableCell>
                 </TableRow>
-              ))}
+              );
+            })}
               <TableRow className="font-semibold bg-muted/40">
                 <TableCell>Total</TableCell>
                 <TableCell className="text-right">{totalPercent}%</TableCell>
