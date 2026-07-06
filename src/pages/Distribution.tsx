@@ -372,6 +372,7 @@ function DistributionBuilder({
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              onBlur={handleTitleBlur}
               className={titleTaken ? "border-destructive focus-visible:ring-destructive" : ""}
             />
             {titleTaken && (
