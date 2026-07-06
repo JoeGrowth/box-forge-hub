@@ -461,14 +461,9 @@ const Entrepreneurship = () => {
                 </div>
 
                 <TabsContent value="ecosystem">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-                    <h2 className="font-display text-lg sm:text-xl font-bold text-foreground">
-                      Startup Projects Seeking Co-Builders
-                    </h2>
-                    <Button variant="outline" size="sm" asChild className="self-start sm:self-auto">
-                      <Link to="/opportunities">View All</Link>
-                    </Button>
-                  </div>
+                  <h2 className="font-display text-lg sm:text-xl font-bold text-foreground mb-4">
+                    Startup Projects Seeking Co-Builders
+                  </h2>
                   {loading ? (
                     <div className="space-y-4">
                       {Array.from({ length: 2 }).map((_, i) => (
@@ -520,21 +515,17 @@ const Entrepreneurship = () => {
                     </div>
 
                     <TabsContent value="initiated">
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-                        <h2 className="font-display text-lg sm:text-xl font-bold text-foreground">
-                          Initiated Projects
-                        </h2>
-                        <Button variant="outline" className="rounded-full px-8 py-3 text-base font-semibold border-2 self-start sm:self-auto" onClick={() => setShowCreateDialog(true)}>
-                          Add Project
-                        </Button>
-                      </div>
+                      <h2 className="font-display text-xl font-bold text-foreground mb-4">
+                        Initiated Projects
+                      </h2>
                       {loading ? (
-                        <div className="space-y-4">
-                          <Skeleton className="h-24 w-full rounded-2xl" />
-                        </div>
+                        <Skeleton className="h-24 w-full rounded-2xl" />
                       ) : myProjects.length === 0 ? (
                         <div className="text-center py-12 text-muted-foreground">
                           <p>You haven't created any projects yet.</p>
+                          <Button variant="outline" className="mt-3" onClick={() => setShowCreateDialog(true)}>
+                            Add Project
+                          </Button>
                         </div>
                       ) : (
                         <div className="space-y-4">
