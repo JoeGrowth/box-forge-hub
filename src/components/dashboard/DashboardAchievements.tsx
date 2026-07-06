@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
+import { useTalentReadiness } from "@/hooks/useTalentReadiness";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Achievement {
