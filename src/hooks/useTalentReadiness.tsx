@@ -61,7 +61,7 @@ export function useTalentReadiness(): TalentReadiness {
             .maybeSingle(),
           supabase
             .from("natural_roles")
-            .select("description")
+            .select("description, status, is_ready, promise_check, practice_check, training_check, consulting_check")
             .eq("user_id", uid)
             .maybeSingle(),
           supabase
