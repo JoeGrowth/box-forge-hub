@@ -89,6 +89,7 @@ export function ActivationMatchCard({ data, source, onMeaningfulAction }: Props)
   const [title, setTitle] = useState(data.title);
   const [subtitle, setSubtitle] = useState<string | null>(data.subtitle);
   const [resolving, setResolving] = useState(data.kind === "personalized");
+  const [unresolved, setUnresolved] = useState(false);
   const [submitting, setSubmitting] = useState<string | null>(null);
 
   useEffect(() => {
@@ -100,6 +101,8 @@ export function ActivationMatchCard({ data, source, onMeaningfulAction }: Props)
       if (r) {
         setTitle(r.title);
         setSubtitle(r.subtitle);
+      } else {
+        setUnresolved(true);
       }
       setResolving(false);
     })();
@@ -107,6 +110,8 @@ export function ActivationMatchCard({ data, source, onMeaningfulAction }: Props)
       cancelled = true;
     };
   }, [data]);
+
+  if (unresolved) return null;
 
   const saved = isSaved(data.opportunityId);
 
