@@ -49,7 +49,7 @@ function DistributionBuilder({
   const { user } = useAuth();
   const [resetKey, setResetKey] = useState(0);
   const [title, setTitle] = useState(defaultTitle);
-  const [budget, setBudget] = useState<number>(420);
+  const [budget, setBudget] = useState<number>(0);
   const [currency, setCurrency] = useState<string>("TND");
   const [budgetLabel, setBudgetLabel] = useState(defaultBudgetLabel);
   const [charges, setCharges] = useState<Charge[]>(defaultCharges);
