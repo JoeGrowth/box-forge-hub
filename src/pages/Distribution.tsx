@@ -191,6 +191,7 @@ function DistributionBuilder({
       title: title.trim(),
       budget_label: budgetLabel,
       budget,
+      currency,
       charges,
       tasks,
       people,
