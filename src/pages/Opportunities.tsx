@@ -161,8 +161,17 @@ const Opportunities = () => {
       ]);
 
       const isOnboardingTrulyComplete = onboardingState?.onboarding_completed && (onboardingState?.current_step ?? 0) >= 5;
-      const nrDecoderComplete = !!nrDecoder;
-      const proTrackComplete = !!naturalRole?.description;
+      const nr: any = naturalRole || {};
+      const proTrackComplete = Boolean(
+        (typeof nr.description === "string" && nr.description.trim().length > 0) ||
+        nr.is_ready === true ||
+        nr.status === "defined" ||
+        nr.promise_check === true ||
+        nr.practice_check === true ||
+        nr.training_check === true ||
+        nr.consulting_check === true
+      );
+      const nrDecoderComplete = !!nrDecoder || proTrackComplete;
 
       const p: any = profile || {};
       const filled = (v: any) => v !== null && v !== undefined && String(v).trim().length > 0;

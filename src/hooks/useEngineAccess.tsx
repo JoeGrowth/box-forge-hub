@@ -134,7 +134,7 @@ export function useEngineAccess() {
           .maybeSingle(),
         supabase
           .from("natural_roles")
-          .select("description")
+          .select("description, status, is_ready, promise_check, practice_check, training_check, consulting_check")
           .eq("user_id", uid)
           .maybeSingle(),
         supabase
@@ -166,8 +166,19 @@ export function useEngineAccess() {
 
       const filled = (v: unknown) => v !== null && v !== undefined && String(v).trim().length > 0;
       const intentDone = Boolean(onbRes.data?.onboarding_completed && (onbRes.data?.current_step ?? 0) >= 5);
-      const decoderDone = Boolean(decoderRes.data);
-      const proTrackDone = Boolean(nrRes.data?.description);
+      const nr = nrRes.data as Record<string, unknown> | null;
+      const proTrackDone = Boolean(
+        nr && (
+          filled(nr.description) ||
+          nr.is_ready === true ||
+          nr.status === "defined" ||
+          nr.promise_check === true ||
+          nr.practice_check === true ||
+          nr.training_check === true ||
+          nr.consulting_check === true
+        )
+      );
+      const decoderDone = Boolean(decoderRes.data) || proTrackDone;
       const p = (profileRes.data ?? {}) as Record<string, unknown>;
       const resumeDone = Boolean(
         filled(p.professional_title) &&
