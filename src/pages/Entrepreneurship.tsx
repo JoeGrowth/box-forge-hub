@@ -5,7 +5,8 @@ import { ScrollToTopButton } from "@/components/layout/ScrollToTopButton";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, Rocket, Eye, Users, Layers, Film, Shield, TrendingUp, Trash2, CheckCircle, Loader2, Lightbulb } from "lucide-react";
+import { Rocket, Eye, Users, Layers, Film, Shield, TrendingUp, Trash2, CheckCircle, Loader2, Lightbulb } from "lucide-react";
+import { NextGoalBanner } from "@/components/progression/NextGoalBanner";
 import { CreateIdeaDialog } from "@/components/idea/CreateIdeaDialog";
 import { ApplyToJoinDialog } from "@/components/idea/ApplyToJoinDialog";
 import { IdeaDevelopDialog } from "@/components/idea/IdeaDevelopDialog";
@@ -419,18 +420,14 @@ const Entrepreneurship = () => {
             <div className="container mx-auto px-4">
 
               {/* Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 md:mb-12 bg-muted/40 rounded-2xl p-4 sm:p-6">
-                <div className="min-w-0">
-                  <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-1">
-                    Entrepreneurship Engine
-                  </h1>
-                  <p className="text-sm sm:text-base text-muted-foreground">
-                    Launch ventures or join exciting startup projects
-                  </p>
-                </div>
-                <Button className="gap-2 w-full sm:w-auto shrink-0" onClick={() => setShowCreateDialog(true)}>
-                  <Plus className="w-4 h-4" /> Start Startup Project
-                </Button>
+              <div className="mb-8 md:mb-12">
+                <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-1">
+                  Entrepreneurship
+                </h1>
+                <p className="text-sm sm:text-base text-muted-foreground mb-6">
+                  Launch ventures or join exciting startup projects
+                </p>
+                <NextGoalBanner pageStage="founder" />
               </div>
 
 
@@ -515,17 +512,23 @@ const Entrepreneurship = () => {
                     </div>
 
                     <TabsContent value="initiated">
-                      <h2 className="font-display text-xl font-bold text-foreground mb-4">
-                        Initiated Projects
-                      </h2>
+                      <div className="flex items-start justify-between gap-3 flex-wrap mb-4">
+                        <div className="min-w-0">
+                          <h2 className="font-display text-xl font-bold text-foreground">Your Journey</h2>
+                          <p className="text-sm text-muted-foreground">
+                            Track your ventures and move them forward, one stage at a time.
+                          </p>
+                        </div>
+                      </div>
                       {loading ? (
                         <Skeleton className="h-24 w-full rounded-2xl" />
                       ) : myProjects.length === 0 ? (
-                        <div className="text-center py-12 text-muted-foreground">
-                          <p>You haven't created any projects yet.</p>
-                          <Button variant="outline" className="mt-3" onClick={() => setShowCreateDialog(true)}>
-                            Add Project
-                          </Button>
+                        <div className="rounded-xl border border-dashed border-border p-12 text-center">
+                          <Lightbulb className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
+                          <p className="font-medium text-foreground">Nothing in your journey yet</p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Add your first project to start the flow.
+                          </p>
                         </div>
                       ) : (
                         <div className="space-y-4">
