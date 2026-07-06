@@ -10,6 +10,7 @@ import { useNextBestActions } from "@/hooks/useNextBestActions";
 import { STAGE_RANK, type Stage } from "@/components/layout/GatedRoute";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardHero } from "@/components/dashboard/DashboardHero";
+import { AIProfileDraftCard } from "@/components/dashboard/AIProfileDraftCard";
 import { NextGoalBanner } from "@/components/progression/NextGoalBanner";
 import { DashboardProgress } from "@/components/dashboard/DashboardProgress";
 import { DashboardNextSteps } from "@/components/dashboard/DashboardNextSteps";
@@ -19,6 +20,8 @@ import { ProgressionPathCard } from "@/components/profile/ProgressionPathCard";
 import { CommitmentsPanel } from "@/components/commitments/CommitmentsPanel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+
 
 
 const GATE_MESSAGES: Record<string, { title: string; description: string }> = {
@@ -95,10 +98,10 @@ const Dashboard = () => {
     setSearchParams(next, { replace: true });
   }, [searchParams, setSearchParams]);
 
-  // Progressive dashboard reveal. On first login only the AI draft
-  // (rendered inside DashboardHero) and Achievements show. Accepting the
-  // draft reveals "Shape your talent". Reaching the Capable stage reveals
-  // the full dashboard.
+  // Progressive dashboard reveal. On first login only the AI draft card
+  // and Achievements show side by side. Accepting the draft reveals
+  // "Shape your talent". Reaching the Capable stage reveals the full dashboard.
+
   useEffect(() => {
     if (!user) return;
     let alive = true;
@@ -120,6 +123,8 @@ const Dashboard = () => {
   const stageRank = STAGE_RANK[(progression?.current_state as Stage) ?? "novice"] ?? 0;
   const isCapable = stageRank >= STAGE_RANK.capable;
   const showShapeTalent = draftAccepted === true || isCapable;
+  const isFirstLogin = draftAccepted === false && !isCapable;
+
 
 
 
@@ -138,14 +143,24 @@ const Dashboard = () => {
       <PageTransition>
         <main className="container mx-auto px-3 sm:px-4 py-6 md:py-8 pt-20 md:pt-24 pb-16">
           <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
-            <DashboardHero />
-            {talentReady && !talentLoading && isCapable && <NextGoalBanner />}
+            {!isFirstLogin && (
+              <>
+                <DashboardHero />
+                {talentReady && !talentLoading && isCapable && <NextGoalBanner />}
+              </>
+            )}
             <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
-              <div className="lg:col-span-2 space-y-6 md:space-y-8 min-w-0">
-                {showShapeTalent && <DashboardProgress />}
-                {isCapable && <CommitmentsPanel />}
-                {isCapable && <DashboardOpportunities />}
-                {isCapable && <ProgressionPathCard userId={user?.id} />}
+              <div className={cn("min-w-0 lg:col-span-2", !isFirstLogin && "space-y-6 md:space-y-8")}>
+                {isFirstLogin ? (
+                  <AIProfileDraftCard />
+                ) : (
+                  <>
+                    {showShapeTalent && <DashboardProgress />}
+                    {isCapable && <CommitmentsPanel />}
+                    {isCapable && <DashboardOpportunities />}
+                    {isCapable && <ProgressionPathCard userId={user?.id} />}
+                  </>
+                )}
               </div>
               <div className="space-y-6 md:space-y-8 min-w-0">
                 {isCapable && <DashboardNextSteps />}
@@ -156,6 +171,7 @@ const Dashboard = () => {
           </div>
         </main>
       </PageTransition>
+
       <Footer />
     </div>
   );
