@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Building2, Plus, Shield, Eye, Pencil, ArrowRight, Trash2, Cog, Search, Filter, Rocket, Sparkles, TrendingUp, Trophy } from "lucide-react";
+import { Building2, Plus, Shield, Eye, Pencil, ArrowRight, Trash2, Cog, Search, Filter, Rocket, Sparkles, TrendingUp, Trophy, FileWarning, ShieldCheck } from "lucide-react";
 
 type LifecycleStage = "venture" | "business" | "startup" | "mature";
 const STAGE_META: Record<LifecycleStage, { label: string; icon: typeof Rocket; className: string }> = {
