@@ -659,7 +659,7 @@ export default function Declaration() {
 
         {/* Pool dashboard – per currency */}
         <Card className="mb-8 border-primary/40 bg-gradient-to-br from-primary/5 via-background to-background">
-          <CardHeader className="pb-3 flex-row items-center">
+          <CardHeader className="py-4 px-6 flex-row items-center">
             <button
               type="button"
               onClick={() => setPoolOpen((v) => !v)}
@@ -676,6 +676,7 @@ export default function Declaration() {
               </div>
             </button>
           </CardHeader>
+
 
           {poolOpen && (
             <CardContent className="space-y-6">
