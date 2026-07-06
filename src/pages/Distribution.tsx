@@ -20,7 +20,7 @@ import { formatDistanceToNow } from "date-fns";
 
 
 
-type Task = { id: string; label: string; percent: number; locked?: boolean };
+type Task = { id: string; label: string; percent: number; locked?: boolean; personShares?: number[] };
 type Charge = { id: string; label: string; amount: number };
 type Kind = string;
 
@@ -80,19 +80,40 @@ function DistributionBuilder({
   const totalPercent = useMemo(() => tasks.reduce((s, t) => s + (Number(t.percent) || 0), 0), [tasks]);
 
   const taskAmounts = tasks.map((t) => (internalPool * (Number(t.percent) || 0)) / 100);
-  const splittableTotal = tasks.reduce(
-    (s, t, i) => (t.locked ? s : s + taskAmounts[i]),
-    0,
+
+  // Per-task share per person (defaults to equal split when not customized)
+  const getShares = (t: Task): number[] => {
+    const n = people.length;
+    if (n === 0) return [];
+    const eq = 100 / n;
+    return Array.from({ length: n }, (_, i) => {
+      const v = t.personShares?.[i];
+      return v === undefined || v === null || Number.isNaN(v) ? eq : Number(v);
+    });
+  };
+  const taskShareSum = (t: Task) => getShares(t).reduce((s, v) => s + v, 0);
+  const perPersonPerTask: (number | null)[][] = tasks.map((t, i) => {
+    if (t.locked || people.length === 0) return people.map(() => null);
+    const shares = getShares(t);
+    return shares.map((s) => (taskAmounts[i] * s) / 100);
+  });
+  const perPersonTotal = people.map((_, pi) =>
+    perPersonPerTask.reduce((s, row) => s + (typeof row[pi] === "number" ? (row[pi] as number) : 0), 0),
   );
-  const perPersonEqual = people.length > 0 ? splittableTotal / people.length : 0;
-  const perPersonPerTask = tasks.map((t, i) =>
-    t.locked || people.length === 0 ? null : taskAmounts[i] / people.length,
-  );
+  const taskShareErrors = tasks.map((t) => (t.locked ? null : Math.round(taskShareSum(t) * 100) / 100));
 
   const updateTask = (id: string, patch: Partial<Task>) =>
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
+  const updateTaskShare = (id: string, personIdx: number, value: number) =>
+    setTasks((prev) => prev.map((t) => {
+      if (t.id !== id) return t;
+      const shares = getShares(t);
+      shares[personIdx] = Number.isFinite(value) ? value : 0;
+      return { ...t, personShares: shares };
+    }));
   const updateCharge = (id: string, patch: Partial<Charge>) =>
     setCharges((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+
 
   const resetForm = () => {
     setTitle(defaultTitle);
@@ -444,11 +465,27 @@ function DistributionBuilder({
                     />
                   </TableCell>
                   <TableCell className="text-right font-mono">{fmt(taskAmounts[idx])}</TableCell>
-                  {people.map((_, pi) => (
-                    <TableCell key={pi} className="text-right font-mono">
-                      {perPersonPerTask[idx] === null ? "—" : fmt(perPersonPerTask[idx] as number)}
-                    </TableCell>
-                  ))}
+                  {people.map((_, pi) => {
+                    const cell = perPersonPerTask[idx][pi];
+                    if (cell === null) {
+                      return <TableCell key={pi} className="text-right text-muted-foreground">—</TableCell>;
+                    }
+                    const share = getShares(t)[pi] ?? 0;
+                    return (
+                      <TableCell key={pi} className="text-right align-top">
+                        <div className="flex items-center justify-end gap-1">
+                          <Input
+                            type="number"
+                            className="h-8 w-16 text-right px-1"
+                            value={share}
+                            onChange={(e) => updateTaskShare(t.id, pi, parseFloat(e.target.value) || 0)}
+                          />
+                          <span className="text-xs text-muted-foreground">%</span>
+                        </div>
+                        <div className="text-[11px] text-muted-foreground font-mono mt-0.5">{fmt(cell)}</div>
+                      </TableCell>
+                    );
+                  })}
                   <TableCell>
                     {!t.locked && (
                       <Button
@@ -467,8 +504,8 @@ function DistributionBuilder({
                 <TableCell className="text-right">{totalPercent}%</TableCell>
                 <TableCell className="text-right">{fmt(taskAmounts.reduce((s, a) => s + a, 0))}</TableCell>
                 {people.map((_, i) => (
-                  <TableCell key={i} className="text-right bg-foreground text-background">
-                    {fmt(perPersonEqual)}
+                  <TableCell key={i} className="text-right bg-foreground text-background font-mono">
+                    {fmt(perPersonTotal[i] || 0)}
                   </TableCell>
                 ))}
                 <TableCell />
@@ -479,6 +516,16 @@ function DistributionBuilder({
           {totalPercent !== 100 && (
             <p className="text-xs text-amber-600 mt-3">
               Task percentages sum to {totalPercent}% — adjust to reach 100% for a full distribution.
+            </p>
+          )}
+          {taskShareErrors.some((e) => e !== null && Math.abs(e - 100) > 0.01) && (
+            <p className="text-xs text-amber-600 mt-1">
+              Each task&rsquo;s per-person shares must total 100%. Rows off target:{" "}
+              {tasks
+                .map((t, i) => ({ t, sum: taskShareErrors[i] }))
+                .filter((x) => x.sum !== null && Math.abs((x.sum as number) - 100) > 0.01)
+                .map((x) => `${x.t.label} (${x.sum}%)`)
+                .join(", ")}
             </p>
           )}
         </CardContent>
