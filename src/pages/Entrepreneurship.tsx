@@ -5,7 +5,7 @@ import { ScrollToTopButton } from "@/components/layout/ScrollToTopButton";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, Rocket, Eye, Users, Layers, Film, Shield, TrendingUp, Trash2, CheckCircle, Loader2, ArrowLeft } from "lucide-react";
+import { Plus, Rocket, Eye, Users, Layers, Film, Shield, TrendingUp, Trash2, CheckCircle, Loader2 } from "lucide-react";
 import { CreateIdeaDialog } from "@/components/idea/CreateIdeaDialog";
 import { ApplyToJoinDialog } from "@/components/idea/ApplyToJoinDialog";
 import { IdeaDevelopDialog } from "@/components/idea/IdeaDevelopDialog";
@@ -43,15 +43,6 @@ interface StartupIdea {
 }
 
 
-interface StatsData {
-  yourProjects: number;
-  coBuilderRoles: number;
-  projectInvites: number;
-  totalEquity: number;
-  activeProjects: number;
-  ideaStageProjects: number;
-  contributingVentures: number;
-}
 
 const getEpisodeLabel = (episode: string) => {
   switch (episode) {
@@ -69,12 +60,18 @@ const Entrepreneurship = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [applyProject, setApplyProject] = useState<StartupIdea | null>(null);
-  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "browse");
+  const [mainTab, setMainTab] = useState<"ecosystem" | "legacy">(
+    searchParams.get("tab") === "legacy" ? "legacy" : "ecosystem"
+  );
+  const [legacySubTab, setLegacySubTab] = useState<"initiated" | "joined">(
+    searchParams.get("sub") === "joined" ? "joined" : "initiated"
+  );
 
   useEffect(() => {
     if (searchParams.get("new") === "1") {
       setShowCreateDialog(true);
-      setActiveTab("my");
+      setMainTab("legacy");
+      setLegacySubTab("initiated");
       const next = new URLSearchParams(searchParams);
       next.delete("new");
       setSearchParams(next, { replace: true });
@@ -86,10 +83,6 @@ const Entrepreneurship = () => {
   const [collaborations, setCollaborations] = useState<StartupIdea[]>([]);
   const [creatorNames, setCreatorNames] = useState<Record<string, string>>({});
   const [teamCounts, setTeamCounts] = useState<Record<string, number>>({});
-  const [stats, setStats] = useState<StatsData>({
-    yourProjects: 0, coBuilderRoles: 0, projectInvites: 0, totalEquity: 0,
-    activeProjects: 0, ideaStageProjects: 0, contributingVentures: 0,
-  });
   const [loading, setLoading] = useState(true);
 
   // Action dialog state (mirrors /start)
@@ -151,47 +144,25 @@ const Entrepreneurship = () => {
     setLoading(true);
 
     try {
-      // Fetch all data in parallel
       const [
         browseRes,
         myRes,
         teamMembershipsRes,
-        applicationsRes,
-        pendingAppsRes,
-        certificationsRes,
       ] = await Promise.all([
-        // Browse: approved projects seeking co-builders (not mine)
         supabase
           .from("startup_ideas")
           .select("*")
           .eq("review_status", "approved")
           .eq("is_looking_for_cobuilders", true)
           .neq("creator_id", user.id),
-        // My projects
         supabase
           .from("startup_ideas")
           .select("*")
           .eq("creator_id", user.id),
-        // Team memberships (collaborations)
         supabase
           .from("startup_team_members")
           .select("startup_id, role_type")
           .eq("member_user_id", user.id),
-        // My applications
-        supabase
-          .from("startup_applications")
-          .select("id, startup_id, status")
-          .eq("applicant_id", user.id),
-        // Pending applications to my projects
-        supabase
-          .from("startup_applications")
-          .select("id, startup_id")
-          .eq("status", "pending"),
-        // Certifications for equity calc
-        supabase
-          .from("user_certifications")
-          .select("id")
-          .eq("user_id", user.id),
       ]);
 
       const browse = browseRes.data || [];
@@ -199,7 +170,6 @@ const Entrepreneurship = () => {
       setBrowseProjects(browse);
       setMyProjects(my);
 
-      // Fetch collaboration startups
       const membershipStartupIds = (teamMembershipsRes.data || []).map(m => m.startup_id);
       if (membershipStartupIds.length > 0) {
         const { data: collabData } = await supabase
@@ -209,7 +179,6 @@ const Entrepreneurship = () => {
         setCollaborations(collabData || []);
       }
 
-      // Get creator names for browse projects
       const creatorIds = [...new Set(browse.map(p => p.creator_id))];
       if (creatorIds.length > 0) {
         const { data: profiles } = await supabase
@@ -221,7 +190,6 @@ const Entrepreneurship = () => {
         setCreatorNames(names);
       }
 
-      // Get team counts for browse projects
       const allProjectIds = browse.map(p => p.id);
       if (allProjectIds.length > 0) {
         const { data: teamData } = await supabase
@@ -232,27 +200,6 @@ const Entrepreneurship = () => {
         (teamData || []).forEach(t => { counts[t.startup_id] = (counts[t.startup_id] || 0) + 1; });
         setTeamCounts(counts);
       }
-
-      // Calc stats
-      const activeCount = my.filter(p => p.status !== "draft").length;
-      const ideaCount = my.filter(p => p.current_episode === "development").length;
-      const coBuilderRoles = (teamMembershipsRes.data || []).length;
-      const myProjectIds = my.map(p => p.id);
-      const pendingInvites = (pendingAppsRes.data || []).filter(a => myProjectIds.includes(a.startup_id)).length;
-      const certCount = (certificationsRes.data || []).length;
-      const teamEquity = coBuilderRoles * 5;
-      const certEquity = Math.min(certCount * 2, 10);
-      const totalEquity = Math.min(teamEquity + certEquity, 25);
-
-      setStats({
-        yourProjects: my.length,
-        coBuilderRoles,
-        projectInvites: pendingInvites,
-        totalEquity,
-        activeProjects: activeCount,
-        ideaStageProjects: ideaCount,
-        contributingVentures: coBuilderRoles,
-      });
     } catch (err) {
       console.error("Error fetching entrepreneurship data:", err);
     } finally {
