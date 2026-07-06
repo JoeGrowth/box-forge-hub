@@ -140,8 +140,8 @@ function DistributionBuilder({
     setPeople(Array.isArray(rec.people) && rec.people.length > 0 ? rec.people : ["Person (1)"]);
     setEditingId(mode === "edit" ? rec.id : null);
     setResetKey((k) => k + 1);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    toast.info(
+      setTimeout(() => missionRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
+      toast.info(
       mode === "edit"
         ? `Editing "${rec.title}" — changes will overwrite this record.`
         : `Loaded "${rec.title}" — save under a new title to keep changes.`,
