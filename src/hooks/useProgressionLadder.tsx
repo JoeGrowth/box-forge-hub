@@ -113,7 +113,7 @@ export function useProgressionLadder(): ProgressionLadder {
           ctaHref: "/opportunities?tab=startup",
         },
         {
-          key: "founder", index: 4, label: "Founder Status",
+          key: "founder", index: 4, label: "Initiation Mastery",
           intent: "Publish 2 approved ideas and recruit co-builders",
           current: Math.min(foundedCount, 2), target: 2,
           unlocked: talentDone, achieved: founderDone,
