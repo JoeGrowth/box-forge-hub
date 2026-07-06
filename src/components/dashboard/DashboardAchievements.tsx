@@ -28,6 +28,7 @@ interface Achievement {
 export function DashboardAchievements() {
   const { user } = useAuth();
   const { onboardingState } = useOnboarding();
+  const { talentReady } = useTalentReadiness();
   const [achievements, setAchievements] = useState<Achievement[]>([]);
 
   useEffect(() => {
