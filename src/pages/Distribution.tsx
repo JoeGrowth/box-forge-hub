@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -60,6 +60,7 @@ function DistributionBuilder({
   const [loadingSaved, setLoadingSaved] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showSaved, setShowSaved] = useState(false);
+  const missionRef = useRef<HTMLDivElement>(null);
 
   const fetchSaved = useCallback(async () => {
     if (!user) return;
@@ -139,8 +140,8 @@ function DistributionBuilder({
     setPeople(Array.isArray(rec.people) && rec.people.length > 0 ? rec.people : ["Person (1)"]);
     setEditingId(mode === "edit" ? rec.id : null);
     setResetKey((k) => k + 1);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    toast.info(
+      setTimeout(() => missionRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
+      toast.info(
       mode === "edit"
         ? `Editing "${rec.title}" — changes will overwrite this record.`
         : `Loaded "${rec.title}" — save under a new title to keep changes.`,
@@ -174,7 +175,7 @@ function DistributionBuilder({
     setPeople(Array.isArray(rec.people) && rec.people.length > 0 ? rec.people : ["Person (1)"]);
     setEditingId(null);
     setResetKey((k) => k + 1);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setTimeout(() => missionRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
     toast.info(`Loaded duplicate as "${newTitle}" — edit and save.`);
   };
 
@@ -362,7 +363,7 @@ function DistributionBuilder({
       </Card>
 
 
-      <Card>
+      <Card ref={missionRef}>
         <CardHeader>
           <CardTitle className="text-base">Mission Setup</CardTitle>
         </CardHeader>
