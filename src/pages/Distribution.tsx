@@ -20,7 +20,7 @@ import { formatDistanceToNow } from "date-fns";
 
 
 
-type Task = { id: string; label: string; percent: number; locked?: boolean };
+type Task = { id: string; label: string; percent: number; locked?: boolean; personShares?: number[] };
 type Charge = { id: string; label: string; amount: number };
 type Kind = string;
 
