@@ -194,7 +194,7 @@ function DistributionBuilder({
     <div className="space-y-6" key={resetKey}>
       {/* Saved distributions */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <CardTitle className="text-base flex items-center gap-2">
             <FolderOpen className="w-4 h-4" /> Saved {label} distributions
             <Badge variant="secondary" className="ml-1">{saved.length}</Badge>
@@ -205,6 +205,7 @@ function DistributionBuilder({
           {saved.length === 0 ? (
             <p className="text-sm text-muted-foreground">No saved distributions yet. Fill the form below and click <strong>Save distribution</strong>.</p>
           ) : (
+            <div className="overflow-x-auto -mx-6 px-6">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -223,7 +224,7 @@ function DistributionBuilder({
                     <TableCell className="font-medium">{r.title}</TableCell>
                     <TableCell className="text-right font-mono">{fmt(Number(r.budget))}</TableCell>
                     <TableCell className="text-right">{Array.isArray(r.people) ? r.people.length : 0}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
+                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                       {r.created_at ? formatDistanceToNow(new Date(r.created_at), { addSuffix: true }) : ""}
                     </TableCell>
                     <TableCell>
@@ -243,6 +244,7 @@ function DistributionBuilder({
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>
