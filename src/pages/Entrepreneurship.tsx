@@ -5,7 +5,7 @@ import { ScrollToTopButton } from "@/components/layout/ScrollToTopButton";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, Rocket, Eye, Users, Layers, Film, Shield, TrendingUp, Trash2, CheckCircle, Loader2, ArrowLeft } from "lucide-react";
+import { Plus, Rocket, Eye, Users, Layers, Film, Shield, TrendingUp, Trash2, CheckCircle, Loader2 } from "lucide-react";
 import { CreateIdeaDialog } from "@/components/idea/CreateIdeaDialog";
 import { ApplyToJoinDialog } from "@/components/idea/ApplyToJoinDialog";
 import { IdeaDevelopDialog } from "@/components/idea/IdeaDevelopDialog";
@@ -43,15 +43,6 @@ interface StartupIdea {
 }
 
 
-interface StatsData {
-  yourProjects: number;
-  coBuilderRoles: number;
-  projectInvites: number;
-  totalEquity: number;
-  activeProjects: number;
-  ideaStageProjects: number;
-  contributingVentures: number;
-}
 
 const getEpisodeLabel = (episode: string) => {
   switch (episode) {
@@ -69,12 +60,18 @@ const Entrepreneurship = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [applyProject, setApplyProject] = useState<StartupIdea | null>(null);
-  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "browse");
+  const [mainTab, setMainTab] = useState<"ecosystem" | "legacy">(
+    searchParams.get("tab") === "legacy" ? "legacy" : "ecosystem"
+  );
+  const [legacySubTab, setLegacySubTab] = useState<"initiated" | "joined">(
+    searchParams.get("sub") === "joined" ? "joined" : "initiated"
+  );
 
   useEffect(() => {
     if (searchParams.get("new") === "1") {
       setShowCreateDialog(true);
-      setActiveTab("my");
+      setMainTab("legacy");
+      setLegacySubTab("initiated");
       const next = new URLSearchParams(searchParams);
       next.delete("new");
       setSearchParams(next, { replace: true });
@@ -86,10 +83,6 @@ const Entrepreneurship = () => {
   const [collaborations, setCollaborations] = useState<StartupIdea[]>([]);
   const [creatorNames, setCreatorNames] = useState<Record<string, string>>({});
   const [teamCounts, setTeamCounts] = useState<Record<string, number>>({});
-  const [stats, setStats] = useState<StatsData>({
-    yourProjects: 0, coBuilderRoles: 0, projectInvites: 0, totalEquity: 0,
-    activeProjects: 0, ideaStageProjects: 0, contributingVentures: 0,
-  });
   const [loading, setLoading] = useState(true);
 
   // Action dialog state (mirrors /start)
@@ -151,47 +144,25 @@ const Entrepreneurship = () => {
     setLoading(true);
 
     try {
-      // Fetch all data in parallel
       const [
         browseRes,
         myRes,
         teamMembershipsRes,
-        applicationsRes,
-        pendingAppsRes,
-        certificationsRes,
       ] = await Promise.all([
-        // Browse: approved projects seeking co-builders (not mine)
         supabase
           .from("startup_ideas")
           .select("*")
           .eq("review_status", "approved")
           .eq("is_looking_for_cobuilders", true)
           .neq("creator_id", user.id),
-        // My projects
         supabase
           .from("startup_ideas")
           .select("*")
           .eq("creator_id", user.id),
-        // Team memberships (collaborations)
         supabase
           .from("startup_team_members")
           .select("startup_id, role_type")
           .eq("member_user_id", user.id),
-        // My applications
-        supabase
-          .from("startup_applications")
-          .select("id, startup_id, status")
-          .eq("applicant_id", user.id),
-        // Pending applications to my projects
-        supabase
-          .from("startup_applications")
-          .select("id, startup_id")
-          .eq("status", "pending"),
-        // Certifications for equity calc
-        supabase
-          .from("user_certifications")
-          .select("id")
-          .eq("user_id", user.id),
       ]);
 
       const browse = browseRes.data || [];
@@ -199,7 +170,6 @@ const Entrepreneurship = () => {
       setBrowseProjects(browse);
       setMyProjects(my);
 
-      // Fetch collaboration startups
       const membershipStartupIds = (teamMembershipsRes.data || []).map(m => m.startup_id);
       if (membershipStartupIds.length > 0) {
         const { data: collabData } = await supabase
@@ -209,7 +179,6 @@ const Entrepreneurship = () => {
         setCollaborations(collabData || []);
       }
 
-      // Get creator names for browse projects
       const creatorIds = [...new Set(browse.map(p => p.creator_id))];
       if (creatorIds.length > 0) {
         const { data: profiles } = await supabase
@@ -221,7 +190,6 @@ const Entrepreneurship = () => {
         setCreatorNames(names);
       }
 
-      // Get team counts for browse projects
       const allProjectIds = browse.map(p => p.id);
       if (allProjectIds.length > 0) {
         const { data: teamData } = await supabase
@@ -232,27 +200,6 @@ const Entrepreneurship = () => {
         (teamData || []).forEach(t => { counts[t.startup_id] = (counts[t.startup_id] || 0) + 1; });
         setTeamCounts(counts);
       }
-
-      // Calc stats
-      const activeCount = my.filter(p => p.status !== "draft").length;
-      const ideaCount = my.filter(p => p.current_episode === "development").length;
-      const coBuilderRoles = (teamMembershipsRes.data || []).length;
-      const myProjectIds = my.map(p => p.id);
-      const pendingInvites = (pendingAppsRes.data || []).filter(a => myProjectIds.includes(a.startup_id)).length;
-      const certCount = (certificationsRes.data || []).length;
-      const teamEquity = coBuilderRoles * 5;
-      const certEquity = Math.min(certCount * 2, 10);
-      const totalEquity = Math.min(teamEquity + certEquity, 25);
-
-      setStats({
-        yourProjects: my.length,
-        coBuilderRoles,
-        projectInvites: pendingInvites,
-        totalEquity,
-        activeProjects: activeCount,
-        ideaStageProjects: ideaCount,
-        contributingVentures: coBuilderRoles,
-      });
     } catch (err) {
       console.error("Error fetching entrepreneurship data:", err);
     } finally {
@@ -260,28 +207,6 @@ const Entrepreneurship = () => {
     }
   };
 
-  const statCards = [
-    {
-      label: "Your Projects",
-      value: stats.yourProjects,
-      sub: `${stats.activeProjects} active, ${stats.ideaStageProjects} in idea stage`,
-    },
-    {
-      label: "Co-Builder Roles",
-      value: stats.coBuilderRoles,
-      sub: `Contributing to ventures`,
-    },
-    {
-      label: "Project Invites",
-      value: stats.projectInvites,
-      sub: "Pending invitations",
-    },
-    {
-      label: "Total Equity",
-      value: `${stats.totalEquity}%`,
-      sub: "Across all ventures",
-    },
-  ];
 
   const ProjectCard = ({ project }: { project: StartupIdea }) => (
     <div className="border border-border rounded-2xl p-4 sm:p-6 bg-card hover:shadow-md transition-shadow">
@@ -492,14 +417,6 @@ const Entrepreneurship = () => {
         <main className="pt-20">
           <section className="py-10">
             <div className="container mx-auto px-4">
-              {/* Back to Paths */}
-              <div className="mb-6">
-                <Button variant="ghost" size="sm" asChild>
-                  <Link to="/paths">
-                    <ArrowLeft className="w-4 h-4 mr-1" /> Back to Paths
-                  </Link>
-                </Button>
-              </div>
 
               {/* Header */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 md:mb-12 bg-muted/40 rounded-2xl p-4 sm:p-6">
@@ -512,39 +429,18 @@ const Entrepreneurship = () => {
                   </p>
                 </div>
                 <Button className="gap-2 w-full sm:w-auto shrink-0" onClick={() => setShowCreateDialog(true)}>
-                  <Plus className="w-4 h-4" /> Start New Project
+                  <Plus className="w-4 h-4" /> Start Startup Project
                 </Button>
               </div>
 
-              {/* Stats Cards */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                {loading
-                  ? Array.from({ length: 4 }).map((_, i) => (
-                      <div key={i} className="border border-border rounded-xl p-5 bg-card">
-                        <Skeleton className="h-4 w-24 mb-3" />
-                        <Skeleton className="h-8 w-12 mb-2" />
-                        <Skeleton className="h-3 w-32" />
-                      </div>
-                    ))
-                  : statCards.map((card) => (
-                      <div key={card.label} className="border border-border rounded-xl p-4 sm:p-5 bg-card">
-                        <p className="text-xs sm:text-sm text-muted-foreground mb-1">{card.label}</p>
-                        <p className="text-2xl sm:text-3xl font-bold text-foreground">{card.value}</p>
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{card.sub}</p>
-                      </div>
-                    ))}
-              </div>
 
-              {/* Tabs */}
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="mb-6 w-full sm:w-auto grid grid-cols-3 sm:inline-flex">
-                  <TabsTrigger value="browse" className="text-xs sm:text-sm">Browse</TabsTrigger>
-                  <TabsTrigger value="my" className="text-xs sm:text-sm">My Projects</TabsTrigger>
-                  <TabsTrigger value="collaborations" className="text-xs sm:text-sm">Collabs</TabsTrigger>
+              <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as "ecosystem" | "legacy")} className="w-full">
+                <TabsList className="mb-6 w-full sm:w-auto grid grid-cols-2 sm:inline-flex">
+                  <TabsTrigger value="ecosystem" className="text-xs sm:text-sm">Ecosystem</TabsTrigger>
+                  <TabsTrigger value="legacy" className="text-xs sm:text-sm">Legacy</TabsTrigger>
                 </TabsList>
 
-                {/* Browse Projects */}
-                <TabsContent value="browse">
+                <TabsContent value="ecosystem">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
                     <h2 className="font-display text-lg sm:text-xl font-bold text-foreground">
                       Startup Projects Seeking Co-Builders
@@ -578,54 +474,61 @@ const Entrepreneurship = () => {
                   )}
                 </TabsContent>
 
-                {/* My Projects */}
-                <TabsContent value="my">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-                    <h2 className="font-display text-lg sm:text-xl font-bold text-foreground">
-                      Your Startup Projects
-                    </h2>
-                    <Button size="sm" className="gap-2 self-start sm:self-auto" onClick={() => setShowCreateDialog(true)}>
-                      <Plus className="w-4 h-4" /> New Project
-                    </Button>
-                  </div>
-                  {loading ? (
-                    <div className="space-y-4">
-                      <Skeleton className="h-24 w-full rounded-2xl" />
-                    </div>
-                  ) : myProjects.length === 0 ? (
-                    <div className="text-center py-12 text-muted-foreground">
-                      <p>You haven't created any projects yet.</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {myProjects.map((project) => (
-                        <MyProjectCard key={project.id} project={project} isOwner={true} />
-                      ))}
-                    </div>
-                  )}
-                </TabsContent>
+                <TabsContent value="legacy">
+                  <Tabs value={legacySubTab} onValueChange={(v) => setLegacySubTab(v as "initiated" | "joined")} className="w-full">
+                    <TabsList className="mb-4 w-full sm:w-auto grid grid-cols-2 sm:inline-flex">
+                      <TabsTrigger value="initiated" className="text-xs sm:text-sm">Initiated</TabsTrigger>
+                      <TabsTrigger value="joined" className="text-xs sm:text-sm">Joined</TabsTrigger>
+                    </TabsList>
 
-                {/* Collaborations */}
-                <TabsContent value="collaborations">
-                  <h2 className="font-display text-xl font-bold text-foreground mb-4">
-                    Projects You're Contributing To
-                  </h2>
-                  {loading ? (
-                    <Skeleton className="h-24 w-full rounded-2xl" />
-                  ) : collaborations.length === 0 ? (
-                    <div className="text-center py-12 text-muted-foreground">
-                      <p>You're not collaborating on any projects yet.</p>
-                      <Button variant="outline" className="mt-3" onClick={() => setActiveTab("browse")}>
-                        Browse Projects
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {collaborations.map((project) => (
-                        <MyProjectCard key={project.id} project={project} isOwner={false} />
-                      ))}
-                    </div>
-                  )}
+                    <TabsContent value="initiated">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+                        <h2 className="font-display text-lg sm:text-xl font-bold text-foreground">
+                          Initiated Projects
+                        </h2>
+                        <Button size="sm" className="gap-2 self-start sm:self-auto" onClick={() => setShowCreateDialog(true)}>
+                          <Plus className="w-4 h-4" /> New Project
+                        </Button>
+                      </div>
+                      {loading ? (
+                        <div className="space-y-4">
+                          <Skeleton className="h-24 w-full rounded-2xl" />
+                        </div>
+                      ) : myProjects.length === 0 ? (
+                        <div className="text-center py-12 text-muted-foreground">
+                          <p>You haven't created any projects yet.</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {myProjects.map((project) => (
+                            <MyProjectCard key={project.id} project={project} isOwner={true} />
+                          ))}
+                        </div>
+                      )}
+                    </TabsContent>
+
+                    <TabsContent value="joined">
+                      <h2 className="font-display text-xl font-bold text-foreground mb-4">
+                        Projects You're Contributing To
+                      </h2>
+                      {loading ? (
+                        <Skeleton className="h-24 w-full rounded-2xl" />
+                      ) : collaborations.length === 0 ? (
+                        <div className="text-center py-12 text-muted-foreground">
+                          <p>You're not collaborating on any projects yet.</p>
+                          <Button variant="outline" className="mt-3" onClick={() => setMainTab("ecosystem")}>
+                            Explore Ecosystem
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {collaborations.map((project) => (
+                            <MyProjectCard key={project.id} project={project} isOwner={false} />
+                          ))}
+                        </div>
+                      )}
+                    </TabsContent>
+                  </Tabs>
                 </TabsContent>
               </Tabs>
             </div>
