@@ -25,6 +25,7 @@ import { NextStepsCard } from "@/components/profile/NextStepsCard";
 import { ProgressionPathCard } from "@/components/profile/ProgressionPathCard";
 import { GrowthLoopsCard } from "@/components/profile/GrowthLoopsCard";
 import { useExpertise } from "@/hooks/useExpertise";
+import { useNextBestActions, progressionStageLabel } from "@/hooks/useNextBestActions";
 import { useTrust, trustLevelStyle } from "@/hooks/useTrust";
 import { useRevenue } from "@/hooks/useRevenue";
 import { useReputation, reputationLevelStyle } from "@/hooks/useReputation";
@@ -100,6 +101,7 @@ const Profile = () => {
   const { revenue } = useRevenue(user?.id);
   const { reputation } = useReputation(user?.id);
   const { ownership } = useOwnership(user?.id);
+  const { progression } = useNextBestActions(user?.id);
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -689,6 +691,11 @@ const Profile = () => {
                         {profile?.full_name || "User"}
                       </h1>
                       <p className="text-muted-foreground mb-3">{user?.email}</p>
+                      <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-3">
+                        <Badge variant="outline" className="capitalize">
+                          {progressionStageLabel[progression?.current_state ?? "novice"]}
+                        </Badge>
+                      </div>
                       {!onboardingState?.onboarding_completed && (
                         <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted text-b4-coral text-sm font-medium">
