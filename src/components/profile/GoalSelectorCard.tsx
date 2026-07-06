@@ -29,6 +29,7 @@ export function GoalSelectorCard() {
   const [selected, setSelected] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const load = async () => {
     if (!user) return;
