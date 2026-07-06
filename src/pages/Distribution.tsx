@@ -158,6 +158,34 @@ function DistributionBuilder({
     fetchSaved();
   };
 
+  const duplicateSaved = async (rec: any) => {
+    if (!user) return;
+    let n = 1;
+    let newTitle = `${rec.title} (${n})`;
+    while (saved.some((r) => r.title.trim().toLowerCase() === newTitle.trim().toLowerCase())) {
+      n++;
+      newTitle = `${rec.title} (${n})`;
+    }
+    const payload = {
+      user_id: user.id,
+      kind,
+      title: newTitle,
+      budget_label: rec.budget_label || defaultBudgetLabel,
+      budget: Number(rec.budget) || 0,
+      currency: rec.currency || "TND",
+      charges: Array.isArray(rec.charges) ? rec.charges.map((c: any) => ({ ...c, id: uid() })) : [],
+      tasks: Array.isArray(rec.tasks) ? rec.tasks.map((t: any) => ({ ...t, id: uid() })) : [],
+      people: Array.isArray(rec.people) && rec.people.length > 0 ? rec.people : ["Person (1)"],
+    };
+    const { error } = await (supabase.from("distribution_records" as any) as any).insert(payload);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(`Duplicated as "${newTitle}".`);
+    await fetchSaved();
+  };
+
   const titleTaken = useMemo(
     () =>
       saved.some(
