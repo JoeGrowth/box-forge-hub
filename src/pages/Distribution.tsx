@@ -960,7 +960,7 @@ export function EntityCategories({
           key={`${scopeId}:${active.id}`}
           kind={`${scopeId}:${active.id}`}
           kindLabel={active.name}
-          defaultTitle={`${active.name} (1)`}
+          defaultTitle=""
           defaultBudgetLabel="Budget"
           defaultTasks={genericTasks()}
           defaultCharges={genericCharges()}
