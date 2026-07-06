@@ -194,7 +194,7 @@ function DistributionBuilder({
     <div className="space-y-6" key={resetKey}>
       {/* Saved distributions */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <CardTitle className="text-base flex items-center gap-2">
             <FolderOpen className="w-4 h-4" /> Saved {label} distributions
             <Badge variant="secondary" className="ml-1">{saved.length}</Badge>
@@ -205,6 +205,7 @@ function DistributionBuilder({
           {saved.length === 0 ? (
             <p className="text-sm text-muted-foreground">No saved distributions yet. Fill the form below and click <strong>Save distribution</strong>.</p>
           ) : (
+            <div className="overflow-x-auto -mx-6 px-6">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -223,7 +224,7 @@ function DistributionBuilder({
                     <TableCell className="font-medium">{r.title}</TableCell>
                     <TableCell className="text-right font-mono">{fmt(Number(r.budget))}</TableCell>
                     <TableCell className="text-right">{Array.isArray(r.people) ? r.people.length : 0}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
+                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                       {r.created_at ? formatDistanceToNow(new Date(r.created_at), { addSuffix: true }) : ""}
                     </TableCell>
                     <TableCell>
@@ -243,6 +244,7 @@ function DistributionBuilder({
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -282,17 +284,19 @@ function DistributionBuilder({
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <CardTitle className="text-base">Charges</CardTitle>
           <Button
             size="sm"
             variant="outline"
+            className="self-start sm:self-auto"
             onClick={() => setCharges((p) => [...p, { id: uid(), label: "New charge", amount: 0 }])}
           >
             <Plus className="w-4 h-4 mr-1" /> Add charge
           </Button>
         </CardHeader>
         <CardContent>
+          <div className="overflow-x-auto -mx-6 px-6">
           <Table>
             <TableHeader>
               <TableRow>
@@ -338,13 +342,14 @@ function DistributionBuilder({
               </TableRow>
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <CardTitle className="text-base">People splitting the pool</CardTitle>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               size="sm"
               variant="outline"
@@ -369,18 +374,19 @@ function DistributionBuilder({
               onChange={(e) =>
                 setPeople((prev) => prev.map((v, idx) => (idx === i ? e.target.value : v)))
               }
-              className="w-48"
+              className="w-full sm:w-48"
             />
           ))}
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <CardTitle className="text-base">Internal &amp; Structure — task distribution</CardTitle>
           <Button
             size="sm"
             variant="outline"
+            className="self-start sm:self-auto"
             onClick={() =>
               setTasks((p) => {
                 // Insert new task before the locked "rest structure" row if present
@@ -397,6 +403,7 @@ function DistributionBuilder({
           </Button>
         </CardHeader>
         <CardContent>
+          <div className="overflow-x-auto -mx-6 px-6">
           <Table>
             <TableHeader>
               <TableRow>
@@ -468,6 +475,7 @@ function DistributionBuilder({
               </TableRow>
             </TableBody>
           </Table>
+          </div>
           {totalPercent !== 100 && (
             <p className="text-xs text-amber-600 mt-3">
               Task percentages sum to {totalPercent}% — adjust to reach 100% for a full distribution.
@@ -622,9 +630,9 @@ export default function Distribution() {
                     : <>Choisir une entité pour organiser les répartitions budgétaires.</>}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
                 <Select value={activeEntityId ?? ""} onValueChange={setActiveEntityId}>
-                  <SelectTrigger className="w-[240px]">
+                  <SelectTrigger className="flex-1 sm:w-[240px]">
                     <Building2 className="h-4 w-4 mr-2 text-muted-foreground" />
                     <SelectValue placeholder="Choisir une entité" />
                   </SelectTrigger>
