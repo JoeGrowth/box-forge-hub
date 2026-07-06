@@ -222,6 +222,7 @@ export default function Organizations() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All types</SelectItem>
+                    <SelectItem value="organization">Organization</SelectItem>
                     <SelectItem value="company">Company</SelectItem>
                     <SelectItem value="ministry">Ministry</SelectItem>
                     <SelectItem value="ngo">NGO</SelectItem>
