@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
+import { useTalentReadiness } from "@/hooks/useTalentReadiness";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Achievement {
@@ -27,6 +28,7 @@ interface Achievement {
 export function DashboardAchievements() {
   const { user } = useAuth();
   const { onboardingState } = useOnboarding();
+  const { talentReady } = useTalentReadiness();
   const [achievements, setAchievements] = useState<Achievement[]>([]);
 
   useEffect(() => {
@@ -63,8 +65,22 @@ export function DashboardAchievements() {
           color: "text-purple-500",
         },
         {
+          icon: Trophy,
+          title: "Approved",
+          description: "Journey validated",
+          earned: onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved",
+          color: "text-b4-teal",
+        },
+        {
+          icon: Star,
+          title: "Talent",
+          description: "Talent foundation set",
+          earned: talentReady,
+          color: "text-cyan-500",
+        },
+        {
           icon: Award,
-          title: "Vaccinated",
+          title: "Certified",
           description: "First certification earned",
           earned: (certifications?.length || 0) > 0,
           color: "text-amber-500",
@@ -84,20 +100,6 @@ export function DashboardAchievements() {
           color: "text-emerald-500",
         },
         {
-          icon: Star,
-          title: "In motion",
-          description: "First application sent",
-          earned: (applications?.length || 0) > 0,
-          color: "text-cyan-500",
-        },
-        {
-          icon: Trophy,
-          title: "Approved",
-          description: "Journey validated",
-          earned: onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved",
-          color: "text-b4-teal",
-        },
-        {
           icon: CheckCircle,
           title: "Stacked",
           description: "2+ certifications",
@@ -110,7 +112,7 @@ export function DashboardAchievements() {
     };
 
     fetchAchievements();
-  }, [user, onboardingState]);
+  }, [user, onboardingState, talentReady]);
 
   const earnedCount = achievements.filter((a) => a.earned).length;
 
