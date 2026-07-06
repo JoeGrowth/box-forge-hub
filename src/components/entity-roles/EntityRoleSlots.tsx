@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Link2, Check, Clock, X as XIcon, Loader2 } from "lucide-react";
+import { Link2, Check, Clock, X as XIcon, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
 import {
   useEntityRoleAssignments,
@@ -23,6 +23,7 @@ const OWNER_SLUGS = new Set(["associe_1", "associe_2"]);
 export function EntityRoleSlots({ entityType, entityId, canManage }: Props) {
   const { data: rows = [], isLoading } = useEntityRoleAssignments(entityType, entityId);
   const [target, setTarget] = useState<EntityRoleAssignment | null>(null);
+  const [rolesOpen, setRolesOpen] = useState(false);
   const revoke = useRevokeLink();
 
   if (isLoading) {
@@ -37,13 +38,26 @@ export function EntityRoleSlots({ entityType, entityId, canManage }: Props) {
 
   return (
     <div className="rounded-xl border bg-background/60 p-4 space-y-3">
-      <div className="flex items-center justify-between">
+      <button
+        type="button"
+        onClick={() => setRolesOpen((v) => !v)}
+        className="w-full flex items-center justify-between text-left"
+      >
         <h3 className="text-sm font-semibold">Roles</h3>
-        <span className="text-xs text-muted-foreground">
-          Optional. Linking unlocks verified evidence for that person.
-        </span>
-      </div>
-      <div className="grid gap-2 md:grid-cols-2">
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">
+            Optional. Linking unlocks verified evidence for that person.
+          </span>
+          {rolesOpen ? (
+            <ChevronUp className="h-4 w-4 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          )}
+        </div>
+      </button>
+      {rolesOpen && (
+        <div className="grid gap-2 md:grid-cols-2">
+
         {rows.map((r) => (
           <div key={r.id} className="flex items-center justify-between rounded-lg border p-3 bg-background">
             <div className="flex items-center gap-3 min-w-0">
@@ -112,8 +126,10 @@ export function EntityRoleSlots({ entityType, entityId, canManage }: Props) {
           </div>
         ))}
       </div>
+      )}
 
       <LinkProfileDialog
+
         open={!!target}
         onOpenChange={(v) => !v && setTarget(null)}
         assignment={target}
