@@ -524,8 +524,8 @@ const Entrepreneurship = () => {
                         <h2 className="font-display text-lg sm:text-xl font-bold text-foreground">
                           Initiated Projects
                         </h2>
-                        <Button variant="outline" size="sm" className="gap-2 self-start sm:self-auto" onClick={() => setShowCreateDialog(true)}>
-                          <Plus className="w-4 h-4" /> New Project
+                        <Button variant="outline" className="rounded-full px-8 py-3 text-base font-semibold border-2 self-start sm:self-auto" onClick={() => setShowCreateDialog(true)}>
+                          Add Project
                         </Button>
                       </div>
                       {loading ? (
