@@ -295,11 +295,24 @@ function DistributionBuilder({
           </div>
           <div className="space-y-1.5">
             <Label>{budgetLabel}</Label>
-            <Input
-              type="number"
-              value={budget}
-              onChange={(e) => setBudget(parseFloat(e.target.value) || 0)}
-            />
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                value={budget}
+                onChange={(e) => setBudget(parseFloat(e.target.value) || 0)}
+                className="flex-1"
+              />
+              <Select value={currency} onValueChange={setCurrency}>
+                <SelectTrigger className="w-28">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="TND">TND</SelectItem>
+                  <SelectItem value="USD">USD</SelectItem>
+                  <SelectItem value="EUR">EUR</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
       </Card>
