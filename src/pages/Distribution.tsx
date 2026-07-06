@@ -317,6 +317,7 @@ function DistributionBuilder({
                     <TableHead className="w-10">#</TableHead>
                     <TableHead>Title</TableHead>
                     <TableHead className="text-right">Budget</TableHead>
+                    <TableHead className="text-right">RS</TableHead>
                     <TableHead className="text-right">People</TableHead>
                     <TableHead>Saved</TableHead>
                     <TableHead className="w-32"></TableHead>
@@ -332,6 +333,7 @@ function DistributionBuilder({
                       <TableCell className="font-mono text-muted-foreground">({i + 1})</TableCell>
                       <TableCell className="font-medium">{r.title}</TableCell>
                       <TableCell className="text-right font-mono">{fmt(Number(r.budget))}</TableCell>
+                      <TableCell className="text-right font-mono">{fmt((Number(r.budget) || 0) - (Array.isArray(r.charges) ? r.charges.reduce((s: number, c: any) => s + (Number(c.amount) || 0), 0) : 0))}</TableCell>
                       <TableCell className="text-right">{Array.isArray(r.people) ? r.people.length : 0}</TableCell>
                       <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                         {r.created_at ? formatDistanceToNow(new Date(r.created_at), { addSuffix: true }) : ""}
@@ -354,6 +356,15 @@ function DistributionBuilder({
                       </TableCell>
                     </TableRow>
                   ))}
+                  <TableRow className="border-t-2 font-semibold">
+                    <TableCell></TableCell>
+                    <TableCell>Total Reste structure</TableCell>
+                    <TableCell></TableCell>
+                    <TableCell className="text-right font-mono">
+                      {fmt(saved.reduce((sum, r) => sum + ((Number(r.budget) || 0) - (Array.isArray(r.charges) ? r.charges.reduce((s: number, c: any) => s + (Number(c.amount) || 0), 0) : 0)), 0))}
+                    </TableCell>
+                    <TableCell colSpan={3}></TableCell>
+                  </TableRow>
                 </TableBody>
               </Table>
               </div>
