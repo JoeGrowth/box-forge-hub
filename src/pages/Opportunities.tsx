@@ -203,17 +203,28 @@ const Opportunities = () => {
   }, [user, onboardingState, naturalRole]);
 
   const visibleKinds = useMemo(() => {
+    let base = KINDS;
     if (talentFoundationSet && talentMonetized) {
-      return KINDS.filter((k) => k.key !== "job" && k.key !== "tender");
+      base = base.filter((k) => k.key !== "job" && k.key !== "tender");
     }
-    return KINDS;
-  }, [talentFoundationSet, talentMonetized]);
+    const hasOrgJobs = rawJobs.some((j: any) => j.organization_id);
+    const hasOrgTenders = rawTenders.some((t: any) => t.organization_id);
+    return base.filter((k) => {
+      if (k.key === "job") return hasOrgJobs;
+      if (k.key === "tender") return hasOrgTenders;
+      return true;
+    });
+  }, [talentFoundationSet, talentMonetized, rawJobs, rawTenders]);
 
   useEffect(() => {
-    if (talentFoundationSet && talentMonetized && (kindFilter === "job" || kindFilter === "tender")) {
+    const hasOrgJobs = rawJobs.some((j: any) => j.organization_id);
+    const hasOrgTenders = rawTenders.some((t: any) => t.organization_id);
+    if ((talentFoundationSet && talentMonetized && (kindFilter === "job" || kindFilter === "tender")) ||
+        (kindFilter === "job" && !hasOrgJobs) ||
+        (kindFilter === "tender" && !hasOrgTenders)) {
       setParam("kind", null);
     }
-  }, [talentFoundationSet, talentMonetized, kindFilter]);
+  }, [talentFoundationSet, talentMonetized, kindFilter, rawJobs, rawTenders]);
   const { scoreById } = useOpportunityScoreMap(user?.id);
 
   useEffect(() => {
