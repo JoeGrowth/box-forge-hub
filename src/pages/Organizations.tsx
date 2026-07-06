@@ -262,7 +262,14 @@ export default function Organizations() {
                       <div className="min-w-0 flex-1">
                         <h3 className="font-semibold text-foreground truncate">{o.name}</h3>
                         <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                          <p className="text-xs text-muted-foreground capitalize">{o.type}</p>
+                          <p className="text-xs text-muted-foreground capitalize">
+                            {o.type === "company" && !incorporatedIds.has(o.id) ? "Unverified company" : o.type}
+                          </p>
+                          {o.type === "company" && incorporatedIds.has(o.id) && (
+                            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 border-emerald-200 text-[10px] py-0 px-1.5 h-4">
+                              <ShieldCheck className="w-2.5 h-2.5 mr-0.5" /> Incorporated
+                            </Badge>
+                          )}
                           {(() => {
                             const stage = (o.lifecycle_stage ?? "venture") as LifecycleStage;
                             const meta = STAGE_META[stage];
@@ -294,6 +301,14 @@ export default function Organizations() {
                     </div>
                     {o.description && (
                       <p className="text-sm text-muted-foreground mt-3 line-clamp-2">{o.description}</p>
+                    )}
+                    {o.type === "company" && !incorporatedIds.has(o.id) && (
+                      <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-500/10 p-2.5 text-xs text-amber-800 dark:text-amber-200">
+                        <FileWarning className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                        <span>
+                          Only recognized as a <strong>Company</strong> once a <strong>Certificate of Incorporation</strong> is uploaded. Open the organization and add it under Legal documents (e.g. name the file "Certificate of Incorporation.pdf").
+                        </span>
+                      </div>
                     )}
                     <div className="flex items-center justify-end mt-4 text-xs text-primary">
                       Open <ArrowRight className="w-3 h-3 ml-1" />
