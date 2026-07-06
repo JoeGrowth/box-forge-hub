@@ -207,28 +207,6 @@ const Entrepreneurship = () => {
     }
   };
 
-  const statCards = [
-    {
-      label: "Your Projects",
-      value: stats.yourProjects,
-      sub: `${stats.activeProjects} active, ${stats.ideaStageProjects} in idea stage`,
-    },
-    {
-      label: "Co-Builder Roles",
-      value: stats.coBuilderRoles,
-      sub: `Contributing to ventures`,
-    },
-    {
-      label: "Project Invites",
-      value: stats.projectInvites,
-      sub: "Pending invitations",
-    },
-    {
-      label: "Total Equity",
-      value: `${stats.totalEquity}%`,
-      sub: "Across all ventures",
-    },
-  ];
 
   const ProjectCard = ({ project }: { project: StartupIdea }) => (
     <div className="border border-border rounded-2xl p-4 sm:p-6 bg-card hover:shadow-md transition-shadow">
@@ -439,14 +417,6 @@ const Entrepreneurship = () => {
         <main className="pt-20">
           <section className="py-10">
             <div className="container mx-auto px-4">
-              {/* Back to Paths */}
-              <div className="mb-6">
-                <Button variant="ghost" size="sm" asChild>
-                  <Link to="/paths">
-                    <ArrowLeft className="w-4 h-4 mr-1" /> Back to Paths
-                  </Link>
-                </Button>
-              </div>
 
               {/* Header */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 md:mb-12 bg-muted/40 rounded-2xl p-4 sm:p-6">
@@ -459,39 +429,18 @@ const Entrepreneurship = () => {
                   </p>
                 </div>
                 <Button className="gap-2 w-full sm:w-auto shrink-0" onClick={() => setShowCreateDialog(true)}>
-                  <Plus className="w-4 h-4" /> Start New Project
+                  <Plus className="w-4 h-4" /> Start Startup Project
                 </Button>
               </div>
 
-              {/* Stats Cards */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                {loading
-                  ? Array.from({ length: 4 }).map((_, i) => (
-                      <div key={i} className="border border-border rounded-xl p-5 bg-card">
-                        <Skeleton className="h-4 w-24 mb-3" />
-                        <Skeleton className="h-8 w-12 mb-2" />
-                        <Skeleton className="h-3 w-32" />
-                      </div>
-                    ))
-                  : statCards.map((card) => (
-                      <div key={card.label} className="border border-border rounded-xl p-4 sm:p-5 bg-card">
-                        <p className="text-xs sm:text-sm text-muted-foreground mb-1">{card.label}</p>
-                        <p className="text-2xl sm:text-3xl font-bold text-foreground">{card.value}</p>
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{card.sub}</p>
-                      </div>
-                    ))}
-              </div>
 
-              {/* Tabs */}
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="mb-6 w-full sm:w-auto grid grid-cols-3 sm:inline-flex">
-                  <TabsTrigger value="browse" className="text-xs sm:text-sm">Browse</TabsTrigger>
-                  <TabsTrigger value="my" className="text-xs sm:text-sm">My Projects</TabsTrigger>
-                  <TabsTrigger value="collaborations" className="text-xs sm:text-sm">Collabs</TabsTrigger>
+              <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as "ecosystem" | "legacy")} className="w-full">
+                <TabsList className="mb-6 w-full sm:w-auto grid grid-cols-2 sm:inline-flex">
+                  <TabsTrigger value="ecosystem" className="text-xs sm:text-sm">Ecosystem</TabsTrigger>
+                  <TabsTrigger value="legacy" className="text-xs sm:text-sm">Legacy</TabsTrigger>
                 </TabsList>
 
-                {/* Browse Projects */}
-                <TabsContent value="browse">
+                <TabsContent value="ecosystem">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
                     <h2 className="font-display text-lg sm:text-xl font-bold text-foreground">
                       Startup Projects Seeking Co-Builders
@@ -525,54 +474,61 @@ const Entrepreneurship = () => {
                   )}
                 </TabsContent>
 
-                {/* My Projects */}
-                <TabsContent value="my">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-                    <h2 className="font-display text-lg sm:text-xl font-bold text-foreground">
-                      Your Startup Projects
-                    </h2>
-                    <Button size="sm" className="gap-2 self-start sm:self-auto" onClick={() => setShowCreateDialog(true)}>
-                      <Plus className="w-4 h-4" /> New Project
-                    </Button>
-                  </div>
-                  {loading ? (
-                    <div className="space-y-4">
-                      <Skeleton className="h-24 w-full rounded-2xl" />
-                    </div>
-                  ) : myProjects.length === 0 ? (
-                    <div className="text-center py-12 text-muted-foreground">
-                      <p>You haven't created any projects yet.</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {myProjects.map((project) => (
-                        <MyProjectCard key={project.id} project={project} isOwner={true} />
-                      ))}
-                    </div>
-                  )}
-                </TabsContent>
+                <TabsContent value="legacy">
+                  <Tabs value={legacySubTab} onValueChange={(v) => setLegacySubTab(v as "initiated" | "joined")} className="w-full">
+                    <TabsList className="mb-4 w-full sm:w-auto grid grid-cols-2 sm:inline-flex">
+                      <TabsTrigger value="initiated" className="text-xs sm:text-sm">Initiated</TabsTrigger>
+                      <TabsTrigger value="joined" className="text-xs sm:text-sm">Joined</TabsTrigger>
+                    </TabsList>
 
-                {/* Collaborations */}
-                <TabsContent value="collaborations">
-                  <h2 className="font-display text-xl font-bold text-foreground mb-4">
-                    Projects You're Contributing To
-                  </h2>
-                  {loading ? (
-                    <Skeleton className="h-24 w-full rounded-2xl" />
-                  ) : collaborations.length === 0 ? (
-                    <div className="text-center py-12 text-muted-foreground">
-                      <p>You're not collaborating on any projects yet.</p>
-                      <Button variant="outline" className="mt-3" onClick={() => setActiveTab("browse")}>
-                        Browse Projects
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {collaborations.map((project) => (
-                        <MyProjectCard key={project.id} project={project} isOwner={false} />
-                      ))}
-                    </div>
-                  )}
+                    <TabsContent value="initiated">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+                        <h2 className="font-display text-lg sm:text-xl font-bold text-foreground">
+                          Initiated Projects
+                        </h2>
+                        <Button size="sm" className="gap-2 self-start sm:self-auto" onClick={() => setShowCreateDialog(true)}>
+                          <Plus className="w-4 h-4" /> New Project
+                        </Button>
+                      </div>
+                      {loading ? (
+                        <div className="space-y-4">
+                          <Skeleton className="h-24 w-full rounded-2xl" />
+                        </div>
+                      ) : myProjects.length === 0 ? (
+                        <div className="text-center py-12 text-muted-foreground">
+                          <p>You haven't created any projects yet.</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {myProjects.map((project) => (
+                            <MyProjectCard key={project.id} project={project} isOwner={true} />
+                          ))}
+                        </div>
+                      )}
+                    </TabsContent>
+
+                    <TabsContent value="joined">
+                      <h2 className="font-display text-xl font-bold text-foreground mb-4">
+                        Projects You're Contributing To
+                      </h2>
+                      {loading ? (
+                        <Skeleton className="h-24 w-full rounded-2xl" />
+                      ) : collaborations.length === 0 ? (
+                        <div className="text-center py-12 text-muted-foreground">
+                          <p>You're not collaborating on any projects yet.</p>
+                          <Button variant="outline" className="mt-3" onClick={() => setMainTab("ecosystem")}>
+                            Explore Ecosystem
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {collaborations.map((project) => (
+                            <MyProjectCard key={project.id} project={project} isOwner={false} />
+                          ))}
+                        </div>
+                      )}
+                    </TabsContent>
+                  </Tabs>
                 </TabsContent>
               </Tabs>
             </div>
