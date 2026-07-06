@@ -504,8 +504,8 @@ function DistributionBuilder({
                 <TableCell className="text-right">{totalPercent}%</TableCell>
                 <TableCell className="text-right">{fmt(taskAmounts.reduce((s, a) => s + a, 0))}</TableCell>
                 {people.map((_, i) => (
-                  <TableCell key={i} className="text-right bg-foreground text-background">
-                    {fmt(perPersonEqual)}
+                  <TableCell key={i} className="text-right bg-foreground text-background font-mono">
+                    {fmt(perPersonTotal[i] || 0)}
                   </TableCell>
                 ))}
                 <TableCell />
