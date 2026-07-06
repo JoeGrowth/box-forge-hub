@@ -149,8 +149,8 @@ const Dashboard = () => {
                 {talentReady && !talentLoading && isCapable && <NextGoalBanner />}
               </>
             )}
-            <div className={cn("grid gap-6 md:gap-8", isFirstLogin ? "lg:grid-cols-2" : "lg:grid-cols-3")}>
-              <div className={cn("min-w-0", !isFirstLogin && "lg:col-span-2 space-y-6 md:space-y-8")}>
+            <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
+              <div className={cn("min-w-0 lg:col-span-2", !isFirstLogin && "space-y-6 md:space-y-8")}>
                 {isFirstLogin ? (
                   <AIProfileDraftCard />
                 ) : (
