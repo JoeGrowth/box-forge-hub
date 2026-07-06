@@ -98,10 +98,10 @@ const Dashboard = () => {
     setSearchParams(next, { replace: true });
   }, [searchParams, setSearchParams]);
 
-  // Progressive dashboard reveal. On first login only the AI draft
-  // (rendered inside DashboardHero) and Achievements show. Accepting the
-  // draft reveals "Shape your talent". Reaching the Capable stage reveals
-  // the full dashboard.
+  // Progressive dashboard reveal. On first login only the AI draft card
+  // and Achievements show side by side. Accepting the draft reveals
+  // "Shape your talent". Reaching the Capable stage reveals the full dashboard.
+
   useEffect(() => {
     if (!user) return;
     let alive = true;
