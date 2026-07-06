@@ -432,6 +432,11 @@ function DistributionBuilder({
               onChange={(e) =>
                 setPeople((prev) => prev.map((v, idx) => (idx === i ? e.target.value : v)))
               }
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && i === people.length - 1) {
+                  setPeople((prev) => [...prev, `Person (${prev.length + 1})`]);
+                }
+              }}
               className="w-full sm:w-48"
             />
           ))}
