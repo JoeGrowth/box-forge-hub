@@ -366,7 +366,7 @@ export function DashboardProgress() {
         </div>
         <p className="text-sm text-muted-foreground">
           Finish these milestones to unlock matches, opportunities and co-builders. Track your long-game in the{" "}
-          <Link to="/profile" className="text-b4-teal hover:underline font-medium">
+          <Link to="/ladder" className="text-b4-teal hover:underline font-medium">
             Professional Growth Path
           </Link>.
         </p>
