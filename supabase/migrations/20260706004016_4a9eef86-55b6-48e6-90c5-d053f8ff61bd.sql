@@ -1,0 +1,1 @@
+ALTER TABLE public.distribution_records DROP CONSTRAINT IF EXISTS distribution_records_kind_check;
