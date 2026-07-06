@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Briefcase, GraduationCap, CalendarDays, Save, RefreshCw, Loader2, Lock, FolderOpen, Eye, Pencil, Building2, Settings, ClipboardList } from "lucide-react";
+import { Plus, Trash2, Briefcase, GraduationCap, CalendarDays, Save, RefreshCw, Loader2, Lock, FolderOpen, Eye, Pencil, Building2, Settings, ClipboardList, ChevronDown, ChevronUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -59,6 +59,7 @@ function DistributionBuilder({
   const [saved, setSaved] = useState<any[]>([]);
   const [loadingSaved, setLoadingSaved] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showSaved, setShowSaved] = useState(false);
 
   const fetchSaved = useCallback(async () => {
     if (!user) return;
@@ -219,63 +220,69 @@ function DistributionBuilder({
     <div className="space-y-6" key={resetKey}>
       {/* Saved distributions */}
       <Card>
-        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <CardHeader
+          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 cursor-pointer select-none"
+          onClick={() => setShowSaved((s) => !s)}
+        >
           <CardTitle className="text-base flex items-center gap-2">
-            <FolderOpen className="w-4 h-4" /> Saved {label} distributions
+            <FolderOpen className="w-4 h-4" /> Saved Distributions
             <Badge variant="secondary" className="ml-1">{saved.length}</Badge>
+            {showSaved ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
           </CardTitle>
           {loadingSaved && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
         </CardHeader>
-        <CardContent>
-          {saved.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No saved distributions yet. Fill the form below and click <strong>Save distribution</strong>.</p>
-          ) : (
-            <div className="overflow-x-auto -mx-6 px-6">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-10">#</TableHead>
-                  <TableHead>Title</TableHead>
-                  <TableHead className="text-right">Budget</TableHead>
-                  <TableHead className="text-right">People</TableHead>
-                  <TableHead>Saved</TableHead>
-                  <TableHead className="w-32"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {saved.map((r, i) => (
-                  <TableRow
-                    key={r.id}
-                    className="cursor-pointer hover:bg-muted/40"
-                    onClick={() => loadSaved(r, "view")}
-                  >
-                    <TableCell className="font-mono text-muted-foreground">({i + 1})</TableCell>
-                    <TableCell className="font-medium">{r.title}</TableCell>
-                    <TableCell className="text-right font-mono">{fmt(Number(r.budget))}</TableCell>
-                    <TableCell className="text-right">{Array.isArray(r.people) ? r.people.length : 0}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                      {r.created_at ? formatDistanceToNow(new Date(r.created_at), { addSuffix: true }) : ""}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-                        <Button size="sm" variant="ghost" onClick={() => loadSaved(r, "view")} title="View">
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => loadSaved(r, "edit")} title="Edit">
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => deleteSaved(r)} title="Delete">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+        {showSaved && (
+          <CardContent>
+            {saved.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No saved distributions yet. Fill the form below and click <strong>Save distribution</strong>.</p>
+            ) : (
+              <div className="overflow-x-auto -mx-6 px-6">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-10">#</TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead className="text-right">Budget</TableHead>
+                    <TableHead className="text-right">People</TableHead>
+                    <TableHead>Saved</TableHead>
+                    <TableHead className="w-32"></TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            </div>
-          )}
-        </CardContent>
+                </TableHeader>
+                <TableBody>
+                  {saved.map((r, i) => (
+                    <TableRow
+                      key={r.id}
+                      className="cursor-pointer hover:bg-muted/40"
+                      onClick={() => loadSaved(r, "view")}
+                    >
+                      <TableCell className="font-mono text-muted-foreground">({i + 1})</TableCell>
+                      <TableCell className="font-medium">{r.title}</TableCell>
+                      <TableCell className="text-right font-mono">{fmt(Number(r.budget))}</TableCell>
+                      <TableCell className="text-right">{Array.isArray(r.people) ? r.people.length : 0}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                        {r.created_at ? formatDistanceToNow(new Date(r.created_at), { addSuffix: true }) : ""}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                          <Button size="sm" variant="ghost" onClick={() => loadSaved(r, "view")} title="View">
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => loadSaved(r, "edit")} title="Edit">
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => deleteSaved(r)} title="Delete">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              </div>
+            )}
+          </CardContent>
+        )}
       </Card>
 
 
