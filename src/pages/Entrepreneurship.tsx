@@ -435,10 +435,30 @@ const Entrepreneurship = () => {
 
 
               <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as "ecosystem" | "legacy")} className="w-full">
-                <TabsList className="mb-6 w-full sm:w-auto grid grid-cols-2 sm:inline-flex">
-                  <TabsTrigger value="ecosystem" className="text-xs sm:text-sm">Ecosystem</TabsTrigger>
-                  <TabsTrigger value="legacy" className="text-xs sm:text-sm">Legacy</TabsTrigger>
-                </TabsList>
+                <div className="flex border-b border-border mb-6">
+                  <button
+                    onClick={() => setMainTab("ecosystem")}
+                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                      mainTab === "ecosystem"
+                        ? "border-foreground text-foreground"
+                        : "border-transparent text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Rocket className="w-4 h-4" />
+                    Ecosystem
+                  </button>
+                  <button
+                    onClick={() => setMainTab("legacy")}
+                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                      mainTab === "legacy"
+                        ? "border-foreground text-foreground"
+                        : "border-transparent text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Lightbulb className="w-4 h-4" />
+                    Legacy
+                  </button>
+                </div>
 
                 <TabsContent value="ecosystem">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
