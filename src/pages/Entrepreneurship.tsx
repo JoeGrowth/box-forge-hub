@@ -415,20 +415,22 @@ const Entrepreneurship = () => {
         ) : !engines.entrepreneurship.unlocked ? (
           <EngineLockedPanel engine="entrepreneurship" access={engines.entrepreneurship} />
         ) : (
-        <main className="pt-20">
-          <section className="py-10">
-            <div className="container mx-auto px-4">
+        <main className="pt-24 pb-8">
+          <section>
+            <div className="container mx-auto px-4 max-w-5xl space-y-6">
 
               {/* Header */}
-              <div className="mb-8 md:mb-12">
-                <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-1">
+              <div>
+                <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
                   Entrepreneurship
                 </h1>
-                <p className="text-sm sm:text-base text-muted-foreground mb-6">
-                  Launch ventures or join exciting startup projects
-                </p>
-                <NextGoalBanner pageStage="founder" />
               </div>
+
+              <NextGoalBanner pageStage="founder" />
+
+              <p className="text-sm sm:text-base text-muted-foreground">
+                Launch ventures or join exciting startup projects
+              </p>
 
 
               <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as "ecosystem" | "legacy")} className="w-full">
