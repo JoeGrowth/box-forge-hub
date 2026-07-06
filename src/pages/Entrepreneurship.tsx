@@ -512,17 +512,23 @@ const Entrepreneurship = () => {
                     </div>
 
                     <TabsContent value="initiated">
-                      <h2 className="font-display text-xl font-bold text-foreground mb-4">
-                        Initiated Projects
-                      </h2>
+                      <div className="flex items-start justify-between gap-3 flex-wrap mb-4">
+                        <div className="min-w-0">
+                          <h2 className="font-display text-xl font-bold text-foreground">Your Journey</h2>
+                          <p className="text-sm text-muted-foreground">
+                            Track your ventures and move them forward, one stage at a time.
+                          </p>
+                        </div>
+                      </div>
                       {loading ? (
                         <Skeleton className="h-24 w-full rounded-2xl" />
                       ) : myProjects.length === 0 ? (
-                        <div className="text-center py-12 text-muted-foreground">
-                          <p>You haven't created any projects yet.</p>
-                          <Button variant="outline" className="mt-3" onClick={() => setShowCreateDialog(true)}>
-                            Add Project
-                          </Button>
+                        <div className="rounded-xl border border-dashed border-border p-12 text-center">
+                          <Lightbulb className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
+                          <p className="font-medium text-foreground">Nothing in your journey yet</p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Add your first project to start the flow.
+                          </p>
                         </div>
                       ) : (
                         <div className="space-y-4">
