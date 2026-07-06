@@ -308,9 +308,9 @@ export function DashboardProgress() {
               ]),
           {
             key: "venture" as const,
-            title: "Get skin in the game",
+            title: "Launch or Join a Venture",
             description:
-              "Kick off your own venture idea or join a venture by applying to a co-builder role.",
+              "Create your own startup project or apply to co-build an existing venture with equity.",
             icon: Lightbulb,
             done: false,
             cta: { label: ventureStarted ? "Continue" : "Start", to: "/entrepreneurship" },
