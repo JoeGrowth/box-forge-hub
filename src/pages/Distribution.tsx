@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Briefcase, GraduationCap, CalendarDays, Save, RefreshCw, Loader2, Lock, FolderOpen, Eye, Pencil, Building2, Settings, ClipboardList, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Trash2, Briefcase, GraduationCap, CalendarDays, Save, RefreshCw, Loader2, Lock, FolderOpen, Eye, Pencil, Building2, Settings, ClipboardList, ChevronDown, ChevronUp, Copy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -158,6 +158,34 @@ function DistributionBuilder({
     fetchSaved();
   };
 
+  const duplicateSaved = async (rec: any) => {
+    if (!user) return;
+    let n = 1;
+    let newTitle = `${rec.title} (${n})`;
+    while (saved.some((r) => r.title.trim().toLowerCase() === newTitle.trim().toLowerCase())) {
+      n++;
+      newTitle = `${rec.title} (${n})`;
+    }
+    const payload = {
+      user_id: user.id,
+      kind,
+      title: newTitle,
+      budget_label: rec.budget_label || defaultBudgetLabel,
+      budget: Number(rec.budget) || 0,
+      currency: rec.currency || "TND",
+      charges: Array.isArray(rec.charges) ? rec.charges.map((c: any) => ({ ...c, id: uid() })) : [],
+      tasks: Array.isArray(rec.tasks) ? rec.tasks.map((t: any) => ({ ...t, id: uid() })) : [],
+      people: Array.isArray(rec.people) && rec.people.length > 0 ? rec.people : ["Person (1)"],
+    };
+    const { error } = await (supabase.from("distribution_records" as any) as any).insert(payload);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(`Duplicated as "${newTitle}".`);
+    await fetchSaved();
+  };
+
   const titleTaken = useMemo(
     () =>
       saved.some(
@@ -269,6 +297,9 @@ function DistributionBuilder({
                           </Button>
                           <Button size="sm" variant="ghost" onClick={() => loadSaved(r, "edit")} title="Edit">
                             <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => duplicateSaved(r)} title="Duplicate">
+                            <Copy className="w-4 h-4" />
                           </Button>
                           <Button size="sm" variant="ghost" onClick={() => deleteSaved(r)} title="Delete">
                             <Trash2 className="w-4 h-4" />
