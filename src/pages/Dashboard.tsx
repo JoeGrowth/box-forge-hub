@@ -53,6 +53,7 @@ const GATE_MESSAGES: Record<string, { title: string; description: string }> = {
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const { onboardingState, loading: onboardingLoading } = useOnboarding();
+  const { talentReady, loading: talentLoading } = useTalentReadiness();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
