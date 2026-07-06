@@ -284,17 +284,19 @@ function DistributionBuilder({
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <CardTitle className="text-base">Charges</CardTitle>
           <Button
             size="sm"
             variant="outline"
+            className="self-start sm:self-auto"
             onClick={() => setCharges((p) => [...p, { id: uid(), label: "New charge", amount: 0 }])}
           >
             <Plus className="w-4 h-4 mr-1" /> Add charge
           </Button>
         </CardHeader>
         <CardContent>
+          <div className="overflow-x-auto -mx-6 px-6">
           <Table>
             <TableHeader>
               <TableRow>
@@ -340,6 +342,7 @@ function DistributionBuilder({
               </TableRow>
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 
