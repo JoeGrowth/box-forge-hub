@@ -244,7 +244,11 @@ function DistributionBuilder({
               </TableHeader>
               <TableBody>
                 {saved.map((r, i) => (
-                  <TableRow key={r.id}>
+                  <TableRow
+                    key={r.id}
+                    className="cursor-pointer hover:bg-muted/40"
+                    onClick={() => loadSaved(r, "view")}
+                  >
                     <TableCell className="font-mono text-muted-foreground">({i + 1})</TableCell>
                     <TableCell className="font-medium">{r.title}</TableCell>
                     <TableCell className="text-right font-mono">{fmt(Number(r.budget))}</TableCell>
@@ -253,7 +257,7 @@ function DistributionBuilder({
                       {r.created_at ? formatDistanceToNow(new Date(r.created_at), { addSuffix: true }) : ""}
                     </TableCell>
                     <TableCell>
-                      <div className="flex justify-end gap-1">
+                      <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                         <Button size="sm" variant="ghost" onClick={() => loadSaved(r, "view")} title="View">
                           <Eye className="w-4 h-4" />
                         </Button>
