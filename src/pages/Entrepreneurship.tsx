@@ -5,7 +5,7 @@ import { ScrollToTopButton } from "@/components/layout/ScrollToTopButton";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Plus, Rocket, Eye, Users, Layers, Film, Shield, TrendingUp, Trash2, CheckCircle, Loader2 } from "lucide-react";
+import { Plus, Rocket, Eye, Users, Layers, Film, Shield, TrendingUp, Trash2, CheckCircle, Loader2, Lightbulb } from "lucide-react";
 import { CreateIdeaDialog } from "@/components/idea/CreateIdeaDialog";
 import { ApplyToJoinDialog } from "@/components/idea/ApplyToJoinDialog";
 import { IdeaDevelopDialog } from "@/components/idea/IdeaDevelopDialog";
@@ -435,10 +435,30 @@ const Entrepreneurship = () => {
 
 
               <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as "ecosystem" | "legacy")} className="w-full">
-                <TabsList className="mb-6 w-full sm:w-auto grid grid-cols-2 sm:inline-flex">
-                  <TabsTrigger value="ecosystem" className="text-xs sm:text-sm">Ecosystem</TabsTrigger>
-                  <TabsTrigger value="legacy" className="text-xs sm:text-sm">Legacy</TabsTrigger>
-                </TabsList>
+                <div className="flex border-b border-border mb-6">
+                  <button
+                    onClick={() => setMainTab("ecosystem")}
+                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                      mainTab === "ecosystem"
+                        ? "border-foreground text-foreground"
+                        : "border-transparent text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Rocket className="w-4 h-4" />
+                    Ecosystem
+                  </button>
+                  <button
+                    onClick={() => setMainTab("legacy")}
+                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                      mainTab === "legacy"
+                        ? "border-foreground text-foreground"
+                        : "border-transparent text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Lightbulb className="w-4 h-4" />
+                    Legacy
+                  </button>
+                </div>
 
                 <TabsContent value="ecosystem">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
@@ -476,10 +496,28 @@ const Entrepreneurship = () => {
 
                 <TabsContent value="legacy">
                   <Tabs value={legacySubTab} onValueChange={(v) => setLegacySubTab(v as "initiated" | "joined")} className="w-full">
-                    <TabsList className="mb-4 w-full sm:w-auto grid grid-cols-2 sm:inline-flex">
-                      <TabsTrigger value="initiated" className="text-xs sm:text-sm">Initiated</TabsTrigger>
-                      <TabsTrigger value="joined" className="text-xs sm:text-sm">Joined</TabsTrigger>
-                    </TabsList>
+                    <div className="flex gap-1 p-1 bg-muted/60 rounded-lg mb-4 w-full sm:w-auto">
+                      <button
+                        onClick={() => setLegacySubTab("initiated")}
+                        className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                          legacySubTab === "initiated"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Initiated
+                      </button>
+                      <button
+                        onClick={() => setLegacySubTab("joined")}
+                        className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                          legacySubTab === "joined"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Joined
+                      </button>
+                    </div>
 
                     <TabsContent value="initiated">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
