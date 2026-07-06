@@ -185,7 +185,14 @@ export default function OrganizationPage() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-bold">{org.name}</h1>
-              <Badge variant="outline" className="capitalize">{org.type}</Badge>
+              {(() => {
+                const hasCert = legalDocs.some((d) => d.name.toLowerCase().startsWith("certificate of incorporation"));
+                return (
+                  <Badge variant="outline" className="capitalize">
+                    {hasCert ? "Company" : "Organization"}
+                  </Badge>
+                );
+              })()}
               {(() => {
                 const stage = (org.lifecycle_stage ?? "venture") as LifecycleStage;
                 const meta = STAGE_META[stage];
