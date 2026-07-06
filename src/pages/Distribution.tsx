@@ -317,6 +317,7 @@ function DistributionBuilder({
                     <TableHead className="w-10">#</TableHead>
                     <TableHead>Title</TableHead>
                     <TableHead className="text-right">Budget</TableHead>
+                    <TableHead className="text-right">RS</TableHead>
                     <TableHead className="text-right">People</TableHead>
                     <TableHead>Saved</TableHead>
                     <TableHead className="w-32"></TableHead>
