@@ -347,9 +347,9 @@ function DistributionBuilder({
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <CardTitle className="text-base">People splitting the pool</CardTitle>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               size="sm"
               variant="outline"
@@ -374,7 +374,7 @@ function DistributionBuilder({
               onChange={(e) =>
                 setPeople((prev) => prev.map((v, idx) => (idx === i ? e.target.value : v)))
               }
-              className="w-48"
+              className="w-full sm:w-48"
             />
           ))}
         </CardContent>
