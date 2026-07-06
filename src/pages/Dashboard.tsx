@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -6,6 +6,9 @@ import { PageTransition } from "@/components/layout/PageTransition";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useTalentReadiness } from "@/hooks/useTalentReadiness";
+import { useNextBestActions } from "@/hooks/useNextBestActions";
+import { STAGE_RANK, type Stage } from "@/components/layout/GatedRoute";
+import { supabase } from "@/integrations/supabase/client";
 import { DashboardHero } from "@/components/dashboard/DashboardHero";
 import { NextGoalBanner } from "@/components/progression/NextGoalBanner";
 import { DashboardProgress } from "@/components/dashboard/DashboardProgress";
@@ -16,6 +19,7 @@ import { ProgressionPathCard } from "@/components/profile/ProgressionPathCard";
 import { CommitmentsPanel } from "@/components/commitments/CommitmentsPanel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
+
 
 const GATE_MESSAGES: Record<string, { title: string; description: string }> = {
   talent: {
