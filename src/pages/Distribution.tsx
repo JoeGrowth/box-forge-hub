@@ -80,19 +80,40 @@ function DistributionBuilder({
   const totalPercent = useMemo(() => tasks.reduce((s, t) => s + (Number(t.percent) || 0), 0), [tasks]);
 
   const taskAmounts = tasks.map((t) => (internalPool * (Number(t.percent) || 0)) / 100);
-  const splittableTotal = tasks.reduce(
-    (s, t, i) => (t.locked ? s : s + taskAmounts[i]),
-    0,
+
+  // Per-task share per person (defaults to equal split when not customized)
+  const getShares = (t: Task): number[] => {
+    const n = people.length;
+    if (n === 0) return [];
+    const eq = 100 / n;
+    return Array.from({ length: n }, (_, i) => {
+      const v = t.personShares?.[i];
+      return v === undefined || v === null || Number.isNaN(v) ? eq : Number(v);
+    });
+  };
+  const taskShareSum = (t: Task) => getShares(t).reduce((s, v) => s + v, 0);
+  const perPersonPerTask: (number | null)[][] = tasks.map((t, i) => {
+    if (t.locked || people.length === 0) return people.map(() => null);
+    const shares = getShares(t);
+    return shares.map((s) => (taskAmounts[i] * s) / 100);
+  });
+  const perPersonTotal = people.map((_, pi) =>
+    perPersonPerTask.reduce((s, row) => s + (typeof row[pi] === "number" ? (row[pi] as number) : 0), 0),
   );
-  const perPersonEqual = people.length > 0 ? splittableTotal / people.length : 0;
-  const perPersonPerTask = tasks.map((t, i) =>
-    t.locked || people.length === 0 ? null : taskAmounts[i] / people.length,
-  );
+  const taskShareErrors = tasks.map((t) => (t.locked ? null : Math.round(taskShareSum(t) * 100) / 100));
 
   const updateTask = (id: string, patch: Partial<Task>) =>
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
+  const updateTaskShare = (id: string, personIdx: number, value: number) =>
+    setTasks((prev) => prev.map((t) => {
+      if (t.id !== id) return t;
+      const shares = getShares(t);
+      shares[personIdx] = Number.isFinite(value) ? value : 0;
+      return { ...t, personShares: shares };
+    }));
   const updateCharge = (id: string, patch: Partial<Charge>) =>
     setCharges((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+
 
   const resetForm = () => {
     setTitle(defaultTitle);
