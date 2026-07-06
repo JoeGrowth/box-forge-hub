@@ -324,7 +324,13 @@ function DistributionBuilder({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {saved.map((r, i) => (
+                  {saved.map((r, i) => {
+                    const bud = Number(r.budget) || 0;
+                    const chg = Array.isArray(r.charges) ? r.charges.reduce((s: number, c: any) => s + (Number(c.amount) || 0), 0) : 0;
+                    const pool = Math.max(0, bud - chg);
+                    const lockedPct = Array.isArray(r.tasks) ? r.tasks.filter((t: any) => t?.locked).reduce((s: number, t: any) => s + (Number(t.percent) || 0), 0) : 0;
+                    const rs = pool * lockedPct / 100;
+                    return (
                     <TableRow
                       key={r.id}
                       className="cursor-pointer hover:bg-muted/40"
@@ -332,8 +338,8 @@ function DistributionBuilder({
                     >
                       <TableCell className="font-mono text-muted-foreground">({i + 1})</TableCell>
                       <TableCell className="font-medium">{r.title}</TableCell>
-                      <TableCell className="text-right font-mono">{fmt(Number(r.budget))}</TableCell>
-                      <TableCell className="text-right font-mono">{fmt((Number(r.budget) || 0) - (Array.isArray(r.charges) ? r.charges.reduce((s: number, c: any) => s + (Number(c.amount) || 0), 0) : 0))}</TableCell>
+                      <TableCell className="text-right font-mono">{fmt(bud)}</TableCell>
+                      <TableCell className="text-right font-mono">{fmt(rs)}</TableCell>
                       <TableCell className="text-right">{Array.isArray(r.people) ? r.people.length : 0}</TableCell>
                       <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                         {r.created_at ? formatDistanceToNow(new Date(r.created_at), { addSuffix: true }) : ""}
@@ -355,17 +361,25 @@ function DistributionBuilder({
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))}
+                    );
+                  })}
                   <TableRow className="border-t-2 font-semibold">
                     <TableCell></TableCell>
                     <TableCell>Total Reste structure</TableCell>
                     <TableCell></TableCell>
                     <TableCell className="text-right font-mono">
-                      {fmt(saved.reduce((sum, r) => sum + ((Number(r.budget) || 0) - (Array.isArray(r.charges) ? r.charges.reduce((s: number, c: any) => s + (Number(c.amount) || 0), 0) : 0)), 0))}
+                      {fmt(saved.reduce((sum, r) => {
+                        const bud = Number(r.budget) || 0;
+                        const chg = Array.isArray(r.charges) ? r.charges.reduce((s: number, c: any) => s + (Number(c.amount) || 0), 0) : 0;
+                        const pool = Math.max(0, bud - chg);
+                        const lockedPct = Array.isArray(r.tasks) ? r.tasks.filter((t: any) => t?.locked).reduce((s: number, t: any) => s + (Number(t.percent) || 0), 0) : 0;
+                        return sum + pool * lockedPct / 100;
+                      }, 0))}
                     </TableCell>
                     <TableCell colSpan={3}></TableCell>
                   </TableRow>
                 </TableBody>
+
               </Table>
               </div>
             )}
