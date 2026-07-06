@@ -289,18 +289,18 @@ export function DashboardProgress() {
             : [
                 {
                   key: "consulting-solo" as const,
-                  title: `Launch your Consulting Growth (${Math.min(soloDelivered, 3)}/3)`,
+                  title: `Start in Solo Mode (${Math.min(soloDelivered, 3)}/3)`,
                   description:
-                    "Track opportunities from LinkedIn or tenders through proposal, delivery and payment distribution with no contractors.",
+                    "Adapt to Consultant Posture by Tracking Opportunities through proposal, delivery, payment and accounting.",
                   icon: User,
                   done: soloDelivered >= 3,
                   cta: { label: soloDelivered > 0 ? "Continue" : "Start", to: "/consulting-growth" },
                 },
                 {
                   key: "consulting-contractors" as const,
-                  title: `Structure your Consulting Growth (${Math.min(contractorsDelivered, 7)}/7)`,
+                  title: `Structure by Splitting Missions with talents (${Math.min(contractorsDelivered, 7)}/7)`,
                   description:
-                    "Track opportunities from LinkedIn or tenders through proposal, delivery and payment distribution with contractors.",
+                    "Focus on your engine and give the opportunity for others to join your consulting engine by splitting missions.",
                   icon: Users,
                   done: contractorsDelivered >= 7,
                   cta: { label: contractorsDelivered > 0 ? "Continue" : "Start", to: "/consulting-growth" },
