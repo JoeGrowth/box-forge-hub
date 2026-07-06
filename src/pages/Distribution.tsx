@@ -298,6 +298,9 @@ function DistributionBuilder({
                           <Button size="sm" variant="ghost" onClick={() => loadSaved(r, "edit")} title="Edit">
                             <Pencil className="w-4 h-4" />
                           </Button>
+                          <Button size="sm" variant="ghost" onClick={() => duplicateSaved(r)} title="Duplicate">
+                            <Copy className="w-4 h-4" />
+                          </Button>
                           <Button size="sm" variant="ghost" onClick={() => deleteSaved(r)} title="Delete">
                             <Trash2 className="w-4 h-4" />
                           </Button>
