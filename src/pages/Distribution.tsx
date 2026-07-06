@@ -49,7 +49,7 @@ function DistributionBuilder({
   const { user } = useAuth();
   const [resetKey, setResetKey] = useState(0);
   const [title, setTitle] = useState(defaultTitle);
-  const [budget, setBudget] = useState<number>(420);
+  const [budget, setBudget] = useState<number>(0);
   const [currency, setCurrency] = useState<string>("TND");
   const [budgetLabel, setBudgetLabel] = useState(defaultBudgetLabel);
   const [charges, setCharges] = useState<Charge[]>(defaultCharges);
@@ -118,7 +118,7 @@ function DistributionBuilder({
 
   const resetForm = () => {
     setTitle(defaultTitle);
-    setBudget(420);
+    setBudget(0);
     setCurrency("TND");
     setBudgetLabel(defaultBudgetLabel);
     setCharges(defaultCharges.map((c) => ({ ...c, id: uid() })));
@@ -783,10 +783,10 @@ const CATS_KEY = (entityId: string) => `distribution_categories_${entityId}`;
 const ACTIVE_CAT_KEY = (entityId: string) => `distribution_active_category_${entityId}`;
 
 const genericTasks = (): Task[] => [
-  { id: uid(), label: "Preparation", percent: 30 },
-  { id: uid(), label: "Delivery", percent: 50 },
-  { id: uid(), label: "Follow-up", percent: 15 },
-  { id: uid(), label: "Rest Structure", percent: 5, locked: true },
+  { id: uid(), label: "Preparation", percent: 0 },
+  { id: uid(), label: "Delivery", percent: 0 },
+  { id: uid(), label: "Follow-up", percent: 0 },
+  { id: uid(), label: "Rest Structure", percent: 0, locked: true },
 ];
 const genericCharges = (): Charge[] => [
   { id: uid(), label: "Materials", amount: 0 },
