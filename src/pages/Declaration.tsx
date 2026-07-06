@@ -46,7 +46,7 @@ const DEFAULT_INTERNALS = ["Structure Handler", "Process Handler"];
 const ROSTER_KEY = "declaration_internal_roster_v1";
 const ACTIVE_ENTITY_KEY = "declaration_active_entity_v1";
 const DELIVERY_TYPES_KEY = "declaration_delivery_types_v1";
-const DEFAULT_DELIVERY_TYPES = ["consulting", "training", "fact-check"];
+const DEFAULT_DELIVERY_TYPES = ["consulting", "training"];
 const THRESHOLD = 1000;
 const CURRENCIES: Currency[] = ["TND", "EUR", "USD"];
 
