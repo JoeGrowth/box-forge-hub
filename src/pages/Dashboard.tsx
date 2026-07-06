@@ -95,6 +95,33 @@ const Dashboard = () => {
     setSearchParams(next, { replace: true });
   }, [searchParams, setSearchParams]);
 
+  // Progressive dashboard reveal. On first login only the AI draft
+  // (rendered inside DashboardHero) and Achievements show. Accepting the
+  // draft reveals "Shape your talent". Reaching the Capable stage reveals
+  // the full dashboard.
+  useEffect(() => {
+    if (!user) return;
+    let alive = true;
+    (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("profile_draft_accepted_at, profile_draft_source")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!alive) return;
+      // Treat "no AI draft ever generated" as accepted so returning users
+      // (pre-draft feature) still see their normal dashboard.
+      const noDraft = !data?.profile_draft_source;
+      setDraftAccepted(noDraft || Boolean(data?.profile_draft_accepted_at));
+    })();
+    return () => { alive = false; };
+  }, [user]);
+
+  const stageRank = STAGE_RANK[(progression?.current_state as Stage) ?? "novice"] ?? 0;
+  const isCapable = stageRank >= STAGE_RANK.capable;
+  const showShapeTalent = draftAccepted === true || isCapable;
+
+
 
   if (authLoading || onboardingLoading) {
     // Match ProtectedRoute's placeholder so the two hold the same background
