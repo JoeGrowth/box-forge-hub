@@ -14,7 +14,6 @@ import {
   User,
   Shield,
   Briefcase,
-  Lightbulb,
   Handshake,
   GraduationCap,
   FileText,
@@ -22,10 +21,7 @@ import {
   MoreHorizontal,
   Package,
   BookOpen,
-  Compass,
   Building2,
-  Sparkles,
-  ListChecks,
   Activity,
   BarChart3,
   Users,
@@ -67,17 +63,12 @@ const moreLinks: Array<{
   minStage?: keyof typeof STAGE_RANK;
   engineKey?: EngineKey;
 }> = [
-  { name: "Career", path: "/career", icon: Briefcase, engineKey: "career" },
   { name: "Consulting", path: "/consulting", icon: Handshake, engineKey: "consulting" },
-  { name: "Entrepreneurship", path: "/entrepreneurship", icon: Lightbulb, engineKey: "entrepreneurship" },
   { name: "Squares", path: "/squares", icon: LayoutGrid },
-  
+
   { name: "Boxes", path: "/boxes", icon: Package },
   { name: "Programs", path: "/programs", icon: BookOpen },
   { name: "Organizations", path: "/organizations", icon: Building2, minStage: "emerging" },
-  { name: "Advisory", path: "/advisory", icon: Compass, minStage: "emerging" },
-  { name: "Brand Identity", path: "/brand-identity", icon: Sparkles, minStage: "emerging" },
-  { name: "Checklist", path: "/checklist", icon: ListChecks, minStage: "emerging" },
 ];
 
 // Synchronous read of cached admin flag so first paint is stable.
