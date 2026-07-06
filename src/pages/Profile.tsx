@@ -689,26 +689,32 @@ const Profile = () => {
                         {profile?.full_name || "User"}
                       </h1>
                       <p className="text-muted-foreground mb-3">{user?.email}</p>
-                      <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-b4-teal/10 text-b4-teal text-sm font-medium">
-                          <Briefcase className="w-3.5 h-3.5" />
-                          {getRoleLabel()}
-                        </span>
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted text-sm font-medium ${status.color}`}
-                        >
-                          <status.icon className="w-3.5 h-3.5" />
-                          {status.label}
-                        </span>
-                        {scalingStatus.show && (
-                          <span
-                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 text-sm font-medium ${scalingStatus.color}`}
-                          >
-                            <scalingStatus.icon className="w-3.5 h-3.5" />
-                            {scalingStatus.label}
+                      {!onboardingState?.onboarding_completed && (
+                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted text-b4-coral text-sm font-medium">
+                            <AlertCircle className="w-3.5 h-3.5" />
+                            Onboarding Incomplete
                           </span>
+                        </div>
+                      )}
+                      {onboardingState?.onboarding_completed &&
+                        onboardingState.journey_status === "pending_approval" && (
+                          <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted text-amber-500 text-sm font-medium">
+                              <Clock className="w-3.5 h-3.5" />
+                              Pending Admin Approval
+                            </span>
+                          </div>
                         )}
-                      </div>
+                      {onboardingState?.onboarding_completed &&
+                        onboardingState.journey_status === "rejected" && (
+                          <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted text-b4-coral text-sm font-medium">
+                              <AlertCircle className="w-3.5 h-3.5" />
+                              Application Rejected
+                            </span>
+                          </div>
+                        )}
                     </>
                   )}
                 </div>
