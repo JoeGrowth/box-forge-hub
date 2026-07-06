@@ -132,6 +132,7 @@ function DistributionBuilder({
     setTitle(rec.title);
     setBudget(Number(rec.budget) || 0);
     setBudgetLabel(rec.budget_label || defaultBudgetLabel);
+    setCurrency(rec.currency || "TND");
     setCharges(Array.isArray(rec.charges) ? rec.charges : []);
     setTasks(Array.isArray(rec.tasks) ? rec.tasks : []);
     setPeople(Array.isArray(rec.people) && rec.people.length > 0 ? rec.people : ["Person (1)"]);
