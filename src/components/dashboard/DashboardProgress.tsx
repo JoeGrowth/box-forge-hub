@@ -289,18 +289,18 @@ export function DashboardProgress() {
             : [
                 {
                   key: "consulting-solo" as const,
-                  title: `Start in Solo Mode (${Math.min(soloDelivered, 3)}/3)`,
+                  title: `Deliver Missions in Solo Mode (${Math.min(soloDelivered, 3)}/3)`,
                   description:
-                    "Adapt to Consultant Posture by Tracking Opportunities through proposal, delivery, payment and accounting.",
+                    "Close 3 missions end-to-end on your own — track opportunities through lead, proposal, delivery, payment, and accounting until your solo engine runs.",
                   icon: User,
                   done: soloDelivered >= 3,
                   cta: { label: soloDelivered > 0 ? "Continue" : "Start", to: "/consulting-growth" },
                 },
                 {
                   key: "consulting-contractors" as const,
-                  title: `Structure by Splitting Missions with talents (${Math.min(contractorsDelivered, 7)}/7)`,
+                  title: `Deliver Missions with other talents (${Math.min(contractorsDelivered, 7)}/7)`,
                   description:
-                    "Focus on your engine and give the opportunity for others to join your consulting engine by splitting missions.",
+                    "Split delivery with other talents on shared missions — share responsibilities, grow your collective track record, and scale your consulting engine beyond solo work.",
                   icon: Users,
                   done: contractorsDelivered >= 7,
                   cta: { label: contractorsDelivered > 0 ? "Continue" : "Start", to: "/consulting-growth" },
