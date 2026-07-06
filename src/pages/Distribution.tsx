@@ -236,6 +236,59 @@ function DistributionBuilder({
     resetForm();
   };
 
+  const handleTitleBlur = async () => {
+    if (!user) return;
+    if (!title.trim()) return;
+    if (titleTaken) return;
+
+    if (editingId) {
+      setSaving(true);
+      const { error } = await (supabase.from("distribution_records" as any) as any)
+        .update({ title: title.trim() })
+        .eq("id", editingId);
+      setSaving(false);
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      toast.success("Title updated.");
+      await fetchSaved();
+      return;
+    }
+
+    if (totalPercent !== 100) return;
+
+    setSaving(true);
+    const payload = {
+      user_id: user.id,
+      kind,
+      title: title.trim(),
+      budget_label: budgetLabel,
+      budget,
+      currency,
+      charges,
+      tasks,
+      people,
+    };
+    const { data, error } = await (supabase.from("distribution_records" as any) as any)
+      .insert(payload)
+      .select();
+    setSaving(false);
+    if (error) {
+      if ((error as any).code === "23505") {
+        toast.error(`A ${label} distribution called "${title}" already exists.`);
+      } else {
+        toast.error(error.message);
+      }
+      return;
+    }
+    if (data?.[0]?.id) {
+      setEditingId(data[0].id);
+    }
+    toast.success("Distribution saved.");
+    await fetchSaved();
+  };
+
   return (
     <div className="space-y-6" key={resetKey}>
       {/* Saved distributions */}
