@@ -465,11 +465,27 @@ function DistributionBuilder({
                     />
                   </TableCell>
                   <TableCell className="text-right font-mono">{fmt(taskAmounts[idx])}</TableCell>
-                  {people.map((_, pi) => (
-                    <TableCell key={pi} className="text-right font-mono">
-                      {perPersonPerTask[idx] === null ? "—" : fmt(perPersonPerTask[idx] as number)}
-                    </TableCell>
-                  ))}
+                  {people.map((_, pi) => {
+                    const cell = perPersonPerTask[idx][pi];
+                    if (cell === null) {
+                      return <TableCell key={pi} className="text-right text-muted-foreground">—</TableCell>;
+                    }
+                    const share = getShares(t)[pi] ?? 0;
+                    return (
+                      <TableCell key={pi} className="text-right align-top">
+                        <div className="flex items-center justify-end gap-1">
+                          <Input
+                            type="number"
+                            className="h-8 w-16 text-right px-1"
+                            value={share}
+                            onChange={(e) => updateTaskShare(t.id, pi, parseFloat(e.target.value) || 0)}
+                          />
+                          <span className="text-xs text-muted-foreground">%</span>
+                        </div>
+                        <div className="text-[11px] text-muted-foreground font-mono mt-0.5">{fmt(cell)}</div>
+                      </TableCell>
+                    );
+                  })}
                   <TableCell>
                     {!t.locked && (
                       <Button
