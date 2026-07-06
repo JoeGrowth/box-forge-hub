@@ -356,6 +356,15 @@ function DistributionBuilder({
                       </TableCell>
                     </TableRow>
                   ))}
+                  <TableRow className="border-t-2 font-semibold">
+                    <TableCell></TableCell>
+                    <TableCell>Total Reste structure</TableCell>
+                    <TableCell></TableCell>
+                    <TableCell className="text-right font-mono">
+                      {fmt(saved.reduce((sum, r) => sum + ((Number(r.budget) || 0) - (Array.isArray(r.charges) ? r.charges.reduce((s: number, c: any) => s + (Number(c.amount) || 0), 0) : 0)), 0))}
+                    </TableCell>
+                    <TableCell colSpan={3}></TableCell>
+                  </TableRow>
                 </TableBody>
               </Table>
               </div>
