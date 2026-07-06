@@ -147,7 +147,8 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user, authLoading]);
 
-  // Realtime: refetch whenever the user's onboarding rows change in Supabase.
+  // Realtime + focus/visibility refetch so admin-side updates (e.g. approval)
+  // become visible without requiring a full page reload.
   useEffect(() => {
     if (!user) return;
 
@@ -165,8 +166,23 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
       )
       .subscribe();
 
+    const onVisible = () => {
+      if (document.visibilityState === "visible") fetchOnboardingData();
+    };
+    const onFocus = () => fetchOnboardingData();
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onFocus);
+
+    // Safety-net poll every 60s to catch any missed realtime events.
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === "visible") fetchOnboardingData();
+    }, 60000);
+
     return () => {
       supabase.removeChannel(channel);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onFocus);
+      window.clearInterval(interval);
     };
   }, [user?.id]);
 
