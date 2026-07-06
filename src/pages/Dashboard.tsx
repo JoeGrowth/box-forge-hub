@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -6,6 +6,9 @@ import { PageTransition } from "@/components/layout/PageTransition";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useTalentReadiness } from "@/hooks/useTalentReadiness";
+import { useNextBestActions } from "@/hooks/useNextBestActions";
+import { STAGE_RANK, type Stage } from "@/components/layout/GatedRoute";
+import { supabase } from "@/integrations/supabase/client";
 import { DashboardHero } from "@/components/dashboard/DashboardHero";
 import { NextGoalBanner } from "@/components/progression/NextGoalBanner";
 import { DashboardProgress } from "@/components/dashboard/DashboardProgress";
@@ -16,6 +19,7 @@ import { ProgressionPathCard } from "@/components/profile/ProgressionPathCard";
 import { CommitmentsPanel } from "@/components/commitments/CommitmentsPanel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
+
 
 const GATE_MESSAGES: Record<string, { title: string; description: string }> = {
   talent: {
@@ -54,6 +58,8 @@ const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const { onboardingState, loading: onboardingLoading } = useOnboarding();
   const { talentReady, loading: talentLoading } = useTalentReadiness();
+  const { progression } = useNextBestActions(user?.id);
+  const [draftAccepted, setDraftAccepted] = useState<boolean | null>(null);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -89,6 +95,33 @@ const Dashboard = () => {
     setSearchParams(next, { replace: true });
   }, [searchParams, setSearchParams]);
 
+  // Progressive dashboard reveal. On first login only the AI draft
+  // (rendered inside DashboardHero) and Achievements show. Accepting the
+  // draft reveals "Shape your talent". Reaching the Capable stage reveals
+  // the full dashboard.
+  useEffect(() => {
+    if (!user) return;
+    let alive = true;
+    (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("profile_draft_accepted_at, profile_draft_source")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!alive) return;
+      // Treat "no AI draft ever generated" as accepted so returning users
+      // (pre-draft feature) still see their normal dashboard.
+      const noDraft = !data?.profile_draft_source;
+      setDraftAccepted(noDraft || Boolean(data?.profile_draft_accepted_at));
+    })();
+    return () => { alive = false; };
+  }, [user]);
+
+  const stageRank = STAGE_RANK[(progression?.current_state as Stage) ?? "novice"] ?? 0;
+  const isCapable = stageRank >= STAGE_RANK.capable;
+  const showShapeTalent = draftAccepted === true || isCapable;
+
+
 
   if (authLoading || onboardingLoading) {
     // Match ProtectedRoute's placeholder so the two hold the same background
@@ -106,19 +139,20 @@ const Dashboard = () => {
         <main className="container mx-auto px-3 sm:px-4 py-6 md:py-8 pt-20 md:pt-24 pb-16">
           <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
             <DashboardHero />
-            {talentReady && !talentLoading && <NextGoalBanner />}
+            {talentReady && !talentLoading && isCapable && <NextGoalBanner />}
             <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
               <div className="lg:col-span-2 space-y-6 md:space-y-8 min-w-0">
-                <DashboardProgress />
-                <CommitmentsPanel />
-                <DashboardOpportunities />
-                <ProgressionPathCard userId={user?.id} />
+                {showShapeTalent && <DashboardProgress />}
+                {isCapable && <CommitmentsPanel />}
+                {isCapable && <DashboardOpportunities />}
+                {isCapable && <ProgressionPathCard userId={user?.id} />}
               </div>
               <div className="space-y-6 md:space-y-8 min-w-0">
-                <DashboardNextSteps />
+                {isCapable && <DashboardNextSteps />}
                 <DashboardAchievements />
               </div>
             </div>
+
           </div>
         </main>
       </PageTransition>
