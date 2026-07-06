@@ -55,7 +55,7 @@ export default function Organizations() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
-  const [type, setType] = useState("company");
+  const [type, setType] = useState("organization");
   const [description, setDescription] = useState("");
   const [website, setWebsite] = useState("");
   const [saving, setSaving] = useState(false);
@@ -162,7 +162,8 @@ export default function Organizations() {
                   <Select value={type} onValueChange={setType}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="company">Company</SelectItem>
+                      <SelectItem value="organization">Organization</SelectItem>
+                      <SelectItem value="company">Company (requires Certificate of Incorporation)</SelectItem>
                       <SelectItem value="ministry">Ministry</SelectItem>
                       <SelectItem value="ngo">NGO</SelectItem>
                       <SelectItem value="startup">Startup</SelectItem>
@@ -221,6 +222,7 @@ export default function Organizations() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All types</SelectItem>
+                    <SelectItem value="organization">Organization</SelectItem>
                     <SelectItem value="company">Company</SelectItem>
                     <SelectItem value="ministry">Ministry</SelectItem>
                     <SelectItem value="ngo">NGO</SelectItem>

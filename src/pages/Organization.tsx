@@ -650,7 +650,7 @@ function LegalTab({
   const [pdfBody, setPdfBody] = useState("");
   const [generating, setGenerating] = useState(false);
 
-  const uploadFile = async (file: File) => {
+  const uploadFile = async (file: File, label?: string) => {
     if (!file) return;
     if (file.type !== "application/pdf") {
       toast({ title: "Only PDF files are allowed", variant: "destructive" });
@@ -666,9 +666,10 @@ function LegalTab({
       toast({ title: "Upload failed", description: upErr.message, variant: "destructive" });
       return;
     }
+    const docName = label ? `${label} — ${file.name}` : file.name;
     const { error: dbErr } = await supabase.from("organization_legal_documents").insert({
       organization_id: orgId,
-      name: file.name,
+      name: docName,
       storage_path: path,
       mime_type: "application/pdf",
       size_bytes: file.size,
@@ -679,9 +680,23 @@ function LegalTab({
       toast({ title: "Save failed", description: dbErr.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Legal document uploaded" });
+    // If the certificate of incorporation was added, promote org type to "company"
+    if (label === "Certificate of Incorporation") {
+      const { error: typeErr } = await supabase
+        .from("organizations")
+        .update({ type: "company" })
+        .eq("id", orgId);
+      if (!typeErr) {
+        toast({ title: "Certificate of Incorporation added", description: "This entity is now labeled as a Company." });
+      } else {
+        toast({ title: "Certificate saved", description: "Could not update the type label automatically." });
+      }
+    } else {
+      toast({ title: `${label ?? "Legal document"} uploaded` });
+    }
     reload();
   };
+
 
   const download = async (d: LegalDoc) => {
     const { data, error } = await supabase.storage
@@ -698,9 +713,19 @@ function LegalTab({
     if (!confirm(`Delete "${d.name}"?`)) return;
     await supabase.storage.from("organization-legal").remove([d.storage_path]);
     const { error } = await supabase.from("organization_legal_documents").delete().eq("id", d.id);
-    if (error) toast({ title: "Delete failed", description: error.message, variant: "destructive" });
-    else { toast({ title: "Deleted" }); reload(); }
+    if (error) { toast({ title: "Delete failed", description: error.message, variant: "destructive" }); return; }
+    // If we just removed the last Certificate of Incorporation, downgrade the org type back to "organization"
+    const wasCert = d.name.toLowerCase().startsWith("certificate of incorporation");
+    const remainingCert = docs.some((x) => x.id !== d.id && x.name.toLowerCase().startsWith("certificate of incorporation"));
+    if (wasCert && !remainingCert) {
+      await supabase.from("organizations").update({ type: "organization" }).eq("id", orgId);
+      toast({ title: "Deleted", description: "Entity is no longer labeled as Company." });
+    } else {
+      toast({ title: "Deleted" });
+    }
+    reload();
   };
+
 
   const generatePdf = async () => {
     if (!pdfTitle.trim() || !pdfBody.trim()) return;
@@ -749,57 +774,93 @@ function LegalTab({
 
   return (
     <div className="space-y-3">
-      {canEdit && (
-        <div className="rounded-xl border border-dashed border-border bg-card p-4 flex flex-wrap gap-2 items-center">
-          <input
-            id="legal-upload"
-            type="file"
-            accept="application/pdf"
-            className="hidden"
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadFile(f); e.currentTarget.value = ""; }}
-          />
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={uploading}
-            onClick={() => document.getElementById("legal-upload")?.click()}
-          >
-            <Upload className="w-3 h-3 mr-1" /> {uploading ? "Uploading…" : "Upload PDF"}
-          </Button>
-          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm"><FilePlus className="w-3 h-3 mr-1" /> Create PDF</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create a legal PDF for {orgName}</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-3">
-                <div>
-                  <Label>Document title</Label>
-                  <Input value={pdfTitle} onChange={(e) => setPdfTitle(e.target.value)} placeholder="Statutes / Founders agreement / NDA…" />
-                </div>
-                <div>
-                  <Label>Content</Label>
-                  <Textarea
-                    value={pdfBody}
-                    onChange={(e) => setPdfBody(e.target.value)}
-                    rows={10}
-                    placeholder="Type the legal clauses. Line breaks are preserved."
-                  />
-                </div>
+      {canEdit && (() => {
+        const LEGAL_CATEGORIES: { label: string; hint: string }[] = [
+          { label: "Certificate of Incorporation", hint: "Promotes this entity to Company" },
+          { label: "Statutes", hint: "Articles of association / bylaws" },
+          { label: "Founders Agreement", hint: "Between co-founders" },
+          { label: "NDA", hint: "Non-disclosure agreement" },
+          { label: "Contract", hint: "Client / supplier / partnership" },
+        ];
+        const hasCert = docs.some((d) => d.name.toLowerCase().startsWith("certificate of incorporation"));
+        return (
+          <div className="rounded-xl border border-dashed border-border bg-card p-4 space-y-3">
+            <div className="flex items-start justify-between gap-2 flex-wrap">
+              <div>
+                <p className="text-sm font-medium text-foreground">Add legal documents</p>
+                <p className="text-xs text-muted-foreground">PDF only. Upload one document per category.</p>
               </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
-                <Button onClick={generatePdf} disabled={generating || !pdfTitle.trim() || !pdfBody.trim()}>
-                  {generating ? "Generating…" : "Generate & save"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-          <span className="text-xs text-muted-foreground">Store statutes, founders agreements, NDAs, contracts — PDF only.</span>
-        </div>
-      )}
+              <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline"><FilePlus className="w-3 h-3 mr-1" /> Generate PDF from text</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create a legal PDF for {orgName}</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-3">
+                    <div>
+                      <Label>Document title</Label>
+                      <Input value={pdfTitle} onChange={(e) => setPdfTitle(e.target.value)} placeholder="Statutes / Founders agreement / NDA…" />
+                    </div>
+                    <div>
+                      <Label>Content</Label>
+                      <Textarea
+                        value={pdfBody}
+                        onChange={(e) => setPdfBody(e.target.value)}
+                        rows={10}
+                        placeholder="Type the legal clauses. Line breaks are preserved."
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
+                    <Button onClick={generatePdf} disabled={generating || !pdfTitle.trim() || !pdfBody.trim()}>
+                      {generating ? "Generating…" : "Generate & save"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            {!hasCert && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-500/10 p-2.5 text-xs text-amber-800 dark:text-amber-200">
+                No <strong>Certificate of Incorporation</strong> yet — this entity is labeled <strong>Organization</strong>. Add it to be recognized as a <strong>Company</strong>.
+              </div>
+            )}
+
+            <div className="grid sm:grid-cols-2 gap-2">
+              {LEGAL_CATEGORIES.map((cat) => {
+                const inputId = `legal-upload-${cat.label.replace(/\s+/g, "-").toLowerCase()}`;
+                return (
+                  <div key={cat.label} className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background p-2.5">
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium text-foreground truncate">Add {cat.label}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">{cat.hint}</p>
+                    </div>
+                    <input
+                      id={inputId}
+                      type="file"
+                      accept="application/pdf"
+                      className="hidden"
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadFile(f, cat.label); e.currentTarget.value = ""; }}
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={uploading}
+                      onClick={() => document.getElementById(inputId)?.click()}
+                    >
+                      <Upload className="w-3 h-3 mr-1" /> PDF
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
+
 
       {docs.length === 0 ? (
         <EmptyState
