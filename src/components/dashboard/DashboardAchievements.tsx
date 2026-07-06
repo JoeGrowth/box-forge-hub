@@ -75,12 +75,12 @@ export function DashboardAchievements() {
     const talentMonetized = solo >= 3 && contractors >= 7;
 
     const a1 = !!onboardingState?.onboarding_completed;
-    const a2 = a1 && !!nrDecoder;
-    const a3 = a2 && talentReady;
-    const a4 = a3 && (onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved");
-    const a5 = a4 && (ideas?.length || 0) > 0;
-    const a6 = a5 && (teamMemberships?.length || 0) > 0;
-    const a7 = a6 && talentMonetized;
+    const a2 = !!nrDecoder;
+    const a3 = talentReady;
+    const a4 = onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved";
+    const a5 = (ideas?.length || 0) > 0;
+    const a6 = (teamMemberships?.length || 0) > 0;
+    const a7 = talentMonetized;
 
     const achievementsList: Achievement[] = [
       {
