@@ -50,6 +50,7 @@ function DistributionBuilder({
   const [resetKey, setResetKey] = useState(0);
   const [title, setTitle] = useState(defaultTitle);
   const [budget, setBudget] = useState<number>(420);
+  const [currency, setCurrency] = useState<string>("TND");
   const [budgetLabel, setBudgetLabel] = useState(defaultBudgetLabel);
   const [charges, setCharges] = useState<Charge[]>(defaultCharges);
   const [tasks, setTasks] = useState<Task[]>(defaultTasks);
@@ -118,6 +119,7 @@ function DistributionBuilder({
   const resetForm = () => {
     setTitle(defaultTitle);
     setBudget(420);
+    setCurrency("TND");
     setBudgetLabel(defaultBudgetLabel);
     setCharges(defaultCharges.map((c) => ({ ...c, id: uid() })));
     setTasks(defaultTasks.map((t) => ({ ...t, id: uid() })));
@@ -130,6 +132,7 @@ function DistributionBuilder({
     setTitle(rec.title);
     setBudget(Number(rec.budget) || 0);
     setBudgetLabel(rec.budget_label || defaultBudgetLabel);
+    setCurrency(rec.currency || "TND");
     setCharges(Array.isArray(rec.charges) ? rec.charges : []);
     setTasks(Array.isArray(rec.tasks) ? rec.tasks : []);
     setPeople(Array.isArray(rec.people) && rec.people.length > 0 ? rec.people : ["Person (1)"]);
@@ -188,6 +191,7 @@ function DistributionBuilder({
       title: title.trim(),
       budget_label: budgetLabel,
       budget,
+      currency,
       charges,
       tasks,
       people,
@@ -291,11 +295,24 @@ function DistributionBuilder({
           </div>
           <div className="space-y-1.5">
             <Label>{budgetLabel}</Label>
-            <Input
-              type="number"
-              value={budget}
-              onChange={(e) => setBudget(parseFloat(e.target.value) || 0)}
-            />
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                value={budget}
+                onChange={(e) => setBudget(parseFloat(e.target.value) || 0)}
+                className="flex-1"
+              />
+              <Select value={currency} onValueChange={setCurrency}>
+                <SelectTrigger className="w-28">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="TND">TND</SelectItem>
+                  <SelectItem value="USD">USD</SelectItem>
+                  <SelectItem value="EUR">EUR</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
       </Card>
