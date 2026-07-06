@@ -670,7 +670,7 @@ const CoBuilders = () => {
                               <span>Natural Role</span>
                             </div>
                             <p className="text-sm text-foreground italic line-clamp-2">
-                              "{cobuilder.natural_role_description}"
+                              {cobuilder.natural_role_description}
                             </p>
                           </div>
                         )}
@@ -841,7 +841,7 @@ const CoBuilders = () => {
                   <Briefcase className="w-4 h-4 text-b4-teal" /> Natural Role
                 </h4>
                 <p className="text-muted-foreground italic">
-                  {previewData.description ? `"${previewData.description}"` : "Not defined"}
+                  {previewData.description || "Not defined"}
                 </p>
               </div>
 

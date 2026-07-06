@@ -1008,7 +1008,7 @@ const Resume = () => {
                       />
                     ) : naturalRole?.description ? (
                       <p className="text-foreground whitespace-pre-wrap bg-muted/30 rounded-lg p-4">
-                        "{naturalRole.description}"
+                        {naturalRole.description}
                       </p>
                     ) : (
                       <button 
