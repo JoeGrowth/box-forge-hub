@@ -713,9 +713,19 @@ function LegalTab({
     if (!confirm(`Delete "${d.name}"?`)) return;
     await supabase.storage.from("organization-legal").remove([d.storage_path]);
     const { error } = await supabase.from("organization_legal_documents").delete().eq("id", d.id);
-    if (error) toast({ title: "Delete failed", description: error.message, variant: "destructive" });
-    else { toast({ title: "Deleted" }); reload(); }
+    if (error) { toast({ title: "Delete failed", description: error.message, variant: "destructive" }); return; }
+    // If we just removed the last Certificate of Incorporation, downgrade the org type back to "organization"
+    const wasCert = d.name.toLowerCase().startsWith("certificate of incorporation");
+    const remainingCert = docs.some((x) => x.id !== d.id && x.name.toLowerCase().startsWith("certificate of incorporation"));
+    if (wasCert && !remainingCert) {
+      await supabase.from("organizations").update({ type: "organization" }).eq("id", orgId);
+      toast({ title: "Deleted", description: "Entity is no longer labeled as Company." });
+    } else {
+      toast({ title: "Deleted" });
+    }
+    reload();
   };
+
 
   const generatePdf = async () => {
     if (!pdfTitle.trim() || !pdfBody.trim()) return;
