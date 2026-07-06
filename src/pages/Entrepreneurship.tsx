@@ -531,6 +531,9 @@ const Entrepreneurship = () => {
                           <p className="text-sm text-muted-foreground mt-1">
                             Add your first project to start the flow.
                           </p>
+                          <Button className="mt-4" onClick={() => setShowCreateDialog(true)}>
+                            <Plus className="w-4 h-4 mr-1" /> Add First Project
+                          </Button>
                         </div>
                       ) : (
                         <div className="space-y-4">
