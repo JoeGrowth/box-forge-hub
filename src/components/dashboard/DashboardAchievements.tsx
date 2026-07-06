@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { 
-  Award, 
-  Star, 
-  Rocket, 
-  Target, 
-  Users, 
+import {
+  TrendingUp,
+  Star,
+  Rocket,
+  Target,
+  Users,
   Zap,
   Trophy,
   CheckCircle
