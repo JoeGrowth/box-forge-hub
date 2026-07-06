@@ -118,7 +118,7 @@ function DistributionBuilder({
 
   const resetForm = () => {
     setTitle(defaultTitle);
-    setBudget(420);
+    setBudget(0);
     setCurrency("TND");
     setBudgetLabel(defaultBudgetLabel);
     setCharges(defaultCharges.map((c) => ({ ...c, id: uid() })));
