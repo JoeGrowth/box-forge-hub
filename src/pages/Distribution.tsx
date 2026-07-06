@@ -630,9 +630,9 @@ export default function Distribution() {
                     : <>Choisir une entité pour organiser les répartitions budgétaires.</>}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
                 <Select value={activeEntityId ?? ""} onValueChange={setActiveEntityId}>
-                  <SelectTrigger className="w-[240px]">
+                  <SelectTrigger className="flex-1 sm:w-[240px]">
                     <Building2 className="h-4 w-4 mr-2 text-muted-foreground" />
                     <SelectValue placeholder="Choisir une entité" />
                   </SelectTrigger>
