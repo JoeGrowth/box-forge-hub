@@ -297,10 +297,6 @@ function DistributionBuilder({
               onChange={(e) => setBudget(parseFloat(e.target.value) || 0)}
             />
           </div>
-          <div className="space-y-1.5">
-            <Label>Budget label</Label>
-            <Input value={budgetLabel} onChange={(e) => setBudgetLabel(e.target.value)} />
-          </div>
         </CardContent>
       </Card>
 
