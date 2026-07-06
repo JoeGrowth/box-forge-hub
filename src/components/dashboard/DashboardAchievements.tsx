@@ -74,54 +74,62 @@ export function DashboardAchievements() {
 
     const talentMonetized = solo >= 3 && contractors >= 7;
 
+    const a1 = !!onboardingState?.onboarding_completed;
+    const a2 = a1 && !!nrDecoder;
+    const a3 = a2 && talentReady;
+    const a4 = a3 && (onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved");
+    const a5 = a4 && (ideas?.length || 0) > 0;
+    const a6 = a5 && (teamMemberships?.length || 0) > 0;
+    const a7 = a6 && talentMonetized;
+
     const achievementsList: Achievement[] = [
       {
         icon: Target,
         title: "Onboarded",
         description: "Intent declared",
-        earned: !!onboardingState?.onboarding_completed,
+        earned: a1,
         color: "text-blue-500",
       },
       {
         icon: Zap,
         title: "Self-aware",
         description: "Natural role decoded",
-        earned: !!nrDecoder,
+        earned: a2,
         color: "text-purple-500",
       },
       {
         icon: Star,
         title: "Talent",
         description: "Talent foundation set",
-        earned: talentReady,
+        earned: a3,
         color: "text-cyan-500",
       },
       {
         icon: Trophy,
         title: "Approved",
         description: "Journey validated",
-        earned: onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved",
+        earned: a4,
         color: "text-b4-teal",
       },
       {
         icon: Rocket,
         title: "Initiator",
         description: "First idea launched",
-        earned: (ideas?.length || 0) > 0,
+        earned: a5,
         color: "text-rose-500",
       },
       {
         icon: Users,
         title: "Co-builder",
         description: "Took a seat in a venture",
-        earned: (teamMemberships?.length || 0) > 0,
+        earned: a6,
         color: "text-emerald-500",
       },
       {
         icon: TrendingUp,
         title: "Advisor",
         description: "Talent monetized",
-        earned: talentMonetized,
+        earned: a7,
         color: "text-pink-500",
       },
     ];
