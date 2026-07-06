@@ -123,6 +123,8 @@ const Dashboard = () => {
   const stageRank = STAGE_RANK[(progression?.current_state as Stage) ?? "novice"] ?? 0;
   const isCapable = stageRank >= STAGE_RANK.capable;
   const showShapeTalent = draftAccepted === true || isCapable;
+  const isFirstLogin = draftAccepted === false && !isCapable;
+
 
 
 
