@@ -25,6 +25,7 @@ import { NextStepsCard } from "@/components/profile/NextStepsCard";
 import { ProgressionPathCard } from "@/components/profile/ProgressionPathCard";
 import { GrowthLoopsCard } from "@/components/profile/GrowthLoopsCard";
 import { useExpertise } from "@/hooks/useExpertise";
+import { useNextBestActions, progressionStageLabel } from "@/hooks/useNextBestActions";
 import { useTrust, trustLevelStyle } from "@/hooks/useTrust";
 import { useRevenue } from "@/hooks/useRevenue";
 import { useReputation, reputationLevelStyle } from "@/hooks/useReputation";
