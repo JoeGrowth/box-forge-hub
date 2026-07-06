@@ -518,6 +518,16 @@ function DistributionBuilder({
               Task percentages sum to {totalPercent}% — adjust to reach 100% for a full distribution.
             </p>
           )}
+          {taskShareErrors.some((e) => e !== null && Math.abs(e - 100) > 0.01) && (
+            <p className="text-xs text-amber-600 mt-1">
+              Each task&rsquo;s per-person shares must total 100%. Rows off target:{" "}
+              {tasks
+                .map((t, i) => ({ t, sum: taskShareErrors[i] }))
+                .filter((x) => x.sum !== null && Math.abs((x.sum as number) - 100) > 0.01)
+                .map((x) => `${x.t.label} (${x.sum}%)`)
+                .join(", ")}
+            </p>
+          )}
         </CardContent>
       </Card>
 
