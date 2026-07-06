@@ -890,14 +890,18 @@ function OrgDistributionsTab({ orgId, orgName, canEdit }: { orgId: string; orgNa
       ) : (
         <div className="rounded-xl border border-border bg-card divide-y divide-border">
           {entities.map((d) => (
-            <div key={d.id} className="flex items-center justify-between p-4 hover:bg-muted/40 transition">
+            <div
+              key={d.id}
+              className="flex items-center justify-between p-4 hover:bg-muted/40 transition cursor-pointer"
+              onClick={() => window.location.href = `/distribution?entity=${d.id}`}
+            >
               <div className="min-w-0">
                 <p className="font-medium text-foreground truncate">{d.name}</p>
                 <p className="text-xs text-muted-foreground">
                   Created {d.createdAt ? new Date(d.createdAt).toLocaleDateString() : "—"}
                 </p>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
                 {canEdit && (
                   <button
                     onClick={() => remove(d.id)}
