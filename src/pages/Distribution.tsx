@@ -475,6 +475,7 @@ function DistributionBuilder({
               </TableRow>
             </TableBody>
           </Table>
+          </div>
           {totalPercent !== 100 && (
             <p className="text-xs text-amber-600 mt-3">
               Task percentages sum to {totalPercent}% — adjust to reach 100% for a full distribution.
