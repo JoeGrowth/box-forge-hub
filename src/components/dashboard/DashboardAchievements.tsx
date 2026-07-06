@@ -112,7 +112,7 @@ export function DashboardAchievements() {
     };
 
     fetchAchievements();
-  }, [user, onboardingState]);
+  }, [user, onboardingState, talentReady]);
 
   const earnedCount = achievements.filter((a) => a.earned).length;
 
