@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { 
-  Award, 
-  Star, 
-  Rocket, 
-  Target, 
-  Users, 
+import {
+  TrendingUp,
+  Star,
+  Rocket,
+  Target,
+  Users,
   Zap,
   Trophy,
   CheckCircle
@@ -30,89 +30,127 @@ export function DashboardAchievements() {
   const { onboardingState } = useOnboarding();
   const { talentReady } = useTalentReadiness();
   const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [soloDelivered, setSoloDelivered] = useState(0);
+  const [contractorsDelivered, setContractorsDelivered] = useState(0);
+
+  const fetchAchievements = useCallback(async () => {
+    if (!user) return;
+
+    const [
+      { data: ideas },
+      { data: teamMemberships },
+      { data: nrDecoder },
+      { data: closedOpps },
+    ] = await Promise.all([
+      supabase.from("startup_ideas").select("review_status").eq("creator_id", user.id),
+      supabase.from("startup_team_members").select("*").eq("member_user_id", user.id),
+      supabase.from("nr_decoder_submissions").select("status").eq("user_id", user.id).single(),
+      supabase.from("consultant_opportunities").select("id").eq("user_id", user.id).eq("stage", "closed"),
+    ]);
+
+    const closedIds = (closedOpps ?? []).map((o: any) => o.id);
+    let solo = 0;
+    let contractors = 0;
+    if (closedIds.length > 0) {
+      const { data: dists } = await supabase
+        .from("consultant_opportunity_distributions")
+        .select("opportunity_id, recipient_name, note")
+        .in("opportunity_id", closedIds);
+      const byOpp: Record<string, { name: string; note: string | null }[]> = {};
+      (dists ?? []).forEach((d: any) => {
+        (byOpp[d.opportunity_id] ||= []).push({ name: d.recipient_name || "", note: d.note });
+      });
+      for (const id of closedIds) {
+        const list = byOpp[id] || [];
+        const hasEquity = list.some((r) =>
+          /associé|associe|equity|partner|co[- ]?builder/i.test(`${r.name} ${r.note ?? ""}`)
+        );
+        if (list.length <= 1) solo++;
+        else if (!hasEquity) contractors++;
+      }
+    }
+    setSoloDelivered(solo);
+    setContractorsDelivered(contractors);
+
+    const talentMonetized = solo >= 3 && contractors >= 7;
+
+    const achievementsList: Achievement[] = [
+      {
+        icon: Target,
+        title: "Onboarded",
+        description: "Intent declared",
+        earned: !!onboardingState?.onboarding_completed,
+        color: "text-blue-500",
+      },
+      {
+        icon: Zap,
+        title: "Self-aware",
+        description: "Natural role decoded",
+        earned: !!nrDecoder,
+        color: "text-purple-500",
+      },
+      {
+        icon: Star,
+        title: "Talent",
+        description: "Talent foundation set",
+        earned: talentReady,
+        color: "text-cyan-500",
+      },
+      {
+        icon: Trophy,
+        title: "Approved",
+        description: "Journey validated",
+        earned: onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved",
+        color: "text-b4-teal",
+      },
+      {
+        icon: Rocket,
+        title: "Initiator",
+        description: "First idea launched",
+        earned: (ideas?.length || 0) > 0,
+        color: "text-rose-500",
+      },
+      {
+        icon: Users,
+        title: "Co-builder",
+        description: "Took a seat in a venture",
+        earned: (teamMemberships?.length || 0) > 0,
+        color: "text-emerald-500",
+      },
+      {
+        icon: TrendingUp,
+        title: "Advisor",
+        description: "Talent monetized",
+        earned: talentMonetized,
+        color: "text-pink-500",
+      },
+    ];
+
+    setAchievements(achievementsList);
+  }, [user, onboardingState, talentReady]);
 
   useEffect(() => {
-    const fetchAchievements = async () => {
-      if (!user) return;
-
-      const [
-        { data: certifications },
-        { data: applications },
-        { data: ideas },
-        { data: teamMemberships },
-        { data: nrDecoder },
-      ] = await Promise.all([
-        supabase.from("user_certifications").select("*").eq("user_id", user.id),
-        supabase.from("startup_applications").select("status").eq("applicant_id", user.id),
-        supabase.from("startup_ideas").select("review_status").eq("creator_id", user.id),
-        supabase.from("startup_team_members").select("*").eq("member_user_id", user.id),
-        supabase.from("nr_decoder_submissions").select("status").eq("user_id", user.id).single(),
-      ]);
-
-      const achievementsList: Achievement[] = [
-        {
-          icon: Target,
-          title: "Onboarded",
-          description: "Intent declared",
-          earned: !!onboardingState?.onboarding_completed,
-          color: "text-blue-500",
-        },
-        {
-          icon: Zap,
-          title: "Self-aware",
-          description: "Natural role decoded",
-          earned: !!nrDecoder,
-          color: "text-purple-500",
-        },
-        {
-          icon: Trophy,
-          title: "Approved",
-          description: "Journey validated",
-          earned: onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved",
-          color: "text-b4-teal",
-        },
-        {
-          icon: Star,
-          title: "Talent",
-          description: "Talent foundation set",
-          earned: talentReady,
-          color: "text-cyan-500",
-        },
-        {
-          icon: Award,
-          title: "Certified",
-          description: "First certification earned",
-          earned: (certifications?.length || 0) > 0,
-          color: "text-amber-500",
-        },
-        {
-          icon: Rocket,
-          title: "Initiator",
-          description: "First idea launched",
-          earned: (ideas?.length || 0) > 0,
-          color: "text-rose-500",
-        },
-        {
-          icon: Users,
-          title: "Co-builder",
-          description: "Took a seat in a venture",
-          earned: (teamMemberships?.length || 0) > 0,
-          color: "text-emerald-500",
-        },
-        {
-          icon: CheckCircle,
-          title: "Stacked",
-          description: "2+ certifications",
-          earned: (certifications?.length || 0) >= 2,
-          color: "text-pink-500",
-        },
-      ];
-
-      setAchievements(achievementsList);
-    };
-
     fetchAchievements();
-  }, [user, onboardingState, talentReady]);
+    if (!user) return;
+    const onVisible = () => { if (document.visibilityState === "visible") fetchAchievements(); };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", fetchAchievements);
+
+    const channel = supabase
+      .channel(`dashboard-achievements-${user.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "consultant_opportunities", filter: `user_id=eq.${user.id}` }, fetchAchievements)
+      .on("postgres_changes", { event: "*", schema: "public", table: "consultant_opportunity_distributions" }, fetchAchievements)
+      .on("postgres_changes", { event: "*", schema: "public", table: "startup_ideas", filter: `creator_id=eq.${user.id}` }, fetchAchievements)
+      .on("postgres_changes", { event: "*", schema: "public", table: "startup_team_members", filter: `member_user_id=eq.${user.id}` }, fetchAchievements)
+      .on("postgres_changes", { event: "*", schema: "public", table: "nr_decoder_submissions", filter: `user_id=eq.${user.id}` }, fetchAchievements)
+      .subscribe();
+
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", fetchAchievements);
+      supabase.removeChannel(channel);
+    };
+  }, [fetchAchievements, user]);
 
   const earnedCount = achievements.filter((a) => a.earned).length;
 
