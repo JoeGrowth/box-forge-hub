@@ -175,7 +175,7 @@ function DistributionBuilder({
     setPeople(Array.isArray(rec.people) && rec.people.length > 0 ? rec.people : ["Person (1)"]);
     setEditingId(null);
     setResetKey((k) => k + 1);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setTimeout(() => missionRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
     toast.info(`Loaded duplicate as "${newTitle}" — edit and save.`);
   };
 
