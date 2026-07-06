@@ -496,10 +496,28 @@ const Entrepreneurship = () => {
 
                 <TabsContent value="legacy">
                   <Tabs value={legacySubTab} onValueChange={(v) => setLegacySubTab(v as "initiated" | "joined")} className="w-full">
-                    <TabsList className="mb-4 w-full sm:w-auto grid grid-cols-2 sm:inline-flex">
-                      <TabsTrigger value="initiated" className="text-xs sm:text-sm">Initiated</TabsTrigger>
-                      <TabsTrigger value="joined" className="text-xs sm:text-sm">Joined</TabsTrigger>
-                    </TabsList>
+                    <div className="flex gap-1 p-1 bg-muted/60 rounded-lg mb-4 w-full sm:w-auto">
+                      <button
+                        onClick={() => setLegacySubTab("initiated")}
+                        className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                          legacySubTab === "initiated"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Initiated
+                      </button>
+                      <button
+                        onClick={() => setLegacySubTab("joined")}
+                        className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                          legacySubTab === "joined"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Joined
+                      </button>
+                    </div>
 
                     <TabsContent value="initiated">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
