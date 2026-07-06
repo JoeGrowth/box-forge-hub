@@ -55,7 +55,7 @@ export default function Organizations() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
-  const [type, setType] = useState("company");
+  const [type, setType] = useState("organization");
   const [description, setDescription] = useState("");
   const [website, setWebsite] = useState("");
   const [saving, setSaving] = useState(false);
