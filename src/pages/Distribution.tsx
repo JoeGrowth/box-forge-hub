@@ -783,10 +783,10 @@ const CATS_KEY = (entityId: string) => `distribution_categories_${entityId}`;
 const ACTIVE_CAT_KEY = (entityId: string) => `distribution_active_category_${entityId}`;
 
 const genericTasks = (): Task[] => [
-  { id: uid(), label: "Preparation", percent: 30 },
-  { id: uid(), label: "Delivery", percent: 50 },
-  { id: uid(), label: "Follow-up", percent: 15 },
-  { id: uid(), label: "Rest Structure", percent: 5, locked: true },
+  { id: uid(), label: "Preparation", percent: 0 },
+  { id: uid(), label: "Delivery", percent: 0 },
+  { id: uid(), label: "Follow-up", percent: 0 },
+  { id: uid(), label: "Rest Structure", percent: 0, locked: true },
 ];
 const genericCharges = (): Charge[] => [
   { id: uid(), label: "Materials", amount: 0 },
