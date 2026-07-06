@@ -98,6 +98,7 @@ export default function Declaration() {
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
   const [collabEmail, setCollabEmail] = useState("");
   const [collabAccess, setCollabAccess] = useState<"view" | "edit">("edit");
+  const [poolOpen, setPoolOpen] = useState(false);
 
   const activeEntity = entities.find((e) => e.id === activeEntityId);
   const isOwner = !!activeEntity && activeEntity.owner_id === user?.id;
