@@ -98,8 +98,22 @@ export function DashboardProgress() {
     setContractorsDelivered(contractors);
     setEquityDelivered(equity);
 
-    setNaturalRoleComplete(!!naturalRole?.description);
-    setNrDecoderComplete(!!nrDecoder);
+    const nr: any = naturalRole || {};
+    // Professional Track Record is filled when the natural role is defined
+    // via ANY path (decoder quiz, professional-track wizard, or sub-checks).
+    const nrDefined = Boolean(
+      (typeof nr.description === "string" && nr.description.trim().length > 0) ||
+      nr.is_ready === true ||
+      nr.status === "defined" ||
+      nr.promise_check === true ||
+      nr.practice_check === true ||
+      nr.training_check === true ||
+      nr.consulting_check === true
+    );
+    setNaturalRoleComplete(nrDefined);
+    // Users who completed the professional-track flow bypass the standalone
+    // decoder quiz but their natural role IS decoded — credit them.
+    setNrDecoderComplete(!!nrDecoder || nrDefined);
 
     const p: any = profile || {};
     const filled = (v: any) => v !== null && v !== undefined && String(v).trim().length > 0;
@@ -114,7 +128,7 @@ export function DashboardProgress() {
     );
     setResumeComplete(resumeDone);
     setTrackRecordComplete(!!entOnboarding?.is_completed);
-    setProTrackComplete(!!naturalRole?.description);
+    setProTrackComplete(nrDefined);
 
     const journeyMap: JourneyProgress[] = [];
 
