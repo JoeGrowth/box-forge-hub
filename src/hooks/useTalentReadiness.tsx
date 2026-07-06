@@ -97,8 +97,25 @@ export function useTalentReadiness(): TalentReadiness {
       const intentDone = Boolean(
         onbRes.data?.onboarding_completed && (onbRes.data?.current_step ?? 0) >= 5
       );
-      const decoderDone = Boolean(decoderRes.data);
-      const proTrackDone = Boolean(nrRes.data?.description);
+      const nr = nrRes.data as Record<string, unknown> | null;
+      // Professional Track Record counts as filled when the natural role has
+      // been defined through ANY flow: the decoder quiz, the professional-track
+      // wizard (sets description + is_ready), or any of the sub-checks below.
+      const proTrackDone = Boolean(
+        nr && (
+          filled(nr.description) ||
+          nr.is_ready === true ||
+          nr.status === "defined" ||
+          nr.promise_check === true ||
+          nr.practice_check === true ||
+          nr.training_check === true ||
+          nr.consulting_check === true
+        )
+      );
+      // Decoder counts as done either from the WhatsApp quiz submission OR
+      // from having a defined natural role (users who went through the
+      // professional-track flow bypass the quiz but end up decoded).
+      const decoderDone = Boolean(decoderRes.data) || proTrackDone;
       const p = (profileRes.data ?? {}) as Record<string, unknown>;
       const resumeDone = Boolean(
         filled(p.professional_title) &&
