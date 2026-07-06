@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Plus, Trash2, Wallet, Users, Building2, FlaskConical, CheckCircle2, Clock,
   TrendingUp, Settings, Briefcase, ArrowDownCircle,
-  ArrowUpCircle, PiggyBank, UserPlus,
+  ArrowUpCircle, PiggyBank, UserPlus, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
