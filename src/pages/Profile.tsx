@@ -691,6 +691,11 @@ const Profile = () => {
                         {profile?.full_name || "User"}
                       </h1>
                       <p className="text-muted-foreground mb-3">{user?.email}</p>
+                      <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-3">
+                        <Badge variant="outline" className="capitalize">
+                          {progressionStageLabel[progression?.current_state ?? "novice"]}
+                        </Badge>
+                      </div>
                       {!onboardingState?.onboarding_completed && (
                         <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted text-b4-coral text-sm font-medium">
