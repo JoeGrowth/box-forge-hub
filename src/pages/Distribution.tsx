@@ -351,10 +351,18 @@ function DistributionBuilder({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {charges.map((c) => (
+              {charges.map((c, idx) => (
                 <TableRow key={c.id}>
                   <TableCell>
-                    <Input value={c.label} onChange={(e) => updateCharge(c.id, { label: e.target.value })} />
+                    <Input
+                      value={c.label}
+                      onChange={(e) => updateCharge(c.id, { label: e.target.value })}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && idx === charges.length - 1) {
+                          setCharges((p) => [...p, { id: uid(), label: "New charge", amount: 0 }]);
+                        }
+                      }}
+                    />
                   </TableCell>
                   <TableCell>
                     <Input
@@ -362,6 +370,11 @@ function DistributionBuilder({
                       className="text-right"
                       value={c.amount}
                       onChange={(e) => updateCharge(c.id, { amount: parseFloat(e.target.value) || 0 })}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && idx === charges.length - 1) {
+                          setCharges((p) => [...p, { id: uid(), label: "New charge", amount: 0 }]);
+                        }
+                      }}
                     />
                   </TableCell>
                   <TableCell>
@@ -419,6 +432,11 @@ function DistributionBuilder({
               onChange={(e) =>
                 setPeople((prev) => prev.map((v, idx) => (idx === i ? e.target.value : v)))
               }
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && i === people.length - 1) {
+                  setPeople((prev) => [...prev, `Person (${prev.length + 1})`]);
+                }
+              }}
               className="w-full sm:w-48"
             />
           ))}
@@ -464,7 +482,18 @@ function DistributionBuilder({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {tasks.map((t, idx) => (
+              {tasks.map((t, idx) => {
+                const isLastNonLocked = !t.locked && tasks.slice(idx + 1).every((x) => x.locked);
+                const addTask = () =>
+                  setTasks((p) => {
+                    const lockedIdx = p.findIndex((x) => x.locked);
+                    const newTask: Task = { id: uid(), label: "New task", percent: 0 };
+                    if (lockedIdx === -1) return [...p, newTask];
+                    const copy = [...p];
+                    copy.splice(lockedIdx, 0, newTask);
+                    return copy;
+                  });
+                return (
                 <TableRow key={t.id} className={t.locked ? "bg-muted/30" : ""}>
                   <TableCell>
                     {t.locked ? (
@@ -477,6 +506,7 @@ function DistributionBuilder({
                       <Input
                         value={t.label}
                         onChange={(e) => updateTask(t.id, { label: e.target.value })}
+                        onKeyDown={(e) => e.key === "Enter" && isLastNonLocked && addTask()}
                       />
                     )}
                   </TableCell>
@@ -486,6 +516,7 @@ function DistributionBuilder({
                       className="text-right"
                       value={t.percent}
                       onChange={(e) => updateTask(t.id, { percent: parseFloat(e.target.value) || 0 })}
+                      onKeyDown={(e) => e.key === "Enter" && isLastNonLocked && addTask()}
                     />
                   </TableCell>
                   <TableCell className="text-right font-mono">{fmt(taskAmounts[idx])}</TableCell>
@@ -522,7 +553,8 @@ function DistributionBuilder({
                     )}
                   </TableCell>
                 </TableRow>
-              ))}
+              );
+            })}
               <TableRow className="font-semibold bg-muted/40">
                 <TableCell>Total</TableCell>
                 <TableCell className="text-right">{totalPercent}%</TableCell>
