@@ -143,14 +143,24 @@ const Dashboard = () => {
       <PageTransition>
         <main className="container mx-auto px-3 sm:px-4 py-6 md:py-8 pt-20 md:pt-24 pb-16">
           <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
-            <DashboardHero />
-            {talentReady && !talentLoading && isCapable && <NextGoalBanner />}
-            <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
-              <div className="lg:col-span-2 space-y-6 md:space-y-8 min-w-0">
-                {showShapeTalent && <DashboardProgress />}
-                {isCapable && <CommitmentsPanel />}
-                {isCapable && <DashboardOpportunities />}
-                {isCapable && <ProgressionPathCard userId={user?.id} />}
+            {!isFirstLogin && (
+              <>
+                <DashboardHero />
+                {talentReady && !talentLoading && isCapable && <NextGoalBanner />}
+              </>
+            )}
+            <div className={cn("grid gap-6 md:gap-8", isFirstLogin ? "lg:grid-cols-2" : "lg:grid-cols-3")}>
+              <div className={cn("min-w-0", !isFirstLogin && "lg:col-span-2 space-y-6 md:space-y-8")}>
+                {isFirstLogin ? (
+                  <AIProfileDraftCard />
+                ) : (
+                  <>
+                    {showShapeTalent && <DashboardProgress />}
+                    {isCapable && <CommitmentsPanel />}
+                    {isCapable && <DashboardOpportunities />}
+                    {isCapable && <ProgressionPathCard userId={user?.id} />}
+                  </>
+                )}
               </div>
               <div className="space-y-6 md:space-y-8 min-w-0">
                 {isCapable && <DashboardNextSteps />}
@@ -161,6 +171,7 @@ const Dashboard = () => {
           </div>
         </main>
       </PageTransition>
+
       <Footer />
     </div>
   );
