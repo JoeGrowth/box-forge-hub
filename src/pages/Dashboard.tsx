@@ -58,6 +58,8 @@ const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const { onboardingState, loading: onboardingLoading } = useOnboarding();
   const { talentReady, loading: talentLoading } = useTalentReadiness();
+  const { progression } = useNextBestActions(user?.id);
+  const [draftAccepted, setDraftAccepted] = useState<boolean | null>(null);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
