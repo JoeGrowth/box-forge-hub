@@ -708,7 +708,7 @@ const AdminOpportunityDetail = () => {
                     </h3>
                     {creatorNaturalRole.description ? (
                       <p className="text-foreground text-sm italic bg-muted/50 p-3 rounded-lg">
-                        "{creatorNaturalRole.description}"
+                        {creatorNaturalRole.description}
                       </p>
                     ) : (
                       <p className="text-muted-foreground text-sm">Not defined</p>
