@@ -650,7 +650,7 @@ function LegalTab({
   const [pdfBody, setPdfBody] = useState("");
   const [generating, setGenerating] = useState(false);
 
-  const uploadFile = async (file: File) => {
+  const uploadFile = async (file: File, label?: string) => {
     if (!file) return;
     if (file.type !== "application/pdf") {
       toast({ title: "Only PDF files are allowed", variant: "destructive" });
@@ -666,9 +666,10 @@ function LegalTab({
       toast({ title: "Upload failed", description: upErr.message, variant: "destructive" });
       return;
     }
+    const docName = label ? `${label} — ${file.name}` : file.name;
     const { error: dbErr } = await supabase.from("organization_legal_documents").insert({
       organization_id: orgId,
-      name: file.name,
+      name: docName,
       storage_path: path,
       mime_type: "application/pdf",
       size_bytes: file.size,
@@ -679,9 +680,23 @@ function LegalTab({
       toast({ title: "Save failed", description: dbErr.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Legal document uploaded" });
+    // If the certificate of incorporation was added, promote org type to "company"
+    if (label === "Certificate of Incorporation") {
+      const { error: typeErr } = await supabase
+        .from("organizations")
+        .update({ type: "company" })
+        .eq("id", orgId);
+      if (!typeErr) {
+        toast({ title: "Certificate of Incorporation added", description: "This entity is now labeled as a Company." });
+      } else {
+        toast({ title: "Certificate saved", description: "Could not update the type label automatically." });
+      }
+    } else {
+      toast({ title: `${label ?? "Legal document"} uploaded` });
+    }
     reload();
   };
+
 
   const download = async (d: LegalDoc) => {
     const { data, error } = await supabase.storage
