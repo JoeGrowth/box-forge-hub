@@ -50,6 +50,7 @@ function DistributionBuilder({
   const [resetKey, setResetKey] = useState(0);
   const [title, setTitle] = useState(defaultTitle);
   const [budget, setBudget] = useState<number>(420);
+  const [currency, setCurrency] = useState<string>("TND");
   const [budgetLabel, setBudgetLabel] = useState(defaultBudgetLabel);
   const [charges, setCharges] = useState<Charge[]>(defaultCharges);
   const [tasks, setTasks] = useState<Task[]>(defaultTasks);
