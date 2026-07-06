@@ -326,7 +326,7 @@ function DistributionBuilder({
                     <TableRow
                       key={r.id}
                       className="cursor-pointer hover:bg-muted/40"
-                      onClick={() => loadSaved(r, "view")}
+                      onClick={() => loadSaved(r, "edit")}
                     >
                       <TableCell className="font-mono text-muted-foreground">({i + 1})</TableCell>
                       <TableCell className="font-medium">{r.title}</TableCell>
@@ -337,7 +337,7 @@ function DistributionBuilder({
                       </TableCell>
                       <TableCell>
                         <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-                          <Button size="sm" variant="ghost" onClick={() => loadSaved(r, "view")} title="View">
+                          <Button size="sm" variant="ghost" onClick={() => loadSaved(r, "edit")} title="View">
                             <Eye className="w-4 h-4" />
                           </Button>
                           <Button size="sm" variant="ghost" onClick={() => loadSaved(r, "edit")} title="Edit">
