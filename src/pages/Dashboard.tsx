@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
+import { useTalentReadiness } from "@/hooks/useTalentReadiness";
 import { DashboardHero } from "@/components/dashboard/DashboardHero";
 import { NextGoalBanner } from "@/components/progression/NextGoalBanner";
 import { DashboardProgress } from "@/components/dashboard/DashboardProgress";
