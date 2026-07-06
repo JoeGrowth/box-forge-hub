@@ -61,6 +61,32 @@ export default function Organizations() {
   const [saving, setSaving] = useState(false);
   const [filter, setFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
+  const [incorporatedIds, setIncorporatedIds] = useState<Set<string>>(new Set());
+
+  const companyOrgIds = useMemo(
+    () => memberships.filter(m => m.organization.type === "company").map(m => m.organization.id),
+    [memberships],
+  );
+
+  useEffect(() => {
+    if (companyOrgIds.length === 0) { setIncorporatedIds(new Set()); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("organization_legal_documents")
+        .select("organization_id, name")
+        .in("organization_id", companyOrgIds);
+      if (cancelled) return;
+      const ids = new Set<string>();
+      (data ?? []).forEach((d: any) => {
+        if (typeof d.name === "string" && d.name.toLowerCase().includes("certificate of incorporation")) {
+          ids.add(d.organization_id);
+        }
+      });
+      setIncorporatedIds(ids);
+    })();
+    return () => { cancelled = true; };
+  }, [companyOrgIds.join(",")]);
 
   const filtered = memberships.filter(({ organization: o }) => {
     const q = filter.toLowerCase();
