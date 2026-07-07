@@ -509,10 +509,12 @@ function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpda
         <MilestoneRow
           done={done.invite_cobuilder}
           label="Invite a co-builder"
-          hint="Bring in capabilities or expertise the venture needs"
-          actionLabel="Mark done"
-          onToggle={() => onToggleMilestone("invite_cobuilder", !done.invite_cobuilder)}
+          hint={done.invite_cobuilder ? "Invitation sent" : "From the platform, or by email if they're not on it yet"}
+          actionLabel={done.invite_cobuilder ? "Invite another" : "Invite"}
+          onToggle={() => setInviteOpen(true)}
         />
+
+
 
         <div className="p-3 rounded-lg border border-border bg-card space-y-2">
           <div className="flex items-start gap-3">
