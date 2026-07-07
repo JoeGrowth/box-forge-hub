@@ -176,8 +176,8 @@ export default function OrganizationPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl space-y-6">
-      <Link to="/organizations" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="w-3 h-3 mr-1" /> All organizations
+      <Link to="/organizations" className="inline-flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary bg-card border border-border rounded-lg px-3 py-2 shadow-sm w-fit">
+        <ArrowLeft className="w-4 h-4" /> All organizations
       </Link>
 
       {/* Header */}
