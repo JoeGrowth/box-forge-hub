@@ -83,6 +83,7 @@ const StartupOpportunityDetail = () => {
   const { toast } = useToast();
   const [idea, setIdea] = useState<StartupIdea | null>(null);
   const [creatorProfile, setCreatorProfile] = useState<CreatorProfile | null>(null);
+  const [naturalRole, setNaturalRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [applyMessage, setApplyMessage] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
