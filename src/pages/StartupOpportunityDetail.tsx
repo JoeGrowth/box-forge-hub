@@ -83,6 +83,7 @@ const StartupOpportunityDetail = () => {
   const { toast } = useToast();
   const [idea, setIdea] = useState<StartupIdea | null>(null);
   const [creatorProfile, setCreatorProfile] = useState<CreatorProfile | null>(null);
+  const [naturalRole, setNaturalRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [applyMessage, setApplyMessage] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
@@ -138,6 +139,17 @@ const StartupOpportunityDetail = () => {
 
       if (profile) {
         setCreatorProfile(profile);
+      }
+
+      // Fetch natural role
+      const { data: nrData } = await supabase
+        .from("natural_roles")
+        .select("description")
+        .eq("user_id", data.creator_id)
+        .maybeSingle();
+
+      if (nrData?.description) {
+        setNaturalRole(nrData.description);
       }
 
       // Check if user has already applied
@@ -697,6 +709,11 @@ const StartupOpportunityDetail = () => {
                         {creatorProfile?.full_name || "Unknown"}
                       </p>
                       <p className="text-sm text-muted-foreground">Initiator</p>
+                      {naturalRole && (
+                        <span className="inline-block mt-1 px-2 py-0.5 rounded-md bg-b4-teal/10 text-xs font-medium text-b4-teal">
+                          {naturalRole}
+                        </span>
+                      )}
                     </div>
                   </div>
                   {creatorProfile?.bio && (
