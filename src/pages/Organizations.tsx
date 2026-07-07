@@ -49,7 +49,7 @@ const ROLE_COLOR = {
 } as const;
 
 type MoneyBox = { tnd: number; eur: number; usd: number };
-type SortKey = "default" | "tnd-out" | "eur-out" | "usd-out";
+type SortKey = "default" | "total-out";
 
 const fmtMoney = (n: number, currency: string) =>
   new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n || 0) + " " + currency;
