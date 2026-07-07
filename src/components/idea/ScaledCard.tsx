@@ -264,22 +264,23 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
               onClick={() => isUnlocked && jumpPhase(p)}
               disabled={!isUnlocked}
               className={cn(
-                "rounded-xl border p-3 text-left transition-all",
+                "rounded-xl border p-2 sm:p-3 text-left transition-all min-w-0",
                 isActive ? "border-primary bg-primary/10 shadow-sm" : "border-border bg-card hover:border-primary/40",
                 !isUnlocked && "opacity-50 cursor-not-allowed",
               )}
             >
-              <div className="flex items-center gap-2 mb-1">
-                <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold",
+              <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+                <div className={cn("w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0",
                   isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
                   {idx + 1}
                 </div>
-                <Icon className="w-3.5 h-3.5 text-muted-foreground" />
-                {!isUnlocked && <Lock className="w-3 h-3 text-muted-foreground ml-auto" />}
+                <Icon className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                {!isUnlocked && <Lock className="w-3 h-3 text-muted-foreground ml-auto flex-shrink-0" />}
               </div>
-              <p className="font-semibold text-sm text-foreground">{meta.label}</p>
-              <p className="text-[11px] text-muted-foreground">{meta.sub}</p>
+              <p className="font-semibold text-xs sm:text-sm text-foreground leading-tight">{meta.label}</p>
+              <p className="text-[10px] sm:text-[11px] text-muted-foreground leading-tight mt-0.5">{meta.sub}</p>
             </button>
+
           );
         })}
       </div>
