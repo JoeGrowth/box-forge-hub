@@ -66,7 +66,7 @@ const moreLinks: Array<{
 }> = [
   { name: "Consulting", path: "/consulting", icon: Handshake, engineKey: "consulting" },
   { name: "Squares", path: "/squares", icon: LayoutGrid },
-  { name: "Ideas", path: "/entrepreneurship", icon: Lightbulb },
+  { name: "Opportunities", path: "/opportunities", icon: Briefcase },
   { name: "Organizations", path: "/organizations", icon: Building2, minStage: "emerging" },
   { name: "Boxes", path: "/boxes", icon: Package },
   { name: "Programs", path: "/programs", icon: BookOpen },
@@ -177,16 +177,14 @@ export function Navbar() {
                   </Link>
                 )}
 
-                {talentReady && (
-                  <Link
-                    to="/opportunities"
-                    className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 ${
-                      location.pathname === "/opportunities" ? "text-b4-teal" : "text-muted-foreground"
-                    }`}
-                  >
-                    Opportunities
-                  </Link>
-                )}
+                <Link
+                  to="/entrepreneurship"
+                  className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 ${
+                    location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-muted-foreground"
+                  }`}
+                >
+                  Ideas
+                </Link>
 
                 <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
                   <DropdownMenuTrigger asChild>
@@ -321,19 +319,18 @@ export function Navbar() {
                     </Link>
                   )}
 
-                  {talentReady && (
-                    <Link
-                      to="/opportunities"
-                      onClick={() => setIsOpen(false)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                        location.pathname === "/opportunities"
-                          ? "bg-muted text-b4-teal"
-                          : "text-muted-foreground hover:bg-muted"
-                      }`}
-                    >
-                      <span className="flex-1">Opportunities</span>
-                    </Link>
-                  )}
+                  <Link
+                    to="/entrepreneurship"
+                    onClick={() => setIsOpen(false)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                      location.pathname === "/entrepreneurship"
+                        ? "bg-muted text-b4-teal"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    <Lightbulb size={16} />
+                    <span className="flex-1">Ideas</span>
+                  </Link>
 
                   {visibleMoreLinks.length > 0 && (
                     <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
