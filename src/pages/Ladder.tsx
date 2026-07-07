@@ -109,13 +109,43 @@ function StageRow({ stage, isFocus, isAdmin }: { stage: LadderStage; isFocus: bo
                 <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Stage {stage.index}</div>
                 <h3 className="font-display text-lg font-bold text-foreground">{stage.label}</h3>
               </div>
-              <Badge variant="outline" className={
-                state === "achieved" ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/30" :
-                state === "active" ? "bg-primary/10 text-primary border-primary/30" :
-                ""
-              }>
-                {state === "achieved" ? "Achieved" : state === "active" ? `${stage.current} / ${stage.target}` : "Locked"}
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className={
+                  state === "achieved" ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/30" :
+                  state === "active" ? "bg-primary/10 text-primary border-primary/30" :
+                  ""
+                }>
+                  {state === "achieved" ? "Achieved" : state === "active" ? `${stage.current} / ${stage.target}` : "Locked"}
+                </Badge>
+                {state === "achieved" && isAdmin && (
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Sink — stay at this stage"
+                        title="Sink — stay at this stage"
+                        className="w-7 h-7 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/20 inline-flex items-center justify-center transition-colors"
+                      >
+                        <Anchor className="w-3.5 h-3.5" />
+                      </button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                          <Anchor className="w-4 h-4 text-emerald-600" />
+                          Sink · {SINK_CONTENT[stage.key].title}
+                        </DialogTitle>
+                        <DialogDescription className="pt-2 text-sm leading-relaxed text-foreground/80">
+                          {SINK_CONTENT[stage.key].body}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="mt-2 rounded-lg bg-muted/40 border border-border p-3 text-xs text-muted-foreground">
+                        Stage {stage.index} · {stage.label} — this stage is already achieved. "Sink" describes the path for those who choose to remain here instead of climbing to the next stage.
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                )}
+              </div>
             </div>
             <p className="text-sm text-muted-foreground mt-1">{stage.intent}</p>
             {state !== "locked" && stage.target > 1 && (
