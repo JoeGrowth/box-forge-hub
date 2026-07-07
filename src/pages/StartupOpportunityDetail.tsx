@@ -685,8 +685,12 @@ const StartupOpportunityDetail = () => {
                     About the Initiator
                   </h3>
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-full bg-b4-teal/10 flex items-center justify-center">
-                      <User className="w-6 h-6 text-b4-teal" />
+                    <div className="w-12 h-12 rounded-full bg-b4-teal/10 flex items-center justify-center overflow-hidden">
+                      {creatorProfile?.avatar_url ? (
+                        <img src={creatorProfile.avatar_url} alt={creatorProfile.full_name || "Initiator"} className="w-full h-full object-cover" />
+                      ) : (
+                        <User className="w-6 h-6 text-b4-teal" />
+                      )}
                     </div>
                     <div>
                       <p className="font-medium text-foreground">
