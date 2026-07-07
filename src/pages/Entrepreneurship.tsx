@@ -354,6 +354,39 @@ const Entrepreneurship = () => {
               >
                 <Users className="w-4 h-4 mr-1" /> Team
               </Button>
+              {linkedOrgs[project.id] && (
+                <>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to={`/org/${linkedOrgs[project.id].slug}`}>
+                      <Building2 className="w-4 h-4 mr-1" /> Organization
+                    </Link>
+                  </Button>
+                  {isOwner && (
+                    <div className="flex items-center gap-2 px-2 rounded-md border border-border h-9">
+                      <Switch
+                        checked={linkedOrgs[project.id].is_public}
+                        onCheckedChange={async (checked) => {
+                          const org = linkedOrgs[project.id];
+                          setLinkedOrgs((prev) => ({ ...prev, [project.id]: { ...prev[project.id], is_public: checked } }));
+                          const { error } = await supabase
+                            .from("organizations")
+                            .update({ is_public: checked } as any)
+                            .eq("id", org.id);
+                          if (error) {
+                            setLinkedOrgs((prev) => ({ ...prev, [project.id]: { ...prev[project.id], is_public: !checked } }));
+                            toast({ title: "Update failed", description: error.message, variant: "destructive" });
+                          } else {
+                            toast({ title: checked ? "Published to ecosystem" : "Hidden from ecosystem" });
+                          }
+                        }}
+                      />
+                      <span className="text-xs text-muted-foreground">
+                        {linkedOrgs[project.id].is_public ? "On" : "Off"}
+                      </span>
+                    </div>
+                  )}
+                </>
+              )}
               {isOwner && !project.development_completed_at && (
                 <Button
                   variant="outline"
