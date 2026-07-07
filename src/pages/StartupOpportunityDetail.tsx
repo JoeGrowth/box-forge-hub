@@ -709,6 +709,11 @@ const StartupOpportunityDetail = () => {
                         {creatorProfile?.full_name || "Unknown"}
                       </p>
                       <p className="text-sm text-muted-foreground">Initiator</p>
+                      {naturalRole && (
+                        <span className="inline-block mt-1 px-2 py-0.5 rounded-md bg-b4-teal/10 text-xs font-medium text-b4-teal">
+                          {naturalRole}
+                        </span>
+                      )}
                     </div>
                   </div>
                   {creatorProfile?.bio && (
