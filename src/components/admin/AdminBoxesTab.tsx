@@ -177,7 +177,10 @@ export function AdminBoxesTab() {
                   <ul className="space-y-1">
                     {admins[b.id].map((a) => (
                       <li key={a.user_id} className="flex items-center justify-between text-sm bg-muted/40 rounded px-2 py-1">
-                        <span>{a.full_name || a.email || a.user_id}</span>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Avatar className="h-6 w-6"><AvatarImage src={a.avatar_url || undefined} /><AvatarFallback>{(a.full_name || "U").charAt(0).toUpperCase()}</AvatarFallback></Avatar>
+                          <span className="truncate">{a.full_name || "Unknown user"}</span>
+                        </div>
                         <button onClick={() => removeAdmin(b.id, a.user_id)} className="text-destructive hover:opacity-70"><Trash2 className="h-3 w-3" /></button>
                       </li>
                     ))}
@@ -191,7 +194,10 @@ export function AdminBoxesTab() {
                 ) : (
                   <ul className="space-y-1">
                     {advisors[b.id].map((a) => (
-                      <li key={a.user_id} className="text-sm bg-muted/40 rounded px-2 py-1">{a.full_name || a.email || a.user_id}</li>
+                      <li key={a.user_id} className="flex items-center gap-2 text-sm bg-muted/40 rounded px-2 py-1">
+                        <Avatar className="h-6 w-6"><AvatarImage src={a.avatar_url || undefined} /><AvatarFallback>{(a.full_name || "U").charAt(0).toUpperCase()}</AvatarFallback></Avatar>
+                        <span className="truncate">{a.full_name || "Unknown user"}</span>
+                      </li>
                     ))}
                   </ul>
                 )}
