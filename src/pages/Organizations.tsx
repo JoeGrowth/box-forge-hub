@@ -48,6 +48,12 @@ const ROLE_COLOR = {
   viewer: "bg-muted text-muted-foreground",
 } as const;
 
+type MoneyBox = { tnd: number; eur: number; usd: number };
+type SortKey = "default" | "tnd-out" | "eur-out" | "usd-out";
+
+const fmtMoney = (n: number, currency: string) =>
+  new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n || 0) + " " + currency;
+
 export default function Organizations() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -63,6 +69,9 @@ export default function Organizations() {
   const [filter, setFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [incorporatedIds, setIncorporatedIds] = useState<Set<string>>(new Set());
+  const [sortBy, setSortBy] = useState<SortKey>("default");
+  const [moneyBox, setMoneyBox] = useState<Record<string, MoneyBox>>({});
+  const [moneyBoxLoading, setMoneyBoxLoading] = useState(false);
 
   const companyOrgIds = useMemo(
     () => memberships.filter(m => m.organization.type === "company").map(m => m.organization.id),
@@ -89,15 +98,72 @@ export default function Organizations() {
     return () => { cancelled = true; };
   }, [companyOrgIds.join(",")]);
 
-  const filtered = memberships.filter(({ organization: o }) => {
-    const q = filter.toLowerCase();
-    const matchesText =
-      o.name.toLowerCase().includes(q) ||
-      o.type.toLowerCase().includes(q) ||
-      (o.description ?? "").toLowerCase().includes(q);
-    const matchesType = !typeFilter || typeFilter === "all" || o.type === typeFilter;
-    return matchesText && matchesType;
-  });
+  // Load Money Box outflows for all user's organizations
+  useEffect(() => {
+    if (!memberships.length) { setMoneyBox({}); return; }
+    let cancelled = false;
+    setMoneyBoxLoading(true);
+    (async () => {
+      const orgIds = memberships.map(m => m.organization.id);
+      // Fetch declaration entities for these orgs
+      const { data: entities } = await supabase
+        .from("declaration_entities")
+        .select("id, organization_id")
+        .in("organization_id", orgIds);
+      if (cancelled) return;
+      const entityIds = (entities ?? []).map((e: any) => e.id);
+      const entityToOrg = new Map<string, string>();
+      (entities ?? []).forEach((e: any) => entityToOrg.set(e.id, e.organization_id));
+
+      if (!entityIds.length) { setMoneyBox({}); setMoneyBoxLoading(false); return; }
+
+      const { data: missions } = await supabase
+        .from("declaration_missions")
+        .select("entity_id, currency, internal, external")
+        .in("entity_id", entityIds);
+      if (cancelled) return;
+
+      const out: Record<string, MoneyBox> = {};
+      orgIds.forEach(id => { out[id] = { tnd: 0, eur: 0, usd: 0 }; });
+
+      (missions ?? []).forEach((m: any) => {
+        const orgId = entityToOrg.get(m.entity_id);
+        if (!orgId) return;
+        const cur = (m.currency as string)?.toLowerCase() as keyof MoneyBox;
+        if (!cur || !(cur in out[orgId])) return;
+
+        const sumPaid = (arr: any[]) =>
+          (arr ?? []).reduce((s, p) => s + (p?.paid ? Number(p?.amount || 0) : 0), 0);
+
+        out[orgId][cur] += sumPaid(m.internal) + sumPaid(m.external);
+      });
+
+      setMoneyBox(out);
+      setMoneyBoxLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [memberships.map(m => m.organization.id).join(",")]);
+
+  const filtered = useMemo(() => {
+    const list = memberships.filter(({ organization: o }) => {
+      const q = filter.toLowerCase();
+      const matchesText =
+        o.name.toLowerCase().includes(q) ||
+        o.type.toLowerCase().includes(q) ||
+        (o.description ?? "").toLowerCase().includes(q);
+      const matchesType = !typeFilter || typeFilter === "all" || o.type === typeFilter;
+      return matchesText && matchesType;
+    });
+
+    if (sortBy === "default") return list;
+
+    const cur = sortBy.split("-")[0] as keyof MoneyBox;
+    return [...list].sort((a, b) => {
+      const av = moneyBox[a.organization.id]?.[cur] ?? 0;
+      const bv = moneyBox[b.organization.id]?.[cur] ?? 0;
+      return bv - av; // highest first
+    });
+  }, [memberships, filter, typeFilter, sortBy, moneyBox]);
 
   const create = async () => {
     if (!user || !name.trim()) return;
