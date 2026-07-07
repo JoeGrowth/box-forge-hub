@@ -148,7 +148,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     proposal_template: !!state.proposal_template_url || milestones.has("proposal_template"),
     professional_presence: autoCounts.professionalPresence || milestones.has("professional_presence"),
     invite_cobuilder: milestones.has("invite_cobuilder"),
-    form_company: !!state.company_name || milestones.has("form_company"),
+    form_company: !!state.company_name?.trim(),
     standardized_processes: milestones.has("standardized_processes"),
     autonomous_operations: state.autonomous_operations,
   }), [autoCounts, milestones, state]);
@@ -322,34 +322,36 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
 
 // ---- Phase 1: Branding ----
 function MilestoneRow({ done, label, hint, actionLabel, onToggle, auto }: { done: boolean; label: string; hint?: string; actionLabel?: string; onToggle?: () => void; auto?: boolean }) {
-  const canToggle = !!onToggle && !auto;
-  // Action button only shown when the label describes a distinct action (e.g. "Invite", "Confirm"),
-  // not the generic "Mark done" — the circle handles check/uncheck directly.
-  const showActionButton = !done && !!onToggle && !auto && !!actionLabel && actionLabel !== "Mark done";
+  const canClick = !!onToggle && !auto;
+  const Wrapper: any = canClick ? "button" : "div";
+  const wrapperProps = canClick
+    ? { type: "button", onClick: onToggle, "aria-pressed": done, "aria-label": done ? `Uncheck ${label}` : `Check ${label}` }
+    : {};
   return (
-    <div className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card">
-      <button
-        type="button"
-        onClick={canToggle ? onToggle : undefined}
-        disabled={!canToggle}
-        aria-label={done ? `Uncheck ${label}` : `Check ${label}`}
-        className={cn("w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 transition",
-          done ? "bg-emerald-500 text-white" : "border-2 border-muted-foreground/40",
-          canToggle ? "cursor-pointer hover:opacity-80" : "cursor-default")}
-      >
+    <Wrapper
+      {...wrapperProps}
+      className={cn(
+        "w-full text-left flex items-start gap-3 p-3 rounded-lg border bg-card transition",
+        done ? "border-emerald-500/40" : "border-border",
+        canClick ? "cursor-pointer hover:border-primary/50 hover:bg-muted/30" : "cursor-default"
+      )}
+    >
+      <div className={cn("w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0",
+        done ? "bg-emerald-500 text-white" : "border-2 border-muted-foreground/40")}>
         {done && <Check className="w-3 h-3" />}
-      </button>
+      </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-foreground">{label}</p>
         {hint && <p className="text-xs text-muted-foreground mt-0.5">{hint}</p>}
       </div>
-      {showActionButton && (
-        <Button size="sm" variant="outline" onClick={onToggle}>{actionLabel}</Button>
-      )}
       {done && auto && <Badge variant="outline" className="text-[10px]">Auto</Badge>}
-    </div>
+      {!done && actionLabel && canClick && actionLabel !== "Mark done" && (
+        <span className="text-xs font-medium text-primary self-center">{actionLabel} →</span>
+      )}
+    </Wrapper>
   );
 }
+
 
 
 function BrandingPhase({ done, autoCounts, state, milestones, progress, onToggleMilestone, onUpdateState, onAdvance }: {
@@ -554,22 +556,14 @@ function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpda
           onToggle={() => onToggleMilestone("standardized_processes", !done.standardized_processes)}
         />
 
-        <div className="p-3 rounded-lg border border-border bg-card">
-          <div className="flex items-start gap-3">
-            <div className={cn("w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0",
-              done.autonomous_operations ? "bg-emerald-500 text-white" : "border-2 border-muted-foreground/40")}>
-              {done.autonomous_operations && <Check className="w-3 h-3" />}
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium">Achieve autonomous operations</p>
-              <p className="text-xs text-muted-foreground">The business no longer depends on your daily involvement</p>
-            </div>
-            <Button size="sm" variant={done.autonomous_operations ? "secondary" : "outline"} onClick={() => onUpdateState({ autonomous_operations: !state.autonomous_operations })}>
-              {done.autonomous_operations ? "Undo" : "Confirm"}
-            </Button>
-          </div>
-        </div>
+        <MilestoneRow
+          done={done.autonomous_operations}
+          label="Achieve autonomous operations"
+          hint="The business no longer depends on your daily involvement"
+          onToggle={() => onUpdateState({ autonomous_operations: !state.autonomous_operations })}
+        />
       </div>
+
 
       {progress === 100 && (
         <div className="p-3 rounded-lg border border-primary/30 bg-primary/5 flex items-center gap-2">
