@@ -453,9 +453,10 @@ function AssetInput({ icon: Icon, label, placeholder, value, onChange }: { icon:
 }
 
 // ---- Phase 2: Systematization ----
-function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpdateState }: {
+function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpdateState, onAdvance }: {
   done: any; state: VentureState; progress: number;
-  onToggleMilestone: (k: string, on: boolean) => void; onUpdateState: (p: Partial<VentureState>) => void;
+  onToggleMilestone: (k: string, on: boolean) => void; onUpdateState: (p: Partial<VentureState>) => void; onAdvance: () => void;
+
 }) {
   return (
     <div className="space-y-5">
