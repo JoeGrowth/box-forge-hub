@@ -430,9 +430,11 @@ function BrandingPhase({ done, autoCounts, state, milestones, progress, onToggle
       {progress === 100 && (
         <div className="p-3 rounded-lg border border-primary/30 bg-primary/5 flex items-center gap-2">
           <ArrowRight className="w-4 h-4 text-primary" />
-          <p className="text-sm text-foreground">Phase 1 complete. Ready to <strong>Systematize</strong> and detach the business from the founder.</p>
+          <p className="text-sm text-foreground flex-1">Phase 1 complete. Ready to <strong>Systematize</strong> and detach the business from the founder.</p>
+          <Button size="sm" onClick={onAdvance}>Continue to Phase 2</Button>
         </div>
       )}
+
     </div>
   );
 }
