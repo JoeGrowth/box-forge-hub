@@ -40,11 +40,15 @@ export const TransferInitiationDialog = ({ open, onOpenChange, idea, onTransferr
     }
     const load = async () => {
       setLoading(true);
-      const { data: certs } = await supabase
-        .from("user_certifications")
-        .select("user_id")
-        .eq("certification_type", "initiator_b4");
-      const ids = (certs || []).map((c) => c.user_id).filter((id) => id !== user?.id);
+      const [{ data: certs }, { data: ideas }] = await Promise.all([
+        supabase.from("user_certifications").select("user_id").eq("certification_type", "initiator_b4"),
+        supabase.from("startup_ideas").select("creator_id"),
+      ]);
+      const idSet = new Set<string>();
+      (certs || []).forEach((c) => c.user_id && idSet.add(c.user_id));
+      (ideas || []).forEach((i) => i.creator_id && idSet.add(i.creator_id));
+      if (user?.id) idSet.delete(user.id);
+      const ids = Array.from(idSet);
       if (!ids.length) {
         setInitiators([]);
         setLoading(false);
