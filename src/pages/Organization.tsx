@@ -114,10 +114,13 @@ export default function OrganizationPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const { org, loading } = useOrganizationBySlug(slug);
+  const { org: loadedOrg, loading } = useOrganizationBySlug(slug);
+  const [org, setOrg] = useState<typeof loadedOrg>(loadedOrg);
+  useEffect(() => { setOrg(loadedOrg); }, [loadedOrg]);
   const role = useMyOrgRole(user?.id, org?.id);
   const canEdit = roleAtLeast(role, "editor");
   const canAdmin = roleAtLeast(role, "admin");
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   const [jobs, setJobs] = useState<JobRow[]>([]);
   const [tenders, setTenders] = useState<TenderRow[]>([]);
