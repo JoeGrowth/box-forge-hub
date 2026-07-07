@@ -305,10 +305,13 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
           onToggleMilestone={toggleMilestone}
           onUpdateState={upsertState}
           onAdvance={() => advanceToPhase("asset")}
+          userId={userId}
+          brandName={title}
         />
       ) : (
         <AssetPhase state={state} />
       )}
+
 
 
       <InviteDialog open={inviteOpen} onOpenChange={setInviteOpen} currentUserId={userId} entityLabel={title} />
