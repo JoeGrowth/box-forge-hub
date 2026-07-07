@@ -441,16 +441,8 @@ function BrandingPhase({ done, autoCounts, state, milestones, progress, onToggle
               </div>
             </div>
           </div>
-        </div>
+      </div>
 
-        <MilestoneRow
-          done={done.core_services}
-          auto={autoCounts.coreServices >= 3}
-          label="Define your core services"
-          hint={autoCounts.coreServices > 0 ? `${autoCounts.coreServices}/3 services published` : (milestones.has("core_services") ? "Manually confirmed" : "Publish at least 3 consulting services")}
-          actionLabel={milestones.has("core_services") ? "Undo" : "Mark done"}
-          onToggle={autoCounts.coreServices >= 3 ? undefined : () => onToggleMilestone("core_services", !milestones.has("core_services"))}
-        />
       </div>
 
 
