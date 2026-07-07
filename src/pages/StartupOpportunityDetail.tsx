@@ -753,7 +753,7 @@ const StartupOpportunityDetail = () => {
                         <span>Skills</span>
                       </div>
                       {(() => {
-                        const allSkills = parseSkills(cobuilder.primary_skills);
+                        const allSkills = parseSkills(creatorProfile.primary_skills);
                         const visible = allSkills.slice(0, 5);
                         const hidden = allSkills.slice(5);
                         return (
