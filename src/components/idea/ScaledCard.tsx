@@ -166,16 +166,17 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
   }, [state, done]);
   const systComplete = systProgress === 100;
 
-  // Auto-promote phases
-  useEffect(() => {
-    if (loading) return;
-    if (state.current_phase === "branding" && brandingComplete && !state.branding_completed_at) {
-      upsertState({ current_phase: "systematization", branding_completed_at: new Date().toISOString() });
-    } else if (state.current_phase === "systematization" && systComplete && !state.systematization_completed_at) {
-      upsertState({ current_phase: "asset", systematization_completed_at: new Date().toISOString(), asset_reached_at: new Date().toISOString() });
+  const advanceToPhase = async (p: Phase) => {
+    const stamps: Partial<VentureState> = { current_phase: p };
+    if (p === "systematization" && !state.branding_completed_at) stamps.branding_completed_at = new Date().toISOString();
+    if (p === "asset") {
+      if (!state.systematization_completed_at) stamps.systematization_completed_at = new Date().toISOString();
+      if (!state.asset_reached_at) stamps.asset_reached_at = new Date().toISOString();
     }
-     
-  }, [brandingComplete, systComplete, loading]);
+    await upsertState(stamps);
+    toast.success(`Moved to ${PHASE_META[p].label} phase`);
+  };
+
 
   const saveBrandName = async () => {
     const name = brandDraft.trim();
