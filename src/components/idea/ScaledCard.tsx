@@ -353,22 +353,29 @@ function BrandingPhase({ done, autoCounts, state, milestones, progress, onToggle
       <div className="space-y-2">
         <MilestoneRow
           done={done.solo_missions}
-          auto
+          auto={autoCounts.soloMissions >= 3}
           label="Deliver 3 solo consulting missions"
-          hint={`${autoCounts.soloMissions}/3 closed missions`}
+          hint={`${autoCounts.soloMissions}/3 closed missions${milestones.has("solo_missions") ? " · manually confirmed" : ""}`}
+          actionLabel={milestones.has("solo_missions") ? "Undo" : "Mark done"}
+          onToggle={autoCounts.soloMissions >= 3 ? undefined : () => onToggleMilestone("solo_missions", !milestones.has("solo_missions"))}
         />
         <MilestoneRow
           done={done.contractor_missions}
-          auto
+          auto={autoCounts.contractorMissions >= 7}
           label="Deliver 7 missions with contractors"
-          hint={`${autoCounts.contractorMissions}/7 closed missions with contractors`}
+          hint={`${autoCounts.contractorMissions}/7 closed missions${milestones.has("contractor_missions") ? " · manually confirmed" : ""}`}
+          actionLabel={milestones.has("contractor_missions") ? "Undo" : "Mark done"}
+          onToggle={autoCounts.contractorMissions >= 7 ? undefined : () => onToggleMilestone("contractor_missions", !milestones.has("contractor_missions"))}
         />
         <MilestoneRow
           done={done.core_services}
-          auto
+          auto={autoCounts.coreServices >= 1}
           label="Define your core services"
-          hint={autoCounts.coreServices > 0 ? `${autoCounts.coreServices} services published` : "Publish at least one consulting service"}
+          hint={autoCounts.coreServices > 0 ? `${autoCounts.coreServices} services published` : (milestones.has("core_services") ? "Manually confirmed" : "Publish at least one consulting service")}
+          actionLabel={milestones.has("core_services") ? "Undo" : "Mark done"}
+          onToggle={autoCounts.coreServices >= 1 ? undefined : () => onToggleMilestone("core_services", !milestones.has("core_services"))}
         />
+
         <div className="p-3 rounded-lg border border-border bg-card space-y-2">
           <div className="flex items-start gap-3">
             <div className={cn("w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0",
