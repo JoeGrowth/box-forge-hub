@@ -1224,6 +1224,93 @@ export type Database = {
           },
         ]
       }
+      consulting_venture_milestones: {
+        Row: {
+          completed_at: string
+          created_at: string
+          id: string
+          metadata: Json
+          milestone_key: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          milestone_key: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          milestone_key?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      consulting_venture_state: {
+        Row: {
+          asset_reached_at: string | null
+          autonomous_operations: boolean
+          branding_completed_at: string | null
+          company_name: string | null
+          company_registration: string | null
+          created_at: string
+          current_phase: string
+          datasets_methodologies: string | null
+          frameworks_url: string | null
+          id: string
+          proposal_template_url: string | null
+          selected_model: string | null
+          software_tools: string | null
+          systematization_completed_at: string | null
+          training_courses: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          asset_reached_at?: string | null
+          autonomous_operations?: boolean
+          branding_completed_at?: string | null
+          company_name?: string | null
+          company_registration?: string | null
+          created_at?: string
+          current_phase?: string
+          datasets_methodologies?: string | null
+          frameworks_url?: string | null
+          id?: string
+          proposal_template_url?: string | null
+          selected_model?: string | null
+          software_tools?: string | null
+          systematization_completed_at?: string | null
+          training_courses?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          asset_reached_at?: string | null
+          autonomous_operations?: boolean
+          branding_completed_at?: string | null
+          company_name?: string | null
+          company_registration?: string | null
+          created_at?: string
+          current_phase?: string
+          datasets_methodologies?: string | null
+          frameworks_url?: string | null
+          id?: string
+          proposal_template_url?: string | null
+          selected_model?: string | null
+          software_tools?: string | null
+          systematization_completed_at?: string | null
+          training_courses?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       contracts: {
         Row: {
           created_at: string
