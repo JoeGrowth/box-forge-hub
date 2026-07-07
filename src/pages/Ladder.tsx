@@ -5,9 +5,38 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useProgressionLadder, type LadderStage } from "@/hooks/useProgressionLadder";
-import { Check, Lock, ArrowRight, Target } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
+import { useProgressionLadder, type LadderStage, type LadderStageKey } from "@/hooks/useProgressionLadder";
+import { useAdmin } from "@/hooks/useAdmin";
+import { Check, Lock, ArrowRight, Target, Anchor } from "lucide-react";
 import { useEffect } from "react";
+
+const SINK_CONTENT: Record<LadderStageKey, { title: string; body: string }> = {
+  talent: {
+    title: "Stay in Talent Foundation",
+    body: "Some people decide to stay at this stage and keep looking for job opportunities. Focus on sharpening your Natural Role, expertise and public profile, then use the Opportunities feed to apply to roles that match your foundation.",
+  },
+  advisor: {
+    title: "Stay in Talent Monetized",
+    body: "Some people decide to stay at this stage and keep structuring — detaching by systemizing their consulting practice and scaling it into an asset (Brand Entity). Keep converting missions, document your delivery, and build a repeatable offer.",
+  },
+  cobuilder: {
+    title: "Stay in Co-Builder Mastery",
+    body: "Some people decide to stay as career co-builders — joining founders' teams for equity without initiating their own venture. Keep curating which startups you join, deepen your role, and compound equity across ventures.",
+  },
+  founder: {
+    title: "Stay in Initiation Mastery",
+    body: "Some people decide to stay as serial initiators — publishing and validating ideas, recruiting co-builders, and handing off execution. Keep refining your idea pipeline and your ability to attract vaccinated co-builders.",
+  },
+  box_admin: {
+    title: "Stay as Box Admin",
+    body: "Some people decide to stay running a vertical Box — curating advisors, funneling opportunities, and growing the ecosystem in one domain rather than moving to platform-wide administration.",
+  },
+  platform_admin: {
+    title: "Platform Admin",
+    body: "Terminal stage — operate the platform across all boxes.",
+  },
+};
 
 export default function Ladder() {
   const { stages, currentStage, loading } = useProgressionLadder();
