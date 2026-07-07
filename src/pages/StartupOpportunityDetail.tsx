@@ -707,41 +707,86 @@ const StartupOpportunityDetail = () => {
                 </div>
 
                 {/* Initiator Card */}
-                <div className="bg-card rounded-2xl border border-border p-6">
+                <div className="group rounded-2xl border border-border p-6 transition-all duration-300 relative flex flex-col shadow-sm hover:shadow-xl hover:-translate-y-1">
                   <h3 className="font-display text-lg font-bold text-foreground mb-4">
                     About the Initiator
                   </h3>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-full bg-b4-teal/10 flex items-center justify-center overflow-hidden">
+                  {/* Avatar and Name */}
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-16 h-16 rounded-full bg-b4-teal/10 flex items-center justify-center font-semibold text-lg ring-2 ring-background shadow-md overflow-hidden shrink-0">
                       {creatorProfile?.avatar_url ? (
-                        <img src={creatorProfile.avatar_url} alt={creatorProfile.full_name || "Initiator"} className="w-full h-full object-cover" />
+                        <img
+                          src={creatorProfile.avatar_url}
+                          alt={creatorProfile.full_name || "Initiator"}
+                          className="w-full h-full object-cover"
+                        />
                       ) : (
                         <User className="w-6 h-6 text-b4-teal" />
                       )}
                     </div>
-                    <div>
-                      <p className="font-medium text-foreground">
+                    <div className="flex-1">
+                      <h3 className="font-display font-semibold text-foreground">
                         {creatorProfile?.full_name || "Unknown"}
-                      </p>
+                      </h3>
                       <p className="text-sm text-muted-foreground">Initiator</p>
-                      {naturalRole && (
-                        <span className="inline-block mt-1 px-2 py-0.5 rounded-md bg-b4-teal/10 text-xs font-medium text-b4-teal">
-                          {naturalRole}
-                        </span>
-                      )}
                     </div>
                   </div>
-                  {creatorProfile?.bio && (
-                    <p className="text-sm text-muted-foreground mb-3">
-                      {creatorProfile.bio}
-                    </p>
+
+                  {/* Natural Role */}
+                  {naturalRole && (
+                    <div className="mb-4">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                        <Briefcase className="w-4 h-4" />
+                        <span>Natural Role</span>
+                      </div>
+                      <p className="text-sm text-foreground italic line-clamp-2">
+                        {naturalRole}
+                      </p>
+                    </div>
                   )}
+
+                  {/* Skills */}
                   {creatorProfile?.primary_skills && (
                     <div>
-                      <p className="text-xs text-muted-foreground mb-1">Skills:</p>
-                      <p className="text-sm text-foreground">
-                        {creatorProfile.primary_skills}
-                      </p>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                        <User className="w-4 h-4" />
+                        <span>Skills</span>
+                      </div>
+                      {(() => {
+                        const allSkills = parseSkills(cobuilder.primary_skills);
+                        const visible = allSkills.slice(0, 5);
+                        const hidden = allSkills.slice(5);
+                        return (
+                          <div className="flex flex-wrap gap-1.5">
+                            {visible.map((skill, idx) => (
+                              <Badge
+                                key={idx}
+                                variant="secondary"
+                                className="bg-b4-teal/10 text-b4-navy border border-b4-teal/30 hover:bg-b4-teal/20 transition-colors font-semibold text-xs px-2.5 py-0.5"
+                              >
+                                {skill}
+                              </Badge>
+                            ))}
+                            {hidden.length > 0 && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Badge
+                                      variant="outline"
+                                      className="text-muted-foreground border-dashed cursor-help text-xs px-2.5 py-0.5"
+                                    >
+                                      +{hidden.length} more
+                                    </Badge>
+                                  </TooltipTrigger>
+                                  <TooltipContent className="max-w-xs">
+                                    <p className="text-xs">{hidden.join(", ")}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </div>
                   )}
                 </div>
