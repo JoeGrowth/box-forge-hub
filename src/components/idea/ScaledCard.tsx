@@ -140,11 +140,11 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     setMilestones(next);
   };
 
-  // Milestone completion resolvers
+  // Milestone completion resolvers (auto detection OR manual override)
   const done = useMemo(() => ({
-    solo_missions: autoCounts.soloMissions >= 3,
-    contractor_missions: autoCounts.contractorMissions >= 7,
-    core_services: autoCounts.coreServices >= 1,
+    solo_missions: autoCounts.soloMissions >= 3 || milestones.has("solo_missions"),
+    contractor_missions: autoCounts.contractorMissions >= 7 || milestones.has("contractor_missions"),
+    core_services: autoCounts.coreServices >= 1 || milestones.has("core_services"),
     proposal_template: !!state.proposal_template_url || milestones.has("proposal_template"),
     professional_presence: autoCounts.professionalPresence || milestones.has("professional_presence"),
     invite_cobuilder: milestones.has("invite_cobuilder"),
@@ -152,6 +152,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     standardized_processes: milestones.has("standardized_processes"),
     autonomous_operations: state.autonomous_operations,
   }), [autoCounts, milestones, state]);
+
 
   const brandingProgress = useMemo(() => {
     const items = [done.solo_missions, done.contractor_missions, done.core_services, done.proposal_template, done.professional_presence];
