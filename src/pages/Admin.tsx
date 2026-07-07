@@ -25,7 +25,7 @@ import {
   ClipboardList,
   BarChart3,
   GraduationCap,
-  Bell,
+  Package,
   FileText,
   Award,
   ShieldCheck,
