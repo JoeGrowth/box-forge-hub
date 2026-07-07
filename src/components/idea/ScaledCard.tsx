@@ -91,35 +91,50 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
 
   const [state, setState] = useState<VentureState>(DEFAULT_STATE);
   const [milestones, setMilestones] = useState<Set<string>>(new Set());
-  const [autoCounts, setAutoCounts] = useState({ soloMissions: 0, contractorMissions: 0, coreServices: 0, professionalPresence: false });
+  const [autoCounts, setAutoCounts] = useState({ soloMissions: 0, contractorMissions: 0, coreServices: 0, professionalPresence: false, hasDistribution: false, hasDeclaration: false });
+  const [orgSlug, setOrgSlug] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => { setBrandDraft(title); }, [title]);
 
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const [stateRes, msRes, missionsRes, servicesRes, profileRes] = await Promise.all([
+      const [stateRes, msRes, missionsRes, servicesRes, profileRes, distRes, entitiesRes, orgRes] = await Promise.all([
         supabase.from("consulting_venture_state" as any).select("*").eq("user_id", userId).maybeSingle(),
         supabase.from("consulting_venture_milestones" as any).select("milestone_key").eq("user_id", userId),
         supabase.from("consultant_opportunities").select("id,stage").eq("user_id", userId).eq("stage", "closed"),
         supabase.from("consulting_services" as any).select("id").eq("user_id", userId),
         supabase.from("profiles").select("full_name,avatar_url,bio,professional_title").eq("user_id", userId).maybeSingle(),
+        supabase.from("distribution_records").select("id").eq("user_id", userId).limit(1),
+        supabase.from("declaration_entities").select("id").eq("owner_id", userId),
+        supabase.from("organizations").select("slug").eq("created_by", userId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
       ]);
       if (stateRes.data) setState({ ...DEFAULT_STATE, ...(stateRes.data as any) });
       setMilestones(new Set(((msRes.data as any[]) || []).map(m => m.milestone_key)));
 
       const closedCount = (missionsRes.data || []).length;
-      // simple split heuristic: 3 solo first, remainder contractor
       const solo = Math.min(3, closedCount);
       const contractor = Math.max(0, closedCount - solo);
       const services = ((servicesRes.data as any[]) || []).length;
       const p = profileRes.data as any;
       const presence = !!(p?.full_name && p?.avatar_url && (p?.bio || p?.professional_title));
-      setAutoCounts({ soloMissions: solo, contractorMissions: contractor, coreServices: services, professionalPresence: presence });
+      const hasDistribution = ((distRes.data as any[]) || []).length > 0;
+
+      let hasDeclaration = false;
+      const entityIds = ((entitiesRes.data as any[]) || []).map(e => e.id);
+      if (entityIds.length) {
+        const { data: mData } = await supabase.from("declaration_missions").select("id").in("entity_id", entityIds).limit(1);
+        hasDeclaration = ((mData as any[]) || []).length > 0;
+      }
+
+      setAutoCounts({ soloMissions: solo, contractorMissions: contractor, coreServices: services, professionalPresence: presence, hasDistribution, hasDeclaration });
+      setOrgSlug(((orgRes.data as any)?.slug as string) || null);
       setLoading(false);
     })();
   }, [userId]);
+
 
   const upsertState = async (patch: Partial<VentureState>) => {
     const next = { ...state, ...patch };
@@ -156,16 +171,17 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
 
 
   const brandingProgress = useMemo(() => {
-    const items = [done.solo_missions, done.contractor_missions, done.core_services, done.proposal_template, done.professional_presence];
+    const items = [done.solo_missions, done.contractor_missions, done.proposal_template, done.professional_presence];
     return Math.round((items.filter(Boolean).length / items.length) * 100);
   }, [done]);
   const brandingComplete = brandingProgress === 100;
 
   const systProgress = useMemo(() => {
-    const items = [!!state.selected_model, done.invite_cobuilder, done.form_company, done.standardized_processes, done.autonomous_operations];
+    const items = [!!state.selected_model, done.invite_cobuilder, done.form_company, done.core_services, done.standardized_processes, done.autonomous_operations];
     return Math.round((items.filter(Boolean).length / items.length) * 100);
   }, [state, done]);
   const systComplete = systProgress === 100;
+
 
   const advanceToPhase = async (p: Phase) => {
     const stamps: Partial<VentureState> = { current_phase: p };
@@ -303,6 +319,8 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
       ) : state.current_phase === "systematization" ? (
         <SystematizationPhase
           done={done}
+          autoCounts={autoCounts}
+          milestones={milestones}
           state={state}
           progress={systProgress}
           onToggleMilestone={toggleMilestone}
@@ -310,7 +328,10 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
           onAdvance={() => advanceToPhase("asset")}
           userId={userId}
           brandName={title}
+          orgSlug={orgSlug}
+          onNavigate={(p) => navigate(p)}
         />
+
       ) : (
         <AssetPhase state={state} />
       )}
@@ -420,16 +441,8 @@ function BrandingPhase({ done, autoCounts, state, milestones, progress, onToggle
               </div>
             </div>
           </div>
-        </div>
+      </div>
 
-        <MilestoneRow
-          done={done.core_services}
-          auto={autoCounts.coreServices >= 3}
-          label="Define your core services"
-          hint={autoCounts.coreServices > 0 ? `${autoCounts.coreServices}/3 services published` : (milestones.has("core_services") ? "Manually confirmed" : "Publish at least 3 consulting services")}
-          actionLabel={milestones.has("core_services") ? "Undo" : "Mark done"}
-          onToggle={autoCounts.coreServices >= 3 ? undefined : () => onToggleMilestone("core_services", !milestones.has("core_services"))}
-        />
       </div>
 
 
@@ -478,14 +491,13 @@ function AssetInput({ icon: Icon, label, placeholder, value, onChange }: { icon:
 }
 
 // ---- Phase 2: Systematization ----
-function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpdateState, onAdvance, userId, brandName }: {
-  done: any; state: VentureState; progress: number;
+function SystematizationPhase({ done, autoCounts, milestones, state, progress, onToggleMilestone, onUpdateState, onAdvance, userId, brandName, orgSlug, onNavigate }: {
+  done: any; autoCounts: any; milestones: Set<string>; state: VentureState; progress: number;
   onToggleMilestone: (k: string, on: boolean) => void; onUpdateState: (p: Partial<VentureState>) => void; onAdvance: () => void;
-  userId: string; brandName: string;
-
-
+  userId: string; brandName: string; orgSlug: string | null; onNavigate: (path: string) => void;
 }) {
   const [inviteOpen, setInviteOpen] = useState(false);
+  const gateOpen = autoCounts.hasDistribution && autoCounts.hasDeclaration;
   return (
     <div className="space-y-5">
 
@@ -541,30 +553,58 @@ function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpda
             onToggle={done.invite_cobuilder ? () => onToggleMilestone("invite_cobuilder", false) : () => setInviteOpen(true)}
           />
 
-          <div className="p-3 rounded-lg border border-border bg-card space-y-2">
-            <div className="flex items-start gap-3">
-              <div className={cn("w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0",
-                done.form_company ? "bg-emerald-500 text-white" : "border-2 border-muted-foreground/40")}>
-                {done.form_company && <Check className="w-3 h-3" />}
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium">Form the company</p>
-                <p className="text-xs text-muted-foreground">Legal entity name and registration</p>
-                <div className="grid sm:grid-cols-2 gap-2 mt-2">
-                  <Input value={state.company_name || ""} onChange={(e) => onUpdateState({ company_name: e.target.value })} placeholder="Company legal name" className="h-8 text-xs" />
-                  <Input value={state.company_registration || ""} onChange={(e) => onUpdateState({ company_registration: e.target.value })} placeholder="Registration # (optional)" className="h-8 text-xs" />
+          <MilestoneRow
+            done={!!orgSlug}
+            auto={!!orgSlug}
+            label="Manage organization"
+            hint={orgSlug ? "Open your organization workspace" : "Create your organization first to manage it"}
+            actionLabel="Open"
+            onToggle={orgSlug ? () => onNavigate(`/organizations/${orgSlug}`) : undefined}
+          />
+
+          {gateOpen ? (
+            <>
+              <div className="p-3 rounded-lg border border-border bg-card space-y-2">
+                <div className="flex items-start gap-3">
+                  <div className={cn("w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0",
+                    done.form_company ? "bg-emerald-500 text-white" : "border-2 border-muted-foreground/40")}>
+                    {done.form_company && <Check className="w-3 h-3" />}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">Form the company</p>
+                    <p className="text-xs text-muted-foreground">Legal entity name and registration</p>
+                    <div className="grid sm:grid-cols-2 gap-2 mt-2">
+                      <Input value={state.company_name || ""} onChange={(e) => onUpdateState({ company_name: e.target.value })} placeholder="Company legal name" className="h-8 text-xs" />
+                      <Input value={state.company_registration || ""} onChange={(e) => onUpdateState({ company_registration: e.target.value })} placeholder="Registration # (optional)" className="h-8 text-xs" />
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <MilestoneRow
-            done={done.standardized_processes}
-            label="Implement standardized processes"
-            hint="Documented playbooks, SOPs, delivery methodology"
-            actionLabel="Mark done"
-            onToggle={() => onToggleMilestone("standardized_processes", !done.standardized_processes)}
-          />
+              <MilestoneRow
+                done={done.core_services}
+                auto={autoCounts.coreServices >= 3}
+                label="Define your core services"
+                hint={autoCounts.coreServices > 0 ? `${autoCounts.coreServices}/3 services published` : (milestones.has("core_services") ? "Manually confirmed" : "Publish at least 3 consulting services")}
+                actionLabel={milestones.has("core_services") ? "Undo" : "Mark done"}
+                onToggle={autoCounts.coreServices >= 3 ? undefined : () => onToggleMilestone("core_services", !milestones.has("core_services"))}
+              />
+
+              <MilestoneRow
+                done={done.standardized_processes}
+                label="Implement standardized processes"
+                hint="Documented playbooks, SOPs, delivery methodology"
+                actionLabel="Mark done"
+                onToggle={() => onToggleMilestone("standardized_processes", !done.standardized_processes)}
+              />
+            </>
+          ) : (
+            <div className="p-3 rounded-lg border border-dashed border-border bg-muted/30 text-center">
+              <p className="text-xs text-muted-foreground">
+                Add at least one <strong>Distribution</strong> and one <strong>Declaration</strong> entry for this venture to unlock <em>Form the company</em>, <em>Define your core services</em>, and <em>Implement standardized processes</em>.
+              </p>
+            </div>
+          )}
 
           {done.invite_cobuilder && done.form_company && done.standardized_processes && (
             <MilestoneRow
@@ -576,6 +616,7 @@ function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpda
           )}
         </div>
       )}
+
 
 
 
