@@ -97,7 +97,7 @@ export function AdminBoxesTab() {
 
   const handleAssignAdmin = async () => {
     if (!assignFor || !assignEmail) return;
-    const { data: prof } = await supabase.from("profiles").select("id").eq("email", assignEmail.trim()).maybeSingle();
+    const { data: prof } = await (supabase.from("profiles") as any).select("id").eq("email", assignEmail.trim()).maybeSingle();
     if (!prof) {
       toast.error("No user found with that email");
       return;
