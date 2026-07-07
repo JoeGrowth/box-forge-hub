@@ -191,6 +191,36 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     setMilestones(next);
   };
 
+  const slugify = (s: string) =>
+    s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48) || "org";
+
+  const ensureOrgAndOpen = async () => {
+    if (orgSlug) { navigate(`/organizations/${orgSlug}`); return; }
+    const name = (title || "").trim();
+    if (!name) { toast.error("Set a brand name first"); return; }
+    let slug = slugify(name);
+    let suffix = 0;
+    // Find a free slug (up to a few attempts)
+    while (suffix < 5) {
+      const { data: existing } = await supabase.from("organizations").select("id").eq("slug", slug).maybeSingle();
+      if (!existing) break;
+      suffix += 1;
+      slug = `${slugify(name)}-${Math.random().toString(36).slice(2, 6)}`;
+    }
+    const { data: created, error } = await supabase
+      .from("organizations")
+      .insert({ name, slug, created_by: userId })
+      .select("id, slug")
+      .single();
+    if (error || !created) { toast.error(error?.message || "Failed to create organization"); return; }
+    await supabase.from("organization_members").insert({ organization_id: (created as any).id, user_id: userId, role: "admin" });
+    setOrgId((created as any).id);
+    setOrgSlug((created as any).slug);
+    toast.success("Organization created");
+    navigate(`/organizations/${(created as any).slug}`);
+  };
+
+
   // Milestone completion resolvers (auto detection OR manual override)
   const done = useMemo(() => ({
     solo_missions: autoCounts.soloMissions >= 3 || milestones.has("solo_missions"),
