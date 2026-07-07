@@ -177,16 +177,14 @@ export function Navbar() {
                   </Link>
                 )}
 
-                {talentReady && (
-                  <Link
-                    to="/opportunities"
-                    className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 ${
-                      location.pathname === "/opportunities" ? "text-b4-teal" : "text-muted-foreground"
-                    }`}
-                  >
-                    Opportunities
-                  </Link>
-                )}
+                <Link
+                  to="/entrepreneurship"
+                  className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 ${
+                    location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-muted-foreground"
+                  }`}
+                >
+                  Ideas
+                </Link>
 
                 <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
                   <DropdownMenuTrigger asChild>
