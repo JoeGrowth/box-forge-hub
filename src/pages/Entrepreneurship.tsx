@@ -726,6 +726,25 @@ const Entrepreneurship = () => {
                         </div>
                       )}
                     </TabsContent>
+
+                    {advisorAchieved && (
+                      <TabsContent value="scaled">
+                        <div className="mb-4">
+                          <h2 className="font-display text-xl font-bold text-foreground">Your Scaled Entity</h2>
+                          <p className="text-sm text-muted-foreground">
+                            You've completed Talent Monetized. This card is private — not listed in the ecosystem — and lets you invite co-builders directly.
+                          </p>
+                        </div>
+                        <ScaledCard
+                          userId={user!.id}
+                          title={profileStartupName || "Your Scaled Brand"}
+                          tagline={
+                            naturalRoleDesc ||
+                            "Detached, systemized consulting practice ready to grow with the right co-builders."
+                          }
+                        />
+                      </TabsContent>
+                    )}
                   </Tabs>
                 </TabsContent>
               </Tabs>
