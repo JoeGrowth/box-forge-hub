@@ -102,6 +102,8 @@ const Entrepreneurship = () => {
   const [ideaToDelete, setIdeaToDelete] = useState<{ id: string; title: string } | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteType, setDeleteType] = useState<"archive" | "permanent" | null>(null);
+  const [transferIdea, setTransferIdea] = useState<{ id: string; title: string } | null>(null);
+  const [transferDialogOpen, setTransferDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
