@@ -29,6 +29,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEngineAccess } from "@/hooks/useEngineAccess";
 import { EngineLockedPanel } from "@/components/engines/EngineLockedPanel";
+import { useProgressionLadder } from "@/hooks/useProgressionLadder";
+import { ScaledCard } from "@/components/idea/ScaledCard";
 
 interface StartupIdea {
   id: string;
