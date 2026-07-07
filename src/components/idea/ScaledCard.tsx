@@ -91,17 +91,45 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
 
   const [state, setState] = useState<VentureState>(DEFAULT_STATE);
   const [milestones, setMilestones] = useState<Set<string>>(new Set());
-  const [autoCounts, setAutoCounts] = useState({ soloMissions: 0, contractorMissions: 0, coreServices: 0, professionalPresence: false, hasDistribution: false, hasDeclaration: false });
+  const [autoCounts, setAutoCounts] = useState({ soloMissions: 0, contractorMissions: 0, coreServices: 0, professionalPresence: false, hasDistribution: false, hasDeclaration: false, orgHasDistribution: false, orgHasDeclaration: false });
   const [orgSlug, setOrgSlug] = useState<string | null>(null);
+  const [orgId, setOrgId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => { setBrandDraft(title); }, [title]);
 
+  const reloadOrgSignals = async (userId: string, brandName: string) => {
+    // Find org by matching brand name (created by the user)
+    const { data: orgRow } = await supabase
+      .from("organizations")
+      .select("id, slug, name")
+      .eq("created_by", userId)
+      .ilike("name", brandName.trim())
+      .maybeSingle();
+    const oid = (orgRow as any)?.id as string | undefined;
+    const oslug = (orgRow as any)?.slug as string | undefined;
+
+    let orgHasDeclaration = false;
+    if (oid) {
+      const { data: ents } = await supabase.from("declaration_entities").select("id").eq("organization_id", oid);
+      const ids = ((ents as any[]) || []).map(e => e.id);
+      if (ids.length) {
+        const { data: mData } = await supabase.from("declaration_missions").select("id").in("entity_id", ids).limit(1);
+        orgHasDeclaration = ((mData as any[]) || []).length > 0;
+      }
+    }
+    // distribution_records has no org column — scope to the user
+    const { data: distData } = await supabase.from("distribution_records").select("id").eq("user_id", userId).limit(1);
+    const orgHasDistribution = ((distData as any[]) || []).length > 0;
+
+    return { orgId: oid || null, orgSlug: oslug || null, orgHasDeclaration, orgHasDistribution };
+  };
+
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const [stateRes, msRes, missionsRes, servicesRes, profileRes, distRes, entitiesRes, orgRes] = await Promise.all([
+      const [stateRes, msRes, missionsRes, servicesRes, profileRes, distRes, entitiesRes] = await Promise.all([
         supabase.from("consulting_venture_state" as any).select("*").eq("user_id", userId).maybeSingle(),
         supabase.from("consulting_venture_milestones" as any).select("milestone_key").eq("user_id", userId),
         supabase.from("consultant_opportunities").select("id,stage").eq("user_id", userId).eq("stage", "closed"),
@@ -109,7 +137,6 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
         supabase.from("profiles").select("full_name,avatar_url,bio,professional_title").eq("user_id", userId).maybeSingle(),
         supabase.from("distribution_records").select("id").eq("user_id", userId).limit(1),
         supabase.from("declaration_entities").select("id").eq("owner_id", userId),
-        supabase.from("organizations").select("slug").eq("created_by", userId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
       ]);
       if (stateRes.data) setState({ ...DEFAULT_STATE, ...(stateRes.data as any) });
       setMilestones(new Set(((msRes.data as any[]) || []).map(m => m.milestone_key)));
@@ -129,11 +156,19 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
         hasDeclaration = ((mData as any[]) || []).length > 0;
       }
 
-      setAutoCounts({ soloMissions: solo, contractorMissions: contractor, coreServices: services, professionalPresence: presence, hasDistribution, hasDeclaration });
-      setOrgSlug(((orgRes.data as any)?.slug as string) || null);
+      const orgSig = await reloadOrgSignals(userId, title);
+      setOrgId(orgSig.orgId);
+      setOrgSlug(orgSig.orgSlug);
+
+      setAutoCounts({
+        soloMissions: solo, contractorMissions: contractor, coreServices: services, professionalPresence: presence,
+        hasDistribution, hasDeclaration,
+        orgHasDistribution: orgSig.orgHasDistribution, orgHasDeclaration: orgSig.orgHasDeclaration,
+      });
       setLoading(false);
     })();
-  }, [userId]);
+  }, [userId, title]);
+
 
 
   const upsertState = async (patch: Partial<VentureState>) => {
@@ -156,6 +191,36 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     setMilestones(next);
   };
 
+  const slugify = (s: string) =>
+    s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48) || "org";
+
+  const ensureOrgAndOpen = async () => {
+    if (orgSlug) { navigate(`/organizations/${orgSlug}`); return; }
+    const name = (title || "").trim();
+    if (!name) { toast.error("Set a brand name first"); return; }
+    let slug = slugify(name);
+    let suffix = 0;
+    // Find a free slug (up to a few attempts)
+    while (suffix < 5) {
+      const { data: existing } = await supabase.from("organizations").select("id").eq("slug", slug).maybeSingle();
+      if (!existing) break;
+      suffix += 1;
+      slug = `${slugify(name)}-${Math.random().toString(36).slice(2, 6)}`;
+    }
+    const { data: created, error } = await supabase
+      .from("organizations")
+      .insert({ name, slug, created_by: userId })
+      .select("id, slug")
+      .single();
+    if (error || !created) { toast.error(error?.message || "Failed to create organization"); return; }
+    await supabase.from("organization_members").insert({ organization_id: (created as any).id, user_id: userId, role: "admin" });
+    setOrgId((created as any).id);
+    setOrgSlug((created as any).slug);
+    toast.success("Organization created");
+    navigate(`/organizations/${(created as any).slug}`);
+  };
+
+
   // Milestone completion resolvers (auto detection OR manual override)
   const done = useMemo(() => ({
     solo_missions: autoCounts.soloMissions >= 3 || milestones.has("solo_missions"),
@@ -164,10 +229,11 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     proposal_template: !!state.proposal_template_url || milestones.has("proposal_template"),
     professional_presence: autoCounts.professionalPresence || milestones.has("professional_presence"),
     invite_cobuilder: milestones.has("invite_cobuilder"),
+    manage_org: !!orgId && autoCounts.orgHasDeclaration && autoCounts.orgHasDistribution,
     form_company: !!state.company_name?.trim(),
     standardized_processes: milestones.has("standardized_processes"),
     autonomous_operations: state.autonomous_operations,
-  }), [autoCounts, milestones, state]);
+  }), [autoCounts, milestones, state, orgId]);
 
 
   const brandingProgress = useMemo(() => {
@@ -177,10 +243,11 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
   const brandingComplete = brandingProgress === 100;
 
   const systProgress = useMemo(() => {
-    const items = [!!state.selected_model, done.invite_cobuilder, done.form_company, done.core_services, done.standardized_processes, done.autonomous_operations];
+    const items = [!!state.selected_model, done.invite_cobuilder, done.core_services, done.manage_org, done.form_company, done.standardized_processes, done.autonomous_operations];
     return Math.round((items.filter(Boolean).length / items.length) * 100);
   }, [state, done]);
   const systComplete = systProgress === 100;
+
 
 
   const advanceToPhase = async (p: Phase) => {
@@ -329,7 +396,8 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
           userId={userId}
           brandName={title}
           orgSlug={orgSlug}
-          onNavigate={(p) => navigate(p)}
+          onOpenOrg={ensureOrgAndOpen}
+
         />
 
       ) : (
@@ -491,10 +559,10 @@ function AssetInput({ icon: Icon, label, placeholder, value, onChange }: { icon:
 }
 
 // ---- Phase 2: Systematization ----
-function SystematizationPhase({ done, autoCounts, milestones, state, progress, onToggleMilestone, onUpdateState, onAdvance, userId, brandName, orgSlug, onNavigate }: {
+function SystematizationPhase({ done, autoCounts, milestones, state, progress, onToggleMilestone, onUpdateState, onAdvance, userId, brandName, orgSlug, onOpenOrg }: {
   done: any; autoCounts: any; milestones: Set<string>; state: VentureState; progress: number;
   onToggleMilestone: (k: string, on: boolean) => void; onUpdateState: (p: Partial<VentureState>) => void; onAdvance: () => void;
-  userId: string; brandName: string; orgSlug: string | null; onNavigate: (path: string) => void;
+  userId: string; brandName: string; orgSlug: string | null; onOpenOrg: () => void;
 }) {
   const [inviteOpen, setInviteOpen] = useState(false);
   const gateOpen = autoCounts.hasDistribution && autoCounts.hasDeclaration;
@@ -545,6 +613,7 @@ function SystematizationPhase({ done, autoCounts, milestones, state, progress, o
         </div>
       ) : (
         <div className="space-y-2">
+          {/* 1. Invite a co-builder */}
           <MilestoneRow
             done={done.invite_cobuilder}
             label="Invite a co-builder"
@@ -553,17 +622,35 @@ function SystematizationPhase({ done, autoCounts, milestones, state, progress, o
             onToggle={done.invite_cobuilder ? () => onToggleMilestone("invite_cobuilder", false) : () => setInviteOpen(true)}
           />
 
+          {/* 2. Define your core services */}
           <MilestoneRow
-            done={!!orgSlug}
-            auto={!!orgSlug}
+            done={done.core_services}
+            auto={autoCounts.coreServices >= 3}
+            label="Define your core services"
+            hint={autoCounts.coreServices > 0 ? `${autoCounts.coreServices}/3 services published` : (milestones.has("core_services") ? "Manually confirmed" : "Publish at least 3 consulting services")}
+            actionLabel={milestones.has("core_services") ? "Undo" : "Mark done"}
+            onToggle={autoCounts.coreServices >= 3 ? undefined : () => onToggleMilestone("core_services", !milestones.has("core_services"))}
+          />
+
+          {/* 3. Manage organization — auto-checked once org has ≥1 linked declaration mission and ≥1 distribution */}
+          <MilestoneRow
+            done={done.manage_org}
+
             label="Manage organization"
-            hint={orgSlug ? "Open your organization workspace" : "Create your organization first to manage it"}
-            actionLabel="Open"
-            onToggle={orgSlug ? () => onNavigate(`/organizations/${orgSlug}`) : undefined}
+            hint={
+              orgSlug
+                ? (done.manage_org
+                    ? `Linked to “${brandName}” · declaration + distribution recorded`
+                    : `Open “${brandName}”. Auto-checks once one declaration and one distribution are linked.`)
+                : `Create the “${brandName}” organization to manage it. Auto-checks once one declaration and one distribution are linked.`
+            }
+            actionLabel={orgSlug ? "Open" : "Create & open"}
+            onToggle={onOpenOrg}
           />
 
           {gateOpen ? (
             <>
+              {/* 4. Form the company */}
               <div className="p-3 rounded-lg border border-border bg-card space-y-2">
                 <div className="flex items-start gap-3">
                   <div className={cn("w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0",
@@ -581,15 +668,7 @@ function SystematizationPhase({ done, autoCounts, milestones, state, progress, o
                 </div>
               </div>
 
-              <MilestoneRow
-                done={done.core_services}
-                auto={autoCounts.coreServices >= 3}
-                label="Define your core services"
-                hint={autoCounts.coreServices > 0 ? `${autoCounts.coreServices}/3 services published` : (milestones.has("core_services") ? "Manually confirmed" : "Publish at least 3 consulting services")}
-                actionLabel={milestones.has("core_services") ? "Undo" : "Mark done"}
-                onToggle={autoCounts.coreServices >= 3 ? undefined : () => onToggleMilestone("core_services", !milestones.has("core_services"))}
-              />
-
+              {/* 5. Implement standardized processes */}
               <MilestoneRow
                 done={done.standardized_processes}
                 label="Implement standardized processes"
@@ -601,10 +680,11 @@ function SystematizationPhase({ done, autoCounts, milestones, state, progress, o
           ) : (
             <div className="p-3 rounded-lg border border-dashed border-border bg-muted/30 text-center">
               <p className="text-xs text-muted-foreground">
-                Add at least one <strong>Distribution</strong> and one <strong>Declaration</strong> entry for this venture to unlock <em>Form the company</em>, <em>Define your core services</em>, and <em>Implement standardized processes</em>.
+                Add at least one <strong>Distribution</strong> and one <strong>Declaration</strong> entry for this venture to unlock <em>Form the company</em> and <em>Implement standardized processes</em>.
               </p>
             </div>
           )}
+
 
           {done.invite_cobuilder && done.form_company && done.standardized_processes && (
             <MilestoneRow
