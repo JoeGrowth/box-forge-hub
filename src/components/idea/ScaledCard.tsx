@@ -319,6 +319,8 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
       ) : state.current_phase === "systematization" ? (
         <SystematizationPhase
           done={done}
+          autoCounts={autoCounts}
+          milestones={milestones}
           state={state}
           progress={systProgress}
           onToggleMilestone={toggleMilestone}
@@ -326,7 +328,10 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
           onAdvance={() => advanceToPhase("asset")}
           userId={userId}
           brandName={title}
+          orgSlug={orgSlug}
+          onNavigate={(p) => navigate(p)}
         />
+
       ) : (
         <AssetPhase state={state} />
       )}
