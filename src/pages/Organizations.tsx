@@ -261,27 +261,37 @@ export default function Organizations() {
                     className="rounded-xl border border-border bg-card p-4 sm:p-5 hover:border-primary/40 hover:shadow-sm transition"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-semibold text-foreground truncate">{o.name}</h3>
-                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                          <p className="text-xs text-muted-foreground capitalize">
-                            {o.type === "company" && !incorporatedIds.has(o.id) ? "Unverified company" : o.type}
-                          </p>
-                          {o.type === "company" && incorporatedIds.has(o.id) && (
-                            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 border-emerald-200 text-[10px] py-0 px-1.5 h-4">
-                              <ShieldCheck className="w-2.5 h-2.5 mr-0.5" /> Incorporated
-                            </Badge>
-                          )}
-                          {(() => {
-                            const stage = (o.lifecycle_stage ?? "venture") as LifecycleStage;
-                            const meta = STAGE_META[stage];
-                            const I = meta.icon;
-                            return (
-                              <Badge variant="outline" className={`${meta.className} text-[10px] py-0 px-1.5 h-4`}>
-                                <I className="w-2.5 h-2.5 mr-0.5" /> {meta.label}
+                      <div className="flex items-start gap-3 min-w-0 flex-1">
+                        <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
+                          <OrgLogo
+                            path={o.logo_url}
+                            alt={`${o.name} logo`}
+                            className="w-full h-full object-cover"
+                            iconClassName="w-5 h-5 text-primary"
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-semibold text-foreground truncate">{o.name}</h3>
+                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                            <p className="text-xs text-muted-foreground capitalize">
+                              {o.type === "company" && !incorporatedIds.has(o.id) ? "Unverified company" : o.type}
+                            </p>
+                            {o.type === "company" && incorporatedIds.has(o.id) && (
+                              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 border-emerald-200 text-[10px] py-0 px-1.5 h-4">
+                                <ShieldCheck className="w-2.5 h-2.5 mr-0.5" /> Incorporated
                               </Badge>
-                            );
-                          })()}
+                            )}
+                            {(() => {
+                              const stage = (o.lifecycle_stage ?? "venture") as LifecycleStage;
+                              const meta = STAGE_META[stage];
+                              const I = meta.icon;
+                              return (
+                                <Badge variant="outline" className={`${meta.className} text-[10px] py-0 px-1.5 h-4`}>
+                                  <I className="w-2.5 h-2.5 mr-0.5" /> {meta.label}
+                                </Badge>
+                              );
+                            })()}
+                          </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-1 shrink-0 self-end sm:self-start">
