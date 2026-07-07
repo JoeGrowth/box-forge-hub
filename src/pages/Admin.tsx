@@ -16,6 +16,7 @@ import { AdminAnalyticsTab } from "@/components/admin/AdminAnalyticsTab";
 import { AdminLearningJourneysTab } from "@/components/admin/AdminLearningJourneysTab";
 import { AdminNRDecoderTab } from "@/components/admin/AdminNRDecoderTab";
 import { AdminTrainingsTab } from "@/components/admin/AdminTrainingsTab";
+import { AdminBoxesTab } from "@/components/admin/AdminBoxesTab";
 import {
   Shield,
   Users,
@@ -24,7 +25,7 @@ import {
   ClipboardList,
   BarChart3,
   GraduationCap,
-  Bell,
+  Package,
   FileText,
   Award,
   ShieldCheck,
@@ -290,9 +291,9 @@ const Admin = () => {
                   <FileText className="h-4 w-4 shrink-0" />
                   Applications
                 </TabsTrigger>
-                <TabsTrigger value="notifications" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
-                  <Bell className="h-4 w-4 shrink-0" />
-                  Notifications
+                <TabsTrigger value="boxes" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+                  <Package className="h-4 w-4 shrink-0" />
+                  Boxes
                 </TabsTrigger>
               </TabsList>
 
@@ -332,8 +333,8 @@ const Admin = () => {
                 <AdminUsersTab users={users} onRefresh={fetchUsers} />
               </TabsContent>
 
-              <TabsContent value="notifications">
-                <AdminNotificationsTab notifications={notifications} onRefresh={fetchNotifications} />
+              <TabsContent value="boxes">
+                <AdminBoxesTab />
               </TabsContent>
             </Tabs>
           </div>
