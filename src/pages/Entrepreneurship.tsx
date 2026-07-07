@@ -29,6 +29,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEngineAccess } from "@/hooks/useEngineAccess";
 import { EngineLockedPanel } from "@/components/engines/EngineLockedPanel";
+import { useProgressionLadder } from "@/hooks/useProgressionLadder";
+import { ScaledCard } from "@/components/idea/ScaledCard";
 
 interface StartupIdea {
   id: string;
@@ -66,9 +68,27 @@ const Entrepreneurship = () => {
   const [mainTab, setMainTab] = useState<"ecosystem" | "legacy">(
     searchParams.get("tab") === "legacy" ? "legacy" : "ecosystem"
   );
-  const [legacySubTab, setLegacySubTab] = useState<"initiated" | "joined">(
-    searchParams.get("sub") === "joined" ? "joined" : "initiated"
+  const [legacySubTab, setLegacySubTab] = useState<"initiated" | "joined" | "scaled">(
+    (searchParams.get("sub") === "joined" || searchParams.get("sub") === "scaled")
+      ? (searchParams.get("sub") as "joined" | "scaled")
+      : "initiated"
   );
+  const { stages } = useProgressionLadder();
+  const advisorAchieved = stages.find((s) => s.key === "advisor")?.achieved ?? false;
+  const [profileStartupName, setProfileStartupName] = useState<string | null>(null);
+  const [naturalRoleDesc, setNaturalRoleDesc] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user || !advisorAchieved) return;
+    (async () => {
+      const [{ data: prof }, { data: nr }] = await Promise.all([
+        supabase.from("profiles").select("startup_name").eq("user_id", user.id).maybeSingle(),
+        supabase.from("natural_roles").select("description").eq("user_id", user.id).maybeSingle(),
+      ]);
+      setProfileStartupName(prof?.startup_name ?? null);
+      setNaturalRoleDesc(nr?.description ?? null);
+    })();
+  }, [user, advisorAchieved]);
 
   useEffect(() => {
     if (searchParams.get("new") === "1") {
@@ -598,7 +618,7 @@ const Entrepreneurship = () => {
                 </TabsContent>
 
                 <TabsContent value="legacy">
-                  <Tabs value={legacySubTab} onValueChange={(v) => setLegacySubTab(v as "initiated" | "joined")} className="w-full">
+                  <Tabs value={legacySubTab} onValueChange={(v) => setLegacySubTab(v as "initiated" | "joined" | "scaled")} className="w-full">
                     <div className="flex gap-1 p-1 bg-muted/60 rounded-lg mb-4 w-full sm:w-auto">
                       <button
                         onClick={() => setLegacySubTab("initiated")}
@@ -620,6 +640,19 @@ const Entrepreneurship = () => {
                       >
                         Joined
                       </button>
+                      {advisorAchieved && (
+                        <button
+                          onClick={() => setLegacySubTab("scaled")}
+                          className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
+                            legacySubTab === "scaled"
+                              ? "bg-background text-foreground shadow-sm"
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          Scaled
+                          <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-primary/40 text-primary">Advisor</Badge>
+                        </button>
+                      )}
                     </div>
 
                     <TabsContent value="initiated">
@@ -693,6 +726,25 @@ const Entrepreneurship = () => {
                         </div>
                       )}
                     </TabsContent>
+
+                    {advisorAchieved && (
+                      <TabsContent value="scaled">
+                        <div className="mb-4">
+                          <h2 className="font-display text-xl font-bold text-foreground">Your Scaled Entity</h2>
+                          <p className="text-sm text-muted-foreground">
+                            You've completed Talent Monetized. This card is private — not listed in the ecosystem — and lets you invite co-builders directly.
+                          </p>
+                        </div>
+                        <ScaledCard
+                          userId={user!.id}
+                          title={profileStartupName || "Your Scaled Brand"}
+                          tagline={
+                            naturalRoleDesc ||
+                            "Detached, systemized consulting practice ready to grow with the right co-builders."
+                          }
+                        />
+                      </TabsContent>
+                    )}
                   </Tabs>
                 </TabsContent>
               </Tabs>
