@@ -5,7 +5,8 @@ import { ScrollToTopButton } from "@/components/layout/ScrollToTopButton";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Rocket, Eye, Users, Layers, Film, Shield, TrendingUp, Trash2, CheckCircle, Loader2, Lightbulb, Plus } from "lucide-react";
+import { Rocket, Eye, Users, Layers, Film, Shield, TrendingUp, Trash2, CheckCircle, Loader2, Lightbulb, Plus, Building2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { NextGoalBanner } from "@/components/progression/NextGoalBanner";
 import { CreateIdeaDialog } from "@/components/idea/CreateIdeaDialog";
 import { ApplyToJoinDialog } from "@/components/idea/ApplyToJoinDialog";
@@ -85,6 +86,7 @@ const Entrepreneurship = () => {
   const [creatorNames, setCreatorNames] = useState<Record<string, string>>({});
   const [teamCounts, setTeamCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  const [linkedOrgs, setLinkedOrgs] = useState<Record<string, { id: string; slug: string; is_public: boolean }>>({});
 
   // Action dialog state (mirrors /start)
   const [selectedIdea, setSelectedIdea] = useState<{ id: string; title: string; currentEpisode: string } | null>(null);
@@ -200,6 +202,24 @@ const Entrepreneurship = () => {
         const counts: Record<string, number> = {};
         (teamData || []).forEach(t => { counts[t.startup_id] = (counts[t.startup_id] || 0) + 1; });
         setTeamCounts(counts);
+      }
+
+      // Load organizations linked to my ideas (source_idea_id) so we can show
+      // an "Organization" button + ecosystem visibility toggle on those cards.
+      const myAndCollabIds = [
+        ...my.map(p => p.id),
+        ...membershipStartupIds,
+      ];
+      if (myAndCollabIds.length > 0) {
+        const { data: orgs } = await supabase
+          .from("organizations")
+          .select("id, slug, source_idea_id, is_public")
+          .in("source_idea_id", myAndCollabIds);
+        const map: Record<string, { id: string; slug: string; is_public: boolean }> = {};
+        (orgs || []).forEach((o: any) => {
+          if (o.source_idea_id) map[o.source_idea_id] = { id: o.id, slug: o.slug, is_public: o.is_public !== false };
+        });
+        setLinkedOrgs(map);
       }
     } catch (err) {
       console.error("Error fetching entrepreneurship data:", err);
@@ -334,6 +354,39 @@ const Entrepreneurship = () => {
               >
                 <Users className="w-4 h-4 mr-1" /> Team
               </Button>
+              {linkedOrgs[project.id] && (
+                <>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to={`/org/${linkedOrgs[project.id].slug}`}>
+                      <Building2 className="w-4 h-4 mr-1" /> Organization
+                    </Link>
+                  </Button>
+                  {isOwner && (
+                    <div className="flex items-center gap-2 px-2 rounded-md border border-border h-9">
+                      <Switch
+                        checked={linkedOrgs[project.id].is_public}
+                        onCheckedChange={async (checked) => {
+                          const org = linkedOrgs[project.id];
+                          setLinkedOrgs((prev) => ({ ...prev, [project.id]: { ...prev[project.id], is_public: checked } }));
+                          const { error } = await supabase
+                            .from("organizations")
+                            .update({ is_public: checked } as any)
+                            .eq("id", org.id);
+                          if (error) {
+                            setLinkedOrgs((prev) => ({ ...prev, [project.id]: { ...prev[project.id], is_public: !checked } }));
+                            toast({ title: "Update failed", description: error.message, variant: "destructive" });
+                          } else {
+                            toast({ title: checked ? "Published to ecosystem" : "Hidden from ecosystem" });
+                          }
+                        }}
+                      />
+                      <span className="text-xs text-muted-foreground">
+                        {linkedOrgs[project.id].is_public ? "On" : "Off"}
+                      </span>
+                    </div>
+                  )}
+                </>
+              )}
               {isOwner && !project.development_completed_at && (
                 <Button
                   variant="outline"
