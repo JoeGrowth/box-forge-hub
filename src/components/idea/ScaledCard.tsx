@@ -556,22 +556,14 @@ function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpda
           onToggle={() => onToggleMilestone("standardized_processes", !done.standardized_processes)}
         />
 
-        <div className="p-3 rounded-lg border border-border bg-card">
-          <div className="flex items-start gap-3">
-            <div className={cn("w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0",
-              done.autonomous_operations ? "bg-emerald-500 text-white" : "border-2 border-muted-foreground/40")}>
-              {done.autonomous_operations && <Check className="w-3 h-3" />}
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium">Achieve autonomous operations</p>
-              <p className="text-xs text-muted-foreground">The business no longer depends on your daily involvement</p>
-            </div>
-            <Button size="sm" variant={done.autonomous_operations ? "secondary" : "outline"} onClick={() => onUpdateState({ autonomous_operations: !state.autonomous_operations })}>
-              {done.autonomous_operations ? "Undo" : "Confirm"}
-            </Button>
-          </div>
-        </div>
+        <MilestoneRow
+          done={done.autonomous_operations}
+          label="Achieve autonomous operations"
+          hint="The business no longer depends on your daily involvement"
+          onToggle={() => onUpdateState({ autonomous_operations: !state.autonomous_operations })}
+        />
       </div>
+
 
       {progress === 100 && (
         <div className="p-3 rounded-lg border border-primary/30 bg-primary/5 flex items-center gap-2">
