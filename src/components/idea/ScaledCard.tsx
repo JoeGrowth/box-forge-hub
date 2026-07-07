@@ -337,10 +337,11 @@ function MilestoneRow({ done, label, hint, actionLabel, onToggle, auto }: { done
   );
 }
 
-function BrandingPhase({ done, autoCounts, state, milestones, progress, onToggleMilestone, onUpdateState }: {
+function BrandingPhase({ done, autoCounts, state, milestones, progress, onToggleMilestone, onUpdateState, onAdvance }: {
   done: any; autoCounts: any; state: VentureState; milestones: Set<string>; progress: number;
-  onToggleMilestone: (k: string, on: boolean) => void; onUpdateState: (p: Partial<VentureState>) => void;
+  onToggleMilestone: (k: string, on: boolean) => void; onUpdateState: (p: Partial<VentureState>) => void; onAdvance: () => void;
 }) {
+
   return (
     <div className="space-y-5">
       <div>
