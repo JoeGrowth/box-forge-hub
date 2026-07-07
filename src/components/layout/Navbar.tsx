@@ -66,7 +66,7 @@ const moreLinks: Array<{
 }> = [
   { name: "Consulting", path: "/consulting", icon: Handshake, engineKey: "consulting" },
   { name: "Squares", path: "/squares", icon: LayoutGrid },
-  { name: "Ideas", path: "/entrepreneurship", icon: Lightbulb },
+  { name: "Opportunities", path: "/opportunities", icon: Briefcase },
   { name: "Organizations", path: "/organizations", icon: Building2, minStage: "emerging" },
   { name: "Boxes", path: "/boxes", icon: Package },
   { name: "Programs", path: "/programs", icon: BookOpen },
