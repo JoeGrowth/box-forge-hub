@@ -702,6 +702,7 @@ const StartupOpportunityDetail = () => {
                     </Dialog>
                   )}
                 </div>
+                )}
 
                 {/* Initiator Card */}
                 <div className="group rounded-2xl border border-border p-6 transition-all duration-300 relative flex flex-col shadow-sm hover:shadow-xl hover:-translate-y-1">
