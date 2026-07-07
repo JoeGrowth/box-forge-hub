@@ -68,9 +68,27 @@ const Entrepreneurship = () => {
   const [mainTab, setMainTab] = useState<"ecosystem" | "legacy">(
     searchParams.get("tab") === "legacy" ? "legacy" : "ecosystem"
   );
-  const [legacySubTab, setLegacySubTab] = useState<"initiated" | "joined">(
-    searchParams.get("sub") === "joined" ? "joined" : "initiated"
+  const [legacySubTab, setLegacySubTab] = useState<"initiated" | "joined" | "scaled">(
+    (searchParams.get("sub") === "joined" || searchParams.get("sub") === "scaled")
+      ? (searchParams.get("sub") as "joined" | "scaled")
+      : "initiated"
   );
+  const { stages } = useProgressionLadder();
+  const advisorAchieved = stages.find((s) => s.key === "advisor")?.achieved ?? false;
+  const [profileStartupName, setProfileStartupName] = useState<string | null>(null);
+  const [naturalRoleDesc, setNaturalRoleDesc] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user || !advisorAchieved) return;
+    (async () => {
+      const [{ data: prof }, { data: nr }] = await Promise.all([
+        supabase.from("profiles").select("startup_name").eq("user_id", user.id).maybeSingle(),
+        supabase.from("natural_roles").select("description").eq("user_id", user.id).maybeSingle(),
+      ]);
+      setProfileStartupName(prof?.startup_name ?? null);
+      setNaturalRoleDesc(nr?.description ?? null);
+    })();
+  }, [user, advisorAchieved]);
 
   useEffect(() => {
     if (searchParams.get("new") === "1") {
