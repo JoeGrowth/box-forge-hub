@@ -14,6 +14,7 @@ import {
   roleAtLeast,
   type OrgRole,
 } from "@/hooks/useOrganizations";
+import { OrgLogo, invalidateOrgLogo } from "@/components/organization/OrgLogo";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -114,10 +115,13 @@ export default function OrganizationPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const { org, loading } = useOrganizationBySlug(slug);
+  const { org: loadedOrg, loading } = useOrganizationBySlug(slug);
+  const [org, setOrg] = useState<typeof loadedOrg>(loadedOrg);
+  useEffect(() => { setOrg(loadedOrg); }, [loadedOrg]);
   const role = useMyOrgRole(user?.id, org?.id);
   const canEdit = roleAtLeast(role, "editor");
   const canAdmin = roleAtLeast(role, "admin");
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   const [jobs, setJobs] = useState<JobRow[]>([]);
   const [tenders, setTenders] = useState<TenderRow[]>([]);
@@ -179,9 +183,62 @@ export default function OrganizationPage() {
       {/* Header */}
       <div className="rounded-2xl border border-border bg-card p-6">
         <div className="flex items-start gap-4 flex-wrap">
-          <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <Building2 className="w-7 h-7 text-primary" />
-          </div>
+          <label
+            className={`w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden relative group ${canEdit ? "cursor-pointer hover:ring-2 hover:ring-primary/40" : ""}`}
+            title={canEdit ? "Click to upload logo" : undefined}
+          >
+            <OrgLogo
+              path={org.logo_url}
+              alt={`${org.name} logo`}
+              className="w-full h-full object-cover"
+              iconClassName="w-7 h-7 text-primary"
+            />
+            {canEdit && (
+              <>
+                <span className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-[10px] font-medium text-white">
+                  {uploadingLogo ? "…" : "Change"}
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  disabled={uploadingLogo}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    e.target.value = "";
+                    if (!file || !org) return;
+                    setUploadingLogo(true);
+                    const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+                    const path = `${org.id}/logo-${Date.now()}.${ext}`;
+                    const { error: upErr } = await supabase.storage
+                      .from("organization-logos")
+                      .upload(path, file, { contentType: file.type, upsert: false });
+                    if (upErr) {
+                      setUploadingLogo(false);
+                      toast({ title: "Upload failed", description: upErr.message, variant: "destructive" });
+                      return;
+                    }
+                    // Delete previous logo if any
+                    if (org.logo_url) {
+                      await supabase.storage.from("organization-logos").remove([org.logo_url]);
+                      invalidateOrgLogo(org.logo_url);
+                    }
+                    const { error: updErr } = await supabase
+                      .from("organizations")
+                      .update({ logo_url: path } as any)
+                      .eq("id", org.id);
+                    setUploadingLogo(false);
+                    if (updErr) {
+                      toast({ title: "Could not save logo", description: updErr.message, variant: "destructive" });
+                      return;
+                    }
+                    setOrg({ ...org, logo_url: path });
+                    toast({ title: "Logo updated" });
+                  }}
+                />
+              </>
+            )}
+          </label>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-bold">{org.name}</h1>
