@@ -132,7 +132,7 @@ const StartupOpportunityDetail = () => {
       // Fetch creator profile
       const { data: profile } = await supabase
         .from("profiles")
-        .select("full_name, bio, primary_skills")
+        .select("full_name, bio, primary_skills, avatar_url")
         .eq("user_id", data.creator_id)
         .maybeSingle();
 
