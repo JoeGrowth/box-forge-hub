@@ -305,10 +305,13 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
           onToggleMilestone={toggleMilestone}
           onUpdateState={upsertState}
           onAdvance={() => advanceToPhase("asset")}
+          userId={userId}
+          brandName={title}
         />
       ) : (
         <AssetPhase state={state} />
       )}
+
 
 
       <InviteDialog open={inviteOpen} onOpenChange={setInviteOpen} currentUserId={userId} entityLabel={title} />
@@ -453,13 +456,17 @@ function AssetInput({ icon: Icon, label, placeholder, value, onChange }: { icon:
 }
 
 // ---- Phase 2: Systematization ----
-function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpdateState, onAdvance }: {
+function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpdateState, onAdvance, userId, brandName }: {
   done: any; state: VentureState; progress: number;
   onToggleMilestone: (k: string, on: boolean) => void; onUpdateState: (p: Partial<VentureState>) => void; onAdvance: () => void;
+  userId: string; brandName: string;
+
 
 }) {
+  const [inviteOpen, setInviteOpen] = useState(false);
   return (
     <div className="space-y-5">
+
       <div>
         <div className="flex items-center justify-between mb-2">
           <div>
@@ -502,10 +509,12 @@ function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpda
         <MilestoneRow
           done={done.invite_cobuilder}
           label="Invite a co-builder"
-          hint="Bring in capabilities or expertise the venture needs"
-          actionLabel="Mark done"
-          onToggle={() => onToggleMilestone("invite_cobuilder", !done.invite_cobuilder)}
+          hint={done.invite_cobuilder ? "Invitation sent" : "From the platform, or by email if they're not on it yet"}
+          actionLabel={done.invite_cobuilder ? "Invite another" : "Invite"}
+          onToggle={() => setInviteOpen(true)}
         />
+
+
 
         <div className="p-3 rounded-lg border border-border bg-card space-y-2">
           <div className="flex items-start gap-3">
@@ -557,9 +566,145 @@ function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpda
         </div>
       )}
 
+      <CoBuilderInviteDialog
+        open={inviteOpen}
+        onOpenChange={setInviteOpen}
+        currentUserId={userId}
+        brandName={brandName}
+        onInvited={() => onToggleMilestone("invite_cobuilder", true)}
+      />
     </div>
   );
 }
+
+function CoBuilderInviteDialog({ open, onOpenChange, currentUserId, brandName, onInvited }: {
+  open: boolean; onOpenChange: (v: boolean) => void; currentUserId: string; brandName: string; onInvited: () => void;
+}) {
+  const navigate = useNavigate();
+  const [mode, setMode] = useState<"platform" | "email">("platform");
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<ProfileMatch[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [inviting, setInviting] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [sendingEmail, setSendingEmail] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(async () => {
+      if (!query.trim() || query.trim().length < 2) { setResults([]); return; }
+      setSearching(true);
+      const { data } = await supabase.from("profiles").select("user_id, full_name, avatar_url, primary_skills").ilike("full_name", `%${query.trim()}%`).neq("user_id", currentUserId).limit(10);
+      setResults((data as ProfileMatch[]) || []);
+      setSearching(false);
+    }, 250);
+    return () => clearTimeout(t);
+  }, [query, currentUserId]);
+
+  const invitePlatform = async (target: ProfileMatch) => {
+    setInviting(target.user_id);
+    try {
+      const { data: existing } = await supabase.from("direct_conversations").select("id")
+        .or(`and(participant_one_id.eq.${currentUserId},participant_two_id.eq.${target.user_id}),and(participant_one_id.eq.${target.user_id},participant_two_id.eq.${currentUserId})`)
+        .maybeSingle();
+      let convId = existing?.id;
+      if (!convId) {
+        const { data: created, error } = await supabase.from("direct_conversations").insert({ participant_one_id: currentUserId, participant_two_id: target.user_id }).select("id").single();
+        if (error) throw error;
+        convId = created.id;
+      }
+      const message = `Hi ${target.full_name || "there"} — I'm systematizing "${brandName}" and looking for a co-builder to bring in capabilities the venture needs. Interested in exploring a role together?`;
+      const { error: msgErr } = await supabase.from("direct_messages").insert({ conversation_id: convId, sender_id: currentUserId, content: message });
+      if (msgErr) throw msgErr;
+      onInvited();
+      toast.success(`Invitation sent to ${target.full_name || "co-builder"}`);
+      onOpenChange(false);
+      navigate(`/messages/${convId}`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send invitation");
+    } finally { setInviting(null); }
+  };
+
+  const inviteEmail = async () => {
+    const clean = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean)) { toast.error("Enter a valid email"); return; }
+    setSendingEmail(true);
+    const { error } = await supabase.functions.invoke("send-collaborator-invite", {
+      body: { email: clean, entityName: brandName, access: "edit" },
+    });
+    setSendingEmail(false);
+    if (error) { toast.error("Failed to send email invite"); return; }
+    onInvited();
+    toast.success(`Email invitation sent to ${clean}`);
+    setEmail("");
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2"><UserPlus className="w-4 h-4" /> Invite a Co-Builder</DialogTitle>
+          <DialogDescription>Search a member of the platform, or invite by email.</DialogDescription>
+        </DialogHeader>
+
+        <div className="flex gap-1 p-1 rounded-lg bg-muted">
+          <button
+            onClick={() => setMode("platform")}
+            className={cn("flex-1 text-xs font-medium py-1.5 rounded-md transition", mode === "platform" ? "bg-background shadow-sm" : "text-muted-foreground")}
+          >From the platform</button>
+          <button
+            onClick={() => setMode("email")}
+            className={cn("flex-1 text-xs font-medium py-1.5 rounded-md transition", mode === "email" ? "bg-background shadow-sm" : "text-muted-foreground")}
+          >By email</button>
+        </div>
+
+        {mode === "platform" ? (
+          <>
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search profiles by name…" className="pl-9" />
+            </div>
+            <div className="max-h-72 overflow-y-auto space-y-1 -mx-2 px-2">
+              {searching && (<div className="flex items-center justify-center py-6 text-sm text-muted-foreground"><Loader2 className="w-4 h-4 animate-spin mr-2" /> Searching…</div>)}
+              {!searching && query.trim().length >= 2 && results.length === 0 && (
+                <div className="text-center py-6 space-y-2">
+                  <p className="text-sm text-muted-foreground">No profiles found.</p>
+                  <Button size="sm" variant="outline" onClick={() => setMode("email")}>Invite by email instead</Button>
+                </div>
+              )}
+              {!searching && results.map((r) => (
+                <div key={r.user_id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50">
+                  <Avatar className="w-9 h-9">{r.avatar_url && <AvatarImage src={r.avatar_url} />}<AvatarFallback>{(r.full_name || "?").charAt(0).toUpperCase()}</AvatarFallback></Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{r.full_name || "Unnamed"}</p>
+                    {r.primary_skills && <p className="text-xs text-muted-foreground truncate">{r.primary_skills}</p>}
+                  </div>
+                  <Button size="sm" variant="outline" disabled={inviting === r.user_id} onClick={() => invitePlatform(r)}>
+                    {inviting === r.user_id ? (<Loader2 className="w-3.5 h-3.5 animate-spin" />) : (<><Send className="w-3.5 h-3.5 mr-1" /> Invite</>)}
+                  </Button>
+                </div>
+              ))}
+              {query.trim().length < 2 && (<p className="text-xs text-muted-foreground text-center py-6">Type at least 2 characters to search.</p>)}
+            </div>
+          </>
+        ) : (
+          <div className="space-y-3">
+            <div>
+              <Label className="text-xs">Email address</Label>
+              <Input autoFocus type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="colleague@example.com" className="mt-1" />
+              <p className="text-[11px] text-muted-foreground mt-1">They'll receive an invitation email with a link to join the platform and connect with you.</p>
+            </div>
+            <Button className="w-full" onClick={inviteEmail} disabled={sendingEmail || !email.trim()}>
+              {sendingEmail ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Sending…</>) : (<><Send className="w-4 h-4 mr-2" /> Send email invitation</>)}
+            </Button>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+
 
 // ---- Phase 3: Asset ----
 function AssetPhase({ state }: { state: VentureState }) {
