@@ -635,7 +635,7 @@ function SystematizationPhase({ done, autoCounts, milestones, state, progress, o
           {/* 3. Manage organization — auto-checked once org has ≥1 linked declaration mission and ≥1 distribution */}
           <MilestoneRow
             done={done.manage_org}
-            auto={done.manage_org}
+
             label="Manage organization"
             hint={
               orgSlug
