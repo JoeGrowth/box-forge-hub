@@ -69,10 +69,11 @@ const DEFAULT_STATE: VentureState = {
 };
 
 const PHASE_META: Record<Phase, { label: string; sub: string; icon: any }> = {
-  branding: { label: "Branding", sub: "Structuring", icon: Sparkles },
-  systematization: { label: "Systematization", sub: "Detaching", icon: Layers },
+  branding: { label: "Structure", sub: "Branding", icon: Sparkles },
+  systematization: { label: "Detach", sub: "Systemize", icon: Layers },
   asset: { label: "Asset", sub: "Scale", icon: Rocket },
 };
+
 
 const MODEL_META: Record<Model, { label: string; desc: string; icon: any }> = {
   boutique_firm: { label: "Boutique Firm", desc: "High-touch consulting firm centered on your expertise.", icon: Building2 },
@@ -144,7 +145,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
   const done = useMemo(() => ({
     solo_missions: autoCounts.soloMissions >= 3 || milestones.has("solo_missions"),
     contractor_missions: autoCounts.contractorMissions >= 7 || milestones.has("contractor_missions"),
-    core_services: autoCounts.coreServices >= 1 || milestones.has("core_services"),
+    core_services: autoCounts.coreServices >= 3 || milestones.has("core_services"),
     proposal_template: !!state.proposal_template_url || milestones.has("proposal_template"),
     professional_presence: autoCounts.professionalPresence || milestones.has("professional_presence"),
     invite_cobuilder: milestones.has("invite_cobuilder"),
@@ -366,7 +367,7 @@ function BrandingPhase({ done, autoCounts, state, milestones, progress, onToggle
       <div>
         <div className="flex items-center justify-between mb-2">
           <div>
-            <p className="font-display text-base font-bold text-foreground">Phase 1 · Branding (Structuring)</p>
+            <p className="font-display text-base font-bold text-foreground">Phase 1 · Structure (Branding)</p>
             <p className="text-xs text-muted-foreground">Establish your consulting business. Ownership stays 100% yours.</p>
           </div>
           <Badge variant="secondary">{progress}%</Badge>
@@ -375,6 +376,14 @@ function BrandingPhase({ done, autoCounts, state, milestones, progress, onToggle
       </div>
 
       <div className="space-y-2">
+        <MilestoneRow
+          done={done.professional_presence}
+          auto={autoCounts.professionalPresence}
+          label="Establish your professional presence"
+          hint="Complete profile: name, avatar, bio/title"
+          actionLabel={milestones.has("professional_presence") ? "Undo" : "Confirm"}
+          onToggle={autoCounts.professionalPresence ? undefined : () => onToggleMilestone("professional_presence", !milestones.has("professional_presence"))}
+        />
         <MilestoneRow
           done={done.solo_missions}
           auto={autoCounts.soloMissions >= 3}
@@ -390,14 +399,6 @@ function BrandingPhase({ done, autoCounts, state, milestones, progress, onToggle
           hint={`${autoCounts.contractorMissions}/7 closed missions${milestones.has("contractor_missions") ? " · manually confirmed" : ""}`}
           actionLabel={milestones.has("contractor_missions") ? "Undo" : "Mark done"}
           onToggle={autoCounts.contractorMissions >= 7 ? undefined : () => onToggleMilestone("contractor_missions", !milestones.has("contractor_missions"))}
-        />
-        <MilestoneRow
-          done={done.core_services}
-          auto={autoCounts.coreServices >= 1}
-          label="Define your core services"
-          hint={autoCounts.coreServices > 0 ? `${autoCounts.coreServices} services published` : (milestones.has("core_services") ? "Manually confirmed" : "Publish at least one consulting service")}
-          actionLabel={milestones.has("core_services") ? "Undo" : "Mark done"}
-          onToggle={autoCounts.coreServices >= 1 ? undefined : () => onToggleMilestone("core_services", !milestones.has("core_services"))}
         />
 
         <div className="p-3 rounded-lg border border-border bg-card space-y-2">
@@ -420,15 +421,17 @@ function BrandingPhase({ done, autoCounts, state, milestones, progress, onToggle
             </div>
           </div>
         </div>
+
         <MilestoneRow
-          done={done.professional_presence}
-          auto={autoCounts.professionalPresence}
-          label="Establish your professional presence"
-          hint="Complete profile: name, avatar, bio/title"
-          actionLabel={milestones.has("professional_presence") ? "Undo" : "Confirm"}
-          onToggle={autoCounts.professionalPresence ? undefined : () => onToggleMilestone("professional_presence", !milestones.has("professional_presence"))}
+          done={done.core_services}
+          auto={autoCounts.coreServices >= 3}
+          label="Define your core services"
+          hint={autoCounts.coreServices > 0 ? `${autoCounts.coreServices}/3 services published` : (milestones.has("core_services") ? "Manually confirmed" : "Publish at least 3 consulting services")}
+          actionLabel={milestones.has("core_services") ? "Undo" : "Mark done"}
+          onToggle={autoCounts.coreServices >= 3 ? undefined : () => onToggleMilestone("core_services", !milestones.has("core_services"))}
         />
       </div>
+
 
       {/* Asset deliverables */}
       <div className="pt-4 border-t border-border">
@@ -489,7 +492,7 @@ function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpda
       <div>
         <div className="flex items-center justify-between mb-2">
           <div>
-            <p className="font-display text-base font-bold text-foreground">Phase 2 · Systematization (Detaching)</p>
+            <p className="font-display text-base font-bold text-foreground">Phase 2 · Detach (Systemize)</p>
             <p className="text-xs text-muted-foreground">Separate the business from you. Build systems others can run.</p>
           </div>
           <Badge variant="secondary">{progress}%</Badge>
@@ -524,50 +527,57 @@ function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpda
         </div>
       </div>
 
-      <div className="space-y-2">
-        <MilestoneRow
-          done={done.invite_cobuilder}
-          label="Invite a co-builder"
-          hint={done.invite_cobuilder ? "Invitation sent" : "From the platform, or by email if they're not on it yet"}
-          actionLabel={done.invite_cobuilder ? "Invite another" : "Invite"}
-          onToggle={done.invite_cobuilder ? () => onToggleMilestone("invite_cobuilder", false) : () => setInviteOpen(true)}
-        />
+      {!state.selected_model ? (
+        <div className="p-3 rounded-lg border border-dashed border-border bg-muted/30 text-center">
+          <p className="text-xs text-muted-foreground">Choose a business model above to unlock the next actions.</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <MilestoneRow
+            done={done.invite_cobuilder}
+            label="Invite a co-builder"
+            hint={done.invite_cobuilder ? "Invitation sent" : "From the platform, or by email if they're not on it yet"}
+            actionLabel={done.invite_cobuilder ? "Invite another" : "Invite"}
+            onToggle={done.invite_cobuilder ? () => onToggleMilestone("invite_cobuilder", false) : () => setInviteOpen(true)}
+          />
 
-
-
-
-        <div className="p-3 rounded-lg border border-border bg-card space-y-2">
-          <div className="flex items-start gap-3">
-            <div className={cn("w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0",
-              done.form_company ? "bg-emerald-500 text-white" : "border-2 border-muted-foreground/40")}>
-              {done.form_company && <Check className="w-3 h-3" />}
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium">Form the company</p>
-              <p className="text-xs text-muted-foreground">Legal entity name and registration</p>
-              <div className="grid sm:grid-cols-2 gap-2 mt-2">
-                <Input value={state.company_name || ""} onChange={(e) => onUpdateState({ company_name: e.target.value })} placeholder="Company legal name" className="h-8 text-xs" />
-                <Input value={state.company_registration || ""} onChange={(e) => onUpdateState({ company_registration: e.target.value })} placeholder="Registration # (optional)" className="h-8 text-xs" />
+          <div className="p-3 rounded-lg border border-border bg-card space-y-2">
+            <div className="flex items-start gap-3">
+              <div className={cn("w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0",
+                done.form_company ? "bg-emerald-500 text-white" : "border-2 border-muted-foreground/40")}>
+                {done.form_company && <Check className="w-3 h-3" />}
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium">Form the company</p>
+                <p className="text-xs text-muted-foreground">Legal entity name and registration</p>
+                <div className="grid sm:grid-cols-2 gap-2 mt-2">
+                  <Input value={state.company_name || ""} onChange={(e) => onUpdateState({ company_name: e.target.value })} placeholder="Company legal name" className="h-8 text-xs" />
+                  <Input value={state.company_registration || ""} onChange={(e) => onUpdateState({ company_registration: e.target.value })} placeholder="Registration # (optional)" className="h-8 text-xs" />
+                </div>
               </div>
             </div>
           </div>
+
+          <MilestoneRow
+            done={done.standardized_processes}
+            label="Implement standardized processes"
+            hint="Documented playbooks, SOPs, delivery methodology"
+            actionLabel="Mark done"
+            onToggle={() => onToggleMilestone("standardized_processes", !done.standardized_processes)}
+          />
+
+          {done.invite_cobuilder && done.form_company && done.standardized_processes && (
+            <MilestoneRow
+              done={done.autonomous_operations}
+              label="Achieve autonomous operations"
+              hint="The business no longer depends on your daily involvement"
+              onToggle={() => onUpdateState({ autonomous_operations: !state.autonomous_operations })}
+            />
+          )}
         </div>
+      )}
 
-        <MilestoneRow
-          done={done.standardized_processes}
-          label="Implement standardized processes"
-          hint="Documented playbooks, SOPs, delivery methodology"
-          actionLabel="Mark done"
-          onToggle={() => onToggleMilestone("standardized_processes", !done.standardized_processes)}
-        />
 
-        <MilestoneRow
-          done={done.autonomous_operations}
-          label="Achieve autonomous operations"
-          hint="The business no longer depends on your daily involvement"
-          onToggle={() => onUpdateState({ autonomous_operations: !state.autonomous_operations })}
-        />
-      </div>
 
 
       {progress === 100 && (
