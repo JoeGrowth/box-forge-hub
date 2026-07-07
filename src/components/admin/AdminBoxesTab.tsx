@@ -50,19 +50,19 @@ export function AdminBoxesTab() {
       ]);
       const userIds = Array.from(new Set([...(ea || []).map((r: any) => r.user_id), ...(adv || []).map((r: any) => r.user_id)]));
       const { data: profs } = userIds.length
-        ? await supabase.from("profiles").select("id,full_name,email").in("id", userIds)
+        ? await supabase.from("profiles").select("user_id,full_name,avatar_url").in("user_id", userIds)
         : { data: [] as any[] };
-      const pmap = new Map((profs || []).map((p: any) => [p.id, p]));
+      const pmap = new Map((profs || []).map((p: any) => [p.user_id, p]));
 
       const aMap: Record<string, Assignment[]> = {};
       const vMap: Record<string, Assignment[]> = {};
       (ea || []).forEach((r: any) => {
         const p: any = pmap.get(r.user_id) || {};
-        (aMap[r.box_id] ||= []).push({ user_id: r.user_id, full_name: p.full_name, email: p.email });
+        (aMap[r.box_id] ||= []).push({ user_id: r.user_id, full_name: p.full_name, avatar_url: p.avatar_url });
       });
       (adv || []).forEach((r: any) => {
         const p: any = pmap.get(r.user_id) || {};
-        (vMap[r.box_id] ||= []).push({ user_id: r.user_id, full_name: p.full_name, email: p.email });
+        (vMap[r.box_id] ||= []).push({ user_id: r.user_id, full_name: p.full_name, avatar_url: p.avatar_url });
       });
       setAdmins(aMap);
       setAdvisors(vMap);
