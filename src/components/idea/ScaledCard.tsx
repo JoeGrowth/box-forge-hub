@@ -453,9 +453,11 @@ function AssetInput({ icon: Icon, label, placeholder, value, onChange }: { icon:
 }
 
 // ---- Phase 2: Systematization ----
-function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpdateState, onAdvance }: {
+function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpdateState, onAdvance, userId, brandName }: {
   done: any; state: VentureState; progress: number;
   onToggleMilestone: (k: string, on: boolean) => void; onUpdateState: (p: Partial<VentureState>) => void; onAdvance: () => void;
+  userId: string; brandName: string;
+
 
 }) {
   return (
