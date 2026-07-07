@@ -91,35 +91,50 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
 
   const [state, setState] = useState<VentureState>(DEFAULT_STATE);
   const [milestones, setMilestones] = useState<Set<string>>(new Set());
-  const [autoCounts, setAutoCounts] = useState({ soloMissions: 0, contractorMissions: 0, coreServices: 0, professionalPresence: false });
+  const [autoCounts, setAutoCounts] = useState({ soloMissions: 0, contractorMissions: 0, coreServices: 0, professionalPresence: false, hasDistribution: false, hasDeclaration: false });
+  const [orgSlug, setOrgSlug] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => { setBrandDraft(title); }, [title]);
 
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const [stateRes, msRes, missionsRes, servicesRes, profileRes] = await Promise.all([
+      const [stateRes, msRes, missionsRes, servicesRes, profileRes, distRes, entitiesRes, orgRes] = await Promise.all([
         supabase.from("consulting_venture_state" as any).select("*").eq("user_id", userId).maybeSingle(),
         supabase.from("consulting_venture_milestones" as any).select("milestone_key").eq("user_id", userId),
         supabase.from("consultant_opportunities").select("id,stage").eq("user_id", userId).eq("stage", "closed"),
         supabase.from("consulting_services" as any).select("id").eq("user_id", userId),
         supabase.from("profiles").select("full_name,avatar_url,bio,professional_title").eq("user_id", userId).maybeSingle(),
+        supabase.from("distribution_records").select("id").eq("user_id", userId).limit(1),
+        supabase.from("declaration_entities").select("id").eq("owner_id", userId),
+        supabase.from("organizations").select("slug").eq("created_by", userId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
       ]);
       if (stateRes.data) setState({ ...DEFAULT_STATE, ...(stateRes.data as any) });
       setMilestones(new Set(((msRes.data as any[]) || []).map(m => m.milestone_key)));
 
       const closedCount = (missionsRes.data || []).length;
-      // simple split heuristic: 3 solo first, remainder contractor
       const solo = Math.min(3, closedCount);
       const contractor = Math.max(0, closedCount - solo);
       const services = ((servicesRes.data as any[]) || []).length;
       const p = profileRes.data as any;
       const presence = !!(p?.full_name && p?.avatar_url && (p?.bio || p?.professional_title));
-      setAutoCounts({ soloMissions: solo, contractorMissions: contractor, coreServices: services, professionalPresence: presence });
+      const hasDistribution = ((distRes.data as any[]) || []).length > 0;
+
+      let hasDeclaration = false;
+      const entityIds = ((entitiesRes.data as any[]) || []).map(e => e.id);
+      if (entityIds.length) {
+        const { data: mData } = await supabase.from("declaration_missions").select("id").in("entity_id", entityIds).limit(1);
+        hasDeclaration = ((mData as any[]) || []).length > 0;
+      }
+
+      setAutoCounts({ soloMissions: solo, contractorMissions: contractor, coreServices: services, professionalPresence: presence, hasDistribution, hasDeclaration });
+      setOrgSlug(((orgRes.data as any)?.slug as string) || null);
       setLoading(false);
     })();
   }, [userId]);
+
 
   const upsertState = async (patch: Partial<VentureState>) => {
     const next = { ...state, ...patch };
