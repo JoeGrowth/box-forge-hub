@@ -367,7 +367,7 @@ function BrandingPhase({ done, autoCounts, state, milestones, progress, onToggle
       <div>
         <div className="flex items-center justify-between mb-2">
           <div>
-            <p className="font-display text-base font-bold text-foreground">Phase 1 · Branding (Structuring)</p>
+            <p className="font-display text-base font-bold text-foreground">Phase 1 · Structure (Branding)</p>
             <p className="text-xs text-muted-foreground">Establish your consulting business. Ownership stays 100% yours.</p>
           </div>
           <Badge variant="secondary">{progress}%</Badge>
@@ -376,6 +376,14 @@ function BrandingPhase({ done, autoCounts, state, milestones, progress, onToggle
       </div>
 
       <div className="space-y-2">
+        <MilestoneRow
+          done={done.professional_presence}
+          auto={autoCounts.professionalPresence}
+          label="Establish your professional presence"
+          hint="Complete profile: name, avatar, bio/title"
+          actionLabel={milestones.has("professional_presence") ? "Undo" : "Confirm"}
+          onToggle={autoCounts.professionalPresence ? undefined : () => onToggleMilestone("professional_presence", !milestones.has("professional_presence"))}
+        />
         <MilestoneRow
           done={done.solo_missions}
           auto={autoCounts.soloMissions >= 3}
@@ -391,14 +399,6 @@ function BrandingPhase({ done, autoCounts, state, milestones, progress, onToggle
           hint={`${autoCounts.contractorMissions}/7 closed missions${milestones.has("contractor_missions") ? " · manually confirmed" : ""}`}
           actionLabel={milestones.has("contractor_missions") ? "Undo" : "Mark done"}
           onToggle={autoCounts.contractorMissions >= 7 ? undefined : () => onToggleMilestone("contractor_missions", !milestones.has("contractor_missions"))}
-        />
-        <MilestoneRow
-          done={done.core_services}
-          auto={autoCounts.coreServices >= 1}
-          label="Define your core services"
-          hint={autoCounts.coreServices > 0 ? `${autoCounts.coreServices} services published` : (milestones.has("core_services") ? "Manually confirmed" : "Publish at least one consulting service")}
-          actionLabel={milestones.has("core_services") ? "Undo" : "Mark done"}
-          onToggle={autoCounts.coreServices >= 1 ? undefined : () => onToggleMilestone("core_services", !milestones.has("core_services"))}
         />
 
         <div className="p-3 rounded-lg border border-border bg-card space-y-2">
@@ -421,15 +421,17 @@ function BrandingPhase({ done, autoCounts, state, milestones, progress, onToggle
             </div>
           </div>
         </div>
+
         <MilestoneRow
-          done={done.professional_presence}
-          auto={autoCounts.professionalPresence}
-          label="Establish your professional presence"
-          hint="Complete profile: name, avatar, bio/title"
-          actionLabel={milestones.has("professional_presence") ? "Undo" : "Confirm"}
-          onToggle={autoCounts.professionalPresence ? undefined : () => onToggleMilestone("professional_presence", !milestones.has("professional_presence"))}
+          done={done.core_services}
+          auto={autoCounts.coreServices >= 3}
+          label="Define your core services"
+          hint={autoCounts.coreServices > 0 ? `${autoCounts.coreServices}/3 services published` : (milestones.has("core_services") ? "Manually confirmed" : "Publish at least 3 consulting services")}
+          actionLabel={milestones.has("core_services") ? "Undo" : "Mark done"}
+          onToggle={autoCounts.coreServices >= 3 ? undefined : () => onToggleMilestone("core_services", !milestones.has("core_services"))}
         />
       </div>
+
 
       {/* Asset deliverables */}
       <div className="pt-4 border-t border-border">
