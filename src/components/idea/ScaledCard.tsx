@@ -559,10 +559,10 @@ function AssetInput({ icon: Icon, label, placeholder, value, onChange }: { icon:
 }
 
 // ---- Phase 2: Systematization ----
-function SystematizationPhase({ done, autoCounts, milestones, state, progress, onToggleMilestone, onUpdateState, onAdvance, userId, brandName, orgSlug, onNavigate }: {
+function SystematizationPhase({ done, autoCounts, milestones, state, progress, onToggleMilestone, onUpdateState, onAdvance, userId, brandName, orgSlug, onOpenOrg }: {
   done: any; autoCounts: any; milestones: Set<string>; state: VentureState; progress: number;
   onToggleMilestone: (k: string, on: boolean) => void; onUpdateState: (p: Partial<VentureState>) => void; onAdvance: () => void;
-  userId: string; brandName: string; orgSlug: string | null; onNavigate: (path: string) => void;
+  userId: string; brandName: string; orgSlug: string | null; onOpenOrg: () => void;
 }) {
   const [inviteOpen, setInviteOpen] = useState(false);
   const gateOpen = autoCounts.hasDistribution && autoCounts.hasDeclaration;
@@ -613,6 +613,7 @@ function SystematizationPhase({ done, autoCounts, milestones, state, progress, o
         </div>
       ) : (
         <div className="space-y-2">
+          {/* 1. Invite a co-builder */}
           <MilestoneRow
             done={done.invite_cobuilder}
             label="Invite a co-builder"
@@ -621,17 +622,35 @@ function SystematizationPhase({ done, autoCounts, milestones, state, progress, o
             onToggle={done.invite_cobuilder ? () => onToggleMilestone("invite_cobuilder", false) : () => setInviteOpen(true)}
           />
 
+          {/* 2. Define your core services */}
           <MilestoneRow
-            done={!!orgSlug}
-            auto={!!orgSlug}
+            done={done.core_services}
+            auto={autoCounts.coreServices >= 3}
+            label="Define your core services"
+            hint={autoCounts.coreServices > 0 ? `${autoCounts.coreServices}/3 services published` : (milestones.has("core_services") ? "Manually confirmed" : "Publish at least 3 consulting services")}
+            actionLabel={milestones.has("core_services") ? "Undo" : "Mark done"}
+            onToggle={autoCounts.coreServices >= 3 ? undefined : () => onToggleMilestone("core_services", !milestones.has("core_services"))}
+          />
+
+          {/* 3. Manage organization — auto-checked once org has ≥1 linked declaration mission and ≥1 distribution */}
+          <MilestoneRow
+            done={done.manage_org}
+            auto={done.manage_org}
             label="Manage organization"
-            hint={orgSlug ? "Open your organization workspace" : "Create your organization first to manage it"}
-            actionLabel="Open"
-            onToggle={orgSlug ? () => onNavigate(`/organizations/${orgSlug}`) : undefined}
+            hint={
+              orgSlug
+                ? (done.manage_org
+                    ? `Linked to “${brandName}” · declaration + distribution recorded`
+                    : `Open “${brandName}”. Auto-checks once one declaration and one distribution are linked.`)
+                : `Create the “${brandName}” organization to manage it. Auto-checks once one declaration and one distribution are linked.`
+            }
+            actionLabel={orgSlug ? "Open" : "Create & open"}
+            onToggle={onOpenOrg}
           />
 
           {gateOpen ? (
             <>
+              {/* 4. Form the company */}
               <div className="p-3 rounded-lg border border-border bg-card space-y-2">
                 <div className="flex items-start gap-3">
                   <div className={cn("w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0",
@@ -649,15 +668,7 @@ function SystematizationPhase({ done, autoCounts, milestones, state, progress, o
                 </div>
               </div>
 
-              <MilestoneRow
-                done={done.core_services}
-                auto={autoCounts.coreServices >= 3}
-                label="Define your core services"
-                hint={autoCounts.coreServices > 0 ? `${autoCounts.coreServices}/3 services published` : (milestones.has("core_services") ? "Manually confirmed" : "Publish at least 3 consulting services")}
-                actionLabel={milestones.has("core_services") ? "Undo" : "Mark done"}
-                onToggle={autoCounts.coreServices >= 3 ? undefined : () => onToggleMilestone("core_services", !milestones.has("core_services"))}
-              />
-
+              {/* 5. Implement standardized processes */}
               <MilestoneRow
                 done={done.standardized_processes}
                 label="Implement standardized processes"
@@ -669,10 +680,11 @@ function SystematizationPhase({ done, autoCounts, milestones, state, progress, o
           ) : (
             <div className="p-3 rounded-lg border border-dashed border-border bg-muted/30 text-center">
               <p className="text-xs text-muted-foreground">
-                Add at least one <strong>Distribution</strong> and one <strong>Declaration</strong> entry for this venture to unlock <em>Form the company</em>, <em>Define your core services</em>, and <em>Implement standardized processes</em>.
+                Add at least one <strong>Distribution</strong> and one <strong>Declaration</strong> entry for this venture to unlock <em>Form the company</em> and <em>Implement standardized processes</em>.
               </p>
             </div>
           )}
+
 
           {done.invite_cobuilder && done.form_company && done.standardized_processes && (
             <MilestoneRow
