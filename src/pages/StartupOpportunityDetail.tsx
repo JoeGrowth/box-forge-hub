@@ -64,6 +64,7 @@ interface CreatorProfile {
   full_name: string | null;
   bio: string | null;
   primary_skills: string | null;
+  avatar_url: string | null;
 }
 
 interface Application {
