@@ -91,17 +91,45 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
 
   const [state, setState] = useState<VentureState>(DEFAULT_STATE);
   const [milestones, setMilestones] = useState<Set<string>>(new Set());
-  const [autoCounts, setAutoCounts] = useState({ soloMissions: 0, contractorMissions: 0, coreServices: 0, professionalPresence: false, hasDistribution: false, hasDeclaration: false });
+  const [autoCounts, setAutoCounts] = useState({ soloMissions: 0, contractorMissions: 0, coreServices: 0, professionalPresence: false, hasDistribution: false, hasDeclaration: false, orgHasDistribution: false, orgHasDeclaration: false });
   const [orgSlug, setOrgSlug] = useState<string | null>(null);
+  const [orgId, setOrgId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => { setBrandDraft(title); }, [title]);
 
+  const reloadOrgSignals = async (userId: string, brandName: string) => {
+    // Find org by matching brand name (created by the user)
+    const { data: orgRow } = await supabase
+      .from("organizations")
+      .select("id, slug, name")
+      .eq("created_by", userId)
+      .ilike("name", brandName.trim())
+      .maybeSingle();
+    const oid = (orgRow as any)?.id as string | undefined;
+    const oslug = (orgRow as any)?.slug as string | undefined;
+
+    let orgHasDeclaration = false;
+    if (oid) {
+      const { data: ents } = await supabase.from("declaration_entities").select("id").eq("organization_id", oid);
+      const ids = ((ents as any[]) || []).map(e => e.id);
+      if (ids.length) {
+        const { data: mData } = await supabase.from("declaration_missions").select("id").in("entity_id", ids).limit(1);
+        orgHasDeclaration = ((mData as any[]) || []).length > 0;
+      }
+    }
+    // distribution_records has no org column — scope to the user
+    const { data: distData } = await supabase.from("distribution_records").select("id").eq("user_id", userId).limit(1);
+    const orgHasDistribution = ((distData as any[]) || []).length > 0;
+
+    return { orgId: oid || null, orgSlug: oslug || null, orgHasDeclaration, orgHasDistribution };
+  };
+
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const [stateRes, msRes, missionsRes, servicesRes, profileRes, distRes, entitiesRes, orgRes] = await Promise.all([
+      const [stateRes, msRes, missionsRes, servicesRes, profileRes, distRes, entitiesRes] = await Promise.all([
         supabase.from("consulting_venture_state" as any).select("*").eq("user_id", userId).maybeSingle(),
         supabase.from("consulting_venture_milestones" as any).select("milestone_key").eq("user_id", userId),
         supabase.from("consultant_opportunities").select("id,stage").eq("user_id", userId).eq("stage", "closed"),
@@ -109,7 +137,6 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
         supabase.from("profiles").select("full_name,avatar_url,bio,professional_title").eq("user_id", userId).maybeSingle(),
         supabase.from("distribution_records").select("id").eq("user_id", userId).limit(1),
         supabase.from("declaration_entities").select("id").eq("owner_id", userId),
-        supabase.from("organizations").select("slug").eq("created_by", userId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
       ]);
       if (stateRes.data) setState({ ...DEFAULT_STATE, ...(stateRes.data as any) });
       setMilestones(new Set(((msRes.data as any[]) || []).map(m => m.milestone_key)));
@@ -129,11 +156,19 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
         hasDeclaration = ((mData as any[]) || []).length > 0;
       }
 
-      setAutoCounts({ soloMissions: solo, contractorMissions: contractor, coreServices: services, professionalPresence: presence, hasDistribution, hasDeclaration });
-      setOrgSlug(((orgRes.data as any)?.slug as string) || null);
+      const orgSig = await reloadOrgSignals(userId, title);
+      setOrgId(orgSig.orgId);
+      setOrgSlug(orgSig.orgSlug);
+
+      setAutoCounts({
+        soloMissions: solo, contractorMissions: contractor, coreServices: services, professionalPresence: presence,
+        hasDistribution, hasDeclaration,
+        orgHasDistribution: orgSig.orgHasDistribution, orgHasDeclaration: orgSig.orgHasDeclaration,
+      });
       setLoading(false);
     })();
-  }, [userId]);
+  }, [userId, title]);
+
 
 
   const upsertState = async (patch: Partial<VentureState>) => {
