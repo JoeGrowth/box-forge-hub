@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { Plus, ExternalLink, UserPlus, Users, Trash2 } from "lucide-react";
 
@@ -21,7 +22,7 @@ interface Box {
 interface Assignment {
   user_id: string;
   full_name?: string | null;
-  email?: string | null;
+  avatar_url?: string | null;
 }
 
 export function AdminBoxesTab() {
@@ -50,19 +51,19 @@ export function AdminBoxesTab() {
       ]);
       const userIds = Array.from(new Set([...(ea || []).map((r: any) => r.user_id), ...(adv || []).map((r: any) => r.user_id)]));
       const { data: profs } = userIds.length
-        ? await supabase.from("profiles").select("id,full_name,email").in("id", userIds)
+        ? await supabase.from("profiles").select("user_id,full_name,avatar_url").in("user_id", userIds)
         : { data: [] as any[] };
-      const pmap = new Map((profs || []).map((p: any) => [p.id, p]));
+      const pmap = new Map((profs || []).map((p: any) => [p.user_id, p]));
 
       const aMap: Record<string, Assignment[]> = {};
       const vMap: Record<string, Assignment[]> = {};
       (ea || []).forEach((r: any) => {
         const p: any = pmap.get(r.user_id) || {};
-        (aMap[r.box_id] ||= []).push({ user_id: r.user_id, full_name: p.full_name, email: p.email });
+        (aMap[r.box_id] ||= []).push({ user_id: r.user_id, full_name: p.full_name, avatar_url: p.avatar_url });
       });
       (adv || []).forEach((r: any) => {
         const p: any = pmap.get(r.user_id) || {};
-        (vMap[r.box_id] ||= []).push({ user_id: r.user_id, full_name: p.full_name, email: p.email });
+        (vMap[r.box_id] ||= []).push({ user_id: r.user_id, full_name: p.full_name, avatar_url: p.avatar_url });
       });
       setAdmins(aMap);
       setAdvisors(vMap);
@@ -177,7 +178,10 @@ export function AdminBoxesTab() {
                   <ul className="space-y-1">
                     {admins[b.id].map((a) => (
                       <li key={a.user_id} className="flex items-center justify-between text-sm bg-muted/40 rounded px-2 py-1">
-                        <span>{a.full_name || a.email || a.user_id}</span>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Avatar className="h-6 w-6"><AvatarImage src={a.avatar_url || undefined} /><AvatarFallback>{(a.full_name || "U").charAt(0).toUpperCase()}</AvatarFallback></Avatar>
+                          <span className="truncate">{a.full_name || "Unknown user"}</span>
+                        </div>
                         <button onClick={() => removeAdmin(b.id, a.user_id)} className="text-destructive hover:opacity-70"><Trash2 className="h-3 w-3" /></button>
                       </li>
                     ))}
@@ -191,7 +195,10 @@ export function AdminBoxesTab() {
                 ) : (
                   <ul className="space-y-1">
                     {advisors[b.id].map((a) => (
-                      <li key={a.user_id} className="text-sm bg-muted/40 rounded px-2 py-1">{a.full_name || a.email || a.user_id}</li>
+                      <li key={a.user_id} className="flex items-center gap-2 text-sm bg-muted/40 rounded px-2 py-1">
+                        <Avatar className="h-6 w-6"><AvatarImage src={a.avatar_url || undefined} /><AvatarFallback>{(a.full_name || "U").charAt(0).toUpperCase()}</AvatarFallback></Avatar>
+                        <span className="truncate">{a.full_name || "Unknown user"}</span>
+                      </li>
                     ))}
                   </ul>
                 )}
