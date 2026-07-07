@@ -412,26 +412,6 @@ const Entrepreneurship = () => {
 
             {(isOwner ? project.review_status === "approved" : true) && (
               <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-muted-foreground hover:text-foreground"
-                  onClick={() => {
-                    setTeamDialogIdea({ id: project.id, title: project.title });
-                    setTeamDialogOpen(true);
-                  }}
-                >
-                  <Users className="w-3.5 h-3.5 mr-1.5" /> Team
-                </Button>
-
-                {org && (
-                  <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
-                    <Link to={`/org/${org.slug}`}>
-                      <Building2 className="w-3.5 h-3.5 mr-1.5" /> Organization
-                    </Link>
-                  </Button>
-                )}
-
                 {isOwner && !project.development_completed_at && (
                   <Button
                     variant="ghost"
@@ -457,6 +437,26 @@ const Entrepreneurship = () => {
                     }}
                   >
                     <Film className="w-3.5 h-3.5 mr-1.5" /> Episodes
+                  </Button>
+                )}
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-foreground"
+                  onClick={() => {
+                    setTeamDialogIdea({ id: project.id, title: project.title });
+                    setTeamDialogOpen(true);
+                  }}
+                >
+                  <Users className="w-3.5 h-3.5 mr-1.5" /> Team
+                </Button>
+
+                {org && project.current_episode !== "development" && (
+                  <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
+                    <Link to={`/org/${org.slug}`}>
+                      <Building2 className="w-3.5 h-3.5 mr-1.5" /> Organization
+                    </Link>
                   </Button>
                 )}
               </>
