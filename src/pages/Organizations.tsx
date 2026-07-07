@@ -157,10 +157,9 @@ export default function Organizations() {
 
     if (sortBy === "default") return list;
 
-    const cur = sortBy.split("-")[0] as keyof MoneyBox;
     return [...list].sort((a, b) => {
-      const av = moneyBox[a.organization.id]?.[cur] ?? 0;
-      const bv = moneyBox[b.organization.id]?.[cur] ?? 0;
+      const av = (moneyBox[a.organization.id]?.tnd ?? 0) + (moneyBox[a.organization.id]?.eur ?? 0) + (moneyBox[a.organization.id]?.usd ?? 0);
+      const bv = (moneyBox[b.organization.id]?.tnd ?? 0) + (moneyBox[b.organization.id]?.eur ?? 0) + (moneyBox[b.organization.id]?.usd ?? 0);
       return bv - av; // highest first
     });
   }, [memberships, filter, typeFilter, sortBy, moneyBox]);
