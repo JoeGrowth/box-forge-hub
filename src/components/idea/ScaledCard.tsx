@@ -171,16 +171,17 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
 
 
   const brandingProgress = useMemo(() => {
-    const items = [done.solo_missions, done.contractor_missions, done.core_services, done.proposal_template, done.professional_presence];
+    const items = [done.solo_missions, done.contractor_missions, done.proposal_template, done.professional_presence];
     return Math.round((items.filter(Boolean).length / items.length) * 100);
   }, [done]);
   const brandingComplete = brandingProgress === 100;
 
   const systProgress = useMemo(() => {
-    const items = [!!state.selected_model, done.invite_cobuilder, done.form_company, done.standardized_processes, done.autonomous_operations];
+    const items = [!!state.selected_model, done.invite_cobuilder, done.form_company, done.core_services, done.standardized_processes, done.autonomous_operations];
     return Math.round((items.filter(Boolean).length / items.length) * 100);
   }, [state, done]);
   const systComplete = systProgress === 100;
+
 
   const advanceToPhase = async (p: Phase) => {
     const stamps: Partial<VentureState> = { current_phase: p };
