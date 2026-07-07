@@ -97,7 +97,7 @@ export function useProgressionLadder(): ProgressionLadder {
           ctaHref: "/publish-talent",
         },
         {
-          key: "advisor", index: 2, label: "Monetize → Advisor",
+          key: "advisor", index: 2, label: "Talent Monetized",
           intent: "Deliver 10 paid consulting missions to unlock Advisor status",
           current: Math.min(paidCount, 10), target: 10,
           unlocked: talentDone, achieved: advisorDone,
