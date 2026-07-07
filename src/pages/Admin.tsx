@@ -291,9 +291,9 @@ const Admin = () => {
                   <FileText className="h-4 w-4 shrink-0" />
                   Applications
                 </TabsTrigger>
-                <TabsTrigger value="notifications" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
-                  <Bell className="h-4 w-4 shrink-0" />
-                  Notifications
+                <TabsTrigger value="boxes" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+                  <Package className="h-4 w-4 shrink-0" />
+                  Boxes
                 </TabsTrigger>
               </TabsList>
 
