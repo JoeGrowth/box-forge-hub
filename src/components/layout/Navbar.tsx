@@ -22,6 +22,7 @@ import {
   Package,
   BookOpen,
   Building2,
+  Lightbulb,
   Activity,
   BarChart3,
   Users,
@@ -65,10 +66,10 @@ const moreLinks: Array<{
 }> = [
   { name: "Consulting", path: "/consulting", icon: Handshake, engineKey: "consulting" },
   { name: "Squares", path: "/squares", icon: LayoutGrid },
-
+  { name: "Ideas", path: "/entrepreneurship", icon: Lightbulb },
+  { name: "Organizations", path: "/organizations", icon: Building2, minStage: "emerging" },
   { name: "Boxes", path: "/boxes", icon: Package },
   { name: "Programs", path: "/programs", icon: BookOpen },
-  { name: "Organizations", path: "/organizations", icon: Building2, minStage: "emerging" },
 ];
 
 // Synchronous read of cached admin flag so first paint is stable.
