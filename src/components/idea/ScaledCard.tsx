@@ -515,8 +515,9 @@ function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpda
           label="Invite a co-builder"
           hint={done.invite_cobuilder ? "Invitation sent" : "From the platform, or by email if they're not on it yet"}
           actionLabel={done.invite_cobuilder ? "Invite another" : "Invite"}
-          onToggle={() => setInviteOpen(true)}
+          onToggle={done.invite_cobuilder ? () => onToggleMilestone("invite_cobuilder", false) : () => setInviteOpen(true)}
         />
+
 
 
 
