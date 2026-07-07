@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Building2, Plus, Shield, Eye, Pencil, ArrowRight, Trash2, Cog, Search, Filter, Rocket, Sparkles, TrendingUp, Trophy, FileWarning, ShieldCheck, ArrowUpCircle, Wallet } from "lucide-react";
+import { Building2, Plus, Shield, Eye, Pencil, ArrowRight, Trash2, Cog, Search, Filter, Rocket, Sparkles, TrendingUp, Trophy, FileWarning, ShieldCheck, Wallet } from "lucide-react";
 import { OrgLogo } from "@/components/organization/OrgLogo";
 
 type LifecycleStage = "venture" | "business" | "startup" | "mature";
