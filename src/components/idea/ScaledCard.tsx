@@ -491,14 +491,13 @@ function AssetInput({ icon: Icon, label, placeholder, value, onChange }: { icon:
 }
 
 // ---- Phase 2: Systematization ----
-function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpdateState, onAdvance, userId, brandName }: {
-  done: any; state: VentureState; progress: number;
+function SystematizationPhase({ done, autoCounts, milestones, state, progress, onToggleMilestone, onUpdateState, onAdvance, userId, brandName, orgSlug, onNavigate }: {
+  done: any; autoCounts: any; milestones: Set<string>; state: VentureState; progress: number;
   onToggleMilestone: (k: string, on: boolean) => void; onUpdateState: (p: Partial<VentureState>) => void; onAdvance: () => void;
-  userId: string; brandName: string;
-
-
+  userId: string; brandName: string; orgSlug: string | null; onNavigate: (path: string) => void;
 }) {
   const [inviteOpen, setInviteOpen] = useState(false);
+  const gateOpen = autoCounts.hasDistribution && autoCounts.hasDeclaration;
   return (
     <div className="space-y-5">
 
@@ -554,30 +553,58 @@ function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpda
             onToggle={done.invite_cobuilder ? () => onToggleMilestone("invite_cobuilder", false) : () => setInviteOpen(true)}
           />
 
-          <div className="p-3 rounded-lg border border-border bg-card space-y-2">
-            <div className="flex items-start gap-3">
-              <div className={cn("w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0",
-                done.form_company ? "bg-emerald-500 text-white" : "border-2 border-muted-foreground/40")}>
-                {done.form_company && <Check className="w-3 h-3" />}
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium">Form the company</p>
-                <p className="text-xs text-muted-foreground">Legal entity name and registration</p>
-                <div className="grid sm:grid-cols-2 gap-2 mt-2">
-                  <Input value={state.company_name || ""} onChange={(e) => onUpdateState({ company_name: e.target.value })} placeholder="Company legal name" className="h-8 text-xs" />
-                  <Input value={state.company_registration || ""} onChange={(e) => onUpdateState({ company_registration: e.target.value })} placeholder="Registration # (optional)" className="h-8 text-xs" />
+          <MilestoneRow
+            done={!!orgSlug}
+            auto={!!orgSlug}
+            label="Manage organization"
+            hint={orgSlug ? "Open your organization workspace" : "Create your organization first to manage it"}
+            actionLabel="Open"
+            onToggle={orgSlug ? () => onNavigate(`/organizations/${orgSlug}`) : undefined}
+          />
+
+          {gateOpen ? (
+            <>
+              <div className="p-3 rounded-lg border border-border bg-card space-y-2">
+                <div className="flex items-start gap-3">
+                  <div className={cn("w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0",
+                    done.form_company ? "bg-emerald-500 text-white" : "border-2 border-muted-foreground/40")}>
+                    {done.form_company && <Check className="w-3 h-3" />}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">Form the company</p>
+                    <p className="text-xs text-muted-foreground">Legal entity name and registration</p>
+                    <div className="grid sm:grid-cols-2 gap-2 mt-2">
+                      <Input value={state.company_name || ""} onChange={(e) => onUpdateState({ company_name: e.target.value })} placeholder="Company legal name" className="h-8 text-xs" />
+                      <Input value={state.company_registration || ""} onChange={(e) => onUpdateState({ company_registration: e.target.value })} placeholder="Registration # (optional)" className="h-8 text-xs" />
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <MilestoneRow
-            done={done.standardized_processes}
-            label="Implement standardized processes"
-            hint="Documented playbooks, SOPs, delivery methodology"
-            actionLabel="Mark done"
-            onToggle={() => onToggleMilestone("standardized_processes", !done.standardized_processes)}
-          />
+              <MilestoneRow
+                done={done.core_services}
+                auto={autoCounts.coreServices >= 3}
+                label="Define your core services"
+                hint={autoCounts.coreServices > 0 ? `${autoCounts.coreServices}/3 services published` : (milestones.has("core_services") ? "Manually confirmed" : "Publish at least 3 consulting services")}
+                actionLabel={milestones.has("core_services") ? "Undo" : "Mark done"}
+                onToggle={autoCounts.coreServices >= 3 ? undefined : () => onToggleMilestone("core_services", !milestones.has("core_services"))}
+              />
+
+              <MilestoneRow
+                done={done.standardized_processes}
+                label="Implement standardized processes"
+                hint="Documented playbooks, SOPs, delivery methodology"
+                actionLabel="Mark done"
+                onToggle={() => onToggleMilestone("standardized_processes", !done.standardized_processes)}
+              />
+            </>
+          ) : (
+            <div className="p-3 rounded-lg border border-dashed border-border bg-muted/30 text-center">
+              <p className="text-xs text-muted-foreground">
+                Add at least one <strong>Distribution</strong> and one <strong>Declaration</strong> entry for this venture to unlock <em>Form the company</em>, <em>Define your core services</em>, and <em>Implement standardized processes</em>.
+              </p>
+            </div>
+          )}
 
           {done.invite_cobuilder && done.form_company && done.standardized_processes && (
             <MilestoneRow
@@ -589,6 +616,7 @@ function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpda
           )}
         </div>
       )}
+
 
 
 
