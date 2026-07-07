@@ -49,7 +49,7 @@ const ROLE_COLOR = {
 } as const;
 
 type MoneyBox = { tnd: number; eur: number; usd: number };
-type SortKey = "default" | "tnd-out" | "eur-out" | "usd-out";
+type SortKey = "default" | "total-out";
 
 const fmtMoney = (n: number, currency: string) =>
   new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n || 0) + " " + currency;
@@ -157,10 +157,9 @@ export default function Organizations() {
 
     if (sortBy === "default") return list;
 
-    const cur = sortBy.split("-")[0] as keyof MoneyBox;
     return [...list].sort((a, b) => {
-      const av = moneyBox[a.organization.id]?.[cur] ?? 0;
-      const bv = moneyBox[b.organization.id]?.[cur] ?? 0;
+      const av = (moneyBox[a.organization.id]?.tnd ?? 0) + (moneyBox[a.organization.id]?.eur ?? 0) + (moneyBox[a.organization.id]?.usd ?? 0);
+      const bv = (moneyBox[b.organization.id]?.tnd ?? 0) + (moneyBox[b.organization.id]?.eur ?? 0) + (moneyBox[b.organization.id]?.usd ?? 0);
       return bv - av; // highest first
     });
   }, [memberships, filter, typeFilter, sortBy, moneyBox]);
@@ -306,9 +305,7 @@ export default function Organizations() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="default">Default order</SelectItem>
-                    <SelectItem value="tnd-out">Outflow: TND (highest)</SelectItem>
-                    <SelectItem value="eur-out">Outflow: EUR (highest)</SelectItem>
-                    <SelectItem value="usd-out">Outflow: USD (highest)</SelectItem>
+                    <SelectItem value="total-out">Outflow: Total (highest)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
