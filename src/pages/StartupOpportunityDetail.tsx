@@ -507,6 +507,7 @@ const StartupOpportunityDetail = () => {
                   />
                 )}
                 {/* Apply Card */}
+                {!isOwnIdea && (
                 <div className="bg-gradient-to-br from-b4-teal/10 to-b4-navy/10 rounded-2xl border border-b4-teal/20 p-6">
                   <h3 className="font-display text-lg font-bold text-foreground mb-2">
                     Join This Startup
@@ -515,11 +516,7 @@ const StartupOpportunityDetail = () => {
                     Express your interest and connect with the initiator to discuss collaboration.
                   </p>
                   
-                  {isOwnIdea ? (
-                    <p className="text-sm text-muted-foreground italic">
-                      This is your own startup idea.
-                    </p>
-                  ) : existingApplication ? (
+                  {existingApplication ? (
                     getApplicationStatusUI()
                   ) : !hasCoBuilderCert ? (
                     <div className="space-y-3">
@@ -705,6 +702,7 @@ const StartupOpportunityDetail = () => {
                     </Dialog>
                   )}
                 </div>
+                )}
 
                 {/* Initiator Card */}
                 <div className="group rounded-2xl border border-border p-6 transition-all duration-300 relative flex flex-col shadow-sm hover:shadow-xl hover:-translate-y-1">
