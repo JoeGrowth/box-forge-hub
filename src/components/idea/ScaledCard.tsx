@@ -166,16 +166,17 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
   }, [state, done]);
   const systComplete = systProgress === 100;
 
-  // Auto-promote phases
-  useEffect(() => {
-    if (loading) return;
-    if (state.current_phase === "branding" && brandingComplete && !state.branding_completed_at) {
-      upsertState({ current_phase: "systematization", branding_completed_at: new Date().toISOString() });
-    } else if (state.current_phase === "systematization" && systComplete && !state.systematization_completed_at) {
-      upsertState({ current_phase: "asset", systematization_completed_at: new Date().toISOString(), asset_reached_at: new Date().toISOString() });
+  const advanceToPhase = async (p: Phase) => {
+    const stamps: Partial<VentureState> = { current_phase: p };
+    if (p === "systematization" && !state.branding_completed_at) stamps.branding_completed_at = new Date().toISOString();
+    if (p === "asset") {
+      if (!state.systematization_completed_at) stamps.systematization_completed_at = new Date().toISOString();
+      if (!state.asset_reached_at) stamps.asset_reached_at = new Date().toISOString();
     }
-     
-  }, [brandingComplete, systComplete, loading]);
+    await upsertState(stamps);
+    toast.success(`Moved to ${PHASE_META[p].label} phase`);
+  };
+
 
   const saveBrandName = async () => {
     const name = brandDraft.trim();
@@ -294,6 +295,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
           progress={brandingProgress}
           onToggleMilestone={toggleMilestone}
           onUpdateState={upsertState}
+          onAdvance={() => advanceToPhase("systematization")}
         />
       ) : state.current_phase === "systematization" ? (
         <SystematizationPhase
@@ -302,10 +304,12 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
           progress={systProgress}
           onToggleMilestone={toggleMilestone}
           onUpdateState={upsertState}
+          onAdvance={() => advanceToPhase("asset")}
         />
       ) : (
         <AssetPhase state={state} />
       )}
+
 
       <InviteDialog open={inviteOpen} onOpenChange={setInviteOpen} currentUserId={userId} entityLabel={title} />
       <MissionHistoryDialog open={historyOpen} onOpenChange={setHistoryOpen} userId={userId} />
@@ -333,10 +337,11 @@ function MilestoneRow({ done, label, hint, actionLabel, onToggle, auto }: { done
   );
 }
 
-function BrandingPhase({ done, autoCounts, state, milestones, progress, onToggleMilestone, onUpdateState }: {
+function BrandingPhase({ done, autoCounts, state, milestones, progress, onToggleMilestone, onUpdateState, onAdvance }: {
   done: any; autoCounts: any; state: VentureState; milestones: Set<string>; progress: number;
-  onToggleMilestone: (k: string, on: boolean) => void; onUpdateState: (p: Partial<VentureState>) => void;
+  onToggleMilestone: (k: string, on: boolean) => void; onUpdateState: (p: Partial<VentureState>) => void; onAdvance: () => void;
 }) {
+
   return (
     <div className="space-y-5">
       <div>
@@ -425,9 +430,11 @@ function BrandingPhase({ done, autoCounts, state, milestones, progress, onToggle
       {progress === 100 && (
         <div className="p-3 rounded-lg border border-primary/30 bg-primary/5 flex items-center gap-2">
           <ArrowRight className="w-4 h-4 text-primary" />
-          <p className="text-sm text-foreground">Phase 1 complete. Ready to <strong>Systematize</strong> and detach the business from the founder.</p>
+          <p className="text-sm text-foreground flex-1">Phase 1 complete. Ready to <strong>Systematize</strong> and detach the business from the founder.</p>
+          <Button size="sm" onClick={onAdvance}>Continue to Phase 2</Button>
         </div>
       )}
+
     </div>
   );
 }
@@ -446,9 +453,10 @@ function AssetInput({ icon: Icon, label, placeholder, value, onChange }: { icon:
 }
 
 // ---- Phase 2: Systematization ----
-function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpdateState }: {
+function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpdateState, onAdvance }: {
   done: any; state: VentureState; progress: number;
-  onToggleMilestone: (k: string, on: boolean) => void; onUpdateState: (p: Partial<VentureState>) => void;
+  onToggleMilestone: (k: string, on: boolean) => void; onUpdateState: (p: Partial<VentureState>) => void; onAdvance: () => void;
+
 }) {
   return (
     <div className="space-y-5">
@@ -544,9 +552,11 @@ function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpda
       {progress === 100 && (
         <div className="p-3 rounded-lg border border-primary/30 bg-primary/5 flex items-center gap-2">
           <ArrowRight className="w-4 h-4 text-primary" />
-          <p className="text-sm text-foreground">Phase 2 complete. The business is detached. Ready to become an <strong>Asset</strong>.</p>
+          <p className="text-sm text-foreground flex-1">Phase 2 complete. The business is detached. Ready to become an <strong>Asset</strong>.</p>
+          <Button size="sm" onClick={onAdvance}>Continue to Phase 3</Button>
         </div>
       )}
+
     </div>
   );
 }
