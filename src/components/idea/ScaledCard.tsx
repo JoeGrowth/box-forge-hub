@@ -6,7 +6,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
-import { Sparkles, UserPlus, Search, Loader2, Send } from "lucide-react";
+import { Sparkles, UserPlus, Search, Loader2, Send, Pencil, Save, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -26,6 +26,7 @@ interface ProfileMatch {
 
 export function ScaledCard({ userId, title, tagline }: ScaledCardProps) {
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
   return (
     <div className="rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-primary/5 via-card to-card p-5 sm:p-6 relative overflow-hidden">
@@ -45,6 +46,9 @@ export function ScaledCard({ userId, title, tagline }: ScaledCardProps) {
             <Button size="sm" onClick={() => setInviteOpen(true)}>
               <UserPlus className="w-4 h-4 mr-1" /> Invite Co-Builder
             </Button>
+            <Button size="sm" variant="outline" onClick={() => setEditOpen(true)}>
+              <Pencil className="w-4 h-4 mr-1" /> Edit
+            </Button>
           </div>
         </div>
       </div>
@@ -55,7 +59,215 @@ export function ScaledCard({ userId, title, tagline }: ScaledCardProps) {
         currentUserId={userId}
         entityLabel={title}
       />
+      <MissionHistoryDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        userId={userId}
+      />
     </div>
+  );
+}
+
+interface Mission {
+  id: string;
+  title: string;
+  client_name: string | null;
+  offer_date: string | null;
+  number_of_days: number | null;
+  amount_per_day: number | null;
+  total_amount: number | null;
+  currency: string;
+  paid_amount: number | null;
+  paid_at: string | null;
+}
+
+function MissionHistoryDialog({
+  open, onOpenChange, userId,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  userId: string;
+}) {
+  const [loading, setLoading] = useState(false);
+  const [missions, setMissions] = useState<Mission[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [draft, setDraft] = useState<Partial<Mission>>({});
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    (async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("consultant_opportunities")
+        .select("id,title,client_name,offer_date,number_of_days,amount_per_day,total_amount,currency,paid_amount,paid_at")
+        .eq("user_id", userId)
+        .eq("stage", "closed")
+        .order("offer_date", { ascending: false, nullsFirst: false });
+      if (!error) setMissions((data as Mission[]) || []);
+      setLoading(false);
+    })();
+  }, [open, userId]);
+
+  const startEdit = (m: Mission) => {
+    setEditingId(m.id);
+    setDraft({
+      client_name: m.client_name,
+      offer_date: m.offer_date,
+      number_of_days: m.number_of_days,
+      amount_per_day: m.amount_per_day,
+      currency: m.currency,
+      paid_amount: m.paid_amount,
+      paid_at: m.paid_at,
+    });
+  };
+
+  const cancelEdit = () => { setEditingId(null); setDraft({}); };
+
+  const saveEdit = async (id: string) => {
+    setSaving(true);
+    const payload: Record<string, unknown> = {
+      client_name: draft.client_name ?? null,
+      offer_date: draft.offer_date || null,
+      number_of_days: draft.number_of_days ?? null,
+      amount_per_day: draft.amount_per_day ?? null,
+      currency: draft.currency || "TND",
+      paid_amount: draft.paid_amount ?? null,
+      paid_at: draft.paid_at || null,
+    };
+    const { error } = await supabase
+      .from("consultant_opportunities")
+      .update(payload)
+      .eq("id", id)
+      .eq("user_id", userId);
+    setSaving(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Mission updated");
+    setMissions((prev) => prev.map((m) => m.id === id ? {
+      ...m,
+      ...payload,
+      total_amount: (Number(payload.number_of_days) || 0) * (Number(payload.amount_per_day) || 0),
+    } as Mission : m));
+    cancelEdit();
+  };
+
+  const totalRevenue = missions.reduce((s, m) => s + Number(m.total_amount || 0), 0);
+  const totalPaid = missions.reduce((s, m) => s + Number(m.paid_amount || 0), 0);
+  const currency = missions[0]?.currency || "TND";
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Pencil className="w-4 h-4" /> Mission History — Accounting
+          </DialogTitle>
+          <DialogDescription>
+            The closed consulting missions that qualified you for Talent Monetized. Edit accounting details inline.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="grid grid-cols-3 gap-3 border-y border-border py-3">
+          <div>
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Missions closed</p>
+            <p className="text-lg font-bold text-foreground">{missions.length}</p>
+          </div>
+          <div>
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Total billed</p>
+            <p className="text-lg font-bold text-foreground">{totalRevenue.toLocaleString()} {currency}</p>
+          </div>
+          <div>
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Total paid</p>
+            <p className="text-lg font-bold text-emerald-600">{totalPaid.toLocaleString()} {currency}</p>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto -mx-2 px-2">
+          {loading ? (
+            <div className="flex items-center justify-center py-10 text-muted-foreground">
+              <Loader2 className="w-4 h-4 animate-spin mr-2" /> Loading missions…
+            </div>
+          ) : missions.length === 0 ? (
+            <p className="text-center text-sm text-muted-foreground py-10">No closed missions yet.</p>
+          ) : (
+            <table className="w-full text-xs">
+              <thead className="text-muted-foreground">
+                <tr className="border-b border-border">
+                  <th className="text-left font-medium py-2 px-2">Mission / Client</th>
+                  <th className="text-left font-medium py-2 px-2">Date</th>
+                  <th className="text-right font-medium py-2 px-2">Days</th>
+                  <th className="text-right font-medium py-2 px-2">Rate</th>
+                  <th className="text-right font-medium py-2 px-2">Total</th>
+                  <th className="text-right font-medium py-2 px-2">Paid</th>
+                  <th className="text-right font-medium py-2 px-2">Paid on</th>
+                  <th className="py-2 px-2"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {missions.map((m) => {
+                  const isEditing = editingId === m.id;
+                  return (
+                    <tr key={m.id} className="border-b border-border/50 align-top">
+                      <td className="py-2 px-2">
+                        <div className="font-medium text-foreground">{m.title}</div>
+                        {isEditing ? (
+                          <Input
+                            value={draft.client_name ?? ""}
+                            onChange={(e) => setDraft({ ...draft, client_name: e.target.value })}
+                            placeholder="Client"
+                            className="h-7 text-xs mt-1"
+                          />
+                        ) : (
+                          <div className="text-muted-foreground">{m.client_name || "—"}</div>
+                        )}
+                      </td>
+                      <td className="py-2 px-2">
+                        {isEditing ? (
+                          <Input type="date" value={draft.offer_date ?? ""} onChange={(e) => setDraft({ ...draft, offer_date: e.target.value })} className="h-7 text-xs" />
+                        ) : (m.offer_date || "—")}
+                      </td>
+                      <td className="py-2 px-2 text-right">
+                        {isEditing ? (
+                          <Input type="number" value={draft.number_of_days ?? ""} onChange={(e) => setDraft({ ...draft, number_of_days: Number(e.target.value) })} className="h-7 text-xs w-16 ml-auto text-right" />
+                        ) : (m.number_of_days ?? "—")}
+                      </td>
+                      <td className="py-2 px-2 text-right">
+                        {isEditing ? (
+                          <Input type="number" step="0.01" value={draft.amount_per_day ?? ""} onChange={(e) => setDraft({ ...draft, amount_per_day: Number(e.target.value) })} className="h-7 text-xs w-24 ml-auto text-right" />
+                        ) : (`${Number(m.amount_per_day || 0).toLocaleString()}`)}
+                      </td>
+                      <td className="py-2 px-2 text-right font-medium">{Number(m.total_amount || 0).toLocaleString()} {m.currency}</td>
+                      <td className="py-2 px-2 text-right">
+                        {isEditing ? (
+                          <Input type="number" step="0.01" value={draft.paid_amount ?? ""} onChange={(e) => setDraft({ ...draft, paid_amount: Number(e.target.value) })} className="h-7 text-xs w-24 ml-auto text-right" />
+                        ) : (`${Number(m.paid_amount || 0).toLocaleString()}`)}
+                      </td>
+                      <td className="py-2 px-2 text-right">
+                        {isEditing ? (
+                          <Input type="date" value={(draft.paid_at ?? "").toString().slice(0,10)} onChange={(e) => setDraft({ ...draft, paid_at: e.target.value })} className="h-7 text-xs" />
+                        ) : (m.paid_at ? m.paid_at.slice(0,10) : "—")}
+                      </td>
+                      <td className="py-2 px-2 text-right whitespace-nowrap">
+                        {isEditing ? (
+                          <div className="flex justify-end gap-1">
+                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => saveEdit(m.id)} disabled={saving}>
+                              {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                            </Button>
+                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={cancelEdit}><X className="w-3 h-3" /></Button>
+                          </div>
+                        ) : (
+                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => startEdit(m)}><Pencil className="w-3 h-3" /></Button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
