@@ -305,9 +305,7 @@ export default function Organizations() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="default">Default order</SelectItem>
-                    <SelectItem value="tnd-out">Outflow: TND (highest)</SelectItem>
-                    <SelectItem value="eur-out">Outflow: EUR (highest)</SelectItem>
-                    <SelectItem value="usd-out">Outflow: USD (highest)</SelectItem>
+                    <SelectItem value="total-out">Outflow: Total (highest)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
