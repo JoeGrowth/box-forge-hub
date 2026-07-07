@@ -40,6 +40,7 @@ const SINK_CONTENT: Record<LadderStageKey, { title: string; body: string }> = {
 
 export default function Ladder() {
   const { stages, currentStage, loading } = useProgressionLadder();
+  const { isAdmin } = useAdmin();
 
   useEffect(() => {
     document.title = "Progression Ladder | Box4Solutions";
