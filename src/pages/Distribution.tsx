@@ -960,7 +960,10 @@ export function EntityCategories({
         localStorage.setItem(CATS_KEY(scopeId), JSON.stringify(list));
       }
       if (list.length === 0) {
-        list = [{ id: uid(), name: "category one" }];
+        list = [
+          { id: uid(), name: "Internal 1 - Structure Handler" },
+          { id: uid(), name: "Consulting & Training" },
+        ];
         localStorage.setItem(CATS_KEY(scopeId), JSON.stringify(list));
       }
       setCats(list);
