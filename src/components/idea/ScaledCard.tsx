@@ -463,8 +463,10 @@ function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpda
 
 
 }) {
+  const [inviteOpen, setInviteOpen] = useState(false);
   return (
     <div className="space-y-5">
+
       <div>
         <div className="flex items-center justify-between mb-2">
           <div>
