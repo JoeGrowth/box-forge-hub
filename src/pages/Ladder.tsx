@@ -73,7 +73,7 @@ export default function Ladder() {
         </div>
 
         <div className="space-y-4">
-          {stages.map((s) => <StageRow key={s.key} stage={s} isFocus={s.key === currentStage.key} />)}
+          {stages.map((s) => <StageRow key={s.key} stage={s} isFocus={s.key === currentStage.key} isAdmin={isAdmin} />)}
         </div>
       </main>
       <Footer />
@@ -81,7 +81,7 @@ export default function Ladder() {
   );
 }
 
-function StageRow({ stage, isFocus }: { stage: LadderStage; isFocus: boolean }) {
+function StageRow({ stage, isFocus, isAdmin }: { stage: LadderStage; isFocus: boolean; isAdmin: boolean }) {
   const pct = stage.target > 0 ? Math.min(100, (stage.current / stage.target) * 100) : 0;
   const state = stage.achieved ? "achieved" : stage.unlocked ? "active" : "locked";
 
