@@ -335,7 +335,11 @@ function MilestoneRow({ done, label, hint, actionLabel, onToggle, auto }: { done
       {!done && onToggle && (
         <Button size="sm" variant="outline" onClick={onToggle}>{actionLabel || "Mark done"}</Button>
       )}
+      {done && onToggle && !auto && (
+        <Button size="sm" variant="ghost" onClick={onToggle}>Undo</Button>
+      )}
       {done && auto && <Badge variant="outline" className="text-[10px]">Auto</Badge>}
+
     </div>
   );
 }
