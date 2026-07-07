@@ -86,6 +86,7 @@ const Entrepreneurship = () => {
   const [creatorNames, setCreatorNames] = useState<Record<string, string>>({});
   const [teamCounts, setTeamCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  const [linkedOrgs, setLinkedOrgs] = useState<Record<string, { id: string; slug: string; is_public: boolean }>>({});
 
   // Action dialog state (mirrors /start)
   const [selectedIdea, setSelectedIdea] = useState<{ id: string; title: string; currentEpisode: string } | null>(null);
