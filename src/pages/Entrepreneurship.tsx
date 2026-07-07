@@ -635,9 +635,12 @@ const Entrepreneurship = () => {
                     </TabsContent>
 
                     <TabsContent value="joined">
-                      <h2 className="font-display text-xl font-bold text-foreground mb-4">
-                        Projects You're Contributing To
-                      </h2>
+                      <div className="mb-4">
+                        <h2 className="font-display text-xl font-bold text-foreground">Projects You're Contributing To</h2>
+                        <p className="text-sm text-muted-foreground">
+                          Stay connected with the teams and ventures you've joined.
+                        </p>
+                      </div>
                       {loading ? (
                         <Skeleton className="h-24 w-full rounded-2xl" />
                       ) : collaborations.length === 0 ? (
