@@ -70,6 +70,7 @@ export const CreateIdeaDialog = ({ open, onOpenChange }: CreateIdeaDialogProps) 
   };
 
   const addRole = () => {
+    if (rolesNeeded.length >= 3) return;
     if (newRole.trim() && !rolesNeeded.includes(newRole.trim())) {
       setRolesNeeded([...rolesNeeded, newRole.trim()]);
       setNewRole("");
@@ -188,19 +189,23 @@ export const CreateIdeaDialog = ({ open, onOpenChange }: CreateIdeaDialogProps) 
             </div>
 
             <div>
-              <Label>Roles Needed</Label>
-              <p className="text-xs text-muted-foreground mb-2">What kind of co-builders are you looking for?</p>
+              <Label>Core Team Roles</Label>
+              <p className="text-xs text-muted-foreground mb-2">
+                Pick up to 3 strategic co-builders to architect each engine and get your idea running.
+              </p>
               <div className="flex gap-2 mb-2">
                 <Input
                   value={newRole}
                   onChange={(e) => setNewRole(e.target.value)}
                   placeholder="e.g., Marketing Lead, Developer"
                   onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addRole())}
+                  disabled={rolesNeeded.length >= 3}
                 />
-                <Button type="button" variant="outline" onClick={addRole}>
+                <Button type="button" variant="outline" onClick={addRole} disabled={rolesNeeded.length >= 3 || !newRole.trim()}>
                   <Plus className="w-4 h-4" />
                 </Button>
               </div>
+              <p className="text-xs text-muted-foreground mb-2">{rolesNeeded.length}/3 selected</p>
               {rolesNeeded.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {rolesNeeded.map((role) => (
