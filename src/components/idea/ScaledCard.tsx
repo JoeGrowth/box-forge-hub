@@ -199,37 +199,37 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
   };
 
   return (
-    <div className="rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-primary/5 via-card to-card p-5 sm:p-6 relative overflow-hidden">
+    <div className="rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-primary/5 via-card to-card p-4 sm:p-6 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-40 h-40 bg-primary/5 rounded-full -mr-20 -mt-20" />
 
       {/* Header */}
-      <div className="relative flex flex-col sm:flex-row sm:items-start gap-4 mb-6">
-        <div className="w-12 h-12 rounded-xl bg-primary/15 text-primary flex items-center justify-center flex-shrink-0">
-          <Sparkles className="w-6 h-6" />
+      <div className="relative flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 mb-5 sm:mb-6">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/15 text-primary flex items-center justify-center flex-shrink-0">
+          <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Consulting &amp; Services</p>
           {editingName ? (
-            <div className="flex items-center gap-2 mt-1">
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
               <Input
                 autoFocus
                 value={brandDraft}
                 onChange={(e) => setBrandDraft(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") saveBrandName(); if (e.key === "Escape") { setEditingName(false); setBrandDraft(title); } }}
-                className="h-9 text-lg font-bold max-w-xs"
+                className="h-9 text-base sm:text-lg font-bold flex-1 min-w-0 sm:max-w-xs"
                 placeholder="e.g. Pengry"
               />
-              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={saveBrandName} disabled={savingName}>
+              <Button size="icon" variant="ghost" className="h-8 w-8 flex-shrink-0" onClick={saveBrandName} disabled={savingName}>
                 {savingName ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               </Button>
-              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setEditingName(false); setBrandDraft(title); }}>
+              <Button size="icon" variant="ghost" className="h-8 w-8 flex-shrink-0" onClick={() => { setEditingName(false); setBrandDraft(title); }}>
                 <X className="w-4 h-4" />
               </Button>
             </div>
           ) : (
             <div className="flex items-center gap-2 flex-wrap mt-0.5">
-              <h3 className="font-display text-xl sm:text-2xl font-bold text-foreground break-words">{title}</h3>
-              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditingName(true)} title="Rename brand">
+              <h3 className="font-display text-lg sm:text-2xl font-bold text-foreground break-words min-w-0">{title}</h3>
+              <Button size="icon" variant="ghost" className="h-7 w-7 flex-shrink-0" onClick={() => setEditingName(true)} title="Rename brand">
                 <Pencil className="w-3.5 h-3.5" />
               </Button>
               <Badge className="bg-primary/15 text-primary border-primary/30 hover:bg-primary/15">Scaled</Badge>
@@ -238,18 +238,19 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
           )}
           <p className="text-sm text-muted-foreground mt-1">{tagline}</p>
           <div className="flex flex-wrap gap-2 mt-3">
-            <Button size="sm" onClick={() => setInviteOpen(true)}>
-              <UserPlus className="w-4 h-4 mr-1" /> Invite Co-Builder
+            <Button size="sm" onClick={() => setInviteOpen(true)} className="flex-1 sm:flex-none min-w-0">
+              <UserPlus className="w-4 h-4 mr-1 flex-shrink-0" /> <span className="truncate">Invite Co-Builder</span>
             </Button>
-            <Button size="sm" variant="outline" onClick={() => setHistoryOpen(true)}>
-              <FileText className="w-4 h-4 mr-1" /> Mission History
+            <Button size="sm" variant="outline" onClick={() => setHistoryOpen(true)} className="flex-1 sm:flex-none min-w-0">
+              <FileText className="w-4 h-4 mr-1 flex-shrink-0" /> <span className="truncate">Mission History</span>
             </Button>
           </div>
         </div>
       </div>
 
       {/* Phase stepper */}
-      <div className="relative grid grid-cols-3 gap-2 mb-6">
+      <div className="relative grid grid-cols-3 gap-1.5 sm:gap-2 mb-5 sm:mb-6">
+
         {(["branding", "systematization", "asset"] as Phase[]).map((p, idx) => {
           const meta = PHASE_META[p];
           const Icon = meta.icon;
@@ -263,22 +264,23 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
               onClick={() => isUnlocked && jumpPhase(p)}
               disabled={!isUnlocked}
               className={cn(
-                "rounded-xl border p-3 text-left transition-all",
+                "rounded-xl border p-2 sm:p-3 text-left transition-all min-w-0",
                 isActive ? "border-primary bg-primary/10 shadow-sm" : "border-border bg-card hover:border-primary/40",
                 !isUnlocked && "opacity-50 cursor-not-allowed",
               )}
             >
-              <div className="flex items-center gap-2 mb-1">
-                <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold",
+              <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+                <div className={cn("w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0",
                   isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
                   {idx + 1}
                 </div>
-                <Icon className="w-3.5 h-3.5 text-muted-foreground" />
-                {!isUnlocked && <Lock className="w-3 h-3 text-muted-foreground ml-auto" />}
+                <Icon className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                {!isUnlocked && <Lock className="w-3 h-3 text-muted-foreground ml-auto flex-shrink-0" />}
               </div>
-              <p className="font-semibold text-sm text-foreground">{meta.label}</p>
-              <p className="text-[11px] text-muted-foreground">{meta.sub}</p>
+              <p className="font-semibold text-xs sm:text-sm text-foreground leading-tight">{meta.label}</p>
+              <p className="text-[10px] sm:text-[11px] text-muted-foreground leading-tight mt-0.5">{meta.sub}</p>
             </button>
+
           );
         })}
       </div>
@@ -445,12 +447,15 @@ function BrandingPhase({ done, autoCounts, state, milestones, progress, onToggle
       </div>
 
       {progress === 100 && (
-        <div className="p-3 rounded-lg border border-primary/30 bg-primary/5 flex items-center gap-2">
-          <ArrowRight className="w-4 h-4 text-primary" />
-          <p className="text-sm text-foreground flex-1">Phase 1 complete. Ready to <strong>Systematize</strong> and detach the business from the founder.</p>
-          <Button size="sm" onClick={onAdvance}>Continue to Phase 2</Button>
+        <div className="p-3 rounded-lg border border-primary/30 bg-primary/5 flex flex-col sm:flex-row sm:items-center gap-2">
+          <div className="flex items-start gap-2 flex-1">
+            <ArrowRight className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-foreground">Phase 1 complete. Ready to <strong>Systematize</strong> and detach the business from the founder.</p>
+          </div>
+          <Button size="sm" onClick={onAdvance} className="w-full sm:w-auto">Continue to Phase 2</Button>
         </div>
       )}
+
 
     </div>
   );
@@ -566,12 +571,15 @@ function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpda
 
 
       {progress === 100 && (
-        <div className="p-3 rounded-lg border border-primary/30 bg-primary/5 flex items-center gap-2">
-          <ArrowRight className="w-4 h-4 text-primary" />
-          <p className="text-sm text-foreground flex-1">Phase 2 complete. The business is detached. Ready to become an <strong>Asset</strong>.</p>
-          <Button size="sm" onClick={onAdvance}>Continue to Phase 3</Button>
+        <div className="p-3 rounded-lg border border-primary/30 bg-primary/5 flex flex-col sm:flex-row sm:items-center gap-2">
+          <div className="flex items-start gap-2 flex-1">
+            <ArrowRight className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-foreground">Phase 2 complete. The business is detached. Ready to become an <strong>Asset</strong>.</p>
+          </div>
+          <Button size="sm" onClick={onAdvance} className="w-full sm:w-auto">Continue to Phase 3</Button>
         </div>
       )}
+
 
       <CoBuilderInviteDialog
         open={inviteOpen}
