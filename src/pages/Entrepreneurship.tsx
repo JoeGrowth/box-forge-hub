@@ -820,6 +820,16 @@ const Entrepreneurship = () => {
         </AlertDialogContent>
       </AlertDialog>
 
+      <TransferInitiationDialog
+        open={transferDialogOpen}
+        onOpenChange={setTransferDialogOpen}
+        idea={transferIdea}
+        onTransferred={() => {
+          refreshMyAndCollabs();
+          setTransferIdea(null);
+        }}
+      />
+
     </div>
   );
 };
