@@ -319,19 +319,18 @@ export function Navbar() {
                     </Link>
                   )}
 
-                  {talentReady && (
-                    <Link
-                      to="/opportunities"
-                      onClick={() => setIsOpen(false)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                        location.pathname === "/opportunities"
-                          ? "bg-muted text-b4-teal"
-                          : "text-muted-foreground hover:bg-muted"
-                      }`}
-                    >
-                      <span className="flex-1">Opportunities</span>
-                    </Link>
-                  )}
+                  <Link
+                    to="/entrepreneurship"
+                    onClick={() => setIsOpen(false)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                      location.pathname === "/entrepreneurship"
+                        ? "bg-muted text-b4-teal"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    <Lightbulb size={16} />
+                    <span className="flex-1">Ideas</span>
+                  </Link>
 
                   {visibleMoreLinks.length > 0 && (
                     <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
