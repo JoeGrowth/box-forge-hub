@@ -203,6 +203,24 @@ const Entrepreneurship = () => {
         (teamData || []).forEach(t => { counts[t.startup_id] = (counts[t.startup_id] || 0) + 1; });
         setTeamCounts(counts);
       }
+
+      // Load organizations linked to my ideas (source_idea_id) so we can show
+      // an "Organization" button + ecosystem visibility toggle on those cards.
+      const myAndCollabIds = [
+        ...my.map(p => p.id),
+        ...membershipStartupIds,
+      ];
+      if (myAndCollabIds.length > 0) {
+        const { data: orgs } = await supabase
+          .from("organizations")
+          .select("id, slug, source_idea_id, is_public")
+          .in("source_idea_id", myAndCollabIds);
+        const map: Record<string, { id: string; slug: string; is_public: boolean }> = {};
+        (orgs || []).forEach((o: any) => {
+          if (o.source_idea_id) map[o.source_idea_id] = { id: o.id, slug: o.slug, is_public: o.is_public !== false };
+        });
+        setLinkedOrgs(map);
+      }
     } catch (err) {
       console.error("Error fetching entrepreneurship data:", err);
     } finally {
