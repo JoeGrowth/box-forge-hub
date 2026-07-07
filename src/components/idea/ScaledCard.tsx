@@ -335,7 +335,11 @@ function MilestoneRow({ done, label, hint, actionLabel, onToggle, auto }: { done
       {!done && onToggle && (
         <Button size="sm" variant="outline" onClick={onToggle}>{actionLabel || "Mark done"}</Button>
       )}
+      {done && onToggle && !auto && (
+        <Button size="sm" variant="ghost" onClick={onToggle}>Undo</Button>
+      )}
       {done && auto && <Badge variant="outline" className="text-[10px]">Auto</Badge>}
+
     </div>
   );
 }
@@ -511,8 +515,9 @@ function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpda
           label="Invite a co-builder"
           hint={done.invite_cobuilder ? "Invitation sent" : "From the platform, or by email if they're not on it yet"}
           actionLabel={done.invite_cobuilder ? "Invite another" : "Invite"}
-          onToggle={() => setInviteOpen(true)}
+          onToggle={done.invite_cobuilder ? () => onToggleMilestone("invite_cobuilder", false) : () => setInviteOpen(true)}
         />
+
 
 
 
