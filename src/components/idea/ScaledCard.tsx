@@ -148,7 +148,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     proposal_template: !!state.proposal_template_url || milestones.has("proposal_template"),
     professional_presence: autoCounts.professionalPresence || milestones.has("professional_presence"),
     invite_cobuilder: milestones.has("invite_cobuilder"),
-    form_company: !!state.company_name || milestones.has("form_company"),
+    form_company: !!state.company_name?.trim(),
     standardized_processes: milestones.has("standardized_processes"),
     autonomous_operations: state.autonomous_operations,
   }), [autoCounts, milestones, state]);
