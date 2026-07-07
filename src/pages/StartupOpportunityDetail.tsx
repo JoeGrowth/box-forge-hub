@@ -141,6 +141,17 @@ const StartupOpportunityDetail = () => {
         setCreatorProfile(profile);
       }
 
+      // Fetch natural role
+      const { data: nrData } = await supabase
+        .from("natural_roles")
+        .select("description")
+        .eq("user_id", data.creator_id)
+        .maybeSingle();
+
+      if (nrData?.description) {
+        setNaturalRole(nrData.description);
+      }
+
       // Check if user has already applied
       const { data: applicationData } = await supabase
         .from("startup_applications")
