@@ -69,10 +69,11 @@ const DEFAULT_STATE: VentureState = {
 };
 
 const PHASE_META: Record<Phase, { label: string; sub: string; icon: any }> = {
-  branding: { label: "Branding", sub: "Structuring", icon: Sparkles },
-  systematization: { label: "Systematization", sub: "Detaching", icon: Layers },
+  branding: { label: "Structure", sub: "Branding", icon: Sparkles },
+  systematization: { label: "Detach", sub: "Systemize", icon: Layers },
   asset: { label: "Asset", sub: "Scale", icon: Rocket },
 };
+
 
 const MODEL_META: Record<Model, { label: string; desc: string; icon: any }> = {
   boutique_firm: { label: "Boutique Firm", desc: "High-touch consulting firm centered on your expertise.", icon: Building2 },
