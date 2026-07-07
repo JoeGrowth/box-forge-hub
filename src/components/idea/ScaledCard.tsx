@@ -396,7 +396,8 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
           userId={userId}
           brandName={title}
           orgSlug={orgSlug}
-          onNavigate={(p) => navigate(p)}
+          onOpenOrg={ensureOrgAndOpen}
+
         />
 
       ) : (
