@@ -270,7 +270,7 @@ export default function Organizations() {
         </div>
       ) : (
         <div className="space-y-4">
-          {memberships.length > 3 && (
+          {memberships.length > 0 && (
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -295,6 +295,20 @@ export default function Organizations() {
                     <SelectItem value="ngo">NGO</SelectItem>
                     <SelectItem value="startup">Startup</SelectItem>
                     <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="sm:w-56">
+                <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortKey)}>
+                  <SelectTrigger className="w-full">
+                    <Wallet className="w-3.5 h-3.5 mr-1.5 text-muted-foreground shrink-0" />
+                    <SelectValue placeholder="Sort by…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">Default order</SelectItem>
+                    <SelectItem value="tnd-out">Outflow: TND (highest)</SelectItem>
+                    <SelectItem value="eur-out">Outflow: EUR (highest)</SelectItem>
+                    <SelectItem value="usd-out">Outflow: USD (highest)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
