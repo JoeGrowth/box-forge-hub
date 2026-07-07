@@ -145,7 +145,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
   const done = useMemo(() => ({
     solo_missions: autoCounts.soloMissions >= 3 || milestones.has("solo_missions"),
     contractor_missions: autoCounts.contractorMissions >= 7 || milestones.has("contractor_missions"),
-    core_services: autoCounts.coreServices >= 1 || milestones.has("core_services"),
+    core_services: autoCounts.coreServices >= 3 || milestones.has("core_services"),
     proposal_template: !!state.proposal_template_url || milestones.has("proposal_template"),
     professional_presence: autoCounts.professionalPresence || milestones.has("professional_presence"),
     invite_cobuilder: milestones.has("invite_cobuilder"),
