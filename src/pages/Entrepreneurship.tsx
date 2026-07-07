@@ -384,6 +384,19 @@ const Entrepreneurship = () => {
                 <CheckCircle className="w-3 h-3 mr-1.5" /> Journey Complete
               </Badge>
             )}
+            {!isOwner && project.current_episode !== "completed" && (
+              <Button size="sm" disabled variant="secondary" className="opacity-100 cursor-default">
+                {project.current_episode === "development" && (
+                  <><Rocket className="w-4 h-4 mr-1.5" /> In Development</>
+                )}
+                {project.current_episode === "validation" && (
+                  <><Shield className="w-4 h-4 mr-1.5" /> In Validation</>
+                )}
+                {project.current_episode === "growth" && (
+                  <><TrendingUp className="w-4 h-4 mr-1.5" /> In Growth</>
+                )}
+              </Button>
+            )}
           </div>
 
           {/* Divider */}
