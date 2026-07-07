@@ -3722,6 +3722,7 @@ export type Database = {
           created_by: string
           description: string | null
           id: string
+          is_public: boolean
           lifecycle_stage: Database["public"]["Enums"]["org_lifecycle_stage"]
           logo_url: string | null
           name: string
@@ -3736,6 +3737,7 @@ export type Database = {
           created_by: string
           description?: string | null
           id?: string
+          is_public?: boolean
           lifecycle_stage?: Database["public"]["Enums"]["org_lifecycle_stage"]
           logo_url?: string | null
           name: string
@@ -3750,6 +3752,7 @@ export type Database = {
           created_by?: string
           description?: string | null
           id?: string
+          is_public?: boolean
           lifecycle_stage?: Database["public"]["Enums"]["org_lifecycle_stage"]
           logo_url?: string | null
           name?: string
