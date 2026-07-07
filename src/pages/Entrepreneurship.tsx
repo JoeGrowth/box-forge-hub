@@ -630,6 +630,14 @@ const Entrepreneurship = () => {
                           {myProjects.map((project) => (
                             <MyProjectCard key={project.id} project={project} isOwner={true} />
                           ))}
+                          <div
+                            className="border border-dashed border-border rounded-2xl p-6 text-center hover:bg-muted/30 transition-colors cursor-pointer"
+                            onClick={() => setShowCreateDialog(true)}
+                          >
+                            <Plus className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                            <p className="font-medium text-foreground">Add an Idea</p>
+                            <p className="text-sm text-muted-foreground mt-1">Start a new venture and begin your journey.</p>
+                          </div>
                         </div>
                       )}
                     </TabsContent>
