@@ -322,27 +322,35 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
 
 // ---- Phase 1: Branding ----
 function MilestoneRow({ done, label, hint, actionLabel, onToggle, auto }: { done: boolean; label: string; hint?: string; actionLabel?: string; onToggle?: () => void; auto?: boolean }) {
+  const canToggle = !!onToggle && !auto;
+  // Action button only shown when the label describes a distinct action (e.g. "Invite", "Confirm"),
+  // not the generic "Mark done" — the circle handles check/uncheck directly.
+  const showActionButton = !done && !!onToggle && !auto && !!actionLabel && actionLabel !== "Mark done";
   return (
     <div className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card">
-      <div className={cn("w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0",
-        done ? "bg-emerald-500 text-white" : "border-2 border-muted-foreground/40")}>
+      <button
+        type="button"
+        onClick={canToggle ? onToggle : undefined}
+        disabled={!canToggle}
+        aria-label={done ? `Uncheck ${label}` : `Check ${label}`}
+        className={cn("w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0 transition",
+          done ? "bg-emerald-500 text-white" : "border-2 border-muted-foreground/40",
+          canToggle ? "cursor-pointer hover:opacity-80" : "cursor-default")}
+      >
         {done && <Check className="w-3 h-3" />}
-      </div>
+      </button>
       <div className="flex-1 min-w-0">
-        <p className={cn("text-sm font-medium", done ? "text-foreground" : "text-foreground")}>{label}</p>
+        <p className="text-sm font-medium text-foreground">{label}</p>
         {hint && <p className="text-xs text-muted-foreground mt-0.5">{hint}</p>}
       </div>
-      {!done && onToggle && (
-        <Button size="sm" variant="outline" onClick={onToggle}>{actionLabel || "Mark done"}</Button>
-      )}
-      {done && onToggle && !auto && (
-        <Button size="sm" variant="ghost" onClick={onToggle}>Undo</Button>
+      {showActionButton && (
+        <Button size="sm" variant="outline" onClick={onToggle}>{actionLabel}</Button>
       )}
       {done && auto && <Badge variant="outline" className="text-[10px]">Auto</Badge>}
-
     </div>
   );
 }
+
 
 function BrandingPhase({ done, autoCounts, state, milestones, progress, onToggleMilestone, onUpdateState, onAdvance }: {
   done: any; autoCounts: any; state: VentureState; milestones: Set<string>; progress: number;
