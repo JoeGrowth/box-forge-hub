@@ -306,28 +306,31 @@ const Entrepreneurship = () => {
     }
   };
 
-  const MyProjectCard = ({ project, isOwner }: { project: StartupIdea; isOwner: boolean }) => (
-    <div className="border border-border rounded-2xl p-4 sm:p-6 bg-card hover:shadow-md transition-shadow">
-      <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-        <div className="flex-1 min-w-0 w-full">
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <h3 className="font-display text-lg sm:text-xl font-bold text-foreground break-words">{project.title}</h3>
-            <Badge variant="outline" className="text-xs">{getEpisodeLabel(project.current_episode)}</Badge>
-            {isOwner && project.review_status && (
-              <Badge variant="secondary" className="text-xs capitalize">{project.review_status}</Badge>
+  const MyProjectCard = ({ project, isOwner }: { project: StartupIdea; isOwner: boolean }) => {
+    const org = linkedOrgs[project.id];
+
+    return (
+      <div className="border border-border rounded-2xl p-4 sm:p-6 bg-card hover:shadow-md transition-shadow">
+        {/* Header row: title + meta + delete */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <h3 className="font-display text-lg sm:text-xl font-bold text-foreground break-words">{project.title}</h3>
+              <Badge variant="outline" className="text-xs">{getEpisodeLabel(project.current_episode)}</Badge>
+              {isOwner && project.review_status && (
+                <Badge variant="secondary" className="text-xs capitalize">{project.review_status}</Badge>
+              )}
+            </div>
+            {project.sector && (
+              <p className="text-sm text-muted-foreground italic mb-2">{project.sector}</p>
             )}
+            <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
           </div>
-          {project.sector && (
-            <p className="text-sm text-muted-foreground italic mb-2">{project.sector}</p>
-          )}
-          <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
-        </div>
-        <div className="flex flex-wrap gap-2 shrink-0 justify-start sm:justify-end w-full sm:w-auto sm:max-w-[60%]">
           {isOwner && (
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+              className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
               onClick={() => {
                 setIdeaToDelete({ id: project.id, title: project.title });
                 setDeleteDialogOpen(true);
@@ -337,124 +340,145 @@ const Entrepreneurship = () => {
               <Trash2 className="h-4 w-4" />
             </Button>
           )}
-          <Button variant="outline" size="sm" asChild>
-            <Link to={`/opportunities/${project.id}`}>
-              <Eye className="w-3 h-3 mr-1" /> View
-            </Link>
-          </Button>
-          {(isOwner ? project.review_status === "approved" : true) && (
-            <>
+        </div>
+
+        {/* Action bar */}
+        <div className="mt-4 pt-4 border-t border-border flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          {/* Primary actions */}
+          <div className="flex flex-wrap gap-2">
+            {isOwner && project.current_episode === "development" && (
               <Button
-                variant="outline"
                 size="sm"
                 onClick={() => {
-                  setTeamDialogIdea({ id: project.id, title: project.title });
-                  setTeamDialogOpen(true);
+                  setSelectedIdea({ id: project.id, title: project.title, currentEpisode: project.current_episode });
+                  setDevelopDialogOpen(true);
                 }}
               >
-                <Users className="w-4 h-4 mr-1" /> Team
+                <Rocket className="w-4 h-4 mr-1.5" /> Develop
               </Button>
-              {linkedOrgs[project.id] && (
-                <>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to={`/org/${linkedOrgs[project.id].slug}`}>
-                      <Building2 className="w-4 h-4 mr-1" /> Organization
+            )}
+            {isOwner && project.current_episode === "validation" && (
+              <Button
+                size="sm"
+                onClick={() => {
+                  setSelectedIdea({ id: project.id, title: project.title, currentEpisode: project.current_episode });
+                  setValidationDialogOpen(true);
+                }}
+              >
+                <Shield className="w-4 h-4 mr-1.5" /> Validate
+              </Button>
+            )}
+            {isOwner && project.current_episode === "growth" && (
+              <Button
+                size="sm"
+                onClick={() => {
+                  setSelectedIdea({ id: project.id, title: project.title, currentEpisode: project.current_episode });
+                  setGrowthDialogOpen(true);
+                }}
+              >
+                <TrendingUp className="w-4 h-4 mr-1.5" /> Grow
+              </Button>
+            )}
+            {project.current_episode === "completed" && (
+              <Badge className="bg-b4-teal text-white h-9 px-3">
+                <CheckCircle className="w-3 h-3 mr-1.5" /> Journey Complete
+              </Badge>
+            )}
+          </div>
+
+          {/* Divider */}
+          <div className="hidden sm:block w-px h-6 bg-border shrink-0" />
+
+          {/* Secondary actions */}
+          <div className="flex flex-wrap gap-2">
+            <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
+              <Link to={`/opportunities/${project.id}`}>
+                <Eye className="w-3.5 h-3.5 mr-1.5" /> View
+              </Link>
+            </Button>
+
+            {(isOwner ? project.review_status === "approved" : true) && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-foreground"
+                  onClick={() => {
+                    setTeamDialogIdea({ id: project.id, title: project.title });
+                    setTeamDialogOpen(true);
+                  }}
+                >
+                  <Users className="w-3.5 h-3.5 mr-1.5" /> Team
+                </Button>
+
+                {org && (
+                  <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground">
+                    <Link to={`/org/${org.slug}`}>
+                      <Building2 className="w-3.5 h-3.5 mr-1.5" /> Organization
                     </Link>
                   </Button>
-                  {isOwner && (
-                    <div className="flex items-center gap-2 px-2 rounded-md border border-border h-9">
-                      <Switch
-                        checked={linkedOrgs[project.id].is_public}
-                        onCheckedChange={async (checked) => {
-                          const org = linkedOrgs[project.id];
-                          setLinkedOrgs((prev) => ({ ...prev, [project.id]: { ...prev[project.id], is_public: checked } }));
-                          const { error } = await supabase
-                            .from("organizations")
-                            .update({ is_public: checked } as any)
-                            .eq("id", org.id);
-                          if (error) {
-                            setLinkedOrgs((prev) => ({ ...prev, [project.id]: { ...prev[project.id], is_public: !checked } }));
-                            toast({ title: "Update failed", description: error.message, variant: "destructive" });
-                          } else {
-                            toast({ title: checked ? "Published to ecosystem" : "Hidden from ecosystem" });
-                          }
-                        }}
-                      />
-                      <span className="text-xs text-muted-foreground">
-                        {linkedOrgs[project.id].is_public ? "On" : "Off"}
-                      </span>
-                    </div>
-                  )}
-                </>
-              )}
-              {isOwner && !project.development_completed_at && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setFiveElementsIdea({ id: project.id, title: project.title, description: project.description });
-                    setFiveElementsDialogOpen(true);
-                  }}
-                >
-                  <Layers className="w-4 h-4 mr-1" /> 5 Elements
-                </Button>
-              )}
-              {project.development_completed_at && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedIdea({ id: project.id, title: project.title, currentEpisode: project.current_episode });
-                    setEpisodesDialogOpen(true);
-                  }}
-                >
-                  <Film className="w-4 h-4 mr-1" /> Episodes
-                </Button>
-              )}
-              {isOwner && project.current_episode === "development" && (
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    setSelectedIdea({ id: project.id, title: project.title, currentEpisode: project.current_episode });
-                    setDevelopDialogOpen(true);
-                  }}
-                >
-                  Develop
-                </Button>
-              )}
-              {isOwner && project.current_episode === "validation" && (
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    setSelectedIdea({ id: project.id, title: project.title, currentEpisode: project.current_episode });
-                    setValidationDialogOpen(true);
-                  }}
-                >
-                  <Shield className="w-4 h-4 mr-1" /> Validate
-                </Button>
-              )}
-              {isOwner && project.current_episode === "growth" && (
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    setSelectedIdea({ id: project.id, title: project.title, currentEpisode: project.current_episode });
-                    setGrowthDialogOpen(true);
-                  }}
-                >
-                  <TrendingUp className="w-4 h-4 mr-1" /> Grow
-                </Button>
-              )}
-              {project.current_episode === "completed" && (
-                <Badge className="bg-b4-teal text-white">
-                  <CheckCircle className="w-3 h-3 mr-1" /> Journey Complete
-                </Badge>
-              )}
-            </>
+                )}
+
+                {isOwner && !project.development_completed_at && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:text-foreground"
+                    onClick={() => {
+                      setFiveElementsIdea({ id: project.id, title: project.title, description: project.description });
+                      setFiveElementsDialogOpen(true);
+                    }}
+                  >
+                    <Layers className="w-3.5 h-3.5 mr-1.5" /> 5 Elements
+                  </Button>
+                )}
+
+                {project.development_completed_at && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:text-foreground"
+                    onClick={() => {
+                      setSelectedIdea({ id: project.id, title: project.title, currentEpisode: project.current_episode });
+                      setEpisodesDialogOpen(true);
+                    }}
+                  >
+                    <Film className="w-3.5 h-3.5 mr-1.5" /> Episodes
+                  </Button>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Visibility toggle — pushed to right on desktop */}
+          {org && isOwner && (
+            <div className="sm:ml-auto flex items-center gap-2">
+              <span className="text-xs text-muted-foreground hidden sm:inline">Ecosystem</span>
+              <Switch
+                checked={org.is_public}
+                onCheckedChange={async (checked) => {
+                  setLinkedOrgs((prev) => ({ ...prev, [project.id]: { ...prev[project.id], is_public: checked } }));
+                  const { error } = await supabase
+                    .from("organizations")
+                    .update({ is_public: checked } as any)
+                    .eq("id", org.id);
+                  if (error) {
+                    setLinkedOrgs((prev) => ({ ...prev, [project.id]: { ...prev[project.id], is_public: !checked } }));
+                    toast({ title: "Update failed", description: error.message, variant: "destructive" });
+                  } else {
+                    toast({ title: checked ? "Published to ecosystem" : "Hidden from ecosystem" });
+                  }
+                }}
+              />
+              <span className={`text-xs font-medium ${org.is_public ? "text-b4-teal" : "text-muted-foreground"}`}>
+                {org.is_public ? "On" : "Off"}
+              </span>
+            </div>
           )}
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
 
   return (
