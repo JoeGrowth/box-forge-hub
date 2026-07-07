@@ -22,6 +22,7 @@ import {
   Package,
   BookOpen,
   Building2,
+  Lightbulb,
   Activity,
   BarChart3,
   Users,
