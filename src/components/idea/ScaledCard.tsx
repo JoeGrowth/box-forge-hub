@@ -199,10 +199,11 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     proposal_template: !!state.proposal_template_url || milestones.has("proposal_template"),
     professional_presence: autoCounts.professionalPresence || milestones.has("professional_presence"),
     invite_cobuilder: milestones.has("invite_cobuilder"),
+    manage_org: !!orgId && autoCounts.orgHasDeclaration && autoCounts.orgHasDistribution,
     form_company: !!state.company_name?.trim(),
     standardized_processes: milestones.has("standardized_processes"),
     autonomous_operations: state.autonomous_operations,
-  }), [autoCounts, milestones, state]);
+  }), [autoCounts, milestones, state, orgId]);
 
 
   const brandingProgress = useMemo(() => {
@@ -212,10 +213,11 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
   const brandingComplete = brandingProgress === 100;
 
   const systProgress = useMemo(() => {
-    const items = [!!state.selected_model, done.invite_cobuilder, done.form_company, done.core_services, done.standardized_processes, done.autonomous_operations];
+    const items = [!!state.selected_model, done.invite_cobuilder, done.core_services, done.manage_org, done.form_company, done.standardized_processes, done.autonomous_operations];
     return Math.round((items.filter(Boolean).length / items.length) * 100);
   }, [state, done]);
   const systComplete = systProgress === 100;
+
 
 
   const advanceToPhase = async (p: Phase) => {
