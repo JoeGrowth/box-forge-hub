@@ -5,7 +5,8 @@ import { ScrollToTopButton } from "@/components/layout/ScrollToTopButton";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Rocket, Eye, Users, Layers, Film, Shield, TrendingUp, Trash2, CheckCircle, Loader2, Lightbulb, Plus, Building2 } from "lucide-react";
+import { Rocket, Eye, Users, Layers, Film, Shield, TrendingUp, Trash2, CheckCircle, Loader2, Lightbulb, Plus, Building2, UserRoundCog } from "lucide-react";
+import { TransferInitiationDialog } from "@/components/idea/TransferInitiationDialog";
 import { Switch } from "@/components/ui/switch";
 import { NextGoalBanner } from "@/components/progression/NextGoalBanner";
 import { CreateIdeaDialog } from "@/components/idea/CreateIdeaDialog";
@@ -101,6 +102,8 @@ const Entrepreneurship = () => {
   const [ideaToDelete, setIdeaToDelete] = useState<{ id: string; title: string } | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteType, setDeleteType] = useState<"archive" | "permanent" | null>(null);
+  const [transferIdea, setTransferIdea] = useState<{ id: string; title: string } | null>(null);
+  const [transferDialogOpen, setTransferDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
@@ -327,18 +330,34 @@ const Entrepreneurship = () => {
             <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
           </div>
           {isOwner && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-              onClick={() => {
-                setIdeaToDelete({ id: project.id, title: project.title });
-                setDeleteDialogOpen(true);
-              }}
-              title="Delete idea"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-1 shrink-0">
+              {project.current_episode === "development" && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                  onClick={() => {
+                    setTransferIdea({ id: project.id, title: project.title });
+                    setTransferDialogOpen(true);
+                  }}
+                  title="Transfer initiation to another initiator"
+                >
+                  <UserRoundCog className="h-4 w-4" />
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                onClick={() => {
+                  setIdeaToDelete({ id: project.id, title: project.title });
+                  setDeleteDialogOpen(true);
+                }}
+                title="Delete idea"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
           )}
         </div>
 
@@ -800,6 +819,16 @@ const Entrepreneurship = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <TransferInitiationDialog
+        open={transferDialogOpen}
+        onOpenChange={setTransferDialogOpen}
+        idea={transferIdea}
+        onTransferred={() => {
+          refreshMyAndCollabs();
+          setTransferIdea(null);
+        }}
+      />
 
     </div>
   );

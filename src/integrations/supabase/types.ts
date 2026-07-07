@@ -6577,6 +6577,10 @@ export type Database = {
       seed_cold_start_expertise: { Args: { _user_id: string }; Returns: number }
       slugify_text: { Args: { _input: string }; Returns: string }
       test_growth_loop_dispatch: { Args: { _user_id: string }; Returns: Json }
+      transfer_startup_initiation: {
+        Args: { _new_initiator_id: string; _startup_id: string }
+        Returns: undefined
+      }
       transition_box_request: {
         Args: {
           _advisor?: string
