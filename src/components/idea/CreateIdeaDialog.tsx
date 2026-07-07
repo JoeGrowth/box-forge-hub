@@ -70,6 +70,7 @@ export const CreateIdeaDialog = ({ open, onOpenChange }: CreateIdeaDialogProps) 
   };
 
   const addRole = () => {
+    if (rolesNeeded.length >= 3) return;
     if (newRole.trim() && !rolesNeeded.includes(newRole.trim())) {
       setRolesNeeded([...rolesNeeded, newRole.trim()]);
       setNewRole("");
