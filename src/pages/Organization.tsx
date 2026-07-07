@@ -14,6 +14,7 @@ import {
   roleAtLeast,
   type OrgRole,
 } from "@/hooks/useOrganizations";
+import { OrgLogo, invalidateOrgLogo } from "@/components/organization/OrgLogo";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
