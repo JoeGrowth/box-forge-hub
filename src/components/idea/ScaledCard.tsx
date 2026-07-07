@@ -492,7 +492,7 @@ function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpda
       <div>
         <div className="flex items-center justify-between mb-2">
           <div>
-            <p className="font-display text-base font-bold text-foreground">Phase 2 · Systematization (Detaching)</p>
+            <p className="font-display text-base font-bold text-foreground">Phase 2 · Detach (Systemize)</p>
             <p className="text-xs text-muted-foreground">Separate the business from you. Build systems others can run.</p>
           </div>
           <Badge variant="secondary">{progress}%</Badge>
@@ -527,50 +527,57 @@ function SystematizationPhase({ done, state, progress, onToggleMilestone, onUpda
         </div>
       </div>
 
-      <div className="space-y-2">
-        <MilestoneRow
-          done={done.invite_cobuilder}
-          label="Invite a co-builder"
-          hint={done.invite_cobuilder ? "Invitation sent" : "From the platform, or by email if they're not on it yet"}
-          actionLabel={done.invite_cobuilder ? "Invite another" : "Invite"}
-          onToggle={done.invite_cobuilder ? () => onToggleMilestone("invite_cobuilder", false) : () => setInviteOpen(true)}
-        />
+      {!state.selected_model ? (
+        <div className="p-3 rounded-lg border border-dashed border-border bg-muted/30 text-center">
+          <p className="text-xs text-muted-foreground">Choose a business model above to unlock the next actions.</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <MilestoneRow
+            done={done.invite_cobuilder}
+            label="Invite a co-builder"
+            hint={done.invite_cobuilder ? "Invitation sent" : "From the platform, or by email if they're not on it yet"}
+            actionLabel={done.invite_cobuilder ? "Invite another" : "Invite"}
+            onToggle={done.invite_cobuilder ? () => onToggleMilestone("invite_cobuilder", false) : () => setInviteOpen(true)}
+          />
 
-
-
-
-        <div className="p-3 rounded-lg border border-border bg-card space-y-2">
-          <div className="flex items-start gap-3">
-            <div className={cn("w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0",
-              done.form_company ? "bg-emerald-500 text-white" : "border-2 border-muted-foreground/40")}>
-              {done.form_company && <Check className="w-3 h-3" />}
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium">Form the company</p>
-              <p className="text-xs text-muted-foreground">Legal entity name and registration</p>
-              <div className="grid sm:grid-cols-2 gap-2 mt-2">
-                <Input value={state.company_name || ""} onChange={(e) => onUpdateState({ company_name: e.target.value })} placeholder="Company legal name" className="h-8 text-xs" />
-                <Input value={state.company_registration || ""} onChange={(e) => onUpdateState({ company_registration: e.target.value })} placeholder="Registration # (optional)" className="h-8 text-xs" />
+          <div className="p-3 rounded-lg border border-border bg-card space-y-2">
+            <div className="flex items-start gap-3">
+              <div className={cn("w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0",
+                done.form_company ? "bg-emerald-500 text-white" : "border-2 border-muted-foreground/40")}>
+                {done.form_company && <Check className="w-3 h-3" />}
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium">Form the company</p>
+                <p className="text-xs text-muted-foreground">Legal entity name and registration</p>
+                <div className="grid sm:grid-cols-2 gap-2 mt-2">
+                  <Input value={state.company_name || ""} onChange={(e) => onUpdateState({ company_name: e.target.value })} placeholder="Company legal name" className="h-8 text-xs" />
+                  <Input value={state.company_registration || ""} onChange={(e) => onUpdateState({ company_registration: e.target.value })} placeholder="Registration # (optional)" className="h-8 text-xs" />
+                </div>
               </div>
             </div>
           </div>
+
+          <MilestoneRow
+            done={done.standardized_processes}
+            label="Implement standardized processes"
+            hint="Documented playbooks, SOPs, delivery methodology"
+            actionLabel="Mark done"
+            onToggle={() => onToggleMilestone("standardized_processes", !done.standardized_processes)}
+          />
+
+          {done.invite_cobuilder && done.form_company && done.standardized_processes && (
+            <MilestoneRow
+              done={done.autonomous_operations}
+              label="Achieve autonomous operations"
+              hint="The business no longer depends on your daily involvement"
+              onToggle={() => onUpdateState({ autonomous_operations: !state.autonomous_operations })}
+            />
+          )}
         </div>
+      )}
 
-        <MilestoneRow
-          done={done.standardized_processes}
-          label="Implement standardized processes"
-          hint="Documented playbooks, SOPs, delivery methodology"
-          actionLabel="Mark done"
-          onToggle={() => onToggleMilestone("standardized_processes", !done.standardized_processes)}
-        />
 
-        <MilestoneRow
-          done={done.autonomous_operations}
-          label="Achieve autonomous operations"
-          hint="The business no longer depends on your daily involvement"
-          onToggle={() => onUpdateState({ autonomous_operations: !state.autonomous_operations })}
-        />
-      </div>
 
 
       {progress === 100 && (
