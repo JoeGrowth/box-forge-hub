@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Building2, Plus, Shield, Eye, Pencil, ArrowRight, Trash2, Cog, Search, Filter, Rocket, Sparkles, TrendingUp, Trophy, FileWarning, ShieldCheck, ArrowUpCircle, Wallet } from "lucide-react";
+import { Building2, Plus, Shield, Eye, Pencil, ArrowRight, Trash2, Cog, Search, Filter, Rocket, Sparkles, TrendingUp, Trophy, FileWarning, ShieldCheck, Wallet } from "lucide-react";
 import { OrgLogo } from "@/components/organization/OrgLogo";
 
 type LifecycleStage = "venture" | "business" | "startup" | "mature";
@@ -395,28 +395,6 @@ export default function Organizations() {
                     {o.description && (
                       <p className="text-sm text-muted-foreground mt-3 line-clamp-2">{o.description}</p>
                     )}
-                    {/* Money Box outflow badges */}
-                    <div className="flex items-center gap-2 mt-3 flex-wrap">
-                      {moneyBoxLoading ? (
-                        <span className="text-[10px] text-muted-foreground">Loading Money Box…</span>
-                      ) : (
-                        (["TND", "EUR", "USD"] as const).map((cur) => {
-                          const key = cur.toLowerCase() as keyof MoneyBox;
-                          const val = moneyBox[o.id]?.[key] ?? 0;
-                          if (val <= 0) return null;
-                          return (
-                            <Badge
-                              key={cur}
-                              variant="outline"
-                              className="bg-rose-500/10 text-rose-700 border-rose-200 text-[10px] py-0 px-1.5 h-5"
-                            >
-                              <ArrowUpCircle className="w-2.5 h-2.5 mr-0.5" />
-                              {fmtMoney(val, cur)} outflow
-                            </Badge>
-                          );
-                        })
-                      )}
-                    </div>
                     {o.type === "company" && !incorporatedIds.has(o.id) && (
                       <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-500/10 p-2.5 text-xs text-amber-800 dark:text-amber-200">
                         <FileWarning className="w-3.5 h-3.5 mt-0.5 shrink-0" />
