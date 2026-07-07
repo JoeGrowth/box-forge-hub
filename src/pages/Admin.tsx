@@ -16,6 +16,7 @@ import { AdminAnalyticsTab } from "@/components/admin/AdminAnalyticsTab";
 import { AdminLearningJourneysTab } from "@/components/admin/AdminLearningJourneysTab";
 import { AdminNRDecoderTab } from "@/components/admin/AdminNRDecoderTab";
 import { AdminTrainingsTab } from "@/components/admin/AdminTrainingsTab";
+import { AdminBoxesTab } from "@/components/admin/AdminBoxesTab";
 import {
   Shield,
   Users,
