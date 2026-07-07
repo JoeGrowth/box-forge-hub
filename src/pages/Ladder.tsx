@@ -5,12 +5,42 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useProgressionLadder, type LadderStage } from "@/hooks/useProgressionLadder";
-import { Check, Lock, ArrowRight, Target } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
+import { useProgressionLadder, type LadderStage, type LadderStageKey } from "@/hooks/useProgressionLadder";
+import { useAdmin } from "@/hooks/useAdmin";
+import { Check, Lock, ArrowRight, Target, Anchor } from "lucide-react";
 import { useEffect } from "react";
+
+const SINK_CONTENT: Record<LadderStageKey, { title: string; body: string }> = {
+  talent: {
+    title: "Stay in Talent Foundation",
+    body: "Some people decide to stay at this stage and keep looking for job opportunities. Focus on sharpening your Natural Role, expertise and public profile, then use the Opportunities feed to apply to roles that match your foundation.",
+  },
+  advisor: {
+    title: "Stay in Talent Monetized",
+    body: "Some people decide to stay at this stage and keep structuring — detaching by systemizing their consulting practice and scaling it into an asset (Brand Entity). Keep converting missions, document your delivery, and build a repeatable offer.",
+  },
+  cobuilder: {
+    title: "Stay in Co-Builder Mastery",
+    body: "Some people decide to stay as career co-builders — joining founders' teams for equity without initiating their own venture. Keep curating which startups you join, deepen your role, and compound equity across ventures.",
+  },
+  founder: {
+    title: "Stay in Initiation Mastery",
+    body: "Some people decide to stay as serial initiators — publishing and validating ideas, recruiting co-builders, and handing off execution. Keep refining your idea pipeline and your ability to attract vaccinated co-builders.",
+  },
+  box_admin: {
+    title: "Stay as Box Admin",
+    body: "Some people decide to stay running a vertical Box — curating advisors, funneling opportunities, and growing the ecosystem in one domain rather than moving to platform-wide administration.",
+  },
+  platform_admin: {
+    title: "Platform Admin",
+    body: "Terminal stage — operate the platform across all boxes.",
+  },
+};
 
 export default function Ladder() {
   const { stages, currentStage, loading } = useProgressionLadder();
+  const { isAdmin } = useAdmin();
 
   useEffect(() => {
     document.title = "Progression Ladder | Box4Solutions";
@@ -44,7 +74,7 @@ export default function Ladder() {
         </div>
 
         <div className="space-y-4">
-          {stages.map((s) => <StageRow key={s.key} stage={s} isFocus={s.key === currentStage.key} />)}
+          {stages.map((s) => <StageRow key={s.key} stage={s} isFocus={s.key === currentStage.key} isAdmin={isAdmin} />)}
         </div>
       </main>
       <Footer />
@@ -52,7 +82,7 @@ export default function Ladder() {
   );
 }
 
-function StageRow({ stage, isFocus }: { stage: LadderStage; isFocus: boolean }) {
+function StageRow({ stage, isFocus, isAdmin }: { stage: LadderStage; isFocus: boolean; isAdmin: boolean }) {
   const pct = stage.target > 0 ? Math.min(100, (stage.current / stage.target) * 100) : 0;
   const state = stage.achieved ? "achieved" : stage.unlocked ? "active" : "locked";
 
@@ -79,13 +109,43 @@ function StageRow({ stage, isFocus }: { stage: LadderStage; isFocus: boolean }) 
                 <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Stage {stage.index}</div>
                 <h3 className="font-display text-lg font-bold text-foreground">{stage.label}</h3>
               </div>
-              <Badge variant="outline" className={
-                state === "achieved" ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/30" :
-                state === "active" ? "bg-primary/10 text-primary border-primary/30" :
-                ""
-              }>
-                {state === "achieved" ? "Achieved" : state === "active" ? `${stage.current} / ${stage.target}` : "Locked"}
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className={
+                  state === "achieved" ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/30" :
+                  state === "active" ? "bg-primary/10 text-primary border-primary/30" :
+                  ""
+                }>
+                  {state === "achieved" ? "Achieved" : state === "active" ? `${stage.current} / ${stage.target}` : "Locked"}
+                </Badge>
+                {state === "achieved" && isAdmin && (
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Sink — stay at this stage"
+                        title="Sink — stay at this stage"
+                        className="w-7 h-7 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/20 inline-flex items-center justify-center transition-colors"
+                      >
+                        <Anchor className="w-3.5 h-3.5" />
+                      </button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                          <Anchor className="w-4 h-4 text-emerald-600" />
+                          Sink · {SINK_CONTENT[stage.key].title}
+                        </DialogTitle>
+                        <DialogDescription className="pt-2 text-sm leading-relaxed text-foreground/80">
+                          {SINK_CONTENT[stage.key].body}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="mt-2 rounded-lg bg-muted/40 border border-border p-3 text-xs text-muted-foreground">
+                        Stage {stage.index} · {stage.label} — this stage is already achieved. "Sink" describes the path for those who choose to remain here instead of climbing to the next stage.
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                )}
+              </div>
             </div>
             <p className="text-sm text-muted-foreground mt-1">{stage.intent}</p>
             {state !== "locked" && stage.target > 1 && (
