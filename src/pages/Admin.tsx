@@ -333,8 +333,8 @@ const Admin = () => {
                 <AdminUsersTab users={users} onRefresh={fetchUsers} />
               </TabsContent>
 
-              <TabsContent value="notifications">
-                <AdminNotificationsTab notifications={notifications} onRefresh={fetchNotifications} />
+              <TabsContent value="boxes">
+                <AdminBoxesTab />
               </TabsContent>
             </Tabs>
           </div>
