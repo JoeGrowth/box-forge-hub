@@ -959,6 +959,10 @@ export function EntityCategories({
         list = defaults.map((n) => ({ id: uid(), name: n }));
         localStorage.setItem(CATS_KEY(scopeId), JSON.stringify(list));
       }
+      if (list.length === 0) {
+        list = [{ id: uid(), name: "category one" }];
+        localStorage.setItem(CATS_KEY(scopeId), JSON.stringify(list));
+      }
       setCats(list);
       const saved = localStorage.getItem(ACTIVE_CAT_KEY(scopeId));
       setActiveCatId(list.find((c) => c.id === saved)?.id ?? list[0]?.id ?? null);
