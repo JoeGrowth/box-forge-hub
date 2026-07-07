@@ -140,11 +140,11 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     setMilestones(next);
   };
 
-  // Milestone completion resolvers
+  // Milestone completion resolvers (auto detection OR manual override)
   const done = useMemo(() => ({
-    solo_missions: autoCounts.soloMissions >= 3,
-    contractor_missions: autoCounts.contractorMissions >= 7,
-    core_services: autoCounts.coreServices >= 1,
+    solo_missions: autoCounts.soloMissions >= 3 || milestones.has("solo_missions"),
+    contractor_missions: autoCounts.contractorMissions >= 7 || milestones.has("contractor_missions"),
+    core_services: autoCounts.coreServices >= 1 || milestones.has("core_services"),
     proposal_template: !!state.proposal_template_url || milestones.has("proposal_template"),
     professional_presence: autoCounts.professionalPresence || milestones.has("professional_presence"),
     invite_cobuilder: milestones.has("invite_cobuilder"),
@@ -152,6 +152,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     standardized_processes: milestones.has("standardized_processes"),
     autonomous_operations: state.autonomous_operations,
   }), [autoCounts, milestones, state]);
+
 
   const brandingProgress = useMemo(() => {
     const items = [done.solo_missions, done.contractor_missions, done.core_services, done.proposal_template, done.professional_presence];
@@ -352,22 +353,29 @@ function BrandingPhase({ done, autoCounts, state, milestones, progress, onToggle
       <div className="space-y-2">
         <MilestoneRow
           done={done.solo_missions}
-          auto
+          auto={autoCounts.soloMissions >= 3}
           label="Deliver 3 solo consulting missions"
-          hint={`${autoCounts.soloMissions}/3 closed missions`}
+          hint={`${autoCounts.soloMissions}/3 closed missions${milestones.has("solo_missions") ? " · manually confirmed" : ""}`}
+          actionLabel={milestones.has("solo_missions") ? "Undo" : "Mark done"}
+          onToggle={autoCounts.soloMissions >= 3 ? undefined : () => onToggleMilestone("solo_missions", !milestones.has("solo_missions"))}
         />
         <MilestoneRow
           done={done.contractor_missions}
-          auto
+          auto={autoCounts.contractorMissions >= 7}
           label="Deliver 7 missions with contractors"
-          hint={`${autoCounts.contractorMissions}/7 closed missions with contractors`}
+          hint={`${autoCounts.contractorMissions}/7 closed missions${milestones.has("contractor_missions") ? " · manually confirmed" : ""}`}
+          actionLabel={milestones.has("contractor_missions") ? "Undo" : "Mark done"}
+          onToggle={autoCounts.contractorMissions >= 7 ? undefined : () => onToggleMilestone("contractor_missions", !milestones.has("contractor_missions"))}
         />
         <MilestoneRow
           done={done.core_services}
-          auto
+          auto={autoCounts.coreServices >= 1}
           label="Define your core services"
-          hint={autoCounts.coreServices > 0 ? `${autoCounts.coreServices} services published` : "Publish at least one consulting service"}
+          hint={autoCounts.coreServices > 0 ? `${autoCounts.coreServices} services published` : (milestones.has("core_services") ? "Manually confirmed" : "Publish at least one consulting service")}
+          actionLabel={milestones.has("core_services") ? "Undo" : "Mark done"}
+          onToggle={autoCounts.coreServices >= 1 ? undefined : () => onToggleMilestone("core_services", !milestones.has("core_services"))}
         />
+
         <div className="p-3 rounded-lg border border-border bg-card space-y-2">
           <div className="flex items-start gap-3">
             <div className={cn("w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0",
