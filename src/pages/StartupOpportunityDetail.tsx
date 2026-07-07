@@ -82,6 +82,14 @@ interface Application {
   created_at: string;
 }
 
+const parseSkills = (skills: string | null): string[] => {
+  if (!skills) return [];
+  return skills
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+};
+
 const StartupOpportunityDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
