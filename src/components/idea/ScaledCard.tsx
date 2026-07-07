@@ -295,6 +295,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
           progress={brandingProgress}
           onToggleMilestone={toggleMilestone}
           onUpdateState={upsertState}
+          onAdvance={() => advanceToPhase("systematization")}
         />
       ) : state.current_phase === "systematization" ? (
         <SystematizationPhase
@@ -303,10 +304,12 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
           progress={systProgress}
           onToggleMilestone={toggleMilestone}
           onUpdateState={upsertState}
+          onAdvance={() => advanceToPhase("asset")}
         />
       ) : (
         <AssetPhase state={state} />
       )}
+
 
       <InviteDialog open={inviteOpen} onOpenChange={setInviteOpen} currentUserId={userId} entityLabel={title} />
       <MissionHistoryDialog open={historyOpen} onOpenChange={setHistoryOpen} userId={userId} />
