@@ -201,12 +201,17 @@ export default function JourneyTimeline() {
 
   if (!user) {
     return (
-      <main className="container mx-auto px-4 py-16 max-w-2xl">
-        <h1 className="text-2xl font-bold mb-4">Sign in to see your journey</h1>
-        <Button asChild>
-          <Link to="/auth">Sign in</Link>
-        </Button>
-      </main>
+      <div className="min-h-screen bg-background flex flex-col">
+        <PageTransition>
+          <main className="flex-1 container mx-auto px-4 pt-24 pb-16 max-w-2xl">
+            <h1 className="text-2xl font-bold mb-4">Sign in to see your journey</h1>
+            <Button asChild>
+              <Link to="/auth">Sign in</Link>
+            </Button>
+          </main>
+        </PageTransition>
+        <Footer />
+      </div>
     );
   }
 
