@@ -640,6 +640,16 @@ const Entrepreneurship = () => {
                       >
                         Joined
                       </button>
+                      <button
+                        onClick={() => setLegacySubTab("partnered")}
+                        className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                          legacySubTab === "partnered"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Partnered
+                      </button>
                       {advisorAchieved && (
                         <button
                           onClick={() => setLegacySubTab("systematized")}
