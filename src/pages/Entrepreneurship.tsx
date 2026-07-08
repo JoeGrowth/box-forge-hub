@@ -558,7 +558,7 @@ const Entrepreneurship = () => {
               <NextGoalBanner pageStage="founder" />
 
               <p className="text-sm sm:text-base text-muted-foreground">
-                Launch ventures or join exciting startup projects
+                Stop trading hours for dollars—start Building long term talent assets or trading talent for equity
               </p>
 
 
@@ -649,7 +649,7 @@ const Entrepreneurship = () => {
                               : "text-muted-foreground hover:text-foreground"
                           }`}
                         >
-                          Scaled
+                          Systematized
                           <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-primary/40 text-primary">Advisor</Badge>
                         </button>
                       )}
@@ -660,7 +660,7 @@ const Entrepreneurship = () => {
                         <div className="min-w-0">
                           <h2 className="font-display text-xl font-bold text-foreground">Your Journey</h2>
                           <p className="text-sm text-muted-foreground">
-                            Track your ventures and move them forward, one stage at a time.
+                            Projects you started from scratch.
                           </p>
                         </div>
                       </div>
@@ -698,7 +698,7 @@ const Entrepreneurship = () => {
                       <div className="mb-4">
                         <h2 className="font-display text-xl font-bold text-foreground">Projects You're Contributing To</h2>
                         <p className="text-sm text-muted-foreground">
-                          Stay connected with the teams and ventures you've joined.
+                          Ventures you teamed up with.
                         </p>
                       </div>
                       {loading ? (
@@ -728,11 +728,11 @@ const Entrepreneurship = () => {
                     </TabsContent>
 
                     {advisorAchieved && (
-                      <TabsContent value="scaled">
+                      <TabsContent value="systematized">
                         <div className="mb-4">
                           <h2 className="font-display text-xl font-bold text-foreground">Consulting &amp; Services</h2>
                           <p className="text-sm text-muted-foreground">
-                            You've completed Talent Monetized. Systematize your practice, detach it from yourself, and turn it into a scalable asset.
+                            Services turned into scalable, self-running assets.
                           </p>
                         </div>
                         <ScaledCard
