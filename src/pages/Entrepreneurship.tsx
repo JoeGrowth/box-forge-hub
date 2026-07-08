@@ -68,7 +68,7 @@ const Entrepreneurship = () => {
   const [mainTab, setMainTab] = useState<"ecosystem" | "legacy">(
     searchParams.get("tab") === "legacy" ? "legacy" : "ecosystem"
   );
-  const [legacySubTab, setLegacySubTab] = useState<"initiated" | "joined" | "scaled">(
+  const [legacySubTab, setLegacySubTab] = useState<"initiated" | "joined" | "partnered" | "systematized">(
     (searchParams.get("sub") === "joined" || searchParams.get("sub") === "scaled")
       ? (searchParams.get("sub") as "joined" | "scaled")
       : "initiated"
