@@ -166,11 +166,10 @@ const App = () => (
                   <Route path="/publish-training" element={<GatedRoute talentGate><PublishTraining /></GatedRoute>} />
                   <Route path="/publish-job" element={<GatedRoute talentGate orgAdminOnly><PublishJob /></GatedRoute>} />
                   <Route path="/consulting-growth" element={<ProtectedRoute><ConsultingGrowth /></ProtectedRoute>} />
-                  </Route>
                   <Route path="/opportunities/:category/:id" element={<GatedRoute talentGate><OpportunityDetail /></GatedRoute>} />
                   {/* Legacy: old links pointed at startup ideas only. */}
                   <Route path="/opportunities/:id" element={<GatedRoute talentGate><OpportunityDetail /></GatedRoute>} />
-                  <Route path="/mask" element={<Mask />} />
+                  <Route path="/mask" element={<Navigate to="/brand-identity" replace />} />
                   <Route path="/checklist" element={<GatedRoute minStage="emerging"><Checklist /></GatedRoute>} />
                   <Route path="/resume" element={<Resume />} />
                   <Route path="/track-record" element={<TrackRecord />} />
