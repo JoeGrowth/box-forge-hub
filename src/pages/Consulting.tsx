@@ -132,7 +132,7 @@ const Consulting = () => {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 sm:mb-12 bg-muted/40 rounded-2xl p-4 sm:p-6">
                 <div>
                   <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-1">
-                    Consulting Engine
+                    Talent Foundation & Monetization
                   </h1>
                   <p className="text-muted-foreground text-sm sm:text-base">
                     Monetize your expertise

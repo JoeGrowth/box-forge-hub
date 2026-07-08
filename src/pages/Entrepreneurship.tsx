@@ -551,7 +551,7 @@ const Entrepreneurship = () => {
               {/* Header */}
               <div>
                 <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
-                  Entrepreneurship
+                  Build Assets
                 </h1>
               </div>
 
