@@ -33,7 +33,7 @@ const paths = [
       "Launch support",
     ],
     cta: "Start Your Idea",
-    link: "/journey?section=initiator",
+    link: "/certifications?section=initiator",
     gradient: "from-purple-500/20 to-pink-500/10",
     iconBg: "from-purple-500 to-pink-500",
     featured: true,

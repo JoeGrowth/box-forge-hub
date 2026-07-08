@@ -140,7 +140,7 @@ export const CreateIdeaDialog = ({ open, onOpenChange }: CreateIdeaDialogProps) 
                 <li>• Prepare for a successful launch</li>
               </ul>
             </div>
-            <Link to="/journey?section=initiator" onClick={() => onOpenChange(false)}>
+            <Link to="/certifications?section=initiator" onClick={() => onOpenChange(false)}>
               <Button size="sm">
                 <GraduationCap className="w-4 h-4 mr-1" /> Start Initiator Journey
               </Button>
