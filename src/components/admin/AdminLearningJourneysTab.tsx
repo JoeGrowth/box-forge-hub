@@ -206,7 +206,7 @@ export const AdminLearningJourneysTab = () => {
         notification_type: "journey_approved",
         title: "Journey Approved!",
         message: `Congratulations! Your ${journey.journey_type.replace("_", " ").toUpperCase()} journey has been approved. You've earned the "${certLabel}" certification!`,
-        link: journey.journey_type === "scaling_path" ? "/scale" : "/journey",
+        link: journey.journey_type === "scaling_path" ? "/scale" : "/certifications",
       });
 
       toast({

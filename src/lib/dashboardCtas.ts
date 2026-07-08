@@ -27,7 +27,7 @@ export function primaryCtaForGoal(goal: string | null, primaryRole: string | nul
     case "monetize_expertise":
       return { to: "/opportunities?v=discover&kind=tender", label: "Browse Tenders", icon: FileText };
     case "learn_skills":
-      return { to: "/journey", label: "Open Learning", icon: GraduationCap };
+      return { to: "/certifications", label: "Open Learning", icon: GraduationCap };
     default:
       if (primaryRole === "entrepreneur") {
         return { to: "/entrepreneurship?new=1", label: "Post an Idea", icon: Lightbulb };

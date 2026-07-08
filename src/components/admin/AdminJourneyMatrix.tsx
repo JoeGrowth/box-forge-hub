@@ -122,7 +122,7 @@ export function AdminJourneyMatrix() {
         notification_type: "journey_approved",
         title: "Journey Approved!",
         message: `You've earned the "${col.certLabel}" certification.`,
-        link: "/journey",
+        link: "/certifications",
       });
       toast({ title: "Certified", description: `${col.label} approved.` });
       await load();
@@ -152,7 +152,7 @@ export function AdminJourneyMatrix() {
         notification_type: "journey_rejected",
         title: "Certification cancelled",
         message: `Your "${col.certLabel}" certification has been cancelled by an admin.`,
-        link: "/journey",
+        link: "/certifications",
       });
       toast({ title: "Cancelled", description: `${col.label} certification removed.` });
       await load();
@@ -182,7 +182,7 @@ export function AdminJourneyMatrix() {
         notification_type: "journey_rejected",
         title: "Path reopened",
         message: `Your "${col.certLabel}" path has been reopened — redo it to regain the certification.`,
-        link: "/journey",
+        link: "/certifications",
       });
       toast({ title: "Reopened", description: `${col.label} path reset for redo.` });
       await load();

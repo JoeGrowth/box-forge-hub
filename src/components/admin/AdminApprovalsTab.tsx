@@ -194,7 +194,7 @@ export const AdminApprovalsTab = ({ onRefresh }: AdminApprovalsTabProps) => {
         notification_type: "approval_granted",
         title: "Application Approved!",
         message: "Your journey has been approved! You now have access to the Boosting page.",
-        link: "/journey"
+        link: "/certifications"
       });
 
       toast({

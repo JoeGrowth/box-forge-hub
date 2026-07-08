@@ -111,7 +111,7 @@ const Journey = () => {
     return (
       <Card
         key={path.key}
-        onClick={() => !locked && navigate(`/journey/${path.key}`)}
+        onClick={() => !locked && navigate(`/certifications/${path.key}`)}
         className={`group cursor-pointer transition-all border-2 border-border/50 ${path.border} hover:shadow-lg ${locked ? "opacity-60 cursor-not-allowed" : ""}`}
       >
         <CardContent className="p-5 md:p-6">

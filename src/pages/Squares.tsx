@@ -87,7 +87,7 @@ export default function Squares() {
       bgColor: "bg-purple-500/10",
       iconColor: "#a855f7",
       detail: "Skills you've earned Vaccinated status on by completing the full practice → train → consult journey.",
-      link: "/journey",
+      link: "/certifications",
     },
     {
       icon: Briefcase,
