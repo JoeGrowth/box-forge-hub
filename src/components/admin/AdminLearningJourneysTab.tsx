@@ -131,9 +131,9 @@ export const AdminLearningJourneysTab = () => {
 
       const certLabel =
         journey.journey_type === "skill_ptc"
-          ? "Vaccinated Co Builder"
+          ? "Certified Co Builder"
           : journey.journey_type === "idea_ptc"
-            ? "Vaccinated Initiator"
+            ? "Certified Initiator"
             : journey.journey_type === "scaling_path"
               ? "Certified Consultant"
               : "Scaled";

@@ -26,7 +26,7 @@ const SINK_CONTENT: Record<LadderStageKey, { title: string; body: string }> = {
   },
   founder: {
     title: "Stay in Initiation Mastery",
-    body: "Some people decide to stay as serial initiators — publishing and validating ideas, recruiting co-builders, and handing off execution. Keep refining your idea pipeline and your ability to attract vaccinated co-builders.",
+    body: "Some people decide to stay as serial initiators — publishing and validating ideas, recruiting co-builders, and handing off execution. Keep refining your idea pipeline and your ability to attract certified co-builders.",
   },
   box_admin: {
     title: "Stay as Box Admin",

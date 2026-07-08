@@ -30,8 +30,8 @@ import { sanitizeError } from "@/lib/errorHandler";
 type JourneyType = "skill_ptc" | "idea_ptc" | "scaling_path";
 
 const JOURNEY_COLS: { type: JourneyType; label: string; certType: string; certLabel: string }[] = [
-  { type: "skill_ptc",    label: "Co-Builder",  certType: "cobuilder_b4",  certLabel: "Vaccinated Co Builder" },
-  { type: "idea_ptc",     label: "Initiator",   certType: "initiator_b4",  certLabel: "Vaccinated Initiator" },
+  { type: "skill_ptc",    label: "Co-Builder",  certType: "cobuilder_b4",  certLabel: "Certified Co Builder" },
+  { type: "idea_ptc",     label: "Initiator",   certType: "initiator_b4",  certLabel: "Certified Initiator" },
   { type: "scaling_path", label: "Consultant",  certType: "consultant_b4", certLabel: "Certified Consultant" },
 ];
 

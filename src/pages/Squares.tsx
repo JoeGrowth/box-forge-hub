@@ -83,10 +83,10 @@ export default function Squares() {
       icon: Award,
       label: "Certifications",
       value: certifications.toString(),
-      description: "Vaccinated skills",
+      description: "Certified skills",
       bgColor: "bg-purple-500/10",
       iconColor: "#a855f7",
-      detail: "Skills you've earned Vaccinated status on by completing the full practice → train → consult journey.",
+      detail: "Skills you've earned Certified status on by completing the full practice → train → consult journey.",
       link: "/certifications",
     },
     {
