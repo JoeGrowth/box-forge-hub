@@ -78,10 +78,10 @@ export function DashboardStats() {
       icon: Award,
       label: "Certifications",
       value: certifications.toString(),
-      description: "Vaccinated skills",
+      description: "Certified skills",
       color: "from-purple-500 to-pink-500",
       bgColor: "bg-purple-500/10",
-      detail: "Skills you've earned Vaccinated status on by completing the full practice → train → consult journey. Each one raises your equity ceiling and unlocks gated opportunities.",
+      detail: "Skills you've earned Certified status on by completing the full practice → train → consult journey. Each one raises your equity ceiling and unlocks gated opportunities.",
     },
     {
       icon: Users,

@@ -16,7 +16,7 @@ export const GOAL_OPTIONS: { value: string; label: string; desc: string }[] = [
   { value: "join_startup", label: "Join a startup", desc: "Co-build a venture as a co-founder or early team member." },
   { value: "build_venture", label: "Build my venture", desc: "Launch your own idea and recruit co-builders." },
   { value: "monetize_expertise", label: "Monetize my expertise", desc: "Sell consulting services and grow an advisory track record." },
-  { value: "learn_skills", label: "Learn new skills", desc: "Get vaccinated through certifications and journeys." },
+  { value: "learn_skills", label: "Learn new skills", desc: "Get certified through certifications and journeys." },
 ];
 
 export function GoalSelectorCard() {

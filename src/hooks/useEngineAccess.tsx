@@ -280,14 +280,14 @@ export function useEngineAccess() {
         {
           ok: hasCoBuilderCert,
           sig: {
-            label: "Vaccinated Co-Builder certification",
+            label: "Certified Co-Builder certification",
             cta: { label: "Start the Co-Builder journey", to: "/learning-journeys" },
           },
         },
         {
           ok: hasInitiatorCert,
           sig: {
-            label: "Vaccinated Initiator certification",
+            label: "Certified Initiator certification",
             cta: { label: "Start the Initiator journey", to: "/learning-journeys" },
           },
         },

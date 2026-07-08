@@ -121,7 +121,7 @@ export function DashboardHero() {
       eyebrow: "Learner mode",
       headline: `${getGreeting()}, ${firstName} — every certification opens a new door`,
       subline:
-        "Builders are trained, not born. Pick a journey, get vaccinated, and let the ecosystem unlock the opportunities your new skills deserve.",
+        "Builders are trained, not born. Pick a journey, get certified, and let the ecosystem unlock the opportunities your new skills deserve.",
     },
   };
 
