@@ -68,9 +68,9 @@ const Entrepreneurship = () => {
   const [mainTab, setMainTab] = useState<"ecosystem" | "legacy">(
     searchParams.get("tab") === "legacy" ? "legacy" : "ecosystem"
   );
-  const [legacySubTab, setLegacySubTab] = useState<"initiated" | "joined" | "scaled">(
-    (searchParams.get("sub") === "joined" || searchParams.get("sub") === "scaled")
-      ? (searchParams.get("sub") as "joined" | "scaled")
+  const [legacySubTab, setLegacySubTab] = useState<"initiated" | "joined" | "partnered" | "systematized">(
+    (searchParams.get("sub") === "joined" || searchParams.get("sub") === "partnered" || searchParams.get("sub") === "systematized")
+      ? (searchParams.get("sub") as "joined" | "partnered" | "systematized")
       : "initiated"
   );
   const { stages } = useProgressionLadder();
@@ -558,7 +558,7 @@ const Entrepreneurship = () => {
               <NextGoalBanner pageStage="founder" />
 
               <p className="text-sm sm:text-base text-muted-foreground">
-                Launch ventures or join exciting startup projects
+                Stop trading hours for dollars—start Building long term talent assets or trading talent for equity
               </p>
 
 
@@ -618,7 +618,7 @@ const Entrepreneurship = () => {
                 </TabsContent>
 
                 <TabsContent value="legacy">
-                  <Tabs value={legacySubTab} onValueChange={(v) => setLegacySubTab(v as "initiated" | "joined" | "scaled")} className="w-full">
+                  <Tabs value={legacySubTab} onValueChange={(v) => setLegacySubTab(v as "initiated" | "joined" | "partnered" | "systematized")} className="w-full">
                     <div className="flex gap-1 p-1 bg-muted/60 rounded-lg mb-4 w-full sm:w-auto">
                       <button
                         onClick={() => setLegacySubTab("initiated")}
@@ -640,16 +640,26 @@ const Entrepreneurship = () => {
                       >
                         Joined
                       </button>
+                      <button
+                        onClick={() => setLegacySubTab("partnered")}
+                        className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                          legacySubTab === "partnered"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Partnered
+                      </button>
                       {advisorAchieved && (
                         <button
-                          onClick={() => setLegacySubTab("scaled")}
+                          onClick={() => setLegacySubTab("systematized")}
                           className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
-                            legacySubTab === "scaled"
+                            legacySubTab === "systematized"
                               ? "bg-background text-foreground shadow-sm"
                               : "text-muted-foreground hover:text-foreground"
                           }`}
                         >
-                          Scaled
+                          Systematized
                           <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-primary/40 text-primary">Advisor</Badge>
                         </button>
                       )}
@@ -660,7 +670,7 @@ const Entrepreneurship = () => {
                         <div className="min-w-0">
                           <h2 className="font-display text-xl font-bold text-foreground">Your Journey</h2>
                           <p className="text-sm text-muted-foreground">
-                            Track your ventures and move them forward, one stage at a time.
+                            Projects you started from scratch.
                           </p>
                         </div>
                       </div>
@@ -698,7 +708,7 @@ const Entrepreneurship = () => {
                       <div className="mb-4">
                         <h2 className="font-display text-xl font-bold text-foreground">Projects You're Contributing To</h2>
                         <p className="text-sm text-muted-foreground">
-                          Stay connected with the teams and ventures you've joined.
+                          Ventures you teamed up with.
                         </p>
                       </div>
                       {loading ? (
@@ -727,12 +737,26 @@ const Entrepreneurship = () => {
                       )}
                     </TabsContent>
 
+                    <TabsContent value="partnered">
+                      <div className="mb-4">
+                        <h2 className="font-display text-xl font-bold text-foreground">Equity Partnerships</h2>
+                        <p className="text-sm text-muted-foreground">
+                          Skills traded for equity and long-term shares.
+                        </p>
+                      </div>
+                      <div className="text-center py-12 text-muted-foreground">
+                        <Users className="w-10 h-10 mx-auto mb-3 opacity-40" />
+                        <p>No partnerships recorded yet.</p>
+                        <p className="text-sm mt-1">Join ventures where you trade skills for equity.</p>
+                      </div>
+                    </TabsContent>
+
                     {advisorAchieved && (
-                      <TabsContent value="scaled">
+                      <TabsContent value="systematized">
                         <div className="mb-4">
                           <h2 className="font-display text-xl font-bold text-foreground">Consulting &amp; Services</h2>
                           <p className="text-sm text-muted-foreground">
-                            You've completed Talent Monetized. Systematize your practice, detach it from yourself, and turn it into a scalable asset.
+                            Services turned into scalable, self-running assets.
                           </p>
                         </div>
                         <ScaledCard
