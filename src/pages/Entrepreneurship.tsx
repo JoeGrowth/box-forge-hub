@@ -69,8 +69,8 @@ const Entrepreneurship = () => {
     searchParams.get("tab") === "legacy" ? "legacy" : "ecosystem"
   );
   const [legacySubTab, setLegacySubTab] = useState<"initiated" | "joined" | "partnered" | "systematized">(
-    (searchParams.get("sub") === "joined" || searchParams.get("sub") === "scaled")
-      ? (searchParams.get("sub") as "joined" | "scaled")
+    (searchParams.get("sub") === "joined" || searchParams.get("sub") === "partnered" || searchParams.get("sub") === "systematized")
+      ? (searchParams.get("sub") as "joined" | "partnered" | "systematized")
       : "initiated"
   );
   const { stages } = useProgressionLadder();
