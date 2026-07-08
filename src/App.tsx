@@ -33,7 +33,7 @@ import BetaConsole from "./pages/BetaConsole";
 import LifecycleIntegrity from "./pages/admin/LifecycleIntegrity";
 import Organizations from "./pages/Organizations";
 import OrganizationPage from "./pages/Organization";
-import CompressedOnboarding from "./pages/CompressedOnboarding";
+import PostSignupOnboarding from "./pages/PostSignupOnboarding";
 import ProfessionalMap from "./pages/ProfessionalMap";
 import Opportunities from "./pages/Opportunities";
 import OpportunityDetail from "./pages/OpportunityDetail";
@@ -126,10 +126,10 @@ const App = () => (
                   <Route path="/reset-password" element={<ResetPassword />} />
                   {/* P0: single activation funnel = /onboarding (compressed).
                       Legacy 9-step flows live on as optional enrichment tracks. */}
-                  <Route path="/onboarding" element={<CompressedOnboarding />} />
+                  <Route path="/onboarding" element={<PostSignupOnboarding />} />
                   <Route path="/onboarding/map" element={<ProfessionalMap />} />
-                  <Route path="/professional-track" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-                  <Route path="/entrepreneurial-track" element={<ProtectedRoute><EntrepreneurialOnboarding /></ProtectedRoute>} />
+                  <Route path="/professional-track" element={<ProtectedRoute><ProfessionalTrackRecord /></ProtectedRoute>} />
+                  <Route path="/entrepreneurial-track" element={<ProtectedRoute><EntrepreneurialTrackRecord /></ProtectedRoute>} />
                   {/* Legacy redirects — preserve bookmarks / emails. */}
                   <Route path="/professional-onboarding" element={<Navigate to="/professional-track" replace />} />
                   <Route path="/entrepreneurial-onboarding" element={<Navigate to="/entrepreneurial-track" replace />} />
