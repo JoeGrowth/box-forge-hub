@@ -644,7 +644,7 @@ const Entrepreneurship = () => {
                         <button
                           onClick={() => setLegacySubTab("systematized")}
                           className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
-                            legacySubTab === "scaled"
+                            legacySubTab === "systematized"
                               ? "bg-background text-foreground shadow-sm"
                               : "text-muted-foreground hover:text-foreground"
                           }`}
