@@ -11,22 +11,32 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 
 import { useAuth } from "@/hooks/useAuth";
 
+// Step mapping — legacy "choose path" step removed.
+// Wizard step (1..8)  <->  stored current_step in DB (2..9)
+const WIZARD_TO_STORED = (n: number) => n + 1;
+const STORED_TO_WIZARD = (n: number) => Math.max(1, n - 1);
+const TOTAL_STEPS = 8;
+
 const Onboarding = () => {
   const { user, loading: authLoading } = useAuth();
   const { onboardingState, naturalRole, updateOnboardingState, loading: onboardingLoading } = useOnboarding();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const forcedStep = parseInt(searchParams.get("step") || "", 10);
-  const [currentStep, setCurrentStep] = useState(
-    Number.isFinite(forcedStep) && forcedStep >= 2 && forcedStep <= 9 ? forcedStep : 1,
-  );
+  const rawForcedStep = parseInt(searchParams.get("step") || "", 10);
+  // ?step= is expressed in wizard steps (1..8). Convert to stored steps for DB.
+  const forcedStoredStep = Number.isFinite(rawForcedStep) && rawForcedStep >= 1 && rawForcedStep <= TOTAL_STEPS
+    ? WIZARD_TO_STORED(rawForcedStep)
+    : NaN;
+  const hasForcedStepParam = Number.isFinite(forcedStoredStep);
+
+  const [currentStep, setCurrentStep] = useState(hasForcedStepParam ? forcedStoredStep : 2);
   const [showNotReady, setShowNotReady] = useState(false);
   const [showPendingHelp, setShowPendingHelp] = useState(false);
   const [showFormDirectly, setShowFormDirectly] = useState(false);
   const [hasRestarted, setHasRestarted] = useState(false);
-  const hasForcedStepParam = Number.isFinite(forcedStep) && forcedStep >= 2 && forcedStep <= 9;
   const [hasAppliedForcedStep, setHasAppliedForcedStep] = useState(!hasForcedStepParam);
   const [usedForcedStep, setUsedForcedStep] = useState(false);
+
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/auth", { replace: true });
@@ -35,54 +45,42 @@ const Onboarding = () => {
 
   useEffect(() => {
     if (onboardingState) {
-      // Honor ?step=N once — overrides stored progress so user lands on requested step.
-      // Once applied, keep local control of currentStep and stop syncing from onboardingState
-      // (the hook normalizes current_step to >=5 once the 5-question session is done).
-      if (!hasAppliedForcedStep && Number.isFinite(forcedStep) && forcedStep >= 2 && forcedStep <= 9) {
-        setCurrentStep(forcedStep);
+      if (!hasAppliedForcedStep && hasForcedStepParam) {
+        setCurrentStep(forcedStoredStep);
         setHasAppliedForcedStep(true);
         setUsedForcedStep(true);
-        updateOnboardingState({ current_step: forcedStep, onboarding_completed: false });
+        updateOnboardingState({ current_step: forcedStoredStep, onboarding_completed: false });
         searchParams.delete("step");
         setSearchParams(searchParams, { replace: true });
         return;
       }
 
-      // If a forced step was applied this session, don't snap back to stored step.
-      if (usedForcedStep) {
-        return;
-      }
+      if (usedForcedStep) return;
 
-      // If user has assistance_requested status but came back to define their NR,
-      // start them at step 2 (NR definition) — only if they haven't restarted
       if (naturalRole?.status === "assistance_requested" && onboardingState.onboarding_completed && !hasRestarted) {
         setCurrentStep(2);
         return;
       }
-      
-      // If current_step is 1, user is starting fresh (e.g. came from choose-path)
+
       if (onboardingState.current_step <= 1) {
         setHasRestarted(true);
       }
-      
-      // If step is 1 or less, user hasn't selected a path yet - send to choose-path
+
       if (onboardingState.current_step <= 1) {
         navigate("/onboarding", { replace: true });
         return;
       }
-      
+
       setCurrentStep(onboardingState.current_step);
-      // Redirect if truly completed (step 9 for both paths) and not needing support
-      if (onboardingState.current_step >= 9 && 
-          onboardingState.onboarding_completed && 
+      if (onboardingState.current_step >= 9 &&
+          onboardingState.onboarding_completed &&
           naturalRole?.status !== "assistance_requested") {
         navigate("/", { replace: true });
       }
     }
-  }, [onboardingState, naturalRole, navigate, hasRestarted, hasAppliedForcedStep, forcedStep, searchParams, setSearchParams, updateOnboardingState]);
+  }, [onboardingState, naturalRole, navigate, hasRestarted, hasAppliedForcedStep, hasForcedStepParam, forcedStoredStep, searchParams, setSearchParams, updateOnboardingState, usedForcedStep]);
 
   useEffect(() => {
-    // Only show pending help if they just requested it in this session, not from stale DB state
     if (naturalRole?.status === "assistance_requested" && !onboardingState?.onboarding_completed && currentStep > 1 && !hasRestarted) {
       setShowPendingHelp(true);
     }
@@ -99,34 +97,21 @@ const Onboarding = () => {
     );
   }
 
-  const totalSteps = 9; // Same steps for both entrepreneurs and co-builders
-
   const handleBack = async () => {
-    if (showPendingHelp) {
-      setShowPendingHelp(false);
-      return;
-    }
-    if (showNotReady) {
-      setShowNotReady(false);
-      return;
-    }
+    if (showPendingHelp) { setShowPendingHelp(false); return; }
+    if (showNotReady) { setShowNotReady(false); return; }
     if (currentStep > 2) {
       setCurrentStep(currentStep - 1);
     } else {
-      // Going back from the first professional step (step 2) → return to the page that referred the user here
-      if (window.history.length > 1) {
-        navigate(-1);
-      } else {
-        navigate("/dashboard");
-      }
+      if (window.history.length > 1) navigate(-1);
+      else navigate("/dashboard");
     }
   };
 
-  const canGoBack = currentStep >= 1 || showPendingHelp || showNotReady;
+  const canGoBack = currentStep >= 2 || showPendingHelp || showNotReady;
 
   const getStepLabel = () => {
     const labels: Record<number, string> = {
-      1: "Choose your path",
       2: "Define your Natural Role",
       3: "Assessment: Promise",
       4: "Assessment: Practice",
@@ -139,33 +124,19 @@ const Onboarding = () => {
     return labels[currentStep] || "";
   };
 
-  const handleDefineNowFromPendingHelp = () => {
-    setShowPendingHelp(false);
-    setShowFormDirectly(true);
-  };
-
-  const handleBackToHelpScreen = () => {
-    setShowFormDirectly(false);
-    setShowPendingHelp(true);
-  };
-
-  const handleBackToChoiceScreen = () => {
-    setShowPendingHelp(false);
-  };
+  const handleDefineNowFromPendingHelp = () => { setShowPendingHelp(false); setShowFormDirectly(true); };
+  const handleBackToHelpScreen = () => { setShowFormDirectly(false); setShowPendingHelp(true); };
+  const handleBackToChoiceScreen = () => { setShowPendingHelp(false); };
 
   const renderStep = () => {
     if (showPendingHelp) return <PendingHelpStep onDefineNow={handleDefineNowFromPendingHelp} onBack={handleBackToChoiceScreen} />;
     if (showNotReady) return <NotReadyStep onNeedHelp={() => navigate("/")} />;
 
-    // Professional journey starts at step 2 (NR definition) - step 1 is handled by ChoosePath
     switch (currentStep) {
       case 2:
         return (
-          <NaturalRoleDefinitionStep 
-            onNext={() => {
-              setShowFormDirectly(false);
-              setCurrentStep(3);
-            }} 
+          <NaturalRoleDefinitionStep
+            onNext={() => { setShowFormDirectly(false); setCurrentStep(3); }}
             onNeedHelp={() => setShowPendingHelp(true)}
             showFormDirectly={showFormDirectly}
             onBackToHelp={handleBackToHelpScreen}
@@ -173,15 +144,12 @@ const Onboarding = () => {
         );
       case 3:
         return (
-          <PromiseCheckStep 
+          <PromiseCheckStep
             onNext={() => {
-              if (naturalRole?.promise_check === false) {
-                setShowNotReady(true);
-              } else {
-                setCurrentStep(4);
-              }
-            }} 
-            onNeedHelp={() => setShowNotReady(true)} 
+              if (naturalRole?.promise_check === false) setShowNotReady(true);
+              else setCurrentStep(4);
+            }}
+            onNeedHelp={() => setShowNotReady(true)}
           />
         );
       case 4:
@@ -202,9 +170,9 @@ const Onboarding = () => {
   };
 
   return (
-    <OnboardingLayout 
-      currentStep={currentStep} 
-      totalSteps={totalSteps}
+    <OnboardingLayout
+      currentStep={STORED_TO_WIZARD(currentStep)}
+      totalSteps={TOTAL_STEPS}
       stepLabel={getStepLabel()}
       onBack={handleBack}
       canGoBack={canGoBack}
