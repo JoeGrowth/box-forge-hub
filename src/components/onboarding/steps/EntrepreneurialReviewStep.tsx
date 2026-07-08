@@ -6,7 +6,7 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import type { EntrepreneurialData } from "@/pages/EntrepreneurialOnboarding";
+import type { EntrepreneurialData } from "@/pages/EntrepreneurialTrackRecord";
 
 type StatusType = "filled" | "needs_help" | "not_done" | "pending";
 
