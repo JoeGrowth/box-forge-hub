@@ -249,7 +249,7 @@ const Scale = () => {
         description: "Complete a boosting journey to unlock the Scale page.",
         variant: "destructive",
       });
-      navigate("/journey", { replace: true });
+      navigate("/certifications", { replace: true });
     }
     // If user has team memberships but no scaling access, force cobuilder section
     if (

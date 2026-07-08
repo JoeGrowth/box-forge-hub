@@ -250,7 +250,7 @@ const JourneyDetail = () => {
                 <Lock className="w-10 h-10 mx-auto text-muted-foreground mb-4" />
                 <h1 className="font-display text-2xl font-bold text-foreground mb-2">Consultant Path Locked</h1>
                 <p className="text-muted-foreground mb-6">Unlocks after Talent Foundation is complete (onboarding, NR decoder, professional track, resume).</p>
-                <Button variant="outline" onClick={() => navigate("/journey")}>
+                <Button variant="outline" onClick={() => navigate("/certifications")}>
                   <ArrowLeft className="w-4 h-4 mr-2" /> Back to Certifications
                 </Button>
               </div>
@@ -270,7 +270,7 @@ const JourneyDetail = () => {
           <section className={`py-10 md:py-14 bg-gradient-to-br ${sectionInfo.color} text-white`}>
             <div className="container mx-auto px-4">
               <button
-                onClick={() => navigate("/journey")}
+                onClick={() => navigate("/certifications")}
                 className="inline-flex items-center gap-1.5 text-white/80 hover:text-white text-sm mb-4 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" /> All Certifications

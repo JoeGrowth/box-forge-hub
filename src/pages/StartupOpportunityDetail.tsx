@@ -530,7 +530,7 @@ const StartupOpportunityDetail = () => {
                       <Button 
                         variant="teal" 
                         className="w-full"
-                        onClick={() => navigate("/journey?section=cobuilder")}
+                        onClick={() => navigate("/certifications?section=cobuilder")}
                       >
                         <BookOpen className="w-4 h-4 mr-2" />
                         Learn to be a Co-Builder

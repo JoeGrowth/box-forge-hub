@@ -110,7 +110,7 @@ export function useOpportunityPersona(): PersonaConfig {
           title: "Build signals first",
           body: "Complete one validated training or practice journey to unlock paid missions.",
           ctaLabel: "Open Learning",
-          ctaRoute: "/journey",
+          ctaRoute: "/certifications",
         },
         hasApprovedStartupIdea: false,
         loading: false,

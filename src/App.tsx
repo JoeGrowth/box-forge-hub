@@ -150,8 +150,10 @@ const App = () => (
                   <Route path="/organizations" element={<GatedRoute minStage="emerging"><Organizations /></GatedRoute>} />
                   <Route path="/org/:slug" element={<GatedRoute minStage="emerging"><OrganizationPage /></GatedRoute>} />
                   <Route path="/people" element={<GatedRoute minStage="emerging"><CoBuilders /></GatedRoute>} />
-                  <Route path="/journey" element={<ProtectedRoute><Journey /></ProtectedRoute>} />
-                  <Route path="/journey/:section" element={<ProtectedRoute><JourneyDetail /></ProtectedRoute>} />
+                  <Route path="/certifications" element={<ProtectedRoute><Journey /></ProtectedRoute>} />
+                  <Route path="/certifications/:section" element={<ProtectedRoute><JourneyDetail /></ProtectedRoute>} />
+                  <Route path="/journey" element={<Navigate to="/certifications" replace />} />
+                  <Route path="/journey/:section" element={<Navigate to="/certifications" replace />} />
                   <Route path="/start" element={<ProtectedRoute><Scale /></ProtectedRoute>} />
                   <Route path="/track" element={<ProtectedRoute><Track /></ProtectedRoute>} />
                   <Route path="/advisory" element={<GatedRoute minStage="emerging"><Advisory /></GatedRoute>} />

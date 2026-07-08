@@ -294,7 +294,7 @@ export function ApplyToJoinDialog({
               <span className="font-medium text-foreground">Co-Builder Certification Required</span>
             </div>
             <p className="text-sm text-muted-foreground">Complete the Co-Builder learning journey to unlock applications.</p>
-            <Button variant="teal" className="w-full" onClick={() => { handleClose(false); navigate("/journey?section=cobuilder"); }}>
+            <Button variant="teal" className="w-full" onClick={() => { handleClose(false); navigate("/certifications?section=cobuilder"); }}>
               <BookOpen className="w-4 h-4 mr-2" /> Learn to be a Co-Builder <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>

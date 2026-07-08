@@ -162,7 +162,7 @@ export function DashboardProgress() {
         status: journey.status,
         currentPhase: journey.current_phase,
         totalPhases: phaseMap[journey.journey_type] || 4,
-        link: "/journey",
+        link: "/certifications",
       });
     });
 
@@ -454,7 +454,7 @@ export function DashboardProgress() {
 
 
         <Button variant="ghost" className="w-full mt-4" asChild>
-          <Link to="/journey">
+          <Link to="/certifications">
             Explore all learning paths <ArrowRight className="ml-2 w-4 h-4" />
           </Link>
         </Button>
