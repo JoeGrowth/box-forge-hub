@@ -5,11 +5,19 @@ import { PageTransition } from "@/components/layout/PageTransition";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useLearningJourneys } from "@/hooks/useLearningJourneys";
-import { Loader2, Users, Lightbulb, ArrowRight, Handshake, TrendingUp, Award, Shield, Lock } from "lucide-react";
+import {
+  Loader2,
+  Users,
+  Lightbulb,
+  ArrowRight,
+  Handshake,
+  TrendingUp,
+  Award,
+  Shield,
+  Lock,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import JourneyTimelinePanel from "@/components/journey/JourneyTimelinePanel";
 
 type SectionKey = "initiator" | "cobuilder" | "consultant" | "finance" | "security";
 
@@ -34,11 +42,7 @@ const OPTIONAL_PATHS: PathCard[] = [
   { key: "security", title: "Learn to Be Secure", subtitle: "Practical security literacy. 4 steps to certification.", icon: Shield, gradient: "from-red-500 to-orange-500", border: "hover:border-red-500/50", certType: "security_literacy" },
 ];
 
-interface JourneyProps {
-  defaultTab?: "certifications" | "timeline";
-}
-
-const Journey = ({ defaultTab = "certifications" }: JourneyProps) => {
+const Journey = () => {
   const { user, loading: authLoading } = useAuth();
   const { onboardingState, loading: onboardingLoading } = useOnboarding();
   const { certifications } = useLearningJourneys();
@@ -88,8 +92,8 @@ const Journey = ({ defaultTab = "certifications" }: JourneyProps) => {
           <main className="pt-20">
             <section className="py-16">
               <div className="container mx-auto px-4 text-center">
-                <h1 className="font-display text-3xl font-bold text-foreground mb-4">Your Journey</h1>
-                <p className="text-muted-foreground mb-8">Please log in to access your journey.</p>
+                <h1 className="font-display text-3xl font-bold text-foreground mb-4">Getting Certified</h1>
+                <p className="text-muted-foreground mb-8">Please log in to access your certifications.</p>
               </div>
             </section>
           </main>
@@ -123,7 +127,9 @@ const Journey = ({ defaultTab = "certifications" }: JourneyProps) => {
               </div>
               <p className="text-sm text-muted-foreground">{path.subtitle}</p>
               {locked && (
-                <p className="text-xs text-muted-foreground mt-2">Unlocks after Talent Foundation is complete</p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Unlocks after Talent Foundation is complete
+                </p>
               )}
               {!locked && (
                 <div className="inline-flex items-center gap-1 text-xs font-medium text-primary mt-3 group-hover:gap-2 transition-all">
@@ -141,46 +147,37 @@ const Journey = ({ defaultTab = "certifications" }: JourneyProps) => {
     <div className="min-h-screen bg-background">
       <PageTransition>
         <main className="pt-20">
+          {/* Hero */}
           <section className="py-12 md:py-16 gradient-hero text-primary-foreground">
             <div className="container mx-auto px-4 text-center">
-              <h1 className="font-display text-3xl md:text-4xl font-bold mb-3">Your Journey</h1>
+              <h1 className="font-display text-3xl md:text-4xl font-bold mb-3">Getting Certified</h1>
               <p className="text-primary-foreground/80 max-w-2xl mx-auto text-sm md:text-base">
-                Certifications to earn and the timeline of milestones you've hit.
+                Pick a certification path — Initiator, Co-Builder, Finance or Security — and earn your badges.
               </p>
             </div>
           </section>
 
           <section className="py-10 md:py-14">
-            <div className="container max-w-5xl mx-auto px-4">
-              <Tabs defaultValue={defaultTab} className="w-full">
-                <TabsList className="mb-8">
-                  <TabsTrigger value="certifications">Certifications</TabsTrigger>
-                  <TabsTrigger value="timeline">Timeline</TabsTrigger>
-                </TabsList>
+            <div className="container max-w-5xl mx-auto px-4 space-y-10">
+              {/* Needed */}
+              <div>
+                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                  Needed Certifications
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {NEEDED_PATHS.map(renderCard)}
+                </div>
+              </div>
 
-                <TabsContent value="certifications" className="space-y-10">
-                  <div>
-                    <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-                      Needed Certifications
-                    </h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {NEEDED_PATHS.map(renderCard)}
-                    </div>
-                  </div>
-                  <div>
-                    <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-                      Optional Certifications
-                    </h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {OPTIONAL_PATHS.map(renderCard)}
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="timeline">
-                  <JourneyTimelinePanel />
-                </TabsContent>
-              </Tabs>
+              {/* Optional */}
+              <div>
+                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                  Optional Certifications
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {OPTIONAL_PATHS.map(renderCard)}
+                </div>
+              </div>
             </div>
           </section>
         </main>
