@@ -166,11 +166,10 @@ const App = () => (
                   <Route path="/publish-training" element={<GatedRoute talentGate><PublishTraining /></GatedRoute>} />
                   <Route path="/publish-job" element={<GatedRoute talentGate orgAdminOnly><PublishJob /></GatedRoute>} />
                   <Route path="/consulting-growth" element={<ProtectedRoute><ConsultingGrowth /></ProtectedRoute>} />
-                  </Route>
                   <Route path="/opportunities/:category/:id" element={<GatedRoute talentGate><OpportunityDetail /></GatedRoute>} />
                   {/* Legacy: old links pointed at startup ideas only. */}
                   <Route path="/opportunities/:id" element={<GatedRoute talentGate><OpportunityDetail /></GatedRoute>} />
-                  <Route path="/mask" element={<Mask />} />
+                  <Route path="/mask" element={<Navigate to="/brand-identity" replace />} />
                   <Route path="/checklist" element={<GatedRoute minStage="emerging"><Checklist /></GatedRoute>} />
                   <Route path="/resume" element={<Resume />} />
                   <Route path="/track-record" element={<TrackRecord />} />
@@ -198,7 +197,6 @@ const App = () => (
                   <Route path="/declaration" element={<Declaration />} />
                   <Route path="/PGP" element={<PGP />} />
                   <Route path="/characters" element={<ProtectedRoute><Characters /></ProtectedRoute>} />
-                  <Route path="/consulting-growth" element={<ProtectedRoute><ConsultingGrowth /></ProtectedRoute>} />
                   <Route path="/brand-entity" element={<ProtectedRoute><BrandEntity /></ProtectedRoute>} />
                   <Route path="/calcul" element={<ProtectedRoute><Calcul /></ProtectedRoute>} />
                   <Route path="/publish-talent" element={<ProtectedRoute><PublishTalent /></ProtectedRoute>} />
@@ -248,6 +246,7 @@ const App = () => (
                   <Route path="/growth" element={<Navigate to="/paths" replace />} />
                   <Route path="/map" element={<Navigate to="/onboarding/map" replace />} />
                   <Route path="/beta" element={<Navigate to="/admin/beta" replace />} />
+                  </Route>
 
                   <Route path="*" element={<NotFound />} />
                 </Routes>
