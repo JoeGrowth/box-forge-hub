@@ -6,6 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Footer } from "@/components/layout/Footer";
+import { PageTransition } from "@/components/layout/PageTransition";
 import {
   UserPlus,
   CheckCircle2,
@@ -199,12 +201,17 @@ export default function JourneyTimeline() {
 
   if (!user) {
     return (
-      <main className="container mx-auto px-4 py-16 max-w-2xl">
-        <h1 className="text-2xl font-bold mb-4">Sign in to see your journey</h1>
-        <Button asChild>
-          <Link to="/auth">Sign in</Link>
-        </Button>
-      </main>
+      <div className="min-h-screen bg-background flex flex-col">
+        <PageTransition>
+          <main className="flex-1 container mx-auto px-4 pt-24 pb-16 max-w-2xl">
+            <h1 className="text-2xl font-bold mb-4">Sign in to see your journey</h1>
+            <Button asChild>
+              <Link to="/auth">Sign in</Link>
+            </Button>
+          </main>
+        </PageTransition>
+        <Footer />
+      </div>
     );
   }
 
@@ -213,96 +220,101 @@ export default function JourneyTimeline() {
   const pct = Math.round((doneCount / totalCount) * 100);
 
   return (
-    <main className="container mx-auto px-4 py-12 max-w-3xl">
-      <header className="mb-10">
-        <p className="text-sm text-muted-foreground mb-2">End-to-end process</p>
-        <h1 className="text-3xl md:text-4xl font-bold mb-3">Your Journey Timeline</h1>
-        <p className="text-muted-foreground">
-          From <span className="font-medium">signup</span> to{" "}
-          <span className="font-medium">equity earned</span> — every milestone, timestamped.
-        </p>
-        <div className="mt-6 flex items-center gap-3">
-          <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-            <div className="h-full bg-primary transition-all" style={{ width: `${pct}%` }} />
-          </div>
-          <span className="text-sm font-medium tabular-nums">
-            {doneCount}/{totalCount} · {pct}%
-          </span>
-        </div>
-      </header>
+    <div className="min-h-screen bg-background flex flex-col">
+      <PageTransition>
+        <main className="flex-1 container mx-auto px-4 pt-24 pb-16 max-w-3xl">
+          <header className="mb-10">
+            <p className="text-sm text-muted-foreground mb-2">End-to-end process</p>
+            <h1 className="text-3xl md:text-4xl font-bold mb-3">Your Journey Timeline</h1>
+            <p className="text-muted-foreground">
+              From <span className="font-medium">signup</span> to{" "}
+              <span className="font-medium">equity earned</span> — every milestone, timestamped.
+            </p>
+            <div className="mt-6 flex items-center gap-3">
+              <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                <div className="h-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+              </div>
+              <span className="text-sm font-medium tabular-nums">
+                {doneCount}/{totalCount} · {pct}%
+              </span>
+            </div>
+          </header>
 
-      {!steps ? (
-        <div className="space-y-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-24 w-full" />
-          ))}
-        </div>
-      ) : (
-        <ol className="relative border-l border-border ml-4 space-y-6">
-          {steps.map((s) => {
-            const Icon = s.icon;
-            const ring =
-              s.status === "done"
-                ? "bg-primary text-primary-foreground border-primary"
-                : s.status === "current"
-                ? "bg-background text-primary border-primary animate-pulse"
-                : "bg-muted text-muted-foreground border-border";
-            return (
-              <li key={s.key} className="ml-6">
-                <span
-                  className={`absolute -left-[17px] flex h-8 w-8 items-center justify-center rounded-full border-2 ${ring}`}
-                >
-                  {s.status === "done" ? (
-                    <Icon className="h-4 w-4" />
-                  ) : s.status === "current" ? (
-                    <Clock className="h-4 w-4" />
-                  ) : (
-                    <Circle className="h-4 w-4" />
-                  )}
-                </span>
-                <Card className={s.status === "current" ? "border-primary" : ""}>
-                  <CardContent className="pt-5">
-                    <div className="flex items-start justify-between gap-3 flex-wrap">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h2 className="font-semibold text-base">{s.label}</h2>
-                          <Badge
-                            variant={
-                              s.status === "done"
-                                ? "default"
-                                : s.status === "current"
-                                ? "secondary"
-                                : "outline"
-                            }
-                          >
-                            {s.status}
-                          </Badge>
-                          {s.detail && (
-                            <Badge variant="outline" className="font-mono text-xs">
-                              {s.detail}
-                            </Badge>
+          {!steps ? (
+            <div className="space-y-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-24 w-full" />
+              ))}
+            </div>
+          ) : (
+            <ol className="relative border-l border-border ml-4 space-y-6">
+              {steps.map((s) => {
+                const Icon = s.icon;
+                const ring =
+                  s.status === "done"
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : s.status === "current"
+                    ? "bg-background text-primary border-primary animate-pulse"
+                    : "bg-muted text-muted-foreground border-border";
+                return (
+                  <li key={s.key} className="ml-6">
+                    <span
+                      className={`absolute -left-[17px] flex h-8 w-8 items-center justify-center rounded-full border-2 ${ring}`}
+                    >
+                      {s.status === "done" ? (
+                        <Icon className="h-4 w-4" />
+                      ) : s.status === "current" ? (
+                        <Clock className="h-4 w-4" />
+                      ) : (
+                        <Circle className="h-4 w-4" />
+                      )}
+                    </span>
+                    <Card className={s.status === "current" ? "border-primary" : ""}>
+                      <CardContent className="pt-5">
+                        <div className="flex items-start justify-between gap-3 flex-wrap">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h2 className="font-semibold text-base">{s.label}</h2>
+                              <Badge
+                                variant={
+                                  s.status === "done"
+                                    ? "default"
+                                    : s.status === "current"
+                                    ? "secondary"
+                                    : "outline"
+                                }
+                              >
+                                {s.status}
+                              </Badge>
+                              {s.detail && (
+                                <Badge variant="outline" className="font-mono text-xs">
+                                  {s.detail}
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-1">{s.description}</p>
+                            <p className="text-xs text-muted-foreground mt-2 tabular-nums">
+                              {fmt(s.at) ?? (s.status === "locked" ? "—" : "Not yet")}
+                            </p>
+                          </div>
+                          {s.cta && s.status !== "locked" && (
+                            <Button asChild size="sm" variant={s.status === "current" ? "default" : "outline"}>
+                              <Link to={s.cta.to}>
+                                {s.cta.label} <ArrowRight className="ml-1 h-3 w-3" />
+                              </Link>
+                            </Button>
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground mt-1">{s.description}</p>
-                        <p className="text-xs text-muted-foreground mt-2 tabular-nums">
-                          {fmt(s.at) ?? (s.status === "locked" ? "—" : "Not yet")}
-                        </p>
-                      </div>
-                      {s.cta && s.status !== "locked" && (
-                        <Button asChild size="sm" variant={s.status === "current" ? "default" : "outline"}>
-                          <Link to={s.cta.to}>
-                            {s.cta.label} <ArrowRight className="ml-1 h-3 w-3" />
-                          </Link>
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </li>
-            );
-          })}
-        </ol>
-      )}
-    </main>
+                      </CardContent>
+                    </Card>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+        </main>
+      </PageTransition>
+      <Footer />
+    </div>
   );
 }
