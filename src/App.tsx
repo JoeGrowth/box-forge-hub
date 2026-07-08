@@ -80,7 +80,7 @@ import Declaration from "./pages/Declaration";
 import PGP from "./pages/PGP";
 import PublicProfile from "./pages/PublicProfile";
 import Characters from "./pages/Characters";
-import JourneyTimeline from "./pages/JourneyTimeline";
+
 import ActivationHub from "./pages/ActivationHub";
 import AdvisorWorkQueue from "./pages/AdvisorWorkQueue";
 import ClickAnalytics from "./pages/admin/ClickAnalytics";
@@ -203,7 +203,7 @@ const App = () => (
                   <Route path="/talent" element={<Navigate to="/publish-talent" replace />} />
                   <Route path="/ladder" element={<ProtectedRoute><Ladder /></ProtectedRoute>} />
                   <Route path="/progression" element={<Navigate to="/ladder" replace />} />
-                  <Route path="/journey-timeline" element={<ProtectedRoute><JourneyTimeline /></ProtectedRoute>} />
+                  <Route path="/journey-timeline" element={<ProtectedRoute><Journey defaultTab="timeline" /></ProtectedRoute>} />
                   <Route path="/timeline" element={<Navigate to="/journey-timeline" replace />} />
                   <Route path="/pgp" element={<Navigate to="/PGP" replace />} />
 
