@@ -22,9 +22,10 @@ import Join from "./pages/Join";
 import Auth from "./pages/Auth";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
-import Onboarding from "./pages/Onboarding";
+import ProfessionalTrackRecord from "./pages/ProfessionalTrackRecord";
 // ChoosePath retired — /choose-path now redirects to /onboarding
-import EntrepreneurialOnboarding from "./pages/EntrepreneurialOnboarding";
+import EntrepreneurialTrackRecord from "./pages/EntrepreneurialTrackRecord";
+
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import AdminOpportunityDetail from "./pages/AdminOpportunityDetail";
