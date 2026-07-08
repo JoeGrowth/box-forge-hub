@@ -205,8 +205,8 @@ const App = () => (
                   <Route path="/talent" element={<Navigate to="/publish-talent" replace />} />
                   <Route path="/ladder" element={<ProtectedRoute><Ladder /></ProtectedRoute>} />
                   <Route path="/progression" element={<Navigate to="/ladder" replace />} />
-                  <Route path="/journey-timeline" element={<ProtectedRoute><JourneyTimeline /></ProtectedRoute>} />
-                  <Route path="/timeline" element={<Navigate to="/journey-timeline" replace />} />
+                  <Route path="/timeline" element={<ProtectedRoute><JourneyTimeline /></ProtectedRoute>} />
+                  <Route path="/journey-timeline" element={<Navigate to="/timeline" replace />} />
                   <Route path="/pgp" element={<Navigate to="/PGP" replace />} />
 
                   {/* Intuitive aliases — keep growth loop intact for guessed URLs */}
