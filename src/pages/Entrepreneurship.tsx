@@ -642,7 +642,7 @@ const Entrepreneurship = () => {
                       </button>
                       {advisorAchieved && (
                         <button
-                          onClick={() => setLegacySubTab("scaled")}
+                          onClick={() => setLegacySubTab("systematized")}
                           className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
                             legacySubTab === "scaled"
                               ? "bg-background text-foreground shadow-sm"
