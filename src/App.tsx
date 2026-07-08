@@ -246,6 +246,7 @@ const App = () => (
                   <Route path="/growth" element={<Navigate to="/paths" replace />} />
                   <Route path="/map" element={<Navigate to="/onboarding/map" replace />} />
                   <Route path="/beta" element={<Navigate to="/admin/beta" replace />} />
+                  </Route>
 
                   <Route path="*" element={<NotFound />} />
                 </Routes>
