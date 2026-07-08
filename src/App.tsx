@@ -197,7 +197,6 @@ const App = () => (
                   <Route path="/declaration" element={<Declaration />} />
                   <Route path="/PGP" element={<PGP />} />
                   <Route path="/characters" element={<ProtectedRoute><Characters /></ProtectedRoute>} />
-                  <Route path="/consulting-growth" element={<ProtectedRoute><ConsultingGrowth /></ProtectedRoute>} />
                   <Route path="/brand-entity" element={<ProtectedRoute><BrandEntity /></ProtectedRoute>} />
                   <Route path="/calcul" element={<ProtectedRoute><Calcul /></ProtectedRoute>} />
                   <Route path="/publish-talent" element={<ProtectedRoute><PublishTalent /></ProtectedRoute>} />
