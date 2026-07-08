@@ -737,6 +737,20 @@ const Entrepreneurship = () => {
                       )}
                     </TabsContent>
 
+                    <TabsContent value="partnered">
+                      <div className="mb-4">
+                        <h2 className="font-display text-xl font-bold text-foreground">Equity Partnerships</h2>
+                        <p className="text-sm text-muted-foreground">
+                          Skills traded for equity and long-term shares.
+                        </p>
+                      </div>
+                      <div className="text-center py-12 text-muted-foreground">
+                        <Users className="w-10 h-10 mx-auto mb-3 opacity-40" />
+                        <p>No partnerships recorded yet.</p>
+                        <p className="text-sm mt-1">Join ventures where you trade skills for equity.</p>
+                      </div>
+                    </TabsContent>
+
                     {advisorAchieved && (
                       <TabsContent value="systematized">
                         <div className="mb-4">
