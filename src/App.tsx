@@ -52,7 +52,7 @@ import Contact from "./pages/Contact";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Chat from "./pages/Chat";
-import DirectChat from "./pages/DirectChat";
+
 import Messages from "./pages/Messages";
 import NRDecoder from "./pages/NRDecoder";
 import Dashboard from "./pages/Dashboard";
