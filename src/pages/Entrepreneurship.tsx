@@ -5,7 +5,7 @@ import { ScrollToTopButton } from "@/components/layout/ScrollToTopButton";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Rocket, Eye, Users, Layers, Film, Shield, TrendingUp, Trash2, CheckCircle, Loader2, Lightbulb, Plus, Building2, UserRoundCog } from "lucide-react";
+import { Rocket, Eye, Users, Layers, Film, Shield, TrendingUp, Trash2, CheckCircle, Loader2, Lightbulb, Plus, Building2, UserRoundCog, Trophy, Coins, Settings2 } from "lucide-react";
 import { TransferInitiationDialog } from "@/components/idea/TransferInitiationDialog";
 import { Switch } from "@/components/ui/switch";
 import { NextGoalBanner } from "@/components/progression/NextGoalBanner";
