@@ -763,25 +763,71 @@ const Entrepreneurship = () => {
                   </Tabs>
                 </TabsContent>
 
-                {advisorAchieved && (
-                  <TabsContent value="systematized">
-                    <div className="mb-4">
-                      <h2 className="font-display text-xl font-bold text-foreground">Consulting &amp; Services</h2>
-                      <p className="text-sm text-muted-foreground">
-                        Services turned into scalable, self-running assets.
-                      </p>
-                    </div>
-                    <ScaledCard
-                      userId={user!.id}
-                      title={profileStartupName || "Your Brand"}
-                      tagline={
-                        naturalRoleDesc ||
-                        "Detached, systemized consulting practice ready to grow with the right co-builders."
-                      }
-                      onBrandNameSaved={(name) => setProfileStartupName(name)}
-                    />
-                  </TabsContent>
-                )}
+                <TabsContent value="growth">
+                  <div className="flex gap-1 p-1 bg-muted/60 rounded-lg mb-4 w-full sm:w-auto">
+                    <button
+                      onClick={() => setGrowthSubTab("ladder")}
+                      className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
+                        growthSubTab === "ladder"
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <Trophy className="w-3.5 h-3.5" /> Ladder
+                    </button>
+                    <button
+                      onClick={() => setGrowthSubTab("monetized")}
+                      className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
+                        growthSubTab === "monetized"
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <Coins className="w-3.5 h-3.5" /> Monetized
+                    </button>
+                    {advisorAchieved && (
+                      <button
+                        onClick={() => setGrowthSubTab("systematized")}
+                        className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
+                          growthSubTab === "systematized"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        <Settings2 className="w-3.5 h-3.5" /> Systematized
+                        <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-primary/40 text-primary">Advisor</Badge>
+                      </button>
+                    )}
+                  </div>
+
+                  {growthSubTab === "ladder" && <LadderPage embedded />}
+                  {growthSubTab === "monetized" && <ConsultingGrowthPage embedded />}
+                  {growthSubTab === "systematized" && (
+                    advisorAchieved ? (
+                      <div>
+                        <div className="mb-4">
+                          <h2 className="font-display text-xl font-bold text-foreground">Consulting &amp; Services</h2>
+                          <p className="text-sm text-muted-foreground">
+                            Services turned into scalable, self-running assets.
+                          </p>
+                        </div>
+                        <ScaledCard
+                          userId={user!.id}
+                          title={profileStartupName || "Your Brand"}
+                          tagline={
+                            naturalRoleDesc ||
+                            "Detached, systemized consulting practice ready to grow with the right co-builders."
+                          }
+                          onBrandNameSaved={(name) => setProfileStartupName(name)}
+                        />
+                      </div>
+                    ) : (
+                      <div className="text-center py-12 text-muted-foreground text-sm">
+                        Reach the Advisor stage to unlock Systematized.
+                      </div>
+                    )
+                  )}
+                </TabsContent>
               </Tabs>
             </div>
           </section>
