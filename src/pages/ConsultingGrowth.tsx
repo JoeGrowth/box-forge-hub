@@ -287,7 +287,7 @@ export default function ConsultingGrowth({ embedded = false }: { embedded?: bool
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button asChild size="sm"><a href="/organizations">Build My Asset <ArrowRight className="w-3.5 h-3.5 ml-1" /></a></Button>
+            <Button asChild size="sm"><a href="/entrepreneurship?tab=growth&growth=systematized">Build My Asset <ArrowRight className="w-3.5 h-3.5 ml-1" /></a></Button>
           </CardContent>
         </Card>
       )}
