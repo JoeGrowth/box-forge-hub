@@ -95,7 +95,7 @@ export function useProgressionLadder(): ProgressionLadder {
           current: talentCompleted, target: talentTotal,
           unlocked: true, achieved: talentDone,
           ctaLabel: talentDone ? "View public profile" : "Start discovery",
-          ctaHref: "/publish-talent",
+          ctaHref: "/career",
         },
         {
           key: "talent", index: 1, label: "Talent Foundation",
