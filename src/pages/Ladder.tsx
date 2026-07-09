@@ -42,16 +42,21 @@ const SINK_CONTENT: Record<LadderStageKey, { title: string; body: string }> = {
   },
 };
 
-export default function Ladder() {
+export default function Ladder({ embedded = false }: { embedded?: boolean } = {}) {
   const { stages, currentStage, loading } = useProgressionLadder();
   const { isAdmin } = useAdmin();
 
   useEffect(() => {
-    document.title = "Progression Ladder | Box4Solutions";
-  }, []);
+    if (!embedded) document.title = "Progression Ladder | Box4Solutions";
+  }, [embedded]);
 
   if (loading) {
-    return (
+    return embedded ? (
+      <div className="space-y-4">
+        <Skeleton className="h-32 w-full rounded-2xl" />
+        {[1,2,3,4,5,6].map((i) => <Skeleton key={i} className="h-24 w-full rounded-xl" />)}
+      </div>
+    ) : (
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="container mx-auto px-4 pt-24 pb-12 max-w-4xl space-y-4">
@@ -62,24 +67,32 @@ export default function Ladder() {
     );
   }
 
+  const body = (
+    <>
+      <div className="bg-gradient-to-br from-b4-navy via-b4-navy/95 to-b4-navy/85 rounded-2xl p-8 text-white">
+        <h1 className="font-display text-3xl md:text-4xl font-bold mb-2">Your Progression Ladder</h1>
+        <p className="text-white/80 max-w-2xl mb-4">
+          Seven stages from Talent Discovery to Platform Admin. Each stage unlocks the next once its target is hit.
+        </p>
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-sm">
+          <Target className="w-4 h-4" />
+          Currently on <span className="font-semibold">Stage {currentStage.index} · {currentStage.label}</span>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {stages.map((s) => <StageRow key={s.key} stage={s} isFocus={s.key === currentStage.key} isAdmin={isAdmin} />)}
+      </div>
+    </>
+  );
+
+  if (embedded) return <div className="space-y-6">{body}</div>;
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
       <main className="container mx-auto px-4 pt-24 pb-12 max-w-4xl flex-1 space-y-6">
-        <div className="bg-gradient-to-br from-b4-navy via-b4-navy/95 to-b4-navy/85 rounded-2xl p-8 text-white">
-          <h1 className="font-display text-3xl md:text-4xl font-bold mb-2">Your Progression Ladder</h1>
-          <p className="text-white/80 max-w-2xl mb-4">
-            Seven stages from Talent Discovery to Platform Admin. Each stage unlocks the next once its target is hit.
-          </p>
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-sm">
-            <Target className="w-4 h-4" />
-            Currently on <span className="font-semibold">Stage {currentStage.index} · {currentStage.label}</span>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          {stages.map((s) => <StageRow key={s.key} stage={s} isFocus={s.key === currentStage.key} isAdmin={isAdmin} />)}
-        </div>
+        {body}
       </main>
       <Footer />
     </div>
