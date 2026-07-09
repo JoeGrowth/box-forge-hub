@@ -31,6 +31,8 @@ import { useEngineAccess } from "@/hooks/useEngineAccess";
 import { EngineLockedPanel } from "@/components/engines/EngineLockedPanel";
 import { useProgressionLadder } from "@/hooks/useProgressionLadder";
 import { ScaledCard } from "@/components/idea/ScaledCard";
+import LadderPage from "@/pages/Ladder";
+import ConsultingGrowthPage from "@/pages/ConsultingGrowth";
 
 interface StartupIdea {
   id: string;
