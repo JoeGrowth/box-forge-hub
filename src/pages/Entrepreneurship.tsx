@@ -775,7 +775,7 @@ const Entrepreneurship = () => {
                           : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      Ladder
+                      Organized
                     </button>
                     <button
                       onClick={() => setGrowthSubTab("monetized")}
