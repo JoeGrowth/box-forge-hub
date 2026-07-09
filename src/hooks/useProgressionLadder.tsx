@@ -9,6 +9,7 @@ import { useAdmin } from "./useAdmin";
 import { useTalentReadiness } from "./useTalentReadiness";
 
 export type LadderStageKey =
+  | "discovery"    // Stage 0 — default unlock for everyone
   | "talent"       // Stage 1
   | "advisor"      // Stage 2 — 10 paid missions
   | "cobuilder"    // Stage 3 — 3 startup memberships
