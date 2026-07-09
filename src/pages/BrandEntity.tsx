@@ -96,7 +96,7 @@ export default function BrandEntity() {
         <h1 className="font-display text-3xl font-bold flex items-center gap-2">
           <Rocket className="w-7 h-7 text-b4-teal" /> Launch your brand entity
         </h1>
-        <p className="text-muted-foreground mt-1">Graduate from solo consultant to your own brand, with B4 as inspiring advisor.</p>
+        <p className="text-muted-foreground mt-1">Graduate from solo consultant to a brand systematized</p>
       </div>
 
       <Card>
