@@ -530,7 +530,7 @@ export default function ConsultingGrowth({ embedded = false }: { embedded?: bool
       </DialogContent>
     </Dialog>
 
-    <Footer />
+    {!embedded && <Footer />}
     </>
   );
 }
