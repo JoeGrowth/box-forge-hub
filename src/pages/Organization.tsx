@@ -113,6 +113,7 @@ const SCOPE_ICON = { global: Globe, organization: Building2, private: Lock } as 
 export default function OrganizationPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { toast } = useToast();
   const { org: loadedOrg, loading } = useOrganizationBySlug(slug);
