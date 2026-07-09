@@ -280,15 +280,14 @@ export default function ConsultingGrowth({ embedded = false }: { embedded?: bool
         <Card className="border-primary/40 bg-primary/5">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Lock className="w-4 h-4 text-primary" /> You've graduated — status: Advisor
+              <Lock className="w-4 h-4 text-primary" /> Step Unlocked - status : Advisor
             </CardTitle>
             <CardDescription>
-              You've closed {closed.length} paid missions. Solo consulting is capped here.
-              Open your organization and continue mission follow-up from the Organizations workspace.
+              You've closed {closed.length} paid missions. Graduate from solo consultant to a systematized brand. Turn your services into scalable, self-running assets.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button asChild size="sm"><a href="/organizations">Go to Organizations <ArrowRight className="w-3.5 h-3.5 ml-1" /></a></Button>
+            <Button asChild size="sm"><a href="/organizations">Build My Asset <ArrowRight className="w-3.5 h-3.5 ml-1" /></a></Button>
           </CardContent>
         </Card>
       )}
