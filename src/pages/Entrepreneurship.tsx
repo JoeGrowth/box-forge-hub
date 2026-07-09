@@ -3,9 +3,9 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ScrollToTopButton } from "@/components/layout/ScrollToTopButton";
 import { PageTransition } from "@/components/layout/PageTransition";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Rocket, Eye, Users, Layers, Film, Shield, TrendingUp, Trash2, CheckCircle, Loader2, Lightbulb, Plus, Building2, UserRoundCog } from "lucide-react";
+import { Rocket, Eye, Users, Layers, Film, Shield, TrendingUp, Trash2, CheckCircle, Loader2, Lightbulb, Plus, Building2, UserRoundCog, Trophy, Coins, Settings2 } from "lucide-react";
 import { TransferInitiationDialog } from "@/components/idea/TransferInitiationDialog";
 import { Switch } from "@/components/ui/switch";
 import { NextGoalBanner } from "@/components/progression/NextGoalBanner";
@@ -63,14 +63,19 @@ const Entrepreneurship = () => {
   const { engines, loading: accessLoading } = useEngineAccess();
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [applyProject, setApplyProject] = useState<StartupIdea | null>(null);
-  const [mainTab, setMainTab] = useState<"ecosystem" | "legacy">(
-    searchParams.get("tab") === "legacy" ? "legacy" : "ecosystem"
-  );
-  const [legacySubTab, setLegacySubTab] = useState<"initiated" | "joined" | "partnered" | "systematized">(
-    (searchParams.get("sub") === "joined" || searchParams.get("sub") === "partnered" || searchParams.get("sub") === "systematized")
-      ? (searchParams.get("sub") as "joined" | "partnered" | "systematized")
+  type MainTab = "ecosystem" | "legacy" | "systematized";
+  const initialTab = (() => {
+    const t = searchParams.get("tab");
+    if (t === "legacy" || t === "systematized") return t as MainTab;
+    return "ecosystem" as MainTab;
+  })();
+  const [mainTab, setMainTab] = useState<MainTab>(initialTab);
+  const [legacySubTab, setLegacySubTab] = useState<"initiated" | "joined" | "partnered">(
+    (searchParams.get("sub") === "joined" || searchParams.get("sub") === "partnered")
+      ? (searchParams.get("sub") as "joined" | "partnered")
       : "initiated"
   );
   const { stages } = useProgressionLadder();
@@ -562,11 +567,11 @@ const Entrepreneurship = () => {
               </p>
 
 
-              <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as "ecosystem" | "legacy")} className="w-full">
-                <div className="flex border-b border-border mb-6">
+              <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as MainTab)} className="w-full">
+                <div className="flex border-b border-border mb-6 overflow-x-auto">
                   <button
                     onClick={() => setMainTab("ecosystem")}
-                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                       mainTab === "ecosystem"
                         ? "border-foreground text-foreground"
                         : "border-transparent text-muted-foreground hover:text-foreground"
@@ -577,7 +582,7 @@ const Entrepreneurship = () => {
                   </button>
                   <button
                     onClick={() => setMainTab("legacy")}
-                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                       mainTab === "legacy"
                         ? "border-foreground text-foreground"
                         : "border-transparent text-muted-foreground hover:text-foreground"
@@ -586,6 +591,34 @@ const Entrepreneurship = () => {
                     <Lightbulb className="w-4 h-4" />
                     Legacy
                   </button>
+                  <button
+                    onClick={() => navigate("/ladder")}
+                    className="flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
+                  >
+                    <Trophy className="w-4 h-4" />
+                    Ladder
+                  </button>
+                  <button
+                    onClick={() => navigate("/consulting-growth")}
+                    className="flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
+                  >
+                    <Coins className="w-4 h-4" />
+                    Talent Monetized
+                  </button>
+                  {advisorAchieved && (
+                    <button
+                      onClick={() => setMainTab("systematized")}
+                      className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                        mainTab === "systematized"
+                          ? "border-foreground text-foreground"
+                          : "border-transparent text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <Settings2 className="w-4 h-4" />
+                      Systematized
+                      <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-primary/40 text-primary">Advisor</Badge>
+                    </button>
+                  )}
                 </div>
 
                 <TabsContent value="ecosystem">
@@ -618,7 +651,7 @@ const Entrepreneurship = () => {
                 </TabsContent>
 
                 <TabsContent value="legacy">
-                  <Tabs value={legacySubTab} onValueChange={(v) => setLegacySubTab(v as "initiated" | "joined" | "partnered" | "systematized")} className="w-full">
+                  <Tabs value={legacySubTab} onValueChange={(v) => setLegacySubTab(v as "initiated" | "joined" | "partnered")} className="w-full">
                     <div className="flex gap-1 p-1 bg-muted/60 rounded-lg mb-4 w-full sm:w-auto">
                       <button
                         onClick={() => setLegacySubTab("initiated")}
@@ -650,19 +683,6 @@ const Entrepreneurship = () => {
                       >
                         Partnered
                       </button>
-                      {advisorAchieved && (
-                        <button
-                          onClick={() => setLegacySubTab("systematized")}
-                          className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
-                            legacySubTab === "systematized"
-                              ? "bg-background text-foreground shadow-sm"
-                              : "text-muted-foreground hover:text-foreground"
-                          }`}
-                        >
-                          Systematized
-                          <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-primary/40 text-primary">Advisor</Badge>
-                        </button>
-                      )}
                     </div>
 
                     <TabsContent value="initiated">
@@ -751,28 +771,28 @@ const Entrepreneurship = () => {
                       </div>
                     </TabsContent>
 
-                    {advisorAchieved && (
-                      <TabsContent value="systematized">
-                        <div className="mb-4">
-                          <h2 className="font-display text-xl font-bold text-foreground">Consulting &amp; Services</h2>
-                          <p className="text-sm text-muted-foreground">
-                            Services turned into scalable, self-running assets.
-                          </p>
-                        </div>
-                        <ScaledCard
-                          userId={user!.id}
-                          title={profileStartupName || "Your Brand"}
-                          tagline={
-                            naturalRoleDesc ||
-                            "Detached, systemized consulting practice ready to grow with the right co-builders."
-                          }
-                          onBrandNameSaved={(name) => setProfileStartupName(name)}
-                        />
-                      </TabsContent>
-                    )}
-
                   </Tabs>
                 </TabsContent>
+
+                {advisorAchieved && (
+                  <TabsContent value="systematized">
+                    <div className="mb-4">
+                      <h2 className="font-display text-xl font-bold text-foreground">Consulting &amp; Services</h2>
+                      <p className="text-sm text-muted-foreground">
+                        Services turned into scalable, self-running assets.
+                      </p>
+                    </div>
+                    <ScaledCard
+                      userId={user!.id}
+                      title={profileStartupName || "Your Brand"}
+                      tagline={
+                        naturalRoleDesc ||
+                        "Detached, systemized consulting practice ready to grow with the right co-builders."
+                      }
+                      onBrandNameSaved={(name) => setProfileStartupName(name)}
+                    />
+                  </TabsContent>
+                )}
               </Tabs>
             </div>
           </section>
