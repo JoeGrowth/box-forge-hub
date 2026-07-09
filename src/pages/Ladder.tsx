@@ -12,6 +12,10 @@ import { Check, Lock, ArrowRight, Target, Anchor } from "lucide-react";
 import { useEffect } from "react";
 
 const SINK_CONTENT: Record<LadderStageKey, { title: string; body: string }> = {
+  discovery: {
+    title: "Stay in Talent Discovery",
+    body: "Some people stay in discovery — exploring their Natural Role, refining their expertise, and iterating on their resume and public profile before committing to a foundation.",
+  },
   talent: {
     title: "Stay in Talent Foundation",
     body: "Some people decide to stay at this stage and keep looking for job opportunities. Focus on sharpening your Natural Role, expertise and public profile, then use the Opportunities feed to apply to roles that match your foundation.",
@@ -65,7 +69,7 @@ export default function Ladder() {
         <div className="bg-gradient-to-br from-b4-navy via-b4-navy/95 to-b4-navy/85 rounded-2xl p-8 text-white">
           <h1 className="font-display text-3xl md:text-4xl font-bold mb-2">Your Progression Ladder</h1>
           <p className="text-white/80 max-w-2xl mb-4">
-            Six stages from Talent to Platform Admin. Each stage unlocks the next once its target is hit.
+            Seven stages from Talent Discovery to Platform Admin. Each stage unlocks the next once its target is hit.
           </p>
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-sm">
             <Target className="w-4 h-4" />

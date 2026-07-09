@@ -9,6 +9,7 @@ import { useAdmin } from "./useAdmin";
 import { useTalentReadiness } from "./useTalentReadiness";
 
 export type LadderStageKey =
+  | "discovery"    // Stage 0 — default unlock for everyone
   | "talent"       // Stage 1
   | "advisor"      // Stage 2 — 10 paid missions
   | "cobuilder"    // Stage 3 — 3 startup memberships
@@ -89,11 +90,19 @@ export function useProgressionLadder(): ProgressionLadder {
       // Stage unlocks are cumulative: previous stage must be achieved OR foundation ready.
       const stages: LadderStage[] = [
         {
-          key: "talent", index: 1, label: "Talent Foundation",
-          intent: "Natural Role + Expertise + Skills → Resume + Public Profile",
+          key: "discovery", index: 0, label: "Talent Discovery",
+          intent: "Discover your Natural Role, Expertise, Resume and Public Profile — unlocked by default",
           current: talentCompleted, target: talentTotal,
           unlocked: true, achieved: talentDone,
-          ctaLabel: talentDone ? "View public profile" : "Complete foundation",
+          ctaLabel: talentDone ? "View public profile" : "Start discovery",
+          ctaHref: "/publish-talent",
+        },
+        {
+          key: "talent", index: 1, label: "Talent Foundation",
+          intent: "Foundation unlocked once Natural Role + Expertise + Resume + Public Profile are complete",
+          current: talentDone ? 1 : 0, target: 1,
+          unlocked: talentDone, achieved: talentDone,
+          ctaLabel: talentDone ? "View public profile" : "Complete discovery first",
           ctaHref: "/publish-talent",
         },
         {
