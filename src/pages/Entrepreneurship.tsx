@@ -683,19 +683,6 @@ const Entrepreneurship = () => {
                       >
                         Partnered
                       </button>
-                      {advisorAchieved && (
-                        <button
-                          onClick={() => setLegacySubTab("systematized")}
-                          className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
-                            legacySubTab === "systematized"
-                              ? "bg-background text-foreground shadow-sm"
-                              : "text-muted-foreground hover:text-foreground"
-                          }`}
-                        >
-                          Systematized
-                          <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-primary/40 text-primary">Advisor</Badge>
-                        </button>
-                      )}
                     </div>
 
                     <TabsContent value="initiated">
