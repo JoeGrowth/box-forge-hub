@@ -183,7 +183,7 @@ export function Navbar() {
                     location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-muted-foreground"
                   }`}
                 >
-                  Ideas
+                  Entities
                 </Link>
 
                 <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
@@ -329,7 +329,7 @@ export function Navbar() {
                     }`}
                   >
                     <Lightbulb size={16} />
-                    <span className="flex-1">Ideas</span>
+                    <span className="flex-1">Entities</span>
                   </Link>
 
                   {visibleMoreLinks.length > 0 && (
