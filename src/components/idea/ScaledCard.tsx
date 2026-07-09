@@ -100,15 +100,17 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
   useEffect(() => { setBrandDraft(title); }, [title]);
 
   const reloadOrgSignals = async (userId: string, brandName: string) => {
-    // Find org by matching brand name (created by the user)
-    const { data: orgRow } = await supabase
+    // Find orgs created by the user; prefer brand-name match, else most recent
+    const { data: orgs } = await supabase
       .from("organizations")
-      .select("id, slug, name")
+      .select("id, slug, name, created_at")
       .eq("created_by", userId)
-      .ilike("name", brandName.trim())
-      .maybeSingle();
-    const oid = (orgRow as any)?.id as string | undefined;
-    const oslug = (orgRow as any)?.slug as string | undefined;
+      .order("created_at", { ascending: false });
+    const list = ((orgs as any[]) || []);
+    const target = brandName.trim().toLowerCase();
+    const match = list.find(o => (o.name || "").trim().toLowerCase() === target) || list[0];
+    const oid = match?.id as string | undefined;
+    const oslug = match?.slug as string | undefined;
 
     let orgHasDeclaration = false;
     if (oid) {
