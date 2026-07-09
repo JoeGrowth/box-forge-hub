@@ -325,7 +325,13 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
             <Button size="sm" variant="outline" onClick={() => setHistoryOpen(true)} className="flex-1 sm:flex-none min-w-0">
               <FileText className="w-4 h-4 mr-1 flex-shrink-0" /> <span className="truncate">Talent Monetization History</span>
             </Button>
-            <Button size="sm" variant="outline" onClick={() => navigate('/organizations?tab=distribution')} className="flex-1 sm:flex-none min-w-0">
+            <Button size="sm" variant="outline" onClick={() => {
+              if (orgSlug) {
+                navigate(`/org/${orgSlug}?tab=distribution`);
+              } else {
+                navigate('/organizations?tab=distribution');
+              }
+            }} className="flex-1 sm:flex-none min-w-0">
               <Building2 className="w-4 h-4 mr-1 flex-shrink-0" /> <span className="truncate">Manage Missions</span>
             </Button>
           </div>

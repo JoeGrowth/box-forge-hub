@@ -4,7 +4,7 @@
 // Viewer can browse but not edit.
 
 import { useEffect, useState, useCallback } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -113,6 +113,7 @@ const SCOPE_ICON = { global: Globe, organization: Building2, private: Lock } as 
 export default function OrganizationPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { toast } = useToast();
   const { org: loadedOrg, loading } = useOrganizationBySlug(slug);
@@ -303,7 +304,7 @@ export default function OrganizationPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="legal" className="space-y-4">
+      <Tabs defaultValue={searchParams.get("tab") || "legal"} className="space-y-4">
         <TabsList className="flex-wrap h-auto justify-start">
           <TabsTrigger value="legal"><Scale className="w-3 h-3 mr-1" /> Legal ({legalDocs.length})</TabsTrigger>
           <TabsTrigger value="jobs"><Briefcase className="w-3 h-3 mr-1" /> Jobs ({jobs.length})</TabsTrigger>
