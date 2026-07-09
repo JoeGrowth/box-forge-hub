@@ -146,7 +146,7 @@ const EMPTY_FORM = {
 function stageIndex(s: Stage) { return STAGES.findIndex(x => x.value === s); }
 function nextStage(s: Stage): Stage { return STAGES[Math.min(STAGES.length - 1, stageIndex(s) + 1)].value; }
 
-export default function ConsultingGrowth() {
+export default function ConsultingGrowth({ embedded = false }: { embedded?: boolean } = {}) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [items, setItems] = useState<Opportunity[]>([]);
