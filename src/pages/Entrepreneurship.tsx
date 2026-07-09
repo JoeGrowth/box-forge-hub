@@ -771,28 +771,28 @@ const Entrepreneurship = () => {
                       </div>
                     </TabsContent>
 
-                    {advisorAchieved && (
-                      <TabsContent value="systematized">
-                        <div className="mb-4">
-                          <h2 className="font-display text-xl font-bold text-foreground">Consulting &amp; Services</h2>
-                          <p className="text-sm text-muted-foreground">
-                            Services turned into scalable, self-running assets.
-                          </p>
-                        </div>
-                        <ScaledCard
-                          userId={user!.id}
-                          title={profileStartupName || "Your Brand"}
-                          tagline={
-                            naturalRoleDesc ||
-                            "Detached, systemized consulting practice ready to grow with the right co-builders."
-                          }
-                          onBrandNameSaved={(name) => setProfileStartupName(name)}
-                        />
-                      </TabsContent>
-                    )}
-
                   </Tabs>
                 </TabsContent>
+
+                {advisorAchieved && (
+                  <TabsContent value="systematized">
+                    <div className="mb-4">
+                      <h2 className="font-display text-xl font-bold text-foreground">Consulting &amp; Services</h2>
+                      <p className="text-sm text-muted-foreground">
+                        Services turned into scalable, self-running assets.
+                      </p>
+                    </div>
+                    <ScaledCard
+                      userId={user!.id}
+                      title={profileStartupName || "Your Brand"}
+                      tagline={
+                        naturalRoleDesc ||
+                        "Detached, systemized consulting practice ready to grow with the right co-builders."
+                      }
+                      onBrandNameSaved={(name) => setProfileStartupName(name)}
+                    />
+                  </TabsContent>
+                )}
               </Tabs>
             </div>
           </section>
