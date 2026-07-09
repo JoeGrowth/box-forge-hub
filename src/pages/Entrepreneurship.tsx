@@ -63,14 +63,19 @@ const Entrepreneurship = () => {
   const { engines, loading: accessLoading } = useEngineAccess();
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [applyProject, setApplyProject] = useState<StartupIdea | null>(null);
-  const [mainTab, setMainTab] = useState<"ecosystem" | "legacy">(
-    searchParams.get("tab") === "legacy" ? "legacy" : "ecosystem"
-  );
-  const [legacySubTab, setLegacySubTab] = useState<"initiated" | "joined" | "partnered" | "systematized">(
-    (searchParams.get("sub") === "joined" || searchParams.get("sub") === "partnered" || searchParams.get("sub") === "systematized")
-      ? (searchParams.get("sub") as "joined" | "partnered" | "systematized")
+  type MainTab = "ecosystem" | "legacy" | "systematized";
+  const initialTab = (() => {
+    const t = searchParams.get("tab");
+    if (t === "legacy" || t === "systematized") return t as MainTab;
+    return "ecosystem" as MainTab;
+  })();
+  const [mainTab, setMainTab] = useState<MainTab>(initialTab);
+  const [legacySubTab, setLegacySubTab] = useState<"initiated" | "joined" | "partnered">(
+    (searchParams.get("sub") === "joined" || searchParams.get("sub") === "partnered")
+      ? (searchParams.get("sub") as "joined" | "partnered")
       : "initiated"
   );
   const { stages } = useProgressionLadder();
