@@ -322,11 +322,11 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
           )}
           <p className="text-sm text-muted-foreground mt-1">{tagline}</p>
           <div className="flex flex-wrap gap-2 mt-3">
-            <Button size="sm" onClick={() => setInviteOpen(true)} className="flex-1 sm:flex-none min-w-0">
-              <UserPlus className="w-4 h-4 mr-1 flex-shrink-0" /> <span className="truncate">Invite Co-Builder</span>
-            </Button>
             <Button size="sm" variant="outline" onClick={() => setHistoryOpen(true)} className="flex-1 sm:flex-none min-w-0">
-              <FileText className="w-4 h-4 mr-1 flex-shrink-0" /> <span className="truncate">Mission History</span>
+              <FileText className="w-4 h-4 mr-1 flex-shrink-0" /> <span className="truncate">Talent Monetization History</span>
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => navigate('/organizations?tab=distribution')} className="flex-1 sm:flex-none min-w-0">
+              <Building2 className="w-4 h-4 mr-1 flex-shrink-0" /> <span className="truncate">Manage Missions</span>
             </Button>
           </div>
         </div>
