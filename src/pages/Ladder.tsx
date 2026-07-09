@@ -12,6 +12,10 @@ import { Check, Lock, ArrowRight, Target, Anchor } from "lucide-react";
 import { useEffect } from "react";
 
 const SINK_CONTENT: Record<LadderStageKey, { title: string; body: string }> = {
+  discovery: {
+    title: "Stay in Talent Discovery",
+    body: "Some people stay in discovery — exploring their Natural Role, refining their expertise, and iterating on their resume and public profile before committing to a foundation.",
+  },
   talent: {
     title: "Stay in Talent Foundation",
     body: "Some people decide to stay at this stage and keep looking for job opportunities. Focus on sharpening your Natural Role, expertise and public profile, then use the Opportunities feed to apply to roles that match your foundation.",
