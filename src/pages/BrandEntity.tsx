@@ -91,7 +91,7 @@ export default function BrandEntity() {
   };
 
   return (
-    <div className="container mx-auto max-w-3xl py-8 px-4 space-y-6">
+    <div className="container mx-auto max-w-3xl pt-24 pb-8 px-4 space-y-6">
       <div>
         <h1 className="font-display text-3xl font-bold flex items-center gap-2">
           <Rocket className="w-7 h-7 text-b4-teal" /> Launch your brand entity
