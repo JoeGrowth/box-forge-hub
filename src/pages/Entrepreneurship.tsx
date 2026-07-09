@@ -651,7 +651,7 @@ const Entrepreneurship = () => {
                 </TabsContent>
 
                 <TabsContent value="legacy">
-                  <Tabs value={legacySubTab} onValueChange={(v) => setLegacySubTab(v as "initiated" | "joined" | "partnered" | "systematized")} className="w-full">
+                  <Tabs value={legacySubTab} onValueChange={(v) => setLegacySubTab(v as "initiated" | "joined" | "partnered")} className="w-full">
                     <div className="flex gap-1 p-1 bg-muted/60 rounded-lg mb-4 w-full sm:w-auto">
                       <button
                         onClick={() => setLegacySubTab("initiated")}
