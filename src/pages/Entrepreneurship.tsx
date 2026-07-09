@@ -567,11 +567,11 @@ const Entrepreneurship = () => {
               </p>
 
 
-              <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as "ecosystem" | "legacy")} className="w-full">
-                <div className="flex border-b border-border mb-6">
+              <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as MainTab)} className="w-full">
+                <div className="flex border-b border-border mb-6 overflow-x-auto">
                   <button
                     onClick={() => setMainTab("ecosystem")}
-                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                       mainTab === "ecosystem"
                         ? "border-foreground text-foreground"
                         : "border-transparent text-muted-foreground hover:text-foreground"
@@ -582,7 +582,7 @@ const Entrepreneurship = () => {
                   </button>
                   <button
                     onClick={() => setMainTab("legacy")}
-                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                       mainTab === "legacy"
                         ? "border-foreground text-foreground"
                         : "border-transparent text-muted-foreground hover:text-foreground"
@@ -591,6 +591,34 @@ const Entrepreneurship = () => {
                     <Lightbulb className="w-4 h-4" />
                     Legacy
                   </button>
+                  <button
+                    onClick={() => navigate("/ladder")}
+                    className="flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
+                  >
+                    <Trophy className="w-4 h-4" />
+                    Ladder
+                  </button>
+                  <button
+                    onClick={() => navigate("/consulting-growth")}
+                    className="flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
+                  >
+                    <Coins className="w-4 h-4" />
+                    Talent Monetized
+                  </button>
+                  {advisorAchieved && (
+                    <button
+                      onClick={() => setMainTab("systematized")}
+                      className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                        mainTab === "systematized"
+                          ? "border-foreground text-foreground"
+                          : "border-transparent text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <Settings2 className="w-4 h-4" />
+                      Systematized
+                      <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-primary/40 text-primary">Advisor</Badge>
+                    </button>
+                  )}
                 </div>
 
                 <TabsContent value="ecosystem">
