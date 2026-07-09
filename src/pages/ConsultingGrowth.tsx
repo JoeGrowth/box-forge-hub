@@ -146,7 +146,7 @@ const EMPTY_FORM = {
 function stageIndex(s: Stage) { return STAGES.findIndex(x => x.value === s); }
 function nextStage(s: Stage): Stage { return STAGES[Math.min(STAGES.length - 1, stageIndex(s) + 1)].value; }
 
-export default function ConsultingGrowth() {
+export default function ConsultingGrowth({ embedded = false }: { embedded?: boolean } = {}) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [items, setItems] = useState<Opportunity[]>([]);
@@ -267,7 +267,7 @@ export default function ConsultingGrowth() {
 
   return (
     <>
-    <div className="container mx-auto px-4 pt-24 pb-8 max-w-5xl space-y-6">
+    <div className={embedded ? "space-y-6" : "container mx-auto px-4 pt-24 pb-8 max-w-5xl space-y-6"}>
       <div className="flex items-start justify-between gap-4 mb-2 flex-wrap">
         <div className="flex-1 min-w-[260px]">
           <h1 className="text-3xl font-bold tracking-tight">Consulting Growth</h1>
@@ -530,7 +530,7 @@ export default function ConsultingGrowth() {
       </DialogContent>
     </Dialog>
 
-    <Footer />
+    {!embedded && <Footer />}
     </>
   );
 }
