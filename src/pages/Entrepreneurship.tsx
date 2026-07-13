@@ -60,6 +60,15 @@ const getEpisodeLabel = (episode: string) => {
   }
 };
 
+const getEpisodeBadgeClasses = (episode: string) => {
+  switch (episode) {
+    case "development": return "bg-sky-100 text-sky-700 border-sky-200 hover:bg-sky-100";
+    case "validation": return "bg-violet-100 text-violet-700 border-violet-200 hover:bg-violet-100";
+    case "growth": return "bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100";
+    default: return "bg-secondary text-secondary-foreground hover:bg-secondary";
+  }
+};
+
 const getReviewStatusLabel = (status: string) => {
   switch (status) {
     case "pending": return "waiting for admin approval";
@@ -286,7 +295,7 @@ const Entrepreneurship = () => {
         <div className="flex-1 min-w-0 w-full">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <h3 className="font-display text-lg sm:text-xl font-bold text-foreground break-words">{project.title}</h3>
-            <Badge variant="outline" className="text-xs">{getEpisodeLabel(project.current_episode)}</Badge>
+            <Badge variant="outline" className={`text-xs ${getEpisodeBadgeClasses(project.current_episode)}`}>{getEpisodeLabel(project.current_episode)}</Badge>
           </div>
           {project.sector && (
             <p className="text-sm text-muted-foreground italic mb-2">{project.sector}</p>
@@ -367,7 +376,7 @@ const Entrepreneurship = () => {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
               <h3 className="font-display text-lg sm:text-xl font-bold text-foreground break-words">{project.title}</h3>
-              <Badge variant="outline" className="text-xs">{getEpisodeLabel(project.current_episode)}</Badge>
+              <Badge variant="outline" className={`text-xs ${getEpisodeBadgeClasses(project.current_episode)}`}>{getEpisodeLabel(project.current_episode)}</Badge>
               {isOwner && project.review_status && (
                 <Badge variant="outline" className={`text-xs capitalize ${getReviewStatusBadgeClasses(project.review_status)}`}>{getReviewStatusLabel(project.review_status)}</Badge>
               )}
