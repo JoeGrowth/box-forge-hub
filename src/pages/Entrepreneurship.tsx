@@ -67,6 +67,14 @@ const getReviewStatusLabel = (status: string) => {
   }
 };
 
+const getReviewStatusBadgeClasses = (status: string) => {
+  switch (status) {
+    case "pending": return "bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100";
+    case "approved": return "bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100";
+    default: return "bg-secondary text-secondary-foreground hover:bg-secondary";
+  }
+};
+
 const Entrepreneurship = () => {
   const { user } = useAuth();
   const { engines, loading: accessLoading } = useEngineAccess();
@@ -361,7 +369,7 @@ const Entrepreneurship = () => {
               <h3 className="font-display text-lg sm:text-xl font-bold text-foreground break-words">{project.title}</h3>
               <Badge variant="outline" className="text-xs">{getEpisodeLabel(project.current_episode)}</Badge>
               {isOwner && project.review_status && (
-                <Badge variant="secondary" className="text-xs capitalize">{getReviewStatusLabel(project.review_status)}</Badge>
+                <Badge variant="outline" className={`text-xs capitalize ${getReviewStatusBadgeClasses(project.review_status)}`}>{getReviewStatusLabel(project.review_status)}</Badge>
               )}
             </div>
             {project.sector && (
