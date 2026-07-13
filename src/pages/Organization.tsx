@@ -538,7 +538,12 @@ export default function OrganizationPage() {
 
         {/* PROJECT JOURNEY */}
         <TabsContent value="journey" className="space-y-3">
-          <ProjectJourneyTab orgId={org.id} sourceIdeaId={(org as any).source_idea_id ?? null} />
+          <ProjectJourneyTab
+            orgId={org.id}
+            orgName={org.name}
+            orgCreatedBy={org.created_by}
+            sourceIdeaId={(org as any).source_idea_id ?? null}
+          />
         </TabsContent>
 
 
