@@ -1433,7 +1433,7 @@ function ProjectJourneyTab({
   // Location: startup ideas are listed in the Legacy tab. Growth episode also
   // qualifies the venture for the Growth · Systematized track.
   const inLegacy = true;
-  const inSystematized = ep === "growth";
+  const inSystematized = ep === "growth" || brandMatches;
 
   return (
     <div className="space-y-4">
