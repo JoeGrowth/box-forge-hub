@@ -67,6 +67,10 @@ import {
   Sparkles,
   TrendingUp,
   Trophy,
+  CalendarCheck,
+  CheckCircle2,
+  Circle,
+  Presentation,
 } from "lucide-react";
 import jsPDF from "jspdf";
 import { readDistEntities, addDistEntity, writeDistEntities, type DistEntity } from "@/pages/Distribution";
