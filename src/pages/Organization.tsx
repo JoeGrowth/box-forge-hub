@@ -568,9 +568,14 @@ function DailyTab({ orgId, canEdit }: { orgId: string; canEdit: boolean }) {
     localStorage.setItem(presKey, JSON.stringify(next));
   };
 
+  const MAX_OPEN_TASKS = 4;
+  const openCount = tasks.filter(t => !t.done).length;
+  const atLimit = openCount >= MAX_OPEN_TASKS;
+
   const addTask = () => {
     const t = newTask.trim();
     if (!t) return;
+    if (atLimit) return;
     saveTasks([{ id: crypto.randomUUID(), text: t, done: false, created_at: new Date().toISOString() }, ...tasks]);
     setNewTask("");
   };
