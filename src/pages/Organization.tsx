@@ -568,9 +568,14 @@ function DailyTab({ orgId, canEdit }: { orgId: string; canEdit: boolean }) {
     localStorage.setItem(presKey, JSON.stringify(next));
   };
 
+  const MAX_OPEN_TASKS = 4;
+  const openCount = tasks.filter(t => !t.done).length;
+  const atLimit = openCount >= MAX_OPEN_TASKS;
+
   const addTask = () => {
     const t = newTask.trim();
     if (!t) return;
+    if (atLimit) return;
     saveTasks([{ id: crypto.randomUUID(), text: t, done: false, created_at: new Date().toISOString() }, ...tasks]);
     setNewTask("");
   };
@@ -598,20 +603,28 @@ function DailyTab({ orgId, canEdit }: { orgId: string; canEdit: boolean }) {
         <div className="flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 text-primary" />
           <h3 className="font-semibold">Tasks to do</h3>
-          <Badge variant="outline" className="ml-auto">{openTasks.length} open</Badge>
+          <Badge variant="outline" className="ml-auto">{openTasks.length}/{MAX_OPEN_TASKS} open</Badge>
         </div>
         {canEdit && (
-          <div className="flex gap-2">
-            <Input
-              value={newTask}
-              onChange={(e) => setNewTask(e.target.value)}
-              placeholder="Add a task…"
-              onKeyDown={(e) => e.key === "Enter" && addTask()}
-            />
-            <Button onClick={addTask} disabled={!newTask.trim()}>
-              <Plus className="w-3 h-3 mr-1" /> Add
-            </Button>
-          </div>
+          <>
+            <div className="flex gap-2">
+              <Input
+                value={newTask}
+                onChange={(e) => setNewTask(e.target.value)}
+                placeholder={atLimit ? "Limit reached — finish or delete one first" : "Add a task…"}
+                disabled={atLimit}
+                onKeyDown={(e) => e.key === "Enter" && addTask()}
+              />
+              <Button onClick={addTask} disabled={!newTask.trim() || atLimit}>
+                <Plus className="w-3 h-3 mr-1" /> Add
+              </Button>
+            </div>
+            {atLimit && (
+              <p className="text-xs text-amber-600">
+                You can't add more than {MAX_OPEN_TASKS} open tasks. Regroup them into one task or delete a task to free a slot.
+              </p>
+            )}
+          </>
         )}
         {tasks.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-6">No tasks yet.</p>
