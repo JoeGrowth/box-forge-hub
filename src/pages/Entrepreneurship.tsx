@@ -60,6 +60,13 @@ const getEpisodeLabel = (episode: string) => {
   }
 };
 
+const getReviewStatusLabel = (status: string) => {
+  switch (status) {
+    case "pending": return "waiting for admin approval";
+    default: return status;
+  }
+};
+
 const Entrepreneurship = () => {
   const { user } = useAuth();
   const { engines, loading: accessLoading } = useEngineAccess();
