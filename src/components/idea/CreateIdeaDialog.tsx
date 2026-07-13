@@ -102,7 +102,7 @@ export const CreateIdeaDialog = ({ open, onOpenChange }: CreateIdeaDialogProps) 
       toast({ title: "Startup Idea Created!", description: "Your idea is now visible to other co-builders." });
       resetForm();
       onOpenChange(false);
-      navigate("/opportunities");
+      navigate("/entrepreneurship?tab=legacy&sub=initiated");
     } catch (error) {
       console.error("Error creating idea:", error);
       toast({ title: "Error", description: "Failed to create startup idea. Please try again.", variant: "destructive" });
