@@ -71,6 +71,7 @@ import {
   CheckCircle2,
   Circle,
   Presentation,
+  Lightbulb,
 } from "lucide-react";
 import jsPDF from "jspdf";
 import { readDistEntities, addDistEntity, writeDistEntities, type DistEntity } from "@/pages/Distribution";
@@ -316,6 +317,7 @@ export default function OrganizationPage() {
           <TabsTrigger value="distribution"><PieChart className="w-3 h-3 mr-1" /> Distribution</TabsTrigger>
           <TabsTrigger value="declaration"><ClipboardList className="w-3 h-3 mr-1" /> Declaration ({declarations.length})</TabsTrigger>
           <TabsTrigger value="daily"><CalendarCheck className="w-3 h-3 mr-1" /> Daily</TabsTrigger>
+          <TabsTrigger value="journey"><Lightbulb className="w-3 h-3 mr-1" /> Project Journey</TabsTrigger>
           <TabsTrigger value="members"><Users className="w-3 h-3 mr-1" /> Members ({members.length})</TabsTrigger>
         </TabsList>
 
@@ -533,6 +535,13 @@ export default function OrganizationPage() {
         <TabsContent value="daily" className="space-y-3">
           <DailyTab orgId={org.id} canEdit={canEdit} />
         </TabsContent>
+
+        {/* PROJECT JOURNEY */}
+        <TabsContent value="journey" className="space-y-3">
+          <ProjectJourneyTab orgId={org.id} sourceIdeaId={(org as any).source_idea_id ?? null} />
+        </TabsContent>
+
+
 
 
       </Tabs>
@@ -1252,3 +1261,176 @@ function OrgDistributionsTab({ orgId, orgName, canEdit }: { orgId: string; orgNa
 }
 
 
+
+type JourneyIdea = {
+  id: string;
+  title: string;
+  current_episode: string;
+  creator_id: string;
+  review_status: string | null;
+  status: string | null;
+};
+
+const EPISODE_META: Record<string, { label: string; className: string }> = {
+  development: { label: "Development", className: "bg-blue-500/10 text-blue-700 border-blue-200" },
+  validation:  { label: "Validation",  className: "bg-amber-500/10 text-amber-700 border-amber-200" },
+  growth:      { label: "Growth",      className: "bg-emerald-500/10 text-emerald-700 border-emerald-200" },
+};
+
+function ProjectJourneyTab({ orgId, sourceIdeaId }: { orgId: string; sourceIdeaId: string | null }) {
+  const { user } = useAuth();
+  const [idea, setIdea] = useState<JourneyIdea | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      if (!sourceIdeaId) {
+        // Fallback: try to find an idea created by current user with same title? Skip — no reliable link.
+        if (!cancelled) { setIdea(null); setLoading(false); }
+        return;
+      }
+      const { data } = await supabase
+        .from("startup_ideas")
+        .select("id, title, current_episode, creator_id, review_status, status")
+        .eq("id", sourceIdeaId)
+        .maybeSingle();
+      if (!cancelled) {
+        setIdea((data as JourneyIdea) ?? null);
+        setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [sourceIdeaId, orgId, user?.id]);
+
+  if (loading) {
+    return <div className="text-sm text-muted-foreground">Loading project journey…</div>;
+  }
+
+  if (!idea) {
+    return (
+      <div className="rounded-xl border border-dashed border-border p-10 text-center">
+        <Lightbulb className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
+        <p className="font-medium text-foreground">No startup linked to this organization</p>
+        <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
+          This organization is not yet present in the Entrepreneurship engine — neither in{" "}
+          <span className="font-medium">Legacy</span> nor in{" "}
+          <span className="font-medium">Growth · Systematized</span>.
+        </p>
+        <Button asChild className="mt-4">
+          <Link to="/entrepreneurship?tab=legacy&new=1">
+            <Plus className="w-4 h-4 mr-1" /> Add startup
+          </Link>
+        </Button>
+      </div>
+    );
+  }
+
+  const ep = (idea.current_episode || "development").toLowerCase();
+  const epMeta = EPISODE_META[ep] ?? EPISODE_META.development;
+  // Location: startup ideas are listed in the Legacy tab. Growth episode also
+  // qualifies the venture for the Growth · Systematized track.
+  const inLegacy = true;
+  const inSystematized = ep === "growth";
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-2xl border border-border bg-card p-5">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-lg font-semibold text-foreground truncate">{idea.title}</h3>
+              <Badge variant="outline" className={epMeta.className}>
+                Step: {epMeta.label}
+              </Badge>
+              {idea.review_status && (
+                <Badge variant="secondary" className="capitalize text-xs">{idea.review_status}</Badge>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Linked startup idea from the Entrepreneurship engine.
+            </p>
+          </div>
+          <Button asChild variant="outline" size="sm">
+            <Link to={`/opportunities/${idea.id}`}>
+              <Eye className="w-3.5 h-3.5 mr-1" /> Open idea
+            </Link>
+          </Button>
+        </div>
+
+        <div className="mt-4 grid sm:grid-cols-2 gap-3">
+          <div className={`rounded-lg border p-3 ${inLegacy ? "border-primary/40 bg-primary/5" : "border-dashed border-border"}`}>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-foreground">Legacy</p>
+              {inLegacy ? (
+                <Badge className="bg-emerald-500/10 text-emerald-700 border-emerald-200" variant="outline">
+                  <CheckCircle2 className="w-3 h-3 mr-1" /> Present
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="text-muted-foreground">
+                  <Circle className="w-3 h-3 mr-1" /> Not present
+                </Badge>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Ventures you initiated, joined, or partnered on.
+            </p>
+            <Button asChild variant="link" size="sm" className="px-0 h-auto mt-1 text-xs">
+              <Link to="/entrepreneurship?tab=legacy&sub=initiated">Open Legacy →</Link>
+            </Button>
+          </div>
+
+          <div className={`rounded-lg border p-3 ${inSystematized ? "border-primary/40 bg-primary/5" : "border-dashed border-border"}`}>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-foreground">Growth · Systematized</p>
+              {inSystematized ? (
+                <Badge className="bg-emerald-500/10 text-emerald-700 border-emerald-200" variant="outline">
+                  <CheckCircle2 className="w-3 h-3 mr-1" /> Present
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="text-muted-foreground">
+                  <Circle className="w-3 h-3 mr-1" /> Not yet
+                </Badge>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Unlocks when the venture reaches the Growth step.
+            </p>
+            <Button asChild variant="link" size="sm" className="px-0 h-auto mt-1 text-xs">
+              <Link to="/entrepreneurship?tab=growth&growth=systematized">Open Systematized →</Link>
+            </Button>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-xs text-muted-foreground mb-2">Journey steps</p>
+          <div className="flex items-center gap-2 flex-wrap">
+            {(["development", "validation", "growth"] as const).map((k, i) => {
+              const meta = EPISODE_META[k];
+              const active = k === ep;
+              const reached =
+                (ep === "validation" && i <= 1) ||
+                (ep === "growth" && i <= 2) ||
+                (ep === "development" && i === 0);
+              return (
+                <div
+                  key={k}
+                  className={`px-3 py-1.5 rounded-full text-xs border ${
+                    active
+                      ? meta.className + " font-semibold"
+                      : reached
+                      ? "bg-muted text-foreground border-border"
+                      : "border-dashed border-border text-muted-foreground"
+                  }`}
+                >
+                  {i + 1}. {meta.label}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
