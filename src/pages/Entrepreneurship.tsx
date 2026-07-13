@@ -60,6 +60,13 @@ const getEpisodeLabel = (episode: string) => {
   }
 };
 
+const getReviewStatusLabel = (status: string) => {
+  switch (status) {
+    case "pending": return "waiting for admin approval";
+    default: return status;
+  }
+};
+
 const Entrepreneurship = () => {
   const { user } = useAuth();
   const { engines, loading: accessLoading } = useEngineAccess();
@@ -354,7 +361,7 @@ const Entrepreneurship = () => {
               <h3 className="font-display text-lg sm:text-xl font-bold text-foreground break-words">{project.title}</h3>
               <Badge variant="outline" className="text-xs">{getEpisodeLabel(project.current_episode)}</Badge>
               {isOwner && project.review_status && (
-                <Badge variant="secondary" className="text-xs capitalize">{project.review_status}</Badge>
+                <Badge variant="secondary" className="text-xs capitalize">{getReviewStatusLabel(project.review_status)}</Badge>
               )}
             </div>
             {project.sector && (
