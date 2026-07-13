@@ -60,6 +60,15 @@ const getEpisodeLabel = (episode: string) => {
   }
 };
 
+const getEpisodeBadgeClasses = (episode: string) => {
+  switch (episode) {
+    case "development": return "bg-sky-100 text-sky-700 border-sky-200 hover:bg-sky-100";
+    case "validation": return "bg-violet-100 text-violet-700 border-violet-200 hover:bg-violet-100";
+    case "growth": return "bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100";
+    default: return "bg-secondary text-secondary-foreground hover:bg-secondary";
+  }
+};
+
 const getReviewStatusLabel = (status: string) => {
   switch (status) {
     case "pending": return "waiting for admin approval";
