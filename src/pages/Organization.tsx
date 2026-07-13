@@ -536,6 +536,13 @@ export default function OrganizationPage() {
           <DailyTab orgId={org.id} canEdit={canEdit} />
         </TabsContent>
 
+        {/* PROJECT JOURNEY */}
+        <TabsContent value="journey" className="space-y-3">
+          <ProjectJourneyTab orgId={org.id} sourceIdeaId={(org as any).source_idea_id ?? null} />
+        </TabsContent>
+
+
+
 
       </Tabs>
     </div>
