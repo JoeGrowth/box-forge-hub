@@ -376,7 +376,7 @@ const Entrepreneurship = () => {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
               <h3 className="font-display text-lg sm:text-xl font-bold text-foreground break-words">{project.title}</h3>
-              <Badge variant="outline" className="text-xs">{getEpisodeLabel(project.current_episode)}</Badge>
+              <Badge variant="outline" className={`text-xs ${getEpisodeBadgeClasses(project.current_episode)}`}>{getEpisodeLabel(project.current_episode)}</Badge>
               {isOwner && project.review_status && (
                 <Badge variant="outline" className={`text-xs capitalize ${getReviewStatusBadgeClasses(project.review_status)}`}>{getReviewStatusLabel(project.review_status)}</Badge>
               )}
