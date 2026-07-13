@@ -67,6 +67,14 @@ const getReviewStatusLabel = (status: string) => {
   }
 };
 
+const getReviewStatusBadgeClasses = (status: string) => {
+  switch (status) {
+    case "pending": return "bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100";
+    case "approved": return "bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100";
+    default: return "bg-secondary text-secondary-foreground hover:bg-secondary";
+  }
+};
+
 const Entrepreneurship = () => {
   const { user } = useAuth();
   const { engines, loading: accessLoading } = useEngineAccess();
