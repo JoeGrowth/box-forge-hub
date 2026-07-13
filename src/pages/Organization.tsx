@@ -538,7 +538,12 @@ export default function OrganizationPage() {
 
         {/* PROJECT JOURNEY */}
         <TabsContent value="journey" className="space-y-3">
-          <ProjectJourneyTab orgId={org.id} sourceIdeaId={(org as any).source_idea_id ?? null} />
+          <ProjectJourneyTab
+            orgId={org.id}
+            orgName={org.name}
+            orgCreatedBy={org.created_by}
+            sourceIdeaId={(org as any).source_idea_id ?? null}
+          />
         </TabsContent>
 
 
@@ -1277,38 +1282,84 @@ const EPISODE_META: Record<string, { label: string; className: string }> = {
   growth:      { label: "Growth",      className: "bg-emerald-500/10 text-emerald-700 border-emerald-200" },
 };
 
-function ProjectJourneyTab({ orgId, sourceIdeaId }: { orgId: string; sourceIdeaId: string | null }) {
+function ProjectJourneyTab({
+  orgId,
+  orgName,
+  orgCreatedBy,
+  sourceIdeaId,
+}: {
+  orgId: string;
+  orgName: string;
+  orgCreatedBy: string;
+  sourceIdeaId: string | null;
+}) {
   const { user } = useAuth();
   const [idea, setIdea] = useState<JourneyIdea | null>(null);
+  const [systematizedBrand, setSystematizedBrand] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      if (!sourceIdeaId) {
-        // Fallback: try to find an idea created by current user with same title? Skip — no reliable link.
-        if (!cancelled) { setIdea(null); setLoading(false); }
-        return;
+
+      // 1) Try direct link via source_idea_id
+      let found: JourneyIdea | null = null;
+      if (sourceIdeaId) {
+        const { data } = await supabase
+          .from("startup_ideas")
+          .select("id, title, current_episode, creator_id, review_status, status")
+          .eq("id", sourceIdeaId)
+          .maybeSingle();
+        found = (data as JourneyIdea) ?? null;
       }
-      const { data } = await supabase
-        .from("startup_ideas")
-        .select("id, title, current_episode, creator_id, review_status, status")
-        .eq("id", sourceIdeaId)
+
+      // 2) Fallback: fuzzy match by title on ideas created by the org creator
+      if (!found) {
+        const { data } = await supabase
+          .from("startup_ideas")
+          .select("id, title, current_episode, creator_id, review_status, status")
+          .eq("creator_id", orgCreatedBy);
+        const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "");
+        const target = norm(orgName);
+        found =
+          (data as JourneyIdea[] | null)?.find(
+            (r) => norm(r.title) === target || norm(r.title).includes(target) || target.includes(norm(r.title)),
+          ) ?? null;
+      }
+
+      // 3) Systematized detection: the org creator's profile brand name.
+      //    Growth · Systematized surfaces the user's brand (profile.startup_name),
+      //    so we consider the org "present" when that brand matches the org.
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("startup_name")
+        .eq("user_id", orgCreatedBy)
         .maybeSingle();
+      const brand = (prof as any)?.startup_name ?? null;
+
       if (!cancelled) {
-        setIdea((data as JourneyIdea) ?? null);
+        setIdea(found);
+        setSystematizedBrand(brand);
         setLoading(false);
       }
     })();
     return () => { cancelled = true; };
-  }, [sourceIdeaId, orgId, user?.id]);
+  }, [sourceIdeaId, orgId, orgName, orgCreatedBy, user?.id]);
+
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "");
+  const brandMatches =
+    !!systematizedBrand &&
+    (norm(systematizedBrand) === norm(orgName) ||
+      norm(systematizedBrand).includes(norm(orgName)) ||
+      norm(orgName).includes(norm(systematizedBrand)));
 
   if (loading) {
     return <div className="text-sm text-muted-foreground">Loading project journey…</div>;
   }
 
-  if (!idea) {
+  // Not linked to any startup idea AND not matching a systematized brand
+  if (!idea && !brandMatches) {
     return (
       <div className="rounded-xl border border-dashed border-border p-10 text-center">
         <Lightbulb className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
@@ -1317,6 +1368,9 @@ function ProjectJourneyTab({ orgId, sourceIdeaId }: { orgId: string; sourceIdeaI
           This organization is not yet present in the Entrepreneurship engine — neither in{" "}
           <span className="font-medium">Legacy</span> nor in{" "}
           <span className="font-medium">Growth · Systematized</span>.
+          {systematizedBrand && (
+            <> Your Systematized brand is <span className="font-medium">"{systematizedBrand}"</span>, which doesn't match <span className="font-medium">"{orgName}"</span>.</>
+          )}
         </p>
         <Button asChild className="mt-4">
           <Link to="/entrepreneurship?tab=legacy&new=1">
@@ -1327,12 +1381,59 @@ function ProjectJourneyTab({ orgId, sourceIdeaId }: { orgId: string; sourceIdeaI
     );
   }
 
+  // Case: no idea but brand matches → Systematized-only presence
+  if (!idea && brandMatches) {
+    return (
+      <div className="space-y-4">
+        <div className="rounded-2xl border border-border bg-card p-5">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="text-lg font-semibold text-foreground truncate">{systematizedBrand}</h3>
+            <Badge variant="outline" className={EPISODE_META.growth.className}>Step: Growth</Badge>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Detected as your Systematized brand asset in the Entrepreneurship engine.
+          </p>
+
+          <div className="mt-4 grid sm:grid-cols-2 gap-3">
+            <div className="rounded-lg border border-dashed border-border p-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-foreground">Legacy</p>
+                <Badge variant="outline" className="text-muted-foreground">
+                  <Circle className="w-3 h-3 mr-1" /> Not present
+                </Badge>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">No linked startup idea yet.</p>
+              <Button asChild variant="link" size="sm" className="px-0 h-auto mt-1 text-xs">
+                <Link to="/entrepreneurship?tab=legacy&new=1">Add as startup idea →</Link>
+              </Button>
+            </div>
+            <div className="rounded-lg border border-primary/40 bg-primary/5 p-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-foreground">Growth · Systematized</p>
+                <Badge className="bg-emerald-500/10 text-emerald-700 border-emerald-200" variant="outline">
+                  <CheckCircle2 className="w-3 h-3 mr-1" /> Present
+                </Badge>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Matches your brand "{systematizedBrand}".
+              </p>
+              <Button asChild variant="link" size="sm" className="px-0 h-auto mt-1 text-xs">
+                <Link to="/entrepreneurship?tab=growth&growth=systematized">Open Systematized →</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+
   const ep = (idea.current_episode || "development").toLowerCase();
   const epMeta = EPISODE_META[ep] ?? EPISODE_META.development;
   // Location: startup ideas are listed in the Legacy tab. Growth episode also
   // qualifies the venture for the Growth · Systematized track.
   const inLegacy = true;
-  const inSystematized = ep === "growth";
+  const inSystematized = ep === "growth" || brandMatches;
 
   return (
     <div className="space-y-4">
