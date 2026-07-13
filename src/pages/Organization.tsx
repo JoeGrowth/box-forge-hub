@@ -529,7 +529,190 @@ export default function OrganizationPage() {
         </TabsContent>
 
 
+        {/* DAILY */}
+        <TabsContent value="daily" className="space-y-3">
+          <DailyTab orgId={org.id} canEdit={canEdit} />
+        </TabsContent>
+
+
       </Tabs>
+    </div>
+  );
+}
+
+type DailyTask = { id: string; text: string; done: boolean; created_at: string };
+type DailyPresentation = { id: string; title: string; url: string; created_at: string };
+
+function DailyTab({ orgId, canEdit }: { orgId: string; canEdit: boolean }) {
+  const tasksKey = `org-daily-tasks:${orgId}`;
+  const presKey = `org-daily-presentations:${orgId}`;
+  const [tasks, setTasks] = useState<DailyTask[]>([]);
+  const [presentations, setPresentations] = useState<DailyPresentation[]>([]);
+  const [newTask, setNewTask] = useState("");
+  const [presTitle, setPresTitle] = useState("");
+  const [presUrl, setPresUrl] = useState("");
+
+  useEffect(() => {
+    try {
+      setTasks(JSON.parse(localStorage.getItem(tasksKey) || "[]"));
+      setPresentations(JSON.parse(localStorage.getItem(presKey) || "[]"));
+    } catch { /* ignore */ }
+  }, [tasksKey, presKey]);
+
+  const saveTasks = (next: DailyTask[]) => {
+    setTasks(next);
+    localStorage.setItem(tasksKey, JSON.stringify(next));
+  };
+  const savePres = (next: DailyPresentation[]) => {
+    setPresentations(next);
+    localStorage.setItem(presKey, JSON.stringify(next));
+  };
+
+  const addTask = () => {
+    const t = newTask.trim();
+    if (!t) return;
+    saveTasks([{ id: crypto.randomUUID(), text: t, done: false, created_at: new Date().toISOString() }, ...tasks]);
+    setNewTask("");
+  };
+  const toggleTask = (id: string) => saveTasks(tasks.map(t => t.id === id ? { ...t, done: !t.done } : t));
+  const removeTask = (id: string) => saveTasks(tasks.filter(t => t.id !== id));
+
+  const addPresentation = () => {
+    const title = presTitle.trim();
+    const url = presUrl.trim();
+    if (!title || !url) return;
+    try { new URL(url); } catch { return; }
+    savePres([{ id: crypto.randomUUID(), title, url, created_at: new Date().toISOString() }, ...presentations]);
+    setPresTitle("");
+    setPresUrl("");
+  };
+  const removePresentation = (id: string) => savePres(presentations.filter(p => p.id !== id));
+
+  const openTasks = tasks.filter(t => !t.done);
+  const doneTasks = tasks.filter(t => t.done);
+
+  return (
+    <div className="grid md:grid-cols-2 gap-4">
+      {/* TASKS */}
+      <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-primary" />
+          <h3 className="font-semibold">Tasks to do</h3>
+          <Badge variant="outline" className="ml-auto">{openTasks.length} open</Badge>
+        </div>
+        {canEdit && (
+          <div className="flex gap-2">
+            <Input
+              value={newTask}
+              onChange={(e) => setNewTask(e.target.value)}
+              placeholder="Add a task…"
+              onKeyDown={(e) => e.key === "Enter" && addTask()}
+            />
+            <Button onClick={addTask} disabled={!newTask.trim()}>
+              <Plus className="w-3 h-3 mr-1" /> Add
+            </Button>
+          </div>
+        )}
+        {tasks.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-6">No tasks yet.</p>
+        ) : (
+          <div className="space-y-1">
+            {[...openTasks, ...doneTasks].map((t) => (
+              <div key={t.id} className="flex items-center gap-2 p-2 rounded hover:bg-muted/40 group">
+                <button
+                  onClick={() => canEdit && toggleTask(t.id)}
+                  disabled={!canEdit}
+                  className="shrink-0"
+                  title={t.done ? "Mark as todo" : "Mark as done"}
+                >
+                  {t.done
+                    ? <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    : <Circle className="w-4 h-4 text-muted-foreground" />}
+                </button>
+                <span className={`text-sm flex-1 ${t.done ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                  {t.text}
+                </span>
+                {canEdit && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="opacity-0 group-hover:opacity-100 h-7 w-7 p-0"
+                    onClick={() => removeTask(t.id)}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* PRESENTATIONS */}
+      <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <Presentation className="w-4 h-4 text-primary" />
+          <h3 className="font-semibold">Presentations done</h3>
+          <Badge variant="outline" className="ml-auto">{presentations.length}</Badge>
+        </div>
+        {canEdit && (
+          <div className="space-y-2">
+            <Input
+              value={presTitle}
+              onChange={(e) => setPresTitle(e.target.value)}
+              placeholder="Title (e.g. Q1 kickoff)"
+            />
+            <div className="flex gap-2">
+              <Input
+                value={presUrl}
+                onChange={(e) => setPresUrl(e.target.value)}
+                placeholder="Google Docs / Slides link (https://…)"
+                onKeyDown={(e) => e.key === "Enter" && addPresentation()}
+              />
+              <Button onClick={addPresentation} disabled={!presTitle.trim() || !presUrl.trim()}>
+                <Plus className="w-3 h-3 mr-1" /> Add
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Paste a Google Docs/Slides share link. Anyone with view access on the doc can open it from here.
+            </p>
+          </div>
+        )}
+        {presentations.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-6">No presentations linked yet.</p>
+        ) : (
+          <div className="divide-y divide-border">
+            {presentations.map((p) => (
+              <div key={p.id} className="flex items-center gap-2 py-2 group">
+                <div className="min-w-0 flex-1">
+                  <a
+                    href={p.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-sm font-medium text-foreground hover:text-primary inline-flex items-center gap-1"
+                  >
+                    {p.title} <ExternalLink className="w-3 h-3" />
+                  </a>
+                  <p className="text-xs text-muted-foreground truncate">{p.url}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    Added {new Date(p.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+                {canEdit && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="opacity-0 group-hover:opacity-100 h-7 w-7 p-0"
+                    onClick={() => removePresentation(p.id)}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
