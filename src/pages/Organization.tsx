@@ -1432,8 +1432,10 @@ function ProjectJourneyTab({
   const epMeta = EPISODE_META[ep] ?? EPISODE_META.development;
   // Location: startup ideas are listed in the Legacy tab. Growth episode also
   // qualifies the venture for the Growth · Systematized track.
-  const inLegacy = true;
+  // Legacy hosts Development/Validation ideas. Once a venture reaches Growth,
+  // it graduates to the Growth · Systematized track and is no longer in Legacy.
   const inSystematized = ep === "growth" || brandMatches;
+  const inLegacy = !inSystematized;
 
   return (
     <div className="space-y-4">
