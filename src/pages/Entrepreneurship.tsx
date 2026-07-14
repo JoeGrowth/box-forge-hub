@@ -610,7 +610,7 @@ const Entrepreneurship = () => {
               <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as MainTab)} className="w-full">
                 <div className="flex border-b border-border mb-6 overflow-x-auto">
                   <Link
-                    to="/ecosystem"
+                    to="/projects"
                     className="flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
                   >
                     <Rocket className="w-4 h-4" />
@@ -745,7 +745,7 @@ const Entrepreneurship = () => {
                       ) : collaborations.length === 0 ? (
                         <div className="text-center py-12 text-muted-foreground">
                           <p>You're not collaborating on any projects yet.</p>
-                          <Button variant="outline" className="mt-3" onClick={() => navigate("/ecosystem")}>
+                          <Button variant="outline" className="mt-3" onClick={() => navigate("/projects")}>
                             Explore Ecosystem
                           </Button>
                         </div>
@@ -756,7 +756,7 @@ const Entrepreneurship = () => {
                           ))}
                           <div
                             className="border border-dashed border-border rounded-2xl p-6 text-center hover:bg-muted/30 transition-colors cursor-pointer"
-                            onClick={() => navigate("/ecosystem")}
+                            onClick={() => navigate("/projects")}
                           >
                             <Users className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
                             <p className="font-medium text-foreground">Join an Idea</p>
