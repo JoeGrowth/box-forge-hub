@@ -756,7 +756,7 @@ const Entrepreneurship = () => {
                           ))}
                           <div
                             className="border border-dashed border-border rounded-2xl p-6 text-center hover:bg-muted/30 transition-colors cursor-pointer"
-                            onClick={() => setMainTab("ecosystem")}
+                            onClick={() => navigate("/ecosystem")}
                           >
                             <Users className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
                             <p className="font-medium text-foreground">Join an Idea</p>
