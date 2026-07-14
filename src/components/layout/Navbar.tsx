@@ -366,7 +366,7 @@ export function Navbar() {
                     }`}
                   >
                     <Building2 size={16} />
-                    <span className="flex-1">Entities</span>
+                    <span className="flex-1">Ventures</span>
                   </Link>
 
 
