@@ -884,8 +884,9 @@ const Entrepreneurship = () => {
                               )}
                             </div>
                           )}
-                          <Button variant="outline" size="sm" className="mt-3" asChild>
-                            <Link to="/profile">Choose Domain</Link>
+                          <Button variant="outline" size="sm" className="mt-3" onClick={() => setSuggestDomainOpen(true)}>
+                            <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                            Suggest domain based on my Natural Role
                           </Button>
                         </div>
 
