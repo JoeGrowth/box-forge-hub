@@ -33,6 +33,7 @@ import { useProgressionLadder } from "@/hooks/useProgressionLadder";
 import { ScaledCard } from "@/components/idea/ScaledCard";
 import LadderPage from "@/pages/Ladder";
 import ConsultingGrowthPage from "@/pages/ConsultingGrowth";
+import { SuggestDomainDialog } from "@/components/domain/SuggestDomainDialog";
 
 interface StartupIdea {
   id: string;
