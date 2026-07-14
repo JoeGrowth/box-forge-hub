@@ -640,7 +640,23 @@ const Entrepreneurship = () => {
                     <TrendingUp className="w-4 h-4" />
                     Growth
                   </button>
+                  <button
+                    onClick={() => setMainTab("organized")}
+                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                      mainTab === "organized"
+                        ? "border-foreground text-foreground"
+                        : "border-transparent text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Layers className="w-4 h-4" />
+                    Organized
+                  </button>
                 </div>
+
+                <TabsContent value="organized">
+                  <LadderPage embedded />
+                </TabsContent>
+
 
                 <TabsContent value="ecosystem">
                   <h2 className="font-display text-lg sm:text-xl font-bold text-foreground mb-4">
