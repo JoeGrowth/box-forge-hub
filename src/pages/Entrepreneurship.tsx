@@ -92,18 +92,18 @@ const Entrepreneurship = () => {
   const navigate = useNavigate();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [applyProject, setApplyProject] = useState<StartupIdea | null>(null);
-  type MainTab = "ecosystem" | "legacy" | "growth";
-  type GrowthSub = "ladder" | "monetized" | "systematized";
+  type MainTab = "ecosystem" | "legacy" | "growth" | "organized";
+  type GrowthSub = "developed" | "monetized" | "systematized";
   const initialTab = (() => {
     const t = searchParams.get("tab");
-    if (t === "legacy" || t === "growth") return t as MainTab;
+    if (t === "legacy" || t === "growth" || t === "organized") return t as MainTab;
     return "ecosystem" as MainTab;
   })();
   const [mainTab, setMainTab] = useState<MainTab>(initialTab);
   const [growthSubTab, setGrowthSubTab] = useState<GrowthSub>(() => {
     const g = searchParams.get("growth");
     if (g === "monetized" || g === "systematized") return g as GrowthSub;
-    return "ladder";
+    return "developed";
   });
   const [legacySubTab, setLegacySubTab] = useState<"initiated" | "joined" | "partnered">(
     (searchParams.get("sub") === "joined" || searchParams.get("sub") === "partnered")
@@ -114,18 +114,24 @@ const Entrepreneurship = () => {
   const advisorAchieved = stages.find((s) => s.key === "advisor")?.achieved ?? false;
   const [profileStartupName, setProfileStartupName] = useState<string | null>(null);
   const [naturalRoleDesc, setNaturalRoleDesc] = useState<string | null>(null);
+  const [profileTitle, setProfileTitle] = useState<string | null>(null);
+  const [profilePrimarySkills, setProfilePrimarySkills] = useState<string | null>(null);
+  const [profileUsername, setProfileUsername] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user || !advisorAchieved) return;
+    if (!user) return;
     (async () => {
       const [{ data: prof }, { data: nr }] = await Promise.all([
-        supabase.from("profiles").select("startup_name").eq("user_id", user.id).maybeSingle(),
+        supabase.from("profiles").select("startup_name, professional_title, primary_skills, username").eq("user_id", user.id).maybeSingle(),
         supabase.from("natural_roles").select("description").eq("user_id", user.id).maybeSingle(),
       ]);
-      setProfileStartupName(prof?.startup_name ?? null);
+      setProfileStartupName((prof as any)?.startup_name ?? null);
+      setProfileTitle((prof as any)?.professional_title ?? null);
+      setProfilePrimarySkills((prof as any)?.primary_skills ?? null);
+      setProfileUsername((prof as any)?.username ?? null);
       setNaturalRoleDesc(nr?.description ?? null);
     })();
-  }, [user, advisorAchieved]);
+  }, [user]);
 
   useEffect(() => {
     if (searchParams.get("new") === "1") {
@@ -634,7 +640,23 @@ const Entrepreneurship = () => {
                     <TrendingUp className="w-4 h-4" />
                     Growth
                   </button>
+                  <button
+                    onClick={() => setMainTab("organized")}
+                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                      mainTab === "organized"
+                        ? "border-foreground text-foreground"
+                        : "border-transparent text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Layers className="w-4 h-4" />
+                    Organized
+                  </button>
                 </div>
+
+                <TabsContent value="organized">
+                  <LadderPage embedded />
+                </TabsContent>
+
 
                 <TabsContent value="ecosystem">
                   <h2 className="font-display text-lg sm:text-xl font-bold text-foreground mb-4">
@@ -792,14 +814,14 @@ const Entrepreneurship = () => {
                 <TabsContent value="growth">
                   <div className="flex gap-1 p-1 bg-muted/60 rounded-lg mb-4 w-full sm:w-auto">
                     <button
-                      onClick={() => setGrowthSubTab("ladder")}
+                      onClick={() => setGrowthSubTab("developed")}
                       className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
-                        growthSubTab === "ladder"
+                        growthSubTab === "developed"
                           ? "bg-background text-foreground shadow-sm"
                           : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      Organized
+                      Developed
                     </button>
                     <button
                       onClick={() => setGrowthSubTab("monetized")}
@@ -826,7 +848,70 @@ const Entrepreneurship = () => {
                     )}
                   </div>
 
-                  {growthSubTab === "ladder" && <LadderPage embedded />}
+                  {growthSubTab === "developed" && (
+                    <div className="space-y-4">
+                      <div className="mb-2">
+                        <h2 className="font-display text-xl font-bold text-foreground">Your Talent, Developed</h2>
+                        <p className="text-sm text-muted-foreground">
+                          The foundation you'll grow: natural role, domain, resume, and public profile.
+                        </p>
+                      </div>
+
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="border border-border rounded-2xl p-5 bg-card">
+                          <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Natural Role</p>
+                          <p className="text-sm text-foreground min-h-[2.5rem]">
+                            {naturalRoleDesc || "Not yet defined — decode it from your profile."}
+                          </p>
+                          <Button variant="outline" size="sm" className="mt-3" asChild>
+                            <Link to="/nr-decoder">Decode / Update</Link>
+                          </Button>
+                        </div>
+
+                        <div className="border border-border rounded-2xl p-5 bg-card">
+                          <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Domain</p>
+                          {profileTitle ? (
+                            <p className="text-sm text-foreground min-h-[2.5rem]">{profileTitle}</p>
+                          ) : (
+                            <div className="min-h-[2.5rem]">
+                              <p className="text-sm text-muted-foreground">Not set yet.</p>
+                              {(naturalRoleDesc || profilePrimarySkills) && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Suggested: {profilePrimarySkills || naturalRoleDesc}
+                                </p>
+                              )}
+                            </div>
+                          )}
+                          <Button variant="outline" size="sm" className="mt-3" asChild>
+                            <Link to="/profile">Choose Domain</Link>
+                          </Button>
+                        </div>
+
+                        <div className="border border-border rounded-2xl p-5 bg-card">
+                          <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Resume</p>
+                          <p className="text-sm text-muted-foreground min-h-[2.5rem]">
+                            Sharpen the story employers and co-builders read first.
+                          </p>
+                          <Button variant="outline" size="sm" className="mt-3" asChild>
+                            <Link to="/resume">Open Resume</Link>
+                          </Button>
+                        </div>
+
+                        <div className="border border-border rounded-2xl p-5 bg-card">
+                          <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Public Profile</p>
+                          <p className="text-sm text-muted-foreground min-h-[2.5rem]">
+                            How the ecosystem discovers you.
+                          </p>
+                          <Button variant="outline" size="sm" className="mt-3" asChild>
+                            <Link to={profileUsername ? `/u/${profileUsername}` : "/profile"}>
+                              View Public Profile
+                            </Link>
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {growthSubTab === "monetized" && <ConsultingGrowthPage embedded />}
                   {growthSubTab === "monetized" && <ConsultingGrowthPage embedded />}
                   {growthSubTab === "systematized" && (
                     advisorAchieved ? (
