@@ -50,6 +50,7 @@ const Ecosystem = () => {
   const [teamCounts, setTeamCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [applyProject, setApplyProject] = useState<StartupIdea | null>(null);
+  const [activeTab, setActiveTab] = useState("all");
 
   useEffect(() => {
     if (!user) return;
