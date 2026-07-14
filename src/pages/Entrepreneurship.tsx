@@ -92,11 +92,11 @@ const Entrepreneurship = () => {
   const navigate = useNavigate();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [applyProject, setApplyProject] = useState<StartupIdea | null>(null);
-  type MainTab = "ecosystem" | "legacy" | "growth" | "organized";
+  type MainTab = "ecosystem" | "legacy" | "growth" | "progress";
   type GrowthSub = "developed" | "monetized" | "systematized";
   const initialTab = (() => {
     const t = searchParams.get("tab");
-    if (t === "legacy" || t === "growth" || t === "organized") return t as MainTab;
+    if (t === "legacy" || t === "growth" || t === "progress") return t as MainTab;
     return "ecosystem" as MainTab;
   })();
   const [mainTab, setMainTab] = useState<MainTab>(initialTab);
@@ -641,19 +641,19 @@ const Entrepreneurship = () => {
                     Growth
                   </button>
                   <button
-                    onClick={() => setMainTab("organized")}
+                    onClick={() => setMainTab("progress")}
                     className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                      mainTab === "organized"
+                      mainTab === "progress"
                         ? "border-foreground text-foreground"
                         : "border-transparent text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     <Layers className="w-4 h-4" />
-                    Organized
+                    Progress
                   </button>
                 </div>
 
-                <TabsContent value="organized">
+                <TabsContent value="progress">
                   <LadderPage embedded />
                 </TabsContent>
 
