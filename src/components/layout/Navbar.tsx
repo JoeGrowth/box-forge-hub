@@ -64,8 +64,8 @@ const moreLinks: Array<{
   minStage?: keyof typeof STAGE_RANK;
   engineKey?: EngineKey;
 }> = [
-  { name: "Consulting", path: "/consulting", icon: Handshake, engineKey: "consulting" },
   { name: "Squares", path: "/squares", icon: LayoutGrid },
+  { name: "Paths", path: "/paths", icon: Activity },
   { name: "Opportunities", path: "/opportunities", icon: Briefcase },
   { name: "Organizations", path: "/organizations", icon: Building2, minStage: "emerging" },
   { name: "Boxes", path: "/boxes", icon: Package },
