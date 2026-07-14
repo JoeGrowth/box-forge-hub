@@ -166,25 +166,36 @@ export function Navbar() {
             ) : (
               <>
 
-                {stageRank >= STAGE_RANK.emerging && (
-                  <Link
-                    to="/people"
-                    className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 ${
-                      location.pathname === "/people" ? "text-b4-teal" : "text-muted-foreground"
-                    }`}
-                  >
-                    People
-                  </Link>
-                )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 outline-none ${
+                        location.pathname === "/people" || location.pathname === "/entrepreneurship"
+                          ? "text-b4-teal"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      Ecosystem
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48 mt-2">
+                    {stageRank >= STAGE_RANK.emerging && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/people" className="flex items-center gap-2 cursor-pointer">
+                          <Users className="w-4 h-4" />
+                          <span>People</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem asChild>
+                      <Link to="/entrepreneurship" className="flex items-center gap-2 cursor-pointer">
+                        <Building2 className="w-4 h-4" />
+                        <span>Entities</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
-                <Link
-                  to="/entrepreneurship"
-                  className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 ${
-                    location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-muted-foreground"
-                  }`}
-                >
-                  Entities
-                </Link>
 
                 <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
                   <DropdownMenuTrigger asChild>
