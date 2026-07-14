@@ -44,6 +44,7 @@ const getEpisodeBadgeClasses = (episode: string) => {
 const Ecosystem = () => {
   const { user } = useAuth();
   const [browseProjects, setBrowseProjects] = useState<StartupIdea[]>([]);
+  const [myProjects, setMyProjects] = useState<StartupIdea[]>([]);
   const [creatorNames, setCreatorNames] = useState<Record<string, string>>({});
   const [teamCounts, setTeamCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
@@ -54,16 +55,18 @@ const Ecosystem = () => {
     (async () => {
       setLoading(true);
       try {
-        const { data: browse } = await supabase
+        const { data: all } = await supabase
           .from("startup_ideas")
           .select("*")
           .eq("review_status", "approved")
-          .eq("is_looking_for_cobuilders", true)
-          .neq("creator_id", user.id);
-        const list = (browse || []) as StartupIdea[];
-        setBrowseProjects(list);
+          .eq("is_looking_for_cobuilders", true);
+        const list = (all || []) as StartupIdea[];
+        const mine = list.filter((p) => p.creator_id === user.id);
+        const others = list.filter((p) => p.creator_id !== user.id);
+        setMyProjects(mine);
+        setBrowseProjects(others);
 
-        const creatorIds = [...new Set(list.map((p) => p.creator_id))];
+        const creatorIds = [...new Set(others.map((p) => p.creator_id))];
         if (creatorIds.length > 0) {
           const { data: profiles } = await supabase
             .from("profiles")
@@ -89,6 +92,70 @@ const Ecosystem = () => {
       }
     })();
   }, [user]);
+
+  const renderProjectCard = (project: StartupIdea, isOwn: boolean) => (
+    <div key={project.id} className="border border-border rounded-2xl p-4 sm:p-6 bg-card hover:shadow-md transition-shadow">
+      <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+        <div className="flex-1 min-w-0 w-full">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <h3 className="font-display text-lg sm:text-xl font-bold text-foreground break-words">{project.title}</h3>
+            <Badge variant="outline" className={`text-xs ${getEpisodeBadgeClasses(project.current_episode)}`}>{getEpisodeLabel(project.current_episode)}</Badge>
+            {isOwn && <Badge variant="secondary" className="text-xs">Your listing</Badge>}
+          </div>
+          {project.sector && (
+            <p className="text-sm text-muted-foreground italic mb-2">{project.sector}</p>
+          )}
+          <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{project.description}</p>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4 text-sm">
+            <div>
+              <p className="text-muted-foreground">Founder</p>
+              <p className="font-semibold text-foreground truncate">{isOwn ? "You" : (creatorNames[project.creator_id] || "—")}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Team Size</p>
+              <p className="font-semibold text-foreground">{(teamCounts[project.id] || 0) + 1} members</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Industry</p>
+              <p className="font-semibold text-foreground truncate">{project.sector || "General"}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Equity Offer</p>
+              <p className="font-semibold text-secondary">5-15%</p>
+            </div>
+          </div>
+
+          {project.roles_needed && project.roles_needed.length > 0 && (
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Seeking roles:</p>
+              <div className="flex flex-wrap gap-1">
+                {project.roles_needed.map((role) => (
+                  <Badge key={role} variant="secondary" className="text-xs">
+                    {role}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-row sm:flex-col gap-2 shrink-0 w-full sm:w-auto">
+          <Rocket className="w-8 h-8 text-primary mx-auto mb-1 hidden sm:block" />
+          {!isOwn && (
+            <Button size="sm" className="flex-1 sm:flex-none" onClick={() => setApplyProject(project)}>
+              Express Interest
+            </Button>
+          )}
+          <Button variant="outline" size="sm" className="flex-1 sm:flex-none" asChild>
+            <Link to={`/opportunities/${project.id}`}>
+              <Eye className="w-3 h-3 mr-1" /> View Details
+            </Link>
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-background">
