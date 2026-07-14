@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Sparkles, Check } from "lucide-react";
@@ -38,9 +39,35 @@ interface Props {
 export function SuggestDomainDialog({ open, onOpenChange, naturalRole, currentTitle, primarySkills, onApply }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const storageKey = user ? `suggest-domains:${user.id}` : "suggest-domains:anon";
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<SuggestionResult | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
+  const [savedAt, setSavedAt] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.result) setResult(parsed.result);
+        if (parsed?.savedAt) setSavedAt(parsed.savedAt);
+      }
+    } catch {}
+  }, [open, storageKey]);
+
+  const saveResult = () => {
+    if (!result) return;
+    const ts = new Date().toISOString();
+    try {
+      localStorage.setItem(storageKey, JSON.stringify({ result, savedAt: ts }));
+      setSavedAt(ts);
+      toast({ title: "Saved", description: "Your recommendations are saved. Reopen this dialog to review them." });
+    } catch (e: any) {
+      toast({ title: "Save failed", description: e.message || "Could not save locally.", variant: "destructive" });
+    }
+  };
 
   const run = async () => {
     if (!naturalRole) {
@@ -223,8 +250,19 @@ export function SuggestDomainDialog({ open, onOpenChange, naturalRole, currentTi
           )}
         </div>
 
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>Close</Button>
+        <DialogFooter className="flex-col sm:flex-row gap-2 sm:justify-between sm:items-center">
+          {savedAt ? (
+            <p className="text-xs text-muted-foreground">
+              Saved {new Date(savedAt).toLocaleString()}
+            </p>
+          ) : <span />}
+          <div className="flex gap-2">
+            <Button variant="ghost" onClick={() => onOpenChange(false)}>Close</Button>
+            <Button variant="teal" onClick={saveResult} disabled={!result}>
+              <Save className="w-4 h-4 mr-2" />
+              Save
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
