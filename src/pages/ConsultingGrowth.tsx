@@ -270,7 +270,7 @@ export default function ConsultingGrowth({ embedded = false }: { embedded?: bool
     <div className={embedded ? "space-y-6" : "container mx-auto px-4 pt-24 pb-8 max-w-5xl space-y-6"}>
       <div className="flex items-start justify-between gap-4 mb-2 flex-wrap">
         <div className="flex-1 min-w-[260px]">
-          <h1 className="text-3xl font-bold tracking-tight">Consulting Growth</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Consulting Growth : Your Talent Monetized</h1>
         </div>
       </div>
 
