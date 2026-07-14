@@ -814,14 +814,14 @@ const Entrepreneurship = () => {
                 <TabsContent value="growth">
                   <div className="flex gap-1 p-1 bg-muted/60 rounded-lg mb-4 w-full sm:w-auto">
                     <button
-                      onClick={() => setGrowthSubTab("ladder")}
+                      onClick={() => setGrowthSubTab("developed")}
                       className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
-                        growthSubTab === "ladder"
+                        growthSubTab === "developed"
                           ? "bg-background text-foreground shadow-sm"
                           : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      Organized
+                      Developed
                     </button>
                     <button
                       onClick={() => setGrowthSubTab("monetized")}
@@ -848,7 +848,70 @@ const Entrepreneurship = () => {
                     )}
                   </div>
 
-                  {growthSubTab === "ladder" && <LadderPage embedded />}
+                  {growthSubTab === "developed" && (
+                    <div className="space-y-4">
+                      <div className="mb-2">
+                        <h2 className="font-display text-xl font-bold text-foreground">Your Talent, Developed</h2>
+                        <p className="text-sm text-muted-foreground">
+                          The foundation you'll grow: natural role, domain, resume, and public profile.
+                        </p>
+                      </div>
+
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="border border-border rounded-2xl p-5 bg-card">
+                          <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Natural Role</p>
+                          <p className="text-sm text-foreground min-h-[2.5rem]">
+                            {naturalRoleDesc || "Not yet defined — decode it from your profile."}
+                          </p>
+                          <Button variant="outline" size="sm" className="mt-3" asChild>
+                            <Link to="/nr-decoder">Decode / Update</Link>
+                          </Button>
+                        </div>
+
+                        <div className="border border-border rounded-2xl p-5 bg-card">
+                          <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Domain</p>
+                          {profileTitle ? (
+                            <p className="text-sm text-foreground min-h-[2.5rem]">{profileTitle}</p>
+                          ) : (
+                            <div className="min-h-[2.5rem]">
+                              <p className="text-sm text-muted-foreground">Not set yet.</p>
+                              {(naturalRoleDesc || profilePrimarySkills) && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Suggested: {profilePrimarySkills || naturalRoleDesc}
+                                </p>
+                              )}
+                            </div>
+                          )}
+                          <Button variant="outline" size="sm" className="mt-3" asChild>
+                            <Link to="/profile">Choose Domain</Link>
+                          </Button>
+                        </div>
+
+                        <div className="border border-border rounded-2xl p-5 bg-card">
+                          <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Resume</p>
+                          <p className="text-sm text-muted-foreground min-h-[2.5rem]">
+                            Sharpen the story employers and co-builders read first.
+                          </p>
+                          <Button variant="outline" size="sm" className="mt-3" asChild>
+                            <Link to="/resume">Open Resume</Link>
+                          </Button>
+                        </div>
+
+                        <div className="border border-border rounded-2xl p-5 bg-card">
+                          <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Public Profile</p>
+                          <p className="text-sm text-muted-foreground min-h-[2.5rem]">
+                            How the ecosystem discovers you.
+                          </p>
+                          <Button variant="outline" size="sm" className="mt-3" asChild>
+                            <Link to={profileUsername ? `/u/${profileUsername}` : "/profile"}>
+                              View Public Profile
+                            </Link>
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {growthSubTab === "monetized" && <ConsultingGrowthPage embedded />}
                   {growthSubTab === "monetized" && <ConsultingGrowthPage embedded />}
                   {growthSubTab === "systematized" && (
                     advisorAchieved ? (
