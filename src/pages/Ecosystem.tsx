@@ -199,7 +199,12 @@ const Ecosystem = () => {
         <ApplyToJoinDialog
           open={!!applyProject}
           onOpenChange={(open) => !open && setApplyProject(null)}
-          project={applyProject as any}
+          idea={{
+            id: applyProject.id,
+            title: applyProject.title,
+            creator_id: applyProject.creator_id,
+            roles_needed: applyProject.roles_needed,
+          }}
         />
       )}
     </div>
