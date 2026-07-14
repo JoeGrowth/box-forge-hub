@@ -610,6 +610,17 @@ const Entrepreneurship = () => {
               <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as MainTab)} className="w-full">
                 <div className="flex border-b border-border mb-6 overflow-x-auto">
                   <button
+                    onClick={() => setMainTab("growth")}
+                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                      mainTab === "growth"
+                        ? "border-foreground text-foreground"
+                        : "border-transparent text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <TrendingUp className="w-4 h-4" />
+                    Your Talent
+                  </button>
+                  <button
                     onClick={() => setMainTab("legacy")}
                     className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                       mainTab === "legacy"
@@ -621,17 +632,6 @@ const Entrepreneurship = () => {
                     Legacy
                   </button>
                   <button
-                    onClick={() => setMainTab("growth")}
-                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                      mainTab === "growth"
-                        ? "border-foreground text-foreground"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <TrendingUp className="w-4 h-4" />
-                    Growth
-                  </button>
-                  <button
                     onClick={() => setMainTab("progress")}
                     className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                       mainTab === "progress"
@@ -640,13 +640,10 @@ const Entrepreneurship = () => {
                     }`}
                   >
                     <Layers className="w-4 h-4" />
-                    Progress
+                    Ladder
                   </button>
                 </div>
 
-                <TabsContent value="progress">
-                  <LadderPage embedded />
-                </TabsContent>
 
 
 
@@ -904,6 +901,10 @@ const Entrepreneurship = () => {
                       </div>
                     )
                   )}
+                </TabsContent>
+
+                <TabsContent value="progress">
+                  <LadderPage embedded />
                 </TabsContent>
               </Tabs>
             </div>
