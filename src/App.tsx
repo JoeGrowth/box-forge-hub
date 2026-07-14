@@ -90,6 +90,7 @@ import BrandEntity from "./pages/BrandEntity";
 import Calcul from "./pages/Calcul";
 import PublishTalent from "./pages/PublishTalent";
 import Ladder from "./pages/Ladder";
+import SavedDomainSuggestions from "./pages/SavedDomainSuggestions";
 
 import { ClickTracker } from "./components/analytics/ClickTracker";
 
@@ -203,6 +204,7 @@ const App = () => (
                   <Route path="/talent" element={<Navigate to="/publish-talent" replace />} />
                   <Route path="/ladder" element={<ProtectedRoute><Ladder /></ProtectedRoute>} />
                   <Route path="/progression" element={<Navigate to="/ladder" replace />} />
+                  <Route path="/domain-suggestions" element={<ProtectedRoute><SavedDomainSuggestions /></ProtectedRoute>} />
                   <Route path="/timeline" element={<ProtectedRoute><JourneyTimeline /></ProtectedRoute>} />
                   <Route path="/journey-timeline" element={<Navigate to="/timeline" replace />} />
                   <Route path="/pgp" element={<Navigate to="/PGP" replace />} />
