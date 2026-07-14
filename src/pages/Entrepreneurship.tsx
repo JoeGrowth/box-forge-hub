@@ -118,6 +118,7 @@ const Entrepreneurship = () => {
   const [profileTitle, setProfileTitle] = useState<string | null>(null);
   const [profilePrimarySkills, setProfilePrimarySkills] = useState<string | null>(null);
   const [profileUsername, setProfileUsername] = useState<string | null>(null);
+  const [suggestDomainOpen, setSuggestDomainOpen] = useState(false);
 
   useEffect(() => {
     if (!user) return;
