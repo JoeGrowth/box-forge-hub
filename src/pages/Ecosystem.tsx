@@ -175,7 +175,7 @@ const Ecosystem = () => {
           </section>
 
           <section>
-            <div className="container mx-auto px-4 max-w-5xl space-y-6 pt-8">
+            <div className="container mx-auto px-4 max-w-5xl space-y-8 pt-8">
 
             {loading ? (
                 <div className="space-y-4">
@@ -187,75 +187,30 @@ const Ecosystem = () => {
                     </div>
                   ))}
                 </div>
-              ) : browseProjects.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Rocket className="w-12 h-12 mx-auto mb-3 opacity-40" />
-                  <p>No projects seeking co-builders right now.</p>
-                  <p className="text-sm mt-1">Check back soon or start your own!</p>
-                </div>
               ) : (
-                <div className="space-y-4">
-                  {browseProjects.map((project) => (
-                    <div key={project.id} className="border border-border rounded-2xl p-4 sm:p-6 bg-card hover:shadow-md transition-shadow">
-                      <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-                        <div className="flex-1 min-w-0 w-full">
-                          <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <h3 className="font-display text-lg sm:text-xl font-bold text-foreground break-words">{project.title}</h3>
-                            <Badge variant="outline" className={`text-xs ${getEpisodeBadgeClasses(project.current_episode)}`}>{getEpisodeLabel(project.current_episode)}</Badge>
-                          </div>
-                          {project.sector && (
-                            <p className="text-sm text-muted-foreground italic mb-2">{project.sector}</p>
-                          )}
-                          <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{project.description}</p>
-
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4 text-sm">
-                            <div>
-                              <p className="text-muted-foreground">Founder</p>
-                              <p className="font-semibold text-foreground truncate">{creatorNames[project.creator_id] || "—"}</p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">Team Size</p>
-                              <p className="font-semibold text-foreground">{(teamCounts[project.id] || 0) + 1} members</p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">Industry</p>
-                              <p className="font-semibold text-foreground truncate">{project.sector || "General"}</p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">Equity Offer</p>
-                              <p className="font-semibold text-secondary">5-15%</p>
-                            </div>
-                          </div>
-
-                          {project.roles_needed && project.roles_needed.length > 0 && (
-                            <div>
-                              <p className="text-xs text-muted-foreground mb-1">Seeking roles:</p>
-                              <div className="flex flex-wrap gap-1">
-                                {project.roles_needed.map((role) => (
-                                  <Badge key={role} variant="secondary" className="text-xs">
-                                    {role}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="flex flex-row sm:flex-col gap-2 shrink-0 w-full sm:w-auto">
-                          <Rocket className="w-8 h-8 text-primary mx-auto mb-1 hidden sm:block" />
-                          <Button size="sm" className="flex-1 sm:flex-none" onClick={() => setApplyProject(project)}>
-                            Express Interest
-                          </Button>
-                          <Button variant="outline" size="sm" className="flex-1 sm:flex-none" asChild>
-                            <Link to={`/opportunities/${project.id}`}>
-                              <Eye className="w-3 h-3 mr-1" /> View Details
-                            </Link>
-                          </Button>
-                        </div>
-                      </div>
+                <>
+                  {myProjects.length > 0 && (
+                    <div className="space-y-4">
+                      <h2 className="font-display text-xl font-bold text-foreground">Your Listings</h2>
+                      {myProjects.map((p) => renderProjectCard(p, true))}
                     </div>
-                  ))}
-                </div>
+                  )}
+
+                  <div className="space-y-4">
+                    {myProjects.length > 0 && (
+                      <h2 className="font-display text-xl font-bold text-foreground">Browse Other Projects</h2>
+                    )}
+                    {browseProjects.length === 0 ? (
+                      <div className="text-center py-12 text-muted-foreground">
+                        <Rocket className="w-12 h-12 mx-auto mb-3 opacity-40" />
+                        <p>No other projects seeking co-builders right now.</p>
+                        <p className="text-sm mt-1">Check back soon!</p>
+                      </div>
+                    ) : (
+                      browseProjects.map((p) => renderProjectCard(p, false))
+                    )}
+                  </div>
+                </>
               )}
             </div>
           </section>
