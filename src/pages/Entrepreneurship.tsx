@@ -114,18 +114,24 @@ const Entrepreneurship = () => {
   const advisorAchieved = stages.find((s) => s.key === "advisor")?.achieved ?? false;
   const [profileStartupName, setProfileStartupName] = useState<string | null>(null);
   const [naturalRoleDesc, setNaturalRoleDesc] = useState<string | null>(null);
+  const [profileTitle, setProfileTitle] = useState<string | null>(null);
+  const [profilePrimarySkills, setProfilePrimarySkills] = useState<string | null>(null);
+  const [profileUsername, setProfileUsername] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user || !advisorAchieved) return;
+    if (!user) return;
     (async () => {
       const [{ data: prof }, { data: nr }] = await Promise.all([
-        supabase.from("profiles").select("startup_name").eq("user_id", user.id).maybeSingle(),
+        supabase.from("profiles").select("startup_name, professional_title, primary_skills, username").eq("user_id", user.id).maybeSingle(),
         supabase.from("natural_roles").select("description").eq("user_id", user.id).maybeSingle(),
       ]);
-      setProfileStartupName(prof?.startup_name ?? null);
+      setProfileStartupName((prof as any)?.startup_name ?? null);
+      setProfileTitle((prof as any)?.professional_title ?? null);
+      setProfilePrimarySkills((prof as any)?.primary_skills ?? null);
+      setProfileUsername((prof as any)?.username ?? null);
       setNaturalRoleDesc(nr?.description ?? null);
     })();
-  }, [user, advisorAchieved]);
+  }, [user]);
 
   useEffect(() => {
     if (searchParams.get("new") === "1") {
