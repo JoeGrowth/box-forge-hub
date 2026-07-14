@@ -99,16 +99,13 @@ const Ecosystem = () => {
             <div className="container mx-auto px-4 max-w-5xl space-y-6">
               <div>
                 <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
-                  Ecosystem
+                  Startup Projects
                 </h1>
                 <p className="text-sm sm:text-base text-muted-foreground mt-2">
                   Discover startup projects seeking co-builders and join the ventures shaping the platform.
                 </p>
               </div>
 
-              <h2 className="font-display text-lg sm:text-xl font-bold text-foreground">
-                Startup Projects Seeking Co-Builders
-              </h2>
 
               {loading ? (
                 <div className="space-y-4">
