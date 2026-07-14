@@ -951,6 +951,14 @@ const Entrepreneurship = () => {
       <Footer />
       <ScrollToTopButton />
       <CreateIdeaDialog open={showCreateDialog} onOpenChange={setShowCreateDialog} />
+      <SuggestDomainDialog
+        open={suggestDomainOpen}
+        onOpenChange={setSuggestDomainOpen}
+        naturalRole={naturalRoleDesc}
+        currentTitle={profileTitle}
+        primarySkills={profilePrimarySkills}
+        onApply={(d) => setProfileTitle(d)}
+      />
       {applyProject && (
         <ApplyToJoinDialog
           open={!!applyProject}
