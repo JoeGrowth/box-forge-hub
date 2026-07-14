@@ -90,6 +90,7 @@ import BrandEntity from "./pages/BrandEntity";
 import Calcul from "./pages/Calcul";
 import PublishTalent from "./pages/PublishTalent";
 import Ladder from "./pages/Ladder";
+import SavedDomainSuggestions from "./pages/SavedDomainSuggestions";
 
 import { ClickTracker } from "./components/analytics/ClickTracker";
 
