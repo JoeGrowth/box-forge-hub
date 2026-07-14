@@ -94,20 +94,23 @@ const Ecosystem = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <PageTransition>
-        <main className="pt-24 pb-8">
-          <section>
-            <div className="container mx-auto px-4 max-w-5xl space-y-6">
-              <div>
-                <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
-                  Startup Projects
-                </h1>
-                <p className="text-sm sm:text-base text-muted-foreground mt-2">
-                  Discover startup projects seeking co-builders and join the ventures shaping the platform.
-                </p>
+        <main className="pt-20 pb-8">
+          <section className="py-12 gradient-hero text-primary-foreground">
+            <div className="container mx-auto px-4">
+              <div className="flex items-center gap-3 mb-2">
+                <Rocket className="w-8 h-8" />
+                <h1 className="font-display text-3xl font-bold">Startup Projects</h1>
               </div>
+              <p className="text-primary-foreground/80 max-w-2xl">
+                Discover startup projects seeking co-builders and join the ventures shaping the platform.
+              </p>
+            </div>
+          </section>
 
+          <section>
+            <div className="container mx-auto px-4 max-w-5xl space-y-6 pt-8">
 
-              {loading ? (
+            {loading ? (
                 <div className="space-y-4">
                   {Array.from({ length: 2 }).map((_, i) => (
                     <div key={i} className="border border-border rounded-2xl p-6 bg-card">
