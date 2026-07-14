@@ -39,9 +39,35 @@ interface Props {
 export function SuggestDomainDialog({ open, onOpenChange, naturalRole, currentTitle, primarySkills, onApply }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const storageKey = user ? `suggest-domains:${user.id}` : "suggest-domains:anon";
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<SuggestionResult | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
+  const [savedAt, setSavedAt] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.result) setResult(parsed.result);
+        if (parsed?.savedAt) setSavedAt(parsed.savedAt);
+      }
+    } catch {}
+  }, [open, storageKey]);
+
+  const saveResult = () => {
+    if (!result) return;
+    const ts = new Date().toISOString();
+    try {
+      localStorage.setItem(storageKey, JSON.stringify({ result, savedAt: ts }));
+      setSavedAt(ts);
+      toast({ title: "Saved", description: "Your recommendations are saved. Reopen this dialog to review them." });
+    } catch (e: any) {
+      toast({ title: "Save failed", description: e.message || "Could not save locally.", variant: "destructive" });
+    }
+  };
 
   const run = async () => {
     if (!naturalRole) {
