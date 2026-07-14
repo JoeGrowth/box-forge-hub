@@ -1649,6 +1649,36 @@ export type Database = {
         }
         Relationships: []
       }
+      domain_suggestions: {
+        Row: {
+          created_at: string
+          id: string
+          label: string | null
+          natural_role: string | null
+          result: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label?: string | null
+          natural_role?: string | null
+          result: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string | null
+          natural_role?: string | null
+          result?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       entity_role_assignments: {
         Row: {
           accepted_at: string | null
