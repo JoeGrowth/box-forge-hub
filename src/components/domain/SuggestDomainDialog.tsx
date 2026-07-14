@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Sparkles, Check } from "lucide-react";
+import { Loader2, Sparkles, Check, Save, BookMarked } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,7 +17,7 @@ interface DomainSuggestion {
   businesses: string[];
 }
 
-interface SuggestionResult {
+export interface SuggestionResult {
   primary_natural_role?: string;
   supporting_expressions?: string[];
   cognitive_function?: string;
@@ -39,35 +39,31 @@ interface Props {
 export function SuggestDomainDialog({ open, onOpenChange, naturalRole, currentTitle, primarySkills, onApply }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const storageKey = user ? `suggest-domains:${user.id}` : "suggest-domains:anon";
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<SuggestionResult | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
-  const [savedAt, setSavedAt] = useState<string | null>(null);
+  const [persisting, setPersisting] = useState(false);
+  const [savedCount, setSavedCount] = useState(0);
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed?.result) setResult(parsed.result);
-        if (parsed?.savedAt) setSavedAt(parsed.savedAt);
-      }
-    } catch {}
-  }, [open, storageKey]);
-
-  const saveResult = () => {
-    if (!result) return;
-    const ts = new Date().toISOString();
-    try {
-      localStorage.setItem(storageKey, JSON.stringify({ result, savedAt: ts }));
-      setSavedAt(ts);
-      toast({ title: "Saved", description: "Your recommendations are saved. Reopen this dialog to review them." });
-    } catch (e: any) {
-      toast({ title: "Save failed", description: e.message || "Could not save locally.", variant: "destructive" });
+  const loadSaved = async () => {
+    if (!user) return;
+    const { data, error } = await (supabase as any)
+      .from("domain_suggestions")
+      .select("id, created_at, result")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+    if (error) return;
+    setSavedCount(data?.length ?? 0);
+    if (data && data.length > 0) {
+      setResult(data[0].result as SuggestionResult);
+      setLastSavedAt(data[0].created_at);
     }
   };
+
+  useEffect(() => {
+    if (open) loadSaved();
+  }, [open, user?.id]);
 
   const run = async () => {
     if (!naturalRole) {
@@ -76,6 +72,7 @@ export function SuggestDomainDialog({ open, onOpenChange, naturalRole, currentTi
     }
     setLoading(true);
     setResult(null);
+    setLastSavedAt(null);
     try {
       const { data, error } = await supabase.functions.invoke("suggest-domains", {
         body: { naturalRole, currentTitle, primarySkills },
@@ -88,6 +85,30 @@ export function SuggestDomainDialog({ open, onOpenChange, naturalRole, currentTi
       toast({ title: "Failed to generate", description: e.message || "Try again.", variant: "destructive" });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const persist = async () => {
+    if (!user || !result) return;
+    setPersisting(true);
+    try {
+      const label = result.recommended_domains?.[0]?.name || "Domain suggestions";
+      const { error } = await (supabase as any).from("domain_suggestions").insert({
+        user_id: user.id,
+        label,
+        natural_role: naturalRole,
+        result,
+      });
+      if (error) throw error;
+      toast({
+        title: "Saved to your account",
+        description: "Find it in Saved suggestions. Only the last 3 are kept.",
+      });
+      await loadSaved();
+    } catch (e: any) {
+      toast({ title: "Save failed", description: e.message || "Try again.", variant: "destructive" });
+    } finally {
+      setPersisting(false);
     }
   };
 
@@ -124,9 +145,17 @@ export function SuggestDomainDialog({ open, onOpenChange, naturalRole, currentTi
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="rounded-lg border border-border p-3 bg-muted/40 text-sm">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Your Natural Role</p>
-            <p className="text-foreground">{naturalRole || "Not defined yet."}</p>
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="rounded-lg border border-border p-3 bg-muted/40 text-sm flex-1 min-w-[240px]">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Your Natural Role</p>
+              <p className="text-foreground">{naturalRole || "Not defined yet."}</p>
+            </div>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/domain-suggestions">
+                <BookMarked className="w-4 h-4 mr-2" />
+                Saved ({savedCount}/3)
+              </Link>
+            </Button>
           </div>
 
           {!result && !loading && (
@@ -251,16 +280,16 @@ export function SuggestDomainDialog({ open, onOpenChange, naturalRole, currentTi
         </div>
 
         <DialogFooter className="flex-col sm:flex-row gap-2 sm:justify-between sm:items-center">
-          {savedAt ? (
+          {lastSavedAt ? (
             <p className="text-xs text-muted-foreground">
-              Saved {new Date(savedAt).toLocaleString()}
+              Last saved {new Date(lastSavedAt).toLocaleString()}
             </p>
           ) : <span />}
           <div className="flex gap-2">
             <Button variant="ghost" onClick={() => onOpenChange(false)}>Close</Button>
-            <Button variant="teal" onClick={saveResult} disabled={!result}>
-              <Save className="w-4 h-4 mr-2" />
-              Save
+            <Button variant="teal" onClick={persist} disabled={!result || persisting}>
+              {persisting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+              Save to my account
             </Button>
           </div>
         </DialogFooter>
