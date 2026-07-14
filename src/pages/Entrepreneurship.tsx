@@ -902,6 +902,10 @@ const Entrepreneurship = () => {
                     )
                   )}
                 </TabsContent>
+
+                <TabsContent value="progress">
+                  <LadderPage embedded />
+                </TabsContent>
               </Tabs>
             </div>
           </section>
