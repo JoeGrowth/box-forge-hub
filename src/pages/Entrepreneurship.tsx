@@ -656,34 +656,8 @@ const Entrepreneurship = () => {
                 </TabsContent>
 
 
-                <TabsContent value="ecosystem">
-                  <h2 className="font-display text-lg sm:text-xl font-bold text-foreground mb-4">
-                    Startup Projects Seeking Co-Builders
-                  </h2>
-                  {loading ? (
-                    <div className="space-y-4">
-                      {Array.from({ length: 2 }).map((_, i) => (
-                        <div key={i} className="border border-border rounded-2xl p-6 bg-card">
-                          <Skeleton className="h-6 w-48 mb-3" />
-                          <Skeleton className="h-4 w-full mb-2" />
-                          <Skeleton className="h-4 w-2/3" />
-                        </div>
-                      ))}
-                    </div>
-                  ) : browseProjects.length === 0 ? (
-                    <div className="text-center py-12 text-muted-foreground">
-                      <Rocket className="w-12 h-12 mx-auto mb-3 opacity-40" />
-                      <p>No projects seeking co-builders right now.</p>
-                      <p className="text-sm mt-1">Check back soon or start your own!</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {browseProjects.map((project) => (
-                        <ProjectCard key={project.id} project={project} />
-                      ))}
-                    </div>
-                  )}
-                </TabsContent>
+
+
 
                 <TabsContent value="legacy">
                   <Tabs value={legacySubTab} onValueChange={(v) => setLegacySubTab(v as "initiated" | "joined" | "partnered")} className="w-full">
