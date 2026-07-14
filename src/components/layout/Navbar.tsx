@@ -170,7 +170,7 @@ export function Navbar() {
                   <DropdownMenuTrigger asChild>
                     <button
                       className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 outline-none ${
-                        location.pathname === "/people" || location.pathname === "/entrepreneurship"
+                        location.pathname === "/people" || location.pathname === "/projects"
                           ? "text-b4-teal"
                           : "text-muted-foreground"
                       }`}
@@ -188,13 +188,23 @@ export function Navbar() {
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuItem asChild>
-                      <Link to="/entrepreneurship" className="flex items-center gap-2 cursor-pointer">
-                        <Building2 className="w-4 h-4" />
-                        <span>Entities</span>
+                      <Link to="/projects" className="flex items-center gap-2 cursor-pointer">
+                        <Rocket className="w-4 h-4" />
+                        <span>Projects</span>
                       </Link>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+
+                <Link
+                  to="/entrepreneurship"
+                  className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 ${
+                    location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-muted-foreground"
+                  }`}
+                >
+                  Entities
+                </Link>
+
 
 
                 <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
@@ -334,6 +344,19 @@ export function Navbar() {
                   )}
 
                   <Link
+                    to="/projects"
+                    onClick={() => setIsOpen(false)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                      location.pathname === "/projects"
+                        ? "bg-muted text-b4-teal"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    <Rocket size={16} />
+                    <span className="flex-1">Projects</span>
+                  </Link>
+
+                  <Link
                     to="/entrepreneurship"
                     onClick={() => setIsOpen(false)}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
@@ -345,6 +368,7 @@ export function Navbar() {
                     <Building2 size={16} />
                     <span className="flex-1">Entities</span>
                   </Link>
+
 
 
                   {visibleMoreLinks.length > 0 && (
