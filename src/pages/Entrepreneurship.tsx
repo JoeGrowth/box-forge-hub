@@ -5,7 +5,7 @@ import { ScrollToTopButton } from "@/components/layout/ScrollToTopButton";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Rocket, Eye, Users, Layers, Film, Shield, TrendingUp, Trash2, CheckCircle, Loader2, Lightbulb, Plus, Building2, UserRoundCog } from "lucide-react";
+import { Rocket, Eye, Users, Layers, Film, Shield, TrendingUp, Trash2, CheckCircle, Loader2, Lightbulb, Plus, Building2, UserRoundCog, Sparkles } from "lucide-react";
 import { TransferInitiationDialog } from "@/components/idea/TransferInitiationDialog";
 import { Switch } from "@/components/ui/switch";
 import { NextGoalBanner } from "@/components/progression/NextGoalBanner";
@@ -33,6 +33,7 @@ import { useProgressionLadder } from "@/hooks/useProgressionLadder";
 import { ScaledCard } from "@/components/idea/ScaledCard";
 import LadderPage from "@/pages/Ladder";
 import ConsultingGrowthPage from "@/pages/ConsultingGrowth";
+import { SuggestDomainDialog } from "@/components/domain/SuggestDomainDialog";
 
 interface StartupIdea {
   id: string;
@@ -117,6 +118,7 @@ const Entrepreneurship = () => {
   const [profileTitle, setProfileTitle] = useState<string | null>(null);
   const [profilePrimarySkills, setProfilePrimarySkills] = useState<string | null>(null);
   const [profileUsername, setProfileUsername] = useState<string | null>(null);
+  const [suggestDomainOpen, setSuggestDomainOpen] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -882,8 +884,9 @@ const Entrepreneurship = () => {
                               )}
                             </div>
                           )}
-                          <Button variant="outline" size="sm" className="mt-3" asChild>
-                            <Link to="/profile">Choose Domain</Link>
+                          <Button variant="outline" size="sm" className="mt-3" onClick={() => setSuggestDomainOpen(true)}>
+                            <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                            Suggest domain based on my Natural Role
                           </Button>
                         </div>
 
@@ -948,6 +951,14 @@ const Entrepreneurship = () => {
       <Footer />
       <ScrollToTopButton />
       <CreateIdeaDialog open={showCreateDialog} onOpenChange={setShowCreateDialog} />
+      <SuggestDomainDialog
+        open={suggestDomainOpen}
+        onOpenChange={setSuggestDomainOpen}
+        naturalRole={naturalRoleDesc}
+        currentTitle={profileTitle}
+        primarySkills={profilePrimarySkills}
+        onApply={(d) => setProfileTitle(d)}
+      />
       {applyProject && (
         <ApplyToJoinDialog
           open={!!applyProject}
