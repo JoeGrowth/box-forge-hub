@@ -250,8 +250,19 @@ export function SuggestDomainDialog({ open, onOpenChange, naturalRole, currentTi
           )}
         </div>
 
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>Close</Button>
+        <DialogFooter className="flex-col sm:flex-row gap-2 sm:justify-between sm:items-center">
+          {savedAt ? (
+            <p className="text-xs text-muted-foreground">
+              Saved {new Date(savedAt).toLocaleString()}
+            </p>
+          ) : <span />}
+          <div className="flex gap-2">
+            <Button variant="ghost" onClick={() => onOpenChange(false)}>Close</Button>
+            <Button variant="teal" onClick={saveResult} disabled={!result}>
+              <Save className="w-4 h-4 mr-2" />
+              Save
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
