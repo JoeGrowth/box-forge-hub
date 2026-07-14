@@ -243,7 +243,7 @@ const App = () => (
                   <Route path="/discover" element={<Navigate to="/opportunities" replace />} />
                   <Route path="/feed" element={<Navigate to="/opportunities" replace />} />
                   <Route path="/scale" element={<Navigate to="/start" replace />} />
-                  <Route path="/projects" element={<Navigate to="/start" replace />} />
+                  
                   <Route path="/projects/new" element={<Navigate to="/create-idea" replace />} />
                   <Route path="/track-record/new" element={<Navigate to="/track-record" replace />} />
                   <Route path="/cv" element={<Navigate to="/resume" replace />} />
