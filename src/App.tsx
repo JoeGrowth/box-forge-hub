@@ -91,6 +91,7 @@ import Calcul from "./pages/Calcul";
 import PublishTalent from "./pages/PublishTalent";
 import Ladder from "./pages/Ladder";
 import SavedDomainSuggestions from "./pages/SavedDomainSuggestions";
+import Ecosystem from "./pages/Ecosystem";
 
 import { ClickTracker } from "./components/analytics/ClickTracker";
 
@@ -188,6 +189,7 @@ const App = () => (
                   <Route path="/paths" element={<Paths />} />
                   <Route path="/career" element={<ProtectedRoute><Career /></ProtectedRoute>} />
                   <Route path="/entrepreneurship" element={<GatedRoute engineKey="entrepreneurship"><Entrepreneurship /></GatedRoute>} />
+                  <Route path="/ecosystem" element={<GatedRoute engineKey="entrepreneurship"><Ecosystem /></GatedRoute>} />
                   <Route path="/consulting" element={<GatedRoute engineKey="consulting"><Consulting /></GatedRoute>} />
                   <Route path="/startstructuring" element={<ProtectedRoute><StartStructuring /></ProtectedRoute>} />
                   <Route path="/startscaling" element={<ProtectedRoute><StartScaling /></ProtectedRoute>} />

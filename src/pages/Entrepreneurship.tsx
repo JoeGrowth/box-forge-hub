@@ -93,12 +93,12 @@ const Entrepreneurship = () => {
   const navigate = useNavigate();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [applyProject, setApplyProject] = useState<StartupIdea | null>(null);
-  type MainTab = "ecosystem" | "legacy" | "growth" | "progress";
+  type MainTab = "legacy" | "growth" | "progress";
   type GrowthSub = "developed" | "monetized" | "systematized";
   const initialTab = (() => {
     const t = searchParams.get("tab");
     if (t === "legacy" || t === "growth" || t === "progress") return t as MainTab;
-    return "ecosystem" as MainTab;
+    return "legacy" as MainTab;
   })();
   const [mainTab, setMainTab] = useState<MainTab>(initialTab);
   const [growthSubTab, setGrowthSubTab] = useState<GrowthSub>(() => {
@@ -609,17 +609,13 @@ const Entrepreneurship = () => {
 
               <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as MainTab)} className="w-full">
                 <div className="flex border-b border-border mb-6 overflow-x-auto">
-                  <button
-                    onClick={() => setMainTab("ecosystem")}
-                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                      mainTab === "ecosystem"
-                        ? "border-foreground text-foreground"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
-                    }`}
+                  <Link
+                    to="/ecosystem"
+                    className="flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
                   >
                     <Rocket className="w-4 h-4" />
                     Ecosystem
-                  </button>
+                  </Link>
                   <button
                     onClick={() => setMainTab("legacy")}
                     className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
@@ -660,34 +656,8 @@ const Entrepreneurship = () => {
                 </TabsContent>
 
 
-                <TabsContent value="ecosystem">
-                  <h2 className="font-display text-lg sm:text-xl font-bold text-foreground mb-4">
-                    Startup Projects Seeking Co-Builders
-                  </h2>
-                  {loading ? (
-                    <div className="space-y-4">
-                      {Array.from({ length: 2 }).map((_, i) => (
-                        <div key={i} className="border border-border rounded-2xl p-6 bg-card">
-                          <Skeleton className="h-6 w-48 mb-3" />
-                          <Skeleton className="h-4 w-full mb-2" />
-                          <Skeleton className="h-4 w-2/3" />
-                        </div>
-                      ))}
-                    </div>
-                  ) : browseProjects.length === 0 ? (
-                    <div className="text-center py-12 text-muted-foreground">
-                      <Rocket className="w-12 h-12 mx-auto mb-3 opacity-40" />
-                      <p>No projects seeking co-builders right now.</p>
-                      <p className="text-sm mt-1">Check back soon or start your own!</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {browseProjects.map((project) => (
-                        <ProjectCard key={project.id} project={project} />
-                      ))}
-                    </div>
-                  )}
-                </TabsContent>
+
+
 
                 <TabsContent value="legacy">
                   <Tabs value={legacySubTab} onValueChange={(v) => setLegacySubTab(v as "initiated" | "joined" | "partnered")} className="w-full">
@@ -775,7 +745,7 @@ const Entrepreneurship = () => {
                       ) : collaborations.length === 0 ? (
                         <div className="text-center py-12 text-muted-foreground">
                           <p>You're not collaborating on any projects yet.</p>
-                          <Button variant="outline" className="mt-3" onClick={() => setMainTab("ecosystem")}>
+                          <Button variant="outline" className="mt-3" onClick={() => navigate("/ecosystem")}>
                             Explore Ecosystem
                           </Button>
                         </div>
@@ -786,7 +756,7 @@ const Entrepreneurship = () => {
                           ))}
                           <div
                             className="border border-dashed border-border rounded-2xl p-6 text-center hover:bg-muted/30 transition-colors cursor-pointer"
-                            onClick={() => setMainTab("ecosystem")}
+                            onClick={() => navigate("/ecosystem")}
                           >
                             <Users className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
                             <p className="font-medium text-foreground">Join an Idea</p>
