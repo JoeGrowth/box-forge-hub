@@ -202,7 +202,7 @@ export function Navbar() {
                     location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-muted-foreground"
                   }`}
                 >
-                  Entities
+                  Ventures
                 </Link>
 
 
