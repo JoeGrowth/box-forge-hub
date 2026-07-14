@@ -3,6 +3,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Rocket, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -49,6 +50,7 @@ const Ecosystem = () => {
   const [teamCounts, setTeamCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [applyProject, setApplyProject] = useState<StartupIdea | null>(null);
+  const [activeTab, setActiveTab] = useState("all");
 
   useEffect(() => {
     if (!user) return;
@@ -175,43 +177,64 @@ const Ecosystem = () => {
           </section>
 
           <section>
-            <div className="container mx-auto px-4 max-w-5xl space-y-8 pt-8">
+            <div className="container mx-auto px-4 max-w-5xl pt-8">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="mb-6">
+                  <TabsTrigger value="all">All</TabsTrigger>
+                  <TabsTrigger value="yours">Yours</TabsTrigger>
+                  <TabsTrigger value="others">Others</TabsTrigger>
+                </TabsList>
 
-            {loading ? (
-                <div className="space-y-4">
-                  {Array.from({ length: 2 }).map((_, i) => (
-                    <div key={i} className="border border-border rounded-2xl p-6 bg-card">
-                      <Skeleton className="h-6 w-48 mb-3" />
-                      <Skeleton className="h-4 w-full mb-2" />
-                      <Skeleton className="h-4 w-2/3" />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <>
-                  {myProjects.length > 0 && (
-                    <div className="space-y-4">
-                      <h2 className="font-display text-xl font-bold text-foreground">Your Listings</h2>
-                      {myProjects.map((p) => renderProjectCard(p, true))}
-                    </div>
-                  )}
-
+                {loading ? (
                   <div className="space-y-4">
-                    {myProjects.length > 0 && (
-                      <h2 className="font-display text-xl font-bold text-foreground">Browse Other Projects</h2>
-                    )}
-                    {browseProjects.length === 0 ? (
-                      <div className="text-center py-12 text-muted-foreground">
-                        <Rocket className="w-12 h-12 mx-auto mb-3 opacity-40" />
-                        <p>No other projects seeking co-builders right now.</p>
-                        <p className="text-sm mt-1">Check back soon!</p>
+                    {Array.from({ length: 2 }).map((_, i) => (
+                      <div key={i} className="border border-border rounded-2xl p-6 bg-card">
+                        <Skeleton className="h-6 w-48 mb-3" />
+                        <Skeleton className="h-4 w-full mb-2" />
+                        <Skeleton className="h-4 w-2/3" />
                       </div>
-                    ) : (
-                      browseProjects.map((p) => renderProjectCard(p, false))
-                    )}
+                    ))}
                   </div>
-                </>
-              )}
+                ) : (
+                  <>
+                    <TabsContent value="all" className="space-y-4">
+                      {[...myProjects, ...browseProjects].length === 0 ? (
+                        <div className="text-center py-12 text-muted-foreground">
+                          <Rocket className="w-12 h-12 mx-auto mb-3 opacity-40" />
+                          <p>No projects seeking co-builders right now.</p>
+                          <p className="text-sm mt-1">Check back soon!</p>
+                        </div>
+                      ) : (
+                        [...myProjects, ...browseProjects].map((p) => renderProjectCard(p, p.creator_id === user?.id))
+                      )}
+                    </TabsContent>
+
+                    <TabsContent value="yours" className="space-y-4">
+                      {myProjects.length === 0 ? (
+                        <div className="text-center py-12 text-muted-foreground">
+                          <Rocket className="w-12 h-12 mx-auto mb-3 opacity-40" />
+                          <p>You have no active project listings.</p>
+                          <p className="text-sm mt-1">Create a startup idea to see it here.</p>
+                        </div>
+                      ) : (
+                        myProjects.map((p) => renderProjectCard(p, true))
+                      )}
+                    </TabsContent>
+
+                    <TabsContent value="others" className="space-y-4">
+                      {browseProjects.length === 0 ? (
+                        <div className="text-center py-12 text-muted-foreground">
+                          <Rocket className="w-12 h-12 mx-auto mb-3 opacity-40" />
+                          <p>No other projects seeking co-builders right now.</p>
+                          <p className="text-sm mt-1">Check back soon!</p>
+                        </div>
+                      ) : (
+                        browseProjects.map((p) => renderProjectCard(p, false))
+                      )}
+                    </TabsContent>
+                  </>
+                )}
+              </Tabs>
             </div>
           </section>
         </main>
