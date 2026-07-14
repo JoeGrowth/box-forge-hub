@@ -610,6 +610,17 @@ const Entrepreneurship = () => {
               <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as MainTab)} className="w-full">
                 <div className="flex border-b border-border mb-6 overflow-x-auto">
                   <button
+                    onClick={() => setMainTab("growth")}
+                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                      mainTab === "growth"
+                        ? "border-foreground text-foreground"
+                        : "border-transparent text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <TrendingUp className="w-4 h-4" />
+                    Your Talent
+                  </button>
+                  <button
                     onClick={() => setMainTab("legacy")}
                     className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                       mainTab === "legacy"
@@ -621,17 +632,6 @@ const Entrepreneurship = () => {
                     Legacy
                   </button>
                   <button
-                    onClick={() => setMainTab("growth")}
-                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                      mainTab === "growth"
-                        ? "border-foreground text-foreground"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <TrendingUp className="w-4 h-4" />
-                    Growth
-                  </button>
-                  <button
                     onClick={() => setMainTab("progress")}
                     className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                       mainTab === "progress"
@@ -640,12 +640,63 @@ const Entrepreneurship = () => {
                     }`}
                   >
                     <Layers className="w-4 h-4" />
-                    Progress
+                    Ladder
                   </button>
                 </div>
 
-                <TabsContent value="progress">
-                  <LadderPage embedded />
+                <TabsContent value="growth">
+                  <Tabs value={growthSubTab} onValueChange={(v) => setGrowthSubTab(v as GrowthSub)} className="w-full">
+                    <div className="flex gap-1 p-1 bg-muted/60 rounded-lg mb-4 w-full sm:w-auto">
+                      <button
+                        onClick={() => setGrowthSubTab("developed")}
+                        className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                          growthSubTab === "developed"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Developed
+                      </button>
+                      <button
+                        onClick={() => setGrowthSubTab("monetized")}
+                        className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                          growthSubTab === "monetized"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Monetized
+                      </button>
+                      <button
+                        onClick={() => setGrowthSubTab("systematized")}
+                        className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                          growthSubTab === "systematized"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Systematized
+                      </button>
+                    </div>
+
+                    {growthSubTab === "developed" && (
+                      <div className="space-y-4">
+                        <div className="bg-muted/30 rounded-lg p-4">
+                          <h3 className="text-lg font-semibold mb-2">Developed Assets</h3>
+                          <p className="text-sm text-muted-foreground">Assets you have developed but not yet monetized.</p>
+                        </div>
+                      </div>
+                    )}
+                    {growthSubTab === "monetized" && <ConsultingGrowthPage embedded />}
+                    {growthSubTab === "systematized" && (
+                      <div className="space-y-4">
+                        <div className="bg-muted/30 rounded-lg p-4">
+                          <h3 className="text-lg font-semibold mb-2">Systematized Assets</h3>
+                          <p className="text-sm text-muted-foreground">Assets that are running without your direct involvement.</p>
+                        </div>
+                      </div>
+                    )}
+                  </Tabs>
                 </TabsContent>
 
 
