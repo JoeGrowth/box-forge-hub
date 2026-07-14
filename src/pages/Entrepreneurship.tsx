@@ -745,7 +745,7 @@ const Entrepreneurship = () => {
                       ) : collaborations.length === 0 ? (
                         <div className="text-center py-12 text-muted-foreground">
                           <p>You're not collaborating on any projects yet.</p>
-                          <Button variant="outline" className="mt-3" onClick={() => setMainTab("ecosystem")}>
+                          <Button variant="outline" className="mt-3" onClick={() => navigate("/ecosystem")}>
                             Explore Ecosystem
                           </Button>
                         </div>
