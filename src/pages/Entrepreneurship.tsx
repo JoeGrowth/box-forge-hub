@@ -609,17 +609,13 @@ const Entrepreneurship = () => {
 
               <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as MainTab)} className="w-full">
                 <div className="flex border-b border-border mb-6 overflow-x-auto">
-                  <button
-                    onClick={() => setMainTab("ecosystem")}
-                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                      mainTab === "ecosystem"
-                        ? "border-foreground text-foreground"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
-                    }`}
+                  <Link
+                    to="/ecosystem"
+                    className="flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
                   >
                     <Rocket className="w-4 h-4" />
                     Ecosystem
-                  </button>
+                  </Link>
                   <button
                     onClick={() => setMainTab("legacy")}
                     className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
