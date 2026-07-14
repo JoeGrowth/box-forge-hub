@@ -91,6 +91,7 @@ import Calcul from "./pages/Calcul";
 import PublishTalent from "./pages/PublishTalent";
 import Ladder from "./pages/Ladder";
 import SavedDomainSuggestions from "./pages/SavedDomainSuggestions";
+import Ecosystem from "./pages/Ecosystem";
 
 import { ClickTracker } from "./components/analytics/ClickTracker";
 
