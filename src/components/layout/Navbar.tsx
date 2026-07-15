@@ -94,6 +94,7 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [ecosystemOpen, setEcosystemOpen] = useState(false);
+  const [growthOpen, setGrowthOpen] = useState(false);
 
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
@@ -224,14 +225,44 @@ export function Navbar() {
                   </DropdownMenuContent>
                 </DropdownMenu>
 
-                <Link
-                  to="/entrepreneurship"
-                  className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 ${
-                    location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-muted-foreground"
-                  }`}
-                >
-                  Growth Studio
-                </Link>
+                <DropdownMenu open={growthOpen} onOpenChange={setGrowthOpen}>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`text-sm font-medium transition-colors hover:text-b4-teal outline-none ${
+                        location.pathname === "/entrepreneurship" || location.pathname === "/ladder"
+                          ? "text-b4-teal"
+                          : "text-muted-foreground"
+                      }`}
+                      aria-label="Growth"
+                    >
+                      Growth
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 mt-2">
+                    <DropdownMenuItem asChild>
+                      <Link
+                        to="/entrepreneurship"
+                        className={`flex items-center gap-2 cursor-pointer ${
+                          location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-foreground"
+                        }`}
+                      >
+                        <Building2 size={16} />
+                        Studio
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        to="/ladder"
+                        className={`flex items-center gap-2 cursor-pointer ${
+                          location.pathname === "/ladder" ? "text-b4-teal" : "text-foreground"
+                        }`}
+                      >
+                        <BarChart3 size={16} />
+                        Ladder
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
                 <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
                   <DropdownMenuTrigger asChild>
@@ -383,6 +414,10 @@ export function Navbar() {
                     <span className="flex-1">Projects</span>
                   </Link>
 
+                  <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Growth
+                  </div>
+
                   <Link
                     to="/entrepreneurship"
                     onClick={() => setIsOpen(false)}
@@ -393,7 +428,20 @@ export function Navbar() {
                     }`}
                   >
                     <Building2 size={16} />
-                    <span className="flex-1">Growth Studio</span>
+                    <span className="flex-1">Studio</span>
+                  </Link>
+
+                  <Link
+                    to="/ladder"
+                    onClick={() => setIsOpen(false)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                      location.pathname === "/ladder"
+                        ? "bg-muted text-b4-teal"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    <BarChart3 size={16} />
+                    <span className="flex-1">Ladder</span>
                   </Link>
 
 
