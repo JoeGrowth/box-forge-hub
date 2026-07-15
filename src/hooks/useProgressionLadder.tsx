@@ -160,7 +160,9 @@ export function useProgressionLadder(): ProgressionLadder {
       const lastAchieved = [...stages].reverse().find((s) => s.achieved);
       const currentStage = nextGoal ?? lastAchieved ?? stages[0];
 
-      setState({ stages, currentStage, nextGoal, loading: false });
+      const next = { stages, currentStage, nextGoal, loading: false };
+      LADDER_CACHE = { userId: uid, data: next };
+      setState(next);
     })();
 
     return () => { alive = false; };
