@@ -209,7 +209,7 @@ export function Navbar() {
                     location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-muted-foreground"
                   }`}
                 >
-                  Ventures
+                  Assets
                 </Link>
 
 
@@ -370,7 +370,7 @@ export function Navbar() {
                     }`}
                   >
                     <Building2 size={16} />
-                    <span className="flex-1">Ventures</span>
+                    <span className="flex-1">Assets</span>
                   </Link>
 
 
