@@ -112,7 +112,7 @@ function validateRequest(body: any): { valid: true; data: NotificationEmailReque
   }
 
   const sanitizedData: NotificationEmailRequest = {
-    to: to.trim(),
+    to: (to || "").trim(),
     userName: sanitizeString(userName, 100),
     type,
     ...(userId ? { userId } : {}),
