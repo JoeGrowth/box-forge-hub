@@ -245,8 +245,8 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
   const brandingComplete = brandingProgress === 100;
 
   const systProgress = useMemo(() => {
-    // invite_cobuilder is optional and intentionally excluded from phase 2 progress.
-    const items = [!!state.selected_model, done.core_services, done.manage_org, done.form_company, done.standardized_processes, done.autonomous_operations];
+    // invite_cobuilder and manage_org are optional and intentionally excluded from phase 2 progress.
+    const items = [!!state.selected_model, done.core_services, done.form_company, done.standardized_processes, done.autonomous_operations];
     return Math.round((items.filter(Boolean).length / items.length) * 100);
   }, [state, done]);
   const systComplete = systProgress === 100;
