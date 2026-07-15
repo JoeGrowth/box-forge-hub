@@ -184,26 +184,47 @@ export function Navbar() {
               ))
             ) : (
               <>
-
-                {stageRank >= STAGE_RANK.emerging && (
-                  <Link
-                    to="/people"
-                    className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 ${
-                      location.pathname === "/people" ? "text-b4-teal" : "text-muted-foreground"
-                    }`}
-                  >
-                    People
-                  </Link>
-                )}
-
-                <Link
-                  to="/projects"
-                  className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 ${
-                    location.pathname === "/projects" ? "text-b4-teal" : "text-muted-foreground"
-                  }`}
-                >
-                  Projects
-                </Link>
+                <DropdownMenu open={ecosystemOpen} onOpenChange={setEcosystemOpen}>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-b4-teal outline-none ${
+                        location.pathname === "/people" || location.pathname === "/projects"
+                          ? "text-b4-teal"
+                          : "text-muted-foreground"
+                      }`}
+                      aria-label="Ecosystem"
+                    >
+                      <Network size={18} />
+                      Ecosystem
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 mt-2">
+                    {stageRank >= STAGE_RANK.emerging && (
+                      <DropdownMenuItem asChild>
+                        <Link
+                          to="/people"
+                          className={`flex items-center gap-2 cursor-pointer ${
+                            location.pathname === "/people" ? "text-b4-teal" : "text-foreground"
+                          }`}
+                        >
+                          <Users size={16} />
+                          People
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem asChild>
+                      <Link
+                        to="/projects"
+                        className={`flex items-center gap-2 cursor-pointer ${
+                          location.pathname === "/projects" ? "text-b4-teal" : "text-foreground"
+                        }`}
+                      >
+                        <Rocket size={16} />
+                        Projects
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
                 <Link
                   to="/entrepreneurship"
@@ -211,10 +232,8 @@ export function Navbar() {
                     location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-muted-foreground"
                   }`}
                 >
-                  Assets
+                  Growth Studio
                 </Link>
-
-
 
                 <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
                   <DropdownMenuTrigger asChild>
