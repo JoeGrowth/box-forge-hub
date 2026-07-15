@@ -583,13 +583,18 @@ const Entrepreneurship = () => {
       <Navbar />
       <PageTransition>
         {accessLoading ? (
-          <main className="pt-24 container mx-auto px-4 max-w-3xl">
+          <main className="pt-24 pb-8 min-h-[80vh] container mx-auto px-4 max-w-5xl space-y-6">
+            <Skeleton className="h-10 w-56 rounded-lg" />
+            <Skeleton className="h-5 w-96 rounded-lg" />
+            <Skeleton className="h-10 w-full max-w-md rounded-lg" />
             <Skeleton className="h-64 w-full rounded-2xl" />
           </main>
         ) : !engines.entrepreneurship.unlocked ? (
-          <EngineLockedPanel engine="entrepreneurship" access={engines.entrepreneurship} />
+          <div className="min-h-[80vh]">
+            <EngineLockedPanel engine="entrepreneurship" access={engines.entrepreneurship} />
+          </div>
         ) : (
-        <main className="pt-24 pb-8">
+        <main className="pt-24 pb-8 min-h-[80vh]">
           <section>
             <div className="container mx-auto px-4 max-w-5xl space-y-6">
 

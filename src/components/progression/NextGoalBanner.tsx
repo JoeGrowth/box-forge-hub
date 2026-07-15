@@ -13,7 +13,12 @@ interface NextGoalBannerProps {
 
 export function NextGoalBanner({ pageStage, className = "" }: NextGoalBannerProps) {
   const { nextGoal, stages, loading } = useProgressionLadder();
-  if (loading) return null;
+  if (loading) {
+    // Reserve invisible space to avoid a layout-shift flash once the ladder resolves.
+    return <div className={`h-[92px] ${className}`} aria-hidden />;
+  }
+
+
 
   const stage = pageStage ? stages.find((s) => s.key === pageStage) : nextGoal;
   if (!stage) return null;
