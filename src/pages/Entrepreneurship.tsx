@@ -921,7 +921,10 @@ const Entrepreneurship = () => {
                       </div>
                     )
                   )}
+                  </>
+                  )}
                 </TabsContent>
+
 
               </Tabs>
             </div>
