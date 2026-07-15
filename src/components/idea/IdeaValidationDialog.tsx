@@ -575,30 +575,48 @@ export const IdeaValidationDialog = ({
                   </div>
                 ))}
 
-                <div className="flex gap-4 pt-4 border-t">
-                  <Button
-                    variant="outline"
-                    onClick={handleSaveProgress}
-                    disabled={isSaving}
-                    className="flex-1"
-                  >
-                    {isSaving ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    ) : (
-                      <Save className="w-4 h-4 mr-2" />
-                    )}
-                    Save Progress
-                  </Button>
+                <div className="flex flex-col gap-3 pt-4 border-t">
+                  {currentPhase === summaryPhaseNumber && (
+                    <Button
+                      variant="teal"
+                      onClick={handleGenerateSummary}
+                      disabled={isGeneratingSummary}
+                      className="w-full"
+                    >
+                      {isGeneratingSummary ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Sparkles className="w-4 h-4 mr-2" />
+                      )}
+                      Generate with AI
+                    </Button>
+                  )}
+                  <div className="flex gap-4">
+                    <Button
+                      variant="outline"
+                      onClick={handleSaveProgress}
+                      disabled={isSaving}
+                      className="flex-1"
+                    >
+                      {isSaving ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Save className="w-4 h-4 mr-2" />
+                      )}
+                      Save Progress
+                    </Button>
 
-                  <Button
-                    onClick={handleCompletePhase}
-                    disabled={!isPhaseComplete() || isSaving}
-                    className="flex-1"
-                  >
-                    {isLastPhase ? "Complete Episode" : "Complete Phase"}
-                    {!isLastPhase && <ArrowRight className="w-4 h-4 ml-2" />}
-                  </Button>
+                    <Button
+                      onClick={handleCompletePhase}
+                      disabled={!isPhaseComplete() || isSaving}
+                      className="flex-1"
+                    >
+                      {isLastPhase ? "Complete Episode" : "Complete Phase"}
+                      {!isLastPhase && <ArrowRight className="w-4 h-4 ml-2" />}
+                    </Button>
+                  </div>
                 </div>
+
               </CardContent>
             </Card>
 
