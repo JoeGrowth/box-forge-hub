@@ -803,7 +803,7 @@ const Entrepreneurship = () => {
                             : "text-muted-foreground hover:text-foreground"
                         }`}
                       >
-                        Systematized
+                        Grown
                         <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-primary/40 text-primary">Advisor</Badge>
                       </button>
                     )}
@@ -879,7 +879,7 @@ const Entrepreneurship = () => {
                     advisorAchieved ? (
                       <div>
                         <div className="mb-4">
-                          <h2 className="font-display text-xl font-bold text-foreground">Your Talent, Systematized</h2>
+                          <h2 className="font-display text-xl font-bold text-foreground">Your Talent, Grown</h2>
                           <p className="text-sm text-muted-foreground">
                             Services turned into scalable, self-running assets.
                           </p>
@@ -896,7 +896,7 @@ const Entrepreneurship = () => {
                       </div>
                     ) : (
                       <div className="text-center py-12 text-muted-foreground text-sm">
-                        Reach the Advisor stage to unlock Systematized.
+                        Reach the Advisor stage to unlock Grown.
                       </div>
                     )
                   )}
