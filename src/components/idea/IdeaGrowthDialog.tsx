@@ -149,6 +149,27 @@ const GROWTH_PHASES = [
       },
     ],
   },
+  {
+    number: 4,
+    name: "Summary",
+    description: "AI-generated systemization & scale recap",
+    icon: Sparkles,
+    color: "from-b4-teal to-b4-coral",
+    tasks: [
+      {
+        id: "summary_systemization",
+        label: "Idea Systemization — Can the product improve and scale predictably?",
+        description:
+          "Synthesize the operating system: processes, feedback loops, and mechanisms that let the product improve reliably. Use Generate with AI, then refine.",
+      },
+      {
+        id: "summary_scale",
+        label: "Idea Scale — Can this become a larger executive intelligence layer?",
+        description:
+          "Summarize the ceiling: markets, partnerships, and org design that turn this into a durable executive intelligence layer. Use Generate with AI, then refine.",
+      },
+    ],
+  },
 ];
 
 export const IdeaGrowthDialog = ({
