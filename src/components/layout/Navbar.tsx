@@ -27,7 +27,6 @@ import {
   BarChart3,
   Users,
   LayoutGrid,
-  Network,
 } from "lucide-react";
 import { useEngineAccess, type EngineKey } from "@/hooks/useEngineAccess";
 import { useTalentReadiness } from "@/hooks/useTalentReadiness";
