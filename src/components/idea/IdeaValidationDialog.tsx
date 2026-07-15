@@ -121,6 +121,27 @@ const VALIDATION_PHASES = [
       },
     ],
   },
+  {
+    number: 3,
+    name: "Summary",
+    description: "AI-generated validation & monetization recap",
+    icon: Sparkles,
+    color: "from-b4-teal to-b4-coral",
+    tasks: [
+      {
+        id: "summary_validation",
+        label: "Idea Validation — Does the market trust and need this?",
+        description:
+          "Synthesize evidence of demand, trust signals, and validated hypotheses from prior phases. Use Generate with AI, then refine.",
+      },
+      {
+        id: "summary_monetization",
+        label: "Idea Monetization — Will users pay for this?",
+        description:
+          "Summarize willingness to pay, pricing signals, unit economics, and revenue proof gathered so far. Use Generate with AI, then refine.",
+      },
+    ],
+  },
 ];
 
 export const IdeaValidationDialog = ({
