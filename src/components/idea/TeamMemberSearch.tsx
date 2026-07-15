@@ -302,6 +302,40 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
     }
   };
 
+  // Resend the "added to team" notification email to a specific member.
+  const [notifyingId, setNotifyingId] = useState<string | null>(null);
+  const handleNotifyMember = async (member: TeamMember) => {
+    if (member.member_user_id === currentUserId) {
+      toast.info("You can't send this email to yourself.");
+      return;
+    }
+    setNotifyingId(member.id);
+    try {
+      const [{ data: startup }, { data: initiatorProfile }] = await Promise.all([
+        supabase.from("startup_ideas").select("title").eq("id", startupId).maybeSingle(),
+        supabase.from("profiles").select("full_name").eq("user_id", currentUserId).maybeSingle(),
+      ]);
+      const { error } = await supabase.functions.invoke("send-notification-email", {
+        body: {
+          userId: member.member_user_id,
+          userName: member.full_name || "Co-builder",
+          type: "team_member_added",
+          data: {
+            ideaTitle: startup?.title || "a startup",
+            applicantName: initiatorProfile?.full_name || "The initiator",
+          },
+        },
+      });
+      if (error) throw error;
+      toast.success(`Notification sent to ${member.full_name || "co-builder"}`);
+    } catch (err) {
+      console.error("Failed to send notification email", err);
+      toast.error("Failed to send notification email");
+    } finally {
+      setNotifyingId(null);
+    }
+  };
+
   // Remove member from team
   const handleRemoveMember = async (member: TeamMember) => {
     try {
