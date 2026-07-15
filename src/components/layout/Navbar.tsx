@@ -225,14 +225,44 @@ export function Navbar() {
                   </DropdownMenuContent>
                 </DropdownMenu>
 
-                <Link
-                  to="/entrepreneurship"
-                  className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 ${
-                    location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-muted-foreground"
-                  }`}
-                >
-                  Growth Studio
-                </Link>
+                <DropdownMenu open={growthOpen} onOpenChange={setGrowthOpen}>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`text-sm font-medium transition-colors hover:text-b4-teal outline-none ${
+                        location.pathname === "/entrepreneurship" || location.pathname === "/ladder"
+                          ? "text-b4-teal"
+                          : "text-muted-foreground"
+                      }`}
+                      aria-label="Growth"
+                    >
+                      Growth
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 mt-2">
+                    <DropdownMenuItem asChild>
+                      <Link
+                        to="/entrepreneurship"
+                        className={`flex items-center gap-2 cursor-pointer ${
+                          location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-foreground"
+                        }`}
+                      >
+                        <Building2 size={16} />
+                        Studio
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        to="/ladder"
+                        className={`flex items-center gap-2 cursor-pointer ${
+                          location.pathname === "/ladder" ? "text-b4-teal" : "text-foreground"
+                        }`}
+                      >
+                        <BarChart3 size={16} />
+                        Ladder
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
                 <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
                   <DropdownMenuTrigger asChild>
