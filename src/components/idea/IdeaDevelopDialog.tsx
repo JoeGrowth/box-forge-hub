@@ -196,6 +196,22 @@ const IDEA_DEVELOP_PHASES = [
       },
     ],
   },
+  {
+    number: 6,
+    name: "Summary",
+    description: "AI-generated foundation recap from every prior phase",
+    icon: Sparkles,
+    color: "from-b4-teal to-b4-coral",
+    tasks: [
+      {
+        id: "summary_foundation",
+        label: "Idea Foundation — Who are we? What exactly are we building and for whom?",
+        type: "question",
+        description:
+          "Concise synthesis of the venture's identity, product, and target user based on all Develop responses. Use the AI Generate button to draft it, then edit freely.",
+      },
+    ],
+  },
 ];
 
 export const IdeaDevelopDialog = ({
