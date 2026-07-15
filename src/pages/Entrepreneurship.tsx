@@ -683,6 +683,7 @@ const Entrepreneurship = () => {
                     </div>
 
                     <TabsContent value="initiated">
+                      <NextGoalBanner pageStage="founder" className="mb-4" />
                       <div className="flex items-start justify-between gap-3 flex-wrap mb-4">
                         <div className="min-w-0">
                           <h2 className="font-display text-xl font-bold text-foreground">Your Journey</h2>
