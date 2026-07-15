@@ -414,6 +414,10 @@ export function Navbar() {
                     <span className="flex-1">Projects</span>
                   </Link>
 
+                  <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Growth
+                  </div>
+
                   <Link
                     to="/entrepreneurship"
                     onClick={() => setIsOpen(false)}
@@ -424,7 +428,20 @@ export function Navbar() {
                     }`}
                   >
                     <Building2 size={16} />
-                    <span className="flex-1">Growth Studio</span>
+                    <span className="flex-1">Studio</span>
+                  </Link>
+
+                  <Link
+                    to="/ladder"
+                    onClick={() => setIsOpen(false)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                      location.pathname === "/ladder"
+                        ? "bg-muted text-b4-teal"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    <BarChart3 size={16} />
+                    <span className="flex-1">Ladder</span>
                   </Link>
 
 
