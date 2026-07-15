@@ -92,6 +92,7 @@ import PublishTalent from "./pages/PublishTalent";
 import Ladder from "./pages/Ladder";
 import SavedDomainSuggestions from "./pages/SavedDomainSuggestions";
 import Ecosystem from "./pages/Ecosystem";
+import Grow from "./pages/Grow";
 
 import { ClickTracker } from "./components/analytics/ClickTracker";
 
@@ -187,6 +188,7 @@ const App = () => (
                   <Route path="/decoder" element={<ProtectedRoute><NRDecoder /></ProtectedRoute>} />
                   <Route path="/coming-soon" element={<ComingSoon />} />
                   <Route path="/paths" element={<Paths />} />
+                  <Route path="/grow" element={<ProtectedRoute><Grow /></ProtectedRoute>} />
                   <Route path="/career" element={<ProtectedRoute><Career /></ProtectedRoute>} />
                   <Route path="/entrepreneurship" element={<GatedRoute engineKey="entrepreneurship"><Entrepreneurship /></GatedRoute>} />
                   <Route path="/projects" element={<GatedRoute engineKey="entrepreneurship"><Ecosystem /></GatedRoute>} />
