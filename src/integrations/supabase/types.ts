@@ -401,6 +401,51 @@ export type Database = {
           },
         ]
       }
+      beta_bug_reports: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          description: string
+          id: string
+          location: string
+          reporter_id: string | null
+          screenshot_path: string | null
+          screenshot_url: string | null
+          severity: string
+          status: string
+          sub_task: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          location: string
+          reporter_id?: string | null
+          screenshot_path?: string | null
+          screenshot_url?: string | null
+          severity: string
+          status?: string
+          sub_task?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          location?: string
+          reporter_id?: string | null
+          screenshot_path?: string | null
+          screenshot_url?: string | null
+          severity?: string
+          status?: string
+          sub_task?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       box_advisors: {
         Row: {
           accepting_requests: boolean

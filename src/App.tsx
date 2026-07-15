@@ -95,6 +95,7 @@ import Ecosystem from "./pages/Ecosystem";
 import Grow from "./pages/Grow";
 
 import { ClickTracker } from "./components/analytics/ClickTracker";
+import { ReportBetaIssueButton } from "./components/beta/ReportBetaIssueButton";
 
 
 const queryClient = new QueryClient();
@@ -111,6 +112,7 @@ const App = () => (
               <BrowserRouter>
                 <ScrollToTop />
                 <ClickTracker />
+                <ReportBetaIssueButton />
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/home" element={<Navigate to="/" replace />} />

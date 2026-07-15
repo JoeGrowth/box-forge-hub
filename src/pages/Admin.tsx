@@ -17,6 +17,7 @@ import { AdminLearningJourneysTab } from "@/components/admin/AdminLearningJourne
 import { AdminNRDecoderTab } from "@/components/admin/AdminNRDecoderTab";
 import { AdminTrainingsTab } from "@/components/admin/AdminTrainingsTab";
 import { AdminBoxesTab } from "@/components/admin/AdminBoxesTab";
+import { AdminBugsTab } from "@/components/admin/AdminBugsTab";
 import {
   Shield,
   Users,
@@ -30,6 +31,7 @@ import {
   Award,
   ShieldCheck,
   Brain,
+  Bug,
 } from "lucide-react";
 
 const Admin = () => {
@@ -254,7 +256,7 @@ const Admin = () => {
 
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="mb-8 grid h-auto w-full grid-cols-2 gap-2 p-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-10">
+              <TabsList className="mb-8 grid h-auto w-full grid-cols-2 gap-2 p-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-11">
                 <TabsTrigger value="analytics" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
                   <BarChart3 className="h-4 w-4 shrink-0" />
                   Analytics
@@ -294,6 +296,10 @@ const Admin = () => {
                 <TabsTrigger value="boxes" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
                   <Package className="h-4 w-4 shrink-0" />
                   Boxes
+                </TabsTrigger>
+                <TabsTrigger value="bugs" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+                  <Bug className="h-4 w-4 shrink-0" />
+                  Bugs
                 </TabsTrigger>
               </TabsList>
 
@@ -335,6 +341,10 @@ const Admin = () => {
 
               <TabsContent value="boxes">
                 <AdminBoxesTab />
+              </TabsContent>
+
+              <TabsContent value="bugs">
+                <AdminBugsTab />
               </TabsContent>
             </Tabs>
           </div>
