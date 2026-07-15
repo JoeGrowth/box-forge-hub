@@ -118,6 +118,8 @@ export const CompensationDialog = ({
     (teamMember && ROLE_LABELS[teamMember.role_type]) ||
     application?.roleApplied ||
     "Co-Builder";
+  const roleTier =
+    (teamMember && ROLE_TIER[teamMember.role_type]) || "co-founder";
 
   // Load existing offer
   useEffect(() => {
