@@ -1171,7 +1171,7 @@ export function EntityCategories({
       {active && (
         <DistributionBuilder
           key={`${scopeId}:${active.id}`}
-          kind={`${scopeId}:${active.id}`}
+          kind={active.kind ?? `${scopeId}:${active.id}`}
           kindLabel={active.name}
           defaultTitle=""
           defaultBudgetLabel="Budget"
