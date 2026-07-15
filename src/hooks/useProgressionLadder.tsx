@@ -44,12 +44,20 @@ const EMPTY_LADDER: ProgressionLadder = {
   loading: true,
 };
 
+// Module-level cache so multiple hook consumers on the same page don't each
+// show their own loading→content flash. First consumer resolves and stores
+// the result; later consumers hydrate synchronously.
+let LADDER_CACHE: { userId: string; data: ProgressionLadder } | null = null;
+
 export function useProgressionLadder(): ProgressionLadder {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdmin();
   const { talentReady, talentCompleted, talentTotal, loading: talentLoading } = useTalentReadiness();
-  const [state, setState] = useState<ProgressionLadder>(EMPTY_LADDER);
+  const [state, setState] = useState<ProgressionLadder>(() =>
+    user && LADDER_CACHE && LADDER_CACHE.userId === user.id ? LADDER_CACHE.data : EMPTY_LADDER
+  );
   const [tick, setTick] = useState(0);
+
 
   useEffect(() => {
     const handler = () => setTick((t) => t + 1);
