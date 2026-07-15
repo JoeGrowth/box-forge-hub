@@ -82,6 +82,12 @@ const ROLE_LABELS: Record<string, string> = {
   MLCB: "Most Loyal Co-Builder",
 };
 
+const ROLE_TIER: Record<string, string> = {
+  MVCB: "senior co-founder",
+  MMCB: "core co-founder",
+  MLCB: "light co-founder",
+};
+
 export const CompensationDialog = ({
   open,
   onOpenChange,
@@ -112,6 +118,8 @@ export const CompensationDialog = ({
     (teamMember && ROLE_LABELS[teamMember.role_type]) ||
     application?.roleApplied ||
     "Co-Builder";
+  const roleTier =
+    (teamMember && ROLE_TIER[teamMember.role_type]) || "co-founder";
 
   // Load existing offer
   useEffect(() => {
@@ -212,8 +220,12 @@ export const CompensationDialog = ({
       return;
     }
 
-    if (timeEq > 0 && timeEq !== cliff + vesting) {
-      toast.error(`Time-Based Equity (${timeEq}%) must equal Cliff (${cliff}) + Vesting (${vesting}) = ${cliff + vesting}%`);
+    if (timeEq > 0 && vesting <= 0) {
+      toast.error("Vesting period must be at least 1 year.");
+      return;
+    }
+    if (timeEq > 0 && cliff > vesting) {
+      toast.error(`Cliff (${cliff}y) cannot be longer than the vesting period (${vesting}y).`);
       return;
     }
 
@@ -454,6 +466,19 @@ export const CompensationDialog = ({
           </div>
         ) : (
           <div className="space-y-6 py-4">
+            {/* Role Summary */}
+            <div className="rounded-lg border border-b4-teal/30 bg-b4-teal/5 p-3">
+              <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                Role
+              </div>
+              <div className="text-sm font-medium text-foreground">
+                {roleLabel}{" "}
+                <span className="text-muted-foreground font-normal">
+                  ({roleTier})
+                </span>
+              </div>
+            </div>
+
             {/* Time-Based Equity Section */}
             <div className="space-y-3">
               <div className="flex items-center gap-2">
@@ -476,6 +501,9 @@ export const CompensationDialog = ({
                     max="85"
                     step="0.1"
                   />
+                  <p className="text-[11px] leading-snug text-muted-foreground mt-1">
+                    Total ownership the person can earn.
+                  </p>
                 </div>
                 <div>
                   <Label className="text-xs">Cliff (years)</Label>
@@ -488,6 +516,9 @@ export const CompensationDialog = ({
                     min="0"
                     max="4"
                   />
+                  <p className="text-[11px] leading-snug text-muted-foreground mt-1">
+                    Waiting period before they earn any equity.
+                  </p>
                 </div>
                 <div>
                   <Label className="text-xs">Vesting (years)</Label>
@@ -500,7 +531,14 @@ export const CompensationDialog = ({
                     min="1"
                     max="6"
                   />
+                  <p className="text-[11px] leading-snug text-muted-foreground mt-1">
+                    Time over which equity is gradually earned.
+                  </p>
                 </div>
+              </div>
+              <div className="rounded-md bg-muted/40 p-2 text-[11px] leading-snug text-muted-foreground">
+                Equity % is independent — it does not need to equal Cliff + Vesting.
+                Cliff must be ≤ Vesting.
               </div>
             </div>
 
