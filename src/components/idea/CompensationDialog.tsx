@@ -302,8 +302,9 @@ export const CompensationDialog = ({
           performance_equity_percentage: offerData.performance_equity_percentage as number,
           performance_milestone: offerData.performance_milestone as string | null,
           version: offerData.version as number,
+          role_title: offerData.role_title as string,
           action: action === "accept" ? "accepted" : existingOffer ? "counter_proposed" : "proposed",
-        });
+        } as never);
       }
 
       // ──────────────────────────────────────────────────────────────
