@@ -238,6 +238,11 @@ export const CompensationDialog = ({
       return;
     }
 
+    if (!roleTitle.trim()) {
+      toast.error("Please enter the role title (e.g. AI Compliance Product Engineer).");
+      return;
+    }
+
     setIsSaving(true);
 
     try {
