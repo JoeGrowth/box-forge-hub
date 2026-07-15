@@ -423,7 +423,42 @@ export function Navbar() {
                     <span className="flex-1">Ventures</span>
                   </Link>
 
+                  {visibleResourceLinks.length > 0 && (
+                    <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Resources
+                    </div>
+                  )}
+                  {visibleResourceLinks.map((link) => {
+                    const Icon = link.icon;
+                    return (
+                      <Link
+                        key={link.path}
+                        to={link.path}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                          location.pathname === link.path
+                            ? "bg-muted text-b4-teal"
+                            : "text-muted-foreground hover:bg-muted"
+                        }`}
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <Icon size={16} />
+                        <span className="flex-1">{link.name}</span>
+                      </Link>
+                    );
+                  })}
 
+                  <Link
+                    to="/paths"
+                    onClick={() => setIsOpen(false)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                      location.pathname === "/paths"
+                        ? "bg-muted text-b4-teal"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    <Activity size={16} />
+                    <span className="flex-1">Paths</span>
+                  </Link>
 
                   {visibleMoreLinks.length > 0 && (
                     <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
