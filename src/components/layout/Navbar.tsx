@@ -27,7 +27,6 @@ import {
   BarChart3,
   Users,
   LayoutGrid,
-  Network,
 } from "lucide-react";
 import { useEngineAccess, type EngineKey } from "@/hooks/useEngineAccess";
 import { useTalentReadiness } from "@/hooks/useTalentReadiness";
@@ -187,14 +186,13 @@ export function Navbar() {
                 <DropdownMenu open={ecosystemOpen} onOpenChange={setEcosystemOpen}>
                   <DropdownMenuTrigger asChild>
                     <button
-                      className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-b4-teal outline-none ${
+                      className={`text-sm font-medium transition-colors hover:text-b4-teal outline-none ${
                         location.pathname === "/people" || location.pathname === "/projects"
                           ? "text-b4-teal"
                           : "text-muted-foreground"
                       }`}
                       aria-label="Ecosystem"
                     >
-                      <Network size={18} />
                       Ecosystem
                     </button>
                   </DropdownMenuTrigger>
