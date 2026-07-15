@@ -863,7 +863,6 @@ const Entrepreneurship = () => {
                     </div>
                   )}
                   {growthSubTab === "monetized" && <ConsultingGrowthPage embedded />}
-                  {growthSubTab === "monetized" && <ConsultingGrowthPage embedded />}
                   {growthSubTab === "systematized" && (
                     advisorAchieved ? (
                       <div>
