@@ -31,7 +31,7 @@ import { useEngineAccess } from "@/hooks/useEngineAccess";
 import { EngineLockedPanel } from "@/components/engines/EngineLockedPanel";
 import { useProgressionLadder } from "@/hooks/useProgressionLadder";
 import { ScaledCard } from "@/components/idea/ScaledCard";
-import LadderPage from "@/pages/Ladder";
+
 import ConsultingGrowthPage from "@/pages/ConsultingGrowth";
 import { SuggestDomainDialog } from "@/components/domain/SuggestDomainDialog";
 
@@ -93,11 +93,11 @@ const Entrepreneurship = () => {
   const navigate = useNavigate();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [applyProject, setApplyProject] = useState<StartupIdea | null>(null);
-  type MainTab = "legacy" | "growth" | "progress";
+  type MainTab = "legacy" | "growth";
   type GrowthSub = "developed" | "monetized" | "systematized";
   const initialTab = (() => {
     const t = searchParams.get("tab");
-    if (t === "legacy" || t === "growth" || t === "progress") return t as MainTab;
+    if (t === "legacy" || t === "growth") return t as MainTab;
     return "growth" as MainTab;
   })();
   const [mainTab, setMainTab] = useState<MainTab>(initialTab);
@@ -629,17 +629,6 @@ const Entrepreneurship = () => {
                     <Lightbulb className="w-4 h-4" />
                     Legacy
                   </button>
-                  <button
-                    onClick={() => setMainTab("progress")}
-                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                      mainTab === "progress"
-                        ? "border-foreground text-foreground"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Layers className="w-4 h-4" />
-                    Ladder
-                  </button>
                 </div>
 
 
@@ -902,9 +891,6 @@ const Entrepreneurship = () => {
                   )}
                 </TabsContent>
 
-                <TabsContent value="progress">
-                  <LadderPage embedded />
-                </TabsContent>
               </Tabs>
             </div>
           </section>
