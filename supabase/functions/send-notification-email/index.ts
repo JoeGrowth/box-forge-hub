@@ -495,7 +495,7 @@ const getEmailContent = (type: string, userName: string, data?: NotificationEmai
                 Head to the platform to review the project, discuss compensation, and start building together.
               </p>
               <div style="margin-top: 30px; text-align: center;">
-                <a href="https://b4-platform.lovable.app/entrepreneurship"
+                <a href="https://box4solutions.com/entrepreneurship?tab=collaborations"
                    style="background: #0d9488; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">
                   Open Project
                 </a>
