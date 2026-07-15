@@ -82,6 +82,12 @@ const ROLE_LABELS: Record<string, string> = {
   MLCB: "Most Loyal Co-Builder",
 };
 
+const ROLE_TIER: Record<string, string> = {
+  MVCB: "senior co-founder",
+  MMCB: "core co-founder",
+  MLCB: "light co-founder",
+};
+
 export const CompensationDialog = ({
   open,
   onOpenChange,
