@@ -508,7 +508,7 @@ const getEmailContent = (type: string, userName: string, data?: NotificationEmai
         `,
         inAppTitle: "You joined a startup team!",
         inAppMessage: `You were added as a co-builder on "${data?.ideaTitle || 'a startup'}".`,
-        inAppLink: "/entrepreneurship",
+        inAppLink: "/entrepreneurship?tab=legacy&sub=joined",
       };
 
 
