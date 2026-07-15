@@ -63,12 +63,7 @@ const resourceLinks: Array<{
   icon: typeof Briefcase;
   minStage?: keyof typeof STAGE_RANK;
   engineKey?: EngineKey;
-}> = [
-  { name: "Squares", path: "/squares", icon: LayoutGrid },
-  { name: "Programs", path: "/programs", icon: BookOpen },
-  { name: "Boxes", path: "/boxes", icon: Package },
-  { name: "Organizations", path: "/organizations", icon: Building2, minStage: "emerging" },
-];
+}> = [];
 
 const moreLinks: Array<{
   name: string;
@@ -76,7 +71,14 @@ const moreLinks: Array<{
   icon: typeof Briefcase;
   minStage?: keyof typeof STAGE_RANK;
   engineKey?: EngineKey;
-}> = [{ name: "Opportunities", path: "/opportunities", icon: Briefcase }];
+}> = [
+  { name: "Squares", path: "/squares", icon: LayoutGrid },
+  { name: "Programs", path: "/programs", icon: BookOpen },
+  { name: "Boxes", path: "/boxes", icon: Package },
+  { name: "Organizations", path: "/organizations", icon: Building2, minStage: "emerging" },
+  { name: "Paths", path: "/paths", icon: Activity },
+  { name: "Opportunities", path: "/opportunities", icon: Briefcase },
+];
 
 // Synchronous read of cached admin flag so first paint is stable.
 function readCachedAdmin(userId: string | undefined): boolean {
@@ -185,12 +187,12 @@ export function Navbar() {
                   <DropdownMenuTrigger asChild>
                     <button
                       className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 outline-none ${
-                        location.pathname === "/people" || location.pathname === "/projects"
+                        ["/people", "/projects", "/entrepreneurship"].includes(location.pathname)
                           ? "text-b4-teal"
                           : "text-muted-foreground"
                       }`}
                     >
-                      Ecosystem
+                      Assets
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="w-48 mt-2">
@@ -208,58 +210,15 @@ export function Navbar() {
                         <span>Projects</span>
                       </Link>
                     </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/entrepreneurship" className="flex items-center gap-2 cursor-pointer">
+                        <Building2 className="w-4 h-4" />
+                        <span>Ventures</span>
+                      </Link>
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
 
-                <Link
-                  to="/entrepreneurship"
-                  className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 ${
-                    location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-muted-foreground"
-                  }`}
-                >
-                  Ventures
-                </Link>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 outline-none ${
-                        ["/squares", "/programs", "/boxes", "/organizations"].includes(location.pathname)
-                          ? "text-b4-teal"
-                          : "text-muted-foreground"
-                      }`}
-                    >
-                      Resources
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-56 mt-2">
-                    {visibleResourceLinks.map((link) => {
-                      const Icon = link.icon;
-                      return (
-                        <DropdownMenuItem key={link.path} asChild>
-                          <Link
-                            to={link.path}
-                            className={`flex items-center gap-2 cursor-pointer ${
-                              location.pathname === link.path ? "text-b4-teal" : "text-foreground"
-                            }`}
-                          >
-                            <Icon size={16} />
-                            {link.name}
-                          </Link>
-                        </DropdownMenuItem>
-                      );
-                    })}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <Link
-                  to="/paths"
-                  className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 ${
-                    location.pathname === "/paths" ? "text-b4-teal" : "text-muted-foreground"
-                  }`}
-                >
-                  Paths
-                </Link>
 
                 <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
                   <DropdownMenuTrigger asChild>
@@ -380,7 +339,7 @@ export function Navbar() {
 
                 <>
                   <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Ecosystem
+                    Assets
                   </div>
                   {stageRank >= STAGE_RANK.emerging && (
                     <Link
@@ -423,42 +382,6 @@ export function Navbar() {
                     <span className="flex-1">Ventures</span>
                   </Link>
 
-                  {visibleResourceLinks.length > 0 && (
-                    <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Resources
-                    </div>
-                  )}
-                  {visibleResourceLinks.map((link) => {
-                    const Icon = link.icon;
-                    return (
-                      <Link
-                        key={link.path}
-                        to={link.path}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                          location.pathname === link.path
-                            ? "bg-muted text-b4-teal"
-                            : "text-muted-foreground hover:bg-muted"
-                        }`}
-                        onClick={() => setIsOpen(false)}
-                      >
-                        <Icon size={16} />
-                        <span className="flex-1">{link.name}</span>
-                      </Link>
-                    );
-                  })}
-
-                  <Link
-                    to="/paths"
-                    onClick={() => setIsOpen(false)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                      location.pathname === "/paths"
-                        ? "bg-muted text-b4-teal"
-                        : "text-muted-foreground hover:bg-muted"
-                    }`}
-                  >
-                    <Activity size={16} />
-                    <span className="flex-1">Paths</span>
-                  </Link>
 
                   {visibleMoreLinks.length > 0 && (
                     <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
