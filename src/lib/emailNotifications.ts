@@ -24,7 +24,9 @@ export type NotificationType =
   | "application_submitted"
   | "application_received"
   | "application_accepted"
-  | "application_rejected";
+  | "application_rejected"
+  // Team achievements
+  | "team_member_added";
 
 interface SendNotificationEmailParams {
   to: string;
