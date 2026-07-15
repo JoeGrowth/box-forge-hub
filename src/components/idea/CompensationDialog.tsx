@@ -269,6 +269,7 @@ export const CompensationDialog = ({
         current_proposer_id: currentUserId,
         status: action === "accept" ? "accepted" : "pending",
         version: (existingOffer?.version || 0) + 1,
+        role_title: roleTitle.trim(),
       };
 
       let offerId = existingOffer?.id ?? null;
