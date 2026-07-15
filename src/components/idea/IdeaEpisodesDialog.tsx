@@ -61,7 +61,7 @@ const EPISODES = [
   {
     id: "development",
     number: 1,
-    name: "Part 1: Creation",
+    name: "Part 1: Foundation",
     description: "Ideation, Structuring, Role Definition, Equity & Responsibility, Team Building, Launch",
     color: "from-violet-500 to-purple-500",
     icon: Rocket,
