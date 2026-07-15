@@ -282,10 +282,12 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     const { error } = await supabase.from("profiles").update({ startup_name: name }).eq("user_id", userId);
     setSavingName(false);
     if (error) { toast.error(error.message); return; }
+    setSavedNameOverride(name);
     toast.success("Brand name updated");
     setEditingName(false);
     onBrandNameSaved?.(name);
   };
+
 
   const jumpPhase = (p: Phase) => {
     // allow navigating between unlocked phases
