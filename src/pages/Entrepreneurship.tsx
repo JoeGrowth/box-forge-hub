@@ -807,6 +807,8 @@ const Entrepreneurship = () => {
                         </p>
                       </div>
 
+                      <NextGoalBanner pageStage="talent" />
+
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div className="border border-border rounded-2xl p-5 bg-card">
                           <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Natural Role</p>
