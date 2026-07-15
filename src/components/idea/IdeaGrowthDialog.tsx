@@ -22,6 +22,7 @@ import {
   Handshake,
   DollarSign,
   UsersRound,
+  Sparkles,
 } from "lucide-react";
 
 interface IdeaGrowthDialogProps {
@@ -148,6 +149,27 @@ const GROWTH_PHASES = [
       },
     ],
   },
+  {
+    number: 4,
+    name: "Summary",
+    description: "AI-generated systemization & scale recap",
+    icon: Sparkles,
+    color: "from-b4-teal to-b4-coral",
+    tasks: [
+      {
+        id: "summary_systemization",
+        label: "Idea Systemization — Can the product improve and scale predictably?",
+        description:
+          "Synthesize the operating system: processes, feedback loops, and mechanisms that let the product improve reliably. Use Generate with AI, then refine.",
+      },
+      {
+        id: "summary_scale",
+        label: "Idea Scale — Can this become a larger executive intelligence layer?",
+        description:
+          "Summarize the ceiling: markets, partnerships, and org design that turn this into a durable executive intelligence layer. Use Generate with AI, then refine.",
+      },
+    ],
+  },
 ];
 
 export const IdeaGrowthDialog = ({
@@ -165,7 +187,56 @@ export const IdeaGrowthDialog = ({
   const [isLoading, setIsLoading] = useState(true);
   const [hasLoadedInitial, setHasLoadedInitial] = useState(false);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const summaryPhaseNumber = 4;
+  const handleGenerateSummary = async () => {
+    setIsGeneratingSummary(true);
+    try {
+      const priorResponses: Record<string, string> = {};
+      Object.values(phaseProgress).forEach((p) => {
+        if (p.phase_number === summaryPhaseNumber) return;
+        Object.entries(p.responses || {}).forEach(([k, v]) => {
+          if (typeof v === "string" && v.trim()) priorResponses[k] = v;
+        });
+      });
+      Object.entries(responses).forEach(([k, v]) => {
+        if (v && v.trim() && !(k in priorResponses)) priorResponses[k] = v;
+      });
+      const summaryPhase = GROWTH_PHASES[summaryPhaseNumber];
+      const { data, error } = await supabase.functions.invoke("generate-episode-summary", {
+        body: {
+          ideaTitle,
+          episode: "Grow",
+          priorResponses,
+          questions: summaryPhase.tasks.map((t) => ({
+            id: t.id,
+            label: t.label,
+            prompt: t.description,
+          })),
+        },
+      });
+      if (error) throw error;
+      const summaries: Array<{ id: string; text: string }> = data?.summaries ?? [];
+      const patch: Record<string, string> = {};
+      summaries.forEach((s) => {
+        if (s?.id && s?.text) patch[s.id] = s.text;
+      });
+      if (Object.keys(patch).length) {
+        setResponses((prev) => ({ ...prev, ...patch }));
+        toast.success("Summary drafted. Edit before completing.");
+      } else {
+        toast.error("AI returned no summary content.");
+      }
+    } catch (e) {
+      console.error("generate-episode-summary failed", e);
+      toast.error("Failed to generate summary. Try again.");
+    } finally {
+      setIsGeneratingSummary(false);
+    }
+  };
+
 
   const phase = GROWTH_PHASES[currentPhase];
   const totalPhases = GROWTH_PHASES.length;
@@ -532,30 +603,48 @@ export const IdeaGrowthDialog = ({
                   </div>
                 ))}
 
-                <div className="flex gap-4 pt-4 border-t">
-                  <Button
-                    variant="outline"
-                    onClick={handleSaveProgress}
-                    disabled={isSaving}
-                    className="flex-1"
-                  >
-                    {isSaving ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    ) : (
-                      <Save className="w-4 h-4 mr-2" />
-                    )}
-                    Save Progress
-                  </Button>
+                <div className="flex flex-col gap-3 pt-4 border-t">
+                  {currentPhase === summaryPhaseNumber && (
+                    <Button
+                      variant="teal"
+                      onClick={handleGenerateSummary}
+                      disabled={isGeneratingSummary}
+                      className="w-full"
+                    >
+                      {isGeneratingSummary ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Sparkles className="w-4 h-4 mr-2" />
+                      )}
+                      Generate with AI
+                    </Button>
+                  )}
+                  <div className="flex gap-4">
+                    <Button
+                      variant="outline"
+                      onClick={handleSaveProgress}
+                      disabled={isSaving}
+                      className="flex-1"
+                    >
+                      {isSaving ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Save className="w-4 h-4 mr-2" />
+                      )}
+                      Save Progress
+                    </Button>
 
-                  <Button
-                    onClick={handleCompletePhase}
-                    disabled={!isPhaseComplete() || isSaving}
-                    className="flex-1"
-                  >
-                    {isLastPhase ? "Complete Journey 🎉" : "Complete Phase"}
-                    {!isLastPhase && <ArrowRight className="w-4 h-4 ml-2" />}
-                  </Button>
+                    <Button
+                      onClick={handleCompletePhase}
+                      disabled={!isPhaseComplete() || isSaving}
+                      className="flex-1"
+                    >
+                      {isLastPhase ? "Complete Journey 🎉" : "Complete Phase"}
+                      {!isLastPhase && <ArrowRight className="w-4 h-4 ml-2" />}
+                    </Button>
+                  </div>
                 </div>
+
               </CardContent>
             </Card>
 
