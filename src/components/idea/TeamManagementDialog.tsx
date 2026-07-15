@@ -201,7 +201,41 @@ export const TeamManagementDialog = ({
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [compMember, setCompMember] = useState<TeamMemberData | null>(null);
   const [compApplicant, setCompApplicant] = useState<Applicant | null>(null);
+  const [notifyingId, setNotifyingId] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const handleNotifyMember = async (member: TeamMemberData) => {
+    if (member.member_user_id === currentUserId) {
+      toast({ title: "You can't send this email to yourself." });
+      return;
+    }
+    setNotifyingId(member.id);
+    try {
+      const { data: initiatorProfile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("user_id", currentUserId)
+        .maybeSingle();
+      const { error } = await supabase.functions.invoke("send-notification-email", {
+        body: {
+          userId: member.member_user_id,
+          userName: member.full_name || "Co-builder",
+          type: "team_member_added",
+          data: {
+            ideaTitle: startupTitle || "a startup",
+            applicantName: initiatorProfile?.full_name || "The initiator",
+          },
+        },
+      });
+      if (error) throw error;
+      toast({ title: `Notification sent to ${member.full_name || "co-builder"}` });
+    } catch (err) {
+      console.error("Failed to send notification email", err);
+      toast({ title: "Failed to send notification email", variant: "destructive" });
+    } finally {
+      setNotifyingId(null);
+    }
+  };
 
   const fetchData = useCallback(async () => {
     if (!startupId) return;
