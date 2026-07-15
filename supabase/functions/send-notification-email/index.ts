@@ -154,7 +154,7 @@ const getEmailContent = (type: string, userName: string, data?: NotificationEmai
                 <li>Execute your plan with structured guidance</li>
               </ul>
               <div style="margin-top: 30px; text-align: center;">
-                <a href="https://b4-platform.lovable.app/profile" 
+                <a href="https://box4solutions.com/profile" 
                    style="background: #0d9488; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">
                   Start Your Journey
                 </a>
@@ -217,7 +217,7 @@ const getEmailContent = (type: string, userName: string, data?: NotificationEmai
                 Please update your submission with more details and resubmit for review.
               </p>
               <div style="margin-top: 30px; text-align: center;">
-                <a href="https://b4-platform.lovable.app/profile" 
+                <a href="https://box4solutions.com/profile" 
                    style="background: #f59e0b; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">
                   Update Your Idea
                 </a>
@@ -281,7 +281,7 @@ const getEmailContent = (type: string, userName: string, data?: NotificationEmai
                 Keep up the momentum! Continue to your next step to move closer to launching your venture.
               </p>
               <div style="margin-top: 30px; text-align: center;">
-                <a href="https://b4-platform.lovable.app/profile" 
+                <a href="https://box4solutions.com/profile" 
                    style="background: #0d9488; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">
                   Continue Journey
                 </a>
@@ -327,7 +327,7 @@ const getEmailContent = (type: string, userName: string, data?: NotificationEmai
                 You can always revisit and update your journey responses from your profile.
               </p>
               <div style="margin-top: 30px; text-align: center;">
-                <a href="https://b4-platform.lovable.app/profile" 
+                <a href="https://box4solutions.com/profile" 
                    style="background: #0d9488; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">
                   View Your Journey
                 </a>
@@ -364,7 +364,7 @@ const getEmailContent = (type: string, userName: string, data?: NotificationEmai
                 <li><strong>Request Entrepreneur Review</strong> - Unlock the full entrepreneur journey</li>
               </ul>
               <div style="margin-top: 30px; text-align: center;">
-                <a href="https://b4-platform.lovable.app/profile" 
+                <a href="https://box4solutions.com/profile" 
                    style="background: #0d9488; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">
                   View Your Dashboard
                 </a>
@@ -396,7 +396,7 @@ const getEmailContent = (type: string, userName: string, data?: NotificationEmai
                 <strong>${data?.applicantName || 'A co-builder'}</strong> has applied for the <strong>${data?.roleName || 'team member'}</strong> role.
               </p>
               <div style="margin-top: 30px; text-align: center;">
-                <a href="https://b4-platform.lovable.app/profile" 
+                <a href="https://box4solutions.com/profile" 
                    style="background: #0d9488; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">
                   Review Application
                 </a>
@@ -428,7 +428,7 @@ const getEmailContent = (type: string, userName: string, data?: NotificationEmai
                 The initiator will reach out to you with next steps. Get ready to start building together!
               </p>
               <div style="margin-top: 30px; text-align: center;">
-                <a href="https://b4-platform.lovable.app/opportunities" 
+                <a href="https://box4solutions.com/opportunities" 
                    style="background: #0d9488; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">
                   View Opportunities
                 </a>
@@ -463,7 +463,7 @@ const getEmailContent = (type: string, userName: string, data?: NotificationEmai
                 Don't be discouraged! There are many other exciting opportunities waiting for you.
               </p>
               <div style="margin-top: 30px; text-align: center;">
-                <a href="https://b4-platform.lovable.app/opportunities" 
+                <a href="https://box4solutions.com/opportunities" 
                    style="background: #0d9488; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">
                   Browse Other Opportunities
                 </a>
