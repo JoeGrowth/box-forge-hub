@@ -21,6 +21,7 @@ import {
   Shield,
   Settings,
   RefreshCw,
+  Sparkles,
 } from "lucide-react";
 
 interface IdeaValidationDialogProps {
