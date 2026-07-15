@@ -786,15 +786,75 @@ export default function Distribution() {
   const [manageOpen, setManageOpen] = useState(false);
   const [newEntityName, setNewEntityName] = useState("");
 
+  const { user } = useAuth();
+
   useEffect(() => {
-    try {
-      const list = readDistEntities();
-      setEntities(list);
-      const saved = localStorage.getItem(DIST_ACTIVE_ENTITY_KEY);
-      const preferred = entityParam && list.find((e) => e.id === entityParam)?.id;
-      setActiveEntityId(preferred ?? list.find((e) => e.id === saved)?.id ?? list[0]?.id ?? null);
-    } catch {}
-  }, [entityParam]);
+    let cancelled = false;
+    (async () => {
+      try {
+        let list = readDistEntities();
+
+        // Recover legacy distribution_records (kinds without ":" mapping) so
+        // saved data always surfaces even if localStorage was cleared.
+        if (user) {
+          const { data } = await (supabase.from("distribution_records" as any) as any)
+            .select("kind")
+            .eq("user_id", user.id);
+          const kinds: string[] = Array.from(
+            new Set(((data as any[]) ?? []).map((r) => String(r.kind || "")).filter(Boolean)),
+          );
+          const legacyKinds = kinds.filter((k) => !k.includes(":"));
+          // Also detect scoped kinds whose scopeId no longer exists locally.
+          const scopedOrphans = kinds
+            .filter((k) => k.includes(":"))
+            .map((k) => k.split(":")[0])
+            .filter((sid) => sid && !list.find((e) => e.id === sid));
+          const orphanScopes = Array.from(new Set(scopedOrphans));
+
+          if (legacyKinds.length > 0 || orphanScopes.length > 0) {
+            const RECOVERY_ID = "recovery";
+            let recovery = list.find((e) => e.id === RECOVERY_ID);
+            if (!recovery) {
+              recovery = { id: RECOVERY_ID, name: "Recovered records", createdAt: new Date().toISOString() };
+              list = [...list, recovery];
+              writeDistEntities(list);
+            }
+            // Ensure a category exists for each legacy kind.
+            try {
+              const catsKey = CATS_KEY(RECOVERY_ID);
+              const rawCats = localStorage.getItem(catsKey);
+              const existing: Array<{ id: string; name: string; kind?: string }> = rawCats ? JSON.parse(rawCats) : [];
+              let changed = false;
+              for (const k of legacyKinds) {
+                if (!existing.find((c) => c.kind === k)) {
+                  existing.push({ id: uid(), name: k.charAt(0).toUpperCase() + k.slice(1), kind: k });
+                  changed = true;
+                }
+              }
+              for (const sid of orphanScopes) {
+                // Recover every distinct scoped kind under this vanished scope
+                const scoped = kinds.filter((k) => k.startsWith(`${sid}:`));
+                for (const k of scoped) {
+                  if (!existing.find((c) => c.kind === k)) {
+                    existing.push({ id: uid(), name: `Recovered ${k.slice(0, 10)}…`, kind: k });
+                    changed = true;
+                  }
+                }
+              }
+              if (changed) localStorage.setItem(catsKey, JSON.stringify(existing));
+            } catch {}
+          }
+        }
+
+        if (cancelled) return;
+        setEntities(list);
+        const saved = localStorage.getItem(DIST_ACTIVE_ENTITY_KEY);
+        const preferred = entityParam && list.find((e) => e.id === entityParam)?.id;
+        setActiveEntityId(preferred ?? list.find((e) => e.id === saved)?.id ?? list[0]?.id ?? null);
+      } catch {}
+    })();
+    return () => { cancelled = true; };
+  }, [entityParam, user]);
 
   useEffect(() => { localStorage.setItem(DIST_ENTITIES_KEY, JSON.stringify(entities)); }, [entities]);
   useEffect(() => {
@@ -920,7 +980,7 @@ export default function Distribution() {
 }
 
 // ─── Per-entity dynamic categories ─────────────────────────────────────────
-type Category = { id: string; name: string };
+type Category = { id: string; name: string; kind?: string };
 const CATS_KEY = (entityId: string) => `distribution_categories_${entityId}`;
 const ACTIVE_CAT_KEY = (entityId: string) => `distribution_active_category_${entityId}`;
 
@@ -1111,7 +1171,7 @@ export function EntityCategories({
       {active && (
         <DistributionBuilder
           key={`${scopeId}:${active.id}`}
-          kind={`${scopeId}:${active.id}`}
+          kind={active.kind ?? `${scopeId}:${active.id}`}
           kindLabel={active.name}
           defaultTitle=""
           defaultBudgetLabel="Budget"
