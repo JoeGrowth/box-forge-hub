@@ -767,7 +767,23 @@ const Entrepreneurship = () => {
                 </TabsContent>
 
                 <TabsContent value="growth">
+                  {ladderLoading ? (
+                    <div className="space-y-4">
+                      <Skeleton className="h-9 w-full max-w-md rounded-lg" />
+                      <Skeleton className="h-6 w-64 rounded" />
+                      <Skeleton className="h-4 w-96 rounded" />
+                      <Skeleton className="h-24 w-full rounded-xl" />
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <Skeleton className="h-36 w-full rounded-2xl" />
+                        <Skeleton className="h-36 w-full rounded-2xl" />
+                        <Skeleton className="h-36 w-full rounded-2xl" />
+                        <Skeleton className="h-36 w-full rounded-2xl" />
+                      </div>
+                    </div>
+                  ) : (
+                  <>
                   <div className="flex gap-1 p-1 bg-muted/60 rounded-lg mb-4 w-full sm:w-auto">
+
                     <button
                       onClick={() => setGrowthSubTab("developed")}
                       className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
