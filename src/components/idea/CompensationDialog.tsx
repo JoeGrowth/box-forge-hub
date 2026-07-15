@@ -112,6 +112,7 @@ export const CompensationDialog = ({
   const [vestingYears, setVestingYears] = useState("4");
   const [performanceEquity, setPerformanceEquity] = useState("");
   const [performanceMilestone, setPerformanceMilestone] = useState("");
+  const [roleTitle, setRoleTitle] = useState("");
 
   const subjectName = teamMember?.full_name || application?.applicantName || "Co-Builder";
   const roleLabel =
@@ -164,6 +165,7 @@ export const CompensationDialog = ({
         setVestingYears(data.vesting_years?.toString() || "4");
         setPerformanceEquity(data.performance_equity_percentage?.toString() || "0");
         setPerformanceMilestone(data.performance_milestone || "");
+        setRoleTitle((data as any).role_title || "");
       } else if (application) {
         // Seed form from applicant's proposal so the initiator opens negotiation
         // looking at exactly what the applicant asked for.
@@ -177,6 +179,7 @@ export const CompensationDialog = ({
         setVestingYears(p.vesting_years?.toString() || "4");
         setPerformanceEquity(p.performance_equity_percentage?.toString() || "");
         setPerformanceMilestone(p.performance_milestone || "");
+        setRoleTitle("");
       } else {
         setExistingOffer(null);
         setIncludeSalary(false);
@@ -187,6 +190,7 @@ export const CompensationDialog = ({
         setVestingYears("4");
         setPerformanceEquity("");
         setPerformanceMilestone("");
+        setRoleTitle("");
       }
     } finally {
       setIsLoading(false);
@@ -234,6 +238,11 @@ export const CompensationDialog = ({
       return;
     }
 
+    if (!roleTitle.trim()) {
+      toast.error("Please enter the role title (e.g. AI Compliance Product Engineer).");
+      return;
+    }
+
     setIsSaving(true);
 
     try {
@@ -260,6 +269,7 @@ export const CompensationDialog = ({
         current_proposer_id: currentUserId,
         status: action === "accept" ? "accepted" : "pending",
         version: (existingOffer?.version || 0) + 1,
+        role_title: roleTitle.trim(),
       };
 
       let offerId = existingOffer?.id ?? null;
@@ -292,8 +302,9 @@ export const CompensationDialog = ({
           performance_equity_percentage: offerData.performance_equity_percentage as number,
           performance_milestone: offerData.performance_milestone as string | null,
           version: offerData.version as number,
+          role_title: offerData.role_title as string,
           action: action === "accept" ? "accepted" : existingOffer ? "counter_proposed" : "proposed",
-        });
+        } as never);
       }
 
       // ──────────────────────────────────────────────────────────────
@@ -466,18 +477,28 @@ export const CompensationDialog = ({
           </div>
         ) : (
           <div className="space-y-6 py-4">
-            {/* Role Summary */}
-            <div className="rounded-lg border border-b4-teal/30 bg-b4-teal/5 p-3">
-              <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                Role
+            {/* Role */}
+            <div className="rounded-lg border border-b4-teal/30 bg-b4-teal/5 p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="role-title" className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Role
+                </Label>
+                <Badge variant="outline" className="text-[10px]">
+                  {roleTier}
+                </Badge>
               </div>
-              <div className="text-sm font-medium text-foreground">
-                {roleLabel}{" "}
-                <span className="text-muted-foreground font-normal">
-                  ({roleTier})
-                </span>
-              </div>
+              <Input
+                id="role-title"
+                placeholder="e.g. AI Compliance Product Engineer"
+                value={roleTitle}
+                onChange={(e) => setRoleTitle(e.target.value)}
+                disabled={!isMyTurn}
+              />
+              <p className="text-[11px] leading-snug text-muted-foreground">
+                Specific job title for this co-builder. Shown as: <span className="italic">{roleTitle.trim() || "Role Title"} ({roleTier})</span>. Tier is inferred from {roleLabel}.
+              </p>
             </div>
+
 
             {/* Time-Based Equity Section */}
             <div className="space-y-3">
