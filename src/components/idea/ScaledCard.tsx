@@ -695,7 +695,7 @@ function SystematizationPhase({ done, autoCounts, milestones, state, progress, o
           )}
 
 
-          {done.invite_cobuilder && done.form_company && done.standardized_processes && (
+          {done.form_company && done.standardized_processes && (
             <MilestoneRow
               done={done.autonomous_operations}
               label="Achieve autonomous operations"
