@@ -27,6 +27,7 @@ import {
   BarChart3,
   Users,
   LayoutGrid,
+  Network,
 } from "lucide-react";
 import { useEngineAccess, type EngineKey } from "@/hooks/useEngineAccess";
 import { useTalentReadiness } from "@/hooks/useTalentReadiness";
@@ -93,6 +94,7 @@ function readCachedAdmin(userId: string | undefined): boolean {
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
+  const [ecosystemOpen, setEcosystemOpen] = useState(false);
 
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
@@ -182,26 +184,47 @@ export function Navbar() {
               ))
             ) : (
               <>
-
-                {stageRank >= STAGE_RANK.emerging && (
-                  <Link
-                    to="/people"
-                    className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 ${
-                      location.pathname === "/people" ? "text-b4-teal" : "text-muted-foreground"
-                    }`}
-                  >
-                    People
-                  </Link>
-                )}
-
-                <Link
-                  to="/projects"
-                  className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 ${
-                    location.pathname === "/projects" ? "text-b4-teal" : "text-muted-foreground"
-                  }`}
-                >
-                  Projects
-                </Link>
+                <DropdownMenu open={ecosystemOpen} onOpenChange={setEcosystemOpen}>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-b4-teal outline-none ${
+                        location.pathname === "/people" || location.pathname === "/projects"
+                          ? "text-b4-teal"
+                          : "text-muted-foreground"
+                      }`}
+                      aria-label="Ecosystem"
+                    >
+                      <Network size={18} />
+                      Ecosystem
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 mt-2">
+                    {stageRank >= STAGE_RANK.emerging && (
+                      <DropdownMenuItem asChild>
+                        <Link
+                          to="/people"
+                          className={`flex items-center gap-2 cursor-pointer ${
+                            location.pathname === "/people" ? "text-b4-teal" : "text-foreground"
+                          }`}
+                        >
+                          <Users size={16} />
+                          People
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem asChild>
+                      <Link
+                        to="/projects"
+                        className={`flex items-center gap-2 cursor-pointer ${
+                          location.pathname === "/projects" ? "text-b4-teal" : "text-foreground"
+                        }`}
+                      >
+                        <Rocket size={16} />
+                        Projects
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
                 <Link
                   to="/entrepreneurship"
@@ -209,10 +232,8 @@ export function Navbar() {
                     location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-muted-foreground"
                   }`}
                 >
-                  Assets
+                  Growth Studio
                 </Link>
-
-
 
                 <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
                   <DropdownMenuTrigger asChild>
@@ -332,6 +353,10 @@ export function Navbar() {
 
 
                 <>
+                  <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Ecosystem
+                  </div>
+
                   {stageRank >= STAGE_RANK.emerging && (
                     <Link
                       to="/people"
@@ -370,7 +395,7 @@ export function Navbar() {
                     }`}
                   >
                     <Building2 size={16} />
-                    <span className="flex-1">Assets</span>
+                    <span className="flex-1">Growth Studio</span>
                   </Link>
 
 
