@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, X, Plus, Loader2, DollarSign, PieChart, Check, Clock } from "lucide-react";
+import { Search, X, Plus, Loader2, DollarSign, PieChart, Check, Clock, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { CompensationDialog } from "./CompensationDialog";
 
