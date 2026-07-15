@@ -980,7 +980,7 @@ export default function Distribution() {
 }
 
 // ─── Per-entity dynamic categories ─────────────────────────────────────────
-type Category = { id: string; name: string };
+type Category = { id: string; name: string; kind?: string };
 const CATS_KEY = (entityId: string) => `distribution_categories_${entityId}`;
 const ACTIVE_CAT_KEY = (entityId: string) => `distribution_active_category_${entityId}`;
 
