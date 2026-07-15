@@ -740,6 +740,23 @@ export const TeamManagementDialog = ({
                               <span className="text-xs text-muted-foreground">
                                 Added {format(new Date(member.added_at), "MMM d, yyyy")}
                               </span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleNotifyMember(member)}
+                                disabled={notifyingId === member.id || member.member_user_id === currentUserId}
+                                title="Send welcome email"
+                                className="text-b4-teal hover:text-b4-teal h-7 px-2"
+                              >
+                                {notifyingId === member.id ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                  <>
+                                    <Mail className="w-3.5 h-3.5 mr-1" />
+                                    <span className="text-xs">Notify</span>
+                                  </>
+                                )}
+                              </Button>
                             </div>
                           </div>
 
