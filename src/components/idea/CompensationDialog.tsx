@@ -165,6 +165,7 @@ export const CompensationDialog = ({
         setVestingYears(data.vesting_years?.toString() || "4");
         setPerformanceEquity(data.performance_equity_percentage?.toString() || "0");
         setPerformanceMilestone(data.performance_milestone || "");
+        setRoleTitle((data as any).role_title || "");
       } else if (application) {
         // Seed form from applicant's proposal so the initiator opens negotiation
         // looking at exactly what the applicant asked for.
@@ -178,6 +179,7 @@ export const CompensationDialog = ({
         setVestingYears(p.vesting_years?.toString() || "4");
         setPerformanceEquity(p.performance_equity_percentage?.toString() || "");
         setPerformanceMilestone(p.performance_milestone || "");
+        setRoleTitle("");
       } else {
         setExistingOffer(null);
         setIncludeSalary(false);
@@ -188,6 +190,7 @@ export const CompensationDialog = ({
         setVestingYears("4");
         setPerformanceEquity("");
         setPerformanceMilestone("");
+        setRoleTitle("");
       }
     } finally {
       setIsLoading(false);
