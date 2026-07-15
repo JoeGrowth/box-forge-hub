@@ -880,7 +880,7 @@ const Entrepreneurship = () => {
                     advisorAchieved ? (
                       <div>
                         <div className="mb-4">
-                          <h2 className="font-display text-xl font-bold text-foreground">Consulting &amp; Services</h2>
+                          <h2 className="font-display text-xl font-bold text-foreground">Your Talent Systematized</h2>
                           <p className="text-sm text-muted-foreground">
                             Services turned into scalable, self-running assets.
                           </p>
