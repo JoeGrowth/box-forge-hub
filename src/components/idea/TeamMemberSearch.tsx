@@ -569,6 +569,20 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
                     <Button
                       variant="ghost"
                       size="sm"
+                      onClick={() => handleNotifyMember(member)}
+                      disabled={notifyingId === member.id || member.member_user_id === currentUserId}
+                      title="Send welcome email"
+                      className="text-b4-teal hover:text-b4-teal"
+                    >
+                      {notifyingId === member.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Mail className="w-4 h-4" />
+                      )}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => handleRemoveMember(member)}
                       className="text-destructive hover:text-destructive"
                     >
