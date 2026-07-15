@@ -48,6 +48,7 @@ const VALID_NOTIFICATION_TYPES = [
   "application_received",
   "application_accepted",
   "application_rejected",
+  "team_member_added",
 ] as const;
 
 type NotificationType = typeof VALID_NOTIFICATION_TYPES[number];
@@ -86,8 +87,12 @@ function validateRequest(body: any): { valid: true; data: NotificationEmailReque
 
   const { to, userName, userId, type, data } = body;
 
-  if (!to || typeof to !== 'string' || !isValidEmail(to)) {
-    return { valid: false, error: 'Invalid or missing email address' };
+  // `to` may be empty when caller provides userId — it will be resolved server-side via admin.
+  if (to !== undefined && to !== "" && (typeof to !== 'string' || !isValidEmail(to))) {
+    return { valid: false, error: 'Invalid email address' };
+  }
+  if ((!to || to === "") && !body.userId) {
+    return { valid: false, error: 'Either `to` or `userId` must be provided' };
   }
 
   if (!userName || typeof userName !== 'string' || userName.trim().length === 0 || userName.length > 100) {
@@ -107,7 +112,7 @@ function validateRequest(body: any): { valid: true; data: NotificationEmailReque
   }
 
   const sanitizedData: NotificationEmailRequest = {
-    to: to.trim(),
+    to: (to || "").trim(),
     userName: sanitizeString(userName, 100),
     type,
     ...(userId ? { userId } : {}),
@@ -474,6 +479,39 @@ const getEmailContent = (type: string, userName: string, data?: NotificationEmai
         inAppLink: "/opportunities",
       };
 
+    case "team_member_added":
+      return {
+        subject: `🚀 You've been added to "${data?.ideaTitle || 'a startup'}"`,
+        html: `
+          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+            <div style="background: linear-gradient(135deg, #0d9488 0%, #0f172a 100%); padding: 30px; border-radius: 16px 16px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 24px;">Welcome to the team, ${userName}! 🚀</h1>
+            </div>
+            <div style="background: #f8fafc; padding: 30px; border-radius: 0 0 16px 16px; border: 1px solid #e2e8f0; border-top: none;">
+              <p style="font-size: 16px; color: #334155; line-height: 1.6;">
+                ${data?.applicantName ? `<strong>${data.applicantName}</strong> has` : 'You have been'} added you as a co-builder on <strong>"${data?.ideaTitle || 'a startup'}"</strong>${data?.roleName ? ` as <strong>${data.roleName}</strong>` : ''}.
+              </p>
+              <p style="font-size: 16px; color: #334155; line-height: 1.6;">
+                Head to the platform to review the project, discuss compensation, and start building together.
+              </p>
+              <div style="margin-top: 30px; text-align: center;">
+                <a href="https://b4-platform.lovable.app/entrepreneurship"
+                   style="background: #0d9488; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">
+                  Open Project
+                </a>
+              </div>
+            </div>
+            <p style="text-align: center; color: #94a3b8; font-size: 12px; margin-top: 20px;">
+              B4 Platform - Building the Future Together
+            </p>
+          </div>
+        `,
+        inAppTitle: "You joined a startup team!",
+        inAppMessage: `You were added as a co-builder on "${data?.ideaTitle || 'a startup'}".`,
+        inAppLink: "/entrepreneurship",
+      };
+
+
     default:
       return {
         subject: "B4 Platform Update",
@@ -548,7 +586,26 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const { to, userName, userId, type, data } = validation.data;
+    let { to, userName, userId, type, data } = validation.data;
+
+    // Resolve `to` from userId via admin when the client couldn't provide it.
+    if (!to && userId) {
+      try {
+        const admin = createClient(supabaseUrl, supabaseServiceKey);
+        const { data: userData } = await admin.auth.admin.getUserById(userId);
+        if (userData?.user?.email) to = userData.user.email;
+      } catch (e) {
+        console.warn("Failed to resolve email from userId", e);
+      }
+    }
+
+    if (!to) {
+      return new Response(
+        JSON.stringify({ error: "Recipient email could not be resolved" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
     console.log(`Sending ${type} email to ${to} for user ${userName}`);
 
     const emailContent = getEmailContent(type, userName, data);

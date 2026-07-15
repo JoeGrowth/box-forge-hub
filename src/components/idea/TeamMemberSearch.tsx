@@ -269,6 +269,31 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
 
       toast.success(`${cobuilder.full_name || "Co-builder"} added to team`);
       onTeamUpdated();
+
+      // Send notification email to the newly added co-builder (best-effort).
+      if (cobuilder.user_id !== currentUserId) {
+        try {
+          const [{ data: startup }, { data: initiatorProfile }] = await Promise.all([
+            supabase.from("startup_ideas").select("title").eq("id", startupId).maybeSingle(),
+            supabase.from("profiles").select("full_name").eq("user_id", currentUserId).maybeSingle(),
+          ]);
+          await supabase.functions.invoke("send-notification-email", {
+            body: {
+              userId: cobuilder.user_id,
+              userName: cobuilder.full_name || "Co-builder",
+              type: "team_member_added",
+              data: {
+                ideaTitle: startup?.title || "a startup",
+                applicantName: initiatorProfile?.full_name || "The initiator",
+              },
+            },
+          });
+        } catch (emailErr) {
+          console.warn("Failed to send team member added email", emailErr);
+        }
+      }
+
+
     } catch (error) {
       console.error("Error adding team member:", error);
       toast.error("Failed to add team member");
