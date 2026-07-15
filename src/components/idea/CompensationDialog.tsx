@@ -477,18 +477,28 @@ export const CompensationDialog = ({
           </div>
         ) : (
           <div className="space-y-6 py-4">
-            {/* Role Summary */}
-            <div className="rounded-lg border border-b4-teal/30 bg-b4-teal/5 p-3">
-              <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                Role
+            {/* Role */}
+            <div className="rounded-lg border border-b4-teal/30 bg-b4-teal/5 p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="role-title" className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Role
+                </Label>
+                <Badge variant="outline" className="text-[10px]">
+                  {roleTier}
+                </Badge>
               </div>
-              <div className="text-sm font-medium text-foreground">
-                {roleLabel}{" "}
-                <span className="text-muted-foreground font-normal">
-                  ({roleTier})
-                </span>
-              </div>
+              <Input
+                id="role-title"
+                placeholder="e.g. AI Compliance Product Engineer"
+                value={roleTitle}
+                onChange={(e) => setRoleTitle(e.target.value)}
+                disabled={!isMyTurn}
+              />
+              <p className="text-[11px] leading-snug text-muted-foreground">
+                Specific job title for this co-builder. Shown as: <span className="italic">{roleTitle.trim() || "Role Title"} ({roleTier})</span>. Tier is inferred from {roleLabel}.
+              </p>
             </div>
+
 
             {/* Time-Based Equity Section */}
             <div className="space-y-3">
