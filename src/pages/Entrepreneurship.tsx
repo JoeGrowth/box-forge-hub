@@ -792,7 +792,7 @@ const Entrepreneurship = () => {
                           : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      Monetized
+                      Validated
                     </button>
                     {advisorAchieved && (
                       <button
