@@ -48,6 +48,7 @@ const VALID_NOTIFICATION_TYPES = [
   "application_received",
   "application_accepted",
   "application_rejected",
+  "team_member_added",
 ] as const;
 
 type NotificationType = typeof VALID_NOTIFICATION_TYPES[number];
