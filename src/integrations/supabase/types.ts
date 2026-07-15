@@ -5206,6 +5206,7 @@ export type Database = {
           performance_equity_percentage: number | null
           performance_milestone: string | null
           proposer_id: string
+          role_title: string | null
           salary_currency: string | null
           time_equity_percentage: number | null
           version: number
@@ -5222,6 +5223,7 @@ export type Database = {
           performance_equity_percentage?: number | null
           performance_milestone?: string | null
           proposer_id: string
+          role_title?: string | null
           salary_currency?: string | null
           time_equity_percentage?: number | null
           version: number
@@ -5238,6 +5240,7 @@ export type Database = {
           performance_equity_percentage?: number | null
           performance_milestone?: string | null
           proposer_id?: string
+          role_title?: string | null
           salary_currency?: string | null
           time_equity_percentage?: number | null
           version?: number
@@ -5266,6 +5269,7 @@ export type Database = {
           monthly_salary: number | null
           performance_equity_percentage: number | null
           performance_milestone: string | null
+          role_title: string | null
           salary_currency: string | null
           startup_id: string
           status: string
@@ -5287,6 +5291,7 @@ export type Database = {
           monthly_salary?: number | null
           performance_equity_percentage?: number | null
           performance_milestone?: string | null
+          role_title?: string | null
           salary_currency?: string | null
           startup_id: string
           status?: string
@@ -5308,6 +5313,7 @@ export type Database = {
           monthly_salary?: number | null
           performance_equity_percentage?: number | null
           performance_milestone?: string | null
+          role_title?: string | null
           salary_currency?: string | null
           startup_id?: string
           status?: string
