@@ -273,29 +273,26 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
       // Send notification email to the newly added co-builder (best-effort).
       if (cobuilder.user_id !== currentUserId) {
         try {
-          const [{ data: memberAuth }, { data: startup }, { data: initiatorProfile }] = await Promise.all([
-            supabase.from("profiles").select("email").eq("user_id", cobuilder.user_id).maybeSingle(),
+          const [{ data: startup }, { data: initiatorProfile }] = await Promise.all([
             supabase.from("startup_ideas").select("title").eq("id", startupId).maybeSingle(),
             supabase.from("profiles").select("full_name").eq("user_id", currentUserId).maybeSingle(),
           ]);
-          if (memberAuth?.email) {
-            await supabase.functions.invoke("send-notification-email", {
-              body: {
-                to: memberAuth.email,
-                userName: cobuilder.full_name || "Co-builder",
-                userId: cobuilder.user_id,
-                type: "team_member_added",
-                data: {
-                  ideaTitle: startup?.title || "a startup",
-                  applicantName: initiatorProfile?.full_name || "The initiator",
-                },
+          await supabase.functions.invoke("send-notification-email", {
+            body: {
+              userId: cobuilder.user_id,
+              userName: cobuilder.full_name || "Co-builder",
+              type: "team_member_added",
+              data: {
+                ideaTitle: startup?.title || "a startup",
+                applicantName: initiatorProfile?.full_name || "The initiator",
               },
-            });
-          }
+            },
+          });
         } catch (emailErr) {
           console.warn("Failed to send team member added email", emailErr);
         }
       }
+
 
     } catch (error) {
       console.error("Error adding team member:", error);
