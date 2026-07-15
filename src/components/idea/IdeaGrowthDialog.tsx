@@ -22,6 +22,7 @@ import {
   Handshake,
   DollarSign,
   UsersRound,
+  Sparkles,
 } from "lucide-react";
 
 interface IdeaGrowthDialogProps {
