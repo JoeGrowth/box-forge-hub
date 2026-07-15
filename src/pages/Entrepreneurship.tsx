@@ -600,8 +600,6 @@ const Entrepreneurship = () => {
                 </h1>
               </div>
 
-              <NextGoalBanner pageStage="founder" />
-
               <p className="text-sm sm:text-base text-muted-foreground">
                 Stop trading hours for dollars—start Building long term talent assets or trading talent for equity
               </p>
