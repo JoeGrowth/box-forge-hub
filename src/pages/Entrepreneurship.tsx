@@ -881,7 +881,7 @@ const Entrepreneurship = () => {
                         <div className="mb-4">
                           <h2 className="font-display text-xl font-bold text-foreground">Your Talent, Grown</h2>
                           <p className="text-sm text-muted-foreground">
-                            Services turned into scalable, self-running assets.
+                            Methods, frameworks, and knowledge assets scaled through team and products for larger impact.
                           </p>
                         </div>
                         <ScaledCard
