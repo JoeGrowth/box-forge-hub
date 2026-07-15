@@ -243,6 +243,30 @@ export const CompensationDialog = ({
       return;
     }
 
+    // Enforce role caps: 3 MVCB · 2 MMCB · 1 MLCB.
+    if (action === "accept") {
+      const ROLE_CAPS: Record<"MVCB" | "MMCB" | "MLCB", number> = { MVCB: 3, MMCB: 2, MLCB: 1 };
+      const resultingRole: "MVCB" | "MMCB" | "MLCB" =
+        timeEq + perfEq >= 11 ? "MVCB" : timeEq + perfEq >= 6 ? "MMCB" : "MLCB";
+      const { data: sameStartupOffers } = await supabase
+        .from("team_compensation_offers")
+        .select("id, team_member_id, status, time_equity_percentage, performance_equity_percentage")
+        .eq("startup_id", startupId)
+        .eq("status", "accepted");
+      const currentCount = (sameStartupOffers ?? []).filter((o: any) => {
+        if (existingOffer?.id && o.id === existingOffer.id) return false;
+        const total = (o.time_equity_percentage || 0) + (o.performance_equity_percentage || 0);
+        const r = total >= 11 ? "MVCB" : total >= 6 ? "MMCB" : "MLCB";
+        return r === resultingRole;
+      }).length;
+      if (currentCount + 1 > ROLE_CAPS[resultingRole]) {
+        toast.error(
+          `Role cap reached: max ${ROLE_CAPS[resultingRole]} ${resultingRole}. Adjust equity to fit another tier.`
+        );
+        return;
+      }
+    }
+
     setIsSaving(true);
 
     try {

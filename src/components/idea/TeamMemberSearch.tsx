@@ -46,6 +46,15 @@ const ROLE_LABELS: Record<string, string> = {
   MLCB: "MLCB - Most Loyal - Growing",
 };
 
+// Enforced caps per role (MVCB first, then MMCB, then MLCB).
+const ROLE_CAPS: Record<"MVCB" | "MMCB" | "MLCB", number> = {
+  MVCB: 3,
+  MMCB: 2,
+  MLCB: 1,
+};
+const ROLE_ORDER: Array<"MVCB" | "MMCB" | "MLCB"> = ["MVCB", "MMCB", "MLCB"];
+const TOTAL_CAP = ROLE_CAPS.MVCB + ROLE_CAPS.MMCB + ROLE_CAPS.MLCB;
+
 // Auto-assign role based on total equity percentage
 const getRoleFromEquity = (totalEquity: number): "MVCB" | "MMCB" | "MLCB" => {
   if (totalEquity >= 11) return "MVCB";
@@ -217,6 +226,10 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
 
   // Add member to team
   const handleAddMember = async (cobuilder: CoBuilder) => {
+    if (teamMembers.length >= TOTAL_CAP) {
+      toast.error(`Team is full. Max ${TOTAL_CAP} members (${ROLE_CAPS.MVCB} MVCB · ${ROLE_CAPS.MMCB} MMCB · ${ROLE_CAPS.MLCB} MLCB).`);
+      return;
+    }
     setIsAdding(true);
     try {
       const { data: newMember, error } = await supabase
@@ -370,7 +383,39 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
 
       {/* Current Team Members - Now Second */}
       <div>
-        <h4 className="text-sm font-medium text-foreground mb-3">Current Team</h4>
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <h4 className="text-sm font-medium text-foreground">Current Team</h4>
+          {(() => {
+            const roleCounts = teamMembers.reduce(
+              (acc, m) => {
+                const isAgreed = m.compensation?.status === "accepted";
+                const totalEq =
+                  (m.compensation?.time_equity_percentage || 0) +
+                  (m.compensation?.performance_equity_percentage || 0);
+                const r = isAgreed ? getRoleFromEquity(totalEq) : m.role_type;
+                acc[r] = (acc[r] || 0) + 1;
+                return acc;
+              },
+              { MVCB: 0, MMCB: 0, MLCB: 0 } as Record<"MVCB" | "MMCB" | "MLCB", number>
+            );
+            return (
+              <div className="flex items-center gap-1.5 text-[11px]">
+                {ROLE_ORDER.map((r) => {
+                  const over = roleCounts[r] > ROLE_CAPS[r];
+                  return (
+                    <Badge
+                      key={r}
+                      variant={over ? "destructive" : "outline"}
+                      className="font-normal"
+                    >
+                      {r} {roleCounts[r]}/{ROLE_CAPS[r]}
+                    </Badge>
+                  );
+                })}
+              </div>
+            );
+          })()}
+        </div>
         {loadingTeam ? (
           <div className="flex items-center justify-center py-4">
             <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
@@ -379,7 +424,17 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
           <p className="text-sm text-muted-foreground py-2">No team members added yet. Search above to add co-builders.</p>
         ) : (
           <div className="space-y-2">
-            {teamMembers.map((member) => {
+            {[...teamMembers]
+              .map((m) => {
+                const isAgreed = m.compensation?.status === "accepted";
+                const totalEq =
+                  (m.compensation?.time_equity_percentage || 0) +
+                  (m.compensation?.performance_equity_percentage || 0);
+                const effectiveRole = isAgreed ? getRoleFromEquity(totalEq) : m.role_type;
+                return { m, effectiveRole };
+              })
+              .sort((a, b) => ROLE_ORDER.indexOf(a.effectiveRole) - ROLE_ORDER.indexOf(b.effectiveRole))
+              .map(({ m: member }) => {
               const hasOffer = !!member.compensation;
               const isAgreed = member.compensation?.status === "accepted";
               const totalEquity = (member.compensation?.time_equity_percentage || 0) + (member.compensation?.performance_equity_percentage || 0);
