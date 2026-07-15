@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, X, Plus, Loader2, DollarSign, PieChart, Check, Clock } from "lucide-react";
+import { Search, X, Plus, Loader2, DollarSign, PieChart, Check, Clock, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { CompensationDialog } from "./CompensationDialog";
 
@@ -302,6 +302,40 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
     }
   };
 
+  // Resend the "added to team" notification email to a specific member.
+  const [notifyingId, setNotifyingId] = useState<string | null>(null);
+  const handleNotifyMember = async (member: TeamMember) => {
+    if (member.member_user_id === currentUserId) {
+      toast.info("You can't send this email to yourself.");
+      return;
+    }
+    setNotifyingId(member.id);
+    try {
+      const [{ data: startup }, { data: initiatorProfile }] = await Promise.all([
+        supabase.from("startup_ideas").select("title").eq("id", startupId).maybeSingle(),
+        supabase.from("profiles").select("full_name").eq("user_id", currentUserId).maybeSingle(),
+      ]);
+      const { error } = await supabase.functions.invoke("send-notification-email", {
+        body: {
+          userId: member.member_user_id,
+          userName: member.full_name || "Co-builder",
+          type: "team_member_added",
+          data: {
+            ideaTitle: startup?.title || "a startup",
+            applicantName: initiatorProfile?.full_name || "The initiator",
+          },
+        },
+      });
+      if (error) throw error;
+      toast.success(`Notification sent to ${member.full_name || "co-builder"}`);
+    } catch (err) {
+      console.error("Failed to send notification email", err);
+      toast.error("Failed to send notification email");
+    } finally {
+      setNotifyingId(null);
+    }
+  };
+
   // Remove member from team
   const handleRemoveMember = async (member: TeamMember) => {
     try {
@@ -530,6 +564,20 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
                           <DollarSign className="w-3 h-3" />
                           <span className="hidden sm:inline">Set Compensation</span>
                         </>
+                      )}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleNotifyMember(member)}
+                      disabled={notifyingId === member.id || member.member_user_id === currentUserId}
+                      title="Send welcome email"
+                      className="text-b4-teal hover:text-b4-teal"
+                    >
+                      {notifyingId === member.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Mail className="w-4 h-4" />
                       )}
                     </Button>
                     <Button
