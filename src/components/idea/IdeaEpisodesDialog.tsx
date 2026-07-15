@@ -13,6 +13,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import {
   CheckCircle,
   Loader2,
@@ -197,113 +198,268 @@ export const IdeaEpisodesDialog = ({
     const progress = episodeProgress[episodeId] || [];
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
-    const margin = 20;
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 18;
     const contentWidth = pageWidth - margin * 2;
-    let yPosition = 20;
 
-    // Title
-    doc.setFontSize(20);
+    // Brand palette
+    const NAVY: [number, number, number] = [15, 30, 60];
+    const TEAL: [number, number, number] = [0, 128, 128];
+    const CORAL: [number, number, number] = [255, 111, 97];
+    const MUTED: [number, number, number] = [110, 110, 120];
+    const BORDER: [number, number, number] = [220, 224, 230];
+
+    // ---------- Cover header ----------
+    doc.setFillColor(...NAVY);
+    doc.rect(0, 0, pageWidth, 42, "F");
+    doc.setFillColor(...TEAL);
+    doc.rect(0, 42, pageWidth, 3, "F");
+
+    doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
-    doc.text(`${episode.name}`, pageWidth / 2, yPosition, { align: "center" });
-    yPosition += 10;
+    doc.setFontSize(20);
+    doc.text(episode.name, margin, 22);
 
-    doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
-    doc.text(`Startup: ${startupTitle}`, pageWidth / 2, yPosition, { align: "center" });
-    yPosition += 8;
+    doc.setFontSize(11);
+    doc.text(startupTitle, margin, 32);
 
+    doc.setFontSize(9);
+    doc.setTextColor(200, 210, 220);
+    doc.text(
+      `Generated ${new Date().toLocaleDateString()}`,
+      pageWidth - margin,
+      32,
+      { align: "right" }
+    );
+
+    let yPosition = 58;
+
+    // Episode description
+    doc.setTextColor(...MUTED);
     doc.setFontSize(10);
-    doc.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth / 2, yPosition, { align: "center" });
-    yPosition += 15;
+    doc.setFont("helvetica", "italic");
+    const descLines = doc.splitTextToSize(episode.description, contentWidth);
+    doc.text(descLines, margin, yPosition);
+    yPosition += descLines.length * 5 + 6;
 
-    doc.setDrawColor(200);
-    doc.line(margin, yPosition, pageWidth - margin, yPosition);
-    yPosition += 15;
-
-    // Phases
-    episode.phases.forEach((phase) => {
-      const phaseProgress = progress.find((p) => p.phase_name === phase.name);
-
-      if (yPosition > 250) {
+    const ensureSpace = (needed: number) => {
+      if (yPosition + needed > pageHeight - 20) {
         doc.addPage();
         yPosition = 20;
       }
+    };
 
-      doc.setFontSize(14);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(0, 128, 128);
-      doc.text((phase as any).displayName || phase.name, margin, yPosition);
-      yPosition += 8;
+    const formatLabel = (key: string) =>
+      key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 
-      if (phaseProgress && Object.keys(phaseProgress.responses).length > 0) {
-        Object.entries(phaseProgress.responses).forEach(([key, value]) => {
-          if (!value) return;
+    const tryParse = (v: any) => {
+      if (v && typeof v === "object") return v;
+      if (typeof v === "string" && (v.trim().startsWith("{") || v.trim().startsWith("["))) {
+        try { return JSON.parse(v); } catch { return null; }
+      }
+      return null;
+    };
 
-          // Format structured JSON values for PDF
-          let displayValue = String(value);
-          if (typeof value === 'object' || (typeof value === 'string' && (value.startsWith('{') || value.startsWith('[')))) {
-            try {
-              const parsed = typeof value === 'object' ? value : JSON.parse(value);
-              if (parsed && typeof parsed === 'object') {
-                if (parsed.stages && Array.isArray(parsed.stages)) {
-                  displayValue = parsed.stages.map((stage: any) => {
-                    const roles = stage.rows?.map((r: any) =>
-                      `${r.role}: ${r.responsibility} (${r.equityRange})`
-                    ).join('\n    ') || '';
-                    return `${stage.label}:\n    ${roles}`;
-                  }).join('\n  ');
-                } else {
-                  displayValue = JSON.stringify(parsed, null, 2);
-                }
-              }
-            } catch {
-              // use as string
-            }
-          }
+    const renderEquityStages = (stages: any[]) => {
+      stages.forEach((stage) => {
+        ensureSpace(20);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.setTextColor(...NAVY);
+        doc.text(stage.label || "Stage", margin, yPosition);
+        yPosition += 4;
 
-          if (yPosition > 270) {
-            doc.addPage();
-            yPosition = 20;
-          }
+        const rows = (stage.rows || []).map((r: any) => [
+          r.role || "-",
+          r.responsibility || "-",
+          r.equityRange || "-",
+          r.vestingTrigger || "-",
+        ]);
 
-          doc.setFontSize(10);
-          doc.setFont("helvetica", "bold");
-          doc.setTextColor(80);
-          const label = key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
-          doc.text(label, margin, yPosition);
-          yPosition += 6;
+        autoTable(doc, {
+          startY: yPosition + 2,
+          head: [["Role", "Responsibility", "Equity", "Vesting Trigger"]],
+          body: rows.length ? rows : [["-", "-", "-", "-"]],
+          margin: { left: margin, right: margin },
+          styles: { fontSize: 9, cellPadding: 3, textColor: [40, 40, 50], lineColor: BORDER, lineWidth: 0.2 },
+          headStyles: { fillColor: TEAL, textColor: [255, 255, 255], fontStyle: "bold" },
+          alternateRowStyles: { fillColor: [245, 248, 250] },
+          columnStyles: {
+            0: { cellWidth: 34, fontStyle: "bold" },
+            2: { cellWidth: 22, halign: "center" },
+            3: { cellWidth: 34 },
+          },
+        });
+        yPosition = (doc as any).lastAutoTable.finalY + 6;
+      });
+    };
 
-          doc.setFont("helvetica", "normal");
-          doc.setTextColor(60);
-          const lines = doc.splitTextToSize(displayValue, contentWidth);
-          lines.forEach((line: string) => {
-            if (yPosition > 280) {
-              doc.addPage();
-              yPosition = 20;
-            }
-            doc.text(line, margin, yPosition);
-            yPosition += 5;
-          });
-          yPosition += 5;
+    const renderKeyValueTable = (obj: Record<string, any>) => {
+      const body = Object.entries(obj)
+        .filter(([, v]) => v !== null && v !== undefined && v !== "")
+        .map(([k, v]) => [
+          formatLabel(k),
+          typeof v === "object" ? JSON.stringify(v, null, 2) : String(v),
+        ]);
+      if (!body.length) return;
+      autoTable(doc, {
+        startY: yPosition,
+        body,
+        margin: { left: margin, right: margin },
+        styles: { fontSize: 9, cellPadding: 3, textColor: [40, 40, 50], lineColor: BORDER, lineWidth: 0.2 },
+        columnStyles: {
+          0: { cellWidth: 55, fontStyle: "bold", fillColor: [245, 248, 250], textColor: NAVY },
+        },
+      });
+      yPosition = (doc as any).lastAutoTable.finalY + 6;
+    };
+
+    const renderArrayTable = (arr: any[]) => {
+      if (!arr.length) return;
+      if (typeof arr[0] === "object" && arr[0] !== null) {
+        const cols = Array.from(new Set(arr.flatMap((r) => Object.keys(r))));
+        const body = arr.map((r) =>
+          cols.map((c) => (r[c] == null ? "-" : typeof r[c] === "object" ? JSON.stringify(r[c]) : String(r[c])))
+        );
+        autoTable(doc, {
+          startY: yPosition,
+          head: [cols.map(formatLabel)],
+          body,
+          margin: { left: margin, right: margin },
+          styles: { fontSize: 9, cellPadding: 3, lineColor: BORDER, lineWidth: 0.2 },
+          headStyles: { fillColor: TEAL, textColor: [255, 255, 255] },
+          alternateRowStyles: { fillColor: [245, 248, 250] },
         });
       } else {
-        doc.setFontSize(10);
+        autoTable(doc, {
+          startY: yPosition,
+          body: arr.map((v) => [String(v)]),
+          margin: { left: margin, right: margin },
+          styles: { fontSize: 9, cellPadding: 3, lineColor: BORDER, lineWidth: 0.2 },
+        });
+      }
+      yPosition = (doc as any).lastAutoTable.finalY + 6;
+    };
+
+    const renderTextBlock = (label: string, value: string) => {
+      ensureSpace(14);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(...NAVY);
+      doc.text(label, margin, yPosition);
+      yPosition += 5;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(55, 55, 65);
+      const lines = doc.splitTextToSize(value, contentWidth);
+      lines.forEach((line: string) => {
+        ensureSpace(6);
+        doc.text(line, margin, yPosition);
+        yPosition += 5;
+      });
+      yPosition += 3;
+    };
+
+    // ---------- Phases ----------
+    episode.phases.forEach((phase, idx) => {
+      const phaseProgress = progress.find((p) => p.phase_name === phase.name);
+      const completed = !!phaseProgress?.is_completed;
+
+      ensureSpace(22);
+
+      // Phase header bar
+      doc.setFillColor(245, 248, 250);
+      doc.rect(margin, yPosition - 5, contentWidth, 11, "F");
+      doc.setFillColor(...TEAL);
+      doc.rect(margin, yPosition - 5, 2.5, 11, "F");
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(...NAVY);
+      const title = `${idx + 1}. ${(phase as any).displayName || phase.name}`;
+      doc.text(title, margin + 6, yPosition + 2);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(...(completed ? TEAL : CORAL));
+      doc.text(
+        completed ? "Completed" : "In Progress",
+        pageWidth - margin - 2,
+        yPosition + 2,
+        { align: "right" }
+      );
+      yPosition += 12;
+
+      if (!phaseProgress || Object.keys(phaseProgress.responses).length === 0) {
         doc.setFont("helvetica", "italic");
-        doc.setTextColor(150);
-        doc.text("No responses recorded", margin, yPosition);
-        yPosition += 8;
+        doc.setFontSize(10);
+        doc.setTextColor(...MUTED);
+        doc.text("No responses recorded", margin, yPosition + 2);
+        yPosition += 12;
+        return;
       }
 
-      yPosition += 5;
+      Object.entries(phaseProgress.responses).forEach(([key, value]) => {
+        if (value === null || value === undefined || value === "") return;
+        const parsed = tryParse(value);
+
+        // Equity & Responsibility stages table
+        if (parsed && parsed.stages && Array.isArray(parsed.stages)) {
+          ensureSpace(16);
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(10);
+          doc.setTextColor(...NAVY);
+          doc.text(formatLabel(key), margin, yPosition);
+          yPosition += 4;
+          renderEquityStages(parsed.stages);
+          return;
+        }
+
+        // Array of objects → table
+        if (Array.isArray(parsed)) {
+          ensureSpace(16);
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(10);
+          doc.setTextColor(...NAVY);
+          doc.text(formatLabel(key), margin, yPosition);
+          yPosition += 4;
+          renderArrayTable(parsed);
+          return;
+        }
+
+        // Object → key/value table
+        if (parsed && typeof parsed === "object") {
+          ensureSpace(16);
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(10);
+          doc.setTextColor(...NAVY);
+          doc.text(formatLabel(key), margin, yPosition);
+          yPosition += 4;
+          renderKeyValueTable(parsed);
+          return;
+        }
+
+        // Plain text
+        renderTextBlock(formatLabel(key), String(value));
+      });
+
+      yPosition += 2;
     });
 
-    // Footer
+    // ---------- Footer on every page ----------
     const pageCount = doc.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
-      doc.setFontSize(9);
-      doc.setTextColor(150);
-      doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, 290, { align: "center" });
+      doc.setDrawColor(...BORDER);
+      doc.line(margin, pageHeight - 14, pageWidth - margin, pageHeight - 14);
+      doc.setFontSize(8);
+      doc.setTextColor(...MUTED);
+      doc.setFont("helvetica", "normal");
+      doc.text(startupTitle, margin, pageHeight - 8);
+      doc.text(episode.name, pageWidth / 2, pageHeight - 8, { align: "center" });
+      doc.text(`Page ${i} of ${pageCount}`, pageWidth - margin, pageHeight - 8, { align: "right" });
     }
 
     const fileName = `${startupTitle.toLowerCase().replace(/\s+/g, "-")}-${episodeId}.pdf`;
