@@ -111,7 +111,7 @@ const Entrepreneurship = () => {
       ? (searchParams.get("sub") as "joined" | "partnered")
       : "initiated"
   );
-  const { stages } = useProgressionLadder();
+  const { stages, loading: ladderLoading } = useProgressionLadder();
   const advisorAchieved = stages.find((s) => s.key === "advisor")?.achieved ?? false;
   const [profileStartupName, setProfileStartupName] = useState<string | null>(null);
   const [naturalRoleDesc, setNaturalRoleDesc] = useState<string | null>(null);
