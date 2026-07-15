@@ -645,7 +645,7 @@ function SystematizationPhase({ done, autoCounts, milestones, state, progress, o
           <MilestoneRow
             done={done.manage_org}
 
-            label="Manage organization"
+            label="Manage organization (optional)"
             hint={
               orgSlug
                 ? (done.manage_org
