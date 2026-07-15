@@ -332,9 +332,6 @@ export function Navbar() {
 
 
                 <>
-                  <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Assets
-                  </div>
                   {stageRank >= STAGE_RANK.emerging && (
                     <Link
                       to="/people"
