@@ -245,7 +245,8 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
   const brandingComplete = brandingProgress === 100;
 
   const systProgress = useMemo(() => {
-    const items = [!!state.selected_model, done.invite_cobuilder, done.core_services, done.manage_org, done.form_company, done.standardized_processes, done.autonomous_operations];
+    // invite_cobuilder is optional and intentionally excluded from phase 2 progress.
+    const items = [!!state.selected_model, done.core_services, done.manage_org, done.form_company, done.standardized_processes, done.autonomous_operations];
     return Math.round((items.filter(Boolean).length / items.length) * 100);
   }, [state, done]);
   const systComplete = systProgress === 100;
@@ -624,8 +625,8 @@ function SystematizationPhase({ done, autoCounts, milestones, state, progress, o
           {/* 1. Invite a co-builder */}
           <MilestoneRow
             done={done.invite_cobuilder}
-            label="Invite a co-builder"
-            hint={done.invite_cobuilder ? "Invitation sent" : "From the platform, or by email if they're not on it yet"}
+            label="Invite a co-builder (optional)"
+            hint={done.invite_cobuilder ? "Invitation sent" : "Optional — from the platform, or by email if they're not on it yet"}
             actionLabel={done.invite_cobuilder ? "Invite another" : "Invite"}
             onToggle={done.invite_cobuilder ? () => onToggleMilestone("invite_cobuilder", false) : () => setInviteOpen(true)}
           />
@@ -694,7 +695,7 @@ function SystematizationPhase({ done, autoCounts, milestones, state, progress, o
           )}
 
 
-          {done.invite_cobuilder && done.form_company && done.standardized_processes && (
+          {done.form_company && done.standardized_processes && (
             <MilestoneRow
               done={done.autonomous_operations}
               label="Achieve autonomous operations"
