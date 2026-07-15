@@ -181,8 +181,8 @@ const Ecosystem = () => {
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="mb-6">
                   <TabsTrigger value="all">All</TabsTrigger>
-                  <TabsTrigger value="yours">Yours</TabsTrigger>
                   <TabsTrigger value="others">Others</TabsTrigger>
+                  <TabsTrigger value="yours">Yours</TabsTrigger>
                 </TabsList>
 
                 {loading ? (
