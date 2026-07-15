@@ -276,7 +276,7 @@ export default function ConsultingGrowth({ embedded = false }: { embedded?: bool
 
       <NextGoalBanner pageStage="advisor" />
 
-      {advisorGraduated && (
+      {advisorGraduated && !embedded && (
         <Card className="border-primary/40 bg-primary/5">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
