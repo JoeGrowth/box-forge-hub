@@ -353,6 +353,10 @@ export function Navbar() {
 
 
                 <>
+                  <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Ecosystem
+                  </div>
+
                   {stageRank >= STAGE_RANK.emerging && (
                     <Link
                       to="/people"
@@ -391,7 +395,7 @@ export function Navbar() {
                     }`}
                   >
                     <Building2 size={16} />
-                    <span className="flex-1">Assets</span>
+                    <span className="flex-1">Growth Studio</span>
                   </Link>
 
 
