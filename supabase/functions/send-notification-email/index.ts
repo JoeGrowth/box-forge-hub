@@ -586,7 +586,26 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const { to, userName, userId, type, data } = validation.data;
+    let { to, userName, userId, type, data } = validation.data;
+
+    // Resolve `to` from userId via admin when the client couldn't provide it.
+    if (!to && userId) {
+      try {
+        const admin = createClient(supabaseUrl, supabaseServiceKey);
+        const { data: userData } = await admin.auth.admin.getUserById(userId);
+        if (userData?.user?.email) to = userData.user.email;
+      } catch (e) {
+        console.warn("Failed to resolve email from userId", e);
+      }
+    }
+
+    if (!to) {
+      return new Response(
+        JSON.stringify({ error: "Recipient email could not be resolved" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
     console.log(`Sending ${type} email to ${to} for user ${userName}`);
 
     const emailContent = getEmailContent(type, userName, data);
