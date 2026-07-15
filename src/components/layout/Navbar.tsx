@@ -133,6 +133,15 @@ export function Navbar() {
 
   const { progression } = useNextBestActions(user?.id);
   const stageRank = STAGE_RANK[progression?.current_state ?? "novice"] ?? 0;
+  const visibleResourceLinks = useMemo(
+    () =>
+      resourceLinks.filter(
+        (l) =>
+          (!l.minStage || stageRank >= STAGE_RANK[l.minStage]) &&
+          (!l.engineKey || engineAccess[l.engineKey].unlocked),
+      ),
+    [stageRank, engineAccess],
+  );
   const visibleMoreLinks = useMemo(
     () =>
       moreLinks.filter(
