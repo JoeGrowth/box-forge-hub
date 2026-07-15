@@ -29,7 +29,7 @@ export type NotificationType =
   | "team_member_added";
 
 interface SendNotificationEmailParams {
-  to: string;
+  to?: string;
   userName: string;
   userId?: string;
   type: NotificationType;
