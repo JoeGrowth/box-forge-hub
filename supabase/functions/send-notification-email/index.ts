@@ -87,8 +87,12 @@ function validateRequest(body: any): { valid: true; data: NotificationEmailReque
 
   const { to, userName, userId, type, data } = body;
 
-  if (!to || typeof to !== 'string' || !isValidEmail(to)) {
-    return { valid: false, error: 'Invalid or missing email address' };
+  // `to` may be empty when caller provides userId — it will be resolved server-side via admin.
+  if (to !== undefined && to !== "" && (typeof to !== 'string' || !isValidEmail(to))) {
+    return { valid: false, error: 'Invalid email address' };
+  }
+  if ((!to || to === "") && !body.userId) {
+    return { valid: false, error: 'Either `to` or `userId` must be provided' };
   }
 
   if (!userName || typeof userName !== 'string' || userName.trim().length === 0 || userName.length > 100) {
