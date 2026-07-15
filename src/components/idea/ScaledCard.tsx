@@ -88,6 +88,11 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
   const [editingName, setEditingName] = useState(false);
   const [brandDraft, setBrandDraft] = useState(title);
   const [savingName, setSavingName] = useState(false);
+  // Optimistic override: once the user successfully saves a brand name, keep it
+  // displayed even if the parent's profile-fetch effect momentarily re-fires
+  // and passes back the stale/fallback title before its own state re-syncs.
+  const [savedNameOverride, setSavedNameOverride] = useState<string | null>(null);
+  const displayTitle = savedNameOverride ?? title;
 
   const [state, setState] = useState<VentureState>(DEFAULT_STATE);
   const [milestones, setMilestones] = useState<Set<string>>(new Set());
@@ -97,7 +102,12 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => { setBrandDraft(title); }, [title]);
+  useEffect(() => { setBrandDraft(displayTitle); }, [displayTitle]);
+  // Clear the override once the parent's title catches up.
+  useEffect(() => {
+    if (savedNameOverride && title === savedNameOverride) setSavedNameOverride(null);
+  }, [title, savedNameOverride]);
+
 
   const reloadOrgSignals = async (userId: string, brandName: string) => {
     // Find orgs created by the user; prefer brand-name match, else most recent
@@ -272,10 +282,12 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     const { error } = await supabase.from("profiles").update({ startup_name: name }).eq("user_id", userId);
     setSavingName(false);
     if (error) { toast.error(error.message); return; }
+    setSavedNameOverride(name);
     toast.success("Brand name updated");
     setEditingName(false);
     onBrandNameSaved?.(name);
   };
+
 
   const jumpPhase = (p: Phase) => {
     // allow navigating between unlocked phases
@@ -302,20 +314,20 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
                 autoFocus
                 value={brandDraft}
                 onChange={(e) => setBrandDraft(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") saveBrandName(); if (e.key === "Escape") { setEditingName(false); setBrandDraft(title); } }}
+                onKeyDown={(e) => { if (e.key === "Enter") saveBrandName(); if (e.key === "Escape") { setEditingName(false); setBrandDraft(displayTitle); } }}
                 className="h-9 text-base sm:text-lg font-bold flex-1 min-w-0 sm:max-w-xs"
                 placeholder="e.g. Pengry"
               />
               <Button size="icon" variant="ghost" className="h-8 w-8 flex-shrink-0" onClick={saveBrandName} disabled={savingName}>
                 {savingName ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               </Button>
-              <Button size="icon" variant="ghost" className="h-8 w-8 flex-shrink-0" onClick={() => { setEditingName(false); setBrandDraft(title); }}>
+              <Button size="icon" variant="ghost" className="h-8 w-8 flex-shrink-0" onClick={() => { setEditingName(false); setBrandDraft(displayTitle); }}>
                 <X className="w-4 h-4" />
               </Button>
             </div>
           ) : (
             <div className="flex items-center gap-2 flex-wrap mt-0.5">
-              <h3 className="font-display text-lg sm:text-2xl font-bold text-foreground break-words min-w-0">{title}</h3>
+              <h3 className="font-display text-lg sm:text-2xl font-bold text-foreground break-words min-w-0">{displayTitle}</h3>
               <Button size="icon" variant="ghost" className="h-7 w-7 flex-shrink-0" onClick={() => setEditingName(true)} title="Rename brand">
                 <Pencil className="w-3.5 h-3.5" />
               </Button>
@@ -323,6 +335,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
               <Badge variant="outline" className="text-[10px]">Private · not in ecosystem</Badge>
             </div>
           )}
+
           <p className="text-sm text-muted-foreground mt-1">{tagline}</p>
           <div className="flex flex-wrap gap-2 mt-3">
             <Button size="sm" variant="outline" onClick={() => setHistoryOpen(true)} className="flex-1 sm:flex-none min-w-0">
