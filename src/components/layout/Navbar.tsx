@@ -183,41 +183,35 @@ export function Navbar() {
             ) : (
               <>
 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 outline-none ${
-                        ["/people", "/projects", "/entrepreneurship"].includes(location.pathname)
-                          ? "text-b4-teal"
-                          : "text-muted-foreground"
-                      }`}
-                    >
-                      Assets
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-48 mt-2">
-                    {stageRank >= STAGE_RANK.emerging && (
-                      <DropdownMenuItem asChild>
-                        <Link to="/people" className="flex items-center gap-2 cursor-pointer">
-                          <Users className="w-4 h-4" />
-                          <span>People</span>
-                        </Link>
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuItem asChild>
-                      <Link to="/projects" className="flex items-center gap-2 cursor-pointer">
-                        <Rocket className="w-4 h-4" />
-                        <span>Projects</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/entrepreneurship" className="flex items-center gap-2 cursor-pointer">
-                        <Building2 className="w-4 h-4" />
-                        <span>Ventures</span>
-                      </Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                {stageRank >= STAGE_RANK.emerging && (
+                  <Link
+                    to="/people"
+                    className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 ${
+                      location.pathname === "/people" ? "text-b4-teal" : "text-muted-foreground"
+                    }`}
+                  >
+                    People
+                  </Link>
+                )}
+
+                <Link
+                  to="/projects"
+                  className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 ${
+                    location.pathname === "/projects" ? "text-b4-teal" : "text-muted-foreground"
+                  }`}
+                >
+                  Projects
+                </Link>
+
+                <Link
+                  to="/entrepreneurship"
+                  className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 ${
+                    location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-muted-foreground"
+                  }`}
+                >
+                  Ventures
+                </Link>
+
 
 
                 <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
@@ -338,9 +332,6 @@ export function Navbar() {
 
 
                 <>
-                  <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Assets
-                  </div>
                   {stageRank >= STAGE_RANK.emerging && (
                     <Link
                       to="/people"
