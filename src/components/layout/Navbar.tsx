@@ -56,8 +56,8 @@ const guestNavLinks: Array<{ name: string; path: string; icon: typeof Briefcase 
 
 // `minStage` gates a link behind the user's progression stage. Items without
 // a `minStage` are visible to all authenticated users (subject to talentGate).
-// Novice unlocks Boxes + Programs only; Emerging unlocks the full More list.
-const moreLinks: Array<{
+// Novice unlocks Boxes + Programs only; Emerging unlocks the full Resources list.
+const resourceLinks: Array<{
   name: string;
   path: string;
   icon: typeof Briefcase;
@@ -65,12 +65,18 @@ const moreLinks: Array<{
   engineKey?: EngineKey;
 }> = [
   { name: "Squares", path: "/squares", icon: LayoutGrid },
-  { name: "Paths", path: "/paths", icon: Activity },
-  { name: "Opportunities", path: "/opportunities", icon: Briefcase },
-  { name: "Organizations", path: "/organizations", icon: Building2, minStage: "emerging" },
-  { name: "Boxes", path: "/boxes", icon: Package },
   { name: "Programs", path: "/programs", icon: BookOpen },
+  { name: "Boxes", path: "/boxes", icon: Package },
+  { name: "Organizations", path: "/organizations", icon: Building2, minStage: "emerging" },
 ];
+
+const moreLinks: Array<{
+  name: string;
+  path: string;
+  icon: typeof Briefcase;
+  minStage?: keyof typeof STAGE_RANK;
+  engineKey?: EngineKey;
+}> = [{ name: "Opportunities", path: "/opportunities", icon: Briefcase }];
 
 // Synchronous read of cached admin flag so first paint is stable.
 function readCachedAdmin(userId: string | undefined): boolean {
