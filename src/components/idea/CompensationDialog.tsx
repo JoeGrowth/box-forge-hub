@@ -212,8 +212,12 @@ export const CompensationDialog = ({
       return;
     }
 
-    if (timeEq > 0 && timeEq !== cliff + vesting) {
-      toast.error(`Time-Based Equity (${timeEq}%) must equal Cliff (${cliff}) + Vesting (${vesting}) = ${cliff + vesting}%`);
+    if (timeEq > 0 && vesting <= 0) {
+      toast.error("Vesting period must be at least 1 year.");
+      return;
+    }
+    if (timeEq > 0 && cliff > vesting) {
+      toast.error(`Cliff (${cliff}y) cannot be longer than the vesting period (${vesting}y).`);
       return;
     }
 
