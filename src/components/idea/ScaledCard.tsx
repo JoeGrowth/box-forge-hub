@@ -88,6 +88,11 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
   const [editingName, setEditingName] = useState(false);
   const [brandDraft, setBrandDraft] = useState(title);
   const [savingName, setSavingName] = useState(false);
+  // Optimistic override: once the user successfully saves a brand name, keep it
+  // displayed even if the parent's profile-fetch effect momentarily re-fires
+  // and passes back the stale/fallback title before its own state re-syncs.
+  const [savedNameOverride, setSavedNameOverride] = useState<string | null>(null);
+  const displayTitle = savedNameOverride ?? title;
 
   const [state, setState] = useState<VentureState>(DEFAULT_STATE);
   const [milestones, setMilestones] = useState<Set<string>>(new Set());
@@ -97,7 +102,12 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => { setBrandDraft(title); }, [title]);
+  useEffect(() => { setBrandDraft(displayTitle); }, [displayTitle]);
+  // Clear the override once the parent's title catches up.
+  useEffect(() => {
+    if (savedNameOverride && title === savedNameOverride) setSavedNameOverride(null);
+  }, [title, savedNameOverride]);
+
 
   const reloadOrgSignals = async (userId: string, brandName: string) => {
     // Find orgs created by the user; prefer brand-name match, else most recent
