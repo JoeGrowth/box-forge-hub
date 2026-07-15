@@ -159,7 +159,56 @@ export const IdeaValidationDialog = ({
   const [isLoading, setIsLoading] = useState(true);
   const [hasLoadedInitial, setHasLoadedInitial] = useState(false);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const summaryPhaseNumber = 3;
+  const handleGenerateSummary = async () => {
+    setIsGeneratingSummary(true);
+    try {
+      const priorResponses: Record<string, string> = {};
+      Object.values(phaseProgress).forEach((p) => {
+        if (p.phase_number === summaryPhaseNumber) return;
+        Object.entries(p.responses || {}).forEach(([k, v]) => {
+          if (typeof v === "string" && v.trim()) priorResponses[k] = v;
+        });
+      });
+      Object.entries(responses).forEach(([k, v]) => {
+        if (v && v.trim() && !(k in priorResponses)) priorResponses[k] = v;
+      });
+      const summaryPhase = VALIDATION_PHASES[summaryPhaseNumber];
+      const { data, error } = await supabase.functions.invoke("generate-episode-summary", {
+        body: {
+          ideaTitle,
+          episode: "Validate",
+          priorResponses,
+          questions: summaryPhase.tasks.map((t) => ({
+            id: t.id,
+            label: t.label,
+            prompt: t.description,
+          })),
+        },
+      });
+      if (error) throw error;
+      const summaries: Array<{ id: string; text: string }> = data?.summaries ?? [];
+      const patch: Record<string, string> = {};
+      summaries.forEach((s) => {
+        if (s?.id && s?.text) patch[s.id] = s.text;
+      });
+      if (Object.keys(patch).length) {
+        setResponses((prev) => ({ ...prev, ...patch }));
+        toast.success("Summary drafted. Edit before completing.");
+      } else {
+        toast.error("AI returned no summary content.");
+      }
+    } catch (e) {
+      console.error("generate-episode-summary failed", e);
+      toast.error("Failed to generate summary. Try again.");
+    } finally {
+      setIsGeneratingSummary(false);
+    }
+  };
+
 
   const phase = VALIDATION_PHASES[currentPhase];
   const totalPhases = VALIDATION_PHASES.length;
