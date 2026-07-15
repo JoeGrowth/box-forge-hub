@@ -112,6 +112,7 @@ export const CompensationDialog = ({
   const [vestingYears, setVestingYears] = useState("4");
   const [performanceEquity, setPerformanceEquity] = useState("");
   const [performanceMilestone, setPerformanceMilestone] = useState("");
+  const [roleTitle, setRoleTitle] = useState("");
 
   const subjectName = teamMember?.full_name || application?.applicantName || "Co-Builder";
   const roleLabel =
