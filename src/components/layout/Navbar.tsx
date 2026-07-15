@@ -220,7 +220,46 @@ export function Navbar() {
                   Ventures
                 </Link>
 
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 outline-none ${
+                        ["/squares", "/programs", "/boxes", "/organizations"].includes(location.pathname)
+                          ? "text-b4-teal"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      Resources
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-56 mt-2">
+                    {visibleResourceLinks.map((link) => {
+                      const Icon = link.icon;
+                      return (
+                        <DropdownMenuItem key={link.path} asChild>
+                          <Link
+                            to={link.path}
+                            className={`flex items-center gap-2 cursor-pointer ${
+                              location.pathname === link.path ? "text-b4-teal" : "text-foreground"
+                            }`}
+                          >
+                            <Icon size={16} />
+                            {link.name}
+                          </Link>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
+                <Link
+                  to="/paths"
+                  className={`text-sm font-medium transition-colors hover:text-b4-teal inline-flex items-center gap-1 ${
+                    location.pathname === "/paths" ? "text-b4-teal" : "text-muted-foreground"
+                  }`}
+                >
+                  Paths
+                </Link>
 
                 <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
                   <DropdownMenuTrigger asChild>
