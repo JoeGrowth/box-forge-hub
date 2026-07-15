@@ -170,10 +170,11 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
         .select("user_id, description")
         .in("user_id", userIds);
 
-      // Combine data and exclude current user and existing team members
+      // Combine data and exclude existing team members (self is allowed —
+      // the initiator can add themselves as a founding team member).
       const existingMemberIds = teamMembers.map((m) => m.member_user_id);
       const results: CoBuilder[] = profiles
-        .filter((p) => p.user_id !== currentUserId && !existingMemberIds.includes(p.user_id))
+        .filter((p) => !existingMemberIds.includes(p.user_id))
         .map((profile) => {
           const naturalRole = naturalRoles?.find((nr) => nr.user_id === profile.user_id);
           return {
@@ -334,7 +335,12 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
                     )}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-foreground">{cobuilder.full_name || "Unknown"}</p>
+                    <p className="text-sm font-medium text-foreground flex items-center gap-2">
+                      {cobuilder.full_name || "Unknown"}
+                      {cobuilder.user_id === currentUserId && (
+                        <Badge variant="secondary" className="text-[10px]">You</Badge>
+                      )}
+                    </p>
                     {cobuilder.natural_role_description && (
                       <p className="text-xs text-muted-foreground line-clamp-1">
                         {cobuilder.natural_role_description}
