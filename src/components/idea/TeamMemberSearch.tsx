@@ -46,6 +46,15 @@ const ROLE_LABELS: Record<string, string> = {
   MLCB: "MLCB - Most Loyal - Growing",
 };
 
+// Enforced caps per role (MVCB first, then MMCB, then MLCB).
+const ROLE_CAPS: Record<"MVCB" | "MMCB" | "MLCB", number> = {
+  MVCB: 3,
+  MMCB: 2,
+  MLCB: 1,
+};
+const ROLE_ORDER: Array<"MVCB" | "MMCB" | "MLCB"> = ["MVCB", "MMCB", "MLCB"];
+const TOTAL_CAP = ROLE_CAPS.MVCB + ROLE_CAPS.MMCB + ROLE_CAPS.MLCB;
+
 // Auto-assign role based on total equity percentage
 const getRoleFromEquity = (totalEquity: number): "MVCB" | "MMCB" | "MLCB" => {
   if (totalEquity >= 11) return "MVCB";
