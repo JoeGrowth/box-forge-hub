@@ -94,6 +94,7 @@ function readCachedAdmin(userId: string | undefined): boolean {
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
+  const [ecosystemOpen, setEcosystemOpen] = useState(false);
 
   const location = useLocation();
   const { user, signOut, loading } = useAuth();
