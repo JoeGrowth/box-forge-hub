@@ -98,7 +98,7 @@ const Entrepreneurship = () => {
   const initialTab = (() => {
     const t = searchParams.get("tab");
     if (t === "legacy" || t === "growth" || t === "progress") return t as MainTab;
-    return "legacy" as MainTab;
+    return "growth" as MainTab;
   })();
   const [mainTab, setMainTab] = useState<MainTab>(initialTab);
   const [growthSubTab, setGrowthSubTab] = useState<GrowthSub>(() => {
