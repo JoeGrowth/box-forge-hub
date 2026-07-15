@@ -226,6 +226,10 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
 
   // Add member to team
   const handleAddMember = async (cobuilder: CoBuilder) => {
+    if (teamMembers.length >= TOTAL_CAP) {
+      toast.error(`Team is full. Max ${TOTAL_CAP} members (${ROLE_CAPS.MVCB} MVCB · ${ROLE_CAPS.MMCB} MMCB · ${ROLE_CAPS.MLCB} MLCB).`);
+      return;
+    }
     setIsAdding(true);
     try {
       const { data: newMember, error } = await supabase
