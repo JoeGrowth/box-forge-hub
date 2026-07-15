@@ -22,6 +22,7 @@ import {
   Save,
   Target,
   Scale,
+  Sparkles,
 } from "lucide-react";
 import { TeamMemberSearch } from "./TeamMemberSearch";
 import { EquityResponsibilityEditor, type EquityResponsibilityData } from "./EquityResponsibilityEditor";
