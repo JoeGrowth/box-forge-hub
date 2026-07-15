@@ -198,14 +198,14 @@ const Ecosystem = () => {
                 ) : (
                   <>
                     <TabsContent value="all" className="space-y-4">
-                      {[...myProjects, ...browseProjects].length === 0 ? (
+                      {[...browseProjects, ...myProjects].length === 0 ? (
                         <div className="text-center py-12 text-muted-foreground">
                           <Rocket className="w-12 h-12 mx-auto mb-3 opacity-40" />
                           <p>No projects seeking co-builders right now.</p>
                           <p className="text-sm mt-1">Check back soon!</p>
                         </div>
                       ) : (
-                        [...myProjects, ...browseProjects].map((p) => renderProjectCard(p, p.creator_id === user?.id))
+                        [...browseProjects, ...myProjects].map((p) => renderProjectCard(p, p.creator_id === user?.id))
                       )}
                     </TabsContent>
 
