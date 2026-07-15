@@ -335,7 +335,12 @@ export const TeamMemberSearch = ({ startupId, currentUserId, onTeamUpdated }: Te
                     )}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-foreground">{cobuilder.full_name || "Unknown"}</p>
+                    <p className="text-sm font-medium text-foreground flex items-center gap-2">
+                      {cobuilder.full_name || "Unknown"}
+                      {cobuilder.user_id === currentUserId && (
+                        <Badge variant="secondary" className="text-[10px]">You</Badge>
+                      )}
+                    </p>
                     {cobuilder.natural_role_description && (
                       <p className="text-xs text-muted-foreground line-clamp-1">
                         {cobuilder.natural_role_description}
