@@ -3892,6 +3892,7 @@ export type Database = {
           id: string
           implementation_type: string | null
           organization_id: string
+          product_id: string | null
           shipped_at: string | null
           title: string
           updated_at: string
@@ -3905,6 +3906,7 @@ export type Database = {
           id?: string
           implementation_type?: string | null
           organization_id: string
+          product_id?: string | null
           shipped_at?: string | null
           title: string
           updated_at?: string
@@ -3918,6 +3920,7 @@ export type Database = {
           id?: string
           implementation_type?: string | null
           organization_id?: string
+          product_id?: string | null
           shipped_at?: string | null
           title?: string
           updated_at?: string
@@ -3927,6 +3930,54 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "organization_product_iterations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_product_iterations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "organization_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_products: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          name: string
+          organization_id: string
+          position: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          position?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          position?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_products_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"

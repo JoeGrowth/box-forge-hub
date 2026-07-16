@@ -1545,6 +1545,125 @@ function ProjectJourneyTab({
 
 function ProductJourneySection({ orgId, userId }: { orgId: string; userId: string | undefined }) {
   const { toast } = useToast();
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [addingProduct, setAddingProduct] = useState(false);
+  const [newProductName, setNewProductName] = useState("");
+  const [savingProduct, setSavingProduct] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const { data } = await (supabase as any)
+      .from("organization_products")
+      .select("*")
+      .eq("organization_id", orgId)
+      .order("position", { ascending: true });
+    setProducts((data as any[]) ?? []);
+    setLoading(false);
+  }, [orgId]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const addProduct = async () => {
+    if (!userId) return;
+    setSavingProduct(true);
+    const nextPos = (products[products.length - 1]?.position ?? 0) + 1;
+    const name = newProductName.trim() || `Product Journey (${nextPos})`;
+    const { error } = await (supabase as any)
+      .from("organization_products")
+      .insert({ organization_id: orgId, name, position: nextPos, created_by: userId });
+    setSavingProduct(false);
+    if (error) {
+      toast({ title: "Couldn't add product", description: error.message, variant: "destructive" });
+      return;
+    }
+    setNewProductName("");
+    setAddingProduct(false);
+    load();
+  };
+
+  const removeProduct = async (id: string) => {
+    if (!confirm("Remove this product journey and all its iterations?")) return;
+    const { error } = await (supabase as any)
+      .from("organization_products")
+      .delete()
+      .eq("id", id);
+    if (error) {
+      toast({ title: "Couldn't remove", description: error.message, variant: "destructive" });
+      return;
+    }
+    load();
+  };
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5">
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <div className="flex items-center gap-2">
+            <Rocket className="w-4 h-4 text-primary" />
+            <h3 className="text-lg font-semibold text-foreground">Product Journeys</h3>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Track every product this entity ships. Each product has its own versioned case-study trail — v1 spreadsheet, v2 platform, v3 optimized…
+          </p>
+        </div>
+        <Button size="sm" onClick={() => setAddingProduct((o) => !o)}>
+          <Plus className="w-4 h-4 mr-1" /> {addingProduct ? "Cancel" : "Add product journey"}
+        </Button>
+      </div>
+
+      {addingProduct && (
+        <div className="mt-4 rounded-lg border border-border p-3 bg-background flex items-end gap-2 flex-wrap">
+          <div className="flex-1 min-w-[200px]">
+            <Label className="text-xs">Product name</Label>
+            <Input
+              value={newProductName}
+              onChange={(e) => setNewProductName(e.target.value)}
+              placeholder={`Product Journey (${(products[products.length - 1]?.position ?? 0) + 1})`}
+            />
+          </div>
+          <Button size="sm" onClick={addProduct} disabled={savingProduct}>
+            {savingProduct ? "Saving…" : "Create"}
+          </Button>
+        </div>
+      )}
+
+      <div className="mt-4 space-y-4">
+        {loading ? (
+          <p className="text-xs text-muted-foreground">Loading…</p>
+        ) : products.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-border p-6 text-center">
+            <Rocket className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground">No product journeys yet. Add one to start logging shipped iterations as case studies.</p>
+          </div>
+        ) : (
+          products.map((p) => (
+            <ProductBlock
+              key={p.id}
+              product={p}
+              orgId={orgId}
+              userId={userId}
+              onRemove={() => removeProduct(p.id)}
+            />
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ProductBlock({
+  product,
+  orgId,
+  userId,
+  onRemove,
+}: {
+  product: any;
+  orgId: string;
+  userId: string | undefined;
+  onRemove: () => void;
+}) {
+  const { toast } = useToast();
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -1562,11 +1681,11 @@ function ProductJourneySection({ orgId, userId }: { orgId: string; userId: strin
     const { data } = await (supabase as any)
       .from("organization_product_iterations")
       .select("*")
-      .eq("organization_id", orgId)
+      .eq("product_id", product.id)
       .order("version_number", { ascending: true });
     setItems((data as any[]) ?? []);
     setLoading(false);
-  }, [orgId]);
+  }, [product.id]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -1580,6 +1699,7 @@ function ProductJourneySection({ orgId, userId }: { orgId: string; userId: strin
       .from("organization_product_iterations")
       .insert({
         organization_id: orgId,
+        product_id: product.id,
         version_number: nextVersion,
         title: form.title.trim(),
         description: form.description.trim() || null,
@@ -1599,7 +1719,7 @@ function ProductJourneySection({ orgId, userId }: { orgId: string; userId: strin
     load();
   };
 
-  const remove = async (id: string) => {
+  const removeIteration = async (id: string) => {
     const { error } = await (supabase as any)
       .from("organization_product_iterations")
       .delete()
@@ -1612,24 +1732,28 @@ function ProductJourneySection({ orgId, userId }: { orgId: string; userId: strin
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-5">
+    <div className="rounded-xl border border-border bg-background p-4">
       <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div>
-          <div className="flex items-center gap-2">
-            <Rocket className="w-4 h-4 text-primary" />
-            <h3 className="text-lg font-semibold text-foreground">Product Journey</h3>
-          </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            Each time you ship an implementation of this entity's solution — v1 spreadsheet, v2 platform, v3 optimized… — log it here as a case study.
+        <div className="min-w-0">
+          <h4 className="font-semibold text-foreground">{product.name}</h4>
+          <p className="text-xs text-muted-foreground">
+            {items.length} shipped iteration{items.length === 1 ? "" : "s"}
           </p>
         </div>
-        <Button size="sm" onClick={() => setOpen((o) => !o)}>
-          <Plus className="w-4 h-4 mr-1" /> {open ? "Cancel" : "Add iteration"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={() => setOpen((o) => !o)}>
+            <Plus className="w-4 h-4 mr-1" /> {open ? "Cancel" : "Add iteration"}
+          </Button>
+          {userId === product.created_by && (
+            <Button variant="ghost" size="icon" onClick={onRemove} title="Remove product journey">
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
       </div>
 
       {open && (
-        <div className="mt-4 rounded-lg border border-border p-3 space-y-2 bg-background">
+        <div className="mt-3 rounded-lg border border-border p-3 space-y-2 bg-card">
           <div className="grid sm:grid-cols-2 gap-2">
             <div>
               <Label className="text-xs">Title *</Label>
@@ -1660,14 +1784,11 @@ function ProductJourneySection({ orgId, userId }: { orgId: string; userId: strin
         </div>
       )}
 
-      <div className="mt-4">
+      <div className="mt-3">
         {loading ? (
           <p className="text-xs text-muted-foreground">Loading…</p>
         ) : items.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-border p-6 text-center">
-            <Rocket className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">No shipped iterations yet. Log the first version of the product to start the case study trail.</p>
-          </div>
+          <p className="text-xs text-muted-foreground">No shipped iterations yet.</p>
         ) : (
           <ol className="relative border-l border-border ml-3 space-y-4">
             {items.map((it) => (
@@ -1695,7 +1816,7 @@ function ProductJourneySection({ orgId, userId }: { orgId: string; userId: strin
                       )}
                     </div>
                     {userId === it.created_by && (
-                      <Button variant="ghost" size="icon" onClick={() => remove(it.id)}>
+                      <Button variant="ghost" size="icon" onClick={() => removeIteration(it.id)}>
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     )}
