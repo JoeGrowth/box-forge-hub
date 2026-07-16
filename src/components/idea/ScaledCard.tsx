@@ -44,6 +44,7 @@ interface VentureState {
   selected_model: Model | null;
   company_name: string | null;
   company_registration: string | null;
+  certificate_of_incorporation_url: string | null;
   proposal_template_url: string | null;
   frameworks_url: string | null;
   software_tools: string | null;
@@ -60,6 +61,7 @@ const DEFAULT_STATE: VentureState = {
   selected_model: null,
   company_name: null,
   company_registration: null,
+  certificate_of_incorporation_url: null,
   proposal_template_url: null,
   frameworks_url: null,
   software_tools: null,
@@ -242,7 +244,8 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     professional_presence: autoCounts.professionalPresence || milestones.has("professional_presence"),
     invite_cobuilder: milestones.has("invite_cobuilder"),
     manage_org: !!orgId && autoCounts.orgHasDeclaration && autoCounts.orgHasDistribution,
-    form_company: !!state.company_name?.trim(),
+    brand_added: !!orgId || milestones.has("brand_added"),
+    form_company: !!state.company_name?.trim() && !!state.certificate_of_incorporation_url?.trim(),
     standardized_processes: milestones.has("standardized_processes"),
     autonomous_operations: state.autonomous_operations,
   }), [autoCounts, milestones, state, orgId]);
@@ -635,36 +638,48 @@ function SystematizationPhase({ done, autoCounts, milestones, state, progress, o
         </div>
       ) : (
         <div className="space-y-2">
-          {/* 1. Invite a co-builder */}
+          {/* 2. Add a brand in Legacy */}
+          <MilestoneRow
+            done={done.brand_added}
+            label='Add a brand in Legacy "initiated"'
+            hint={
+              done.brand_added
+                ? `Brand "${brandName}" added to Legacy`
+                : "Create your brand entity — it appears under Legacy › Initiated"
+            }
+            actionLabel={done.brand_added ? "Open" : "Add brand"}
+            onToggle={onOpenOrg}
+          />
+
+          {/* 3. Work the development phase & invite a co-builder */}
           <MilestoneRow
             done={done.invite_cobuilder}
-            label="Invite a co-builder (optional)"
-            hint={done.invite_cobuilder ? "Invitation sent" : "Optional — from the platform, or by email if they're not on it yet"}
+            label="Work the development phase & invite a co-builder"
+            hint={done.invite_cobuilder ? "Co-builder invited — keep progressing the development phase" : "Progress the brand's development phase and invite a co-builder (from the platform or by email)"}
             actionLabel={done.invite_cobuilder ? "Invite another" : "Invite"}
             onToggle={done.invite_cobuilder ? () => onToggleMilestone("invite_cobuilder", false) : () => setInviteOpen(true)}
           />
 
-          {/* 2. Define your core services */}
+          {/* 4. Define your core services */}
           <MilestoneRow
             done={done.core_services}
             auto={autoCounts.coreServices >= 3}
-            label="Define your core services"
+            label="Define core services"
             hint={autoCounts.coreServices > 0 ? `${autoCounts.coreServices}/3 services published` : (milestones.has("core_services") ? "Manually confirmed" : "Publish at least 3 consulting services")}
             actionLabel={milestones.has("core_services") ? "Undo" : "Mark done"}
             onToggle={autoCounts.coreServices >= 3 ? undefined : () => onToggleMilestone("core_services", !milestones.has("core_services"))}
           />
 
-          {/* 3. Manage organization — auto-checked once org has ≥1 linked declaration mission and ≥1 distribution */}
+          {/* 5. Start managing the organization */}
           <MilestoneRow
             done={done.manage_org}
-
-            label="Manage organization (optional)"
+            label="Start managing the organization"
             hint={
               orgSlug
                 ? (done.manage_org
-                    ? `Linked to “${brandName}” · declaration + distribution recorded`
-                    : `Open “${brandName}”. Auto-checks once one declaration and one distribution are linked.`)
-                : `Create the “${brandName}” organization to manage it. Auto-checks once one declaration and one distribution are linked.`
+                    ? `Linked to "${brandName}" · declaration + distribution recorded`
+                    : `Open "${brandName}". Auto-checks once one declaration and one distribution are linked.`)
+                : `Create the "${brandName}" organization to manage it. Auto-checks once one declaration and one distribution are linked.`
             }
             actionLabel={orgSlug ? "Open" : "Create & open"}
             onToggle={onOpenOrg}
@@ -672,7 +687,7 @@ function SystematizationPhase({ done, autoCounts, milestones, state, progress, o
 
           {gateOpen ? (
             <>
-              {/* 4. Form the company */}
+              {/* 6. Form the company + certificate of incorporation */}
               <div className="p-3 rounded-lg border border-border bg-card space-y-2">
                 <div className="flex items-start gap-3">
                   <div className={cn("w-5 h-5 mt-0.5 rounded-full flex items-center justify-center flex-shrink-0",
@@ -680,17 +695,26 @@ function SystematizationPhase({ done, autoCounts, milestones, state, progress, o
                     {done.form_company && <Check className="w-3 h-3" />}
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium">Form the company</p>
-                    <p className="text-xs text-muted-foreground">Legal entity name and registration</p>
+                    <p className="text-sm font-medium">Form the company & add certificate of incorporation</p>
+                    <p className="text-xs text-muted-foreground">Legal entity name, registration, and incorporation certificate</p>
                     <div className="grid sm:grid-cols-2 gap-2 mt-2">
                       <Input value={state.company_name || ""} onChange={(e) => onUpdateState({ company_name: e.target.value })} placeholder="Company legal name" className="h-8 text-xs" />
                       <Input value={state.company_registration || ""} onChange={(e) => onUpdateState({ company_registration: e.target.value })} placeholder="Registration # (optional)" className="h-8 text-xs" />
+                    </div>
+                    <div className="mt-2">
+                      <Input
+                        value={state.certificate_of_incorporation_url || ""}
+                        onChange={(e) => onUpdateState({ certificate_of_incorporation_url: e.target.value })}
+                        placeholder="Certificate of incorporation — URL or reference"
+                        className="h-8 text-xs"
+                      />
+                      <p className="text-[11px] text-muted-foreground mt-1">Paste a link to the incorporation certificate (PDF, drive, or registry URL).</p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* 5. Implement standardized processes */}
+              {/* 7. Implement standardized processes */}
               <MilestoneRow
                 done={done.standardized_processes}
                 label="Implement standardized processes"
@@ -709,6 +733,7 @@ function SystematizationPhase({ done, autoCounts, milestones, state, progress, o
 
 
           {done.form_company && done.standardized_processes && (
+            /* 8. Achieve autonomous operations */
             <MilestoneRow
               done={done.autonomous_operations}
               label="Achieve autonomous operations"
