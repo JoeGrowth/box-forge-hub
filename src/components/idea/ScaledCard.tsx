@@ -461,7 +461,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
             </div>
           )}
 
-          <p className="text-sm text-muted-foreground mt-1">{tagline}</p>
+          <p className="text-sm text-muted-foreground mt-1">{state.brand_description || tagline}</p>
           <div className="flex flex-wrap gap-2 mt-3">
             <Button size="sm" variant="outline" onClick={() => setHistoryOpen(true)} className="flex-1 sm:flex-none min-w-0">
               <FileText className="w-4 h-4 mr-1 flex-shrink-0" /> <span className="truncate">Talent Monetization History</span>
