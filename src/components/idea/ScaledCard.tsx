@@ -233,10 +233,15 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48) || "org";
 
   const ensureOrgAndOpen = async () => {
+    // Prefer the brand-typed org for this step; if none exists yet, open the naming dialog.
+    if (brandOrgSlug) { navigate(`/organizations/${brandOrgSlug}`); return; }
+    setBrandDialogOpen(true);
+  };
+
+  // Separate handler for "Manage organization" — falls back to any org, otherwise the brand dialog.
+  const openManageOrg = async () => {
+    if (brandOrgSlug) { navigate(`/organizations/${brandOrgSlug}`); return; }
     if (orgSlug) { navigate(`/organizations/${orgSlug}`); return; }
-    // No brand entity yet — open the naming dialog first so the founder
-    // can rename it after co-builder discussions and we auto-fill a
-    // business-model-driven description.
     setBrandDialogOpen(true);
   };
 
