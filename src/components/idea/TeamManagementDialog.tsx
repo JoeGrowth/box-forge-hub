@@ -368,7 +368,7 @@ export const TeamManagementDialog = ({
     } finally {
       setLoading(false);
     }
-  }, [startupId]);
+  }, [startupId, currentUserId]);
 
   useEffect(() => {
     if (open) fetchData();
