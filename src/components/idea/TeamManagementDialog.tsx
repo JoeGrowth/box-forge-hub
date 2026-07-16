@@ -202,6 +202,7 @@ export const TeamManagementDialog = ({
   const [compMember, setCompMember] = useState<TeamMemberData | null>(null);
   const [compApplicant, setCompApplicant] = useState<Applicant | null>(null);
   const [notifyingId, setNotifyingId] = useState<string | null>(null);
+  const [isInitiator, setIsInitiator] = useState(false);
   const { toast } = useToast();
 
   const handleNotifyMember = async (member: TeamMemberData) => {
@@ -242,6 +243,15 @@ export const TeamManagementDialog = ({
     setLoading(true);
 
     try {
+      // Determine if current user is the initiator (creator) of this startup
+      const { data: ideaRow } = await supabase
+        .from("startup_ideas")
+        .select("creator_id")
+        .eq("id", startupId)
+        .maybeSingle();
+      const userIsInitiator = ideaRow?.creator_id === currentUserId;
+      setIsInitiator(userIsInitiator);
+
       // Fetch applications
       const { data: apps } = await supabase
         .from("startup_applications")
@@ -358,7 +368,7 @@ export const TeamManagementDialog = ({
     } finally {
       setLoading(false);
     }
-  }, [startupId]);
+  }, [startupId, currentUserId]);
 
   useEffect(() => {
     if (open) fetchData();
@@ -821,7 +831,8 @@ export const TeamManagementDialog = ({
                           )}
 
                           {/* Action: open compensation dialog */}
-                          {(!member.compensation || member.compensation.status !== "accepted") && (
+                          {(!member.compensation || member.compensation.status !== "accepted") &&
+                            (isInitiator || member.member_user_id === currentUserId) && (
                             <Button
                               variant={
                                 member.compensation &&
@@ -832,10 +843,18 @@ export const TeamManagementDialog = ({
                               size="sm"
                               className="w-full"
                               onClick={() => setCompMember(member)}
+                              disabled={!member.compensation && !isInitiator}
+                              title={
+                                !member.compensation && !isInitiator
+                                  ? "Waiting for the initiator to propose an initial offer"
+                                  : undefined
+                              }
                             >
                               <MessageCircle className="w-4 h-4 mr-2" />
                               {!member.compensation
-                                ? "Set Compensation"
+                                ? isInitiator
+                                  ? "Set Compensation"
+                                  : "Awaiting Initiator Offer"
                                 : member.compensation.current_proposer_id !== currentUserId
                                 ? `Review & Respond (v${member.compensation.version})`
                                 : "View Proposal — Awaiting Response"}
@@ -864,7 +883,7 @@ export const TeamManagementDialog = ({
           }}
           startupId={startupId}
           currentUserId={currentUserId}
-          isInitiator={true}
+          isInitiator={isInitiator}
           onOfferSubmitted={() => {
             setCompMember(null);
             fetchData();
@@ -897,7 +916,7 @@ export const TeamManagementDialog = ({
           startupId={startupId}
           startupTitle={startupTitle}
           currentUserId={currentUserId}
-          isInitiator={true}
+          isInitiator={isInitiator}
           onOfferSubmitted={() => {
             setCompApplicant(null);
             fetchData();
