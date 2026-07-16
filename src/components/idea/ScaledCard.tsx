@@ -225,27 +225,46 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
 
   const ensureOrgAndOpen = async () => {
     if (orgSlug) { navigate(`/organizations/${orgSlug}`); return; }
-    const name = (title || "").trim();
-    if (!name) { toast.error("Set a brand name first"); return; }
+    // No brand entity yet — open the naming dialog first so the founder
+    // can rename it after co-builder discussions and we auto-fill a
+    // business-model-driven description.
+    setBrandDialogOpen(true);
+  };
+
+  const createBrandOrg = async (finalName: string) => {
+    const name = finalName.trim();
+    if (!name) { toast.error("Brand name required"); return; }
     let slug = slugify(name);
     let suffix = 0;
-    // Find a free slug (up to a few attempts)
     while (suffix < 5) {
       const { data: existing } = await supabase.from("organizations").select("id").eq("slug", slug).maybeSingle();
       if (!existing) break;
       suffix += 1;
       slug = `${slugify(name)}-${Math.random().toString(36).slice(2, 6)}`;
     }
+    const autoDesc = state.selected_model ? MODEL_META[state.selected_model].desc : null;
+    // Seed name_history with the founder's original handle (previous brand
+    // name from profile) so the org keeps the "was: hackit → now: Hum Agency" trail.
+    const previous = (title || "").trim();
+    const history: string[] = previous && previous.toLowerCase() !== name.toLowerCase() ? [previous] : [];
     const { data: created, error } = await supabase
       .from("organizations")
-      .insert({ name, slug, created_by: userId })
-      .select("id, slug")
+      .insert({ name, slug, type: "brand", description: autoDesc, name_history: history, created_by: userId } as any)
+      .select("id, slug, name_history")
       .single();
-    if (error || !created) { toast.error(error?.message || "Failed to create organization"); return; }
+    if (error || !created) { toast.error(error?.message || "Failed to create brand"); return; }
     await supabase.from("organization_members").insert({ organization_id: (created as any).id, user_id: userId, role: "admin" });
     setOrgId((created as any).id);
     setOrgSlug((created as any).slug);
-    toast.success("Organization created");
+    setOrgNameHistory(((created as any).name_history as string[]) || history);
+    // Keep the profile brand name in sync so the header displays the new name.
+    if (previous.toLowerCase() !== name.toLowerCase()) {
+      await supabase.from("profiles").update({ startup_name: name }).eq("user_id", userId);
+      setSavedNameOverride(name);
+      onBrandNameSaved?.(name);
+    }
+    toast.success(`Brand "${name}" added to Legacy`);
+    setBrandDialogOpen(false);
     navigate(`/organizations/${(created as any).slug}`);
   };
 
@@ -257,7 +276,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     core_services: autoCounts.coreServices >= 3 || milestones.has("core_services"),
     proposal_template: !!state.proposal_template_url || milestones.has("proposal_template"),
     professional_presence: autoCounts.professionalPresence || milestones.has("professional_presence"),
-    invite_cobuilder: milestones.has("invite_cobuilder"),
+    invite_cobuilder: autoCounts.hasIdeaPastDevelopment || milestones.has("invite_cobuilder"),
     manage_org: !!orgId && autoCounts.orgHasDeclaration && autoCounts.orgHasDistribution,
     brand_added: !!orgId || milestones.has("brand_added"),
     form_company: !!state.company_name?.trim() && !!state.certificate_of_incorporation_url?.trim(),
