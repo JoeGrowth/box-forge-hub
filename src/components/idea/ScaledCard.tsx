@@ -234,14 +234,14 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
 
   const ensureOrgAndOpen = async () => {
     // Prefer the brand-typed org for this step; if none exists yet, open the naming dialog.
-    if (brandOrgSlug) { navigate(`/organizations/${brandOrgSlug}`); return; }
+    if (brandOrgSlug) { navigate(`/org/${brandOrgSlug}`); return; }
     setBrandDialogOpen(true);
   };
 
   // Separate handler for "Manage organization" — falls back to any org, otherwise the brand dialog.
   const openManageOrg = async () => {
-    if (brandOrgSlug) { navigate(`/organizations/${brandOrgSlug}`); return; }
-    if (orgSlug) { navigate(`/organizations/${orgSlug}`); return; }
+    if (brandOrgSlug) { navigate(`/org/${brandOrgSlug}`); return; }
+    if (orgSlug) { navigate(`/org/${orgSlug}`); return; }
     setBrandDialogOpen(true);
   };
 
@@ -332,7 +332,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     setOrgNameHistory(((created as any).name_history as string[]) || history);
     toast.success(`Brand "${name}" added to Legacy`);
     setBrandDialogOpen(false);
-    navigate(`/organizations/${(created as any).slug}`);
+    navigate(`/org/${(created as any).slug}`);
   };
 
 
