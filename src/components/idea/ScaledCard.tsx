@@ -234,14 +234,14 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
 
   const ensureOrgAndOpen = async () => {
     // Prefer the brand-typed org for this step; if none exists yet, open the naming dialog.
-    if (brandOrgSlug) { navigate(`/organizations/${brandOrgSlug}`); return; }
+    if (brandOrgSlug) { navigate(`/org/${brandOrgSlug}`); return; }
     setBrandDialogOpen(true);
   };
 
   // Separate handler for "Manage organization" — falls back to any org, otherwise the brand dialog.
   const openManageOrg = async () => {
-    if (brandOrgSlug) { navigate(`/organizations/${brandOrgSlug}`); return; }
-    if (orgSlug) { navigate(`/organizations/${orgSlug}`); return; }
+    if (brandOrgSlug) { navigate(`/org/${brandOrgSlug}`); return; }
+    if (orgSlug) { navigate(`/org/${orgSlug}`); return; }
     setBrandDialogOpen(true);
   };
 
@@ -258,12 +258,16 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
       .from("organizations").select("id").ilike("name", name).maybeSingle();
     if (nameClash) { toast.error(`Brand name "${name}" is already taken. Try another name.`); return; }
 
-    // Pull the founder's profile for the AI branding prompt.
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("full_name, professional_title, bio, primary_skills, natural_role, sector")
-      .eq("user_id", userId)
-      .maybeSingle();
+    // Pull the founder's profile + natural role for the AI branding prompt.
+    const [{ data: profile }, { data: nrRow }] = await Promise.all([
+      supabase.from("profiles").select("full_name, professional_title, bio, primary_skills").eq("user_id", userId).maybeSingle(),
+      supabase.from("natural_roles").select("description, services_description").eq("user_id", userId).maybeSingle(),
+    ]);
+    const promptProfile = {
+      ...(profile || {}),
+      natural_role: (nrRow as any)?.description || null,
+      services_description: (nrRow as any)?.services_description || null,
+    };
 
     // Ask the AI for a branded description + 3 role suggestions.
     let aiDescription = modelDesc || "";
@@ -271,7 +275,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     const toastId = toast.loading("Generating brand description…");
     try {
       const { data: gen, error: genErr } = await supabase.functions.invoke("generate-brand-content", {
-        body: { brandName: name, modelLabel, modelDesc, profile: profile || {} },
+        body: { brandName: name, modelLabel, modelDesc, profile: promptProfile },
       });
       if (genErr) throw genErr;
       if (gen?.description) aiDescription = gen.description as string;
@@ -332,7 +336,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     setOrgNameHistory(((created as any).name_history as string[]) || history);
     toast.success(`Brand "${name}" added to Legacy`);
     setBrandDialogOpen(false);
-    navigate(`/organizations/${(created as any).slug}`);
+    navigate(`/org/${(created as any).slug}`);
   };
 
 
