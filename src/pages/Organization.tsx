@@ -1507,7 +1507,7 @@ function ProjectJourneyTab({
         </div>
 
         <div className="mt-4">
-          <p className="text-xs text-muted-foreground mb-2">Journey steps</p>
+          <p className="text-xs text-muted-foreground mb-2">Business Idea Journey steps</p>
           <div className="flex items-center gap-2 flex-wrap">
             {(["development", "validation", "growth"] as const).map((k, i) => {
               const meta = EPISODE_META[k];
