@@ -317,6 +317,21 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     if (!name) { toast.error("Brand name required"); return; }
     setSavingName(true);
     const { error } = await supabase.from("profiles").update({ startup_name: name }).eq("user_id", userId);
+    // Keep the linked brand organization (Legacy › Initiated) in sync and
+    // preserve the previous name in name_history.
+    if (!error && orgId) {
+      const previous = (displayTitle || "").trim();
+      const nextHistory = previous && previous.toLowerCase() !== name.toLowerCase()
+        ? [previous, ...orgNameHistory.filter(h => h.toLowerCase() !== previous.toLowerCase())]
+        : orgNameHistory;
+      const newSlug = slugify(name);
+      await supabase
+        .from("organizations")
+        .update({ name, slug: newSlug, name_history: nextHistory } as any)
+        .eq("id", orgId);
+      setOrgSlug(newSlug);
+      setOrgNameHistory(nextHistory);
+    }
     setSavingName(false);
     if (error) { toast.error(error.message); return; }
     setSavedNameOverride(name);
