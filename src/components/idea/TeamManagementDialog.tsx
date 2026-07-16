@@ -883,7 +883,7 @@ export const TeamManagementDialog = ({
           }}
           startupId={startupId}
           currentUserId={currentUserId}
-          isInitiator={true}
+          isInitiator={isInitiator}
           onOfferSubmitted={() => {
             setCompMember(null);
             fetchData();
@@ -916,7 +916,7 @@ export const TeamManagementDialog = ({
           startupId={startupId}
           startupTitle={startupTitle}
           currentUserId={currentUserId}
-          isInitiator={true}
+          isInitiator={isInitiator}
           onOfferSubmitted={() => {
             setCompApplicant(null);
             fetchData();
