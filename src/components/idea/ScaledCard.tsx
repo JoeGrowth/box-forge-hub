@@ -117,7 +117,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     // Find orgs created by the user; prefer brand-name match, else most recent
     const { data: orgs } = await supabase
       .from("organizations")
-      .select("id, slug, name, created_at")
+      .select("id, slug, name, name_history, created_at")
       .eq("created_by", userId)
       .order("created_at", { ascending: false });
     const list = ((orgs as any[]) || []);
@@ -125,6 +125,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     const match = list.find(o => (o.name || "").trim().toLowerCase() === target) || list[0];
     const oid = match?.id as string | undefined;
     const oslug = match?.slug as string | undefined;
+    const nameHistory = (match?.name_history as string[] | undefined) || [];
 
     let orgHasDeclaration = false;
     if (oid) {
@@ -139,7 +140,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     const { data: distData } = await supabase.from("distribution_records").select("id").eq("user_id", userId).limit(1);
     const orgHasDistribution = ((distData as any[]) || []).length > 0;
 
-    return { orgId: oid || null, orgSlug: oslug || null, orgHasDeclaration, orgHasDistribution };
+    return { orgId: oid || null, orgSlug: oslug || null, orgHasDeclaration, orgHasDistribution, nameHistory };
   };
 
   useEffect(() => {
