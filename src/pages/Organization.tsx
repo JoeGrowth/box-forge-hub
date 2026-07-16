@@ -1426,6 +1426,7 @@ function ProjectJourneyTab({
             </div>
           </div>
         </div>
+        <ProductJourneySection orgId={orgId} userId={user?.id} />
       </div>
     );
   }
