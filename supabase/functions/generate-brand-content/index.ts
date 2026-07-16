@@ -24,6 +24,7 @@ serve(async (req) => {
     if (profile?.bio) ctx.push(`Bio: ${profile.bio}`);
     if (profile?.primary_skills) ctx.push(`Skills: ${profile.primary_skills}`);
     if (profile?.natural_role) ctx.push(`Natural role: ${profile.natural_role}`);
+    if (profile?.services_description) ctx.push(`Service description: ${profile.services_description}`);
     if (profile?.sector) ctx.push(`Sector: ${profile.sector}`);
     if (modelLabel) ctx.push(`Business model: ${modelLabel}${modelDesc ? " — " + modelDesc : ""}`);
 
@@ -39,7 +40,11 @@ No prose outside the JSON.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+      headers: {
+        "Lovable-API-Key": LOVABLE_API_KEY,
+        "Content-Type": "application/json",
+        "X-Lovable-AIG-SDK": "supabase-edge-function",
+      },
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [{ role: "system", content: system }, { role: "user", content: user }],
