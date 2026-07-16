@@ -100,7 +100,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
 
   const [state, setState] = useState<VentureState>(DEFAULT_STATE);
   const [milestones, setMilestones] = useState<Set<string>>(new Set());
-  const [autoCounts, setAutoCounts] = useState({ soloMissions: 0, contractorMissions: 0, coreServices: 0, professionalPresence: false, hasDistribution: false, hasDeclaration: false, orgHasDistribution: false, orgHasDeclaration: false, hasIdeaPastDevelopment: false });
+  const [autoCounts, setAutoCounts] = useState({ soloMissions: 0, contractorMissions: 0, coreServices: 0, professionalPresence: false, hasDistribution: false, hasDeclaration: false, orgHasDistribution: false, orgHasDeclaration: false, orgHasCertificate: false, hasIdeaPastDevelopment: false });
   const [orgSlug, setOrgSlug] = useState<string | null>(null);
   const [orgId, setOrgId] = useState<string | null>(null);
   const [brandOrgSlug, setBrandOrgSlug] = useState<string | null>(null);
