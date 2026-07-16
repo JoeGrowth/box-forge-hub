@@ -482,6 +482,14 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
 
       <InviteDialog open={inviteOpen} onOpenChange={setInviteOpen} currentUserId={userId} entityLabel={title} />
       <MissionHistoryDialog open={historyOpen} onOpenChange={setHistoryOpen} userId={userId} />
+      <AddBrandDialog
+        open={brandDialogOpen}
+        onOpenChange={setBrandDialogOpen}
+        defaultName={displayTitle}
+        modelDesc={state.selected_model ? MODEL_META[state.selected_model].desc : null}
+        modelLabel={state.selected_model ? MODEL_META[state.selected_model].label : null}
+        onConfirm={createBrandOrg}
+      />
     </div>
   );
 }
