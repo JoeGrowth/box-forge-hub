@@ -149,7 +149,19 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     const { data: distData } = await supabase.from("distribution_records").select("id").eq("user_id", userId).limit(1);
     const orgHasDistribution = ((distData as any[]) || []).length > 0;
 
-    return { orgId: oid || null, orgSlug: oslug || null, brandOrgId, brandOrgSlug, orgHasDeclaration, orgHasDistribution, nameHistory };
+    // Certificate of Incorporation uploaded in the Legal tab of the org
+    let orgHasCertificate = false;
+    if (oid) {
+      const { data: legalDocs } = await supabase
+        .from("organization_legal_documents")
+        .select("name")
+        .eq("organization_id", oid);
+      orgHasCertificate = ((legalDocs as any[]) || []).some(
+        (d) => typeof d?.name === "string" && d.name.toLowerCase().startsWith("certificate of incorporation")
+      );
+    }
+
+    return { orgId: oid || null, orgSlug: oslug || null, brandOrgId, brandOrgSlug, orgHasDeclaration, orgHasDistribution, orgHasCertificate, nameHistory };
   };
 
   useEffect(() => {
