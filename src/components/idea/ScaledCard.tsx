@@ -215,6 +215,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
         soloMissions: solo, contractorMissions: contractor, coreServices: services, professionalPresence: presence,
         hasDistribution, hasDeclaration,
         orgHasDistribution: orgSig.orgHasDistribution, orgHasDeclaration: orgSig.orgHasDeclaration,
+        orgHasCertificate: orgSig.orgHasCertificate,
         hasIdeaPastDevelopment,
       });
       setLoading(false);
