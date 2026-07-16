@@ -1,0 +1,1 @@
+ALTER TABLE public.consulting_venture_state ADD COLUMN IF NOT EXISTS brand_description text;

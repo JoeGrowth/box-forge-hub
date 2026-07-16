@@ -51,6 +51,7 @@ interface VentureState {
   datasets_methodologies: string | null;
   training_courses: string | null;
   autonomous_operations: boolean;
+  brand_description: string | null;
 }
 
 const DEFAULT_STATE: VentureState = {
@@ -68,6 +69,7 @@ const DEFAULT_STATE: VentureState = {
   datasets_methodologies: null,
   training_courses: null,
   autonomous_operations: false,
+  brand_description: null,
 };
 
 const PHASE_META: Record<Phase, { label: string; sub: string; icon: any }> = {
@@ -206,6 +208,49 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
       setLoading(false);
     })();
   }, [userId, title]);
+
+  // Auto-generate a branded, profile-anchored description as soon as a business
+  // model is chosen. Persists to consulting_venture_state.brand_description so
+  // the tagline stops falling back to the generic model desc.
+  useEffect(() => {
+    if (loading) return;
+    if (!state.selected_model) return;
+    if (state.brand_description && state.brand_description.trim().length > 0) return;
+    let cancelled = false;
+    (async () => {
+      const modelKey = state.selected_model!;
+      const modelLabel = MODEL_META[modelKey].label;
+      const modelDesc = MODEL_META[modelKey].desc;
+      const [{ data: profile }, { data: nrRow }] = await Promise.all([
+        supabase.from("profiles").select("full_name, professional_title, bio, primary_skills").eq("user_id", userId).maybeSingle(),
+        supabase.from("natural_roles").select("description, services_description").eq("user_id", userId).maybeSingle(),
+      ]);
+      const promptProfile = {
+        ...(profile || {}),
+        natural_role: (nrRow as any)?.description || null,
+        services_description: (nrRow as any)?.services_description || null,
+      };
+      try {
+        const { data: gen, error } = await supabase.functions.invoke("generate-brand-content", {
+          body: { brandName: displayTitle, modelLabel, modelDesc, profile: promptProfile },
+        });
+        if (error) throw error;
+        const desc = typeof gen?.description === "string" ? gen.description.trim() : "";
+        if (!cancelled && desc) {
+          setState((prev) => ({ ...prev, brand_description: desc }));
+          await supabase
+            .from("consulting_venture_state" as any)
+            .upsert({ user_id: userId, brand_description: desc } as any, { onConflict: "user_id" });
+        }
+      } catch (e) {
+        console.error("auto brand description failed", e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [loading, state.selected_model, state.brand_description, userId, displayTitle]);
+
+
+
 
 
 
@@ -459,7 +504,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
             </div>
           )}
 
-          <p className="text-sm text-muted-foreground mt-1">{tagline}</p>
+          <p className="text-sm text-muted-foreground mt-1">{state.brand_description || tagline}</p>
           <div className="flex flex-wrap gap-2 mt-3">
             <Button size="sm" variant="outline" onClick={() => setHistoryOpen(true)} className="flex-1 sm:flex-none min-w-0">
               <FileText className="w-4 h-4 mr-1 flex-shrink-0" /> <span className="truncate">Talent Monetization History</span>
