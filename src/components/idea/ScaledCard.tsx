@@ -176,11 +176,23 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
       const orgSig = await reloadOrgSignals(userId, title);
       setOrgId(orgSig.orgId);
       setOrgSlug(orgSig.orgSlug);
+      setOrgNameHistory(orgSig.nameHistory);
+
+      // Auto-check "Work the development phase & invite a co-builder" when
+      // any of the user's startup ideas has moved past the Development episode.
+      const { data: ideasRes } = await supabase
+        .from("startup_ideas")
+        .select("id, current_episode, development_completed_at")
+        .eq("creator_id", userId);
+      const hasIdeaPastDevelopment = ((ideasRes as any[]) || []).some(
+        (i) => !!i.development_completed_at || (i.current_episode && i.current_episode !== "development" && i.current_episode !== "draft"),
+      );
 
       setAutoCounts({
         soloMissions: solo, contractorMissions: contractor, coreServices: services, professionalPresence: presence,
         hasDistribution, hasDeclaration,
         orgHasDistribution: orgSig.orgHasDistribution, orgHasDeclaration: orgSig.orgHasDeclaration,
+        hasIdeaPastDevelopment,
       });
       setLoading(false);
     })();
