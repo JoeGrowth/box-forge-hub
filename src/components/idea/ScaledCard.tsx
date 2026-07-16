@@ -249,21 +249,41 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     const name = finalName.trim();
     if (!name) { toast.error("Brand name required"); return; }
     const previous = (title || "").trim();
-    const autoDesc = state.selected_model ? MODEL_META[state.selected_model].desc : null;
+    const modelKey = state.selected_model;
+    const modelLabel = modelKey ? MODEL_META[modelKey].label : null;
+    const modelDesc = modelKey ? MODEL_META[modelKey].desc : null;
 
-    // Global name uniqueness check (case-insensitive) — DB has unique constraint on lower(name).
-    // Any match (even one owned by this user) means the name is unavailable for a NEW brand.
+    // Global name uniqueness check (case-insensitive).
     const { data: nameClash } = await supabase
-      .from("organizations")
-      .select("id, name")
-      .ilike("name", name)
+      .from("organizations").select("id").ilike("name", name).maybeSingle();
+    if (nameClash) { toast.error(`Brand name "${name}" is already taken. Try another name.`); return; }
+
+    // Pull the founder's profile for the AI branding prompt.
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name, professional_title, bio, primary_skills, natural_role, sector")
+      .eq("user_id", userId)
       .maybeSingle();
-    if (nameClash) {
-      toast.error(`Brand name "${name}" is already taken. Try another name.`);
-      return;
+
+    // Ask the AI for a branded description + 3 role suggestions.
+    let aiDescription = modelDesc || "";
+    let aiRoles: string[] = ["Co-Founder", "Lead Consultant", "Operations Lead"];
+    const toastId = toast.loading("Generating brand description…");
+    try {
+      const { data: gen, error: genErr } = await supabase.functions.invoke("generate-brand-content", {
+        body: { brandName: name, modelLabel, modelDesc, profile: profile || {} },
+      });
+      if (genErr) throw genErr;
+      if (gen?.description) aiDescription = gen.description as string;
+      if (Array.isArray(gen?.roles_needed) && gen.roles_needed.length >= 1) aiRoles = gen.roles_needed as string[];
+      toast.dismiss(toastId);
+    } catch (e) {
+      toast.dismiss(toastId);
+      console.error("generate-brand-content failed", e);
+      // fall through with default modelDesc + default roles
     }
 
-    // Always create a NEW brand entity (do not rename existing orgs).
+    // Slug collision-safe insertion.
     let slug = slugify(name);
     let suffix = 0;
     while (suffix < 5) {
@@ -275,7 +295,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     const history: string[] = previous && previous.toLowerCase() !== name.toLowerCase() ? [previous] : [];
     const { data: created, error } = await supabase
       .from("organizations")
-      .insert({ name, slug, type: "brand", description: autoDesc, name_history: history, created_by: userId } as any)
+      .insert({ name, slug, type: "brand", description: aiDescription, name_history: history, created_by: userId } as any)
       .select("id, slug, name_history")
       .single();
     if (error || !created) {
@@ -288,6 +308,25 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
       return;
     }
     await supabase.from("organization_members").insert({ organization_id: (created as any).id, user_id: userId, role: "admin" });
+
+    // Create a companion startup_idea so the brand renders as a full idea card
+    // (Develop / Team / 5 Elements / View / roles).
+    const { error: ideaErr } = await supabase
+      .from("startup_ideas")
+      .insert({
+        creator_id: userId,
+        title: name,
+        description: aiDescription,
+        sector: modelLabel,
+        roles_needed: aiRoles.slice(0, 3),
+        current_episode: "development",
+        status: "active",
+        review_status: "approved",
+        is_looking_for_cobuilders: true,
+        organization_id: (created as any).id,
+      } as any);
+    if (ideaErr) console.error("Failed to create linked startup idea:", ideaErr);
+
     setBrandOrgId((created as any).id);
     setBrandOrgSlug((created as any).slug);
     setOrgNameHistory(((created as any).name_history as string[]) || history);
