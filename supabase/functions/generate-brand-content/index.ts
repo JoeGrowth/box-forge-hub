@@ -19,9 +19,8 @@ serve(async (req) => {
     }
 
     const ctx: string[] = [];
-    if (profile?.full_name) ctx.push(`Founder: ${profile.full_name}`);
-    if (profile?.professional_title) ctx.push(`Title: ${profile.professional_title}`);
-    if (profile?.bio) ctx.push(`Bio: ${profile.bio}`);
+    if (profile?.professional_title) ctx.push(`Founder expertise: ${profile.professional_title}`);
+    if (profile?.bio) ctx.push(`Founder background: ${profile.bio}`);
     if (profile?.primary_skills) ctx.push(`Skills: ${profile.primary_skills}`);
     if (profile?.natural_role) ctx.push(`Natural role: ${profile.natural_role}`);
     if (profile?.services_description) ctx.push(`Service description: ${profile.services_description}`);
@@ -38,9 +37,9 @@ serve(async (req) => {
         .join(", ");
       const service = profile?.services_description
         ? String(profile.services_description).split(/[\n•]/).map((s) => s.trim()).filter(Boolean)[0]
-        : `turns founder expertise into repeatable consulting systems`;
+        : `turning specialist expertise into repeatable consulting systems`;
       const model = modelLabel || "Consulting Brand";
-      return `${brandName} is a ${model.toLowerCase()} built around ${profile?.full_name || "the initiator"}'s edge as ${title}. It converts ${skills} into a clear consulting offer, repeatable delivery method, and recruitable operating model. The firm focuses on ${service.replace(/\.$/, "")}. Positioning: ${brandName} turns specialist expertise into a structured brand that clients can buy and co-builders can scale.`;
+      return `${brandName} is a ${model.toLowerCase()} anchored in deep ${title} expertise. It converts ${skills} into a clear consulting offer, a repeatable delivery method, and a recruitable operating model. The firm focuses on ${service.replace(/\.$/, "")}. Positioning: ${brandName} turns specialist expertise into a structured brand that clients can buy and co-builders can scale.`;
     })();
 
     const fallbackRoles = (() => {
@@ -58,8 +57,8 @@ serve(async (req) => {
     })();
 
     const system = `You are a brand strategist. Given a brand name, a business model, and the founder's profile, produce:
-1) A crisp, branded description (3–5 sentences) written in Absolute Mode: blunt, directive, logic-driven. NO emojis, NO motivational filler. It must anchor the brand to the founder's expertise and the chosen business model. Speak in third person about the brand. End with a one-line positioning statement.
-2) Exactly 3 "Roles Needed" — short role titles (2–5 words each) that a founder in this model should recruit first. Tailor them to the founder's expertise and sector.
+1) A crisp, branded description (3–5 sentences) written in Absolute Mode: blunt, directive, logic-driven. NO emojis, NO motivational filler. Anchor the brand to the founder's expertise and the chosen business model. Speak in third person about the brand as an institutional firm (like Deloitte, McKinsey, BCG). CRITICAL: NEVER mention the founder/initiator by name. Do not include any personal name at all. Reference expertise, capabilities, and sector — never a person. End with a one-line positioning statement.
+2) Exactly 3 "Roles Needed" — short role titles (2–5 words each) that a founder in this model should recruit first. Tailor them to the expertise and sector.
 
 Return ONLY strict JSON of the form:
 {"description":"...","roles_needed":["...","...","..."]}
@@ -96,7 +95,17 @@ No prose outside the JSON.`;
       const m = raw.match(/\{[\s\S]*\}/);
       if (m) { try { parsed = JSON.parse(m[0]); } catch {} }
     }
-    const description = typeof parsed.description === "string" && parsed.description.trim() ? parsed.description.trim() : fallbackDescription;
+    let description = typeof parsed.description === "string" && parsed.description.trim() ? parsed.description.trim() : fallbackDescription;
+    // Strip any occurrence of the founder's name (full, or individual name parts) to enforce institutional voice.
+    const founderName = String(profile?.full_name || "").trim();
+    if (founderName) {
+      const parts = [founderName, ...founderName.split(/\s+/)].filter(p => p && p.length > 1);
+      for (const p of parts) {
+        const re = new RegExp(`\\b${p.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&")}(?:'s)?\\b`, "gi");
+        description = description.replace(re, "the firm");
+      }
+      description = description.replace(/\s{2,}/g, " ").replace(/\bthe firm the firm\b/gi, "the firm");
+    }
     let roles: string[] = Array.isArray(parsed.roles_needed) ? parsed.roles_needed.filter((r: any) => typeof r === "string") : [];
     roles = roles.map(r => r.trim()).filter(Boolean).slice(0, 3);
     while (roles.length < 3) roles.push(fallbackRoles[roles.length]);
