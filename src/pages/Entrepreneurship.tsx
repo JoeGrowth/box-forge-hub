@@ -153,6 +153,20 @@ const Entrepreneurship = () => {
   const [teamCounts, setTeamCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [linkedOrgs, setLinkedOrgs] = useState<Record<string, { id: string; slug: string; is_public: boolean }>>({});
+  const [brandOrgs, setBrandOrgs] = useState<Array<{ id: string; slug: string; name: string; description: string | null; name_history: string[]; type: string | null }>>([]);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase
+        .from("organizations")
+        .select("id, slug, name, description, name_history, type")
+        .eq("created_by", user.id)
+        .eq("type", "brand")
+        .order("created_at", { ascending: false });
+      setBrandOrgs(((data as any[]) || []) as any);
+    })();
+  }, [user]);
 
   // Action dialog state (mirrors /start)
   const [selectedIdea, setSelectedIdea] = useState<{ id: string; title: string; currentEpisode: string } | null>(null);
