@@ -202,6 +202,7 @@ export const TeamManagementDialog = ({
   const [compMember, setCompMember] = useState<TeamMemberData | null>(null);
   const [compApplicant, setCompApplicant] = useState<Applicant | null>(null);
   const [notifyingId, setNotifyingId] = useState<string | null>(null);
+  const [isInitiator, setIsInitiator] = useState(false);
   const { toast } = useToast();
 
   const handleNotifyMember = async (member: TeamMemberData) => {
