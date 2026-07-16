@@ -28,6 +28,35 @@ serve(async (req) => {
     if (profile?.sector) ctx.push(`Sector: ${profile.sector}`);
     if (modelLabel) ctx.push(`Business model: ${modelLabel}${modelDesc ? " — " + modelDesc : ""}`);
 
+    const fallbackDescription = (() => {
+      const title = profile?.professional_title || profile?.natural_role || "specialist operator";
+      const skills = String(profile?.primary_skills || "structured execution, client delivery, and operating systems")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .slice(0, 3)
+        .join(", ");
+      const service = profile?.services_description
+        ? String(profile.services_description).split(/[\n•]/).map((s) => s.trim()).filter(Boolean)[0]
+        : `turns founder expertise into repeatable consulting systems`;
+      const model = modelLabel || "Consulting Brand";
+      return `${brandName} is a ${model.toLowerCase()} built around ${profile?.full_name || "the initiator"}'s edge as ${title}. It converts ${skills} into a clear consulting offer, repeatable delivery method, and recruitable operating model. The firm focuses on ${service.replace(/\.$/, "")}. Positioning: ${brandName} turns specialist expertise into a structured brand that clients can buy and co-builders can scale.`;
+    })();
+
+    const fallbackRoles = (() => {
+      const text = `${profile?.primary_skills || ""} ${profile?.services_description || ""} ${profile?.natural_role || ""}`.toLowerCase();
+      if (text.includes("digital") || text.includes("automation") || text.includes("ai") || text.includes("systems")) {
+        return ["Systems Delivery Lead", "Client Strategy Lead", "Operations Architect"];
+      }
+      if (String(modelLabel || "").toLowerCase().includes("academy")) {
+        return ["Curriculum Lead", "Client Acquisition Lead", "Learning Operations Lead"];
+      }
+      if (String(modelLabel || "").toLowerCase().includes("network")) {
+        return ["Partner Network Lead", "Methodology Lead", "Client Delivery Lead"];
+      }
+      return ["Client Strategy Lead", "Delivery Operations Lead", "Growth Partner"];
+    })();
+
     const system = `You are a brand strategist. Given a brand name, a business model, and the founder's profile, produce:
 1) A crisp, branded description (3–5 sentences) written in Absolute Mode: blunt, directive, logic-driven. NO emojis, NO motivational filler. It must anchor the brand to the founder's expertise and the chosen business model. Speak in third person about the brand. End with a one-line positioning statement.
 2) Exactly 3 "Roles Needed" — short role titles (2–5 words each) that a founder in this model should recruit first. Tailor them to the founder's expertise and sector.
@@ -67,10 +96,10 @@ No prose outside the JSON.`;
       const m = raw.match(/\{[\s\S]*\}/);
       if (m) { try { parsed = JSON.parse(m[0]); } catch {} }
     }
-    const description = typeof parsed.description === "string" ? parsed.description.trim() : "";
+    const description = typeof parsed.description === "string" && parsed.description.trim() ? parsed.description.trim() : fallbackDescription;
     let roles: string[] = Array.isArray(parsed.roles_needed) ? parsed.roles_needed.filter((r: any) => typeof r === "string") : [];
     roles = roles.map(r => r.trim()).filter(Boolean).slice(0, 3);
-    while (roles.length < 3) roles.push(["Co-Founder", "Lead Consultant", "Operations Lead"][roles.length]);
+    while (roles.length < 3) roles.push(fallbackRoles[roles.length]);
 
     return new Response(JSON.stringify({ description, roles_needed: roles }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
