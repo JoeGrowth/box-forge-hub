@@ -1538,6 +1538,174 @@ function ProjectJourneyTab({
           </div>
         </div>
       </div>
+      <ProductJourneySection orgId={orgId} userId={user?.id} />
+    </div>
+  );
+}
+
+function ProductJourneySection({ orgId, userId }: { orgId: string; userId: string | undefined }) {
+  const { toast } = useToast();
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    implementation_type: "",
+    url: "",
+    shipped_at: "",
+  });
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const { data } = await (supabase as any)
+      .from("organization_product_iterations")
+      .select("*")
+      .eq("organization_id", orgId)
+      .order("version_number", { ascending: true });
+    setItems((data as any[]) ?? []);
+    setLoading(false);
+  }, [orgId]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const reset = () => setForm({ title: "", description: "", implementation_type: "", url: "", shipped_at: "" });
+
+  const submit = async () => {
+    if (!userId || !form.title.trim()) return;
+    setSaving(true);
+    const nextVersion = (items[items.length - 1]?.version_number ?? 0) + 1;
+    const { error } = await (supabase as any)
+      .from("organization_product_iterations")
+      .insert({
+        organization_id: orgId,
+        version_number: nextVersion,
+        title: form.title.trim(),
+        description: form.description.trim() || null,
+        implementation_type: form.implementation_type.trim() || null,
+        url: form.url.trim() || null,
+        shipped_at: form.shipped_at || null,
+        created_by: userId,
+      });
+    setSaving(false);
+    if (error) {
+      toast({ title: "Couldn't add iteration", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: `v${nextVersion} added` });
+    reset();
+    setOpen(false);
+    load();
+  };
+
+  const remove = async (id: string) => {
+    const { error } = await (supabase as any)
+      .from("organization_product_iterations")
+      .delete()
+      .eq("id", id);
+    if (error) {
+      toast({ title: "Couldn't remove", description: error.message, variant: "destructive" });
+      return;
+    }
+    load();
+  };
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5">
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <div className="flex items-center gap-2">
+            <Rocket className="w-4 h-4 text-primary" />
+            <h3 className="text-lg font-semibold text-foreground">Product Journey</h3>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Each time you ship an implementation of this entity's solution — v1 spreadsheet, v2 platform, v3 optimized… — log it here as a case study.
+          </p>
+        </div>
+        <Button size="sm" onClick={() => setOpen((o) => !o)}>
+          <Plus className="w-4 h-4 mr-1" /> {open ? "Cancel" : "Add iteration"}
+        </Button>
+      </div>
+
+      {open && (
+        <div className="mt-4 rounded-lg border border-border p-3 space-y-2 bg-background">
+          <div className="grid sm:grid-cols-2 gap-2">
+            <div>
+              <Label className="text-xs">Title *</Label>
+              <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Client tracker MVP" />
+            </div>
+            <div>
+              <Label className="text-xs">Implementation type</Label>
+              <Input value={form.implementation_type} onChange={(e) => setForm({ ...form, implementation_type: e.target.value })} placeholder="Google Sheet · Platform · Optimized…" />
+            </div>
+            <div>
+              <Label className="text-xs">URL or reference</Label>
+              <Input value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} placeholder="https://…" />
+            </div>
+            <div>
+              <Label className="text-xs">Shipped on</Label>
+              <Input type="date" value={form.shipped_at} onChange={(e) => setForm({ ...form, shipped_at: e.target.value })} />
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs">Case study — what you implemented and results</Label>
+            <Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Context, what you shipped, who it served, outcomes…" />
+          </div>
+          <div className="flex justify-end">
+            <Button size="sm" onClick={submit} disabled={saving || !form.title.trim()}>
+              {saving ? "Saving…" : "Save iteration"}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <div className="mt-4">
+        {loading ? (
+          <p className="text-xs text-muted-foreground">Loading…</p>
+        ) : items.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-border p-6 text-center">
+            <Rocket className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground">No shipped iterations yet. Log the first version of the product to start the case study trail.</p>
+          </div>
+        ) : (
+          <ol className="relative border-l border-border ml-3 space-y-4">
+            {items.map((it) => (
+              <li key={it.id} className="ml-4">
+                <span className="absolute -left-[11px] flex h-5 w-5 items-center justify-center rounded-full border-2 border-primary bg-background text-[10px] font-semibold text-primary">
+                  {it.version_number}
+                </span>
+                <div className="rounded-lg border border-border p-3">
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-medium text-foreground">v{it.version_number} · {it.title}</p>
+                        {it.implementation_type && (
+                          <Badge variant="outline" className="text-xs">{it.implementation_type}</Badge>
+                        )}
+                        {it.shipped_at && (
+                          <span className="text-xs text-muted-foreground">{new Date(it.shipped_at).toLocaleDateString()}</span>
+                        )}
+                      </div>
+                      {it.description && <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{it.description}</p>}
+                      {it.url && (
+                        <a href={it.url} target="_blank" rel="noreferrer" className="text-xs text-primary inline-flex items-center gap-1 mt-1">
+                          <ExternalLink className="w-3 h-3" /> {it.url}
+                        </a>
+                      )}
+                    </div>
+                    {userId === it.created_by && (
+                      <Button variant="ghost" size="icon" onClick={() => remove(it.id)}>
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ol>
+        )}
+      </div>
     </div>
   );
 }
