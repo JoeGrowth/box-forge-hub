@@ -294,11 +294,11 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     professional_presence: autoCounts.professionalPresence || milestones.has("professional_presence"),
     invite_cobuilder: autoCounts.hasIdeaPastDevelopment || milestones.has("invite_cobuilder"),
     manage_org: !!orgId && autoCounts.orgHasDeclaration && autoCounts.orgHasDistribution,
-    brand_added: !!orgId || milestones.has("brand_added"),
+    brand_added: !!brandOrgId,
     form_company: !!state.company_name?.trim() && !!state.certificate_of_incorporation_url?.trim(),
     standardized_processes: milestones.has("standardized_processes"),
     autonomous_operations: state.autonomous_operations,
-  }), [autoCounts, milestones, state, orgId]);
+  }), [autoCounts, milestones, state, orgId, brandOrgId]);
 
 
   const brandingProgress = useMemo(() => {
