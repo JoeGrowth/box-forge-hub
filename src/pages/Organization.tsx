@@ -1361,22 +1361,25 @@ function ProjectJourneyTab({
   // Not linked to any startup idea AND not matching a systematized brand
   if (!idea && !brandMatches) {
     return (
-      <div className="rounded-xl border border-dashed border-border p-10 text-center">
-        <Lightbulb className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-        <p className="font-medium text-foreground">No startup linked to this organization</p>
-        <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
-          This organization is not yet present in the Entrepreneurship engine — neither in{" "}
-          <span className="font-medium">Legacy</span> nor in{" "}
-          <span className="font-medium">Growth · Systematized</span>.
-          {systematizedBrand && (
-            <> Your Systematized brand is <span className="font-medium">"{systematizedBrand}"</span>, which doesn't match <span className="font-medium">"{orgName}"</span>.</>
-          )}
-        </p>
-        <Button asChild className="mt-4">
-          <Link to="/entrepreneurship?tab=legacy&new=1">
-            <Plus className="w-4 h-4 mr-1" /> Add startup
-          </Link>
-        </Button>
+      <div className="space-y-4">
+        <div className="rounded-xl border border-dashed border-border p-10 text-center">
+          <Lightbulb className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
+          <p className="font-medium text-foreground">No startup linked to this organization</p>
+          <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
+            This organization is not yet present in the Entrepreneurship engine — neither in{" "}
+            <span className="font-medium">Legacy</span> nor in{" "}
+            <span className="font-medium">Growth · Systematized</span>.
+            {systematizedBrand && (
+              <> Your Systematized brand is <span className="font-medium">"{systematizedBrand}"</span>, which doesn't match <span className="font-medium">"{orgName}"</span>.</>
+            )}
+          </p>
+          <Button asChild className="mt-4">
+            <Link to="/entrepreneurship?tab=legacy&new=1">
+              <Plus className="w-4 h-4 mr-1" /> Add startup
+            </Link>
+          </Button>
+        </div>
+        <ProductJourneySection orgId={orgId} userId={user?.id} />
       </div>
     );
   }
