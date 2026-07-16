@@ -268,6 +268,8 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
       .single();
     if (error || !created) { toast.error(error?.message || "Failed to create brand"); return; }
     await supabase.from("organization_members").insert({ organization_id: (created as any).id, user_id: userId, role: "admin" });
+    setBrandOrgId((created as any).id);
+    setBrandOrgSlug((created as any).slug);
     setOrgId((created as any).id);
     setOrgSlug((created as any).slug);
     setOrgNameHistory(((created as any).name_history as string[]) || history);
