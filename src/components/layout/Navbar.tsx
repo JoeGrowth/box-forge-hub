@@ -75,7 +75,6 @@ const moreLinks: Array<{
   { name: "Squares", path: "/squares", icon: LayoutGrid },
   { name: "Programs", path: "/programs", icon: BookOpen },
   { name: "Boxes", path: "/boxes", icon: Package },
-  { name: "Organizations", path: "/organizations", icon: Building2, minStage: "emerging" },
   { name: "Paths", path: "/paths", icon: Activity },
   { name: "Opportunities", path: "/opportunities", icon: Briefcase },
 ];
