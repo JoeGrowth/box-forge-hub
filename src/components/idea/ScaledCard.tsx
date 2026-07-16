@@ -69,6 +69,7 @@ const DEFAULT_STATE: VentureState = {
   datasets_methodologies: null,
   training_courses: null,
   autonomous_operations: false,
+  brand_description: null,
 };
 
 const PHASE_META: Record<Phase, { label: string; sub: string; icon: any }> = {
