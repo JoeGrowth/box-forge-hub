@@ -1207,3 +1207,66 @@ function InviteDialog({ open, onOpenChange, currentUserId, entityLabel }: { open
     </Dialog>
   );
 }
+
+// ---- Add Brand dialog: rename + auto-description from selected business model ----
+function AddBrandDialog({
+  open, onOpenChange, defaultName, modelDesc, modelLabel, onConfirm,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  defaultName: string;
+  modelDesc: string | null;
+  modelLabel: string | null;
+  onConfirm: (name: string) => Promise<void> | void;
+}) {
+  const [name, setName] = useState(defaultName);
+  const [saving, setSaving] = useState(false);
+  useEffect(() => { if (open) setName(defaultName); }, [open, defaultName]);
+  const renamed = name.trim() && name.trim().toLowerCase() !== defaultName.trim().toLowerCase();
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Add brand in Legacy · Initiated</DialogTitle>
+          <DialogDescription>
+            Name the brand entity. The previous name is preserved in the brand's history.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <Label className="text-xs">Brand name</Label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder='e.g. Hum Agency'
+              className="mt-1"
+            />
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Currently: <strong>{defaultName || "—"}</strong>
+              {renamed && <> · will be preserved in history as <em>was: {defaultName}</em></>}
+            </p>
+          </div>
+          <div className="rounded-lg border border-border bg-muted/30 p-3">
+            <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">
+              Auto description {modelLabel ? `· ${modelLabel}` : ""}
+            </p>
+            <p className="text-xs text-foreground mt-1">
+              {modelDesc || "Choose a business model first — description will be auto-generated."}
+            </p>
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 mt-2">
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>
+          <Button
+            size="sm"
+            disabled={saving || !name.trim()}
+            onClick={async () => { setSaving(true); await onConfirm(name); setSaving(false); }}
+          >
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Add brand"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
