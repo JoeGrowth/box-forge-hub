@@ -100,7 +100,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
 
   const [state, setState] = useState<VentureState>(DEFAULT_STATE);
   const [milestones, setMilestones] = useState<Set<string>>(new Set());
-  const [autoCounts, setAutoCounts] = useState({ soloMissions: 0, contractorMissions: 0, coreServices: 0, professionalPresence: false, hasDistribution: false, hasDeclaration: false, orgHasDistribution: false, orgHasDeclaration: false, hasIdeaPastDevelopment: false });
+  const [autoCounts, setAutoCounts] = useState({ soloMissions: 0, contractorMissions: 0, coreServices: 0, professionalPresence: false, hasDistribution: false, hasDeclaration: false, orgHasDistribution: false, orgHasDeclaration: false, orgHasCertificate: false, hasIdeaPastDevelopment: false });
   const [orgSlug, setOrgSlug] = useState<string | null>(null);
   const [orgId, setOrgId] = useState<string | null>(null);
   const [brandOrgSlug, setBrandOrgSlug] = useState<string | null>(null);
@@ -149,7 +149,19 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     const { data: distData } = await supabase.from("distribution_records").select("id").eq("user_id", userId).limit(1);
     const orgHasDistribution = ((distData as any[]) || []).length > 0;
 
-    return { orgId: oid || null, orgSlug: oslug || null, brandOrgId, brandOrgSlug, orgHasDeclaration, orgHasDistribution, nameHistory };
+    // Certificate of Incorporation uploaded in the Legal tab of the org
+    let orgHasCertificate = false;
+    if (oid) {
+      const { data: legalDocs } = await supabase
+        .from("organization_legal_documents")
+        .select("name")
+        .eq("organization_id", oid);
+      orgHasCertificate = ((legalDocs as any[]) || []).some(
+        (d) => typeof d?.name === "string" && d.name.toLowerCase().startsWith("certificate of incorporation")
+      );
+    }
+
+    return { orgId: oid || null, orgSlug: oslug || null, brandOrgId, brandOrgSlug, orgHasDeclaration, orgHasDistribution, orgHasCertificate, nameHistory };
   };
 
   useEffect(() => {
@@ -203,6 +215,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
         soloMissions: solo, contractorMissions: contractor, coreServices: services, professionalPresence: presence,
         hasDistribution, hasDeclaration,
         orgHasDistribution: orgSig.orgHasDistribution, orgHasDeclaration: orgSig.orgHasDeclaration,
+        orgHasCertificate: orgSig.orgHasCertificate,
         hasIdeaPastDevelopment,
       });
       setLoading(false);
@@ -395,7 +408,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     invite_cobuilder: autoCounts.hasIdeaPastDevelopment || milestones.has("invite_cobuilder"),
     manage_org: !!orgId && autoCounts.orgHasDeclaration && autoCounts.orgHasDistribution,
     brand_added: !!brandOrgId,
-    form_company: !!state.company_name?.trim() && !!state.certificate_of_incorporation_url?.trim(),
+    form_company: !!state.company_name?.trim() && !!state.company_registration?.trim() && autoCounts.orgHasCertificate,
     standardized_processes: milestones.has("standardized_processes"),
     autonomous_operations: state.autonomous_operations,
   }), [autoCounts, milestones, state, orgId, brandOrgId]);
@@ -883,17 +896,15 @@ function SystematizationPhase({ done, autoCounts, milestones, state, progress, o
                     <p className="text-xs text-muted-foreground">Legal entity name, registration, and incorporation certificate</p>
                     <div className="grid sm:grid-cols-2 gap-2 mt-2">
                       <Input value={state.company_name || ""} onChange={(e) => onUpdateState({ company_name: e.target.value })} placeholder="Company legal name" className="h-8 text-xs" />
-                      <Input value={state.company_registration || ""} onChange={(e) => onUpdateState({ company_registration: e.target.value })} placeholder="Registration # (optional)" className="h-8 text-xs" />
+                      <Input value={state.company_registration || ""} onChange={(e) => onUpdateState({ company_registration: e.target.value })} placeholder="Registration #" className="h-8 text-xs" />
                     </div>
-                    <div className="mt-2">
-                      <Input
-                        value={state.certificate_of_incorporation_url || ""}
-                        onChange={(e) => onUpdateState({ certificate_of_incorporation_url: e.target.value })}
-                        placeholder="Certificate of incorporation — URL or reference"
-                        className="h-8 text-xs"
-                      />
-                      <p className="text-[11px] text-muted-foreground mt-1">Paste a link to the incorporation certificate (PDF, drive, or registry URL).</p>
-                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-2">
+                      {autoCounts.orgHasCertificate
+                        ? "Certificate of Incorporation uploaded in the Legal tab."
+                        : orgSlug
+                          ? <>Upload the <strong>Certificate of Incorporation</strong> in the <em>Legal</em> tab of your organization to complete this step.</>
+                          : "Create and open your organization, then upload the Certificate of Incorporation in its Legal tab."}
+                    </p>
                   </div>
                 </div>
               </div>
