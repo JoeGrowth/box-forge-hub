@@ -263,6 +263,17 @@ export function Navbar() {
                   </DropdownMenuContent>
                 </DropdownMenu>
 
+                <Link
+                  to="/organizations"
+                  className={`text-sm font-medium transition-colors hover:text-b4-teal ${
+                    location.pathname === "/organizations" ? "text-b4-teal" : "text-muted-foreground"
+                  }`}
+                >
+                  Orgs
+                </Link>
+
+
+
                 <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
                   <DropdownMenuTrigger asChild>
                     <button
