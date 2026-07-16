@@ -3891,6 +3891,7 @@ export type Database = {
           lifecycle_stage: Database["public"]["Enums"]["org_lifecycle_stage"]
           logo_url: string | null
           name: string
+          name_history: string[]
           slug: string
           source_idea_id: string | null
           type: string
@@ -3906,6 +3907,7 @@ export type Database = {
           lifecycle_stage?: Database["public"]["Enums"]["org_lifecycle_stage"]
           logo_url?: string | null
           name: string
+          name_history?: string[]
           slug: string
           source_idea_id?: string | null
           type?: string
@@ -3921,6 +3923,7 @@ export type Database = {
           lifecycle_stage?: Database["public"]["Enums"]["org_lifecycle_stage"]
           logo_url?: string | null
           name?: string
+          name_history?: string[]
           slug?: string
           source_idea_id?: string | null
           type?: string

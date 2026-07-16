@@ -153,6 +153,20 @@ const Entrepreneurship = () => {
   const [teamCounts, setTeamCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [linkedOrgs, setLinkedOrgs] = useState<Record<string, { id: string; slug: string; is_public: boolean }>>({});
+  const [brandOrgs, setBrandOrgs] = useState<Array<{ id: string; slug: string; name: string; description: string | null; name_history: string[]; type: string | null }>>([]);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase
+        .from("organizations")
+        .select("id, slug, name, description, name_history, type")
+        .eq("created_by", user.id)
+        .eq("type", "brand")
+        .order("created_at", { ascending: false });
+      setBrandOrgs(((data as any[]) || []) as any);
+    })();
+  }, [user]);
 
   // Action dialog state (mirrors /start)
   const [selectedIdea, setSelectedIdea] = useState<{ id: string; title: string; currentEpisode: string } | null>(null);
@@ -689,7 +703,7 @@ const Entrepreneurship = () => {
                       </div>
                       {loading ? (
                         <Skeleton className="h-24 w-full rounded-2xl" />
-                      ) : myProjects.length === 0 ? (
+                      ) : (myProjects.length === 0 && brandOrgs.length === 0) ? (
                         <div className="rounded-xl border border-dashed border-border p-12 text-center">
                           <Lightbulb className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
                           <p className="font-medium text-foreground">Nothing in your journey yet</p>
@@ -702,6 +716,38 @@ const Entrepreneurship = () => {
                         </div>
                       ) : (
                         <div className="space-y-4">
+                          {brandOrgs.map((b) => (
+                            <div
+                              key={b.id}
+                              className="rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/5 via-card to-card p-4 sm:p-5 hover:border-primary/50 transition-colors cursor-pointer"
+                              onClick={() => navigate(`/organizations/${b.slug}`)}
+                            >
+                              <div className="flex items-start gap-3 flex-wrap">
+                                <div className="w-10 h-10 rounded-xl bg-primary/15 text-primary flex items-center justify-center flex-shrink-0">
+                                  <Building2 className="w-5 h-5" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <h3 className="font-display text-lg font-bold text-foreground truncate">{b.name}</h3>
+                                    <Badge variant="outline" className="text-[10px]">Brand · Initiated</Badge>
+                                    {b.name_history && b.name_history.length > 0 && (
+                                      <Badge variant="secondary" className="text-[10px]">
+                                        was: {b.name_history[0]}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  {b.description && (
+                                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{b.description}</p>
+                                  )}
+                                  {b.name_history && b.name_history.length > 1 && (
+                                    <p className="text-[11px] text-muted-foreground mt-1">
+                                      History: {b.name_history.join(" → ")} → <strong>{b.name}</strong>
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
                           {myProjects.map((project) => (
                             <MyProjectCard key={project.id} project={project} isOwner={true} />
                           ))}

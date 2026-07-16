@@ -98,9 +98,11 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
 
   const [state, setState] = useState<VentureState>(DEFAULT_STATE);
   const [milestones, setMilestones] = useState<Set<string>>(new Set());
-  const [autoCounts, setAutoCounts] = useState({ soloMissions: 0, contractorMissions: 0, coreServices: 0, professionalPresence: false, hasDistribution: false, hasDeclaration: false, orgHasDistribution: false, orgHasDeclaration: false });
+  const [autoCounts, setAutoCounts] = useState({ soloMissions: 0, contractorMissions: 0, coreServices: 0, professionalPresence: false, hasDistribution: false, hasDeclaration: false, orgHasDistribution: false, orgHasDeclaration: false, hasIdeaPastDevelopment: false });
   const [orgSlug, setOrgSlug] = useState<string | null>(null);
   const [orgId, setOrgId] = useState<string | null>(null);
+  const [orgNameHistory, setOrgNameHistory] = useState<string[]>([]);
+  const [brandDialogOpen, setBrandDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -115,7 +117,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     // Find orgs created by the user; prefer brand-name match, else most recent
     const { data: orgs } = await supabase
       .from("organizations")
-      .select("id, slug, name, created_at")
+      .select("id, slug, name, name_history, created_at")
       .eq("created_by", userId)
       .order("created_at", { ascending: false });
     const list = ((orgs as any[]) || []);
@@ -123,6 +125,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     const match = list.find(o => (o.name || "").trim().toLowerCase() === target) || list[0];
     const oid = match?.id as string | undefined;
     const oslug = match?.slug as string | undefined;
+    const nameHistory = (match?.name_history as string[] | undefined) || [];
 
     let orgHasDeclaration = false;
     if (oid) {
@@ -137,7 +140,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     const { data: distData } = await supabase.from("distribution_records").select("id").eq("user_id", userId).limit(1);
     const orgHasDistribution = ((distData as any[]) || []).length > 0;
 
-    return { orgId: oid || null, orgSlug: oslug || null, orgHasDeclaration, orgHasDistribution };
+    return { orgId: oid || null, orgSlug: oslug || null, orgHasDeclaration, orgHasDistribution, nameHistory };
   };
 
   useEffect(() => {
@@ -173,11 +176,23 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
       const orgSig = await reloadOrgSignals(userId, title);
       setOrgId(orgSig.orgId);
       setOrgSlug(orgSig.orgSlug);
+      setOrgNameHistory(orgSig.nameHistory);
+
+      // Auto-check "Work the development phase & invite a co-builder" when
+      // any of the user's startup ideas has moved past the Development episode.
+      const { data: ideasRes } = await supabase
+        .from("startup_ideas")
+        .select("id, current_episode, development_completed_at")
+        .eq("creator_id", userId);
+      const hasIdeaPastDevelopment = ((ideasRes as any[]) || []).some(
+        (i) => !!i.development_completed_at || (i.current_episode && i.current_episode !== "development" && i.current_episode !== "draft"),
+      );
 
       setAutoCounts({
         soloMissions: solo, contractorMissions: contractor, coreServices: services, professionalPresence: presence,
         hasDistribution, hasDeclaration,
         orgHasDistribution: orgSig.orgHasDistribution, orgHasDeclaration: orgSig.orgHasDeclaration,
+        hasIdeaPastDevelopment,
       });
       setLoading(false);
     })();
@@ -210,27 +225,46 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
 
   const ensureOrgAndOpen = async () => {
     if (orgSlug) { navigate(`/organizations/${orgSlug}`); return; }
-    const name = (title || "").trim();
-    if (!name) { toast.error("Set a brand name first"); return; }
+    // No brand entity yet — open the naming dialog first so the founder
+    // can rename it after co-builder discussions and we auto-fill a
+    // business-model-driven description.
+    setBrandDialogOpen(true);
+  };
+
+  const createBrandOrg = async (finalName: string) => {
+    const name = finalName.trim();
+    if (!name) { toast.error("Brand name required"); return; }
     let slug = slugify(name);
     let suffix = 0;
-    // Find a free slug (up to a few attempts)
     while (suffix < 5) {
       const { data: existing } = await supabase.from("organizations").select("id").eq("slug", slug).maybeSingle();
       if (!existing) break;
       suffix += 1;
       slug = `${slugify(name)}-${Math.random().toString(36).slice(2, 6)}`;
     }
+    const autoDesc = state.selected_model ? MODEL_META[state.selected_model].desc : null;
+    // Seed name_history with the founder's original handle (previous brand
+    // name from profile) so the org keeps the "was: hackit → now: Hum Agency" trail.
+    const previous = (title || "").trim();
+    const history: string[] = previous && previous.toLowerCase() !== name.toLowerCase() ? [previous] : [];
     const { data: created, error } = await supabase
       .from("organizations")
-      .insert({ name, slug, created_by: userId })
-      .select("id, slug")
+      .insert({ name, slug, type: "brand", description: autoDesc, name_history: history, created_by: userId } as any)
+      .select("id, slug, name_history")
       .single();
-    if (error || !created) { toast.error(error?.message || "Failed to create organization"); return; }
+    if (error || !created) { toast.error(error?.message || "Failed to create brand"); return; }
     await supabase.from("organization_members").insert({ organization_id: (created as any).id, user_id: userId, role: "admin" });
     setOrgId((created as any).id);
     setOrgSlug((created as any).slug);
-    toast.success("Organization created");
+    setOrgNameHistory(((created as any).name_history as string[]) || history);
+    // Keep the profile brand name in sync so the header displays the new name.
+    if (previous.toLowerCase() !== name.toLowerCase()) {
+      await supabase.from("profiles").update({ startup_name: name }).eq("user_id", userId);
+      setSavedNameOverride(name);
+      onBrandNameSaved?.(name);
+    }
+    toast.success(`Brand "${name}" added to Legacy`);
+    setBrandDialogOpen(false);
     navigate(`/organizations/${(created as any).slug}`);
   };
 
@@ -242,7 +276,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     core_services: autoCounts.coreServices >= 3 || milestones.has("core_services"),
     proposal_template: !!state.proposal_template_url || milestones.has("proposal_template"),
     professional_presence: autoCounts.professionalPresence || milestones.has("professional_presence"),
-    invite_cobuilder: milestones.has("invite_cobuilder"),
+    invite_cobuilder: autoCounts.hasIdeaPastDevelopment || milestones.has("invite_cobuilder"),
     manage_org: !!orgId && autoCounts.orgHasDeclaration && autoCounts.orgHasDistribution,
     brand_added: !!orgId || milestones.has("brand_added"),
     form_company: !!state.company_name?.trim() && !!state.certificate_of_incorporation_url?.trim(),
@@ -283,6 +317,21 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     if (!name) { toast.error("Brand name required"); return; }
     setSavingName(true);
     const { error } = await supabase.from("profiles").update({ startup_name: name }).eq("user_id", userId);
+    // Keep the linked brand organization (Legacy › Initiated) in sync and
+    // preserve the previous name in name_history.
+    if (!error && orgId) {
+      const previous = (displayTitle || "").trim();
+      const nextHistory = previous && previous.toLowerCase() !== name.toLowerCase()
+        ? [previous, ...orgNameHistory.filter(h => h.toLowerCase() !== previous.toLowerCase())]
+        : orgNameHistory;
+      const newSlug = slugify(name);
+      await supabase
+        .from("organizations")
+        .update({ name, slug: newSlug, name_history: nextHistory } as any)
+        .eq("id", orgId);
+      setOrgSlug(newSlug);
+      setOrgNameHistory(nextHistory);
+    }
     setSavingName(false);
     if (error) { toast.error(error.message); return; }
     setSavedNameOverride(name);
@@ -433,6 +482,14 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
 
       <InviteDialog open={inviteOpen} onOpenChange={setInviteOpen} currentUserId={userId} entityLabel={title} />
       <MissionHistoryDialog open={historyOpen} onOpenChange={setHistoryOpen} userId={userId} />
+      <AddBrandDialog
+        open={brandDialogOpen}
+        onOpenChange={setBrandDialogOpen}
+        defaultName={displayTitle}
+        modelDesc={state.selected_model ? MODEL_META[state.selected_model].desc : null}
+        modelLabel={state.selected_model ? MODEL_META[state.selected_model].label : null}
+        onConfirm={createBrandOrg}
+      />
     </div>
   );
 }
@@ -654,11 +711,22 @@ function SystematizationPhase({ done, autoCounts, milestones, state, progress, o
           {/* 3. Work the development phase & invite a co-builder */}
           <MilestoneRow
             done={done.invite_cobuilder}
+            auto={autoCounts.hasIdeaPastDevelopment}
             label="Work the development phase & invite a co-builder"
-            hint={done.invite_cobuilder ? "Co-builder invited — keep progressing the development phase" : "Progress the brand's development phase and invite a co-builder (from the platform or by email)"}
+            hint={
+              autoCounts.hasIdeaPastDevelopment
+                ? "Auto-checked — a linked idea's Develop episode is validated"
+                : (done.invite_cobuilder
+                    ? "Co-builder invited — keep progressing the development phase"
+                    : "Validate the Develop episode on your idea card (auto-checks) or invite a co-builder manually")
+            }
             actionLabel={done.invite_cobuilder ? "Invite another" : "Invite"}
-            onToggle={done.invite_cobuilder ? () => onToggleMilestone("invite_cobuilder", false) : () => setInviteOpen(true)}
+            onToggle={autoCounts.hasIdeaPastDevelopment
+              ? () => setInviteOpen(true)
+              : (done.invite_cobuilder ? () => onToggleMilestone("invite_cobuilder", false) : () => setInviteOpen(true))
+            }
           />
+
 
           {/* 4. Define your core services */}
           <MilestoneRow
@@ -1150,3 +1218,66 @@ function InviteDialog({ open, onOpenChange, currentUserId, entityLabel }: { open
     </Dialog>
   );
 }
+
+// ---- Add Brand dialog: rename + auto-description from selected business model ----
+function AddBrandDialog({
+  open, onOpenChange, defaultName, modelDesc, modelLabel, onConfirm,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  defaultName: string;
+  modelDesc: string | null;
+  modelLabel: string | null;
+  onConfirm: (name: string) => Promise<void> | void;
+}) {
+  const [name, setName] = useState(defaultName);
+  const [saving, setSaving] = useState(false);
+  useEffect(() => { if (open) setName(defaultName); }, [open, defaultName]);
+  const renamed = name.trim() && name.trim().toLowerCase() !== defaultName.trim().toLowerCase();
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Add brand in Legacy · Initiated</DialogTitle>
+          <DialogDescription>
+            Name the brand entity. The previous name is preserved in the brand's history.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <Label className="text-xs">Brand name</Label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder='e.g. Hum Agency'
+              className="mt-1"
+            />
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Currently: <strong>{defaultName || "—"}</strong>
+              {renamed && <> · will be preserved in history as <em>was: {defaultName}</em></>}
+            </p>
+          </div>
+          <div className="rounded-lg border border-border bg-muted/30 p-3">
+            <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">
+              Auto description {modelLabel ? `· ${modelLabel}` : ""}
+            </p>
+            <p className="text-xs text-foreground mt-1">
+              {modelDesc || "Choose a business model first — description will be auto-generated."}
+            </p>
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 mt-2">
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>
+          <Button
+            size="sm"
+            disabled={saving || !name.trim()}
+            onClick={async () => { setSaving(true); await onConfirm(name); setSaving(false); }}
+          >
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Add brand"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
