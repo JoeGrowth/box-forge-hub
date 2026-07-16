@@ -1301,6 +1301,7 @@ export type Database = {
           asset_reached_at: string | null
           autonomous_operations: boolean
           branding_completed_at: string | null
+          certificate_of_incorporation_url: string | null
           company_name: string | null
           company_registration: string | null
           created_at: string
@@ -1320,6 +1321,7 @@ export type Database = {
           asset_reached_at?: string | null
           autonomous_operations?: boolean
           branding_completed_at?: string | null
+          certificate_of_incorporation_url?: string | null
           company_name?: string | null
           company_registration?: string | null
           created_at?: string
@@ -1339,6 +1341,7 @@ export type Database = {
           asset_reached_at?: string | null
           autonomous_operations?: boolean
           branding_completed_at?: string | null
+          certificate_of_incorporation_url?: string | null
           company_name?: string | null
           company_registration?: string | null
           created_at?: string
