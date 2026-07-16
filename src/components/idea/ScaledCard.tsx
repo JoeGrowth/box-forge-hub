@@ -119,15 +119,20 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     // Find orgs created by the user; prefer brand-name match, else most recent
     const { data: orgs } = await supabase
       .from("organizations")
-      .select("id, slug, name, name_history, created_at")
+      .select("id, slug, name, name_history, type, created_at")
       .eq("created_by", userId)
       .order("created_at", { ascending: false });
     const list = ((orgs as any[]) || []);
     const target = brandName.trim().toLowerCase();
-    const match = list.find(o => (o.name || "").trim().toLowerCase() === target) || list[0];
+    // Brand-typed org drives the Legacy › Initiated card and the "Add a brand" step.
+    const brandMatch = list.find(o => (o.type || "").toLowerCase() === "brand");
+    const brandOrgId = (brandMatch?.id as string | undefined) || null;
+    const brandOrgSlug = (brandMatch?.slug as string | undefined) || null;
+    // Generic org (for "Manage organization" auto-check) — prefer brand, then name match, then most recent.
+    const match = brandMatch || list.find(o => (o.name || "").trim().toLowerCase() === target) || list[0];
     const oid = match?.id as string | undefined;
     const oslug = match?.slug as string | undefined;
-    const nameHistory = (match?.name_history as string[] | undefined) || [];
+    const nameHistory = ((brandMatch || match)?.name_history as string[] | undefined) || [];
 
     let orgHasDeclaration = false;
     if (oid) {
@@ -142,7 +147,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     const { data: distData } = await supabase.from("distribution_records").select("id").eq("user_id", userId).limit(1);
     const orgHasDistribution = ((distData as any[]) || []).length > 0;
 
-    return { orgId: oid || null, orgSlug: oslug || null, orgHasDeclaration, orgHasDistribution, nameHistory };
+    return { orgId: oid || null, orgSlug: oslug || null, brandOrgId, brandOrgSlug, orgHasDeclaration, orgHasDistribution, nameHistory };
   };
 
   useEffect(() => {
