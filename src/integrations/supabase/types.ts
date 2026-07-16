@@ -5084,6 +5084,7 @@ export type Database = {
           ladder_solution_at: string | null
           ladder_structure_at: string | null
           last_evidence_at: string | null
+          organization_id: string | null
           review_status: string | null
           reviewed_at: string | null
           roles_needed: string[] | null
@@ -5114,6 +5115,7 @@ export type Database = {
           ladder_solution_at?: string | null
           ladder_structure_at?: string | null
           last_evidence_at?: string | null
+          organization_id?: string | null
           review_status?: string | null
           reviewed_at?: string | null
           roles_needed?: string[] | null
@@ -5144,6 +5146,7 @@ export type Database = {
           ladder_solution_at?: string | null
           ladder_structure_at?: string | null
           last_evidence_at?: string | null
+          organization_id?: string | null
           review_status?: string | null
           reviewed_at?: string | null
           roles_needed?: string[] | null
@@ -5157,7 +5160,15 @@ export type Database = {
           validated_by?: string | null
           validation_completed_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "startup_ideas_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       startup_team_members: {
         Row: {
