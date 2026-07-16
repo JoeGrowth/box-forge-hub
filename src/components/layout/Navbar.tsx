@@ -467,7 +467,7 @@ export function Navbar() {
                     <span className="flex-1">Orgs</span>
                   </Link>
 
-
+                  {visibleMoreLinks.length > 0 && (
                     <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       More
                     </div>
