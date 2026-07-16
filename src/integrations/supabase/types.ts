@@ -1300,6 +1300,7 @@ export type Database = {
         Row: {
           asset_reached_at: string | null
           autonomous_operations: boolean
+          brand_description: string | null
           branding_completed_at: string | null
           certificate_of_incorporation_url: string | null
           company_name: string | null
@@ -1320,6 +1321,7 @@ export type Database = {
         Insert: {
           asset_reached_at?: string | null
           autonomous_operations?: boolean
+          brand_description?: string | null
           branding_completed_at?: string | null
           certificate_of_incorporation_url?: string | null
           company_name?: string | null
@@ -1340,6 +1342,7 @@ export type Database = {
         Update: {
           asset_reached_at?: string | null
           autonomous_operations?: boolean
+          brand_description?: string | null
           branding_completed_at?: string | null
           certificate_of_incorporation_url?: string | null
           company_name?: string | null
