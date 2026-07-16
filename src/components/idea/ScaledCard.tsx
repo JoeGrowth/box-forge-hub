@@ -101,6 +101,8 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
   const [autoCounts, setAutoCounts] = useState({ soloMissions: 0, contractorMissions: 0, coreServices: 0, professionalPresence: false, hasDistribution: false, hasDeclaration: false, orgHasDistribution: false, orgHasDeclaration: false, hasIdeaPastDevelopment: false });
   const [orgSlug, setOrgSlug] = useState<string | null>(null);
   const [orgId, setOrgId] = useState<string | null>(null);
+  const [brandOrgSlug, setBrandOrgSlug] = useState<string | null>(null);
+  const [brandOrgId, setBrandOrgId] = useState<string | null>(null);
   const [orgNameHistory, setOrgNameHistory] = useState<string[]>([]);
   const [brandDialogOpen, setBrandDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -117,15 +119,20 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     // Find orgs created by the user; prefer brand-name match, else most recent
     const { data: orgs } = await supabase
       .from("organizations")
-      .select("id, slug, name, name_history, created_at")
+      .select("id, slug, name, name_history, type, created_at")
       .eq("created_by", userId)
       .order("created_at", { ascending: false });
     const list = ((orgs as any[]) || []);
     const target = brandName.trim().toLowerCase();
-    const match = list.find(o => (o.name || "").trim().toLowerCase() === target) || list[0];
+    // Brand-typed org drives the Legacy › Initiated card and the "Add a brand" step.
+    const brandMatch = list.find(o => (o.type || "").toLowerCase() === "brand");
+    const brandOrgId = (brandMatch?.id as string | undefined) || null;
+    const brandOrgSlug = (brandMatch?.slug as string | undefined) || null;
+    // Generic org (for "Manage organization" auto-check) — prefer brand, then name match, then most recent.
+    const match = brandMatch || list.find(o => (o.name || "").trim().toLowerCase() === target) || list[0];
     const oid = match?.id as string | undefined;
     const oslug = match?.slug as string | undefined;
-    const nameHistory = (match?.name_history as string[] | undefined) || [];
+    const nameHistory = ((brandMatch || match)?.name_history as string[] | undefined) || [];
 
     let orgHasDeclaration = false;
     if (oid) {
@@ -140,7 +147,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     const { data: distData } = await supabase.from("distribution_records").select("id").eq("user_id", userId).limit(1);
     const orgHasDistribution = ((distData as any[]) || []).length > 0;
 
-    return { orgId: oid || null, orgSlug: oslug || null, orgHasDeclaration, orgHasDistribution, nameHistory };
+    return { orgId: oid || null, orgSlug: oslug || null, brandOrgId, brandOrgSlug, orgHasDeclaration, orgHasDistribution, nameHistory };
   };
 
   useEffect(() => {
@@ -176,6 +183,8 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
       const orgSig = await reloadOrgSignals(userId, title);
       setOrgId(orgSig.orgId);
       setOrgSlug(orgSig.orgSlug);
+      setBrandOrgId(orgSig.brandOrgId);
+      setBrandOrgSlug(orgSig.brandOrgSlug);
       setOrgNameHistory(orgSig.nameHistory);
 
       // Auto-check "Work the development phase & invite a co-builder" when
@@ -224,10 +233,15 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48) || "org";
 
   const ensureOrgAndOpen = async () => {
+    // Prefer the brand-typed org for this step; if none exists yet, open the naming dialog.
+    if (brandOrgSlug) { navigate(`/organizations/${brandOrgSlug}`); return; }
+    setBrandDialogOpen(true);
+  };
+
+  // Separate handler for "Manage organization" — falls back to any org, otherwise the brand dialog.
+  const openManageOrg = async () => {
+    if (brandOrgSlug) { navigate(`/organizations/${brandOrgSlug}`); return; }
     if (orgSlug) { navigate(`/organizations/${orgSlug}`); return; }
-    // No brand entity yet — open the naming dialog first so the founder
-    // can rename it after co-builder discussions and we auto-fill a
-    // business-model-driven description.
     setBrandDialogOpen(true);
   };
 
@@ -254,6 +268,8 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
       .single();
     if (error || !created) { toast.error(error?.message || "Failed to create brand"); return; }
     await supabase.from("organization_members").insert({ organization_id: (created as any).id, user_id: userId, role: "admin" });
+    setBrandOrgId((created as any).id);
+    setBrandOrgSlug((created as any).slug);
     setOrgId((created as any).id);
     setOrgSlug((created as any).slug);
     setOrgNameHistory(((created as any).name_history as string[]) || history);
@@ -278,11 +294,11 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     professional_presence: autoCounts.professionalPresence || milestones.has("professional_presence"),
     invite_cobuilder: autoCounts.hasIdeaPastDevelopment || milestones.has("invite_cobuilder"),
     manage_org: !!orgId && autoCounts.orgHasDeclaration && autoCounts.orgHasDistribution,
-    brand_added: !!orgId || milestones.has("brand_added"),
+    brand_added: !!brandOrgId,
     form_company: !!state.company_name?.trim() && !!state.certificate_of_incorporation_url?.trim(),
     standardized_processes: milestones.has("standardized_processes"),
     autonomous_operations: state.autonomous_operations,
-  }), [autoCounts, milestones, state, orgId]);
+  }), [autoCounts, milestones, state, orgId, brandOrgId]);
 
 
   const brandingProgress = useMemo(() => {
