@@ -248,6 +248,16 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
   const createBrandOrg = async (finalName: string) => {
     const name = finalName.trim();
     if (!name) { toast.error("Brand name required"); return; }
+    // Check name uniqueness (case-insensitive) — DB has unique constraint on lower(name).
+    const { data: nameClash } = await supabase
+      .from("organizations")
+      .select("id, name")
+      .ilike("name", name)
+      .maybeSingle();
+    if (nameClash) {
+      toast.error(`Brand name "${name}" is already taken. Try another name.`);
+      return;
+    }
     let slug = slugify(name);
     let suffix = 0;
     while (suffix < 5) {
@@ -266,7 +276,15 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
       .insert({ name, slug, type: "brand", description: autoDesc, name_history: history, created_by: userId } as any)
       .select("id, slug, name_history")
       .single();
-    if (error || !created) { toast.error(error?.message || "Failed to create brand"); return; }
+    if (error || !created) {
+      const msg = error?.message || "";
+      if (msg.includes("organizations_name_lower_unique") || msg.toLowerCase().includes("duplicate")) {
+        toast.error(`Brand name "${name}" is already taken. Try another name.`);
+      } else {
+        toast.error(msg || "Failed to create brand");
+      }
+      return;
+    }
     await supabase.from("organization_members").insert({ organization_id: (created as any).id, user_id: userId, role: "admin" });
     setBrandOrgId((created as any).id);
     setBrandOrgSlug((created as any).slug);
