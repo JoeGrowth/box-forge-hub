@@ -44,6 +44,7 @@ interface VentureState {
   selected_model: Model | null;
   company_name: string | null;
   company_registration: string | null;
+  certificate_of_incorporation_url: string | null;
   proposal_template_url: string | null;
   frameworks_url: string | null;
   software_tools: string | null;
@@ -60,6 +61,7 @@ const DEFAULT_STATE: VentureState = {
   selected_model: null,
   company_name: null,
   company_registration: null,
+  certificate_of_incorporation_url: null,
   proposal_template_url: null,
   frameworks_url: null,
   software_tools: null,
