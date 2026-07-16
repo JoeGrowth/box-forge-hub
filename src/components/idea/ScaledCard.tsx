@@ -258,12 +258,16 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
       .from("organizations").select("id").ilike("name", name).maybeSingle();
     if (nameClash) { toast.error(`Brand name "${name}" is already taken. Try another name.`); return; }
 
-    // Pull the founder's profile for the AI branding prompt.
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("full_name, professional_title, bio, primary_skills")
-      .eq("user_id", userId)
-      .maybeSingle();
+    // Pull the founder's profile + natural role for the AI branding prompt.
+    const [{ data: profile }, { data: nrRow }] = await Promise.all([
+      supabase.from("profiles").select("full_name, professional_title, bio, primary_skills").eq("user_id", userId).maybeSingle(),
+      supabase.from("natural_roles").select("description, services_description").eq("user_id", userId).maybeSingle(),
+    ]);
+    const promptProfile = {
+      ...(profile || {}),
+      natural_role: (nrRow as any)?.description || null,
+      services_description: (nrRow as any)?.services_description || null,
+    };
 
     // Ask the AI for a branded description + 3 role suggestions.
     let aiDescription = modelDesc || "";
@@ -271,7 +275,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     const toastId = toast.loading("Generating brand description…");
     try {
       const { data: gen, error: genErr } = await supabase.functions.invoke("generate-brand-content", {
-        body: { brandName: name, modelLabel, modelDesc, profile: profile || {} },
+        body: { brandName: name, modelLabel, modelDesc, profile: promptProfile },
       });
       if (genErr) throw genErr;
       if (gen?.description) aiDescription = gen.description as string;
