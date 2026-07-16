@@ -251,69 +251,19 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     const previous = (title || "").trim();
     const autoDesc = state.selected_model ? MODEL_META[state.selected_model].desc : null;
 
-    // Check name uniqueness (case-insensitive) — DB has unique constraint on lower(name).
+    // Global name uniqueness check (case-insensitive) — DB has unique constraint on lower(name).
+    // Any match (even one owned by this user) means the name is unavailable for a NEW brand.
     const { data: nameClash } = await supabase
       .from("organizations")
-      .select("id, name, created_by")
+      .select("id, name")
       .ilike("name", name)
       .maybeSingle();
-    if (nameClash && (nameClash as any).created_by !== userId) {
+    if (nameClash) {
       toast.error(`Brand name "${name}" is already taken. Try another name.`);
       return;
     }
 
-    // If the user already has an org (e.g. auto-created "Hackit" from their handle),
-    // rename it into the new brand instead of creating a duplicate.
-    const { data: existingOrgs } = await supabase
-      .from("organizations")
-      .select("id, name, slug, type, name_history")
-      .eq("created_by", userId)
-      .order("created_at", { ascending: true });
-    const existing = (existingOrgs || []).find(o =>
-      (o.name || "").trim().toLowerCase() === previous.toLowerCase()
-    ) || (existingOrgs || [])[0];
-
-    if (existing) {
-      // Rename in place: preserve history, set type=brand, set description.
-      const prevHistory = ((existing as any).name_history as string[] | null) || [];
-      const oldName = ((existing as any).name || "").trim();
-      const nextHistory = oldName && oldName.toLowerCase() !== name.toLowerCase() && !prevHistory.some(h => h.toLowerCase() === oldName.toLowerCase())
-        ? [...prevHistory, oldName]
-        : prevHistory;
-      let slug = slugify(name);
-      // Only change slug if collision-free; else keep existing slug.
-      const { data: slugClash } = await supabase.from("organizations").select("id").eq("slug", slug).neq("id", (existing as any).id).maybeSingle();
-      if (slugClash) slug = (existing as any).slug;
-      const { data: updated, error: upErr } = await supabase
-        .from("organizations")
-        .update({ name, slug, type: "brand", description: autoDesc, name_history: nextHistory } as any)
-        .eq("id", (existing as any).id)
-        .select("id, slug, name_history")
-        .single();
-      if (upErr || !updated) {
-        const msg = upErr?.message || "";
-        if (msg.includes("organizations_name_lower_unique") || msg.toLowerCase().includes("duplicate")) {
-          toast.error(`Brand name "${name}" is already taken. Try another name.`);
-        } else {
-          toast.error(msg || "Failed to rename brand");
-        }
-        return;
-      }
-      setBrandOrgId((updated as any).id);
-      setBrandOrgSlug((updated as any).slug);
-      setOrgId((updated as any).id);
-      setOrgSlug((updated as any).slug);
-      setOrgNameHistory(((updated as any).name_history as string[]) || nextHistory);
-      await supabase.from("profiles").update({ startup_name: name }).eq("user_id", userId);
-      setSavedNameOverride(name);
-      onBrandNameSaved?.(name);
-      toast.success(`"${oldName || previous}" renamed to "${name}"`);
-      setBrandDialogOpen(false);
-      navigate(`/organizations/${(updated as any).slug}`);
-      return;
-    }
-
-    // No existing org — create a fresh brand.
+    // Always create a NEW brand entity (do not rename existing orgs).
     let slug = slugify(name);
     let suffix = 0;
     while (suffix < 5) {
@@ -340,14 +290,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     await supabase.from("organization_members").insert({ organization_id: (created as any).id, user_id: userId, role: "admin" });
     setBrandOrgId((created as any).id);
     setBrandOrgSlug((created as any).slug);
-    setOrgId((created as any).id);
-    setOrgSlug((created as any).slug);
     setOrgNameHistory(((created as any).name_history as string[]) || history);
-    if (previous.toLowerCase() !== name.toLowerCase()) {
-      await supabase.from("profiles").update({ startup_name: name }).eq("user_id", userId);
-      setSavedNameOverride(name);
-      onBrandNameSaved?.(name);
-    }
     toast.success(`Brand "${name}" added to Legacy`);
     setBrandDialogOpen(false);
     navigate(`/organizations/${(created as any).slug}`);
