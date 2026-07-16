@@ -3884,6 +3884,56 @@ export type Database = {
           },
         ]
       }
+      organization_product_iterations: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          implementation_type: string | null
+          organization_id: string
+          shipped_at: string | null
+          title: string
+          updated_at: string
+          url: string | null
+          version_number: number
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          implementation_type?: string | null
+          organization_id: string
+          shipped_at?: string | null
+          title: string
+          updated_at?: string
+          url?: string | null
+          version_number?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          implementation_type?: string | null
+          organization_id?: string
+          shipped_at?: string | null
+          title?: string
+          updated_at?: string
+          url?: string | null
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_product_iterations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           created_at: string
