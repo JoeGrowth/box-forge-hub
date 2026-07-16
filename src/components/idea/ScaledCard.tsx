@@ -711,11 +711,22 @@ function SystematizationPhase({ done, autoCounts, milestones, state, progress, o
           {/* 3. Work the development phase & invite a co-builder */}
           <MilestoneRow
             done={done.invite_cobuilder}
+            auto={autoCounts.hasIdeaPastDevelopment}
             label="Work the development phase & invite a co-builder"
-            hint={done.invite_cobuilder ? "Co-builder invited — keep progressing the development phase" : "Progress the brand's development phase and invite a co-builder (from the platform or by email)"}
+            hint={
+              autoCounts.hasIdeaPastDevelopment
+                ? "Auto-checked — a linked idea's Develop episode is validated"
+                : (done.invite_cobuilder
+                    ? "Co-builder invited — keep progressing the development phase"
+                    : "Validate the Develop episode on your idea card (auto-checks) or invite a co-builder manually")
+            }
             actionLabel={done.invite_cobuilder ? "Invite another" : "Invite"}
-            onToggle={done.invite_cobuilder ? () => onToggleMilestone("invite_cobuilder", false) : () => setInviteOpen(true)}
+            onToggle={autoCounts.hasIdeaPastDevelopment
+              ? () => setInviteOpen(true)
+              : (done.invite_cobuilder ? () => onToggleMilestone("invite_cobuilder", false) : () => setInviteOpen(true))
+            }
           />
+
 
           {/* 4. Define your core services */}
           <MilestoneRow
