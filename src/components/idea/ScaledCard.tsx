@@ -261,7 +261,7 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
     // Pull the founder's profile for the AI branding prompt.
     const { data: profile } = await supabase
       .from("profiles")
-      .select("full_name, professional_title, bio, primary_skills, natural_role, sector")
+      .select("full_name, professional_title, bio, primary_skills")
       .eq("user_id", userId)
       .maybeSingle();
 
