@@ -896,17 +896,15 @@ function SystematizationPhase({ done, autoCounts, milestones, state, progress, o
                     <p className="text-xs text-muted-foreground">Legal entity name, registration, and incorporation certificate</p>
                     <div className="grid sm:grid-cols-2 gap-2 mt-2">
                       <Input value={state.company_name || ""} onChange={(e) => onUpdateState({ company_name: e.target.value })} placeholder="Company legal name" className="h-8 text-xs" />
-                      <Input value={state.company_registration || ""} onChange={(e) => onUpdateState({ company_registration: e.target.value })} placeholder="Registration # (optional)" className="h-8 text-xs" />
+                      <Input value={state.company_registration || ""} onChange={(e) => onUpdateState({ company_registration: e.target.value })} placeholder="Registration #" className="h-8 text-xs" />
                     </div>
-                    <div className="mt-2">
-                      <Input
-                        value={state.certificate_of_incorporation_url || ""}
-                        onChange={(e) => onUpdateState({ certificate_of_incorporation_url: e.target.value })}
-                        placeholder="Certificate of incorporation — URL or reference"
-                        className="h-8 text-xs"
-                      />
-                      <p className="text-[11px] text-muted-foreground mt-1">Paste a link to the incorporation certificate (PDF, drive, or registry URL).</p>
-                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-2">
+                      {autoCounts.orgHasCertificate
+                        ? "Certificate of Incorporation uploaded in the Legal tab."
+                        : orgSlug
+                          ? <>Upload the <strong>Certificate of Incorporation</strong> in the <em>Legal</em> tab of your organization to complete this step.</>
+                          : "Create and open your organization, then upload the Certificate of Incorporation in its Legal tab."}
+                    </p>
                   </div>
                 </div>
               </div>
