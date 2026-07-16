@@ -95,7 +95,17 @@ No prose outside the JSON.`;
       const m = raw.match(/\{[\s\S]*\}/);
       if (m) { try { parsed = JSON.parse(m[0]); } catch {} }
     }
-    const description = typeof parsed.description === "string" && parsed.description.trim() ? parsed.description.trim() : fallbackDescription;
+    let description = typeof parsed.description === "string" && parsed.description.trim() ? parsed.description.trim() : fallbackDescription;
+    // Strip any occurrence of the founder's name (full, or individual name parts) to enforce institutional voice.
+    const founderName = String(profile?.full_name || "").trim();
+    if (founderName) {
+      const parts = [founderName, ...founderName.split(/\s+/)].filter(p => p && p.length > 1);
+      for (const p of parts) {
+        const re = new RegExp(`\\b${p.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&")}(?:'s)?\\b`, "gi");
+        description = description.replace(re, "the firm");
+      }
+      description = description.replace(/\s{2,}/g, " ").replace(/\bthe firm the firm\b/gi, "the firm");
+    }
     let roles: string[] = Array.isArray(parsed.roles_needed) ? parsed.roles_needed.filter((r: any) => typeof r === "string") : [];
     roles = roles.map(r => r.trim()).filter(Boolean).slice(0, 3);
     while (roles.length < 3) roles.push(fallbackRoles[roles.length]);
