@@ -51,6 +51,7 @@ interface VentureState {
   datasets_methodologies: string | null;
   training_courses: string | null;
   autonomous_operations: boolean;
+  brand_description: string | null;
 }
 
 const DEFAULT_STATE: VentureState = {
