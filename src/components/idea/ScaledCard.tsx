@@ -183,6 +183,8 @@ export function ScaledCard({ userId, title, tagline, onBrandNameSaved }: ScaledC
       const orgSig = await reloadOrgSignals(userId, title);
       setOrgId(orgSig.orgId);
       setOrgSlug(orgSig.orgSlug);
+      setBrandOrgId(orgSig.brandOrgId);
+      setBrandOrgSlug(orgSig.brandOrgSlug);
       setOrgNameHistory(orgSig.nameHistory);
 
       // Auto-check "Work the development phase & invite a co-builder" when
