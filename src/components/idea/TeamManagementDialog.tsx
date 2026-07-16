@@ -831,7 +831,8 @@ export const TeamManagementDialog = ({
                           )}
 
                           {/* Action: open compensation dialog */}
-                          {(!member.compensation || member.compensation.status !== "accepted") && (
+                          {(!member.compensation || member.compensation.status !== "accepted") &&
+                            (isInitiator || member.member_user_id === currentUserId) && (
                             <Button
                               variant={
                                 member.compensation &&
@@ -842,10 +843,18 @@ export const TeamManagementDialog = ({
                               size="sm"
                               className="w-full"
                               onClick={() => setCompMember(member)}
+                              disabled={!member.compensation && !isInitiator}
+                              title={
+                                !member.compensation && !isInitiator
+                                  ? "Waiting for the initiator to propose an initial offer"
+                                  : undefined
+                              }
                             >
                               <MessageCircle className="w-4 h-4 mr-2" />
                               {!member.compensation
-                                ? "Set Compensation"
+                                ? isInitiator
+                                  ? "Set Compensation"
+                                  : "Awaiting Initiator Offer"
                                 : member.compensation.current_proposer_id !== currentUserId
                                 ? `Review & Respond (v${member.compensation.version})`
                                 : "View Proposal — Awaiting Response"}
