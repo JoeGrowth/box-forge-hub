@@ -243,6 +243,15 @@ export const TeamManagementDialog = ({
     setLoading(true);
 
     try {
+      // Determine if current user is the initiator (creator) of this startup
+      const { data: ideaRow } = await supabase
+        .from("startup_ideas")
+        .select("creator_id")
+        .eq("id", startupId)
+        .maybeSingle();
+      const userIsInitiator = ideaRow?.creator_id === currentUserId;
+      setIsInitiator(userIsInitiator);
+
       // Fetch applications
       const { data: apps } = await supabase
         .from("startup_applications")
