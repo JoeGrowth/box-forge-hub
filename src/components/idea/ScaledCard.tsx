@@ -74,7 +74,7 @@ const DEFAULT_STATE: VentureState = {
 
 const PHASE_META: Record<Phase, { label: string; sub: string; icon: any }> = {
   branding: { label: "Structure", sub: "Branding", icon: Sparkles },
-  systematization: { label: "Detach", sub: "Systemize", icon: Layers },
+  systematization: { label: "Legacy", sub: "Systemize", icon: Layers },
   asset: { label: "Asset", sub: "Scale", icon: Rocket },
 };
 
@@ -783,7 +783,7 @@ function SystematizationPhase({ done, autoCounts, milestones, state, progress, o
       <div>
         <div className="flex items-center justify-between mb-2">
           <div>
-            <p className="font-display text-base font-bold text-foreground">Phase 2 · Detach (Systemize)</p>
+            <p className="font-display text-base font-bold text-foreground">Phase 2 · Legacy (Systemize)</p>
             <p className="text-xs text-muted-foreground">Separate the business from you. Build systems others can run.</p>
           </div>
           <Badge variant="secondary">{progress}%</Badge>
