@@ -940,6 +940,15 @@ const Entrepreneurship = () => {
                   )}
                 </TabsContent>
 
+                <TabsContent value="organizations">
+                  <div className="mb-4">
+                    <h2 className="font-display text-xl font-bold text-foreground">Your organizations</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Organizations you own or belong to.
+                    </p>
+                  </div>
+                  <MyOrganizationsSection />
+                </TabsContent>
 
               </Tabs>
             </div>
