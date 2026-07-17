@@ -566,13 +566,8 @@ export default function OrganizationPage() {
   );
 }
 
-type DailyTask = { id: string; text: string; done: boolean; created_at: string };
-type DailyPresentation = { id: string; title: string; url: string; created_at: string };
-
-function DailyTab({ orgId, canEdit }: { orgId: string; canEdit: boolean }) {
-  const tasksKey = `org-daily-tasks:${orgId}`;
+function DailyTab({ orgId, canEdit, tasks, onTasksChange }: { orgId: string; canEdit: boolean; tasks: DailyTask[]; onTasksChange: (next: DailyTask[]) => void }) {
   const presKey = `org-daily-presentations:${orgId}`;
-  const [tasks, setTasks] = useState<DailyTask[]>([]);
   const [presentations, setPresentations] = useState<DailyPresentation[]>([]);
   const [newTask, setNewTask] = useState("");
   const [presTitle, setPresTitle] = useState("");
@@ -580,15 +575,10 @@ function DailyTab({ orgId, canEdit }: { orgId: string; canEdit: boolean }) {
 
   useEffect(() => {
     try {
-      setTasks(JSON.parse(localStorage.getItem(tasksKey) || "[]"));
       setPresentations(JSON.parse(localStorage.getItem(presKey) || "[]"));
     } catch { /* ignore */ }
-  }, [tasksKey, presKey]);
+  }, [presKey]);
 
-  const saveTasks = (next: DailyTask[]) => {
-    setTasks(next);
-    localStorage.setItem(tasksKey, JSON.stringify(next));
-  };
   const savePres = (next: DailyPresentation[]) => {
     setPresentations(next);
     localStorage.setItem(presKey, JSON.stringify(next));
@@ -602,11 +592,11 @@ function DailyTab({ orgId, canEdit }: { orgId: string; canEdit: boolean }) {
     const t = newTask.trim();
     if (!t) return;
     if (atLimit) return;
-    saveTasks([{ id: crypto.randomUUID(), text: t, done: false, created_at: new Date().toISOString() }, ...tasks]);
+    onTasksChange([{ id: crypto.randomUUID(), text: t, done: false, created_at: new Date().toISOString() }, ...tasks]);
     setNewTask("");
   };
-  const toggleTask = (id: string) => saveTasks(tasks.map(t => t.id === id ? { ...t, done: !t.done } : t));
-  const removeTask = (id: string) => saveTasks(tasks.filter(t => t.id !== id));
+  const toggleTask = (id: string) => onTasksChange(tasks.map(t => t.id === id ? { ...t, done: !t.done } : t));
+  const removeTask = (id: string) => onTasksChange(tasks.filter(t => t.id !== id));
 
   const addPresentation = () => {
     const title = presTitle.trim();
