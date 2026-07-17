@@ -637,27 +637,6 @@ const Entrepreneurship = () => {
               </p>
 
 
-              <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as MainTab)} className="w-full">
-                <div className="flex border-b border-border mb-6 overflow-x-auto">
-                  <button
-                    onClick={() => setMainTab("growth")}
-                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                      mainTab === "growth"
-                        ? "border-foreground text-foreground"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <TrendingUp className="w-4 h-4" />
-                    Your Talent
-                  </button>
-                  <button
-                    onClick={() => setMainTab("legacy")}
-                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                      mainTab === "legacy"
-                        ? "border-foreground text-foreground"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
               {(() => {
                 const hasValidationProject = myProjects.some(
                   (p) => p.current_episode === "validation" || p.current_episode === "growth"
