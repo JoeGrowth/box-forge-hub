@@ -1050,6 +1050,17 @@ const Entrepreneurship = () => {
                       </div>
                     </div>
                   )}
+                  {effectiveSub === "validated" && (
+                    <div className="space-y-4">
+                      <div className="mb-2">
+                        <h2 className="font-display text-xl font-bold text-foreground">Your Talent, Validated</h2>
+                        <p className="text-sm text-muted-foreground">
+                          Paid consulting missions, delivered projects, and revenue that prove your expertise.
+                        </p>
+                      </div>
+                      <ConsultingGrowth embedded />
+                    </div>
+                  )}
                   {effectiveSub === "systematized" && (
                     advisorAchieved ? (
                       <div>
