@@ -190,12 +190,7 @@ export function MyOrganizationsSection() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
-        <div className="flex-1 min-w-0">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Organizations</h1>
-          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-            Organizations own opportunities and group team members with roles (admin · editor · viewer).
-          </p>
-        </div>
+        <div className="flex-1 min-w-0" />
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 w-full sm:w-auto">
           <Link to="/opsmanagement" className="w-full sm:w-auto">

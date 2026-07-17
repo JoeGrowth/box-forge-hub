@@ -956,7 +956,7 @@ const Entrepreneurship = () => {
                   <div className="mb-4">
                     <h2 className="font-display text-xl font-bold text-foreground">Your organizations</h2>
                     <p className="text-sm text-muted-foreground">
-                      Organizations you own or belong to.
+                      Organizations you own or belong to. you can have different roles (admin · editor · viewer).
                     </p>
                   </div>
                   <MyOrganizationsSection />
