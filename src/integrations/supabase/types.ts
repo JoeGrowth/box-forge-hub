@@ -3548,6 +3548,8 @@ export type Database = {
           id: string
           message: string | null
           opportunity_id: string
+          reviewed_at: string | null
+          reviewer_id: string | null
           status: string
           user_id: string
         }
@@ -3557,6 +3559,8 @@ export type Database = {
           id?: string
           message?: string | null
           opportunity_id: string
+          reviewed_at?: string | null
+          reviewer_id?: string | null
           status?: string
           user_id: string
         }
@@ -3566,6 +3570,8 @@ export type Database = {
           id?: string
           message?: string | null
           opportunity_id?: string
+          reviewed_at?: string | null
+          reviewer_id?: string | null
           status?: string
           user_id?: string
         }
@@ -5508,6 +5514,65 @@ export type Database = {
             columns: ["team_member_id"]
             isOneToOne: true
             referencedRelation: "startup_team_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tender_submissions: {
+        Row: {
+          created_at: string
+          file_name: string | null
+          file_path: string | null
+          id: string
+          note: string | null
+          paid_at: string | null
+          paid_by: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewer_notes: string | null
+          status: string
+          tender_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          note?: string | null
+          paid_at?: string | null
+          paid_by?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          tender_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          note?: string | null
+          paid_at?: string | null
+          paid_by?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          tender_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tender_submissions_tender_id_fkey"
+            columns: ["tender_id"]
+            isOneToOne: false
+            referencedRelation: "tenders"
             referencedColumns: ["id"]
           },
         ]

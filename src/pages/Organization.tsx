@@ -78,6 +78,8 @@ import {
   X,
   ChevronDown,
   ChevronRight,
+  RefreshCw,
+  DollarSign,
 } from "lucide-react";
 import jsPDF from "jspdf";
 import { readDistEntities, addDistEntity, writeDistEntities, type DistEntity } from "@/pages/Distribution";
@@ -146,8 +148,10 @@ export default function OrganizationPage() {
   const [creatingDecl, setCreatingDecl] = useState(false);
   const { members, reload: reloadMembers } = useOrgMembers(org?.id);
 
-  type TenderInterest = { user_id: string; full_name: string | null; message: string | null; created_at: string };
+  type TenderInterest = { interaction_id: string; user_id: string; full_name: string | null; message: string | null; status: string; created_at: string };
+  type TenderSubmission = { id: string; tender_id: string; user_id: string; user_name: string | null; note: string | null; file_path: string | null; file_name: string | null; status: string; reviewer_notes: string | null; paid_at: string | null; created_at: string };
   const [tenderInterests, setTenderInterests] = useState<Record<string, { count: number; items: TenderInterest[] }>>({});
+  const [tenderSubmissions, setTenderSubmissions] = useState<Record<string, TenderSubmission[]>>({});
   const [viewingTender, setViewingTender] = useState<{ id: string; title: string } | null>(null);
 
   const [dailyTasks, setDailyTasks] = useState<DailyTask[]>([]);
@@ -183,7 +187,7 @@ export default function OrganizationPage() {
       const ids = tenderRows.map((t) => t.id);
       const { data: ints } = await supabase
         .from("opportunity_interactions")
-        .select("opportunity_id, user_id, message, created_at")
+        .select("id, opportunity_id, user_id, message, status, created_at")
         .in("opportunity_id", ids)
         .order("created_at", { ascending: false });
       const items = (ints as any[]) ?? [];
@@ -196,13 +200,33 @@ export default function OrganizationPage() {
       for (const t of tenderRows) map[t.id] = { count: 0, items: [] };
       for (const i of items) {
         const entry = map[i.opportunity_id] ?? { count: 0, items: [] };
-        entry.items.push({ user_id: i.user_id, full_name: nameMap.get(i.user_id) ?? null, message: i.message, created_at: i.created_at });
+        entry.items.push({ interaction_id: i.id, user_id: i.user_id, full_name: nameMap.get(i.user_id) ?? null, message: i.message, status: i.status ?? "pending", created_at: i.created_at });
         entry.count++;
         map[i.opportunity_id] = entry;
       }
       setTenderInterests(map);
+
+      // Load submissions for these tenders
+      const { data: subs } = await supabase
+        .from("tender_submissions")
+        .select("*")
+        .in("tender_id", ids)
+        .order("created_at", { ascending: false });
+      const subRows = (subs as any[]) ?? [];
+      const subUserIds = [...new Set(subRows.map((s) => s.user_id).filter(Boolean))];
+      const subNameMap = new Map<string, string | null>();
+      if (subUserIds.length) {
+        const { data: sp } = await supabase.from("profiles").select("user_id, full_name").in("user_id", subUserIds);
+        for (const p of (sp as any[]) ?? []) subNameMap.set(p.user_id, p.full_name);
+      }
+      const sMap: Record<string, TenderSubmission[]> = {};
+      for (const s of subRows) {
+        (sMap[s.tender_id] ??= []).push({ ...s, user_name: subNameMap.get(s.user_id) ?? null });
+      }
+      setTenderSubmissions(sMap);
     } else {
       setTenderInterests({});
+      setTenderSubmissions({});
     }
   }, [org]);
 
@@ -465,25 +489,41 @@ export default function OrganizationPage() {
           )}
 
           <Dialog open={!!viewingTender} onOpenChange={(open) => !open && setViewingTender(null)}>
-            <DialogContent className="max-w-lg">
+            <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
               <DialogHeader>
-                <DialogTitle>Interested in {viewingTender?.title}</DialogTitle>
-                <DialogDescription>People who expressed interest in this tender.</DialogDescription>
+                <DialogTitle>Manage {viewingTender?.title}</DialogTitle>
+                <DialogDescription>Accept or refuse candidates, review deliverables, and confirm payment.</DialogDescription>
               </DialogHeader>
-              <div className="space-y-3 max-h-80 overflow-auto">
-                {(tenderInterests[viewingTender?.id ?? ""]?.items ?? []).length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No interest yet.</p>
-                ) : (
-                  (tenderInterests[viewingTender?.id ?? ""]?.items ?? []).map((i) => (
-                    <div key={`${i.user_id}-${i.created_at}`} className="rounded-lg border border-border p-3">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-sm">{i.full_name ?? "Unknown"}</span>
-                        <span className="text-xs text-muted-foreground">{new Date(i.created_at).toLocaleDateString()}</span>
-                      </div>
-                      {i.message && <p className="text-sm text-muted-foreground mt-1">{i.message}</p>}
+              <div className="space-y-4 overflow-auto pr-1">
+                <div>
+                  <div className="text-xs uppercase tracking-wide text-muted-foreground mb-2">Interested people</div>
+                  {(tenderInterests[viewingTender?.id ?? ""]?.items ?? []).length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No interest yet.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {(tenderInterests[viewingTender?.id ?? ""]?.items ?? []).map((i) => (
+                        <InterestRow
+                          key={i.interaction_id}
+                          interest={i}
+                          onUpdate={loadOpps}
+                        />
+                      ))}
                     </div>
-                  ))
-                )}
+                  )}
+                </div>
+
+                <div className="border-t border-border pt-3">
+                  <div className="text-xs uppercase tracking-wide text-muted-foreground mb-2">Deliverables</div>
+                  {(tenderSubmissions[viewingTender?.id ?? ""] ?? []).length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No deliverables submitted yet.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {(tenderSubmissions[viewingTender?.id ?? ""] ?? []).map((s) => (
+                        <SubmissionRow key={s.id} submission={s} onUpdate={loadOpps} />
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </DialogContent>
           </Dialog>
@@ -2179,6 +2219,176 @@ function ProductBlock({
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+// ---------------- Tender workflow rows ----------------
+
+const INTEREST_STATUS_META: Record<string, { label: string; className: string }> = {
+  pending: { label: "Pending", className: "bg-amber-500/10 text-amber-700 border-amber-500/30" },
+  accepted: { label: "Accepted", className: "bg-emerald-500/10 text-emerald-700 border-emerald-500/30" },
+  refused: { label: "Refused", className: "bg-destructive/10 text-destructive border-destructive/30" },
+};
+
+function InterestRow({
+  interest,
+  onUpdate,
+}: {
+  interest: { interaction_id: string; user_id: string; full_name: string | null; message: string | null; status: string; created_at: string };
+  onUpdate: () => void;
+}) {
+  const { toast } = useToast();
+  const [busy, setBusy] = useState(false);
+  const meta = INTEREST_STATUS_META[interest.status] ?? INTEREST_STATUS_META.pending;
+
+  const update = async (nextStatus: "accepted" | "refused") => {
+    setBusy(true);
+    const { error } = await supabase
+      .from("opportunity_interactions")
+      .update({ status: nextStatus, reviewed_at: new Date().toISOString() })
+      .eq("id", interest.interaction_id);
+    setBusy(false);
+    if (error) {
+      toast({ title: "Update failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: nextStatus === "accepted" ? "Candidate accepted" : "Candidate refused" });
+    onUpdate();
+  };
+
+  return (
+    <div className="rounded-lg border border-border p-3">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="font-medium text-sm truncate">{interest.full_name ?? "Unknown"}</span>
+          <Badge variant="outline" className={`text-xs ${meta.className}`}>{meta.label}</Badge>
+        </div>
+        <div className="flex items-center gap-1 shrink-0">
+          <a
+            href={`https://box4solutions.com/u/${interest.user_id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex"
+          >
+            <Button size="sm" variant="ghost" title="View public profile">
+              <Eye className="w-3.5 h-3.5" />
+            </Button>
+          </a>
+          {interest.status !== "accepted" && (
+            <Button size="sm" variant="ghost" onClick={() => update("accepted")} disabled={busy} title="Accept">
+              <Check className="w-3.5 h-3.5 text-emerald-600" />
+            </Button>
+          )}
+          {interest.status !== "refused" && (
+            <Button size="sm" variant="ghost" onClick={() => update("refused")} disabled={busy} title="Refuse">
+              <X className="w-3.5 h-3.5 text-destructive" />
+            </Button>
+          )}
+        </div>
+      </div>
+      {interest.message && <p className="text-sm text-muted-foreground mt-2">{interest.message}</p>}
+      <div className="text-xs text-muted-foreground mt-1">{new Date(interest.created_at).toLocaleDateString()}</div>
+    </div>
+  );
+}
+
+const SUB_STATUS_META: Record<string, { label: string; className: string }> = {
+  submitted: { label: "Submitted", className: "bg-amber-500/10 text-amber-700 border-amber-500/30" },
+  approved: { label: "Approved", className: "bg-emerald-500/10 text-emerald-700 border-emerald-500/30" },
+  changes_requested: { label: "Changes requested", className: "bg-orange-500/10 text-orange-700 border-orange-500/30" },
+  paid: { label: "Paid", className: "bg-primary/10 text-primary border-primary/30" },
+  rejected: { label: "Rejected", className: "bg-destructive/10 text-destructive border-destructive/30" },
+};
+
+function SubmissionRow({
+  submission,
+  onUpdate,
+}: {
+  submission: {
+    id: string; tender_id: string; user_id: string; user_name: string | null;
+    note: string | null; file_path: string | null; file_name: string | null;
+    status: string; reviewer_notes: string | null; paid_at: string | null; created_at: string;
+  };
+  onUpdate: () => void;
+}) {
+  const { toast } = useToast();
+  const [busy, setBusy] = useState(false);
+  const [feedback, setFeedback] = useState("");
+  const [showFeedback, setShowFeedback] = useState(false);
+  const meta = SUB_STATUS_META[submission.status] ?? SUB_STATUS_META.submitted;
+
+  const setStatus = async (patch: Record<string, unknown>) => {
+    setBusy(true);
+    const { error } = await supabase.from("tender_submissions").update({ ...patch, reviewed_at: new Date().toISOString() }).eq("id", submission.id);
+    setBusy(false);
+    if (error) { toast({ title: "Update failed", description: error.message, variant: "destructive" }); return; }
+    onUpdate();
+  };
+
+  const download = async () => {
+    if (!submission.file_path) return;
+    const { data, error } = await supabase.storage.from("tender-submissions").createSignedUrl(submission.file_path, 60);
+    if (error || !data) { toast({ title: "Download failed", variant: "destructive" }); return; }
+    window.open(data.signedUrl, "_blank");
+  };
+
+  return (
+    <div className="rounded-lg border border-border p-3 space-y-2">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="font-medium text-sm truncate">{submission.user_name ?? "Unknown"}</span>
+          <Badge variant="outline" className={`text-xs ${meta.className}`}>{meta.label}</Badge>
+          {submission.paid_at && <span className="text-xs text-primary">Paid {new Date(submission.paid_at).toLocaleDateString()}</span>}
+        </div>
+        <a href={`https://box4solutions.com/u/${submission.user_id}`} target="_blank" rel="noopener noreferrer">
+          <Button size="sm" variant="ghost" title="View public profile"><Eye className="w-3.5 h-3.5" /></Button>
+        </a>
+      </div>
+      {submission.note && <p className="text-sm text-muted-foreground">{submission.note}</p>}
+      {submission.file_name && (
+        <Button size="sm" variant="ghost" onClick={download}>
+          <FileText className="w-3 h-3 mr-1" /> {submission.file_name}
+        </Button>
+      )}
+      {submission.reviewer_notes && (
+        <div className="rounded-md bg-muted/50 p-2 text-xs">
+          <span className="font-medium">Feedback:</span> {submission.reviewer_notes}
+        </div>
+      )}
+
+      {showFeedback && (
+        <div className="space-y-2">
+          <Textarea rows={2} value={feedback} onChange={(e) => setFeedback(e.target.value)} placeholder="What needs to change?" />
+          <div className="flex gap-2">
+            <Button size="sm" onClick={() => { setStatus({ status: "changes_requested", reviewer_notes: feedback.trim() || null }); setShowFeedback(false); setFeedback(""); }} disabled={busy}>
+              Send feedback
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setShowFeedback(false)}>Cancel</Button>
+          </div>
+        </div>
+      )}
+
+      {!showFeedback && (
+        <div className="flex flex-wrap gap-1">
+          {submission.status === "submitted" && (
+            <>
+              <Button size="sm" variant="outline" onClick={() => setStatus({ status: "approved" })} disabled={busy}>
+                <Check className="w-3 h-3 mr-1" /> Approve
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => setShowFeedback(true)} disabled={busy}>
+                <RefreshCw className="w-3 h-3 mr-1" /> Request changes
+              </Button>
+            </>
+          )}
+          {submission.status === "approved" && !submission.paid_at && (
+            <Button size="sm" onClick={() => setStatus({ status: "paid", paid_at: new Date().toISOString() })} disabled={busy}>
+              <DollarSign className="w-3 h-3 mr-1" /> Mark as paid
+            </Button>
+          )}
+        </div>
+      )}
+      <div className="text-xs text-muted-foreground">{new Date(submission.created_at).toLocaleString()}</div>
     </div>
   );
 }

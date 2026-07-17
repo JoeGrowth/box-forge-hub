@@ -221,6 +221,17 @@ export function Navbar() {
                         Projects
                       </Link>
                     </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        to="/my-tender-work"
+                        className={`flex items-center gap-2 cursor-pointer ${
+                          location.pathname === "/my-tender-work" ? "text-b4-teal" : "text-foreground"
+                        }`}
+                      >
+                        <FileText size={16} />
+                        My tender work
+                      </Link>
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
 
