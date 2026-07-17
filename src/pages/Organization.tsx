@@ -1677,6 +1677,42 @@ function ProductBlock({
   const [currentName, setCurrentName] = useState(product.name);
   const [history, setHistory] = useState<any[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<any>({ title: "", description: "", implementation_type: "", url: "", shipped_at: "" });
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  const startEdit = (it: any) => {
+    setEditingId(it.id);
+    setEditForm({
+      title: it.title || "",
+      description: it.description || "",
+      implementation_type: it.implementation_type || "",
+      url: it.url || "",
+      shipped_at: it.shipped_at ? String(it.shipped_at).slice(0, 10) : "",
+    });
+  };
+
+  const saveEdit = async (id: string) => {
+    if (!editForm.title.trim()) return;
+    setSavingEdit(true);
+    const { error } = await (supabase as any)
+      .from("organization_product_iterations")
+      .update({
+        title: editForm.title.trim(),
+        description: editForm.description.trim() || null,
+        implementation_type: editForm.implementation_type.trim() || null,
+        url: editForm.url.trim() || null,
+        shipped_at: editForm.shipped_at || null,
+      })
+      .eq("id", id);
+    setSavingEdit(false);
+    if (error) {
+      toast({ title: "Couldn't update", description: error.message, variant: "destructive" });
+      return;
+    }
+    setEditingId(null);
+    load();
+  };
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -1908,30 +1944,68 @@ function ProductBlock({
                   {it.version_number}
                 </span>
                 <div className="rounded-lg border border-border p-3">
-                  <div className="flex items-start justify-between gap-2 flex-wrap">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-medium text-foreground">v{it.version_number} · {it.title}</p>
-                        {it.implementation_type && (
-                          <Badge variant="outline" className="text-xs">{it.implementation_type}</Badge>
-                        )}
-                        {it.shipped_at && (
-                          <span className="text-xs text-muted-foreground">{new Date(it.shipped_at).toLocaleDateString()}</span>
+                  {editingId === it.id ? (
+                    <div className="space-y-2">
+                      <div className="grid sm:grid-cols-2 gap-2">
+                        <div>
+                          <Label className="text-xs">Title *</Label>
+                          <Input value={editForm.title} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Implementation type</Label>
+                          <Input value={editForm.implementation_type} onChange={(e) => setEditForm({ ...editForm, implementation_type: e.target.value })} />
+                        </div>
+                        <div>
+                          <Label className="text-xs">URL or reference</Label>
+                          <Input value={editForm.url} onChange={(e) => setEditForm({ ...editForm, url: e.target.value })} />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Shipped on</Label>
+                          <Input type="date" value={editForm.shipped_at} onChange={(e) => setEditForm({ ...editForm, shipped_at: e.target.value })} />
+                        </div>
+                      </div>
+                      <div>
+                        <Label className="text-xs">Case study</Label>
+                        <Textarea rows={3} value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} />
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>Cancel</Button>
+                        <Button size="sm" onClick={() => saveEdit(it.id)} disabled={savingEdit || !editForm.title.trim()}>
+                          {savingEdit ? "Saving…" : "Save changes"}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-start justify-between gap-2 flex-wrap">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-medium text-foreground">v{it.version_number} · {it.title}</p>
+                          {it.implementation_type && (
+                            <Badge variant="outline" className="text-xs">{it.implementation_type}</Badge>
+                          )}
+                          {it.shipped_at && (
+                            <span className="text-xs text-muted-foreground">{new Date(it.shipped_at).toLocaleDateString()}</span>
+                          )}
+                        </div>
+                        {it.description && <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{it.description}</p>}
+                        {it.url && (
+                          <a href={it.url} target="_blank" rel="noreferrer" className="text-xs text-primary inline-flex items-center gap-1 mt-1">
+                            <ExternalLink className="w-3 h-3" /> {it.url}
+                          </a>
                         )}
                       </div>
-                      {it.description && <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{it.description}</p>}
-                      {it.url && (
-                        <a href={it.url} target="_blank" rel="noreferrer" className="text-xs text-primary inline-flex items-center gap-1 mt-1">
-                          <ExternalLink className="w-3 h-3" /> {it.url}
-                        </a>
+                      {userId === it.created_by && (
+                        <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => startEdit(it)} title="Edit iteration">
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => removeIteration(it.id)} title="Remove iteration">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       )}
                     </div>
-                    {userId === it.created_by && (
-                      <Button variant="ghost" size="icon" onClick={() => removeIteration(it.id)}>
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
+                  )}
                 </div>
               </li>
             ))}
