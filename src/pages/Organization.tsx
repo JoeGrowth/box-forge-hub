@@ -1967,7 +1967,7 @@ function ProductBlock({
           )}
         </div>
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" onClick={() => setOpen((o) => !o)}>
+          <Button size="sm" variant="outline" onClick={() => { if (collapsed) setCollapsed(false); setOpen((o) => !o); }}>
             <Plus className="w-4 h-4 mr-1" /> {open ? "Cancel" : "Add iteration"}
           </Button>
           {canEdit && !editingName && (
@@ -1980,6 +1980,9 @@ function ProductBlock({
               <Trash2 className="w-4 h-4" />
             </Button>
           )}
+          <Button variant="ghost" size="icon" onClick={() => setCollapsed((c) => !c)} title={collapsed ? "Expand product journey" : "Collapse product journey"}>
+            {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </Button>
         </div>
       </div>
 
