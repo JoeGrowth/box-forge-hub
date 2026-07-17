@@ -237,6 +237,7 @@ const App = () => (
                   <Route path="/admin/dashboard" element={<Navigate to="/admin" replace />} />
                   <Route path="/me" element={<Navigate to="/profile" replace />} />
                   <Route path="/u/:slug" element={<PublicProfile />} />
+                  <Route path="/my-tender-work" element={<ProtectedRoute><MyTenderWork /></ProtectedRoute>} />
                   <Route path="/account" element={<Navigate to="/profile" replace />} />
                   <Route path="/settings" element={<Navigate to="/profile" replace />} />
                   <Route path="/inbox" element={<Navigate to="/messages" replace />} />
