@@ -34,7 +34,7 @@ import { ScaledCard } from "@/components/idea/ScaledCard";
 import { useTalentReadiness } from "@/hooks/useTalentReadiness";
 import { CheckCircle2, ArrowRight } from "lucide-react";
 
-import ConsultingGrowthPage from "@/pages/ConsultingGrowth";
+
 import { SuggestDomainDialog } from "@/components/domain/SuggestDomainDialog";
 import { MyOrganizationsSection } from "@/components/organization/MyOrganizationsSection";
 import { YourAssetsSection } from "@/components/organization/YourAssetsSection";
@@ -98,7 +98,7 @@ const Entrepreneurship = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [applyProject, setApplyProject] = useState<StartupIdea | null>(null);
   type MainTab = "legacy" | "growth" | "organizations" | "assets";
-  type GrowthSub = "shaped" | "developed" | "monetized" | "systematized";
+  type GrowthSub = "shaped" | "developed" | "systematized";
   const initialTab = (() => {
     const t = searchParams.get("tab");
     if (t === "legacy" || t === "growth" || t === "organizations" || t === "assets") return t as MainTab;
@@ -107,7 +107,7 @@ const Entrepreneurship = () => {
   const [mainTab, setMainTab] = useState<MainTab>(initialTab);
   const [growthSubTab, setGrowthSubTab] = useState<GrowthSub>(() => {
     const g = searchParams.get("growth");
-    if (g === "shaped" || g === "monetized" || g === "systematized") return g as GrowthSub;
+    if (g === "shaped" || g === "systematized") return g as GrowthSub;
     return "developed";
   });
   const [legacySubTab, setLegacySubTab] = useState<"initiated" | "joined" | "partnered">(
@@ -917,16 +917,6 @@ const Entrepreneurship = () => {
                         Developed
                       </button>
                     )}
-                    <button
-                      onClick={() => setGrowthSubTab("monetized")}
-                      className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
-                        effectiveSub === "monetized"
-                          ? "bg-background text-foreground shadow-sm"
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      Validated
-                    </button>
                     {advisorAchieved && (
                       <button
                         onClick={() => setGrowthSubTab("systematized")}
@@ -1046,17 +1036,6 @@ const Entrepreneurship = () => {
                           </Button>
                         </div>
                       </div>
-                    </div>
-                  )}
-                  {effectiveSub === "monetized" && (
-                    <div className="space-y-4">
-                      <div className="mb-2">
-                        <h2 className="font-display text-xl font-bold text-foreground">Your Talent, Monetized</h2>
-                        <p className="text-sm text-muted-foreground">
-                          Paid consulting missions, delivered projects, and revenue that prove your expertise.
-                        </p>
-                      </div>
-                      <ConsultingGrowthPage embedded />
                     </div>
                   )}
                   {effectiveSub === "systematized" && (
