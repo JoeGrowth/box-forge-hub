@@ -2029,8 +2029,15 @@ function ProductBlock({
 
   const toggleCollapsed = () => setCollapsed((c) => !c);
 
+  const delivered = items.length > 3;
+
   return (
-    <div className="rounded-xl border border-border bg-background p-4">
+    <div className={cn(
+      "rounded-xl border p-4 transition-colors",
+      delivered
+        ? "bg-primary/5 border-primary/20"
+        : "bg-background border-border"
+    )}>
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div
           className={cn(
