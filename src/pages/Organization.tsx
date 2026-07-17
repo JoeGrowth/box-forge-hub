@@ -2307,7 +2307,7 @@ function SubmissionRow({
 }: {
   submission: {
     id: string; tender_id: string; user_id: string; user_name: string | null;
-    note: string | null; file_path: string | null; file_name: string | null;
+    note: string | null; file_path: string | null; file_name: string | null; link_url?: string | null;
     status: string; reviewer_notes: string | null; paid_at: string | null; created_at: string;
   };
   onUpdate: () => void;
