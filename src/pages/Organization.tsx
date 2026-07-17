@@ -145,6 +145,21 @@ export default function OrganizationPage() {
   const [creatingDecl, setCreatingDecl] = useState(false);
   const { members, reload: reloadMembers } = useOrgMembers(org?.id);
 
+  const [dailyTasks, setDailyTasks] = useState<DailyTask[]>([]);
+  useEffect(() => {
+    if (!org?.id) return;
+    try {
+      setDailyTasks(JSON.parse(localStorage.getItem(`org-daily-tasks:${org.id}`) || "[]"));
+    } catch { setDailyTasks([]); }
+  }, [org?.id]);
+
+  const saveDailyTasks = useCallback((next: DailyTask[]) => {
+    setDailyTasks(next);
+    if (org?.id) localStorage.setItem(`org-daily-tasks:${org.id}`, JSON.stringify(next));
+  }, [org?.id]);
+
+  const dailyOpenCount = dailyTasks.filter(t => !t.done).length;
+
   const loadOpps = useCallback(async () => {
     if (!org) return;
     const [{ data: js }, { data: ts }, { data: ds }, { data: lg }] = await Promise.all([
