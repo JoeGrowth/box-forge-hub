@@ -185,7 +185,7 @@ export default function OrganizationPage() {
       const ids = tenderRows.map((t) => t.id);
       const { data: ints } = await supabase
         .from("opportunity_interactions")
-        .select("opportunity_id, user_id, message, created_at")
+        .select("id, opportunity_id, user_id, message, status, created_at")
         .in("opportunity_id", ids)
         .order("created_at", { ascending: false });
       const items = (ints as any[]) ?? [];
@@ -198,13 +198,33 @@ export default function OrganizationPage() {
       for (const t of tenderRows) map[t.id] = { count: 0, items: [] };
       for (const i of items) {
         const entry = map[i.opportunity_id] ?? { count: 0, items: [] };
-        entry.items.push({ user_id: i.user_id, full_name: nameMap.get(i.user_id) ?? null, message: i.message, created_at: i.created_at });
+        entry.items.push({ interaction_id: i.id, user_id: i.user_id, full_name: nameMap.get(i.user_id) ?? null, message: i.message, status: i.status ?? "pending", created_at: i.created_at });
         entry.count++;
         map[i.opportunity_id] = entry;
       }
       setTenderInterests(map);
+
+      // Load submissions for these tenders
+      const { data: subs } = await supabase
+        .from("tender_submissions")
+        .select("*")
+        .in("tender_id", ids)
+        .order("created_at", { ascending: false });
+      const subRows = (subs as any[]) ?? [];
+      const subUserIds = [...new Set(subRows.map((s) => s.user_id).filter(Boolean))];
+      const subNameMap = new Map<string, string | null>();
+      if (subUserIds.length) {
+        const { data: sp } = await supabase.from("profiles").select("user_id, full_name").in("user_id", subUserIds);
+        for (const p of (sp as any[]) ?? []) subNameMap.set(p.user_id, p.full_name);
+      }
+      const sMap: Record<string, TenderSubmission[]> = {};
+      for (const s of subRows) {
+        (sMap[s.tender_id] ??= []).push({ ...s, user_name: subNameMap.get(s.user_id) ?? null });
+      }
+      setTenderSubmissions(sMap);
     } else {
       setTenderInterests({});
+      setTenderSubmissions({});
     }
   }, [org]);
 
