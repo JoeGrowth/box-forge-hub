@@ -146,8 +146,10 @@ export default function OrganizationPage() {
   const [creatingDecl, setCreatingDecl] = useState(false);
   const { members, reload: reloadMembers } = useOrgMembers(org?.id);
 
-  type TenderInterest = { user_id: string; full_name: string | null; message: string | null; created_at: string };
+  type TenderInterest = { interaction_id: string; user_id: string; full_name: string | null; message: string | null; status: string; created_at: string };
+  type TenderSubmission = { id: string; tender_id: string; user_id: string; user_name: string | null; note: string | null; file_path: string | null; file_name: string | null; status: string; reviewer_notes: string | null; paid_at: string | null; created_at: string };
   const [tenderInterests, setTenderInterests] = useState<Record<string, { count: number; items: TenderInterest[] }>>({});
+  const [tenderSubmissions, setTenderSubmissions] = useState<Record<string, TenderSubmission[]>>({});
   const [viewingTender, setViewingTender] = useState<{ id: string; title: string } | null>(null);
 
   const [dailyTasks, setDailyTasks] = useState<DailyTask[]>([]);
