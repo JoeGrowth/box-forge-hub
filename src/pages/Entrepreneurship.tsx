@@ -982,7 +982,7 @@ const Entrepreneurship = () => {
                   )}
 
 
-                  {growthSubTab === "developed" && (
+                  {effectiveSub === "developed" && (
                     <div className="space-y-4">
                       <div className="mb-2">
                         <h2 className="font-display text-xl font-bold text-foreground">Your Talent, Developed</h2>
@@ -1048,7 +1048,7 @@ const Entrepreneurship = () => {
                       </div>
                     </div>
                   )}
-                  {growthSubTab === "monetized" && (
+                  {effectiveSub === "monetized" && (
                     <div className="space-y-4">
                       <div className="mb-2">
                         <h2 className="font-display text-xl font-bold text-foreground">Your Talent, Monetized</h2>
@@ -1059,7 +1059,7 @@ const Entrepreneurship = () => {
                       <ConsultingGrowthPage embedded />
                     </div>
                   )}
-                  {growthSubTab === "systematized" && (
+                  {effectiveSub === "systematized" && (
                     advisorAchieved ? (
                       <div>
                         <div className="mb-4">
@@ -1085,8 +1085,10 @@ const Entrepreneurship = () => {
                     )
                   )}
                   </>
-                  )}
+                  );
+                  })()}
                 </TabsContent>
+
 
                 <TabsContent value="organizations">
                   <MyOrganizationsSection />
