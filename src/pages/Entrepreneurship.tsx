@@ -31,6 +31,8 @@ import { useEngineAccess } from "@/hooks/useEngineAccess";
 import { EngineLockedPanel } from "@/components/engines/EngineLockedPanel";
 import { useProgressionLadder } from "@/hooks/useProgressionLadder";
 import { ScaledCard } from "@/components/idea/ScaledCard";
+import { useTalentReadiness } from "@/hooks/useTalentReadiness";
+import { CheckCircle2, ArrowRight } from "lucide-react";
 
 import ConsultingGrowthPage from "@/pages/ConsultingGrowth";
 import { SuggestDomainDialog } from "@/components/domain/SuggestDomainDialog";
