@@ -72,6 +72,9 @@ import {
   Circle,
   Presentation,
   Lightbulb,
+  History,
+  Check,
+  X,
 } from "lucide-react";
 import jsPDF from "jspdf";
 import { readDistEntities, addDistEntity, writeDistEntities, type DistEntity } from "@/pages/Distribution";
