@@ -211,6 +211,14 @@ export function Navbar() {
                 >
                   Orgs
                 </Link>
+                <Link
+                  to="/entrepreneurship"
+                  className={`text-sm font-medium transition-colors hover:text-b4-teal ${
+                    location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-muted-foreground"
+                  }`}
+                >
+                  Growth Studio
+                </Link>
               </>
             ) : (
               <>
