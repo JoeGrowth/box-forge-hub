@@ -193,7 +193,7 @@ const App = () => (
                   <Route path="/paths" element={<Paths />} />
                   <Route path="/grow" element={<ProtectedRoute><Grow /></ProtectedRoute>} />
                   <Route path="/career" element={<ProtectedRoute><Career /></ProtectedRoute>} />
-                  <Route path="/entrepreneurship" element={<GatedRoute engineKey="entrepreneurship"><Entrepreneurship /></GatedRoute>} />
+                  <Route path="/entrepreneurship" element={<GatedRoute><Entrepreneurship /></GatedRoute>} />
                   <Route path="/projects" element={<GatedRoute engineKey="entrepreneurship" entrepreneurCertGate><Ecosystem /></GatedRoute>} />
                   <Route path="/ecosystem" element={<Navigate to="/projects" replace />} />
                   <Route path="/consulting" element={<GatedRoute engineKey="consulting"><Consulting /></GatedRoute>} />

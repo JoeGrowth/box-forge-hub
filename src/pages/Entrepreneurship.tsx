@@ -31,6 +31,8 @@ import { useEngineAccess } from "@/hooks/useEngineAccess";
 import { EngineLockedPanel } from "@/components/engines/EngineLockedPanel";
 import { useProgressionLadder } from "@/hooks/useProgressionLadder";
 import { ScaledCard } from "@/components/idea/ScaledCard";
+import { useTalentReadiness } from "@/hooks/useTalentReadiness";
+import { CheckCircle2, ArrowRight } from "lucide-react";
 
 import ConsultingGrowthPage from "@/pages/ConsultingGrowth";
 import { SuggestDomainDialog } from "@/components/domain/SuggestDomainDialog";
@@ -96,7 +98,7 @@ const Entrepreneurship = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [applyProject, setApplyProject] = useState<StartupIdea | null>(null);
   type MainTab = "legacy" | "growth" | "organizations" | "assets";
-  type GrowthSub = "developed" | "monetized" | "systematized";
+  type GrowthSub = "shaped" | "developed" | "monetized" | "systematized";
   const initialTab = (() => {
     const t = searchParams.get("tab");
     if (t === "legacy" || t === "growth" || t === "organizations" || t === "assets") return t as MainTab;
@@ -105,7 +107,7 @@ const Entrepreneurship = () => {
   const [mainTab, setMainTab] = useState<MainTab>(initialTab);
   const [growthSubTab, setGrowthSubTab] = useState<GrowthSub>(() => {
     const g = searchParams.get("growth");
-    if (g === "monetized" || g === "systematized") return g as GrowthSub;
+    if (g === "shaped" || g === "monetized" || g === "systematized") return g as GrowthSub;
     return "developed";
   });
   const [legacySubTab, setLegacySubTab] = useState<"initiated" | "joined" | "partnered">(
@@ -127,6 +129,20 @@ const Entrepreneurship = () => {
   const [isOrgAdmin, setIsOrgAdmin] = useState(false);
   const [isOrgMember, setIsOrgMember] = useState(false);
   const [gatingLoaded, setGatingLoaded] = useState(false);
+  const [entTrackDone, setEntTrackDone] = useState(false);
+  const { talentReady, missing: talentMissing, loading: readinessLoading } = useTalentReadiness();
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase
+        .from("entrepreneurial_onboarding")
+        .select("is_completed")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      setEntTrackDone(Boolean((data as any)?.is_completed));
+    })();
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -616,7 +632,7 @@ const Entrepreneurship = () => {
             <Skeleton className="h-10 w-full max-w-md rounded-lg" />
             <Skeleton className="h-64 w-full rounded-2xl" />
           </main>
-        ) : !engines.entrepreneurship.unlocked ? (
+        ) : (!engines.entrepreneurship.unlocked && (talentReady && entTrackDone)) ? (
           <div className="min-h-[80vh]">
             <EngineLockedPanel engine="entrepreneurship" access={engines.entrepreneurship} />
           </div>
@@ -852,24 +868,59 @@ const Entrepreneurship = () => {
                         <Skeleton className="h-36 w-full rounded-2xl" />
                       </div>
                     </div>
-                  ) : (
+                  ) : (() => {
+                  const intentDone = !talentMissing.includes("Declare your intent");
+                  const decoderDone = !talentMissing.includes("Decode your natural role");
+                  const proTrackDone = !talentMissing.includes("Fill your Professional Track Record");
+                  const resumeDone = !talentMissing.includes("Sharpen your resume");
+                  const shapedItems = [
+                    { key: "intent", title: "Declare your intent", desc: "Role, goals and direction locked in.", to: "/onboarding/select-path", done: intentDone },
+                    { key: "nr", title: "Decode your natural role", desc: "7 questions. Your starting compass on the platform.", to: "/nr-decoder", done: decoderDone },
+                    { key: "pro", title: "Fill your Professional Track Record", desc: "Promise, practice, training, consulting — the receipts behind your natural role.", to: "/professional-track", done: proTrackDone },
+                    { key: "resume", title: "Sharpen your resume", desc: "Title, summary and signature skills — the first thing recruiters and initiators see.", to: "/resume", done: resumeDone },
+                    { key: "ent", title: "Fill your Entrepreneurial Track Record", desc: "Initiatives, products, teams, business, equity — what you've shipped as a builder.", to: "/entrepreneurial-track", done: entTrackDone },
+                  ];
+                  const shapedComplete = shapedItems.every((s) => s.done);
+                  const effectiveSub: GrowthSub =
+                    !shapedComplete && (growthSubTab === "developed" || growthSubTab === "shaped")
+                      ? "shaped"
+                      : growthSubTab === "shaped"
+                      ? "developed"
+                      : growthSubTab;
+                  return (
                   <>
                   <div className="flex gap-1 p-1 bg-muted/60 rounded-lg mb-4 w-full sm:w-auto">
-
-                    <button
-                      onClick={() => setGrowthSubTab("developed")}
-                      className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
-                        growthSubTab === "developed"
-                          ? "bg-background text-foreground shadow-sm"
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      Developed
-                    </button>
+                    {!shapedComplete && (
+                      <button
+                        onClick={() => setGrowthSubTab("shaped")}
+                        className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
+                          effectiveSub === "shaped"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Shaped
+                        <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-primary/40 text-primary">
+                          {shapedItems.filter((s) => s.done).length}/{shapedItems.length}
+                        </Badge>
+                      </button>
+                    )}
+                    {shapedComplete && (
+                      <button
+                        onClick={() => setGrowthSubTab("developed")}
+                        className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
+                          effectiveSub === "developed"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Developed
+                      </button>
+                    )}
                     <button
                       onClick={() => setGrowthSubTab("monetized")}
                       className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
-                        growthSubTab === "monetized"
+                        effectiveSub === "monetized"
                           ? "bg-background text-foreground shadow-sm"
                           : "text-muted-foreground hover:text-foreground"
                       }`}
@@ -880,7 +931,7 @@ const Entrepreneurship = () => {
                       <button
                         onClick={() => setGrowthSubTab("systematized")}
                         className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
-                          growthSubTab === "systematized"
+                          effectiveSub === "systematized"
                             ? "bg-background text-foreground shadow-sm"
                             : "text-muted-foreground hover:text-foreground"
                         }`}
@@ -891,7 +942,47 @@ const Entrepreneurship = () => {
                     )}
                   </div>
 
-                  {growthSubTab === "developed" && (
+                  {effectiveSub === "shaped" && (
+                    <div className="space-y-4">
+                      <div className="mb-2">
+                        <h2 className="font-display text-xl font-bold text-foreground">Your Talent, Shaped</h2>
+                        <p className="text-sm text-muted-foreground">
+                          Complete these five steps to unlock the rest of Growth Studio.
+                        </p>
+                      </div>
+                      <div className="space-y-3">
+                        {shapedItems.map((item) => (
+                          <div
+                            key={item.key}
+                            className={`border rounded-2xl p-5 flex items-start gap-4 ${
+                              item.done ? "bg-emerald-50/60 border-emerald-200" : "bg-card border-border"
+                            }`}
+                          >
+                            <div className={`mt-0.5 w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                              item.done ? "bg-emerald-500 text-white" : "bg-muted text-muted-foreground"
+                            }`}>
+                              {item.done ? <CheckCircle2 className="w-5 h-5" /> : <ArrowRight className="w-4 h-4" />}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-foreground">{item.title}</p>
+                              <p className="text-sm text-muted-foreground mt-1">{item.desc}</p>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant={item.done ? "outline" : "default"}
+                              asChild
+                              className="shrink-0"
+                            >
+                              <Link to={item.to}>{item.done ? "Review" : "Start"}</Link>
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+
+                  {effectiveSub === "developed" && (
                     <div className="space-y-4">
                       <div className="mb-2">
                         <h2 className="font-display text-xl font-bold text-foreground">Your Talent, Developed</h2>
@@ -957,7 +1048,7 @@ const Entrepreneurship = () => {
                       </div>
                     </div>
                   )}
-                  {growthSubTab === "monetized" && (
+                  {effectiveSub === "monetized" && (
                     <div className="space-y-4">
                       <div className="mb-2">
                         <h2 className="font-display text-xl font-bold text-foreground">Your Talent, Monetized</h2>
@@ -968,7 +1059,7 @@ const Entrepreneurship = () => {
                       <ConsultingGrowthPage embedded />
                     </div>
                   )}
-                  {growthSubTab === "systematized" && (
+                  {effectiveSub === "systematized" && (
                     advisorAchieved ? (
                       <div>
                         <div className="mb-4">
@@ -994,8 +1085,10 @@ const Entrepreneurship = () => {
                     )
                   )}
                   </>
-                  )}
+                  );
+                  })()}
                 </TabsContent>
+
 
                 <TabsContent value="organizations">
                   <MyOrganizationsSection />

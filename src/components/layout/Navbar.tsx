@@ -211,6 +211,14 @@ export function Navbar() {
                 >
                   Orgs
                 </Link>
+                <Link
+                  to="/entrepreneurship"
+                  className={`text-sm font-medium transition-colors hover:text-b4-teal ${
+                    location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-muted-foreground"
+                  }`}
+                >
+                  Growth Studio
+                </Link>
               </>
             ) : (
               <>
@@ -462,6 +470,19 @@ export function Navbar() {
                       >
                         <Building2 size={16} />
                         <span className="flex-1">Orgs</span>
+                      </Link>
+
+                      <Link
+                        to="/entrepreneurship"
+                        onClick={() => setIsOpen(false)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                          location.pathname === "/entrepreneurship"
+                            ? "bg-muted text-b4-teal"
+                            : "text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        <Rocket size={16} />
+                        <span className="flex-1">Growth Studio</span>
                       </Link>
                     </>
                   ) : (
