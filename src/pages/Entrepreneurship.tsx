@@ -38,6 +38,7 @@ import { CheckCircle2, ArrowRight } from "lucide-react";
 import { SuggestDomainDialog } from "@/components/domain/SuggestDomainDialog";
 import { MyOrganizationsSection } from "@/components/organization/MyOrganizationsSection";
 import { YourAssetsSection } from "@/components/organization/YourAssetsSection";
+import ConsultingGrowth from "@/pages/ConsultingGrowth";
 
 interface StartupIdea {
   id: string;
@@ -98,7 +99,7 @@ const Entrepreneurship = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [applyProject, setApplyProject] = useState<StartupIdea | null>(null);
   type MainTab = "legacy" | "growth" | "organizations" | "assets";
-  type GrowthSub = "shaped" | "developed" | "systematized";
+  type GrowthSub = "shaped" | "developed" | "validated" | "systematized";
   const initialTab = (() => {
     const t = searchParams.get("tab");
     if (t === "legacy" || t === "growth" || t === "organizations" || t === "assets") return t as MainTab;
@@ -107,7 +108,7 @@ const Entrepreneurship = () => {
   const [mainTab, setMainTab] = useState<MainTab>(initialTab);
   const [growthSubTab, setGrowthSubTab] = useState<GrowthSub>(() => {
     const g = searchParams.get("growth");
-    if (g === "shaped" || g === "systematized") return g as GrowthSub;
+    if (g === "shaped" || g === "validated" || g === "systematized") return g as GrowthSub;
     return "developed";
   });
   const [legacySubTab, setLegacySubTab] = useState<"initiated" | "joined" | "partnered">(
@@ -881,30 +882,29 @@ const Entrepreneurship = () => {
                     { key: "ent", title: "Fill your Entrepreneurial Track Record", desc: "Initiatives, products, teams, business, equity — what you've shipped as a builder.", to: "/track?unlock=entrepreneurial", done: entTrackDone, label: "Start" },
                   ];
                   const shapedComplete = shapedItems.every((s) => s.done);
-                  const effectiveSub: GrowthSub =
-                    !shapedComplete && (growthSubTab === "developed" || growthSubTab === "shaped")
-                      ? "shaped"
-                      : growthSubTab === "shaped"
-                      ? "developed"
-                      : growthSubTab;
+                  const effectiveSub: GrowthSub = (() => {
+                    if (!shapedComplete) return "shaped";
+                    if (growthSubTab === "shaped") return "shaped";
+                    if (growthSubTab === "validated") return "validated";
+                    if (growthSubTab === "systematized" && advisorAchieved) return "systematized";
+                    return "developed";
+                  })();
                   return (
                   <>
                   <div className="flex gap-1 p-1 bg-muted/60 rounded-lg mb-4 w-full sm:w-auto">
-                    {!shapedComplete && (
-                      <button
-                        onClick={() => setGrowthSubTab("shaped")}
-                        className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
-                          effectiveSub === "shaped"
-                            ? "bg-background text-foreground shadow-sm"
-                            : "text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        Shaped
-                        <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-primary/40 text-primary">
-                          {shapedItems.filter((s) => s.done).length}/{shapedItems.length}
-                        </Badge>
-                      </button>
-                    )}
+                    <button
+                      onClick={() => setGrowthSubTab("shaped")}
+                      className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
+                        effectiveSub === "shaped"
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      Shaped
+                      <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-primary/40 text-primary">
+                        {shapedItems.filter((s) => s.done).length}/{shapedItems.length}
+                      </Badge>
+                    </button>
                     {shapedComplete && (
                       <button
                         onClick={() => setGrowthSubTab("developed")}
@@ -915,6 +915,18 @@ const Entrepreneurship = () => {
                         }`}
                       >
                         Developed
+                      </button>
+                    )}
+                    {shapedComplete && (
+                      <button
+                        onClick={() => setGrowthSubTab("validated")}
+                        className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
+                          effectiveSub === "validated"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Validated
                       </button>
                     )}
                     {advisorAchieved && (
@@ -1036,6 +1048,17 @@ const Entrepreneurship = () => {
                           </Button>
                         </div>
                       </div>
+                    </div>
+                  )}
+                  {effectiveSub === "validated" && (
+                    <div className="space-y-4">
+                      <div className="mb-2">
+                        <h2 className="font-display text-xl font-bold text-foreground">Your Talent, Validated</h2>
+                        <p className="text-sm text-muted-foreground">
+                          Paid consulting missions, delivered projects, and revenue that prove your expertise.
+                        </p>
+                      </div>
+                      <ConsultingGrowth embedded />
                     </div>
                   )}
                   {effectiveSub === "systematized" && (
