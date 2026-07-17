@@ -247,7 +247,14 @@ function TenderWorkCard({
             {latest?.status === "changes_requested" ? "Resubmit deliverable" : "Submit deliverable"}
           </Label>
           <Textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} placeholder="Describe what you're delivering…" />
-          <Input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">File (optional)</Label>
+            <Input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Link (optional)</Label>
+            <Input type="url" value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} placeholder="https://…" />
+          </div>
           <Button size="sm" onClick={submit} disabled={saving}>
             <Upload className="w-3 h-3 mr-1" /> {saving ? "Submitting…" : "Submit"}
           </Button>
