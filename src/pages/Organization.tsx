@@ -1677,6 +1677,42 @@ function ProductBlock({
   const [currentName, setCurrentName] = useState(product.name);
   const [history, setHistory] = useState<any[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<any>({ title: "", description: "", implementation_type: "", url: "", shipped_at: "" });
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  const startEdit = (it: any) => {
+    setEditingId(it.id);
+    setEditForm({
+      title: it.title || "",
+      description: it.description || "",
+      implementation_type: it.implementation_type || "",
+      url: it.url || "",
+      shipped_at: it.shipped_at ? String(it.shipped_at).slice(0, 10) : "",
+    });
+  };
+
+  const saveEdit = async (id: string) => {
+    if (!editForm.title.trim()) return;
+    setSavingEdit(true);
+    const { error } = await (supabase as any)
+      .from("organization_product_iterations")
+      .update({
+        title: editForm.title.trim(),
+        description: editForm.description.trim() || null,
+        implementation_type: editForm.implementation_type.trim() || null,
+        url: editForm.url.trim() || null,
+        shipped_at: editForm.shipped_at || null,
+      })
+      .eq("id", id);
+    setSavingEdit(false);
+    if (error) {
+      toast({ title: "Couldn't update", description: error.message, variant: "destructive" });
+      return;
+    }
+    setEditingId(null);
+    load();
+  };
   const [form, setForm] = useState({
     title: "",
     description: "",
