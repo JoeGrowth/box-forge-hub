@@ -882,30 +882,29 @@ const Entrepreneurship = () => {
                     { key: "ent", title: "Fill your Entrepreneurial Track Record", desc: "Initiatives, products, teams, business, equity — what you've shipped as a builder.", to: "/track?unlock=entrepreneurial", done: entTrackDone, label: "Start" },
                   ];
                   const shapedComplete = shapedItems.every((s) => s.done);
-                  const effectiveSub: GrowthSub =
-                    !shapedComplete && (growthSubTab === "developed" || growthSubTab === "shaped")
-                      ? "shaped"
-                      : growthSubTab === "shaped"
-                      ? "developed"
-                      : growthSubTab;
+                  const effectiveSub: GrowthSub = (() => {
+                    if (!shapedComplete) return "shaped";
+                    if (growthSubTab === "shaped") return "shaped";
+                    if (growthSubTab === "validated") return "validated";
+                    if (growthSubTab === "systematized" && advisorAchieved) return "systematized";
+                    return "developed";
+                  })();
                   return (
                   <>
                   <div className="flex gap-1 p-1 bg-muted/60 rounded-lg mb-4 w-full sm:w-auto">
-                    {!shapedComplete && (
-                      <button
-                        onClick={() => setGrowthSubTab("shaped")}
-                        className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
-                          effectiveSub === "shaped"
-                            ? "bg-background text-foreground shadow-sm"
-                            : "text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        Shaped
-                        <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-primary/40 text-primary">
-                          {shapedItems.filter((s) => s.done).length}/{shapedItems.length}
-                        </Badge>
-                      </button>
-                    )}
+                    <button
+                      onClick={() => setGrowthSubTab("shaped")}
+                      className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
+                        effectiveSub === "shaped"
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      Shaped
+                      <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-primary/40 text-primary">
+                        {shapedItems.filter((s) => s.done).length}/{shapedItems.length}
+                      </Badge>
+                    </button>
                     {shapedComplete && (
                       <button
                         onClick={() => setGrowthSubTab("developed")}
@@ -916,6 +915,18 @@ const Entrepreneurship = () => {
                         }`}
                       >
                         Developed
+                      </button>
+                    )}
+                    {shapedComplete && (
+                      <button
+                        onClick={() => setGrowthSubTab("validated")}
+                        className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
+                          effectiveSub === "validated"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Validated
                       </button>
                     )}
                     {advisorAchieved && (
