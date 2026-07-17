@@ -632,7 +632,7 @@ const Entrepreneurship = () => {
             <Skeleton className="h-10 w-full max-w-md rounded-lg" />
             <Skeleton className="h-64 w-full rounded-2xl" />
           </main>
-        ) : !engines.entrepreneurship.unlocked ? (
+        ) : (!engines.entrepreneurship.unlocked && (talentReady && entTrackDone)) ? (
           <div className="min-h-[80vh]">
             <EngineLockedPanel engine="entrepreneurship" access={engines.entrepreneurship} />
           </div>
