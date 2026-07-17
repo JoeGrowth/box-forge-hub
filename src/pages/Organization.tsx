@@ -149,7 +149,7 @@ export default function OrganizationPage() {
   const { members, reload: reloadMembers } = useOrgMembers(org?.id);
 
   type TenderInterest = { interaction_id: string; user_id: string; full_name: string | null; message: string | null; status: string; created_at: string };
-  type TenderSubmission = { id: string; tender_id: string; user_id: string; user_name: string | null; note: string | null; file_path: string | null; file_name: string | null; status: string; reviewer_notes: string | null; paid_at: string | null; created_at: string };
+  type TenderSubmission = { id: string; tender_id: string; user_id: string; user_name: string | null; note: string | null; file_path: string | null; file_name: string | null; link_url: string | null; status: string; reviewer_notes: string | null; paid_at: string | null; created_at: string };
   const [tenderInterests, setTenderInterests] = useState<Record<string, { count: number; items: TenderInterest[] }>>({});
   const [tenderSubmissions, setTenderSubmissions] = useState<Record<string, TenderSubmission[]>>({});
   const [viewingTender, setViewingTender] = useState<{ id: string; title: string } | null>(null);
@@ -2307,7 +2307,7 @@ function SubmissionRow({
 }: {
   submission: {
     id: string; tender_id: string; user_id: string; user_name: string | null;
-    note: string | null; file_path: string | null; file_name: string | null;
+    note: string | null; file_path: string | null; file_name: string | null; link_url?: string | null;
     status: string; reviewer_notes: string | null; paid_at: string | null; created_at: string;
   };
   onUpdate: () => void;
@@ -2350,6 +2350,12 @@ function SubmissionRow({
         <Button size="sm" variant="ghost" onClick={download}>
           <FileText className="w-3 h-3 mr-1" /> {submission.file_name}
         </Button>
+      )}
+      {submission.link_url && (
+        <a href={submission.link_url} target="_blank" rel="noopener noreferrer"
+           className="inline-flex items-center gap-1 text-xs text-primary hover:underline break-all">
+          <ExternalLink className="w-3 h-3" /> {submission.link_url}
+        </a>
       )}
       {submission.reviewer_notes && (
         <div className="rounded-md bg-muted/50 p-2 text-xs">

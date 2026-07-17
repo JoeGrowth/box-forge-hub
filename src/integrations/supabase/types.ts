@@ -5524,6 +5524,7 @@ export type Database = {
           file_name: string | null
           file_path: string | null
           id: string
+          link_url: string | null
           note: string | null
           paid_at: string | null
           paid_by: string | null
@@ -5540,6 +5541,7 @@ export type Database = {
           file_name?: string | null
           file_path?: string | null
           id?: string
+          link_url?: string | null
           note?: string | null
           paid_at?: string | null
           paid_by?: string | null
@@ -5556,6 +5558,7 @@ export type Database = {
           file_name?: string | null
           file_path?: string | null
           id?: string
+          link_url?: string | null
           note?: string | null
           paid_at?: string | null
           paid_by?: string | null

@@ -25,6 +25,7 @@ type Submission = {
   note: string | null;
   file_path: string | null;
   file_name: string | null;
+  link_url: string | null;
   status: string;
   reviewer_notes: string | null;
   paid_at: string | null;
@@ -143,14 +144,20 @@ function TenderWorkCard({
   const { toast } = useToast();
   const [note, setNote] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [linkUrl, setLinkUrl] = useState("");
   const [saving, setSaving] = useState(false);
 
   const latest = submissions[0];
   const canSubmit = !latest || latest.status === "changes_requested";
 
   const submit = async () => {
-    if (!note.trim() && !file) {
-      toast({ title: "Add a note or file", variant: "destructive" });
+    const trimmedLink = linkUrl.trim();
+    if (!note.trim() && !file && !trimmedLink) {
+      toast({ title: "Add a note, file, or link", variant: "destructive" });
+      return;
+    }
+    if (trimmedLink && !/^https?:\/\//i.test(trimmedLink)) {
+      toast({ title: "Link must start with http:// or https://", variant: "destructive" });
       return;
     }
     setSaving(true);
@@ -168,7 +175,8 @@ function TenderWorkCard({
       file_name = file.name;
     }
     const { error } = await supabase.from("tender_submissions").insert({
-      tender_id: tender.id, user_id: userId, note: note.trim() || null, file_path, file_name, status: "submitted",
+      tender_id: tender.id, user_id: userId, note: note.trim() || null,
+      file_path, file_name, link_url: trimmedLink || null, status: "submitted",
     });
     setSaving(false);
     if (error) {
@@ -176,7 +184,7 @@ function TenderWorkCard({
       return;
     }
     toast({ title: "Deliverable submitted" });
-    setNote(""); setFile(null);
+    setNote(""); setFile(null); setLinkUrl("");
     onChange();
   };
 
@@ -216,6 +224,12 @@ function TenderWorkCard({
                     <FileText className="w-3 h-3 mr-1" /> {s.file_name}
                   </Button>
                 )}
+                {s.link_url && (
+                  <a href={s.link_url} target="_blank" rel="noopener noreferrer"
+                     className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
+                    <ExternalLink className="w-3 h-3" /> {s.link_url}
+                  </a>
+                )}
                 {s.reviewer_notes && (
                   <div className="rounded-md bg-muted/50 p-2 text-xs">
                     <span className="font-medium">Reviewer:</span> {s.reviewer_notes}
@@ -233,7 +247,14 @@ function TenderWorkCard({
             {latest?.status === "changes_requested" ? "Resubmit deliverable" : "Submit deliverable"}
           </Label>
           <Textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} placeholder="Describe what you're delivering…" />
-          <Input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">File (optional)</Label>
+            <Input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Link (optional)</Label>
+            <Input type="url" value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} placeholder="https://…" />
+          </div>
           <Button size="sm" onClick={submit} disabled={saving}>
             <Upload className="w-3 h-3 mr-1" /> {saving ? "Submitting…" : "Submit"}
           </Button>
