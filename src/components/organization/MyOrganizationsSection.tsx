@@ -155,12 +155,20 @@ export function MyOrganizationsSection() {
       return matchesText && matchesType;
     });
 
-    if (sortBy === "default") return list;
+    if (sortBy === "total-out") {
+      return [...list].sort((a, b) => {
+        const av = (moneyBox[a.organization.id]?.tnd ?? 0) + (moneyBox[a.organization.id]?.eur ?? 0) + (moneyBox[a.organization.id]?.usd ?? 0);
+        const bv = (moneyBox[b.organization.id]?.tnd ?? 0) + (moneyBox[b.organization.id]?.eur ?? 0) + (moneyBox[b.organization.id]?.usd ?? 0);
+        return bv - av; // highest first
+      });
+    }
 
     return [...list].sort((a, b) => {
-      const av = (moneyBox[a.organization.id]?.tnd ?? 0) + (moneyBox[a.organization.id]?.eur ?? 0) + (moneyBox[a.organization.id]?.usd ?? 0);
-      const bv = (moneyBox[b.organization.id]?.tnd ?? 0) + (moneyBox[b.organization.id]?.eur ?? 0) + (moneyBox[b.organization.id]?.usd ?? 0);
-      return bv - av; // highest first
+      const aHasLogo = !!a.organization.logo_url;
+      const bHasLogo = !!b.organization.logo_url;
+      if (aHasLogo && !bHasLogo) return -1;
+      if (!aHasLogo && bHasLogo) return 1;
+      return new Date(b.organization.created_at).getTime() - new Date(a.organization.created_at).getTime();
     });
   }, [memberships, filter, typeFilter, sortBy, moneyBox]);
 
