@@ -1824,6 +1824,7 @@ function ProductJourneySection({ orgId, userId, canManage }: { orgId: string; us
               product={p}
               orgId={orgId}
               userId={userId}
+              canManage={canManage}
               onRemove={() => archiveProduct(p.id)}
             />
           ))
