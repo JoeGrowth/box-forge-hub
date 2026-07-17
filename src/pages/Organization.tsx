@@ -75,6 +75,8 @@ import {
   History,
   Check,
   X,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import jsPDF from "jspdf";
 import { readDistEntities, addDistEntity, writeDistEntities, type DistEntity } from "@/pages/Distribution";
