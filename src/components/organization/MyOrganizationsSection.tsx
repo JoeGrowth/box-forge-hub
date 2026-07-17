@@ -24,7 +24,25 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Building2, Plus, Shield, Eye, Pencil, ArrowRight, Trash2, Cog, Search, Filter, Rocket, Sparkles, TrendingUp, Trophy, FileWarning, ShieldCheck, Wallet } from "lucide-react";
+import {
+  Building2,
+  Plus,
+  Shield,
+  Eye,
+  Pencil,
+  ArrowRight,
+  Trash2,
+  Cog,
+  Search,
+  Filter,
+  Rocket,
+  Sparkles,
+  TrendingUp,
+  Trophy,
+  FileWarning,
+  ShieldCheck,
+  Wallet,
+} from "lucide-react";
 import { OrgLogo } from "@/components/organization/OrgLogo";
 
 type LifecycleStage = "venture" | "business" | "startup" | "mature";
@@ -105,7 +123,6 @@ export function MyOrganizationsSection() {
     setMoneyBoxLoading(true);
     (async () => {
       const orgIds = memberships.map(m => m.organization.id);
-      // Fetch declaration entities for these orgs
       const { data: entities } = await supabase
         .from("declaration_entities")
         .select("id, organization_id")
@@ -159,7 +176,7 @@ export function MyOrganizationsSection() {
       return [...list].sort((a, b) => {
         const av = (moneyBox[a.organization.id]?.tnd ?? 0) + (moneyBox[a.organization.id]?.eur ?? 0) + (moneyBox[a.organization.id]?.usd ?? 0);
         const bv = (moneyBox[b.organization.id]?.tnd ?? 0) + (moneyBox[b.organization.id]?.eur ?? 0) + (moneyBox[b.organization.id]?.usd ?? 0);
-        return bv - av; // highest first
+        return bv - av;
       });
     }
 
@@ -197,74 +214,95 @@ export function MyOrganizationsSection() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
-        <div className="flex-1 min-w-0">
-          <h2 className="text-xl font-semibold text-foreground">Your organizations</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Organizations you own or belong to.
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            you can have different roles (admin · editor · viewer).
-          </p>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 w-full sm:w-auto">
-          <Link to="/opsmanagement" className="w-full sm:w-auto">
-            <Button variant="outline" className="w-full sm:w-auto"><Cog className="w-4 h-4 mr-1" /> Ops management</Button>
-          </Link>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button className="w-full sm:w-auto"><Plus className="w-4 h-4 mr-1" /> New organization</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create an organization</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-3">
-                <div>
-                  <Label>Name</Label>
-                  <Input
-                    value={name}
-                    onChange={(e) => { setName(e.target.value); if (!slug) setSlug(slugify(e.target.value)); }}
-                    placeholder="Elspace"
-                  />
-                </div>
-                <div>
-                  <Label>Slug</Label>
-                  <Input value={slug} onChange={(e) => setSlug(slugify(e.target.value))} placeholder="elspace" />
-                  <p className="text-xs text-muted-foreground mt-1">Used in URLs: /org/{slug || "your-slug"}</p>
-                </div>
-                <div>
-                  <Label>Type</Label>
-                  <Select value={type} onValueChange={setType}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="organization">Organization</SelectItem>
-                      <SelectItem value="company">Company (requires Certificate of Incorporation)</SelectItem>
-                      <SelectItem value="ministry">Ministry</SelectItem>
-                      <SelectItem value="ngo">NGO</SelectItem>
-                      <SelectItem value="startup">Startup</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Website (optional)</Label>
-                  <Input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://elspace.io" />
-                </div>
-                <div>
-                  <Label>Description (optional)</Label>
-                  <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
-                </div>
+      {/* Header — styled like Your Assets */}
+      <div className="rounded-xl border border-border bg-gradient-to-br from-primary/5 via-card to-card p-5">
+        <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+            <Building2 className="w-5 h-5 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-foreground">Your organizations</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              Organizations you own or belong to.
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              you can have different roles (admin · editor · viewer).
+            </p>
+            {!loading && memberships.length > 0 && (
+              <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
+                <Badge className="bg-primary/10 text-primary border border-primary/20">
+                  {memberships.length} organization{memberships.length > 1 ? "s" : ""}
+                </Badge>
+                {moneyBoxLoading ? (
+                  <span className="text-xs text-muted-foreground">Loading outflows…</span>
+                ) : (
+                  Object.values(moneyBox).some(m => m.tnd || m.eur || m.usd) && (
+                    <span className="text-muted-foreground">
+                      Total outflows tracked across currencies.
+                    </span>
+                  )
+                )}
               </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                <Button onClick={create} disabled={saving || !name.trim()}>
-                  {saving ? "Creating…" : "Create organization"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+            )}
+          </div>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 w-full sm:w-auto">
+            <Link to="/opsmanagement" className="w-full sm:w-auto">
+              <Button variant="outline" className="w-full sm:w-auto"><Cog className="w-4 h-4 mr-1" /> Ops management</Button>
+            </Link>
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button className="w-full sm:w-auto"><Plus className="w-4 h-4 mr-1" /> New organization</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create an organization</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3">
+                  <div>
+                    <Label>Name</Label>
+                    <Input
+                      value={name}
+                      onChange={(e) => { setName(e.target.value); if (!slug) setSlug(slugify(e.target.value)); }}
+                      placeholder="Elspace"
+                    />
+                  </div>
+                  <div>
+                    <Label>Slug</Label>
+                    <Input value={slug} onChange={(e) => setSlug(slugify(e.target.value))} placeholder="elspace" />
+                    <p className="text-xs text-muted-foreground mt-1">Used in URLs: /org/{slug || "your-slug"}</p>
+                  </div>
+                  <div>
+                    <Label>Type</Label>
+                    <Select value={type} onValueChange={setType}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="organization">Organization</SelectItem>
+                        <SelectItem value="company">Company (requires Certificate of Incorporation)</SelectItem>
+                        <SelectItem value="ministry">Ministry</SelectItem>
+                        <SelectItem value="ngo">NGO</SelectItem>
+                        <SelectItem value="startup">Startup</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Website (optional)</Label>
+                    <Input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://elspace.io" />
+                  </div>
+                  <div>
+                    <Label>Description (optional)</Label>
+                    <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+                  <Button onClick={create} disabled={saving || !name.trim()}>
+                    {saving ? "Creating…" : "Create organization"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
       </div>
 
@@ -327,7 +365,7 @@ export function MyOrganizationsSection() {
               No organizations match your filter.
             </div>
           ) : (
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid gap-4">
               {filtered.map(({ organization: o, role }) => {
                 const RoleIcon = ROLE_ICON[role];
                 const canDelete = role === "admin";
@@ -343,78 +381,86 @@ export function MyOrganizationsSection() {
                   toast({ title: `Deleted "${o.name}"` });
                   await reload();
                 };
+                const stage = (o.lifecycle_stage ?? "venture") as LifecycleStage;
+                const StageMeta = STAGE_META[stage];
+                const StageIcon = StageMeta.icon;
                 return (
-                  <Link
+                  <div
                     key={o.id}
-                    to={`/org/${o.slug}`}
-                    className="rounded-xl border border-border bg-card p-4 sm:p-5 hover:border-primary/40 hover:shadow-sm transition"
+                    className="rounded-xl border border-border bg-card p-5 transition hover:border-primary/40 hover:shadow-sm"
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
-                      <div className="flex items-start gap-3 min-w-0 flex-1">
-                        <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
-                          <OrgLogo
-                            path={o.logo_url}
-                            alt={`${o.name} logo`}
-                            className="w-full h-full object-cover"
-                            iconClassName="w-5 h-5 text-primary"
-                          />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <h3 className="font-semibold text-foreground truncate">{o.name}</h3>
-                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                            <p className="text-xs text-muted-foreground capitalize">
-                              {o.type === "company" && !incorporatedIds.has(o.id) ? "Unverified company" : o.type}
-                            </p>
-                            {o.type === "company" && incorporatedIds.has(o.id) && (
-                              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 border-emerald-200 text-[10px] py-0 px-1.5 h-4">
-                                <ShieldCheck className="w-2.5 h-2.5 mr-0.5" /> Incorporated
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
+                        <OrgLogo
+                          path={o.logo_url}
+                          alt={`${o.name} logo`}
+                          className="w-full h-full object-cover"
+                          iconClassName="w-6 h-6 text-primary"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <Link to={`/org/${o.slug}`} className="font-semibold text-foreground hover:underline truncate block">
+                              {o.name}
+                            </Link>
+                            <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                              <span className="text-xs text-muted-foreground capitalize">
+                                {o.type === "company" && !incorporatedIds.has(o.id) ? "Unverified company" : o.type}
+                              </span>
+                              <Badge className={ROLE_COLOR[role]}>
+                                <RoleIcon className="w-3 h-3 mr-1" /> {role}
                               </Badge>
-                            )}
-                            {(() => {
-                              const stage = (o.lifecycle_stage ?? "venture") as LifecycleStage;
-                              const meta = STAGE_META[stage];
-                              const I = meta.icon;
-                              return (
-                                <Badge variant="outline" className={`${meta.className} text-[10px] py-0 px-1.5 h-4`}>
-                                  <I className="w-2.5 h-2.5 mr-0.5" /> {meta.label}
+                              <Badge variant="outline" className={`${StageMeta.className} text-[10px] py-0 px-1.5 h-4`}>
+                                <StageIcon className="w-2.5 h-2.5 mr-0.5" /> {StageMeta.label}
+                              </Badge>
+                              {o.type === "company" && incorporatedIds.has(o.id) && (
+                                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 border-emerald-200 text-[10px] py-0 px-1.5 h-4">
+                                  <ShieldCheck className="w-2.5 h-2.5 mr-0.5" /> Incorporated
                                 </Badge>
-                              );
-                            })()}
+                              )}
+                            </div>
                           </div>
+                          {canDelete && (
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
+                              onClick={handleDelete}
+                              aria-label={`Delete ${o.name}`}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          )}
+                        </div>
+
+                        {o.description && (
+                          <p className="text-sm text-muted-foreground mt-3 line-clamp-2">{o.description}</p>
+                        )}
+
+                        {o.type === "company" && !incorporatedIds.has(o.id) && (
+                          <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-500/10 p-2.5 text-xs text-amber-800 dark:text-amber-200">
+                            <FileWarning className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                            <span>
+                              Only recognized as a <strong>Company</strong> once a <strong>Certificate of Incorporation</strong> is uploaded. Open the organization and add it under Legal documents (e.g. name the file "Certificate of Incorporation.pdf").
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
+                          <div className="text-xs text-muted-foreground">
+                            Created {new Date(o.created_at).toLocaleDateString()}
+                          </div>
+                          <Link
+                            to={`/org/${o.slug}`}
+                            className="text-xs text-primary inline-flex items-center hover:underline"
+                          >
+                            Open organization <ArrowRight className="w-3 h-3 ml-1" />
+                          </Link>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 shrink-0 self-end sm:self-start">
-                        <Badge className={ROLE_COLOR[role]}>
-                          <RoleIcon className="w-3 h-3 mr-1" /> {role}
-                        </Badge>
-                        {canDelete && (
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                            onClick={handleDelete}
-                            aria-label={`Delete ${o.name}`}
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </Button>
-                        )}
-                      </div>
                     </div>
-                    {o.description && (
-                      <p className="text-sm text-muted-foreground mt-3 line-clamp-2">{o.description}</p>
-                    )}
-                    {o.type === "company" && !incorporatedIds.has(o.id) && (
-                      <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-500/10 p-2.5 text-xs text-amber-800 dark:text-amber-200">
-                        <FileWarning className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-                        <span>
-                          Only recognized as a <strong>Company</strong> once a <strong>Certificate of Incorporation</strong> is uploaded. Open the organization and add it under Legal documents (e.g. name the file "Certificate of Incorporation.pdf").
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex items-center justify-end mt-4 text-xs text-primary">
-                      Open <ArrowRight className="w-3 h-3 ml-1" />
-                    </div>
-                  </Link>
+                  </div>
                 );
               })}
             </div>
