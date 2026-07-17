@@ -76,6 +76,7 @@ const fmtMoney = (n: number, currency: string) =>
 export function MyOrganizationsSection() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { talentReady } = useTalentReadiness();
   const { memberships, loading, reload } = useMyOrganizations(user?.id);
 
   const [open, setOpen] = useState(false);
