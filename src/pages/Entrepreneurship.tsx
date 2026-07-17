@@ -122,18 +122,40 @@ const Entrepreneurship = () => {
   const [profileUsername, setProfileUsername] = useState<string | null>(null);
   const [suggestDomainOpen, setSuggestDomainOpen] = useState(false);
 
+  const [hasInitiatorCert, setHasInitiatorCert] = useState(false);
+  const [hasCoBuilderCert, setHasCoBuilderCert] = useState(false);
+  const [isOrgAdmin, setIsOrgAdmin] = useState(false);
+  const [isOrgMember, setIsOrgMember] = useState(false);
+  const [gatingLoaded, setGatingLoaded] = useState(false);
+
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const [{ data: prof }, { data: nr }] = await Promise.all([
+      const [
+        { data: prof },
+        { data: nr },
+        { data: certs },
+        { data: memberships },
+        { data: ownedOrgs },
+      ] = await Promise.all([
         supabase.from("profiles").select("startup_name, professional_title, primary_skills").eq("user_id", user.id).maybeSingle(),
         supabase.from("natural_roles").select("description").eq("user_id", user.id).maybeSingle(),
+        supabase.from("user_certifications").select("certification_type").eq("user_id", user.id),
+        supabase.from("organization_members").select("role").eq("user_id", user.id),
+        supabase.from("organizations").select("id").eq("created_by", user.id).limit(1),
       ]);
       setProfileStartupName((prof as any)?.startup_name ?? null);
       setProfileTitle((prof as any)?.professional_title ?? null);
       setProfilePrimarySkills((prof as any)?.primary_skills ?? null);
       setProfileUsername(null);
       setNaturalRoleDesc(nr?.description ?? null);
+      const certList = (certs ?? []) as Array<{ certification_type: string }>;
+      setHasInitiatorCert(certList.some((c) => c.certification_type === "initiator_b4"));
+      setHasCoBuilderCert(certList.some((c) => c.certification_type === "cobuilder_b4"));
+      const mem = (memberships ?? []) as Array<{ role: string }>;
+      setIsOrgMember(mem.length > 0 || (ownedOrgs?.length ?? 0) > 0);
+      setIsOrgAdmin(mem.some((m) => m.role === "admin") || (ownedOrgs?.length ?? 0) > 0);
+      setGatingLoaded(true);
     })();
   }, [user]);
 
@@ -615,6 +637,22 @@ const Entrepreneurship = () => {
               </p>
 
 
+              {(() => {
+                const hasValidationProject = myProjects.some(
+                  (p) => p.current_episode === "validation" || p.current_episode === "growth"
+                );
+                const canSeeOrganizations = hasValidationProject || isOrgMember || advisorAchieved;
+                const canSeeAssets = isOrgAdmin;
+                const canSeeLegacy = hasInitiatorCert || hasCoBuilderCert || advisorAchieved;
+
+                // Auto-redirect if the current tab isn't available
+                if (gatingLoaded && !loading) {
+                  if (mainTab === "assets" && !canSeeAssets) { setTimeout(() => setMainTab("growth"), 0); }
+                  if (mainTab === "organizations" && !canSeeOrganizations) { setTimeout(() => setMainTab("growth"), 0); }
+                  if (mainTab === "legacy" && !canSeeLegacy) { setTimeout(() => setMainTab("growth"), 0); }
+                }
+
+                return (
               <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as MainTab)} className="w-full">
                 <div className="flex border-b border-border mb-6 overflow-x-auto">
                   <button
@@ -628,40 +666,47 @@ const Entrepreneurship = () => {
                     <TrendingUp className="w-4 h-4" />
                     Your Talent
                   </button>
-                  <button
-                    onClick={() => setMainTab("legacy")}
-                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                      mainTab === "legacy"
-                        ? "border-foreground text-foreground"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Lightbulb className="w-4 h-4" />
-                    Your Legacy
-                  </button>
-                  <button
-                    onClick={() => setMainTab("organizations")}
-                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                      mainTab === "organizations"
-                        ? "border-foreground text-foreground"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Building2 className="w-4 h-4" />
-                    Your organizations
-                  </button>
-                  <button
-                    onClick={() => setMainTab("assets")}
-                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                      mainTab === "assets"
-                        ? "border-foreground text-foreground"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    Your Assets
-                  </button>
+                  {canSeeLegacy && (
+                    <button
+                      onClick={() => setMainTab("legacy")}
+                      className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                        mainTab === "legacy"
+                          ? "border-foreground text-foreground"
+                          : "border-transparent text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <Lightbulb className="w-4 h-4" />
+                      Your Legacy
+                    </button>
+                  )}
+                  {canSeeOrganizations && (
+                    <button
+                      onClick={() => setMainTab("organizations")}
+                      className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                        mainTab === "organizations"
+                          ? "border-foreground text-foreground"
+                          : "border-transparent text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <Building2 className="w-4 h-4" />
+                      Your organizations
+                    </button>
+                  )}
+                  {canSeeAssets && (
+                    <button
+                      onClick={() => setMainTab("assets")}
+                      className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                        mainTab === "assets"
+                          ? "border-foreground text-foreground"
+                          : "border-transparent text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      Your Assets
+                    </button>
+                  )}
                 </div>
+
 
 
 
@@ -961,7 +1006,10 @@ const Entrepreneurship = () => {
                 </TabsContent>
 
               </Tabs>
+                );
+              })()}
             </div>
+
           </section>
         </main>
         )}
