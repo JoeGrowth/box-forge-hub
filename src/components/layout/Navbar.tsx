@@ -275,17 +275,6 @@ export function Navbar() {
                   </DropdownMenuContent>
                 </DropdownMenu>
 
-                <Link
-                  to="/organizations"
-                  className={`text-sm font-medium transition-colors hover:text-b4-teal ${
-                    location.pathname === "/organizations" ? "text-b4-teal" : "text-muted-foreground"
-                  }`}
-                >
-                  Orgs
-                </Link>
-
-
-
                 <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
                   <DropdownMenuTrigger asChild>
                     <button
@@ -464,19 +453,6 @@ export function Navbar() {
                   >
                     <BarChart3 size={16} />
                     <span className="flex-1">Ladder</span>
-                  </Link>
-
-                  <Link
-                    to="/organizations"
-                    onClick={() => setIsOpen(false)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                      location.pathname === "/organizations"
-                        ? "bg-muted text-b4-teal"
-                        : "text-muted-foreground hover:bg-muted"
-                    }`}
-                  >
-                    <Building2 size={16} />
-                    <span className="flex-1">Orgs</span>
                   </Link>
 
                   {visibleMoreLinks.length > 0 && (
