@@ -1855,7 +1855,7 @@ function ProductJourneySection({ orgId, userId, canManage }: { orgId: string; us
                     <Button size="sm" variant="outline" onClick={() => restoreProduct(p.id)}>
                       Restore
                     </Button>
-                    {userId === p.created_by && (
+                    {(canManage || userId === p.created_by) && (
                       <Button size="icon" variant="ghost" onClick={() => deleteForever(p.id)} title="Delete permanently">
                         <Trash2 className="w-4 h-4" />
                       </Button>
