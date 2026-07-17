@@ -2045,7 +2045,7 @@ function ProductBlock({
     load();
   };
 
-  const canEdit = userId === product.created_by;
+  const canEdit = canManage || userId === product.created_by;
 
   const toggleCollapsed = () => setCollapsed((c) => !c);
 
