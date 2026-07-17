@@ -1507,7 +1507,7 @@ function ProjectJourneyTab({
             </Link>
           </Button>
         </div>
-        <ProductJourneySection orgId={orgId} userId={user?.id} />
+        <ProductJourneySection orgId={orgId} userId={user?.id} canManage={canManage} />
       </div>
     );
   }
@@ -1554,7 +1554,7 @@ function ProjectJourneyTab({
             </div>
           </div>
         </div>
-        <ProductJourneySection orgId={orgId} userId={user?.id} />
+        <ProductJourneySection orgId={orgId} userId={user?.id} canManage={canManage} />
       </div>
     );
   }
@@ -1666,7 +1666,7 @@ function ProjectJourneyTab({
           </div>
         </div>
       </div>
-      <ProductJourneySection orgId={orgId} userId={user?.id} />
+      <ProductJourneySection orgId={orgId} userId={user?.id} canManage={canManage} />
     </div>
   );
 }
