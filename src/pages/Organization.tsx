@@ -804,9 +804,11 @@ function EmptyState({ icon: Icon, title, hint }: { icon: typeof Briefcase; title
 
 function OppCard({
   title, description, status, scope, meta, href, canManage, canDelete, onDelete,
+  interestedCount, onViewInterested,
 }: {
   title: string; description: string; status: string; scope: string;
   meta: string[]; href: string; canManage: boolean; canDelete: boolean; onDelete: () => void;
+  interestedCount?: number; onViewInterested?: () => void;
 }) {
   const ScopeIcon = (SCOPE_ICON as any)[scope] ?? Globe;
   return (
@@ -821,9 +823,16 @@ function OppCard({
             {meta.map((m) => <span key={m} className="text-muted-foreground">· {m}</span>)}
           </div>
         </div>
-        {canDelete && (
-          <Button size="sm" variant="ghost" onClick={onDelete}><Trash2 className="w-4 h-4" /></Button>
-        )}
+        <div className="flex items-center gap-1 shrink-0">
+          {canManage && interestedCount !== undefined && onViewInterested && (
+            <Button size="sm" variant="ghost" onClick={onViewInterested} title="View interested people">
+              <Users className="w-4 h-4 mr-1" /> {interestedCount}
+            </Button>
+          )}
+          {canDelete && (
+            <Button size="sm" variant="ghost" onClick={onDelete}><Trash2 className="w-4 h-4" /></Button>
+          )}
+        </div>
       </div>
     </div>
   );
