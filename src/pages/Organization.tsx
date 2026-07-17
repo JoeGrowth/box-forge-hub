@@ -1987,119 +1987,123 @@ function ProductBlock({
       </div>
 
 
-      {open && (
-        <div className="mt-3 rounded-lg border border-border p-3 space-y-2 bg-card">
-          <div className="grid sm:grid-cols-2 gap-2">
-            <div>
-              <Label className="text-xs">Title *</Label>
-              <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Client tracker MVP" />
+      {!collapsed && (
+        <>
+          {open && (
+            <div className="mt-3 rounded-lg border border-border p-3 space-y-2 bg-card">
+              <div className="grid sm:grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-xs">Title *</Label>
+                  <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Client tracker MVP" />
+                </div>
+                <div>
+                  <Label className="text-xs">Implementation type</Label>
+                  <Input value={form.implementation_type} onChange={(e) => setForm({ ...form, implementation_type: e.target.value })} placeholder="Google Sheet · Platform · Optimized…" />
+                </div>
+                <div>
+                  <Label className="text-xs">URL or reference</Label>
+                  <Input value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} placeholder="https://…" />
+                </div>
+                <div>
+                  <Label className="text-xs">Shipped on</Label>
+                  <Input type="date" value={form.shipped_at} onChange={(e) => setForm({ ...form, shipped_at: e.target.value })} />
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs">Case study — what you implemented and results</Label>
+                <Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Context, what you shipped, who it served, outcomes…" />
+              </div>
+              <div className="flex justify-end">
+                <Button size="sm" onClick={submit} disabled={saving || !form.title.trim()}>
+                  {saving ? "Saving…" : "Save iteration"}
+                </Button>
+              </div>
             </div>
-            <div>
-              <Label className="text-xs">Implementation type</Label>
-              <Input value={form.implementation_type} onChange={(e) => setForm({ ...form, implementation_type: e.target.value })} placeholder="Google Sheet · Platform · Optimized…" />
-            </div>
-            <div>
-              <Label className="text-xs">URL or reference</Label>
-              <Input value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} placeholder="https://…" />
-            </div>
-            <div>
-              <Label className="text-xs">Shipped on</Label>
-              <Input type="date" value={form.shipped_at} onChange={(e) => setForm({ ...form, shipped_at: e.target.value })} />
-            </div>
-          </div>
-          <div>
-            <Label className="text-xs">Case study — what you implemented and results</Label>
-            <Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Context, what you shipped, who it served, outcomes…" />
-          </div>
-          <div className="flex justify-end">
-            <Button size="sm" onClick={submit} disabled={saving || !form.title.trim()}>
-              {saving ? "Saving…" : "Save iteration"}
-            </Button>
-          </div>
-        </div>
-      )}
+          )}
 
-      <div className="mt-3">
-        {loading ? (
-          <p className="text-xs text-muted-foreground">Loading…</p>
-        ) : items.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No shipped iterations yet.</p>
-        ) : (
-          <ol className="relative border-l border-border ml-3 space-y-4">
-            {items.map((it) => (
-              <li key={it.id} className="ml-4">
-                <span className="absolute -left-[11px] flex h-5 w-5 items-center justify-center rounded-full border-2 border-primary bg-background text-[10px] font-semibold text-primary">
-                  {it.version_number}
-                </span>
-                <div className="rounded-lg border border-border p-3">
-                  {editingId === it.id ? (
-                    <div className="space-y-2">
-                      <div className="grid sm:grid-cols-2 gap-2">
-                        <div>
-                          <Label className="text-xs">Title *</Label>
-                          <Input value={editForm.title} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} />
+          <div className="mt-3">
+            {loading ? (
+              <p className="text-xs text-muted-foreground">Loading…</p>
+            ) : items.length === 0 ? (
+              <p className="text-xs text-muted-foreground">No shipped iterations yet.</p>
+            ) : (
+              <ol className="relative border-l border-border ml-3 space-y-4">
+                {items.map((it) => (
+                  <li key={it.id} className="ml-4">
+                    <span className="absolute -left-[11px] flex h-5 w-5 items-center justify-center rounded-full border-2 border-primary bg-background text-[10px] font-semibold text-primary">
+                      {it.version_number}
+                    </span>
+                    <div className="rounded-lg border border-border p-3">
+                      {editingId === it.id ? (
+                        <div className="space-y-2">
+                          <div className="grid sm:grid-cols-2 gap-2">
+                            <div>
+                              <Label className="text-xs">Title *</Label>
+                              <Input value={editForm.title} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} />
+                            </div>
+                            <div>
+                              <Label className="text-xs">Implementation type</Label>
+                              <Input value={editForm.implementation_type} onChange={(e) => setEditForm({ ...editForm, implementation_type: e.target.value })} />
+                            </div>
+                            <div>
+                              <Label className="text-xs">URL or reference</Label>
+                              <Input value={editForm.url} onChange={(e) => setEditForm({ ...editForm, url: e.target.value })} />
+                            </div>
+                            <div>
+                              <Label className="text-xs">Shipped on</Label>
+                              <Input type="date" value={editForm.shipped_at} onChange={(e) => setEditForm({ ...editForm, shipped_at: e.target.value })} />
+                            </div>
+                          </div>
+                          <div>
+                            <Label className="text-xs">Case study</Label>
+                            <Textarea rows={3} value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} />
+                          </div>
+                          <div className="flex justify-end gap-2">
+                            <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>Cancel</Button>
+                            <Button size="sm" onClick={() => saveEdit(it.id)} disabled={savingEdit || !editForm.title.trim()}>
+                              {savingEdit ? "Saving…" : "Save changes"}
+                            </Button>
+                          </div>
                         </div>
-                        <div>
-                          <Label className="text-xs">Implementation type</Label>
-                          <Input value={editForm.implementation_type} onChange={(e) => setEditForm({ ...editForm, implementation_type: e.target.value })} />
-                        </div>
-                        <div>
-                          <Label className="text-xs">URL or reference</Label>
-                          <Input value={editForm.url} onChange={(e) => setEditForm({ ...editForm, url: e.target.value })} />
-                        </div>
-                        <div>
-                          <Label className="text-xs">Shipped on</Label>
-                          <Input type="date" value={editForm.shipped_at} onChange={(e) => setEditForm({ ...editForm, shipped_at: e.target.value })} />
-                        </div>
-                      </div>
-                      <div>
-                        <Label className="text-xs">Case study</Label>
-                        <Textarea rows={3} value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} />
-                      </div>
-                      <div className="flex justify-end gap-2">
-                        <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>Cancel</Button>
-                        <Button size="sm" onClick={() => saveEdit(it.id)} disabled={savingEdit || !editForm.title.trim()}>
-                          {savingEdit ? "Saving…" : "Save changes"}
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-start justify-between gap-2 flex-wrap">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-medium text-foreground">v{it.version_number} · {it.title}</p>
-                          {it.implementation_type && (
-                            <Badge variant="outline" className="text-xs">{it.implementation_type}</Badge>
+                      ) : (
+                        <div className="flex items-start justify-between gap-2 flex-wrap">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="font-medium text-foreground">v{it.version_number} · {it.title}</p>
+                              {it.implementation_type && (
+                                <Badge variant="outline" className="text-xs">{it.implementation_type}</Badge>
+                              )}
+                              {it.shipped_at && (
+                                <span className="text-xs text-muted-foreground">{new Date(it.shipped_at).toLocaleDateString()}</span>
+                              )}
+                            </div>
+                            {it.description && <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{it.description}</p>}
+                            {it.url && (
+                              <a href={it.url} target="_blank" rel="noreferrer" className="text-xs text-primary inline-flex items-center gap-1 mt-1">
+                                <ExternalLink className="w-3 h-3" /> {it.url}
+                              </a>
+                            )}
+                          </div>
+                          {userId === it.created_by && (
+                            <div className="flex items-center gap-1">
+                              <Button variant="ghost" size="icon" onClick={() => startEdit(it)} title="Edit iteration">
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => removeIteration(it.id)} title="Remove iteration">
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
                           )}
-                          {it.shipped_at && (
-                            <span className="text-xs text-muted-foreground">{new Date(it.shipped_at).toLocaleDateString()}</span>
-                          )}
-                        </div>
-                        {it.description && <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{it.description}</p>}
-                        {it.url && (
-                          <a href={it.url} target="_blank" rel="noreferrer" className="text-xs text-primary inline-flex items-center gap-1 mt-1">
-                            <ExternalLink className="w-3 h-3" /> {it.url}
-                          </a>
-                        )}
-                      </div>
-                      {userId === it.created_by && (
-                        <div className="flex items-center gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => startEdit(it)} title="Edit iteration">
-                            <Pencil className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => removeIteration(it.id)} title="Remove iteration">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
                         </div>
                       )}
                     </div>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ol>
-        )}
-      </div>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }
