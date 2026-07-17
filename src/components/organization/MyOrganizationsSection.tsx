@@ -317,7 +317,9 @@ export function MyOrganizationsSection() {
           <Building2 className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
           <p className="font-medium text-foreground">You don't belong to any organization yet</p>
           <p className="text-sm text-muted-foreground mt-1">
-            Create one above. As the creator you'll automatically be admin.
+            {talentReady
+              ? "Create one above. As the creator you'll automatically be admin."
+              : "Complete Talent Foundation to create or manage organizations. You can still view organizations you were invited to."}
           </p>
         </div>
       ) : (
