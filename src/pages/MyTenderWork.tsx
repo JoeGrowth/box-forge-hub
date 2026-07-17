@@ -224,6 +224,12 @@ function TenderWorkCard({
                     <FileText className="w-3 h-3 mr-1" /> {s.file_name}
                   </Button>
                 )}
+                {s.link_url && (
+                  <a href={s.link_url} target="_blank" rel="noopener noreferrer"
+                     className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
+                    <ExternalLink className="w-3 h-3" /> {s.link_url}
+                  </a>
+                )}
                 {s.reviewer_notes && (
                   <div className="rounded-md bg-muted/50 p-2 text-xs">
                     <span className="font-medium">Reviewer:</span> {s.reviewer_notes}
