@@ -185,7 +185,7 @@ export function Navbar() {
                   {link.name}
                 </Link>
               ))
-            ) : isFreshTalentFoundation ? (
+            ) : isPreTalentFoundation ? (
               <>
                 <Link
                   to="/ladder"
@@ -423,7 +423,7 @@ export function Navbar() {
 
 
                 <>
-                  {isFreshTalentFoundation ? (
+                  {isPreTalentFoundation ? (
                     <>
                       <Link
                         to="/ladder"
