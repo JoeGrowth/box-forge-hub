@@ -34,6 +34,7 @@ import { ScaledCard } from "@/components/idea/ScaledCard";
 
 import ConsultingGrowthPage from "@/pages/ConsultingGrowth";
 import { SuggestDomainDialog } from "@/components/domain/SuggestDomainDialog";
+import { MyOrganizationsSection } from "@/components/organization/MyOrganizationsSection";
 
 interface StartupIdea {
   id: string;
