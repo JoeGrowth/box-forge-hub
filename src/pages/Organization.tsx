@@ -457,9 +457,35 @@ export default function OrganizationPage() {
                   if (error) toast({ title: "Delete failed", description: error.message, variant: "destructive" });
                   else { toast({ title: "Tender deleted" }); loadOpps(); }
                 }}
+                interestedCount={tenderInterests[t.id]?.count ?? 0}
+                onViewInterested={() => setViewingTender({ id: t.id, title: t.title })}
               />
             ))
           )}
+
+          <Dialog open={!!viewingTender} onOpenChange={(open) => !open && setViewingTender(null)}>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Interested in {viewingTender?.title}</DialogTitle>
+                <DialogDescription>People who expressed interest in this tender.</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-3 max-h-80 overflow-auto">
+                {(tenderInterests[viewingTender?.id ?? ""]?.items ?? []).length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No interest yet.</p>
+                ) : (
+                  (tenderInterests[viewingTender?.id ?? ""]?.items ?? []).map((i) => (
+                    <div key={`${i.user_id}-${i.created_at}`} className="rounded-lg border border-border p-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-sm">{i.full_name ?? "Unknown"}</span>
+                        <span className="text-xs text-muted-foreground">{new Date(i.created_at).toLocaleDateString()}</span>
+                      </div>
+                      {i.message && <p className="text-sm text-muted-foreground mt-1">{i.message}</p>}
+                    </div>
+                  ))
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
 
         {/* DECLARATION */}
