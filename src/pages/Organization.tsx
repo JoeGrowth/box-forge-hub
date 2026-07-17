@@ -560,7 +560,7 @@ export default function OrganizationPage() {
 
         {/* DAILY */}
         <TabsContent value="daily" className="space-y-3">
-          <DailyTab orgId={org.id} canEdit={canEdit} />
+          <DailyTab orgId={org.id} canEdit={canEdit} tasks={dailyTasks} onTasksChange={saveDailyTasks} />
         </TabsContent>
 
         {/* PROJECT JOURNEY */}
