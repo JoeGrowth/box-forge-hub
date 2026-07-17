@@ -874,11 +874,11 @@ const Entrepreneurship = () => {
                   const proTrackDone = !talentMissing.includes("Fill your Professional Track Record");
                   const resumeDone = !talentMissing.includes("Sharpen your resume");
                   const shapedItems = [
-                    { key: "intent", title: "Declare your intent", desc: "Role, goals and direction locked in.", to: "/onboarding/select-path", done: intentDone },
-                    { key: "nr", title: "Decode your natural role", desc: "7 questions. Your starting compass on the platform.", to: "/nr-decoder", done: decoderDone },
-                    { key: "pro", title: "Fill your Professional Track Record", desc: "Promise, practice, training, consulting — the receipts behind your natural role.", to: "/professional-track", done: proTrackDone },
-                    { key: "resume", title: "Sharpen your resume", desc: "Title, summary and signature skills — the first thing recruiters and initiators see.", to: "/resume", done: resumeDone },
-                    { key: "ent", title: "Fill your Entrepreneurial Track Record", desc: "Initiatives, products, teams, business, equity — what you've shipped as a builder.", to: "/entrepreneurial-track", done: entTrackDone },
+                    { key: "intent", title: "Declare your intent", desc: "Role, goals and direction locked in.", to: "/professional-track", done: intentDone, label: "Continue" },
+                    { key: "nr", title: "Decode your natural role", desc: "7 questions. Your starting compass on the platform.", to: "/decoder", done: decoderDone, label: "Start" },
+                    { key: "pro", title: "Fill your Professional Track Record", desc: "Promise, practice, training, consulting — the receipts behind your natural role.", to: "/track?unlock=professional", done: proTrackDone, label: "Complete" },
+                    { key: "resume", title: "Sharpen your resume", desc: "Title, summary and signature skills — the first thing recruiters and initiators see.", to: "/resume", done: resumeDone, label: "Complete" },
+                    { key: "ent", title: "Fill your Entrepreneurial Track Record", desc: "Initiatives, products, teams, business, equity — what you've shipped as a builder.", to: "/track?unlock=entrepreneurial", done: entTrackDone, label: "Start" },
                   ];
                   const shapedComplete = shapedItems.every((s) => s.done);
                   const effectiveSub: GrowthSub =
