@@ -963,7 +963,7 @@ const Entrepreneurship = () => {
                               asChild
                               className="shrink-0"
                             >
-                              <Link to={item.to}>{item.done ? "Review" : "Start"}</Link>
+                              <Link to={item.to}>{item.done ? "Review" : item.label}</Link>
                             </Button>
                           </div>
                         ))}
