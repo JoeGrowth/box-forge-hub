@@ -1671,7 +1671,7 @@ function ProjectJourneyTab({
   );
 }
 
-function ProductJourneySection({ orgId, userId }: { orgId: string; userId: string | undefined }) {
+function ProductJourneySection({ orgId, userId, canManage }: { orgId: string; userId: string | undefined; canManage: boolean }) {
   const { toast } = useToast();
   const [products, setProducts] = useState<any[]>([]);
   const [archived, setArchived] = useState<any[]>([]);
