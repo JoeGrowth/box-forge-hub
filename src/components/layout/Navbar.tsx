@@ -187,6 +187,33 @@ export function Navbar() {
                   {link.name}
                 </Link>
               ))
+            ) : isFreshTalentFoundation ? (
+              <>
+                <Link
+                  to="/ladder"
+                  className={`text-sm font-medium transition-colors hover:text-b4-teal ${
+                    location.pathname === "/ladder" ? "text-b4-teal" : "text-muted-foreground"
+                  }`}
+                >
+                  Ladder
+                </Link>
+                <Link
+                  to="/people"
+                  className={`text-sm font-medium transition-colors hover:text-b4-teal ${
+                    location.pathname === "/people" ? "text-b4-teal" : "text-muted-foreground"
+                  }`}
+                >
+                  People
+                </Link>
+                <Link
+                  to="/organizations"
+                  className={`text-sm font-medium transition-colors hover:text-b4-teal ${
+                    location.pathname === "/organizations" ? "text-b4-teal" : "text-muted-foreground"
+                  }`}
+                >
+                  Orgs
+                </Link>
+              </>
             ) : (
               <>
                 <DropdownMenu open={ecosystemOpen} onOpenChange={setEcosystemOpen}>
