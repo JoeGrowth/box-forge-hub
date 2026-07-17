@@ -52,11 +52,16 @@ export function useTalentReadiness(): TalentReadiness {
 
     (async () => {
       const uid = user.id;
-      const [onbRes, nrRes, decoderRes, profileRes, orgMemberRes, ownedOrgRes] =
+      const [onbRes, sessionRes, nrRes, decoderRes, profileRes, orgMemberRes, ownedOrgRes] =
         await Promise.all([
           supabase
             .from("onboarding_state")
             .select("onboarding_completed, current_step, journey_status")
+            .eq("user_id", uid)
+            .maybeSingle(),
+          supabase
+            .from("onboarding_sessions")
+            .select("completed_steps, completed_at")
             .eq("user_id", uid)
             .maybeSingle(),
           supabase
@@ -94,9 +99,16 @@ export function useTalentReadiness(): TalentReadiness {
       const filled = (v: unknown) =>
         v !== null && v !== undefined && String(v).trim().length > 0;
 
-      const intentDone = Boolean(
-        onbRes.data?.onboarding_completed && (onbRes.data?.current_step ?? 0) >= 5
-      );
+      const completedSteps = Array.isArray(sessionRes.data?.completed_steps)
+        ? (sessionRes.data?.completed_steps as unknown as number[])
+        : [];
+      const sessionIntentDone =
+        Boolean(sessionRes.data?.completed_at) ||
+        [1, 2, 3, 4, 5].every((step) => completedSteps.includes(step));
+      const intentDone =
+        sessionIntentDone ||
+        Boolean(onbRes.data?.onboarding_completed && (onbRes.data?.current_step ?? 0) >= 5);
+
       const nr = nrRes.data as Record<string, unknown> | null;
       // Professional Track Record counts as filled when the natural role has
       // been defined through ANY flow: the decoder quiz, the professional-track
