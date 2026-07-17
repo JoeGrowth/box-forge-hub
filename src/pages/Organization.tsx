@@ -1671,6 +1671,12 @@ function ProductBlock({
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState(product.name);
+  const [savingName, setSavingName] = useState(false);
+  const [currentName, setCurrentName] = useState(product.name);
+  const [history, setHistory] = useState<any[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -1678,6 +1684,11 @@ function ProductBlock({
     url: "",
     shipped_at: "",
   });
+
+  useEffect(() => {
+    setCurrentName(product.name);
+    setNameDraft(product.name);
+  }, [product.name]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -1690,9 +1701,52 @@ function ProductBlock({
     setLoading(false);
   }, [product.id]);
 
-  useEffect(() => { load(); }, [load]);
+  const loadHistory = useCallback(async () => {
+    const { data } = await (supabase as any)
+      .from("organization_product_name_history")
+      .select("*")
+      .eq("product_id", product.id)
+      .order("changed_at", { ascending: false });
+    setHistory((data as any[]) ?? []);
+  }, [product.id]);
+
+  useEffect(() => { load(); loadHistory(); }, [load, loadHistory]);
 
   const reset = () => setForm({ title: "", description: "", implementation_type: "", url: "", shipped_at: "" });
+
+  const saveName = async () => {
+    const trimmed = nameDraft.trim();
+    if (!trimmed || trimmed === currentName || !userId) {
+      setEditingName(false);
+      setNameDraft(currentName);
+      return;
+    }
+    setSavingName(true);
+    const previous = currentName;
+    const { error } = await (supabase as any)
+      .from("organization_products")
+      .update({ name: trimmed })
+      .eq("id", product.id);
+    if (error) {
+      setSavingName(false);
+      toast({ title: "Couldn't rename", description: error.message, variant: "destructive" });
+      return;
+    }
+    await (supabase as any)
+      .from("organization_product_name_history")
+      .insert({
+        product_id: product.id,
+        organization_id: orgId,
+        previous_name: previous,
+        new_name: trimmed,
+        changed_by: userId,
+      });
+    setCurrentName(trimmed);
+    setEditingName(false);
+    setSavingName(false);
+    toast({ title: "Renamed", description: `Previous name kept in history.` });
+    loadHistory();
+  };
 
   const submit = async () => {
     if (!userId || !form.title.trim()) return;
@@ -1734,26 +1788,80 @@ function ProductBlock({
     load();
   };
 
+  const canEdit = userId === product.created_by;
+
   return (
     <div className="rounded-xl border border-border bg-background p-4">
       <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div className="min-w-0">
-          <h4 className="font-semibold text-foreground">{product.name}</h4>
-          <p className="text-xs text-muted-foreground">
+        <div className="min-w-0 flex-1">
+          {editingName ? (
+            <div className="flex items-center gap-2 flex-wrap">
+              <Input
+                value={nameDraft}
+                onChange={(e) => setNameDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") saveName();
+                  if (e.key === "Escape") { setEditingName(false); setNameDraft(currentName); }
+                }}
+                autoFocus
+                className="h-8 max-w-xs"
+              />
+              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={saveName} disabled={savingName} title="Save">
+                <Check className="w-4 h-4" />
+              </Button>
+              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setEditingName(false); setNameDraft(currentName); }} title="Cancel">
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 flex-wrap">
+              <h4 className="font-semibold text-foreground">{currentName}</h4>
+              {history.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowHistory((s) => !s)}
+                  className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground rounded-full border border-border px-2 py-0.5"
+                  title="View name history"
+                >
+                  <History className="w-3 h-3" />
+                  {history.length} rename{history.length === 1 ? "" : "s"}
+                </button>
+              )}
+            </div>
+          )}
+          <p className="text-xs text-muted-foreground mt-0.5">
             {items.length} shipped iteration{items.length === 1 ? "" : "s"}
           </p>
+          {showHistory && history.length > 0 && (
+            <ul className="mt-2 space-y-1 text-xs text-muted-foreground border-l border-border pl-3">
+              {history.map((h) => (
+                <li key={h.id}>
+                  <span className="line-through">{h.previous_name}</span>
+                  {" → "}
+                  <span className="text-foreground">{h.new_name}</span>
+                  <span className="ml-2 opacity-70">{new Date(h.changed_at).toLocaleDateString()}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <Button size="sm" variant="outline" onClick={() => setOpen((o) => !o)}>
             <Plus className="w-4 h-4 mr-1" /> {open ? "Cancel" : "Add iteration"}
           </Button>
-          {userId === product.created_by && (
+          {canEdit && !editingName && (
+            <Button variant="ghost" size="icon" onClick={() => setEditingName(true)} title="Rename product journey">
+              <Pencil className="w-4 h-4" />
+            </Button>
+          )}
+          {canEdit && (
             <Button variant="ghost" size="icon" onClick={onRemove} title="Remove product journey">
               <Trash2 className="w-4 h-4" />
             </Button>
           )}
         </div>
       </div>
+
 
       {open && (
         <div className="mt-3 rounded-lg border border-border p-3 space-y-2 bg-card">
