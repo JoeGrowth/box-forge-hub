@@ -3886,6 +3886,7 @@ export type Database = {
       }
       organization_product_iterations: {
         Row: {
+          archived_at: string | null
           created_at: string
           created_by: string
           description: string | null
@@ -3900,6 +3901,7 @@ export type Database = {
           version_number: number
         }
         Insert: {
+          archived_at?: string | null
           created_at?: string
           created_by: string
           description?: string | null
@@ -3914,6 +3916,7 @@ export type Database = {
           version_number?: number
         }
         Update: {
+          archived_at?: string | null
           created_at?: string
           created_by?: string
           description?: string | null
@@ -3984,6 +3987,7 @@ export type Database = {
       }
       organization_products: {
         Row: {
+          archived_at: string | null
           created_at: string
           created_by: string
           description: string | null
@@ -3994,6 +3998,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          archived_at?: string | null
           created_at?: string
           created_by: string
           description?: string | null
@@ -4004,6 +4009,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          archived_at?: string | null
           created_at?: string
           created_by?: string
           description?: string | null

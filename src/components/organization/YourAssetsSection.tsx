@@ -126,8 +126,8 @@ export function YourAssetsSection() {
         supabase.from("organization_members").select("organization_id, user_id").in("organization_id", orgIds),
         supabase.from("job_opportunities").select("organization_id").in("organization_id", orgIds),
         supabase.from("tenders").select("organization_id").in("organization_id", orgIds),
-        supabase.from("organization_products").select("id, organization_id").in("organization_id", orgIds),
-        supabase.from("organization_product_iterations").select("product_id, organization_id").in("organization_id", orgIds),
+        supabase.from("organization_products").select("id, organization_id").in("organization_id", orgIds).is("archived_at", null),
+        supabase.from("organization_product_iterations").select("product_id, organization_id").in("organization_id", orgIds).is("archived_at", null),
       ]);
       if (cancelled) return;
 

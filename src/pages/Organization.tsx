@@ -1549,19 +1549,31 @@ function ProjectJourneyTab({
 function ProductJourneySection({ orgId, userId }: { orgId: string; userId: string | undefined }) {
   const { toast } = useToast();
   const [products, setProducts] = useState<any[]>([]);
+  const [archived, setArchived] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [addingProduct, setAddingProduct] = useState(false);
   const [newProductName, setNewProductName] = useState("");
   const [savingProduct, setSavingProduct] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data } = await (supabase as any)
-      .from("organization_products")
-      .select("*")
-      .eq("organization_id", orgId)
-      .order("position", { ascending: true });
-    setProducts((data as any[]) ?? []);
+    const [{ data: active }, { data: arch }] = await Promise.all([
+      (supabase as any)
+        .from("organization_products")
+        .select("*")
+        .eq("organization_id", orgId)
+        .is("archived_at", null)
+        .order("position", { ascending: true }),
+      (supabase as any)
+        .from("organization_products")
+        .select("*")
+        .eq("organization_id", orgId)
+        .not("archived_at", "is", null)
+        .order("archived_at", { ascending: false }),
+    ]);
+    setProducts((active as any[]) ?? []);
+    setArchived((arch as any[]) ?? []);
     setLoading(false);
   }, [orgId]);
 
@@ -1585,14 +1597,41 @@ function ProductJourneySection({ orgId, userId }: { orgId: string; userId: strin
     load();
   };
 
-  const removeProduct = async (id: string) => {
-    if (!confirm("Remove this product journey and all its iterations?")) return;
+  const archiveProduct = async (id: string) => {
+    if (!confirm("Archive this product journey? You can restore it later from the Archived section.")) return;
+    const { error } = await (supabase as any)
+      .from("organization_products")
+      .update({ archived_at: new Date().toISOString() })
+      .eq("id", id);
+    if (error) {
+      toast({ title: "Couldn't archive", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Archived", description: "Restore anytime from the Archived section." });
+    load();
+  };
+
+  const restoreProduct = async (id: string) => {
+    const { error } = await (supabase as any)
+      .from("organization_products")
+      .update({ archived_at: null })
+      .eq("id", id);
+    if (error) {
+      toast({ title: "Couldn't restore", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Restored" });
+    load();
+  };
+
+  const deleteForever = async (id: string) => {
+    if (!confirm("Permanently delete this product journey and all its iterations? This cannot be undone.")) return;
     const { error } = await (supabase as any)
       .from("organization_products")
       .delete()
       .eq("id", id);
     if (error) {
-      toast({ title: "Couldn't remove", description: error.message, variant: "destructive" });
+      toast({ title: "Couldn't delete", description: error.message, variant: "destructive" });
       return;
     }
     load();
@@ -1646,14 +1685,52 @@ function ProductJourneySection({ orgId, userId }: { orgId: string; userId: strin
               product={p}
               orgId={orgId}
               userId={userId}
-              onRemove={() => removeProduct(p.id)}
+              onRemove={() => archiveProduct(p.id)}
             />
           ))
         )}
       </div>
+
+      {archived.length > 0 && (
+        <div className="mt-6 border-t border-border pt-4">
+          <button
+            type="button"
+            onClick={() => setShowArchived((s) => !s)}
+            className="text-xs font-medium text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+          >
+            <History className="w-3.5 h-3.5" />
+            Archived ({archived.length}) {showArchived ? "▾" : "▸"}
+          </button>
+          {showArchived && (
+            <ul className="mt-3 space-y-2">
+              {archived.map((p) => (
+                <li key={p.id} className="flex items-center justify-between gap-2 rounded-lg border border-dashed border-border bg-background/50 px-3 py-2">
+                  <div className="min-w-0">
+                    <p className="text-sm text-foreground truncate">{p.name}</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      Archived {new Date(p.archived_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button size="sm" variant="outline" onClick={() => restoreProduct(p.id)}>
+                      Restore
+                    </Button>
+                    {userId === p.created_by && (
+                      <Button size="icon" variant="ghost" onClick={() => deleteForever(p.id)} title="Delete permanently">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
     </div>
   );
 }
+
 
 function ProductBlock({
   product,
@@ -1732,6 +1809,7 @@ function ProductBlock({
       .from("organization_product_iterations")
       .select("*")
       .eq("product_id", product.id)
+      .is("archived_at", null)
       .order("version_number", { ascending: true });
     setItems((data as any[]) ?? []);
     setLoading(false);
@@ -1815,7 +1893,7 @@ function ProductBlock({
   const removeIteration = async (id: string) => {
     const { error } = await (supabase as any)
       .from("organization_product_iterations")
-      .delete()
+      .update({ archived_at: new Date().toISOString() })
       .eq("id", id);
     if (error) {
       toast({ title: "Couldn't remove", description: error.message, variant: "destructive" });
