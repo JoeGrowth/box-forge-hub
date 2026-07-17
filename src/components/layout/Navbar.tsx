@@ -137,6 +137,11 @@ export function Navbar() {
 
   const { progression } = useNextBestActions(user?.id);
   const stageRank = STAGE_RANK[progression?.current_state ?? "novice"] ?? 0;
+  // Users who just completed Talent Foundation get a stripped-down nav so they
+  // aren't overwhelmed by the full platform surface.
+  const isFreshTalentFoundation = Boolean(
+    user && talentReady && stageRank <= STAGE_RANK.emerging,
+  );
   const visibleResourceLinks = useMemo(
     () =>
       resourceLinks.filter(
