@@ -2050,7 +2050,7 @@ function ProductBlock({
       ? { className: "bg-emerald-500/5 border-emerald-200/60", badge: "bg-emerald-500/10 text-emerald-700 border-emerald-200", label: "Focused", hint: "Core product — keep iterating." }
       : items.length === 2
       ? { className: "bg-amber-500/5 border-amber-200/60", badge: "bg-amber-500/10 text-amber-700 border-amber-200", label: "Expanding", hint: "Two delivery tracks — watch scope." }
-      : { className: "bg-rose-500/5 border-rose-200/60", badge: "bg-rose-500/10 text-rose-700 border-rose-200", label: "Diversified", hint: "Consider creating a training/delivery template to standardize delivery." };
+      : { className: "bg-rose-500/5 border-rose-200/60", badge: "bg-rose-500/10 text-rose-700 border-rose-200", label: "Repeatable", hint: "Consider creating a training/delivery template to standardize delivery." };
 
   return (
     <div className={cn("rounded-xl border p-4 transition-colors", shippedTier.className)}>
