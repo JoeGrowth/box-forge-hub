@@ -35,6 +35,7 @@ import { ScaledCard } from "@/components/idea/ScaledCard";
 import ConsultingGrowthPage from "@/pages/ConsultingGrowth";
 import { SuggestDomainDialog } from "@/components/domain/SuggestDomainDialog";
 import { MyOrganizationsSection } from "@/components/organization/MyOrganizationsSection";
+import { YourAssetsSection } from "@/components/organization/YourAssetsSection";
 
 interface StartupIdea {
   id: string;
@@ -94,11 +95,11 @@ const Entrepreneurship = () => {
   const navigate = useNavigate();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [applyProject, setApplyProject] = useState<StartupIdea | null>(null);
-  type MainTab = "legacy" | "growth" | "organizations";
+  type MainTab = "legacy" | "growth" | "organizations" | "assets";
   type GrowthSub = "developed" | "monetized" | "systematized";
   const initialTab = (() => {
     const t = searchParams.get("tab");
-    if (t === "legacy" || t === "growth" || t === "organizations") return t as MainTab;
+    if (t === "legacy" || t === "growth" || t === "organizations" || t === "assets") return t as MainTab;
     return "growth" as MainTab;
   })();
   const [mainTab, setMainTab] = useState<MainTab>(initialTab);
@@ -649,6 +650,17 @@ const Entrepreneurship = () => {
                     <Building2 className="w-4 h-4" />
                     Your organizations
                   </button>
+                  <button
+                    onClick={() => setMainTab("assets")}
+                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                      mainTab === "assets"
+                        ? "border-foreground text-foreground"
+                        : "border-transparent text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    Your Assets
+                  </button>
                 </div>
 
 
@@ -948,6 +960,16 @@ const Entrepreneurship = () => {
                     </p>
                   </div>
                   <MyOrganizationsSection />
+                </TabsContent>
+
+                <TabsContent value="assets">
+                  <div className="mb-4">
+                    <h2 className="font-display text-xl font-bold text-foreground">Your Assets</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Organizations that have crossed the asset threshold — incorporated, staffed, shipping, and radiating demand.
+                    </p>
+                  </div>
+                  <YourAssetsSection />
                 </TabsContent>
 
               </Tabs>
