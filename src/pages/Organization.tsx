@@ -315,6 +315,7 @@ export default function OrganizationPage() {
       <Tabs defaultValue={searchParams.get("tab") || "legal"} className="space-y-4">
         <TabsList className="flex-wrap h-auto justify-start">
           <TabsTrigger value="legal"><Scale className="w-3 h-3 mr-1" /> Legal ({legalDocs.length})</TabsTrigger>
+          <TabsTrigger value="daily"><CalendarCheck className="w-3 h-3 mr-1" /> Daily</TabsTrigger>
           {legalDocs.length >= 1 && (
             <>
               <TabsTrigger value="jobs"><Briefcase className="w-3 h-3 mr-1" /> Jobs ({jobs.length})</TabsTrigger>
@@ -323,7 +324,6 @@ export default function OrganizationPage() {
           )}
           <TabsTrigger value="distribution"><PieChart className="w-3 h-3 mr-1" /> Distribution</TabsTrigger>
           <TabsTrigger value="declaration"><ClipboardList className="w-3 h-3 mr-1" /> Declaration ({declarations.length})</TabsTrigger>
-          <TabsTrigger value="daily"><CalendarCheck className="w-3 h-3 mr-1" /> Daily</TabsTrigger>
           <TabsTrigger value="journey"><Lightbulb className="w-3 h-3 mr-1" /> Project Journey</TabsTrigger>
           <TabsTrigger value="members"><Users className="w-3 h-3 mr-1" /> Members ({members.length})</TabsTrigger>
         </TabsList>
