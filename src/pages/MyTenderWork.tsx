@@ -25,6 +25,7 @@ type Submission = {
   note: string | null;
   file_path: string | null;
   file_name: string | null;
+  link_url: string | null;
   status: string;
   reviewer_notes: string | null;
   paid_at: string | null;
