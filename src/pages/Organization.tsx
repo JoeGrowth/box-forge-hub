@@ -1413,11 +1413,13 @@ function ProjectJourneyTab({
   orgName,
   orgCreatedBy,
   sourceIdeaId,
+  canManage,
 }: {
   orgId: string;
   orgName: string;
   orgCreatedBy: string;
   sourceIdeaId: string | null;
+  canManage: boolean;
 }) {
   const { user } = useAuth();
   const [idea, setIdea] = useState<JourneyIdea | null>(null);
