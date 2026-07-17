@@ -120,6 +120,9 @@ const ROLE_COLOR = {
 
 const SCOPE_ICON = { global: Globe, organization: Building2, private: Lock } as const;
 
+type DailyTask = { id: string; text: string; done: boolean; created_at: string };
+type DailyPresentation = { id: string; title: string; url: string; created_at: string };
+
 export default function OrganizationPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
