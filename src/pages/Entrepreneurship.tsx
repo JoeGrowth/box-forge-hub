@@ -143,6 +143,8 @@ const Entrepreneurship = () => {
       setEntTrackDone(Boolean((data as any)?.is_completed));
     })();
   }, [user]);
+
+  useEffect(() => {
     if (!user) return;
     (async () => {
       const [
