@@ -29,6 +29,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -145,6 +146,10 @@ export default function OrganizationPage() {
   const [creatingDecl, setCreatingDecl] = useState(false);
   const { members, reload: reloadMembers } = useOrgMembers(org?.id);
 
+  type TenderInterest = { user_id: string; full_name: string | null; message: string | null; created_at: string };
+  const [tenderInterests, setTenderInterests] = useState<Record<string, { count: number; items: TenderInterest[] }>>({});
+  const [viewingTender, setViewingTender] = useState<{ id: string; title: string } | null>(null);
+
   const [dailyTasks, setDailyTasks] = useState<DailyTask[]>([]);
   useEffect(() => {
     if (!org?.id) return;
@@ -168,10 +173,37 @@ export default function OrganizationPage() {
       supabase.from("declaration_entities").select("id, name, created_at").eq("organization_id", org.id).order("created_at", { ascending: true }),
       supabase.from("organization_legal_documents").select("id, name, storage_path, created_at, size_bytes").eq("organization_id", org.id).order("created_at", { ascending: false }),
     ]);
+    const tenderRows = (ts as TenderRow[]) ?? [];
     setJobs((js as JobRow[]) ?? []);
-    setTenders((ts as TenderRow[]) ?? []);
+    setTenders(tenderRows);
     setDeclarations((ds as any) ?? []);
     setLegalDocs((lg as any) ?? []);
+
+    if (tenderRows.length > 0) {
+      const ids = tenderRows.map((t) => t.id);
+      const { data: ints } = await supabase
+        .from("opportunity_interactions")
+        .select("opportunity_id, user_id, message, created_at")
+        .in("opportunity_id", ids)
+        .order("created_at", { ascending: false });
+      const items = (ints as any[]) ?? [];
+      const userIds = [...new Set(items.map((i) => i.user_id).filter(Boolean))];
+      const { data: profs } = userIds.length
+        ? await supabase.from("profiles").select("user_id, full_name").in("user_id", userIds)
+        : { data: [] };
+      const nameMap = new Map(((profs as any[]) ?? []).map((p) => [p.user_id, p.full_name]));
+      const map: Record<string, { count: number; items: TenderInterest[] }> = {};
+      for (const t of tenderRows) map[t.id] = { count: 0, items: [] };
+      for (const i of items) {
+        const entry = map[i.opportunity_id] ?? { count: 0, items: [] };
+        entry.items.push({ user_id: i.user_id, full_name: nameMap.get(i.user_id) ?? null, message: i.message, created_at: i.created_at });
+        entry.count++;
+        map[i.opportunity_id] = entry;
+      }
+      setTenderInterests(map);
+    } else {
+      setTenderInterests({});
+    }
   }, [org]);
 
   useEffect(() => { loadOpps(); }, [loadOpps]);
@@ -426,9 +458,35 @@ export default function OrganizationPage() {
                   if (error) toast({ title: "Delete failed", description: error.message, variant: "destructive" });
                   else { toast({ title: "Tender deleted" }); loadOpps(); }
                 }}
+                interestedCount={tenderInterests[t.id]?.count ?? 0}
+                onViewInterested={() => setViewingTender({ id: t.id, title: t.title })}
               />
             ))
           )}
+
+          <Dialog open={!!viewingTender} onOpenChange={(open) => !open && setViewingTender(null)}>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Interested in {viewingTender?.title}</DialogTitle>
+                <DialogDescription>People who expressed interest in this tender.</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-3 max-h-80 overflow-auto">
+                {(tenderInterests[viewingTender?.id ?? ""]?.items ?? []).length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No interest yet.</p>
+                ) : (
+                  (tenderInterests[viewingTender?.id ?? ""]?.items ?? []).map((i) => (
+                    <div key={`${i.user_id}-${i.created_at}`} className="rounded-lg border border-border p-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-sm">{i.full_name ?? "Unknown"}</span>
+                        <span className="text-xs text-muted-foreground">{new Date(i.created_at).toLocaleDateString()}</span>
+                      </div>
+                      {i.message && <p className="text-sm text-muted-foreground mt-1">{i.message}</p>}
+                    </div>
+                  ))
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
 
         {/* DECLARATION */}
@@ -773,9 +831,11 @@ function EmptyState({ icon: Icon, title, hint }: { icon: typeof Briefcase; title
 
 function OppCard({
   title, description, status, scope, meta, href, canManage, canDelete, onDelete,
+  interestedCount, onViewInterested,
 }: {
   title: string; description: string; status: string; scope: string;
   meta: string[]; href: string; canManage: boolean; canDelete: boolean; onDelete: () => void;
+  interestedCount?: number; onViewInterested?: () => void;
 }) {
   const ScopeIcon = (SCOPE_ICON as any)[scope] ?? Globe;
   return (
@@ -790,9 +850,16 @@ function OppCard({
             {meta.map((m) => <span key={m} className="text-muted-foreground">· {m}</span>)}
           </div>
         </div>
-        {canDelete && (
-          <Button size="sm" variant="ghost" onClick={onDelete}><Trash2 className="w-4 h-4" /></Button>
-        )}
+        <div className="flex items-center gap-1 shrink-0">
+          {canManage && interestedCount !== undefined && onViewInterested && (
+            <Button size="sm" variant="ghost" onClick={onViewInterested} title="View interested people">
+              <Users className="w-4 h-4 mr-1" /> {interestedCount}
+            </Button>
+          )}
+          {canDelete && (
+            <Button size="sm" variant="ghost" onClick={onDelete}><Trash2 className="w-4 h-4" /></Button>
+          )}
+        </div>
       </div>
     </div>
   );
