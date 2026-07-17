@@ -247,64 +247,66 @@ export function MyOrganizationsSection() {
               </div>
             )}
           </div>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 w-full sm:w-auto">
-            <Link to="/opsmanagement" className="w-full sm:w-auto">
-              <Button variant="outline" className="w-full sm:w-auto"><Cog className="w-4 h-4 mr-1" /> Ops management</Button>
-            </Link>
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button className="w-full sm:w-auto"><Plus className="w-4 h-4 mr-1" /> New organization</Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Create an organization</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-3">
-                  <div>
-                    <Label>Name</Label>
-                    <Input
-                      value={name}
-                      onChange={(e) => { setName(e.target.value); if (!slug) setSlug(slugify(e.target.value)); }}
-                      placeholder="Elspace"
-                    />
+          {talentReady && (
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 w-full sm:w-auto">
+              <Link to="/opsmanagement" className="w-full sm:w-auto">
+                <Button variant="outline" className="w-full sm:w-auto"><Cog className="w-4 h-4 mr-1" /> Ops management</Button>
+              </Link>
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                  <Button className="w-full sm:w-auto"><Plus className="w-4 h-4 mr-1" /> New organization</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create an organization</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-3">
+                    <div>
+                      <Label>Name</Label>
+                      <Input
+                        value={name}
+                        onChange={(e) => { setName(e.target.value); if (!slug) setSlug(slugify(e.target.value)); }}
+                        placeholder="Elspace"
+                      />
+                    </div>
+                    <div>
+                      <Label>Slug</Label>
+                      <Input value={slug} onChange={(e) => setSlug(slugify(e.target.value))} placeholder="elspace" />
+                      <p className="text-xs text-muted-foreground mt-1">Used in URLs: /org/{slug || "your-slug"}</p>
+                    </div>
+                    <div>
+                      <Label>Type</Label>
+                      <Select value={type} onValueChange={setType}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="organization">Organization</SelectItem>
+                          <SelectItem value="company">Company (requires Certificate of Incorporation)</SelectItem>
+                          <SelectItem value="ministry">Ministry</SelectItem>
+                          <SelectItem value="ngo">NGO</SelectItem>
+                          <SelectItem value="startup">Startup</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Website (optional)</Label>
+                      <Input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://elspace.io" />
+                    </div>
+                    <div>
+                      <Label>Description (optional)</Label>
+                      <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
+                    </div>
                   </div>
-                  <div>
-                    <Label>Slug</Label>
-                    <Input value={slug} onChange={(e) => setSlug(slugify(e.target.value))} placeholder="elspace" />
-                    <p className="text-xs text-muted-foreground mt-1">Used in URLs: /org/{slug || "your-slug"}</p>
-                  </div>
-                  <div>
-                    <Label>Type</Label>
-                    <Select value={type} onValueChange={setType}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="organization">Organization</SelectItem>
-                        <SelectItem value="company">Company (requires Certificate of Incorporation)</SelectItem>
-                        <SelectItem value="ministry">Ministry</SelectItem>
-                        <SelectItem value="ngo">NGO</SelectItem>
-                        <SelectItem value="startup">Startup</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Website (optional)</Label>
-                    <Input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://elspace.io" />
-                  </div>
-                  <div>
-                    <Label>Description (optional)</Label>
-                    <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                  <Button onClick={create} disabled={saving || !name.trim()}>
-                    {saving ? "Creating…" : "Create organization"}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+                    <Button onClick={create} disabled={saving || !name.trim()}>
+                      {saving ? "Creating…" : "Create organization"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+          )}
         </div>
       </div>
 
