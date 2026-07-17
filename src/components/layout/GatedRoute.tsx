@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTalentReadiness } from "@/hooks/useTalentReadiness";
 import { useEngineAccess, type EngineKey } from "@/hooks/useEngineAccess";
 import { useNextBestActions } from "@/hooks/useNextBestActions";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useEntrepreneurCertGate } from "@/hooks/useEntrepreneurCertGate";
 
 // Enforces the same lock rules the Navbar shows in the UI, but at the route
 // level — so typing a locked URL directly (e.g. /opportunities) bounces the
@@ -29,6 +29,8 @@ interface GatedRouteProps {
   orgAdminOnly?: boolean;
   /** Requires progression stage >= this value (e.g. "emerging"). */
   minStage?: Stage;
+  /** Requires an Initiator or Co-Builder certification, or the Grown/Advisor step. */
+  entrepreneurCertGate?: boolean;
 }
 
 export function GatedRoute({
@@ -37,6 +39,7 @@ export function GatedRoute({
   engineKey,
   orgAdminOnly = false,
   minStage,
+  entrepreneurCertGate = false,
 }: GatedRouteProps) {
   const { user, loading: authLoading } = useAuth();
   const {
@@ -46,6 +49,7 @@ export function GatedRoute({
   } = useTalentReadiness();
   const { engines, loading: engineLoading } = useEngineAccess();
   const { progression, loading: progressionLoading } = useNextBestActions(user?.id);
+  const certGate = useEntrepreneurCertGate();
   const location = useLocation();
 
   const loading =
@@ -53,7 +57,8 @@ export function GatedRoute({
     (user &&
       (talentLoading ||
         (engineKey && engineLoading) ||
-        (minStage && progressionLoading)));
+        (minStage && progressionLoading) ||
+        (entrepreneurCertGate && certGate.loading)));
 
   if (loading) {
     return <div className="min-h-screen bg-background" aria-hidden />;
@@ -68,6 +73,7 @@ export function GatedRoute({
   if (talentGate && !talentReady) reasons.push("talent");
   if (engineKey && !engines[engineKey].unlocked) reasons.push(`engine-${engineKey}`);
   if (orgAdminOnly && !isOrgAdmin) reasons.push("org-admin");
+  if (entrepreneurCertGate && !certGate.allowed) reasons.push("entrepreneur-cert");
   if (minStage) {
     const currentRank =
       STAGE_RANK[(progression?.current_state as Stage) ?? "novice"] ?? 0;
@@ -76,13 +82,20 @@ export function GatedRoute({
 
   if (reasons.length > 0) {
     // Org-admin-only surfaces redirect to /organizations so the user can
-    // become an admin; everything else bounces to the dashboard with a hint.
-    const fallback =
-      orgAdminOnly && !isOrgAdmin
-        ? "/organizations?gated=org-admin"
-        : `/dashboard?gated=${reasons[0]}&from=${encodeURIComponent(location.pathname)}`;
+    // become an admin; entrepreneur-cert-only surfaces send the user to the
+    // Talent tab where they can start a certification; everything else
+    // bounces to the dashboard with a hint.
+    let fallback: string;
+    if (orgAdminOnly && !isOrgAdmin) {
+      fallback = "/organizations?gated=org-admin";
+    } else if (entrepreneurCertGate && !certGate.allowed) {
+      fallback = "/entrepreneurship?gated=entrepreneur-cert";
+    } else {
+      fallback = `/dashboard?gated=${reasons[0]}&from=${encodeURIComponent(location.pathname)}`;
+    }
     return <Navigate to={fallback} replace />;
   }
 
   return <>{children ?? <Outlet />}</>;
 }
+
