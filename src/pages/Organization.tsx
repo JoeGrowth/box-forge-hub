@@ -335,7 +335,7 @@ export default function OrganizationPage() {
       <Tabs defaultValue={searchParams.get("tab") || "legal"} className="space-y-4">
         <TabsList className="flex-wrap h-auto justify-start">
           <TabsTrigger value="legal"><Scale className="w-3 h-3 mr-1" /> Legal ({legalDocs.length})</TabsTrigger>
-          <TabsTrigger value="daily"><CalendarCheck className="w-3 h-3 mr-1" /> Daily</TabsTrigger>
+          <TabsTrigger value="daily"><CalendarCheck className="w-3 h-3 mr-1" /> Daily ({dailyOpenCount})</TabsTrigger>
           {legalDocs.length >= 1 && (
             <>
               <TabsTrigger value="jobs"><Briefcase className="w-3 h-3 mr-1" /> Jobs ({jobs.length})</TabsTrigger>
