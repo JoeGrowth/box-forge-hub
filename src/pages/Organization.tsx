@@ -120,6 +120,9 @@ const ROLE_COLOR = {
 
 const SCOPE_ICON = { global: Globe, organization: Building2, private: Lock } as const;
 
+type DailyTask = { id: string; text: string; done: boolean; created_at: string };
+type DailyPresentation = { id: string; title: string; url: string; created_at: string };
+
 export default function OrganizationPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
@@ -141,6 +144,21 @@ export default function OrganizationPage() {
   const [newDeclName, setNewDeclName] = useState("");
   const [creatingDecl, setCreatingDecl] = useState(false);
   const { members, reload: reloadMembers } = useOrgMembers(org?.id);
+
+  const [dailyTasks, setDailyTasks] = useState<DailyTask[]>([]);
+  useEffect(() => {
+    if (!org?.id) return;
+    try {
+      setDailyTasks(JSON.parse(localStorage.getItem(`org-daily-tasks:${org.id}`) || "[]"));
+    } catch { setDailyTasks([]); }
+  }, [org?.id]);
+
+  const saveDailyTasks = useCallback((next: DailyTask[]) => {
+    setDailyTasks(next);
+    if (org?.id) localStorage.setItem(`org-daily-tasks:${org.id}`, JSON.stringify(next));
+  }, [org?.id]);
+
+  const dailyOpenCount = dailyTasks.filter(t => !t.done).length;
 
   const loadOpps = useCallback(async () => {
     if (!org) return;
@@ -317,7 +335,7 @@ export default function OrganizationPage() {
       <Tabs defaultValue={searchParams.get("tab") || "legal"} className="space-y-4">
         <TabsList className="flex-wrap h-auto justify-start">
           <TabsTrigger value="legal"><Scale className="w-3 h-3 mr-1" /> Legal ({legalDocs.length})</TabsTrigger>
-          <TabsTrigger value="daily"><CalendarCheck className="w-3 h-3 mr-1" /> Daily</TabsTrigger>
+          <TabsTrigger value="daily"><CalendarCheck className="w-3 h-3 mr-1" /> Daily ({dailyOpenCount})</TabsTrigger>
           {legalDocs.length >= 1 && (
             <>
               <TabsTrigger value="jobs"><Briefcase className="w-3 h-3 mr-1" /> Jobs ({jobs.length})</TabsTrigger>
@@ -542,7 +560,7 @@ export default function OrganizationPage() {
 
         {/* DAILY */}
         <TabsContent value="daily" className="space-y-3">
-          <DailyTab orgId={org.id} canEdit={canEdit} />
+          <DailyTab orgId={org.id} canEdit={canEdit} tasks={dailyTasks} onTasksChange={saveDailyTasks} />
         </TabsContent>
 
         {/* PROJECT JOURNEY */}
@@ -563,13 +581,8 @@ export default function OrganizationPage() {
   );
 }
 
-type DailyTask = { id: string; text: string; done: boolean; created_at: string };
-type DailyPresentation = { id: string; title: string; url: string; created_at: string };
-
-function DailyTab({ orgId, canEdit }: { orgId: string; canEdit: boolean }) {
-  const tasksKey = `org-daily-tasks:${orgId}`;
+function DailyTab({ orgId, canEdit, tasks, onTasksChange }: { orgId: string; canEdit: boolean; tasks: DailyTask[]; onTasksChange: (next: DailyTask[]) => void }) {
   const presKey = `org-daily-presentations:${orgId}`;
-  const [tasks, setTasks] = useState<DailyTask[]>([]);
   const [presentations, setPresentations] = useState<DailyPresentation[]>([]);
   const [newTask, setNewTask] = useState("");
   const [presTitle, setPresTitle] = useState("");
@@ -577,15 +590,10 @@ function DailyTab({ orgId, canEdit }: { orgId: string; canEdit: boolean }) {
 
   useEffect(() => {
     try {
-      setTasks(JSON.parse(localStorage.getItem(tasksKey) || "[]"));
       setPresentations(JSON.parse(localStorage.getItem(presKey) || "[]"));
     } catch { /* ignore */ }
-  }, [tasksKey, presKey]);
+  }, [presKey]);
 
-  const saveTasks = (next: DailyTask[]) => {
-    setTasks(next);
-    localStorage.setItem(tasksKey, JSON.stringify(next));
-  };
   const savePres = (next: DailyPresentation[]) => {
     setPresentations(next);
     localStorage.setItem(presKey, JSON.stringify(next));
@@ -599,11 +607,11 @@ function DailyTab({ orgId, canEdit }: { orgId: string; canEdit: boolean }) {
     const t = newTask.trim();
     if (!t) return;
     if (atLimit) return;
-    saveTasks([{ id: crypto.randomUUID(), text: t, done: false, created_at: new Date().toISOString() }, ...tasks]);
+    onTasksChange([{ id: crypto.randomUUID(), text: t, done: false, created_at: new Date().toISOString() }, ...tasks]);
     setNewTask("");
   };
-  const toggleTask = (id: string) => saveTasks(tasks.map(t => t.id === id ? { ...t, done: !t.done } : t));
-  const removeTask = (id: string) => saveTasks(tasks.filter(t => t.id !== id));
+  const toggleTask = (id: string) => onTasksChange(tasks.map(t => t.id === id ? { ...t, done: !t.done } : t));
+  const removeTask = (id: string) => onTasksChange(tasks.filter(t => t.id !== id));
 
   const addPresentation = () => {
     const title = presTitle.trim();
