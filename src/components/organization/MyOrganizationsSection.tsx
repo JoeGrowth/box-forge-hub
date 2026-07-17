@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useTalentReadiness } from "@/hooks/useTalentReadiness";
 import { useMyOrganizations } from "@/hooks/useOrganizations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -75,6 +76,7 @@ const fmtMoney = (n: number, currency: string) =>
 export function MyOrganizationsSection() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { talentReady } = useTalentReadiness();
   const { memberships, loading, reload } = useMyOrganizations(user?.id);
 
   const [open, setOpen] = useState(false);
@@ -245,64 +247,66 @@ export function MyOrganizationsSection() {
               </div>
             )}
           </div>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 w-full sm:w-auto">
-            <Link to="/opsmanagement" className="w-full sm:w-auto">
-              <Button variant="outline" className="w-full sm:w-auto"><Cog className="w-4 h-4 mr-1" /> Ops management</Button>
-            </Link>
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button className="w-full sm:w-auto"><Plus className="w-4 h-4 mr-1" /> New organization</Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Create an organization</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-3">
-                  <div>
-                    <Label>Name</Label>
-                    <Input
-                      value={name}
-                      onChange={(e) => { setName(e.target.value); if (!slug) setSlug(slugify(e.target.value)); }}
-                      placeholder="Elspace"
-                    />
+          {talentReady && (
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 w-full sm:w-auto">
+              <Link to="/opsmanagement" className="w-full sm:w-auto">
+                <Button variant="outline" className="w-full sm:w-auto"><Cog className="w-4 h-4 mr-1" /> Ops management</Button>
+              </Link>
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                  <Button className="w-full sm:w-auto"><Plus className="w-4 h-4 mr-1" /> New organization</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create an organization</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-3">
+                    <div>
+                      <Label>Name</Label>
+                      <Input
+                        value={name}
+                        onChange={(e) => { setName(e.target.value); if (!slug) setSlug(slugify(e.target.value)); }}
+                        placeholder="Elspace"
+                      />
+                    </div>
+                    <div>
+                      <Label>Slug</Label>
+                      <Input value={slug} onChange={(e) => setSlug(slugify(e.target.value))} placeholder="elspace" />
+                      <p className="text-xs text-muted-foreground mt-1">Used in URLs: /org/{slug || "your-slug"}</p>
+                    </div>
+                    <div>
+                      <Label>Type</Label>
+                      <Select value={type} onValueChange={setType}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="organization">Organization</SelectItem>
+                          <SelectItem value="company">Company (requires Certificate of Incorporation)</SelectItem>
+                          <SelectItem value="ministry">Ministry</SelectItem>
+                          <SelectItem value="ngo">NGO</SelectItem>
+                          <SelectItem value="startup">Startup</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Website (optional)</Label>
+                      <Input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://elspace.io" />
+                    </div>
+                    <div>
+                      <Label>Description (optional)</Label>
+                      <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
+                    </div>
                   </div>
-                  <div>
-                    <Label>Slug</Label>
-                    <Input value={slug} onChange={(e) => setSlug(slugify(e.target.value))} placeholder="elspace" />
-                    <p className="text-xs text-muted-foreground mt-1">Used in URLs: /org/{slug || "your-slug"}</p>
-                  </div>
-                  <div>
-                    <Label>Type</Label>
-                    <Select value={type} onValueChange={setType}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="organization">Organization</SelectItem>
-                        <SelectItem value="company">Company (requires Certificate of Incorporation)</SelectItem>
-                        <SelectItem value="ministry">Ministry</SelectItem>
-                        <SelectItem value="ngo">NGO</SelectItem>
-                        <SelectItem value="startup">Startup</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Website (optional)</Label>
-                    <Input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://elspace.io" />
-                  </div>
-                  <div>
-                    <Label>Description (optional)</Label>
-                    <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                  <Button onClick={create} disabled={saving || !name.trim()}>
-                    {saving ? "Creating…" : "Create organization"}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+                    <Button onClick={create} disabled={saving || !name.trim()}>
+                      {saving ? "Creating…" : "Create organization"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+          )}
         </div>
       </div>
 
@@ -313,7 +317,9 @@ export function MyOrganizationsSection() {
           <Building2 className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
           <p className="font-medium text-foreground">You don't belong to any organization yet</p>
           <p className="text-sm text-muted-foreground mt-1">
-            Create one above. As the creator you'll automatically be admin.
+            {talentReady
+              ? "Create one above. As the creator you'll automatically be admin."
+              : "Complete Talent Foundation to create or manage organizations. You can still view organizations you were invited to."}
           </p>
         </div>
       ) : (
