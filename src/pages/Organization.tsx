@@ -669,6 +669,7 @@ export default function OrganizationPage() {
             orgName={org.name}
             orgCreatedBy={org.created_by}
             sourceIdeaId={(org as any).source_idea_id ?? null}
+            canManage={canAdmin}
           />
         </TabsContent>
 
@@ -1412,11 +1413,13 @@ function ProjectJourneyTab({
   orgName,
   orgCreatedBy,
   sourceIdeaId,
+  canManage,
 }: {
   orgId: string;
   orgName: string;
   orgCreatedBy: string;
   sourceIdeaId: string | null;
+  canManage: boolean;
 }) {
   const { user } = useAuth();
   const [idea, setIdea] = useState<JourneyIdea | null>(null);
@@ -1504,7 +1507,7 @@ function ProjectJourneyTab({
             </Link>
           </Button>
         </div>
-        <ProductJourneySection orgId={orgId} userId={user?.id} />
+        <ProductJourneySection orgId={orgId} userId={user?.id} canManage={canManage} />
       </div>
     );
   }
@@ -1551,7 +1554,7 @@ function ProjectJourneyTab({
             </div>
           </div>
         </div>
-        <ProductJourneySection orgId={orgId} userId={user?.id} />
+        <ProductJourneySection orgId={orgId} userId={user?.id} canManage={canManage} />
       </div>
     );
   }
@@ -1663,12 +1666,12 @@ function ProjectJourneyTab({
           </div>
         </div>
       </div>
-      <ProductJourneySection orgId={orgId} userId={user?.id} />
+      <ProductJourneySection orgId={orgId} userId={user?.id} canManage={canManage} />
     </div>
   );
 }
 
-function ProductJourneySection({ orgId, userId }: { orgId: string; userId: string | undefined }) {
+function ProductJourneySection({ orgId, userId, canManage }: { orgId: string; userId: string | undefined; canManage: boolean }) {
   const { toast } = useToast();
   const [products, setProducts] = useState<any[]>([]);
   const [archived, setArchived] = useState<any[]>([]);
@@ -1821,6 +1824,7 @@ function ProductJourneySection({ orgId, userId }: { orgId: string; userId: strin
               product={p}
               orgId={orgId}
               userId={userId}
+              canManage={canManage}
               onRemove={() => archiveProduct(p.id)}
             />
           ))
@@ -1851,7 +1855,7 @@ function ProductJourneySection({ orgId, userId }: { orgId: string; userId: strin
                     <Button size="sm" variant="outline" onClick={() => restoreProduct(p.id)}>
                       Restore
                     </Button>
-                    {userId === p.created_by && (
+                    {(canManage || userId === p.created_by) && (
                       <Button size="icon" variant="ghost" onClick={() => deleteForever(p.id)} title="Delete permanently">
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -1872,11 +1876,13 @@ function ProductBlock({
   product,
   orgId,
   userId,
+  canManage,
   onRemove,
 }: {
   product: any;
   orgId: string;
   userId: string | undefined;
+  canManage: boolean;
   onRemove: () => void;
 }) {
   const { toast } = useToast();
@@ -2039,7 +2045,7 @@ function ProductBlock({
     load();
   };
 
-  const canEdit = userId === product.created_by;
+  const canEdit = canManage || userId === product.created_by;
 
   const toggleCollapsed = () => setCollapsed((c) => !c);
 
