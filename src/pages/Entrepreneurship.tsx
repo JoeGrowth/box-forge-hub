@@ -962,6 +962,16 @@ const Entrepreneurship = () => {
                   <MyOrganizationsSection />
                 </TabsContent>
 
+                <TabsContent value="assets">
+                  <div className="mb-4">
+                    <h2 className="font-display text-xl font-bold text-foreground">Your Assets</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Organizations that have crossed the asset threshold — incorporated, staffed, shipping, and radiating demand.
+                    </p>
+                  </div>
+                  <YourAssetsSection />
+                </TabsContent>
+
               </Tabs>
             </div>
           </section>
