@@ -144,14 +144,20 @@ function TenderWorkCard({
   const { toast } = useToast();
   const [note, setNote] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [linkUrl, setLinkUrl] = useState("");
   const [saving, setSaving] = useState(false);
 
   const latest = submissions[0];
   const canSubmit = !latest || latest.status === "changes_requested";
 
   const submit = async () => {
-    if (!note.trim() && !file) {
-      toast({ title: "Add a note or file", variant: "destructive" });
+    const trimmedLink = linkUrl.trim();
+    if (!note.trim() && !file && !trimmedLink) {
+      toast({ title: "Add a note, file, or link", variant: "destructive" });
+      return;
+    }
+    if (trimmedLink && !/^https?:\/\//i.test(trimmedLink)) {
+      toast({ title: "Link must start with http:// or https://", variant: "destructive" });
       return;
     }
     setSaving(true);
@@ -169,7 +175,8 @@ function TenderWorkCard({
       file_name = file.name;
     }
     const { error } = await supabase.from("tender_submissions").insert({
-      tender_id: tender.id, user_id: userId, note: note.trim() || null, file_path, file_name, status: "submitted",
+      tender_id: tender.id, user_id: userId, note: note.trim() || null,
+      file_path, file_name, link_url: trimmedLink || null, status: "submitted",
     });
     setSaving(false);
     if (error) {
@@ -177,7 +184,7 @@ function TenderWorkCard({
       return;
     }
     toast({ title: "Deliverable submitted" });
-    setNote(""); setFile(null);
+    setNote(""); setFile(null); setLinkUrl("");
     onChange();
   };
 
