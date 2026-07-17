@@ -1809,6 +1809,7 @@ function ProductBlock({
       .from("organization_product_iterations")
       .select("*")
       .eq("product_id", product.id)
+      .is("archived_at", null)
       .order("version_number", { ascending: true });
     setItems((data as any[]) ?? []);
     setLoading(false);
