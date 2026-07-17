@@ -1893,7 +1893,7 @@ function ProductBlock({
   const removeIteration = async (id: string) => {
     const { error } = await (supabase as any)
       .from("organization_product_iterations")
-      .delete()
+      .update({ archived_at: new Date().toISOString() })
       .eq("id", id);
     if (error) {
       toast({ title: "Couldn't remove", description: error.message, variant: "destructive" });
