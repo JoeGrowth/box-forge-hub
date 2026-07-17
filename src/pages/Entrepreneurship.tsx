@@ -38,6 +38,7 @@ import { CheckCircle2, ArrowRight } from "lucide-react";
 import { SuggestDomainDialog } from "@/components/domain/SuggestDomainDialog";
 import { MyOrganizationsSection } from "@/components/organization/MyOrganizationsSection";
 import { YourAssetsSection } from "@/components/organization/YourAssetsSection";
+import ConsultingGrowth from "@/pages/ConsultingGrowth";
 
 interface StartupIdea {
   id: string;
