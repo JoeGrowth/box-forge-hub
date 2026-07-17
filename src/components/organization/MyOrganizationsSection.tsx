@@ -190,7 +190,15 @@ export function MyOrganizationsSection() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
-        <div className="flex-1 min-w-0" />
+        <div className="flex-1 min-w-0">
+          <h2 className="text-xl font-semibold text-foreground">Your organizations</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Organizations you own or belong to.
+          </p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            you can have different roles (admin · editor · viewer).
+          </p>
+        </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 w-full sm:w-auto">
           <Link to="/opsmanagement" className="w-full sm:w-auto">
