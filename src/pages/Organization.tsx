@@ -2026,12 +2026,32 @@ function ProductBlock({
 
   const canEdit = userId === product.created_by;
 
+  const toggleCollapsed = () => setCollapsed((c) => !c);
+
   return (
     <div className="rounded-xl border border-border bg-background p-4">
       <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div className="min-w-0 flex-1">
+        <div
+          className={cn(
+            "min-w-0 flex-1 rounded-lg -m-1 p-1 transition-colors",
+            !editingName && "cursor-pointer hover:bg-muted/50"
+          )}
+          onClick={!editingName ? toggleCollapsed : undefined}
+          role={!editingName ? "button" : undefined}
+          tabIndex={!editingName ? 0 : undefined}
+          onKeyDown={
+            !editingName
+              ? (e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    toggleCollapsed();
+                  }
+                }
+              : undefined
+          }
+        >
           {editingName ? (
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
               <Input
                 value={nameDraft}
                 onChange={(e) => setNameDraft(e.target.value)}
@@ -2055,7 +2075,7 @@ function ProductBlock({
               {history.length > 0 && (
                 <button
                   type="button"
-                  onClick={() => setShowHistory((s) => !s)}
+                  onClick={(e) => { e.stopPropagation(); setShowHistory((s) => !s); }}
                   className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground rounded-full border border-border px-2 py-0.5"
                   title="View name history"
                 >
@@ -2086,12 +2106,12 @@ function ProductBlock({
             <Plus className="w-4 h-4 mr-1" /> {open ? "Cancel" : "Add iteration"}
           </Button>
           {canEdit && !editingName && (
-            <Button variant="ghost" size="icon" onClick={() => setEditingName(true)} title="Rename product journey">
+            <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setEditingName(true); }} title="Rename product journey">
               <Pencil className="w-4 h-4" />
             </Button>
           )}
           {canEdit && (
-            <Button variant="ghost" size="icon" onClick={onRemove} title="Remove product journey">
+            <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); onRemove(); }} title="Remove product journey">
               <Trash2 className="w-4 h-4" />
             </Button>
           )}
@@ -2100,6 +2120,7 @@ function ProductBlock({
           </Button>
         </div>
       </div>
+
 
 
       {!collapsed && (
