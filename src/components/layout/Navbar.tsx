@@ -137,6 +137,11 @@ export function Navbar() {
 
   const { progression } = useNextBestActions(user?.id);
   const stageRank = STAGE_RANK[progression?.current_state ?? "novice"] ?? 0;
+  // Users who just completed Talent Foundation get a stripped-down nav so they
+  // aren't overwhelmed by the full platform surface.
+  const isFreshTalentFoundation = Boolean(
+    user && talentReady && stageRank <= STAGE_RANK.emerging,
+  );
   const visibleResourceLinks = useMemo(
     () =>
       resourceLinks.filter(
@@ -182,6 +187,33 @@ export function Navbar() {
                   {link.name}
                 </Link>
               ))
+            ) : isFreshTalentFoundation ? (
+              <>
+                <Link
+                  to="/ladder"
+                  className={`text-sm font-medium transition-colors hover:text-b4-teal ${
+                    location.pathname === "/ladder" ? "text-b4-teal" : "text-muted-foreground"
+                  }`}
+                >
+                  Ladder
+                </Link>
+                <Link
+                  to="/people"
+                  className={`text-sm font-medium transition-colors hover:text-b4-teal ${
+                    location.pathname === "/people" ? "text-b4-teal" : "text-muted-foreground"
+                  }`}
+                >
+                  People
+                </Link>
+                <Link
+                  to="/organizations"
+                  className={`text-sm font-medium transition-colors hover:text-b4-teal ${
+                    location.pathname === "/organizations" ? "text-b4-teal" : "text-muted-foreground"
+                  }`}
+                >
+                  Orgs
+                </Link>
+              </>
             ) : (
               <>
                 <DropdownMenu open={ecosystemOpen} onOpenChange={setEcosystemOpen}>
@@ -393,87 +425,132 @@ export function Navbar() {
 
 
                 <>
-                  <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Ecosystem
-                  </div>
-
-                  {stageRank >= STAGE_RANK.emerging && (
-                    <Link
-                      to="/people"
-                      onClick={() => setIsOpen(false)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                        location.pathname === "/people"
-                          ? "bg-muted text-b4-teal"
-                          : "text-muted-foreground hover:bg-muted"
-                      }`}
-                    >
-                      <Users size={16} />
-                      <span className="flex-1">People</span>
-                    </Link>
-                  )}
-
-                  <Link
-                    to="/projects"
-                    onClick={() => setIsOpen(false)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                      location.pathname === "/projects"
-                        ? "bg-muted text-b4-teal"
-                        : "text-muted-foreground hover:bg-muted"
-                    }`}
-                  >
-                    <Rocket size={16} />
-                    <span className="flex-1">Projects</span>
-                  </Link>
-
-                  <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Growth
-                  </div>
-
-                  <Link
-                    to="/entrepreneurship"
-                    onClick={() => setIsOpen(false)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                      location.pathname === "/entrepreneurship"
-                        ? "bg-muted text-b4-teal"
-                        : "text-muted-foreground hover:bg-muted"
-                    }`}
-                  >
-                    <Building2 size={16} />
-                    <span className="flex-1">Studio</span>
-                  </Link>
-
-                  <Link
-                    to="/ladder"
-                    onClick={() => setIsOpen(false)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                      location.pathname === "/ladder"
-                        ? "bg-muted text-b4-teal"
-                        : "text-muted-foreground hover:bg-muted"
-                    }`}
-                  >
-                    <BarChart3 size={16} />
-                    <span className="flex-1">Ladder</span>
-                  </Link>
-
-                  {visibleMoreLinks.length > 0 && (
-                    <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      More
-                    </div>
-                  )}
-                  {visibleMoreLinks.map((link) => {
-                    const Icon = link.icon;
-                    return (
+                  {isFreshTalentFoundation ? (
+                    <>
                       <Link
-                        key={link.path}
-                        to={link.path}
-                        className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors flex items-center gap-2"
+                        to="/ladder"
                         onClick={() => setIsOpen(false)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                          location.pathname === "/ladder"
+                            ? "bg-muted text-b4-teal"
+                            : "text-muted-foreground hover:bg-muted"
+                        }`}
                       >
-                        <Icon size={16} />
-                        {link.name}
+                        <BarChart3 size={16} />
+                        <span className="flex-1">Ladder</span>
                       </Link>
-                    );
-                  })}
+
+                      <Link
+                        to="/people"
+                        onClick={() => setIsOpen(false)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                          location.pathname === "/people"
+                            ? "bg-muted text-b4-teal"
+                            : "text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        <Users size={16} />
+                        <span className="flex-1">People</span>
+                      </Link>
+
+                      <Link
+                        to="/organizations"
+                        onClick={() => setIsOpen(false)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                          location.pathname === "/organizations"
+                            ? "bg-muted text-b4-teal"
+                            : "text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        <Building2 size={16} />
+                        <span className="flex-1">Orgs</span>
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Ecosystem
+                      </div>
+
+                      {stageRank >= STAGE_RANK.emerging && (
+                        <Link
+                          to="/people"
+                          onClick={() => setIsOpen(false)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                            location.pathname === "/people"
+                              ? "bg-muted text-b4-teal"
+                              : "text-muted-foreground hover:bg-muted"
+                          }`}
+                        >
+                          <Users size={16} />
+                          <span className="flex-1">People</span>
+                        </Link>
+                      )}
+
+                      <Link
+                        to="/projects"
+                        onClick={() => setIsOpen(false)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                          location.pathname === "/projects"
+                            ? "bg-muted text-b4-teal"
+                            : "text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        <Rocket size={16} />
+                        <span className="flex-1">Projects</span>
+                      </Link>
+
+                      <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Growth
+                      </div>
+
+                      <Link
+                        to="/entrepreneurship"
+                        onClick={() => setIsOpen(false)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                          location.pathname === "/entrepreneurship"
+                            ? "bg-muted text-b4-teal"
+                            : "text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        <Building2 size={16} />
+                        <span className="flex-1">Studio</span>
+                      </Link>
+
+                      <Link
+                        to="/ladder"
+                        onClick={() => setIsOpen(false)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                          location.pathname === "/ladder"
+                            ? "bg-muted text-b4-teal"
+                            : "text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        <BarChart3 size={16} />
+                        <span className="flex-1">Ladder</span>
+                      </Link>
+
+                      {visibleMoreLinks.length > 0 && (
+                        <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          More
+                        </div>
+                      )}
+                      {visibleMoreLinks.map((link) => {
+                        const Icon = link.icon;
+                        return (
+                          <Link
+                            key={link.path}
+                            to={link.path}
+                            className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors flex items-center gap-2"
+                            onClick={() => setIsOpen(false)}
+                          >
+                            <Icon size={16} />
+                            {link.name}
+                          </Link>
+                        );
+                      })}
+                    </>
+                  )}
                 </>
               )}
               <div className="flex flex-col gap-2 px-4 pt-2">
