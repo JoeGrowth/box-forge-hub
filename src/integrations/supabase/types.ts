@@ -3944,6 +3944,44 @@ export type Database = {
           },
         ]
       }
+      organization_product_name_history: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          id: string
+          new_name: string
+          organization_id: string
+          previous_name: string
+          product_id: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_name: string
+          organization_id: string
+          previous_name: string
+          product_id: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_name?: string
+          organization_id?: string
+          previous_name?: string
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_product_name_history_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "organization_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_products: {
         Row: {
           created_at: string
