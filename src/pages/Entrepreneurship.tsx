@@ -108,7 +108,7 @@ const Entrepreneurship = () => {
   const [mainTab, setMainTab] = useState<MainTab>(initialTab);
   const [growthSubTab, setGrowthSubTab] = useState<GrowthSub>(() => {
     const g = searchParams.get("growth");
-    if (g === "shaped" || g === "systematized") return g as GrowthSub;
+    if (g === "shaped" || g === "validated" || g === "systematized") return g as GrowthSub;
     return "developed";
   });
   const [legacySubTab, setLegacySubTab] = useState<"initiated" | "joined" | "partnered">(
