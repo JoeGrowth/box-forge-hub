@@ -98,7 +98,7 @@ const Entrepreneurship = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [applyProject, setApplyProject] = useState<StartupIdea | null>(null);
   type MainTab = "legacy" | "growth" | "organizations" | "assets";
-  type GrowthSub = "developed" | "monetized" | "systematized";
+  type GrowthSub = "shaped" | "developed" | "monetized" | "systematized";
   const initialTab = (() => {
     const t = searchParams.get("tab");
     if (t === "legacy" || t === "growth" || t === "organizations" || t === "assets") return t as MainTab;
@@ -107,7 +107,7 @@ const Entrepreneurship = () => {
   const [mainTab, setMainTab] = useState<MainTab>(initialTab);
   const [growthSubTab, setGrowthSubTab] = useState<GrowthSub>(() => {
     const g = searchParams.get("growth");
-    if (g === "monetized" || g === "systematized") return g as GrowthSub;
+    if (g === "shaped" || g === "monetized" || g === "systematized") return g as GrowthSub;
     return "developed";
   });
   const [legacySubTab, setLegacySubTab] = useState<"initiated" | "joined" | "partnered">(
