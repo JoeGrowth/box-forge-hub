@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useTalentReadiness } from "@/hooks/useTalentReadiness";
 import { useMyOrganizations } from "@/hooks/useOrganizations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
