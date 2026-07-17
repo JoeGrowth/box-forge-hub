@@ -34,6 +34,7 @@ import { ScaledCard } from "@/components/idea/ScaledCard";
 
 import ConsultingGrowthPage from "@/pages/ConsultingGrowth";
 import { SuggestDomainDialog } from "@/components/domain/SuggestDomainDialog";
+import { MyOrganizationsSection } from "@/components/organization/MyOrganizationsSection";
 
 interface StartupIdea {
   id: string;
@@ -93,11 +94,11 @@ const Entrepreneurship = () => {
   const navigate = useNavigate();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [applyProject, setApplyProject] = useState<StartupIdea | null>(null);
-  type MainTab = "legacy" | "growth";
+  type MainTab = "legacy" | "growth" | "organizations";
   type GrowthSub = "developed" | "monetized" | "systematized";
   const initialTab = (() => {
     const t = searchParams.get("tab");
-    if (t === "legacy" || t === "growth") return t as MainTab;
+    if (t === "legacy" || t === "growth" || t === "organizations") return t as MainTab;
     return "growth" as MainTab;
   })();
   const [mainTab, setMainTab] = useState<MainTab>(initialTab);
@@ -637,6 +638,17 @@ const Entrepreneurship = () => {
                     <Lightbulb className="w-4 h-4" />
                     Your Legacy
                   </button>
+                  <button
+                    onClick={() => setMainTab("organizations")}
+                    className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                      mainTab === "organizations"
+                        ? "border-foreground text-foreground"
+                        : "border-transparent text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Building2 className="w-4 h-4" />
+                    Your organizations
+                  </button>
                 </div>
 
 
@@ -928,6 +940,15 @@ const Entrepreneurship = () => {
                   )}
                 </TabsContent>
 
+                <TabsContent value="organizations">
+                  <div className="mb-4">
+                    <h2 className="font-display text-xl font-bold text-foreground">Your organizations</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Organizations you own or belong to.
+                    </p>
+                  </div>
+                  <MyOrganizationsSection />
+                </TabsContent>
 
               </Tabs>
             </div>
