@@ -487,25 +487,41 @@ export default function OrganizationPage() {
           )}
 
           <Dialog open={!!viewingTender} onOpenChange={(open) => !open && setViewingTender(null)}>
-            <DialogContent className="max-w-lg">
+            <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
               <DialogHeader>
-                <DialogTitle>Interested in {viewingTender?.title}</DialogTitle>
-                <DialogDescription>People who expressed interest in this tender.</DialogDescription>
+                <DialogTitle>Manage {viewingTender?.title}</DialogTitle>
+                <DialogDescription>Accept or refuse candidates, review deliverables, and confirm payment.</DialogDescription>
               </DialogHeader>
-              <div className="space-y-3 max-h-80 overflow-auto">
-                {(tenderInterests[viewingTender?.id ?? ""]?.items ?? []).length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No interest yet.</p>
-                ) : (
-                  (tenderInterests[viewingTender?.id ?? ""]?.items ?? []).map((i) => (
-                    <div key={`${i.user_id}-${i.created_at}`} className="rounded-lg border border-border p-3">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-sm">{i.full_name ?? "Unknown"}</span>
-                        <span className="text-xs text-muted-foreground">{new Date(i.created_at).toLocaleDateString()}</span>
-                      </div>
-                      {i.message && <p className="text-sm text-muted-foreground mt-1">{i.message}</p>}
+              <div className="space-y-4 overflow-auto pr-1">
+                <div>
+                  <div className="text-xs uppercase tracking-wide text-muted-foreground mb-2">Interested people</div>
+                  {(tenderInterests[viewingTender?.id ?? ""]?.items ?? []).length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No interest yet.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {(tenderInterests[viewingTender?.id ?? ""]?.items ?? []).map((i) => (
+                        <InterestRow
+                          key={i.interaction_id}
+                          interest={i}
+                          onUpdate={loadOpps}
+                        />
+                      ))}
                     </div>
-                  ))
-                )}
+                  )}
+                </div>
+
+                <div className="border-t border-border pt-3">
+                  <div className="text-xs uppercase tracking-wide text-muted-foreground mb-2">Deliverables</div>
+                  {(tenderSubmissions[viewingTender?.id ?? ""] ?? []).length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No deliverables submitted yet.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {(tenderSubmissions[viewingTender?.id ?? ""] ?? []).map((s) => (
+                        <SubmissionRow key={s.id} submission={s} onUpdate={loadOpps} />
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </DialogContent>
           </Dialog>
