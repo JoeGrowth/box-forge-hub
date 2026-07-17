@@ -1,0 +1,1 @@
+ALTER TABLE public.tender_submissions ADD COLUMN IF NOT EXISTS link_url text;
