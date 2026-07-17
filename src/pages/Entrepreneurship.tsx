@@ -34,7 +34,7 @@ import { ScaledCard } from "@/components/idea/ScaledCard";
 import { useTalentReadiness } from "@/hooks/useTalentReadiness";
 import { CheckCircle2, ArrowRight } from "lucide-react";
 
-import ConsultingGrowthPage from "@/pages/ConsultingGrowth";
+
 import { SuggestDomainDialog } from "@/components/domain/SuggestDomainDialog";
 import { MyOrganizationsSection } from "@/components/organization/MyOrganizationsSection";
 import { YourAssetsSection } from "@/components/organization/YourAssetsSection";
