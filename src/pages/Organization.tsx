@@ -2351,6 +2351,12 @@ function SubmissionRow({
           <FileText className="w-3 h-3 mr-1" /> {submission.file_name}
         </Button>
       )}
+      {submission.link_url && (
+        <a href={submission.link_url} target="_blank" rel="noopener noreferrer"
+           className="inline-flex items-center gap-1 text-xs text-primary hover:underline break-all">
+          <ExternalLink className="w-3 h-3" /> {submission.link_url}
+        </a>
+      )}
       {submission.reviewer_notes && (
         <div className="rounded-md bg-muted/50 p-2 text-xs">
           <span className="font-medium">Feedback:</span> {submission.reviewer_notes}
