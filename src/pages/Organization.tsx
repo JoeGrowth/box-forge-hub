@@ -669,6 +669,7 @@ export default function OrganizationPage() {
             orgName={org.name}
             orgCreatedBy={org.created_by}
             sourceIdeaId={(org as any).source_idea_id ?? null}
+            canManage={canAdmin}
           />
         </TabsContent>
 
