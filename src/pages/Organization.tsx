@@ -1876,11 +1876,13 @@ function ProductBlock({
   product,
   orgId,
   userId,
+  canManage,
   onRemove,
 }: {
   product: any;
   orgId: string;
   userId: string | undefined;
+  canManage: boolean;
   onRemove: () => void;
 }) {
   const { toast } = useToast();
