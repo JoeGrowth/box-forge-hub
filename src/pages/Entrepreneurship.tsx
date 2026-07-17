@@ -99,7 +99,7 @@ const Entrepreneurship = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [applyProject, setApplyProject] = useState<StartupIdea | null>(null);
   type MainTab = "legacy" | "growth" | "organizations" | "assets";
-  type GrowthSub = "shaped" | "developed" | "systematized";
+  type GrowthSub = "shaped" | "developed" | "validated" | "systematized";
   const initialTab = (() => {
     const t = searchParams.get("tab");
     if (t === "legacy" || t === "growth" || t === "organizations" || t === "assets") return t as MainTab;
