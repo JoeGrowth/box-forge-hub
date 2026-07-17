@@ -122,18 +122,40 @@ const Entrepreneurship = () => {
   const [profileUsername, setProfileUsername] = useState<string | null>(null);
   const [suggestDomainOpen, setSuggestDomainOpen] = useState(false);
 
+  const [hasInitiatorCert, setHasInitiatorCert] = useState(false);
+  const [hasCoBuilderCert, setHasCoBuilderCert] = useState(false);
+  const [isOrgAdmin, setIsOrgAdmin] = useState(false);
+  const [isOrgMember, setIsOrgMember] = useState(false);
+  const [gatingLoaded, setGatingLoaded] = useState(false);
+
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const [{ data: prof }, { data: nr }] = await Promise.all([
+      const [
+        { data: prof },
+        { data: nr },
+        { data: certs },
+        { data: memberships },
+        { data: ownedOrgs },
+      ] = await Promise.all([
         supabase.from("profiles").select("startup_name, professional_title, primary_skills").eq("user_id", user.id).maybeSingle(),
         supabase.from("natural_roles").select("description").eq("user_id", user.id).maybeSingle(),
+        supabase.from("user_certifications").select("certification_type").eq("user_id", user.id),
+        supabase.from("organization_members").select("role").eq("user_id", user.id),
+        supabase.from("organizations").select("id").eq("created_by", user.id).limit(1),
       ]);
       setProfileStartupName((prof as any)?.startup_name ?? null);
       setProfileTitle((prof as any)?.professional_title ?? null);
       setProfilePrimarySkills((prof as any)?.primary_skills ?? null);
       setProfileUsername(null);
       setNaturalRoleDesc(nr?.description ?? null);
+      const certList = (certs ?? []) as Array<{ certification_type: string }>;
+      setHasInitiatorCert(certList.some((c) => c.certification_type === "initiator_b4"));
+      setHasCoBuilderCert(certList.some((c) => c.certification_type === "cobuilder_b4"));
+      const mem = (memberships ?? []) as Array<{ role: string }>;
+      setIsOrgMember(mem.length > 0 || (ownedOrgs?.length ?? 0) > 0);
+      setIsOrgAdmin(mem.some((m) => m.role === "admin") || (ownedOrgs?.length ?? 0) > 0);
+      setGatingLoaded(true);
     })();
   }, [user]);
 
