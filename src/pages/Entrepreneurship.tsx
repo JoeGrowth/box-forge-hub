@@ -129,8 +129,20 @@ const Entrepreneurship = () => {
   const [isOrgAdmin, setIsOrgAdmin] = useState(false);
   const [isOrgMember, setIsOrgMember] = useState(false);
   const [gatingLoaded, setGatingLoaded] = useState(false);
+  const [entTrackDone, setEntTrackDone] = useState(false);
+  const { talentReady, missing: talentMissing, loading: readinessLoading } = useTalentReadiness();
 
   useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase
+        .from("entrepreneurial_onboarding")
+        .select("is_completed")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      setEntTrackDone(Boolean((data as any)?.is_completed));
+    })();
+  }, [user]);
     if (!user) return;
     (async () => {
       const [
