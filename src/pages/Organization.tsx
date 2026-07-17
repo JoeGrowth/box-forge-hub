@@ -1770,6 +1770,20 @@ function ProductJourneySection({ orgId, userId }: { orgId: string; userId: strin
           <p className="text-xs text-muted-foreground mt-1">
             Track every product this entity ships. Each product has its own versioned case-study trail — v1 spreadsheet, v2 platform, v3 optimized…
           </p>
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              1 shipped = focused
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-amber-500" />
+              2 shipped = expanding
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-rose-500" />
+              3+ shipped = diversification risk — template needed
+            </span>
+          </div>
         </div>
         <Button size="sm" onClick={() => setAddingProduct((o) => !o)}>
           <Plus className="w-4 h-4 mr-1" /> {addingProduct ? "Cancel" : "Add product journey"}
@@ -2029,15 +2043,17 @@ function ProductBlock({
 
   const toggleCollapsed = () => setCollapsed((c) => !c);
 
-  const delivered = items.length > 3;
+  const shippedTier =
+    items.length === 0
+      ? { className: "bg-background border-border", badge: "", label: "", hint: "" }
+      : items.length === 1
+      ? { className: "bg-emerald-500/5 border-emerald-200/60", badge: "bg-emerald-500/10 text-emerald-700 border-emerald-200", label: "Focused", hint: "Core product — keep iterating." }
+      : items.length === 2
+      ? { className: "bg-amber-500/5 border-amber-200/60", badge: "bg-amber-500/10 text-amber-700 border-amber-200", label: "Expanding", hint: "Two delivery tracks — watch scope." }
+      : { className: "bg-rose-500/5 border-rose-200/60", badge: "bg-rose-500/10 text-rose-700 border-rose-200", label: "Diversified", hint: "Consider creating a training/delivery template to standardize delivery." };
 
   return (
-    <div className={cn(
-      "rounded-xl border p-4 transition-colors",
-      delivered
-        ? "bg-primary/5 border-primary/20"
-        : "bg-background border-border"
-    )}>
+    <div className={cn("rounded-xl border p-4 transition-colors", shippedTier.className)}>
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div
           className={cn(
@@ -2093,9 +2109,19 @@ function ProductBlock({
               )}
             </div>
           )}
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {items.length} shipped iteration{items.length === 1 ? "" : "s"}
+          <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2 flex-wrap">
+            <span>{items.length} shipped iteration{items.length === 1 ? "" : "s"}</span>
+            {items.length > 0 && (
+              <Badge variant="outline" className={cn("text-[10px] font-normal px-1.5 py-0", shippedTier.badge)} title={shippedTier.hint}>
+                {shippedTier.label}
+              </Badge>
+            )}
           </p>
+          {items.length >= 3 && (
+            <p className="text-[11px] text-rose-600 mt-1">
+              Tip: this product has {items.length} shipped iterations. Consider building a training template so delivery stays repeatable.
+            </p>
+          )}
           {showHistory && history.length > 0 && (
             <ul className="mt-2 space-y-1 text-xs text-muted-foreground border-l border-border pl-3">
               {history.map((h) => (
