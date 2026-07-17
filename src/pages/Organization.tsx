@@ -145,6 +145,10 @@ export default function OrganizationPage() {
   const [creatingDecl, setCreatingDecl] = useState(false);
   const { members, reload: reloadMembers } = useOrgMembers(org?.id);
 
+  type TenderInterest = { user_id: string; full_name: string | null; message: string | null; created_at: string };
+  const [tenderInterests, setTenderInterests] = useState<Record<string, { count: number; items: TenderInterest[] }>>({});
+  const [viewingTender, setViewingTender] = useState<{ id: string; title: string } | null>(null);
+
   const [dailyTasks, setDailyTasks] = useState<DailyTask[]>([]);
   useEffect(() => {
     if (!org?.id) return;
@@ -168,10 +172,37 @@ export default function OrganizationPage() {
       supabase.from("declaration_entities").select("id, name, created_at").eq("organization_id", org.id).order("created_at", { ascending: true }),
       supabase.from("organization_legal_documents").select("id, name, storage_path, created_at, size_bytes").eq("organization_id", org.id).order("created_at", { ascending: false }),
     ]);
+    const tenderRows = (ts as TenderRow[]) ?? [];
     setJobs((js as JobRow[]) ?? []);
-    setTenders((ts as TenderRow[]) ?? []);
+    setTenders(tenderRows);
     setDeclarations((ds as any) ?? []);
     setLegalDocs((lg as any) ?? []);
+
+    if (tenderRows.length > 0) {
+      const ids = tenderRows.map((t) => t.id);
+      const { data: ints } = await supabase
+        .from("opportunity_interactions")
+        .select("opportunity_id, user_id, message, created_at")
+        .in("opportunity_id", ids)
+        .order("created_at", { ascending: false });
+      const items = (ints as any[]) ?? [];
+      const userIds = [...new Set(items.map((i) => i.user_id).filter(Boolean))];
+      const { data: profs } = userIds.length
+        ? await supabase.from("profiles").select("user_id, full_name").in("user_id", userIds)
+        : { data: [] };
+      const nameMap = new Map(((profs as any[]) ?? []).map((p) => [p.user_id, p.full_name]));
+      const map: Record<string, { count: number; items: TenderInterest[] }> = {};
+      for (const t of tenderRows) map[t.id] = { count: 0, items: [] };
+      for (const i of items) {
+        const entry = map[i.opportunity_id] ?? { count: 0, items: [] };
+        entry.items.push({ user_id: i.user_id, full_name: nameMap.get(i.user_id) ?? null, message: i.message, created_at: i.created_at });
+        entry.count++;
+        map[i.opportunity_id] = entry;
+      }
+      setTenderInterests(map);
+    } else {
+      setTenderInterests({});
+    }
   }, [org]);
 
   useEffect(() => { loadOpps(); }, [loadOpps]);
