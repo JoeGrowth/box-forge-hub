@@ -124,6 +124,7 @@ const Entrepreneurship = () => {
   const [profilePrimarySkills, setProfilePrimarySkills] = useState<string | null>(null);
   const [profileUsername, setProfileUsername] = useState<string | null>(null);
   const [suggestDomainOpen, setSuggestDomainOpen] = useState(false);
+  const [hasDomainSuggestion, setHasDomainSuggestion] = useState(false);
 
   const [hasInitiatorCert, setHasInitiatorCert] = useState(false);
   const [hasCoBuilderCert, setHasCoBuilderCert] = useState(false);
@@ -142,6 +143,11 @@ const Entrepreneurship = () => {
         .eq("user_id", user.id)
         .maybeSingle();
       setEntTrackDone(Boolean((data as any)?.is_completed));
+      const { count } = await (supabase as any)
+        .from("domain_suggestions")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id);
+      setHasDomainSuggestion((count ?? 0) > 0);
     })();
   }, [user]);
 
@@ -885,7 +891,7 @@ const Entrepreneurship = () => {
                   const shapedComplete = intentDone && decoderDone && proTrackDone && resumeDone;
                   const effectiveSub: GrowthSub = (() => {
                     if (!shapedComplete) return "shaped";
-                    if (growthSubTab === "validated" && !!profileTitle) return "validated";
+                    if (growthSubTab === "validated" && hasDomainSuggestion) return "validated";
                     if (growthSubTab === "systematized" && advisorAchieved) return "systematized";
                     return "developed";
                   })();
@@ -919,7 +925,7 @@ const Entrepreneurship = () => {
                         Developed
                       </button>
                     )}
-                    {shapedComplete && !!profileTitle && (
+                    {shapedComplete && hasDomainSuggestion && (
                       <button
                         onClick={() => setGrowthSubTab("validated")}
                         className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
