@@ -835,12 +835,25 @@ const Entrepreneurship = () => {
                       {loading ? (
                         <Skeleton className="h-24 w-full rounded-2xl" />
                       ) : collaborations.length === 0 ? (
+                        !hasCoBuilderCert ? (
+                          <div className="rounded-xl border border-dashed border-border p-12 text-center">
+                            <Users className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
+                            <p className="font-medium text-foreground">Get certified before you join a venture</p>
+                            <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
+                              Co-Builders collaborate on ventures only after earning the Co-Builder certification. Complete it to unlock joining projects.
+                            </p>
+                            <Button className="mt-4" onClick={() => navigate("/certifications")}>
+                              Start Co-Builder Certification
+                            </Button>
+                          </div>
+                        ) : (
                         <div className="text-center py-12 text-muted-foreground">
                           <p>You're not collaborating on any projects yet.</p>
                           <Button variant="outline" className="mt-3" onClick={() => navigate("/projects")}>
                             Explore Ecosystem
                           </Button>
                         </div>
+                        )
                       ) : (
                         <div className="space-y-4">
                           {collaborations.map((project) => (
