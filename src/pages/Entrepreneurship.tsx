@@ -785,6 +785,18 @@ const Entrepreneurship = () => {
                       {loading ? (
                         <Skeleton className="h-24 w-full rounded-2xl" />
                       ) : (myProjects.length === 0) ? (
+                        !hasInitiatorCert ? (
+                          <div className="rounded-xl border border-dashed border-border p-12 text-center">
+                            <Lightbulb className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
+                            <p className="font-medium text-foreground">Get certified before you initiate</p>
+                            <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
+                              Initiators launch ventures on the platform only after earning the Initiator certification. Complete it to unlock creating your first project.
+                            </p>
+                            <Button className="mt-4" onClick={() => navigate("/journey/idea")}>
+                              Start Initiator Certification
+                            </Button>
+                          </div>
+                        ) : (
                         <div className="rounded-xl border border-dashed border-border p-12 text-center">
                           <Lightbulb className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
                           <p className="font-medium text-foreground">Nothing in your journey yet</p>
@@ -795,6 +807,7 @@ const Entrepreneurship = () => {
                             <Plus className="w-4 h-4 mr-1" /> Add First Project
                           </Button>
                         </div>
+                        )
                       ) : (
                         <div className="space-y-4">
                           {myProjects.map((project) => (
