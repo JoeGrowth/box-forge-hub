@@ -885,7 +885,7 @@ const Entrepreneurship = () => {
                   const shapedComplete = intentDone && decoderDone && proTrackDone && resumeDone;
                   const effectiveSub: GrowthSub = (() => {
                     if (!shapedComplete) return "shaped";
-                    if (growthSubTab === "validated") return "validated";
+                    if (growthSubTab === "validated" && !!profileTitle) return "validated";
                     if (growthSubTab === "systematized" && advisorAchieved) return "systematized";
                     return "developed";
                   })();
