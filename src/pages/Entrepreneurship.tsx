@@ -969,14 +969,16 @@ const Entrepreneurship = () => {
                               <p className="font-medium text-foreground">{item.title}</p>
                               <p className="text-sm text-muted-foreground mt-1">{item.desc}</p>
                             </div>
-                            <Button
-                              size="sm"
-                              variant={item.done ? "outline" : "default"}
-                              asChild
-                              className="shrink-0"
-                            >
-                              <Link to={item.to}>{item.done ? "Review" : item.label}</Link>
-                            </Button>
+                            {!(item.key === "intent" && item.done) && (
+                              <Button
+                                size="sm"
+                                variant={item.done ? "outline" : "default"}
+                                asChild
+                                className="shrink-0"
+                              >
+                                <Link to={item.to}>{item.done ? "Review" : item.label}</Link>
+                              </Button>
+                            )}
                           </div>
                         ))}
                       </div>
