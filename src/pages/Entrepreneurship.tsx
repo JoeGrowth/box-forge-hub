@@ -666,7 +666,8 @@ const Entrepreneurship = () => {
                 );
                 const canSeeOrganizations = hasValidationProject || isOrgMember || advisorAchieved;
                 const canSeeAssets = isOrgAdmin;
-                const canSeeLegacy = hasInitiatorCert || hasCoBuilderCert || advisorAchieved;
+                const validatedUnlocked = (hasDomainSuggestion || !!profileTitle);
+                const canSeeLegacy = hasInitiatorCert || hasCoBuilderCert || advisorAchieved || validatedUnlocked;
 
                 // Auto-redirect if the current tab isn't available
                 if (gatingLoaded && !loading) {
