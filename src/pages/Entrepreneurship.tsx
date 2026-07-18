@@ -881,7 +881,8 @@ const Entrepreneurship = () => {
                     { key: "resume", title: "Sharpen your resume", desc: "Title, summary and signature skills — the first thing recruiters and initiators see.", to: "/resume", done: resumeDone, label: "Complete" },
                     { key: "ent", title: "Fill your Entrepreneurial Track Record", desc: "Initiatives, products, teams, business, equity — what you've shipped as a builder.", to: "/track?unlock=entrepreneurial", done: entTrackDone, label: "Start" },
                   ];
-                  const shapedComplete = shapedItems.every((s) => s.done);
+                  // Talent Foundation = intent + natural role + professional track record + resume (matches homepage "Shape your talent" card)
+                  const shapedComplete = intentDone && decoderDone && proTrackDone && resumeDone;
                   const effectiveSub: GrowthSub = (() => {
                     if (!shapedComplete) return "shaped";
                     if (growthSubTab === "shaped") return "shaped";
