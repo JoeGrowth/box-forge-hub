@@ -885,7 +885,6 @@ const Entrepreneurship = () => {
                   const shapedComplete = intentDone && decoderDone && proTrackDone && resumeDone;
                   const effectiveSub: GrowthSub = (() => {
                     if (!shapedComplete) return "shaped";
-                    if (growthSubTab === "shaped") return "shaped";
                     if (growthSubTab === "validated") return "validated";
                     if (growthSubTab === "systematized" && advisorAchieved) return "systematized";
                     return "developed";
@@ -893,19 +892,21 @@ const Entrepreneurship = () => {
                   return (
                   <>
                   <div className="flex gap-1 p-1 bg-muted/60 rounded-lg mb-4 w-full sm:w-auto">
-                    <button
-                      onClick={() => setGrowthSubTab("shaped")}
-                      className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
-                        effectiveSub === "shaped"
-                          ? "bg-background text-foreground shadow-sm"
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      Shaped
-                      <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-primary/40 text-primary">
-                        {shapedItems.filter((s) => s.done).length}/{shapedItems.length}
-                      </Badge>
-                    </button>
+                    {!shapedComplete && (
+                      <button
+                        onClick={() => setGrowthSubTab("shaped")}
+                        className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
+                          effectiveSub === "shaped"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        Shaped
+                        <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-primary/40 text-primary">
+                          {shapedItems.filter((s) => s.done).length}/{shapedItems.length}
+                        </Badge>
+                      </button>
+                    )}
                     {shapedComplete && (
                       <button
                         onClick={() => setGrowthSubTab("developed")}
