@@ -885,7 +885,7 @@ const Entrepreneurship = () => {
                   const shapedComplete = intentDone && decoderDone && proTrackDone && resumeDone;
                   const effectiveSub: GrowthSub = (() => {
                     if (!shapedComplete) return "shaped";
-                    if (growthSubTab === "validated") return "validated";
+                    if (growthSubTab === "validated" && !!profileTitle) return "validated";
                     if (growthSubTab === "systematized" && advisorAchieved) return "systematized";
                     return "developed";
                   })();
@@ -919,7 +919,7 @@ const Entrepreneurship = () => {
                         Developed
                       </button>
                     )}
-                    {shapedComplete && (
+                    {shapedComplete && !!profileTitle && (
                       <button
                         onClick={() => setGrowthSubTab("validated")}
                         className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
