@@ -2468,3 +2468,78 @@ function SubmissionRow({
     </div>
   );
 }
+
+function EditableOrgDescription({
+  orgId,
+  initialDescription,
+  onSaved,
+}: {
+  orgId: string;
+  initialDescription: string | null;
+  onSaved?: (v: string) => void;
+}) {
+  const { toast } = useToast();
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(initialDescription || "");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => { setValue(initialDescription || ""); }, [initialDescription]);
+
+  const save = async () => {
+    setSaving(true);
+    const desc = value.trim();
+    const { error } = await supabase
+      .from("organizations")
+      .update({ description: desc || null } as any)
+      .eq("id", orgId);
+    if (error) {
+      setSaving(false);
+      toast({ title: "Save failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    // Sync the linked startup idea (Legacy › Initiated) so both places match.
+    await supabase
+      .from("startup_ideas")
+      .update({ description: desc } as any)
+      .eq("organization_id", orgId);
+    setSaving(false);
+    setEditing(false);
+    onSaved?.(desc);
+    toast({ title: "Description updated", description: "Synced with your Legacy Initiated card." });
+  };
+
+  if (!editing) {
+    return (
+      <div className="mt-2 group">
+        {value ? (
+          <p className="text-sm text-muted-foreground whitespace-pre-wrap">{value}</p>
+        ) : (
+          <p className="text-sm text-muted-foreground italic">No description yet.</p>
+        )}
+        <Button variant="ghost" size="sm" className="mt-1 h-7 px-2 text-xs" onClick={() => setEditing(true)}>
+          <Pencil className="w-3 h-3 mr-1" /> {value ? "Edit description" : "Add description"}
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-2 space-y-2">
+      <Textarea
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        rows={4}
+        placeholder="Describe this organization — this description will also appear on your Legacy Initiated card."
+      />
+      <div className="flex items-center gap-2">
+        <Button size="sm" onClick={save} disabled={saving}>
+          {saving ? "Saving…" : "Save"}
+        </Button>
+        <Button size="sm" variant="ghost" onClick={() => { setValue(initialDescription || ""); setEditing(false); }} disabled={saving}>
+          Cancel
+        </Button>
+      </div>
+    </div>
+  );
+}
+
