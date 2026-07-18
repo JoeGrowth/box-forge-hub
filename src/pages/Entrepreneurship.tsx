@@ -143,6 +143,11 @@ const Entrepreneurship = () => {
         .eq("user_id", user.id)
         .maybeSingle();
       setEntTrackDone(Boolean((data as any)?.is_completed));
+      const { count } = await (supabase as any)
+        .from("domain_suggestions")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id);
+      setHasDomainSuggestion((count ?? 0) > 0);
     })();
   }, [user]);
 
