@@ -925,7 +925,7 @@ const Entrepreneurship = () => {
                         Developed
                       </button>
                     )}
-                    {shapedComplete && hasDomainSuggestion && (
+                    {shapedComplete && (hasDomainSuggestion || !!profileTitle) && (
                       <button
                         onClick={() => setGrowthSubTab("validated")}
                         className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
