@@ -1128,7 +1128,7 @@ const Entrepreneurship = () => {
         naturalRole={naturalRoleDesc}
         currentTitle={profileTitle}
         primarySkills={profilePrimarySkills}
-        onApply={(d) => setProfileTitle(d)}
+        onApply={(d) => { setProfileTitle(d); setHasDomainSuggestion(true); }}
       />
       {applyProject && (
         <ApplyToJoinDialog
