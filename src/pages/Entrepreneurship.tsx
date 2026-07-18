@@ -124,6 +124,7 @@ const Entrepreneurship = () => {
   const [profilePrimarySkills, setProfilePrimarySkills] = useState<string | null>(null);
   const [profileUsername, setProfileUsername] = useState<string | null>(null);
   const [suggestDomainOpen, setSuggestDomainOpen] = useState(false);
+  const [hasDomainSuggestion, setHasDomainSuggestion] = useState(false);
 
   const [hasInitiatorCert, setHasInitiatorCert] = useState(false);
   const [hasCoBuilderCert, setHasCoBuilderCert] = useState(false);
