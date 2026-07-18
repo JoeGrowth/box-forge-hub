@@ -792,7 +792,7 @@ const Entrepreneurship = () => {
                             <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
                               Initiators launch ventures on the platform only after earning the Initiator certification. Complete it to unlock creating your first project.
                             </p>
-                            <Button className="mt-4" onClick={() => navigate("/journey/idea")}>
+                            <Button className="mt-4" onClick={() => navigate("/certifications")}>
                               Start Initiator Certification
                             </Button>
                           </div>
