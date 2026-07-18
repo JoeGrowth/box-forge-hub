@@ -262,10 +262,29 @@ export const IdeaDevelopDialog = ({
         },
       });
       if (error) throw error;
-      const summaries: Array<{ id: string; text: string }> = data?.summaries ?? [];
+      // Defensive: data may arrive as a string, or `text` may itself contain a JSON envelope.
+      let payload: any = data;
+      if (typeof payload === "string") {
+        try { payload = JSON.parse(payload); } catch { /* keep as string */ }
+      }
+      const unwrap = (raw: string): string => {
+        const trimmed = raw.trim();
+        if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) return raw;
+        try {
+          const inner = JSON.parse(trimmed);
+          if (inner && Array.isArray(inner.summaries) && inner.summaries[0]?.text) {
+            return String(inner.summaries[0].text);
+          }
+          if (typeof inner?.text === "string") return inner.text;
+        } catch { /* not JSON, return as-is */ }
+        return raw;
+      };
+      const summaries: Array<{ id: string; text: string }> = payload?.summaries ?? [];
       const patch: Record<string, string> = {};
       summaries.forEach((s) => {
-        if (s?.id && s?.text) patch[s.id] = s.text;
+        if (s?.id && typeof s?.text === "string" && s.text.trim()) {
+          patch[s.id] = unwrap(s.text);
+        }
       });
       if (Object.keys(patch).length) {
         setResponses((prev) => ({ ...prev, ...patch }));
