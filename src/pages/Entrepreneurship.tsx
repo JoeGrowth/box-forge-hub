@@ -837,7 +837,7 @@ const Entrepreneurship = () => {
                         !hasCoBuilderCert ? (
                           <div className="rounded-xl border border-dashed border-border p-12 text-center">
                             <Users className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-                            <p className="font-medium text-foreground">Get certified before you join a venture</p>
+                            <p className="font-medium text-foreground">Get certified before you join</p>
                             <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
                               Co-Builders collaborate on ventures only after earning the Co-Builder certification. Complete it to unlock joining projects.
                             </p>
