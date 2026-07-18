@@ -353,13 +353,22 @@ export default function OrganizationPage() {
                 </Badge>
               )}
             </div>
-            {org.description && <p className="text-sm text-muted-foreground mt-2">{org.description}</p>}
+            {canAdmin ? (
+              <EditableOrgDescription
+                orgId={org.id}
+                initialDescription={org.description}
+                onSaved={(v) => { (org as any).description = v; }}
+              />
+            ) : (
+              org.description && <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">{org.description}</p>
+            )}
             {org.website && (
               <a href={org.website} target="_blank" rel="noreferrer"
                  className="inline-flex items-center text-xs text-primary mt-2 hover:underline">
                 {org.website} <ExternalLink className="w-3 h-3 ml-1" />
               </a>
             )}
+
             {canAdmin && (
               <div className="mt-3 flex items-center gap-2 flex-wrap">
                 <Label className="text-xs text-muted-foreground">Lifecycle stage:</Label>
