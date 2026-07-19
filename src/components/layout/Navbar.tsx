@@ -208,7 +208,7 @@ export function Navbar() {
                     location.pathname === "/organizations" ? "text-b4-teal" : "text-muted-foreground"
                   }`}
                 >
-                  Orgs
+                  Organizations
                 </Link>
                 <Link
                   to="/entrepreneurship"
@@ -270,7 +270,7 @@ export function Navbar() {
                         }`}
                       >
                         <Building2 size={16} />
-                        Orgs
+                        Organizations
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -482,7 +482,7 @@ export function Navbar() {
                         }`}
                       >
                         <Building2 size={16} />
-                        <span className="flex-1">Orgs</span>
+                        <span className="flex-1">Organizations</span>
                       </Link>
 
                       <Link
@@ -542,7 +542,7 @@ export function Navbar() {
                         }`}
                       >
                         <Building2 size={16} />
-                        <span className="flex-1">Orgs</span>
+                        <span className="flex-1">Organizations</span>
                       </Link>
 
                       <Link
