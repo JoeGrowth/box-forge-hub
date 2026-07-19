@@ -216,7 +216,7 @@ export function Navbar() {
                     location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-muted-foreground"
                   }`}
                 >
-                  Growth Studio
+                  Studio
                 </Link>
               </>
             ) : (
@@ -295,9 +295,9 @@ export function Navbar() {
                           ? "text-b4-teal"
                           : "text-muted-foreground"
                       }`}
-                      aria-label="Growth"
+                      aria-label="Studio"
                     >
-                      Growth
+                      Studio
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56 mt-2">
@@ -309,7 +309,7 @@ export function Navbar() {
                         }`}
                       >
                         <Building2 size={16} />
-                        Studio
+                        Build Assets
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -495,7 +495,7 @@ export function Navbar() {
                         }`}
                       >
                         <Rocket size={16} />
-                        <span className="flex-1">Growth Studio</span>
+                        <span className="flex-1">Studio</span>
                       </Link>
                     </>
                   ) : (
@@ -559,7 +559,7 @@ export function Navbar() {
                       </Link>
 
                       <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Growth
+                        Studio
                       </div>
 
                       <Link
@@ -572,7 +572,7 @@ export function Navbar() {
                         }`}
                       >
                         <Building2 size={16} />
-                        <span className="flex-1">Studio</span>
+                        <span className="flex-1">Build Assets</span>
                       </Link>
 
                       <Link
