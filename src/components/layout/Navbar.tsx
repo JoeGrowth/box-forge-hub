@@ -72,7 +72,6 @@ const moreLinks: Array<{
   minStage?: keyof typeof STAGE_RANK;
   engineKey?: EngineKey;
 }> = [
-  { name: "Orgs", path: "/organizations", icon: Building2 },
   { name: "Squares", path: "/squares", icon: LayoutGrid },
   { name: "Programs", path: "/programs", icon: BookOpen },
   { name: "Boxes", path: "/boxes", icon: Package },
@@ -226,7 +225,10 @@ export function Navbar() {
                   <DropdownMenuTrigger asChild>
                     <button
                       className={`text-sm font-medium transition-colors hover:text-b4-teal outline-none ${
-                        location.pathname === "/people" || location.pathname === "/projects"
+                        location.pathname === "/people" ||
+                        location.pathname === "/projects" ||
+                        location.pathname === "/organizations" ||
+                        location.pathname === "/my-tender-work"
                           ? "text-b4-teal"
                           : "text-muted-foreground"
                       }`}
@@ -258,6 +260,17 @@ export function Navbar() {
                       >
                         <Rocket size={16} />
                         Projects
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        to="/organizations"
+                        className={`flex items-center gap-2 cursor-pointer ${
+                          location.pathname === "/organizations" ? "text-b4-teal" : "text-foreground"
+                        }`}
+                      >
+                        <Building2 size={16} />
+                        Orgs
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -517,6 +530,32 @@ export function Navbar() {
                       >
                         <Rocket size={16} />
                         <span className="flex-1">Projects</span>
+                      </Link>
+
+                      <Link
+                        to="/organizations"
+                        onClick={() => setIsOpen(false)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                          location.pathname === "/organizations"
+                            ? "bg-muted text-b4-teal"
+                            : "text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        <Building2 size={16} />
+                        <span className="flex-1">Orgs</span>
+                      </Link>
+
+                      <Link
+                        to="/my-tender-work"
+                        onClick={() => setIsOpen(false)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                          location.pathname === "/my-tender-work"
+                            ? "bg-muted text-b4-teal"
+                            : "text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        <FileText size={16} />
+                        <span className="flex-1">My tender work</span>
                       </Link>
 
                       <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
