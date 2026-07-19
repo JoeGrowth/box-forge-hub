@@ -72,7 +72,6 @@ const moreLinks: Array<{
   minStage?: keyof typeof STAGE_RANK;
   engineKey?: EngineKey;
 }> = [
-  { name: "Orgs", path: "/organizations", icon: Building2 },
   { name: "Squares", path: "/squares", icon: LayoutGrid },
   { name: "Programs", path: "/programs", icon: BookOpen },
   { name: "Boxes", path: "/boxes", icon: Package },
