@@ -122,6 +122,7 @@ const App = () => (
                   <Route path="/LPV1" element={<Navigate to="/landing" replace />} />
 
                   <Route path="/about" element={<About />} />
+                  <Route path="/portfolio" element={<Portfolio />} />
                   <Route path="/boxes" element={<Boxes />} />
                   <Route path="/boxes/:boxId" element={<BoxDetail />} />
                   <Route path="/programs" element={<Programs />} />
