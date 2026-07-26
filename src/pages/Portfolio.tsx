@@ -34,7 +34,9 @@ type Entity = {
   children: Unit[];
 };
 
-const ECOSYSTEM: Entity[] = [
+const STORAGE_KEY = "b4-portfolio-ecosystem";
+
+const DEFAULT_ECOSYSTEM: Entity[] = [
   {
     name: "B4TS",
     subtitle: "Box 4 Transformation Solutions",
