@@ -94,6 +94,7 @@ import SavedDomainSuggestions from "./pages/SavedDomainSuggestions";
 import Ecosystem from "./pages/Ecosystem";
 import Grow from "./pages/Grow";
 import MyTenderWork from "./pages/MyTenderWork";
+import Portfolio from "./pages/Portfolio";
 
 import { ClickTracker } from "./components/analytics/ClickTracker";
 import { ReportBetaIssueButton } from "./components/beta/ReportBetaIssueButton";
@@ -121,6 +122,7 @@ const App = () => (
                   <Route path="/LPV1" element={<Navigate to="/landing" replace />} />
 
                   <Route path="/about" element={<About />} />
+                  <Route path="/portfolio" element={<Portfolio />} />
                   <Route path="/boxes" element={<Boxes />} />
                   <Route path="/boxes/:boxId" element={<BoxDetail />} />
                   <Route path="/programs" element={<Programs />} />
