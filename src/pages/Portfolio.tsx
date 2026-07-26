@@ -1,11 +1,14 @@
+import { useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Cpu, Package, Briefcase, Globe } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Cpu, Package, Briefcase, Globe, ChevronDown } from "lucide-react";
 
 type Unit = {
   name: string;
+  subtitle?: string;
   coreEngine?: { title: string; flow: string };
   functionalProduct: string;
   businessEngine: string[];
@@ -15,49 +18,48 @@ type Unit = {
 type Entity = {
   name: string;
   subtitle?: string;
-  unit?: Unit;
-  children?: Unit[];
+  children: Unit[];
 };
 
 const ECOSYSTEM: Entity[] = [
   {
-    name: "COMMITT",
-    unit: {
-      name: "COMMITT",
-      coreEngine: { title: "Understanding Engine", flow: "Information → Meaning" },
-      functionalProduct:
-        "Creates shared understanding through learning, workshops, facilitation, and knowledge alignment",
-      businessEngine: [
-        "Organizational learning services",
-        "Workshops",
-        "Training programs",
-        "Facilitation",
-      ],
-      similar: [
-        { name: "IDEO", note: "uses workshops and collaborative methods to create shared understanding" },
-        { name: "Deloitte", note: "organizational transformation and learning services" },
-        { name: "McKinsey & Company", note: "problem framing, alignment, and decision support" },
-      ],
-    },
-  },
-  {
-    name: "PENGRY",
-    unit: {
-      name: "PENGRY",
-      coreEngine: { title: "Trust Engine", flow: "Security uncertainty → Trusted decisions" },
-      functionalProduct:
-        "Helps organizations improve security awareness, resilience, and decision-making under uncertainty",
-      businessEngine: ["Security workshops", "Resilience programs", "Advisory services", "Training"],
-      similar: [
-        { name: "KnowBe4", note: "security awareness training" },
-        { name: "SANS Institute", note: "cybersecurity education and professional training" },
-        { name: "Deloitte Cyber Risk", note: "cybersecurity consulting and resilience" },
-      ],
-    },
+    name: "B4TS",
+    subtitle: "Box 4 Transformation Solutions",
+    children: [
+      {
+        name: "COMMITT",
+        coreEngine: { title: "Understanding Engine", flow: "Information \u2192 Meaning" },
+        functionalProduct:
+          "Creates shared understanding through learning, workshops, facilitation, and knowledge alignment",
+        businessEngine: [
+          "Organizational learning services",
+          "Workshops",
+          "Training programs",
+          "Facilitation",
+        ],
+        similar: [
+          { name: "IDEO", note: "uses workshops and collaborative methods to create shared understanding" },
+          { name: "Deloitte", note: "organizational transformation and learning services" },
+          { name: "McKinsey & Company", note: "problem framing, alignment, and decision support" },
+        ],
+      },
+      {
+        name: "PENGRY",
+        coreEngine: { title: "Trust Engine", flow: "Security uncertainty \u2192 Trusted decisions" },
+        functionalProduct:
+          "Helps organizations improve security awareness, resilience, and decision-making under uncertainty",
+        businessEngine: ["Security workshops", "Resilience programs", "Advisory services", "Training"],
+        similar: [
+          { name: "KnowBe4", note: "security awareness training" },
+          { name: "SANS Institute", note: "cybersecurity education and professional training" },
+          { name: "Deloitte Cyber Risk", note: "cybersecurity consulting and resilience" },
+        ],
+      },
+    ],
   },
   {
     name: "B4HS",
-    subtitle: "Box For Health Solutions SARL",
+    subtitle: "Box 4 Health Solutions SARL",
     children: [
       {
         name: "Smart Cigarette Case",
@@ -80,8 +82,8 @@ const ECOSYSTEM: Entity[] = [
     ],
   },
   {
-    name: "Box 4 Digital Solutions",
-    subtitle: "Future entity",
+    name: "B4DS",
+    subtitle: "Box 4 Digital Solutions \u00b7 future entity",
     children: [
       {
         name: "Convoy Organizer",
@@ -160,6 +162,63 @@ function UnitBlock({ unit }: { unit: Unit }) {
   );
 }
 
+function UnitCollapsible({ unit }: { unit: Unit }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <div className="rounded-lg border border-border bg-card/60">
+        <CollapsibleTrigger className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left">
+          <div>
+            <h3 className="font-semibold">{unit.name}</h3>
+            {unit.coreEngine && (
+              <p className="text-xs text-muted-foreground">{unit.coreEngine.title}</p>
+            )}
+          </div>
+          <ChevronDown
+            className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
+          />
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="px-5 pb-5 pt-1">
+            <UnitBlock unit={unit} />
+          </div>
+        </CollapsibleContent>
+      </div>
+    </Collapsible>
+  );
+}
+
+function EntityCollapsible({ entity }: { entity: Entity }) {
+  const [open, setOpen] = useState(true);
+  return (
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <Card className="border-border/80">
+        <CollapsibleTrigger className="flex w-full items-center justify-between gap-3 p-6 text-left">
+          <div>
+            <h2 className="text-xl font-bold tracking-tight">{entity.name}</h2>
+            {entity.subtitle && (
+              <p className="text-sm text-muted-foreground">{entity.subtitle}</p>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            <Badge variant="secondary">{entity.children.length}</Badge>
+            <ChevronDown
+              className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
+            />
+          </div>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <CardContent className="px-6 pb-6 pt-0 space-y-4">
+            {entity.children.map((child) => (
+              <UnitCollapsible key={child.name} unit={child} />
+            ))}
+          </CardContent>
+        </CollapsibleContent>
+      </Card>
+    </Collapsible>
+  );
+}
+
 export default function Portfolio() {
   return (
     <div className="min-h-screen bg-background">
@@ -180,32 +239,7 @@ export default function Portfolio() {
           {ECOSYSTEM.map((entity) => (
             <section key={entity.name} className="relative">
               <div className="hidden md:block absolute -left-[26px] top-7 h-px w-6 bg-border" />
-              <Card className="border-border/80">
-                <CardContent className="p-6 space-y-6">
-                  <div>
-                    <h2 className="text-xl font-bold tracking-tight">{entity.name}</h2>
-                    {entity.subtitle && (
-                      <p className="text-sm text-muted-foreground">{entity.subtitle}</p>
-                    )}
-                  </div>
-
-                  {entity.unit && <UnitBlock unit={entity.unit} />}
-
-                  {entity.children && (
-                    <div className="space-y-4">
-                      {entity.children.map((child) => (
-                        <div
-                          key={child.name}
-                          className="rounded-lg border border-border bg-card/60 p-5"
-                        >
-                          <h3 className="font-semibold mb-4">{child.name}</h3>
-                          <UnitBlock unit={child} />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              <EntityCollapsible entity={entity} />
             </section>
           ))}
         </div>
