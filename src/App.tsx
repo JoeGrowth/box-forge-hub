@@ -94,6 +94,7 @@ import SavedDomainSuggestions from "./pages/SavedDomainSuggestions";
 import Ecosystem from "./pages/Ecosystem";
 import Grow from "./pages/Grow";
 import MyTenderWork from "./pages/MyTenderWork";
+import Portfolio from "./pages/Portfolio";
 
 import { ClickTracker } from "./components/analytics/ClickTracker";
 import { ReportBetaIssueButton } from "./components/beta/ReportBetaIssueButton";
