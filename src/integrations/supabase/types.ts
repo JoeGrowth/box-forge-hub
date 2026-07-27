@@ -4245,6 +4245,89 @@ export type Database = {
         }
         Relationships: []
       }
+      portfolio_entities: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          position: number
+          subtitle: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          position?: number
+          subtitle?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          position?: number
+          subtitle?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      portfolio_products: {
+        Row: {
+          business_engine: string[]
+          core_engine_flow: string | null
+          core_engine_title: string | null
+          created_at: string
+          entity_id: string
+          functional_product: string | null
+          id: string
+          name: string
+          position: number
+          similar_entities: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          business_engine?: string[]
+          core_engine_flow?: string | null
+          core_engine_title?: string | null
+          created_at?: string
+          entity_id: string
+          functional_product?: string | null
+          id?: string
+          name: string
+          position?: number
+          similar_entities?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          business_engine?: string[]
+          core_engine_flow?: string | null
+          core_engine_title?: string | null
+          created_at?: string
+          entity_id?: string
+          functional_product?: string | null
+          id?: string
+          name?: string
+          position?: number
+          similar_entities?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_products_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "portfolio_entities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professional_state_weights: {
         Row: {
           created_at: string
