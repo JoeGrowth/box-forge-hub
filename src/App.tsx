@@ -95,6 +95,7 @@ import Ecosystem from "./pages/Ecosystem";
 import Grow from "./pages/Grow";
 import MyTenderWork from "./pages/MyTenderWork";
 import Portfolio from "./pages/Portfolio";
+import Kanban from "./pages/Kanban";
 
 import { ClickTracker } from "./components/analytics/ClickTracker";
 import { ReportBetaIssueButton } from "./components/beta/ReportBetaIssueButton";
@@ -240,7 +241,9 @@ const App = () => (
                   <Route path="/me" element={<Navigate to="/profile" replace />} />
                   <Route path="/u/:slug" element={<PublicProfile />} />
                   <Route path="/my-tender-work" element={<ProtectedRoute><MyTenderWork /></ProtectedRoute>} />
+                  <Route path="/kanban" element={<ProtectedRoute><Kanban /></ProtectedRoute>} />
                   <Route path="/account" element={<Navigate to="/profile" replace />} />
+
                   <Route path="/settings" element={<Navigate to="/profile" replace />} />
                   <Route path="/inbox" element={<Navigate to="/messages" replace />} />
                   <Route path="/chat" element={<Navigate to="/messages" replace />} />
