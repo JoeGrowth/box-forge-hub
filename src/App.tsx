@@ -95,6 +95,7 @@ import Ecosystem from "./pages/Ecosystem";
 import Grow from "./pages/Grow";
 import MyTenderWork from "./pages/MyTenderWork";
 import Portfolio from "./pages/Portfolio";
+import Kanban from "./pages/Kanban";
 
 import { ClickTracker } from "./components/analytics/ClickTracker";
 import { ReportBetaIssueButton } from "./components/beta/ReportBetaIssueButton";
