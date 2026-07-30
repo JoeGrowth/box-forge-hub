@@ -20,17 +20,17 @@ interface KanbanItem {
 
 const BOARDS: Record<
   BoardKey,
-  { label: string; icon: typeof Users; blurb: string; columns: { key: string; label: string }[] }
+  { label: string; icon: typeof Users; blurb: string; columns: { key: string; label: string; description: string }[] }
 > = {
   people: {
     label: "People",
     icon: Users,
     blurb: "Move talent through your engagement pipeline.",
     columns: [
-      { key: "prospect", label: "Prospect" },
-      { key: "contacted", label: "Contacted" },
-      { key: "engaged", label: "Engaged" },
-      { key: "onboarded", label: "Onboarded" },
+      { key: "prospect", label: "Prospect", description: "New talent you are tracking but have not contacted yet." },
+      { key: "contacted", label: "Contacted", description: "You reached out and are waiting for a response." },
+      { key: "engaged", label: "Engaged", description: "Active conversation or interview in progress." },
+      { key: "onboarded", label: "Onboarded", description: "Hired, contracted, or formally joined the team." },
     ],
   },
   products: {
@@ -38,10 +38,10 @@ const BOARDS: Record<
     icon: Boxes,
     blurb: "Track each product from concept to scale.",
     columns: [
-      { key: "idea", label: "Idea" },
-      { key: "building", label: "Building" },
-      { key: "shipped", label: "Shipped" },
-      { key: "scaling", label: "Scaling" },
+      { key: "idea", label: "Idea", description: "Concept defined but not yet being built." },
+      { key: "building", label: "Building", description: "Actively in design, build, or validation." },
+      { key: "shipped", label: "Shipped", description: "Released to users and collecting feedback." },
+      { key: "scaling", label: "Scaling", description: "Expanding reach, revenue, or operations." },
     ],
   },
   organizations: {
@@ -49,10 +49,10 @@ const BOARDS: Record<
     icon: Building2,
     blurb: "Follow entities from watchlist to active partnership.",
     columns: [
-      { key: "watchlist", label: "Watchlist" },
-      { key: "discussing", label: "Discussing" },
-      { key: "partner", label: "Partner" },
-      { key: "active", label: "Active" },
+      { key: "watchlist", label: "Watchlist", description: "Organizations you are monitoring for future potential." },
+      { key: "discussing", label: "Discussing", description: "Initial conversations or negotiations underway." },
+      { key: "partner", label: "Partner", description: "Formal agreement or active collaboration in place." },
+      { key: "active", label: "Active", description: "Deep integration and ongoing joint operations." },
     ],
   },
 };
@@ -200,9 +200,12 @@ function Board({ board }: { board: BoardKey }) {
               isOver ? "border-primary bg-primary/5" : "border-border"
             }`}
           >
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-semibold">{column.label}</h3>
-              <Badge variant="secondary">{cards.length}</Badge>
+            <div className="mb-3 flex items-start justify-between gap-2">
+              <div>
+                <h3 className="text-sm font-semibold">{column.label}</h3>
+                <p className="text-xs text-muted-foreground">{column.description}</p>
+              </div>
+              <Badge variant="secondary" className="mt-0.5 shrink-0">{cards.length}</Badge>
             </div>
 
             <div className="space-y-2 min-h-[120px]">
