@@ -2833,6 +2833,39 @@ export type Database = {
           },
         ]
       }
+      kanban_placements: {
+        Row: {
+          board: string
+          column_key: string
+          created_at: string
+          id: string
+          item_id: string
+          position: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          board: string
+          column_key: string
+          created_at?: string
+          id?: string
+          item_id: string
+          position?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          board?: string
+          column_key?: string
+          created_at?: string
+          id?: string
+          item_id?: string
+          position?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       learning_journeys: {
         Row: {
           admin_notes: string | null
