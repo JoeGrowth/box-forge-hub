@@ -200,9 +200,12 @@ function Board({ board }: { board: BoardKey }) {
               isOver ? "border-primary bg-primary/5" : "border-border"
             }`}
           >
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-semibold">{column.label}</h3>
-              <Badge variant="secondary">{cards.length}</Badge>
+            <div className="mb-3 flex items-start justify-between gap-2">
+              <div>
+                <h3 className="text-sm font-semibold">{column.label}</h3>
+                <p className="text-xs text-muted-foreground">{column.description}</p>
+              </div>
+              <Badge variant="secondary" className="mt-0.5 shrink-0">{cards.length}</Badge>
             </div>
 
             <div className="space-y-2 min-h-[120px]">
