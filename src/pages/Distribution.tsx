@@ -778,6 +778,54 @@ export function addDistEntity(name: string, orgId?: string): DistEntity {
   return ent;
 }
 
+// ─── Database-backed sync (entities survive browser/device changes) ────────
+export async function syncDistEntities(userId?: string, orgId?: string): Promise<DistEntity[]> {
+  const local = readDistEntities();
+  if (!userId) return orgId ? local.filter((e) => e.orgId === orgId) : local;
+  try {
+    const { data } = await (supabase.from("distribution_entities" as any) as any)
+      .select("id,name,org_id,created_at")
+      .eq("user_id", userId);
+    const remote: DistEntity[] = ((data as any[]) ?? []).map((r) => ({
+      id: r.id, name: r.name, orgId: r.org_id ?? undefined, createdAt: r.created_at,
+    }));
+    const remoteIds = new Set(remote.map((r) => r.id));
+    const toUpload = local.filter((l) => !remoteIds.has(l.id));
+    if (toUpload.length) {
+      await (supabase.from("distribution_entities" as any) as any).insert(
+        toUpload.map((l) => ({ id: l.id, user_id: userId, name: l.name, org_id: l.orgId ?? null })),
+      );
+    }
+    const merged = [...remote, ...toUpload];
+    writeDistEntities(merged);
+    return orgId ? merged.filter((e) => e.orgId === orgId) : merged;
+  } catch {
+    return orgId ? local.filter((e) => e.orgId === orgId) : local;
+  }
+}
+
+export async function createDistEntity(name: string, userId?: string, orgId?: string): Promise<DistEntity> {
+  const ent = addDistEntity(name, orgId);
+  if (userId) {
+    try {
+      await (supabase.from("distribution_entities" as any) as any)
+        .insert({ id: ent.id, user_id: userId, name: ent.name, org_id: orgId ?? null });
+    } catch {}
+  }
+  return ent;
+}
+
+export async function renameDistEntityRemote(id: string, name: string) {
+  writeDistEntities(readDistEntities().map((e) => (e.id === id ? { ...e, name } : e)));
+  try { await (supabase.from("distribution_entities" as any) as any).update({ name }).eq("id", id); } catch {}
+}
+
+export async function deleteDistEntityRemote(id: string) {
+  writeDistEntities(readDistEntities().filter((e) => e.id !== id));
+  try { await (supabase.from("distribution_entities" as any) as any).delete().eq("id", id); } catch {}
+}
+
+
 export default function Distribution() {
   const [searchParams] = useSearchParams();
   const entityParam = searchParams.get("entity");
