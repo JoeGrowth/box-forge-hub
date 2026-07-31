@@ -547,7 +547,7 @@ export function Navbar() {
                       </Link>
 
                       <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Grow
+                        Growth
                       </div>
 
                       <Link
