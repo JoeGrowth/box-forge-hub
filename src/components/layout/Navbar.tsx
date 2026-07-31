@@ -227,6 +227,7 @@ export function Navbar() {
                       className={`text-sm font-medium transition-colors hover:text-b4-teal outline-none ${
                         location.pathname === "/people" ||
                         location.pathname === "/projects" ||
+                        location.pathname === "/opportunities" ||
                         location.pathname === "/my-tender-work"
                           ? "text-b4-teal"
                           : "text-muted-foreground"
@@ -259,6 +260,17 @@ export function Navbar() {
                       >
                         <Rocket size={16} />
                         Projects
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        to="/opportunities"
+                        className={`flex items-center gap-2 cursor-pointer ${
+                          location.pathname === "/opportunities" ? "text-b4-teal" : "text-foreground"
+                        }`}
+                      >
+                        <Briefcase size={16} />
+                        Opportunities
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
