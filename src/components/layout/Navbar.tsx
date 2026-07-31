@@ -227,7 +227,6 @@ export function Navbar() {
                       className={`text-sm font-medium transition-colors hover:text-b4-teal outline-none ${
                         location.pathname === "/people" ||
                         location.pathname === "/projects" ||
-                        location.pathname === "/organizations" ||
                         location.pathname === "/my-tender-work"
                           ? "text-b4-teal"
                           : "text-muted-foreground"
@@ -264,17 +263,6 @@ export function Navbar() {
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link
-                        to="/organizations"
-                        className={`flex items-center gap-2 cursor-pointer ${
-                          location.pathname === "/organizations" ? "text-b4-teal" : "text-foreground"
-                        }`}
-                      >
-                        <Building2 size={16} />
-                        Organizations
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link
                         to="/my-tender-work"
                         className={`flex items-center gap-2 cursor-pointer ${
                           location.pathname === "/my-tender-work" ? "text-b4-teal" : "text-foreground"
@@ -286,6 +274,59 @@ export function Navbar() {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+
+                <DropdownMenu open={growthOpen} onOpenChange={setGrowthOpen}>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`text-sm font-medium transition-colors hover:text-b4-teal outline-none ${
+                        location.pathname === "/entrepreneurship" ||
+                        location.pathname === "/organizations" ||
+                        location.pathname === "/ladder"
+                          ? "text-b4-teal"
+                          : "text-muted-foreground"
+                      }`}
+                      aria-label="Grow"
+                    >
+                      Grow
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 mt-2">
+                    <DropdownMenuItem asChild>
+                      <Link
+                        to="/entrepreneurship"
+                        className={`flex items-center gap-2 cursor-pointer ${
+                          location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-foreground"
+                        }`}
+                      >
+                        <Building2 size={16} />
+                        Studio
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        to="/organizations"
+                        className={`flex items-center gap-2 cursor-pointer ${
+                          location.pathname === "/organizations" ? "text-b4-teal" : "text-foreground"
+                        }`}
+                      >
+                        <Building2 size={16} />
+                        Organizations
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        to="/ladder"
+                        className={`flex items-center gap-2 cursor-pointer ${
+                          location.pathname === "/ladder" ? "text-b4-teal" : "text-foreground"
+                        }`}
+                      >
+                        <BarChart3 size={16} />
+                        Ladder
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
 
                 <DropdownMenu open={growthOpen} onOpenChange={setGrowthOpen}>
                   <DropdownMenuTrigger asChild>
