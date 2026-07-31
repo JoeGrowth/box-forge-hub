@@ -83,7 +83,7 @@ import {
   DollarSign,
 } from "lucide-react";
 import jsPDF from "jspdf";
-import { readDistEntities, addDistEntity, writeDistEntities, type DistEntity } from "@/pages/Distribution";
+import { syncDistEntities, createDistEntity, deleteDistEntityRemote, type DistEntity } from "@/pages/Distribution";
 
 type LifecycleStage = "venture" | "business" | "startup" | "mature";
 const STAGE_META: Record<LifecycleStage, { label: string; icon: typeof Rocket; className: string }> = {
@@ -1319,24 +1319,26 @@ function OrgDistributionsTab({ orgId, orgName, canEdit }: { orgId: string; orgNa
   const [entities, setEntities] = useState<DistEntity[]>([]);
   const [newName, setNewName] = useState("");
 
-  const reload = useCallback(() => {
-    setEntities(readDistEntities().filter((e) => e.orgId === orgId));
-  }, [orgId]);
+  const { user } = useAuth();
 
-  useEffect(() => { reload(); }, [reload]);
+  const reload = useCallback(async () => {
+    setEntities(await syncDistEntities(user?.id, orgId));
+  }, [orgId, user?.id]);
 
-  const create = () => {
+  useEffect(() => { void reload(); }, [reload]);
+
+  const create = async () => {
     const name = newName.trim();
     if (!name) return;
-    addDistEntity(name, orgId);
+    await createDistEntity(name, user?.id, orgId);
     setNewName("");
-    reload();
+    void reload();
   };
 
-  const remove = (id: string) => {
+  const remove = async (id: string) => {
     if (!confirm("Delete this distribution entity?")) return;
-    writeDistEntities(readDistEntities().filter((e) => e.id !== id));
-    reload();
+    await deleteDistEntityRemote(id);
+    void reload();
   };
 
   return (

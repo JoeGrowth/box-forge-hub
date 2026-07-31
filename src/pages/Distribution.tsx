@@ -778,6 +778,54 @@ export function addDistEntity(name: string, orgId?: string): DistEntity {
   return ent;
 }
 
+// ─── Database-backed sync (entities survive browser/device changes) ────────
+export async function syncDistEntities(userId?: string, orgId?: string): Promise<DistEntity[]> {
+  const local = readDistEntities();
+  if (!userId) return orgId ? local.filter((e) => e.orgId === orgId) : local;
+  try {
+    const { data } = await (supabase.from("distribution_entities" as any) as any)
+      .select("id,name,org_id,created_at")
+      .eq("user_id", userId);
+    const remote: DistEntity[] = ((data as any[]) ?? []).map((r) => ({
+      id: r.id, name: r.name, orgId: r.org_id ?? undefined, createdAt: r.created_at,
+    }));
+    const remoteIds = new Set(remote.map((r) => r.id));
+    const toUpload = local.filter((l) => !remoteIds.has(l.id));
+    if (toUpload.length) {
+      await (supabase.from("distribution_entities" as any) as any).insert(
+        toUpload.map((l) => ({ id: l.id, user_id: userId, name: l.name, org_id: l.orgId ?? null })),
+      );
+    }
+    const merged = [...remote, ...toUpload];
+    writeDistEntities(merged);
+    return orgId ? merged.filter((e) => e.orgId === orgId) : merged;
+  } catch {
+    return orgId ? local.filter((e) => e.orgId === orgId) : local;
+  }
+}
+
+export async function createDistEntity(name: string, userId?: string, orgId?: string): Promise<DistEntity> {
+  const ent = addDistEntity(name, orgId);
+  if (userId) {
+    try {
+      await (supabase.from("distribution_entities" as any) as any)
+        .insert({ id: ent.id, user_id: userId, name: ent.name, org_id: orgId ?? null });
+    } catch {}
+  }
+  return ent;
+}
+
+export async function renameDistEntityRemote(id: string, name: string) {
+  writeDistEntities(readDistEntities().map((e) => (e.id === id ? { ...e, name } : e)));
+  try { await (supabase.from("distribution_entities" as any) as any).update({ name }).eq("id", id); } catch {}
+}
+
+export async function deleteDistEntityRemote(id: string) {
+  writeDistEntities(readDistEntities().filter((e) => e.id !== id));
+  try { await (supabase.from("distribution_entities" as any) as any).delete().eq("id", id); } catch {}
+}
+
+
 export default function Distribution() {
   const [searchParams] = useSearchParams();
   const entityParam = searchParams.get("entity");
@@ -792,7 +840,7 @@ export default function Distribution() {
     let cancelled = false;
     (async () => {
       try {
-        let list = readDistEntities();
+        let list = await syncDistEntities(user?.id);
 
         // Recover legacy distribution_records (kinds without ":" mapping) so
         // saved data always surfaces even if localStorage was cleared.
@@ -818,6 +866,10 @@ export default function Distribution() {
               recovery = { id: RECOVERY_ID, name: "Recovered records", createdAt: new Date().toISOString() };
               list = [...list, recovery];
               writeDistEntities(list);
+              try {
+                await (supabase.from("distribution_entities" as any) as any)
+                  .insert({ id: RECOVERY_ID, user_id: user.id, name: recovery.name });
+              } catch {}
             }
             // Ensure a category exists for each legacy kind.
             try {
@@ -861,19 +913,22 @@ export default function Distribution() {
     if (activeEntityId) localStorage.setItem(DIST_ACTIVE_ENTITY_KEY, activeEntityId);
   }, [activeEntityId]);
 
-  const addEntity = () => {
+  const addEntity = async () => {
     const name = newEntityName.trim();
     if (!name) return;
-    const ent: DistEntity = { id: uid(), name, createdAt: new Date().toISOString() };
+    const ent = await createDistEntity(name, user?.id);
     setEntities((p) => [...p, ent]);
     setActiveEntityId(ent.id);
     setNewEntityName("");
   };
-  const renameEntity = (id: string, name: string) =>
+  const renameEntity = (id: string, name: string) => {
     setEntities((p) => p.map((e) => (e.id === id ? { ...e, name } : e)));
+    void renameDistEntityRemote(id, name);
+  };
   const deleteEntity = (id: string) => {
     setEntities((p) => p.filter((e) => e.id !== id));
     if (activeEntityId === id) setActiveEntityId(null);
+    void deleteDistEntityRemote(id);
   };
 
   const activeEntity = entities.find((e) => e.id === activeEntityId);
@@ -1003,6 +1058,7 @@ export function EntityCategories({
   scopeLabel: string;
   defaults?: string[];
 }) {
+  const { user } = useAuth();
   const [cats, setCats] = useState<Category[]>([]);
   const [activeCatId, setActiveCatId] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
@@ -1012,33 +1068,87 @@ export function EntityCategories({
   const [initialised, setInitialised] = useState(false);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(CATS_KEY(scopeId));
-      let list: Category[] = raw ? JSON.parse(raw) : [];
+    let cancelled = false;
+    setInitialised(false);
+    (async () => {
+      let list: Category[] = [];
+      try {
+        const raw = localStorage.getItem(CATS_KEY(scopeId));
+        list = raw ? JSON.parse(raw) : [];
+      } catch { list = []; }
+
+      if (user) {
+        // 1) Database is the source of truth across browsers/devices.
+        try {
+          const { data } = await (supabase.from("distribution_categories" as any) as any)
+            .select("id,name,kind")
+            .eq("user_id", user.id)
+            .eq("entity_id", scopeId);
+          const remote: Category[] = ((data as any[]) ?? []).map((r) => ({ id: r.id, name: r.name, kind: r.kind ?? undefined }));
+          const remoteIds = new Set(remote.map((r) => r.id));
+          const toUpload = list.filter((c) => !remoteIds.has(c.id));
+          if (toUpload.length) {
+            await (supabase.from("distribution_categories" as any) as any).insert(
+              toUpload.map((c) => ({ id: c.id, user_id: user.id, entity_id: scopeId, name: c.name, kind: c.kind ?? null })),
+            );
+          }
+          list = [...remote, ...toUpload];
+        } catch {}
+
+        // 2) Nothing anywhere? Rebuild categories from saved records of this scope.
+        if (list.length === 0) {
+          try {
+            const { data } = await (supabase.from("distribution_records" as any) as any)
+              .select("kind")
+              .eq("user_id", user.id)
+              .like("kind", `${scopeId}:%`);
+            const catIds = Array.from(new Set(((data as any[]) ?? []).map((r) => String(r.kind).split(":")[1]).filter(Boolean)));
+            if (catIds.length) {
+              list = catIds.map((id, i) => ({ id, name: `Distribution ${i + 1}` }));
+              await (supabase.from("distribution_categories" as any) as any).insert(
+                list.map((c) => ({ id: c.id, user_id: user.id, entity_id: scopeId, name: c.name })),
+              );
+            }
+          } catch {}
+        }
+      }
+
       if (list.length === 0 && defaults && defaults.length) {
         list = defaults.map((n) => ({ id: uid(), name: n }));
-        localStorage.setItem(CATS_KEY(scopeId), JSON.stringify(list));
       }
       if (list.length === 0) {
         list = [
           { id: uid(), name: "Internal 1 - Structure Handler" },
           { id: uid(), name: "Consulting & Training" },
         ];
-        localStorage.setItem(CATS_KEY(scopeId), JSON.stringify(list));
       }
+      if (cancelled) return;
+      localStorage.setItem(CATS_KEY(scopeId), JSON.stringify(list));
       setCats(list);
       const saved = localStorage.getItem(ACTIVE_CAT_KEY(scopeId));
       setActiveCatId(list.find((c) => c.id === saved)?.id ?? list[0]?.id ?? null);
-    } catch {
-      setCats([]);
-      setActiveCatId(null);
-    }
-    setInitialised(true);
-  }, [scopeId, defaults]);
+      setInitialised(true);
+    })();
+    return () => { cancelled = true; };
+  }, [scopeId, defaults, user]);
 
   useEffect(() => {
-    if (initialised) localStorage.setItem(CATS_KEY(scopeId), JSON.stringify(cats));
-  }, [cats, scopeId, initialised]);
+    if (!initialised) return;
+    localStorage.setItem(CATS_KEY(scopeId), JSON.stringify(cats));
+    if (!user) return;
+    (async () => {
+      try {
+        await (supabase.from("distribution_categories" as any) as any).upsert(
+          cats.map((c) => ({ id: c.id, user_id: user.id, entity_id: scopeId, name: c.name, kind: c.kind ?? null })),
+        );
+        const ids = cats.map((c) => c.id);
+        let del = (supabase.from("distribution_categories" as any) as any)
+          .delete().eq("user_id", user.id).eq("entity_id", scopeId);
+        if (ids.length) del = del.not("id", "in", `(${ids.map((i) => `"${i}"`).join(",")})`);
+        await del;
+      } catch {}
+    })();
+  }, [cats, scopeId, initialised, user]);
   useEffect(() => {
     if (activeCatId) localStorage.setItem(ACTIVE_CAT_KEY(scopeId), activeCatId);
   }, [activeCatId, scopeId]);
