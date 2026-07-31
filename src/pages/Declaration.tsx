@@ -114,19 +114,20 @@ export default function Declaration() {
   useEffect(() => {
     if (!rosterKey || !deliveryKey) return;
     try {
-      const r = localStorage.getItem(rosterKey);
+      const r = localStorage.getItem(rosterKey) ?? localStorage.getItem(ROSTER_KEY);
       const arr = r ? JSON.parse(r) : null;
       setRoster(Array.isArray(arr) && arr.length ? arr : DEFAULT_INTERNALS);
     } catch {
       setRoster(DEFAULT_INTERNALS);
     }
     try {
-      const d = localStorage.getItem(deliveryKey);
+      const d = localStorage.getItem(deliveryKey) ?? localStorage.getItem(DELIVERY_TYPES_KEY);
       const arr = d ? JSON.parse(d) : null;
       setDeliveryTypes(Array.isArray(arr) && arr.length ? arr : DEFAULT_DELIVERY_TYPES);
     } catch {
       setDeliveryTypes(DEFAULT_DELIVERY_TYPES);
     }
+
   }, [rosterKey, deliveryKey]);
 
   useEffect(() => {
