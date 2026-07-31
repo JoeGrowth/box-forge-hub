@@ -840,7 +840,7 @@ export default function Distribution() {
     let cancelled = false;
     (async () => {
       try {
-        let list = readDistEntities();
+        let list = await syncDistEntities(user?.id);
 
         // Recover legacy distribution_records (kinds without ":" mapping) so
         // saved data always surfaces even if localStorage was cleared.
