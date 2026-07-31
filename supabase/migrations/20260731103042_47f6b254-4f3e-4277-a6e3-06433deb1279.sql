@@ -1,0 +1,1 @@
+DELETE FROM public.distribution_categories WHERE id IN ('iwf1xnf','2g2l7si','sagu7vb');
