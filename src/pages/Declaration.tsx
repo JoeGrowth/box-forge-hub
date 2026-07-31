@@ -505,11 +505,12 @@ export default function Declaration() {
                   <Settings className="h-4 w-4" />
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
                 <DialogHeader>
                   <DialogTitle>Gérer les entités</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-6">
+                <div className="space-y-6 flex-1 overflow-y-auto pr-1 -mr-1">
+
                   {/* Create */}
                   <div>
                     <Label className="text-sm">Créer une entité</Label>
