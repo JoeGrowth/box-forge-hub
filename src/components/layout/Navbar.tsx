@@ -496,7 +496,7 @@ export function Navbar() {
                         }`}
                       >
                         <Rocket size={16} />
-                        <span className="flex-1">Studio</span>
+                        <span className="flex-1">Growth</span>
                       </Link>
                     </>
                   ) : (
