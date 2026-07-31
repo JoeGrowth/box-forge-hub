@@ -913,19 +913,22 @@ export default function Distribution() {
     if (activeEntityId) localStorage.setItem(DIST_ACTIVE_ENTITY_KEY, activeEntityId);
   }, [activeEntityId]);
 
-  const addEntity = () => {
+  const addEntity = async () => {
     const name = newEntityName.trim();
     if (!name) return;
-    const ent: DistEntity = { id: uid(), name, createdAt: new Date().toISOString() };
+    const ent = await createDistEntity(name, user?.id);
     setEntities((p) => [...p, ent]);
     setActiveEntityId(ent.id);
     setNewEntityName("");
   };
-  const renameEntity = (id: string, name: string) =>
+  const renameEntity = (id: string, name: string) => {
     setEntities((p) => p.map((e) => (e.id === id ? { ...e, name } : e)));
+    void renameDistEntityRemote(id, name);
+  };
   const deleteEntity = (id: string) => {
     setEntities((p) => p.filter((e) => e.id !== id));
     if (activeEntityId === id) setActiveEntityId(null);
+    void deleteDistEntityRemote(id);
   };
 
   const activeEntity = entities.find((e) => e.id === activeEntityId);
