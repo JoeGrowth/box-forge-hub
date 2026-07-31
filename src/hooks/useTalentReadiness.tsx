@@ -73,9 +73,14 @@ export function useTalentReadiness(): TalentReadiness {
 
     // Platform admins bypass every gate.
     if (isAdmin) {
+      writeCachedReady(user.id, true);
       setState({ loading: false, talentReady: true, isOrgAdmin: true, missing: [], talentCompleted: TALENT_TOTAL, talentTotal: TALENT_TOTAL });
       return;
     }
+
+    // Keep the cached readiness while refetching to avoid nav flicker.
+    setState((prev) => ({ ...prev, loading: true, talentReady: prev.talentReady || readCachedReady(user.id) }));
+
 
     (async () => {
       const uid = user.id;
