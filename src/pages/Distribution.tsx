@@ -1058,6 +1058,7 @@ export function EntityCategories({
   scopeLabel: string;
   defaults?: string[];
 }) {
+  const { user } = useAuth();
   const [cats, setCats] = useState<Category[]>([]);
   const [activeCatId, setActiveCatId] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
@@ -1067,33 +1068,87 @@ export function EntityCategories({
   const [initialised, setInitialised] = useState(false);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(CATS_KEY(scopeId));
-      let list: Category[] = raw ? JSON.parse(raw) : [];
+    let cancelled = false;
+    setInitialised(false);
+    (async () => {
+      let list: Category[] = [];
+      try {
+        const raw = localStorage.getItem(CATS_KEY(scopeId));
+        list = raw ? JSON.parse(raw) : [];
+      } catch { list = []; }
+
+      if (user) {
+        // 1) Database is the source of truth across browsers/devices.
+        try {
+          const { data } = await (supabase.from("distribution_categories" as any) as any)
+            .select("id,name,kind")
+            .eq("user_id", user.id)
+            .eq("entity_id", scopeId);
+          const remote: Category[] = ((data as any[]) ?? []).map((r) => ({ id: r.id, name: r.name, kind: r.kind ?? undefined }));
+          const remoteIds = new Set(remote.map((r) => r.id));
+          const toUpload = list.filter((c) => !remoteIds.has(c.id));
+          if (toUpload.length) {
+            await (supabase.from("distribution_categories" as any) as any).insert(
+              toUpload.map((c) => ({ id: c.id, user_id: user.id, entity_id: scopeId, name: c.name, kind: c.kind ?? null })),
+            );
+          }
+          list = [...remote, ...toUpload];
+        } catch {}
+
+        // 2) Nothing anywhere? Rebuild categories from saved records of this scope.
+        if (list.length === 0) {
+          try {
+            const { data } = await (supabase.from("distribution_records" as any) as any)
+              .select("kind")
+              .eq("user_id", user.id)
+              .like("kind", `${scopeId}:%`);
+            const catIds = Array.from(new Set(((data as any[]) ?? []).map((r) => String(r.kind).split(":")[1]).filter(Boolean)));
+            if (catIds.length) {
+              list = catIds.map((id, i) => ({ id, name: `Distribution ${i + 1}` }));
+              await (supabase.from("distribution_categories" as any) as any).insert(
+                list.map((c) => ({ id: c.id, user_id: user.id, entity_id: scopeId, name: c.name })),
+              );
+            }
+          } catch {}
+        }
+      }
+
       if (list.length === 0 && defaults && defaults.length) {
         list = defaults.map((n) => ({ id: uid(), name: n }));
-        localStorage.setItem(CATS_KEY(scopeId), JSON.stringify(list));
       }
       if (list.length === 0) {
         list = [
           { id: uid(), name: "Internal 1 - Structure Handler" },
           { id: uid(), name: "Consulting & Training" },
         ];
-        localStorage.setItem(CATS_KEY(scopeId), JSON.stringify(list));
       }
+      if (cancelled) return;
+      localStorage.setItem(CATS_KEY(scopeId), JSON.stringify(list));
       setCats(list);
       const saved = localStorage.getItem(ACTIVE_CAT_KEY(scopeId));
       setActiveCatId(list.find((c) => c.id === saved)?.id ?? list[0]?.id ?? null);
-    } catch {
-      setCats([]);
-      setActiveCatId(null);
-    }
-    setInitialised(true);
-  }, [scopeId, defaults]);
+      setInitialised(true);
+    })();
+    return () => { cancelled = true; };
+  }, [scopeId, defaults, user]);
 
   useEffect(() => {
-    if (initialised) localStorage.setItem(CATS_KEY(scopeId), JSON.stringify(cats));
-  }, [cats, scopeId, initialised]);
+    if (!initialised) return;
+    localStorage.setItem(CATS_KEY(scopeId), JSON.stringify(cats));
+    if (!user) return;
+    (async () => {
+      try {
+        await (supabase.from("distribution_categories" as any) as any).upsert(
+          cats.map((c) => ({ id: c.id, user_id: user.id, entity_id: scopeId, name: c.name, kind: c.kind ?? null })),
+        );
+        const ids = cats.map((c) => c.id);
+        let del = (supabase.from("distribution_categories" as any) as any)
+          .delete().eq("user_id", user.id).eq("entity_id", scopeId);
+        if (ids.length) del = del.not("id", "in", `(${ids.map((i) => `"${i}"`).join(",")})`);
+        await del;
+      } catch {}
+    })();
+  }, [cats, scopeId, initialised, user]);
   useEffect(() => {
     if (activeCatId) localStorage.setItem(ACTIVE_CAT_KEY(scopeId), activeCatId);
   }, [activeCatId, scopeId]);
