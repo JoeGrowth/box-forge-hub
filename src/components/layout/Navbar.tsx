@@ -216,7 +216,7 @@ export function Navbar() {
                     location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-muted-foreground"
                   }`}
                 >
-                  Studio
+                  Growth
                 </Link>
               </>
             ) : (
@@ -285,9 +285,9 @@ export function Navbar() {
                           ? "text-b4-teal"
                           : "text-muted-foreground"
                       }`}
-                      aria-label="Grow"
+                      aria-label="Growth"
                     >
-                      Grow
+                      Growth
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56 mt-2">
@@ -311,46 +311,6 @@ export function Navbar() {
                       >
                         <Building2 size={16} />
                         Organizations
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link
-                        to="/ladder"
-                        className={`flex items-center gap-2 cursor-pointer ${
-                          location.pathname === "/ladder" ? "text-b4-teal" : "text-foreground"
-                        }`}
-                      >
-                        <BarChart3 size={16} />
-                        Ladder
-                      </Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-
-                <DropdownMenu open={growthOpen} onOpenChange={setGrowthOpen}>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      className={`text-sm font-medium transition-colors hover:text-b4-teal outline-none ${
-                        location.pathname === "/entrepreneurship" || location.pathname === "/ladder"
-                          ? "text-b4-teal"
-                          : "text-muted-foreground"
-                      }`}
-                      aria-label="Studio"
-                    >
-                      Studio
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 mt-2">
-                    <DropdownMenuItem asChild>
-                      <Link
-                        to="/entrepreneurship"
-                        className={`flex items-center gap-2 cursor-pointer ${
-                          location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-foreground"
-                        }`}
-                      >
-                        <Building2 size={16} />
-                        Build Assets
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -536,7 +496,7 @@ export function Navbar() {
                         }`}
                       >
                         <Rocket size={16} />
-                        <span className="flex-1">Studio</span>
+                        <span className="flex-1">Growth</span>
                       </Link>
                     </>
                   ) : (
@@ -587,7 +547,7 @@ export function Navbar() {
                       </Link>
 
                       <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Grow
+                        Growth
                       </div>
 
                       <Link
