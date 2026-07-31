@@ -227,6 +227,7 @@ export function Navbar() {
                       className={`text-sm font-medium transition-colors hover:text-b4-teal outline-none ${
                         location.pathname === "/people" ||
                         location.pathname === "/projects" ||
+                        location.pathname === "/opportunities" ||
                         location.pathname === "/my-tender-work"
                           ? "text-b4-teal"
                           : "text-muted-foreground"
@@ -259,6 +260,17 @@ export function Navbar() {
                       >
                         <Rocket size={16} />
                         Projects
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        to="/opportunities"
+                        className={`flex items-center gap-2 cursor-pointer ${
+                          location.pathname === "/opportunities" ? "text-b4-teal" : "text-foreground"
+                        }`}
+                      >
+                        <Briefcase size={16} />
+                        Opportunities
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -327,34 +339,36 @@ export function Navbar() {
                   </DropdownMenuContent>
                 </DropdownMenu>
 
-                <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      className="flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-b4-teal outline-none"
-                      aria-label="More"
-                    >
-                      <MoreHorizontal size={18} />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 mt-2">
-                    {visibleMoreLinks.map((link) => {
-                      const Icon = link.icon;
-                      return (
-                        <DropdownMenuItem key={link.path} asChild>
-                          <Link
-                            to={link.path}
-                            className={`flex items-center gap-2 cursor-pointer ${
-                              location.pathname === link.path ? "text-b4-teal" : "text-foreground"
-                            }`}
-                          >
-                            <Icon size={16} />
-                            {link.name}
-                          </Link>
-                        </DropdownMenuItem>
-                      );
-                    })}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                {isAdmin && (
+                  <DropdownMenu open={moreOpen} onOpenChange={setMoreOpen}>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className="flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-b4-teal outline-none"
+                        aria-label="More"
+                      >
+                        <MoreHorizontal size={18} />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56 mt-2">
+                      {visibleMoreLinks.map((link) => {
+                        const Icon = link.icon;
+                        return (
+                          <DropdownMenuItem key={link.path} asChild>
+                            <Link
+                              to={link.path}
+                              className={`flex items-center gap-2 cursor-pointer ${
+                                location.pathname === link.path ? "text-b4-teal" : "text-foreground"
+                              }`}
+                            >
+                              <Icon size={16} />
+                              {link.name}
+                            </Link>
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </>
             )}
           </div>
@@ -534,6 +548,19 @@ export function Navbar() {
                       </Link>
 
                       <Link
+                        to="/opportunities"
+                        onClick={() => setIsOpen(false)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                          location.pathname === "/opportunities"
+                            ? "bg-muted text-b4-teal"
+                            : "text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        <Briefcase size={16} />
+                        <span className="flex-1">Opportunities</span>
+                      </Link>
+
+                      <Link
                         to="/my-tender-work"
                         onClick={() => setIsOpen(false)}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
@@ -590,25 +617,26 @@ export function Navbar() {
                         <span className="flex-1">Ladder</span>
                       </Link>
 
-                      {visibleMoreLinks.length > 0 && (
+                      {isAdmin && visibleMoreLinks.length > 0 && (
                         <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                           More
                         </div>
                       )}
-                      {visibleMoreLinks.map((link) => {
-                        const Icon = link.icon;
-                        return (
-                          <Link
-                            key={link.path}
-                            to={link.path}
-                            className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors flex items-center gap-2"
-                            onClick={() => setIsOpen(false)}
-                          >
-                            <Icon size={16} />
-                            {link.name}
-                          </Link>
-                        );
-                      })}
+                      {isAdmin &&
+                        visibleMoreLinks.map((link) => {
+                          const Icon = link.icon;
+                          return (
+                            <Link
+                              key={link.path}
+                              to={link.path}
+                              className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-colors flex items-center gap-2"
+                              onClick={() => setIsOpen(false)}
+                            >
+                              <Icon size={16} />
+                              {link.name}
+                            </Link>
+                          );
+                        })}
                     </>
                   )}
                 </>
