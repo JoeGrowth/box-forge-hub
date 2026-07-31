@@ -183,6 +183,8 @@ export function useTalentReadiness(): TalentReadiness {
 
       const completed = [intentDone, decoderDone, proTrackDone, resumeDone].filter(Boolean).length;
 
+      writeCachedReady(uid, missing.length === 0);
+
       setState({
         loading: false,
         talentReady: missing.length === 0,
@@ -191,6 +193,7 @@ export function useTalentReadiness(): TalentReadiness {
         talentCompleted: completed,
         talentTotal: TALENT_TOTAL,
       });
+
     })();
 
     return () => {
