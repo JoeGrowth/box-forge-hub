@@ -31,10 +31,37 @@ const DEFAULT: TalentReadiness = {
   talentTotal: TALENT_TOTAL,
 };
 
+const cacheKey = (uid?: string | null) => (uid ? `talent-ready:${uid}` : null);
+
+const readCachedReady = (uid?: string | null): boolean => {
+  try {
+    const key = cacheKey(uid);
+    if (!key || typeof window === "undefined") return false;
+    return window.localStorage.getItem(key) === "1";
+  } catch {
+    return false;
+  }
+};
+
+const writeCachedReady = (uid: string, ready: boolean) => {
+  try {
+    const key = cacheKey(uid);
+    if (key && typeof window !== "undefined") window.localStorage.setItem(key, ready ? "1" : "0");
+  } catch {
+    /* ignore */
+  }
+};
+
 export function useTalentReadiness(): TalentReadiness {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdmin();
-  const [state, setState] = useState<TalentReadiness>(DEFAULT);
+  // Seed from the last known value so navigation between pages doesn't
+  // momentarily flip the navbar back to the simplified (pre-foundation) menu.
+  const [state, setState] = useState<TalentReadiness>(() => ({
+    ...DEFAULT,
+    talentReady: readCachedReady(user?.id),
+  }));
+
 
   useEffect(() => {
     let alive = true;
