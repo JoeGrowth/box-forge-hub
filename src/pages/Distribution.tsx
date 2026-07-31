@@ -866,6 +866,10 @@ export default function Distribution() {
               recovery = { id: RECOVERY_ID, name: "Recovered records", createdAt: new Date().toISOString() };
               list = [...list, recovery];
               writeDistEntities(list);
+              try {
+                await (supabase.from("distribution_entities" as any) as any)
+                  .insert({ id: RECOVERY_ID, user_id: user.id, name: recovery.name });
+              } catch {}
             }
             // Ensure a category exists for each legacy kind.
             try {
