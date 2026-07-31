@@ -107,30 +107,39 @@ export default function Declaration() {
     if (!authLoading && !user) navigate("/auth");
   }, [user, authLoading, navigate]);
 
-  // Load roster from localStorage
-  useEffect(() => {
-    try {
-      const r = localStorage.getItem(ROSTER_KEY);
-      if (r) setRoster(JSON.parse(r));
-    } catch {}
-  }, []);
-  useEffect(() => {
-    localStorage.setItem(ROSTER_KEY, JSON.stringify(roster));
-  }, [roster]);
+  // Per-entity roster + delivery types (scoped so each entity has its own)
+  const rosterKey = activeEntityId ? `${ROSTER_KEY}:${activeEntityId}` : null;
+  const deliveryKey = activeEntityId ? `${DELIVERY_TYPES_KEY}:${activeEntityId}` : null;
 
-  // Load delivery types from localStorage
   useEffect(() => {
+    if (!rosterKey || !deliveryKey) return;
     try {
-      const r = localStorage.getItem(DELIVERY_TYPES_KEY);
-      if (r) {
-        const arr = JSON.parse(r);
-        if (Array.isArray(arr) && arr.length) setDeliveryTypes(arr);
-      }
-    } catch {}
-  }, []);
+      const r = localStorage.getItem(rosterKey) ?? localStorage.getItem(ROSTER_KEY);
+      const arr = r ? JSON.parse(r) : null;
+      setRoster(Array.isArray(arr) && arr.length ? arr : DEFAULT_INTERNALS);
+    } catch {
+      setRoster(DEFAULT_INTERNALS);
+    }
+    try {
+      const d = localStorage.getItem(deliveryKey) ?? localStorage.getItem(DELIVERY_TYPES_KEY);
+      const arr = d ? JSON.parse(d) : null;
+      setDeliveryTypes(Array.isArray(arr) && arr.length ? arr : DEFAULT_DELIVERY_TYPES);
+    } catch {
+      setDeliveryTypes(DEFAULT_DELIVERY_TYPES);
+    }
+
+  }, [rosterKey, deliveryKey]);
+
   useEffect(() => {
-    localStorage.setItem(DELIVERY_TYPES_KEY, JSON.stringify(deliveryTypes));
-  }, [deliveryTypes]);
+    if (!rosterKey) return;
+    localStorage.setItem(rosterKey, JSON.stringify(roster));
+  }, [roster, rosterKey]);
+
+  useEffect(() => {
+    if (!deliveryKey) return;
+    localStorage.setItem(deliveryKey, JSON.stringify(deliveryTypes));
+  }, [deliveryTypes, deliveryKey]);
+
 
 
   // Load entities
