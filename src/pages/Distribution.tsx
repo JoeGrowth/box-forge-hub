@@ -476,7 +476,9 @@ function DistributionBuilder({
                   <TableCell>
                     <Input
                       value={c.label}
-                      onChange={(e) => updateCharge(c.id, { label: e.target.value })}
+                      readOnly={c.fixed}
+                      className={c.fixed ? "font-medium bg-muted/40" : undefined}
+                      onChange={(e) => !c.fixed && updateCharge(c.id, { label: e.target.value })}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && idx === charges.length - 1) {
                           setCharges((p) => [...p, { id: uid(), label: "New charge", amount: 0 }]);
@@ -519,13 +521,15 @@ function DistributionBuilder({
                     />
                   </TableCell>
                   <TableCell>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => setCharges((p) => p.filter((x) => x.id !== c.id))}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    {!c.fixed && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => setCharges((p) => p.filter((x) => x.id !== c.id))}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
                 );
