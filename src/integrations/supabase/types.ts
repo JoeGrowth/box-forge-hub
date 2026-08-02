@@ -1717,9 +1717,11 @@ export type Database = {
           budget: number
           budget_label: string
           charges: Json
+          client: string | null
           created_at: string
           currency: string | null
           id: string
+          iteration: number | null
           kind: string
           people: Json
           tasks: Json
@@ -1731,9 +1733,11 @@ export type Database = {
           budget?: number
           budget_label?: string
           charges?: Json
+          client?: string | null
           created_at?: string
           currency?: string | null
           id?: string
+          iteration?: number | null
           kind: string
           people?: Json
           tasks?: Json
@@ -1745,9 +1749,11 @@ export type Database = {
           budget?: number
           budget_label?: string
           charges?: Json
+          client?: string | null
           created_at?: string
           currency?: string | null
           id?: string
+          iteration?: number | null
           kind?: string
           people?: Json
           tasks?: Json
