@@ -21,10 +21,23 @@ import { formatDistanceToNow } from "date-fns";
 
 
 type Task = { id: string; label: string; percent: number; locked?: boolean; personShares?: number[] };
-type Charge = { id: string; label: string; amount: number };
+type Charge = { id: string; label: string; amount: number; fixed?: boolean };
 type Kind = string;
 
 const uid = () => Math.random().toString(36).slice(2, 9);
+const BASE_CHARGE_LABELS = ["Broker", "Administration", "Quality check"];
+const withBaseCharges = (list: Charge[]): Charge[] => {
+  const rest = (Array.isArray(list) ? list : []).filter(
+    (c) => !BASE_CHARGE_LABELS.some((b) => b.toLowerCase() === String(c.label || "").trim().toLowerCase()),
+  );
+  const base = BASE_CHARGE_LABELS.map((label) => {
+    const existing = (Array.isArray(list) ? list : []).find(
+      (c) => String(c.label || "").trim().toLowerCase() === label.toLowerCase(),
+    );
+    return { id: uid(), label, amount: Number(existing?.amount) || 0, fixed: true } as Charge;
+  });
+  return [...base, ...rest.map((c) => ({ ...c, fixed: false }))];
+};
 const fmt = (n: number) =>
   new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
     Number.isFinite(n) ? n : 0,
@@ -52,7 +65,7 @@ function DistributionBuilder({
   const [budget, setBudget] = useState<number>(0);
   const [currency, setCurrency] = useState<string>("TND");
   const [budgetLabel, setBudgetLabel] = useState(defaultBudgetLabel);
-  const [charges, setCharges] = useState<Charge[]>(defaultCharges);
+  const [charges, setCharges] = useState<Charge[]>(withBaseCharges(defaultCharges));
   const [tasks, setTasks] = useState<Task[]>(defaultTasks);
   const [people, setPeople] = useState<string[]>(["Person (1)", "Person (2)"]);
   const [saving, setSaving] = useState(false);
@@ -123,7 +136,7 @@ function DistributionBuilder({
     setBudget(0);
     setCurrency("TND");
     setBudgetLabel(defaultBudgetLabel);
-    setCharges(defaultCharges.map((c) => ({ ...c, id: uid() })));
+    setCharges(withBaseCharges(defaultCharges));
     setTasks(defaultTasks.map((t) => ({ ...t, id: uid() })));
     setPeople(["Person (1)", "Person (2)"]);
     setEditingId(null);
@@ -135,7 +148,7 @@ function DistributionBuilder({
     setBudget(Number(rec.budget) || 0);
     setBudgetLabel(rec.budget_label || defaultBudgetLabel);
     setCurrency(rec.currency || "TND");
-    setCharges(Array.isArray(rec.charges) ? rec.charges : []);
+    setCharges(withBaseCharges(Array.isArray(rec.charges) ? rec.charges : []));
     setTasks(Array.isArray(rec.tasks) ? rec.tasks : []);
     setPeople(Array.isArray(rec.people) && rec.people.length > 0 ? rec.people : ["Person (1)"]);
     setEditingId(mode === "edit" ? rec.id : null);
@@ -170,7 +183,7 @@ function DistributionBuilder({
     setBudget(Number(rec.budget) || 0);
     setBudgetLabel(rec.budget_label || defaultBudgetLabel);
     setCurrency(rec.currency || "TND");
-    setCharges(Array.isArray(rec.charges) ? rec.charges.map((c: any) => ({ ...c, id: uid() })) : []);
+    setCharges(withBaseCharges(Array.isArray(rec.charges) ? rec.charges : []));
     setTasks(Array.isArray(rec.tasks) ? rec.tasks.map((t: any) => ({ ...t, id: uid() })) : []);
     setPeople(Array.isArray(rec.people) && rec.people.length > 0 ? rec.people : ["Person (1)"]);
     setEditingId(null);
@@ -463,7 +476,9 @@ function DistributionBuilder({
                   <TableCell>
                     <Input
                       value={c.label}
-                      onChange={(e) => updateCharge(c.id, { label: e.target.value })}
+                      readOnly={c.fixed}
+                      className={c.fixed ? "font-medium bg-muted/40" : undefined}
+                      onChange={(e) => !c.fixed && updateCharge(c.id, { label: e.target.value })}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && idx === charges.length - 1) {
                           setCharges((p) => [...p, { id: uid(), label: "New charge", amount: 0 }]);
@@ -506,13 +521,15 @@ function DistributionBuilder({
                     />
                   </TableCell>
                   <TableCell>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => setCharges((p) => p.filter((x) => x.id !== c.id))}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    {!c.fixed && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => setCharges((p) => p.filter((x) => x.id !== c.id))}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
                 );
