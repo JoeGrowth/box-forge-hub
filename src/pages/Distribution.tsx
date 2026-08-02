@@ -185,7 +185,9 @@ function DistributionBuilder({
       n++;
       newTitle = `${rec.title} (${n})`;
     }
+    setClient(rec.client || "");
     setTitle(newTitle);
+    setIteration(Number(rec.iteration) || 1);
     setBudget(Number(rec.budget) || 0);
     setBudgetLabel(rec.budget_label || defaultBudgetLabel);
     setCurrency(rec.currency || "TND");
