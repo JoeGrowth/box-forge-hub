@@ -21,7 +21,7 @@ import { formatDistanceToNow } from "date-fns";
 
 
 type Task = { id: string; label: string; percent: number; locked?: boolean; personShares?: number[] };
-type Charge = { id: string; label: string; amount: number };
+type Charge = { id: string; label: string; amount: number; fixed?: boolean };
 type Kind = string;
 
 const uid = () => Math.random().toString(36).slice(2, 9);
