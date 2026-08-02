@@ -394,7 +394,7 @@ function DistributionBuilder({
                   })}
                   <TableRow className="border-t-2 font-semibold">
                     <TableCell></TableCell>
-                    <TableCell>Total Reste structure</TableCell>
+                    <TableCell colSpan={2}>Total Reste structure</TableCell>
                     <TableCell></TableCell>
                     <TableCell className="text-right font-mono">
                       {fmt(saved.reduce((sum, r) => {
@@ -405,7 +405,7 @@ function DistributionBuilder({
                         return sum + pool * lockedPct / 100;
                       }, 0))}
                     </TableCell>
-                    <TableCell colSpan={3}></TableCell>
+                    <TableCell colSpan={4}></TableCell>
                   </TableRow>
                 </TableBody>
 
