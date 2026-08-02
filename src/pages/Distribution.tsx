@@ -61,7 +61,9 @@ function DistributionBuilder({
   const label = kindLabel ?? kind;
   const { user } = useAuth();
   const [resetKey, setResetKey] = useState(0);
+  const [client, setClient] = useState("");
   const [title, setTitle] = useState(defaultTitle);
+  const [iteration, setIteration] = useState<number>(1);
   const [budget, setBudget] = useState<number>(0);
   const [currency, setCurrency] = useState<string>("TND");
   const [budgetLabel, setBudgetLabel] = useState(defaultBudgetLabel);
