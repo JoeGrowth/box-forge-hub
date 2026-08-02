@@ -134,7 +134,9 @@ function DistributionBuilder({
 
 
   const resetForm = () => {
+    setClient("");
     setTitle(defaultTitle);
+    setIteration(1);
     setBudget(0);
     setCurrency("TND");
     setBudgetLabel(defaultBudgetLabel);
@@ -146,7 +148,9 @@ function DistributionBuilder({
   };
 
   const loadSaved = (rec: any, mode: "view" | "edit" = "view") => {
+    setClient(rec.client || "");
     setTitle(rec.title);
+    setIteration(Number(rec.iteration) || 1);
     setBudget(Number(rec.budget) || 0);
     setBudgetLabel(rec.budget_label || defaultBudgetLabel);
     setCurrency(rec.currency || "TND");
