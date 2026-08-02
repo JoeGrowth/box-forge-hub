@@ -25,6 +25,19 @@ type Charge = { id: string; label: string; amount: number; fixed?: boolean };
 type Kind = string;
 
 const uid = () => Math.random().toString(36).slice(2, 9);
+const BASE_CHARGE_LABELS = ["Broker", "Administration", "Quality check"];
+const withBaseCharges = (list: Charge[]): Charge[] => {
+  const rest = (Array.isArray(list) ? list : []).filter(
+    (c) => !BASE_CHARGE_LABELS.some((b) => b.toLowerCase() === String(c.label || "").trim().toLowerCase()),
+  );
+  const base = BASE_CHARGE_LABELS.map((label) => {
+    const existing = (Array.isArray(list) ? list : []).find(
+      (c) => String(c.label || "").trim().toLowerCase() === label.toLowerCase(),
+    );
+    return { id: uid(), label, amount: Number(existing?.amount) || 0, fixed: true } as Charge;
+  });
+  return [...base, ...rest.map((c) => ({ ...c, fixed: false }))];
+};
 const fmt = (n: number) =>
   new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
     Number.isFinite(n) ? n : 0,
