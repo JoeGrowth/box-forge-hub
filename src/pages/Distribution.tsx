@@ -417,7 +417,15 @@ function DistributionBuilder({
         <CardHeader>
           <CardTitle className="text-base">Mission Setup</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="space-y-1.5">
+            <Label>Client</Label>
+            <Input
+              placeholder="Client name"
+              value={client}
+              onChange={(e) => setClient(e.target.value)}
+            />
+          </div>
           <div className="space-y-1.5">
             <Label>Mission title</Label>
             <Input
@@ -431,6 +439,15 @@ function DistributionBuilder({
                 A {label} distribution with this title already exists.
               </p>
             )}
+          </div>
+          <div className="space-y-1.5">
+            <Label>Number of iteration</Label>
+            <Input
+              type="number"
+              min={1}
+              value={iteration}
+              onChange={(e) => setIteration(Math.max(1, parseInt(e.target.value) || 1))}
+            />
           </div>
           <div className="space-y-1.5">
             <Label>{budgetLabel}</Label>
