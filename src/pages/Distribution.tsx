@@ -61,7 +61,9 @@ function DistributionBuilder({
   const label = kindLabel ?? kind;
   const { user } = useAuth();
   const [resetKey, setResetKey] = useState(0);
+  const [client, setClient] = useState("");
   const [title, setTitle] = useState(defaultTitle);
+  const [iteration, setIteration] = useState<number>(1);
   const [budget, setBudget] = useState<number>(0);
   const [currency, setCurrency] = useState<string>("TND");
   const [budgetLabel, setBudgetLabel] = useState(defaultBudgetLabel);
@@ -132,7 +134,9 @@ function DistributionBuilder({
 
 
   const resetForm = () => {
+    setClient("");
     setTitle(defaultTitle);
+    setIteration(1);
     setBudget(0);
     setCurrency("TND");
     setBudgetLabel(defaultBudgetLabel);
@@ -144,7 +148,9 @@ function DistributionBuilder({
   };
 
   const loadSaved = (rec: any, mode: "view" | "edit" = "view") => {
+    setClient(rec.client || "");
     setTitle(rec.title);
+    setIteration(Number(rec.iteration) || 1);
     setBudget(Number(rec.budget) || 0);
     setBudgetLabel(rec.budget_label || defaultBudgetLabel);
     setCurrency(rec.currency || "TND");
@@ -179,7 +185,9 @@ function DistributionBuilder({
       n++;
       newTitle = `${rec.title} (${n})`;
     }
+    setClient(rec.client || "");
     setTitle(newTitle);
+    setIteration(Number(rec.iteration) || 1);
     setBudget(Number(rec.budget) || 0);
     setBudgetLabel(rec.budget_label || defaultBudgetLabel);
     setCurrency(rec.currency || "TND");
@@ -223,7 +231,9 @@ function DistributionBuilder({
     const payload = {
       user_id: user.id,
       kind,
+      client: client.trim() || null,
       title: title.trim(),
+      iteration: Math.max(1, Number(iteration) || 1),
       budget_label: budgetLabel,
       budget,
       currency,
@@ -258,7 +268,7 @@ function DistributionBuilder({
     if (editingId) {
       setSaving(true);
       const { error } = await (supabase.from("distribution_records" as any) as any)
-        .update({ title: title.trim() })
+        .update({ client: client.trim() || null, title: title.trim(), iteration: Math.max(1, Number(iteration) || 1) })
         .eq("id", editingId);
       setSaving(false);
       if (error) {
@@ -276,7 +286,9 @@ function DistributionBuilder({
     const payload = {
       user_id: user.id,
       kind,
+      client: client.trim() || null,
       title: title.trim(),
+      iteration: Math.max(1, Number(iteration) || 1),
       budget_label: budgetLabel,
       budget,
       currency,
@@ -328,7 +340,9 @@ function DistributionBuilder({
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-10">#</TableHead>
+                    <TableHead>Client</TableHead>
                     <TableHead>Title</TableHead>
+                    <TableHead className="w-20 text-right">Iteration</TableHead>
                     <TableHead className="text-right">Budget</TableHead>
                     <TableHead className="text-right">RS</TableHead>
                     <TableHead className="text-right">People</TableHead>
@@ -350,7 +364,9 @@ function DistributionBuilder({
                       onClick={() => loadSaved(r, "edit")}
                     >
                       <TableCell className="font-mono text-muted-foreground">({i + 1})</TableCell>
+                      <TableCell className="text-sm">{r.client || "—"}</TableCell>
                       <TableCell className="font-medium">{r.title}</TableCell>
+                      <TableCell className="text-right font-mono text-sm">{r.iteration ?? 1}</TableCell>
                       <TableCell className="text-right font-mono">{fmt(bud)}</TableCell>
                       <TableCell className="text-right font-mono">{fmt(rs)}</TableCell>
                       <TableCell className="text-right">{Array.isArray(r.people) ? r.people.length : 0}</TableCell>
@@ -378,7 +394,7 @@ function DistributionBuilder({
                   })}
                   <TableRow className="border-t-2 font-semibold">
                     <TableCell></TableCell>
-                    <TableCell>Total Reste structure</TableCell>
+                    <TableCell colSpan={2}>Total Reste structure</TableCell>
                     <TableCell></TableCell>
                     <TableCell className="text-right font-mono">
                       {fmt(saved.reduce((sum, r) => {
@@ -389,7 +405,7 @@ function DistributionBuilder({
                         return sum + pool * lockedPct / 100;
                       }, 0))}
                     </TableCell>
-                    <TableCell colSpan={3}></TableCell>
+                    <TableCell colSpan={4}></TableCell>
                   </TableRow>
                 </TableBody>
 
@@ -405,7 +421,15 @@ function DistributionBuilder({
         <CardHeader>
           <CardTitle className="text-base">Mission Setup</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="space-y-1.5">
+            <Label>Client</Label>
+            <Input
+              placeholder="Client name"
+              value={client}
+              onChange={(e) => setClient(e.target.value)}
+            />
+          </div>
           <div className="space-y-1.5">
             <Label>Mission title</Label>
             <Input
@@ -419,6 +443,15 @@ function DistributionBuilder({
                 A {label} distribution with this title already exists.
               </p>
             )}
+          </div>
+          <div className="space-y-1.5">
+            <Label>Number of iteration</Label>
+            <Input
+              type="number"
+              min={1}
+              value={iteration}
+              onChange={(e) => setIteration(Math.max(1, parseInt(e.target.value) || 1))}
+            />
           </div>
           <div className="space-y-1.5">
             <Label>{budgetLabel}</Label>
