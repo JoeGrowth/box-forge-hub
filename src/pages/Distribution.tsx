@@ -449,12 +449,16 @@ function DistributionBuilder({
             <TableHeader>
               <TableRow>
                 <TableHead>Item</TableHead>
+                <TableHead className="w-28 text-right">%</TableHead>
                 <TableHead className="w-40 text-right">Amount</TableHead>
                 <TableHead className="w-16"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {charges.map((c, idx) => (
+              {charges.map((c, idx) => {
+                const budgetNum = Number(budget) || 0;
+                const pct = budgetNum > 0 ? Math.round(((Number(c.amount) || 0) / budgetNum) * 10000) / 100 : 0;
+                return (
                 <TableRow key={c.id}>
                   <TableCell>
                     <Input
@@ -466,6 +470,27 @@ function DistributionBuilder({
                         }
                       }}
                     />
+                  </TableCell>
+                  <TableCell>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        step="0.01"
+                        className="text-right pr-6"
+                        value={pct}
+                        disabled={budgetNum <= 0}
+                        onChange={(e) => {
+                          const v = parseFloat(e.target.value);
+                          const nextPct = isNaN(v) ? 0 : v;
+                          updateCharge(c.id, {
+                            amount: Math.round((nextPct / 100) * budgetNum * 100) / 100,
+                          });
+                        }}
+                      />
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                        %
+                      </span>
+                    </div>
                   </TableCell>
                   <TableCell>
                     <Input
@@ -490,17 +515,29 @@ function DistributionBuilder({
                     </Button>
                   </TableCell>
                 </TableRow>
-              ))}
+                );
+              })}
               <TableRow className="font-semibold bg-muted/40">
                 <TableCell>Total charges</TableCell>
+                <TableCell className="text-right">
+                  {(Number(budget) || 0) > 0
+                    ? `${(Math.round((chargesTotal / (Number(budget) || 1)) * 10000) / 100).toFixed(2)}%`
+                    : "—"}
+                </TableCell>
                 <TableCell className="text-right">{fmt(chargesTotal)}</TableCell>
                 <TableCell />
               </TableRow>
               <TableRow className="font-semibold">
                 <TableCell>Total Reste structure</TableCell>
+                <TableCell className="text-right">
+                  {(Number(budget) || 0) > 0
+                    ? `${(Math.round((internalPool / (Number(budget) || 1)) * 10000) / 100).toFixed(2)}%`
+                    : "—"}
+                </TableCell>
                 <TableCell className="text-right">{fmt(internalPool)}</TableCell>
                 <TableCell />
               </TableRow>
+
             </TableBody>
           </Table>
           </div>
