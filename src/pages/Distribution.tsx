@@ -65,7 +65,7 @@ function DistributionBuilder({
   const [budget, setBudget] = useState<number>(0);
   const [currency, setCurrency] = useState<string>("TND");
   const [budgetLabel, setBudgetLabel] = useState(defaultBudgetLabel);
-  const [charges, setCharges] = useState<Charge[]>(defaultCharges);
+  const [charges, setCharges] = useState<Charge[]>(withBaseCharges(defaultCharges));
   const [tasks, setTasks] = useState<Task[]>(defaultTasks);
   const [people, setPeople] = useState<string[]>(["Person (1)", "Person (2)"]);
   const [saving, setSaving] = useState(false);
@@ -136,7 +136,7 @@ function DistributionBuilder({
     setBudget(0);
     setCurrency("TND");
     setBudgetLabel(defaultBudgetLabel);
-    setCharges(defaultCharges.map((c) => ({ ...c, id: uid() })));
+    setCharges(withBaseCharges(defaultCharges));
     setTasks(defaultTasks.map((t) => ({ ...t, id: uid() })));
     setPeople(["Person (1)", "Person (2)"]);
     setEditingId(null);
@@ -148,7 +148,7 @@ function DistributionBuilder({
     setBudget(Number(rec.budget) || 0);
     setBudgetLabel(rec.budget_label || defaultBudgetLabel);
     setCurrency(rec.currency || "TND");
-    setCharges(Array.isArray(rec.charges) ? rec.charges : []);
+    setCharges(withBaseCharges(Array.isArray(rec.charges) ? rec.charges : []));
     setTasks(Array.isArray(rec.tasks) ? rec.tasks : []);
     setPeople(Array.isArray(rec.people) && rec.people.length > 0 ? rec.people : ["Person (1)"]);
     setEditingId(mode === "edit" ? rec.id : null);
@@ -183,7 +183,7 @@ function DistributionBuilder({
     setBudget(Number(rec.budget) || 0);
     setBudgetLabel(rec.budget_label || defaultBudgetLabel);
     setCurrency(rec.currency || "TND");
-    setCharges(Array.isArray(rec.charges) ? rec.charges.map((c: any) => ({ ...c, id: uid() })) : []);
+    setCharges(withBaseCharges(Array.isArray(rec.charges) ? rec.charges : []));
     setTasks(Array.isArray(rec.tasks) ? rec.tasks.map((t: any) => ({ ...t, id: uid() })) : []);
     setPeople(Array.isArray(rec.people) && rec.people.length > 0 ? rec.people : ["Person (1)"]);
     setEditingId(null);
