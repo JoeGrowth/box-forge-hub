@@ -25,7 +25,7 @@ type Charge = { id: string; label: string; amount: number; fixed?: boolean };
 type Kind = string;
 
 const uid = () => Math.random().toString(36).slice(2, 9);
-const BASE_CHARGE_LABELS = ["Broker", "Administration", "Quality check"];
+const BASE_CHARGE_LABELS = ["Broker", "Administration", "Quality"];
 const withBaseCharges = (list: Charge[]): Charge[] => {
   const rest = (Array.isArray(list) ? list : []).filter(
     (c) => !BASE_CHARGE_LABELS.some((b) => b.toLowerCase() === String(c.label || "").trim().toLowerCase()),
@@ -493,7 +493,6 @@ function DistributionBuilder({
                         step="0.01"
                         className="text-right pr-6"
                         value={pct}
-                        disabled={budgetNum <= 0}
                         onChange={(e) => {
                           const v = parseFloat(e.target.value);
                           const nextPct = isNaN(v) ? 0 : v;
