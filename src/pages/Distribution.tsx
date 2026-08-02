@@ -340,7 +340,9 @@ function DistributionBuilder({
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-10">#</TableHead>
+                    <TableHead>Client</TableHead>
                     <TableHead>Title</TableHead>
+                    <TableHead className="w-20 text-right">Iteration</TableHead>
                     <TableHead className="text-right">Budget</TableHead>
                     <TableHead className="text-right">RS</TableHead>
                     <TableHead className="text-right">People</TableHead>
