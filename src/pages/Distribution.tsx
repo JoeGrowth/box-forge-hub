@@ -364,7 +364,9 @@ function DistributionBuilder({
                       onClick={() => loadSaved(r, "edit")}
                     >
                       <TableCell className="font-mono text-muted-foreground">({i + 1})</TableCell>
+                      <TableCell className="text-sm">{r.client || "—"}</TableCell>
                       <TableCell className="font-medium">{r.title}</TableCell>
+                      <TableCell className="text-right font-mono text-sm">{r.iteration ?? 1}</TableCell>
                       <TableCell className="text-right font-mono">{fmt(bud)}</TableCell>
                       <TableCell className="text-right font-mono">{fmt(rs)}</TableCell>
                       <TableCell className="text-right">{Array.isArray(r.people) ? r.people.length : 0}</TableCell>
