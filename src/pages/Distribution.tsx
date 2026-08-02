@@ -231,7 +231,9 @@ function DistributionBuilder({
     const payload = {
       user_id: user.id,
       kind,
+      client: client.trim() || null,
       title: title.trim(),
+      iteration: Math.max(1, Number(iteration) || 1),
       budget_label: budgetLabel,
       budget,
       currency,
