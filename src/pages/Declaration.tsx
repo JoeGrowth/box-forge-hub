@@ -676,8 +676,8 @@ export default function Declaration() {
               onClick={() => setPoolOpen((v) => !v)}
               className="w-full flex items-center justify-between flex-wrap gap-2 text-left"
             >
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-primary" /> Profit Distribution
+              <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                <TrendingUp className="h-4 w-4 text-primary" /> Profit Distribution
               </CardTitle>
               <div className="flex items-center gap-2">
                 {pool.anyReached
@@ -757,8 +757,8 @@ export default function Declaration() {
               onClick={() => setSettingsOpen((v) => !v)}
               className="w-full flex items-center justify-between flex-wrap gap-2 text-left"
             >
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5 text-primary" /> Settings (reused for all missions linked to the organization)
+              <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                <Settings className="h-4 w-4 text-primary" /> Settings (reused for all missions linked to the organization)
               </CardTitle>
               <div className="flex items-center gap-2">
                 {settingsOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
