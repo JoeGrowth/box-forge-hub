@@ -1,9 +1,23 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
-  Plus, Trash2, Wallet, Users, Building2, FlaskConical, CheckCircle2, Clock,
-  TrendingUp, Settings, Briefcase, ArrowDownCircle,
-  ArrowUpCircle, PiggyBank, UserPlus, ChevronDown, ChevronUp,
+  Plus,
+  Trash2,
+  Wallet,
+  Users,
+  Building2,
+  FlaskConical,
+  CheckCircle2,
+  Clock,
+  TrendingUp,
+  Settings,
+  Briefcase,
+  ArrowDownCircle,
+  ArrowUpCircle,
+  PiggyBank,
+  UserPlus,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,9 +29,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Navbar } from "@/components/layout/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -65,7 +77,11 @@ const TYPE_TONES = [
   "bg-orange-500/10 text-orange-700 border-orange-200",
 ];
 const typeLabel = (t: string) =>
-  (t || "").split(/[-_\s]+/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join(" ") || "—";
+  (t || "")
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map((w) => w[0].toUpperCase() + w.slice(1))
+    .join(" ") || "—";
 const typeTone = (t: string) => {
   let h = 0;
   for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) >>> 0;
@@ -128,7 +144,6 @@ export default function Declaration() {
     } catch {
       setDeliveryTypes(DEFAULT_DELIVERY_TYPES);
     }
-
   }, [rosterKey, deliveryKey]);
 
   useEffect(() => {
@@ -140,8 +155,6 @@ export default function Declaration() {
     if (!deliveryKey) return;
     localStorage.setItem(deliveryKey, JSON.stringify(deliveryTypes));
   }, [deliveryTypes, deliveryKey]);
-
-
 
   // Load entities
   const loadEntities = useCallback(async () => {
@@ -260,10 +273,9 @@ export default function Declaration() {
 
     // Send invitation email
     try {
-      const { data: invRes, error: invErr } = await supabase.functions.invoke(
-        "send-collaborator-invite",
-        { body: { email, entityName: activeEntity?.name || "", access: collabAccess } }
-      );
+      const { data: invRes, error: invErr } = await supabase.functions.invoke("send-collaborator-invite", {
+        body: { email, entityName: activeEntity?.name || "", access: collabAccess },
+      });
       if (invErr) throw invErr;
       toast({
         title: "Invitation envoyée",
@@ -306,8 +318,16 @@ export default function Declaration() {
       .single();
     if (error) return toast({ title: "Erreur", description: error.message, variant: "destructive" });
     const m: Mission = {
-      id: data.id, entity_id: data.entity_id, client: "", type: "consulting",
-      budget: 0, currency: "TND", client_paid: false, internal: [], external: [], sort_order,
+      id: data.id,
+      entity_id: data.entity_id,
+      client: "",
+      type: "consulting",
+      budget: 0,
+      currency: "TND",
+      client_paid: false,
+      internal: [],
+      external: [],
+      sort_order,
     };
     setMissions((ms) => [m, ...ms]);
     setActiveId(m.id);
@@ -329,7 +349,10 @@ export default function Declaration() {
 
   const updatePayees = async (id: string, kind: "internal" | "external", payees: Payee[]) => {
     setMissions((ms) => ms.map((m) => (m.id === id ? { ...m, [kind]: payees } : m)));
-    const { error } = await supabase.from("declaration_missions").update({ [kind]: payees }).eq("id", id);
+    const { error } = await supabase
+      .from("declaration_missions")
+      .update({ [kind]: payees })
+      .eq("id", id);
     if (error) {
       console.error("updatePayees error", error);
       toast({ title: "Sauvegarde échouée", description: error.message, variant: "destructive" });
@@ -344,12 +367,20 @@ export default function Declaration() {
   const updatePayee = (id: string, kind: "internal" | "external", pid: string, patch: Partial<Payee>) => {
     const m = missions.find((x) => x.id === id);
     if (!m) return;
-    updatePayees(id, kind, m[kind].map((p) => (p.id === pid ? { ...p, ...patch } : p)));
+    updatePayees(
+      id,
+      kind,
+      m[kind].map((p) => (p.id === pid ? { ...p, ...patch } : p)),
+    );
   };
   const removePayee = (id: string, kind: "internal" | "external", pid: string) => {
     const m = missions.find((x) => x.id === id);
     if (!m) return;
-    updatePayees(id, kind, m[kind].filter((p) => p.id !== pid));
+    updatePayees(
+      id,
+      kind,
+      m[kind].filter((p) => p.id !== pid),
+    );
   };
 
   const removeMission = async (id: string) => {
@@ -377,7 +408,7 @@ export default function Declaration() {
   );
 
   const pool = useMemo(() => {
-    const blank = () => ({ TND: 0, EUR: 0, USD: 0 } as Record<Currency, number>);
+    const blank = () => ({ TND: 0, EUR: 0, USD: 0 }) as Record<Currency, number>;
     const totalRest = blank();
     missions.forEach((m, i) => {
       const cur = (m.currency || "TND") as Currency;
@@ -393,9 +424,12 @@ export default function Declaration() {
         totalRest: rest,
         distributable,
         pending: rest < THRESHOLD ? THRESHOLD - rest : 0,
-        recognition, investment,
-        associe1: recognition * 0.7, associe2: recognition * 0.3,
-        infra: investment * 0.4, lab: investment * 0.6,
+        recognition,
+        investment,
+        associe1: recognition * 0.7,
+        associe2: recognition * 0.3,
+        infra: investment * 0.4,
+        lab: investment * 0.6,
         reached: rest >= THRESHOLD,
       };
     });
@@ -404,7 +438,7 @@ export default function Declaration() {
 
   // Money Box per currency (TND/EUR/USD)
   const moneyBox = useMemo(() => {
-    const blank = () => ({ TND: 0, EUR: 0, USD: 0 } as Record<Currency, number>);
+    const blank = () => ({ TND: 0, EUR: 0, USD: 0 }) as Record<Currency, number>;
     const inflow = blank();
     const outflow = blank();
     missions.forEach((m) => {
@@ -415,10 +449,11 @@ export default function Declaration() {
       });
     });
     const cash = blank();
-    CURRENCIES.forEach((c) => { cash[c] = inflow[c] - outflow[c]; });
+    CURRENCIES.forEach((c) => {
+      cash[c] = inflow[c] - outflow[c];
+    });
     return { inflow, outflow, cash };
   }, [missions]);
-
 
   const activeMission = missions.find((m) => m.id === activeId);
   const activeIndex = missions.findIndex((m) => m.id === activeId);
@@ -465,7 +500,8 @@ export default function Declaration() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Chaque entité (ex : Pengry, Weimprove) regroupe ses propres missions, sa Money Box et ses collaborateurs.
+                Chaque entité (ex : Pengry, Weimprove) regroupe ses propres missions, sa Money Box et ses
+                collaborateurs.
               </p>
               <div className="flex gap-2">
                 <Input
@@ -474,7 +510,9 @@ export default function Declaration() {
                   onChange={(e) => setNewEntityName(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && createEntity()}
                 />
-                <Button onClick={createEntity}><Plus className="h-4 w-4 mr-1" /> Créer</Button>
+                <Button onClick={createEntity}>
+                  <Plus className="h-4 w-4 mr-1" /> Créer
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -491,9 +529,7 @@ export default function Declaration() {
         <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
           <div className="flex-1 min-w-[260px]">
             <h1 className="text-3xl font-bold tracking-tight">statement of the organization</h1>
-            <p className="text-muted-foreground mt-1">
-              Active entity · monitoring of shipments and cash flow.
-            </p>
+            <p className="text-muted-foreground mt-1">Active entity · monitoring of shipments and cash flow.</p>
           </div>
           <div className="flex items-center gap-2">
             <Select value={activeEntityId ?? ""} onValueChange={setActiveEntityId}>
@@ -504,7 +540,8 @@ export default function Declaration() {
               <SelectContent>
                 {entities.map((e) => (
                   <SelectItem key={e.id} value={e.id}>
-                    {e.name}{e.owner_id !== user.id ? " (partagée)" : ""}
+                    {e.name}
+                    {e.owner_id !== user.id ? " (partagée)" : ""}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -520,7 +557,6 @@ export default function Declaration() {
                   <DialogTitle>Gérer les entités</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-6 flex-1 overflow-y-auto pr-1 -mr-1">
-
                   {/* Create */}
                   <div>
                     <Label className="text-sm">Créer une entité</Label>
@@ -531,7 +567,9 @@ export default function Declaration() {
                         onChange={(e) => setNewEntityName(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && createEntity()}
                       />
-                      <Button onClick={createEntity}><Plus className="h-4 w-4 mr-1" /> Ajouter</Button>
+                      <Button onClick={createEntity}>
+                        <Plus className="h-4 w-4 mr-1" /> Ajouter
+                      </Button>
                     </div>
                   </div>
 
@@ -539,19 +577,25 @@ export default function Declaration() {
                   <div>
                     <Label className="text-sm">Mes entités</Label>
                     <div className="space-y-2 mt-1.5">
-                      {entities.filter((e) => e.owner_id === user.id).map((e) => (
-                        <div key={e.id} className="flex items-center gap-2 border rounded-md p-2">
-                          <Input
-                            value={e.name}
-                            onChange={(ev) => setEntities((es) => es.map((x) => x.id === e.id ? { ...x, name: ev.target.value } : x))}
-                            onBlur={(ev) => renameEntity(e.id, ev.target.value)}
-                            className="flex-1"
-                          />
-                          <Button variant="ghost" size="icon" onClick={() => deleteEntity(e.id)}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      ))}
+                      {entities
+                        .filter((e) => e.owner_id === user.id)
+                        .map((e) => (
+                          <div key={e.id} className="flex items-center gap-2 border rounded-md p-2">
+                            <Input
+                              value={e.name}
+                              onChange={(ev) =>
+                                setEntities((es) =>
+                                  es.map((x) => (x.id === e.id ? { ...x, name: ev.target.value } : x)),
+                                )
+                              }
+                              onBlur={(ev) => renameEntity(e.id, ev.target.value)}
+                              className="flex-1"
+                            />
+                            <Button variant="ghost" size="icon" onClick={() => deleteEntity(e.id)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        ))}
                     </div>
                   </div>
 
@@ -568,7 +612,9 @@ export default function Declaration() {
                           onChange={(e) => setCollabEmail(e.target.value)}
                         />
                         <Select value={collabAccess} onValueChange={(v) => setCollabAccess(v as any)}>
-                          <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
+                          <SelectTrigger className="w-[120px]">
+                            <SelectValue />
+                          </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="view">Voir</SelectItem>
                             <SelectItem value="edit">Éditer</SelectItem>
@@ -578,7 +624,10 @@ export default function Declaration() {
                       </div>
                       <div className="space-y-1.5 mt-3">
                         {collaborators.map((c) => (
-                          <div key={c.id} className="flex items-center justify-between border rounded-md px-3 py-1.5 text-sm">
+                          <div
+                            key={c.id}
+                            className="flex items-center justify-between border rounded-md px-3 py-1.5 text-sm"
+                          >
                             <span>{c.collaborator_email}</span>
                             <div className="flex items-center gap-2">
                               <Badge variant="outline">{c.access === "edit" ? "Éditeur" : "Lecteur"}</Badge>
@@ -596,7 +645,9 @@ export default function Declaration() {
                   )}
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setEntityDialogOpen(false)}>Fermer</Button>
+                  <Button variant="outline" onClick={() => setEntityDialogOpen(false)}>
+                    Fermer
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -657,7 +708,9 @@ export default function Declaration() {
                   {CURRENCIES.map((c) => (
                     <div key={c} className="flex items-baseline justify-between">
                       <span className="text-xs text-muted-foreground">{c}</span>
-                      <span className={`text-lg font-bold ${moneyBox.cash[c] >= 0 ? "text-emerald-700" : "text-destructive"}`}>
+                      <span
+                        className={`text-lg font-bold ${moneyBox.cash[c] >= 0 ? "text-emerald-700" : "text-destructive"}`}
+                      >
                         {fmt(moneyBox.cash[c])}
                       </span>
                     </div>
@@ -685,11 +738,14 @@ export default function Declaration() {
                     ? "Seuil atteint sur au moins une devise"
                     : `Pool masqué · seuil ${fmt(THRESHOLD)} par devise`}
                 </span>
-                {poolOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                {poolOpen ? (
+                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                )}
               </div>
             </button>
           </CardHeader>
-
 
           {poolOpen && (
             <CardContent className="space-y-6">
@@ -697,9 +753,14 @@ export default function Declaration() {
                 <div key={p.currency} className="rounded-xl border bg-background/60 p-4">
                   <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="font-semibold">{p.currency}</Badge>
+                      <Badge variant="outline" className="font-semibold">
+                        {p.currency}
+                      </Badge>
                       <span className="text-sm text-muted-foreground">
-                        Total Profit : <strong className="text-foreground">{fmt(p.totalRest)} {p.currency}</strong>
+                        Total Profit :{" "}
+                        <strong className="text-foreground">
+                          {fmt(p.totalRest)} {p.currency}
+                        </strong>
                       </span>
                     </div>
                     {!p.reached && (
@@ -719,7 +780,9 @@ export default function Declaration() {
                           <div className="flex items-center gap-2 font-medium">
                             <Users className="h-4 w-4 text-primary" /> Recognition · 30%
                           </div>
-                          <span className="font-bold">{fmt(p.recognition)} {p.currency}</span>
+                          <span className="font-bold">
+                            {fmt(p.recognition)} {p.currency}
+                          </span>
                         </div>
                         <div className="space-y-1.5 text-sm pl-2 border-l-2 border-primary/40">
                           <Row label="Associé 1 (70%)" value={p.associe1} currency={p.currency} />
@@ -731,11 +794,23 @@ export default function Declaration() {
                           <div className="flex items-center gap-2 font-medium">
                             <Building2 className="h-4 w-4 text-primary" /> Investment · 70%
                           </div>
-                          <span className="font-bold">{fmt(p.investment)} {p.currency}</span>
+                          <span className="font-bold">
+                            {fmt(p.investment)} {p.currency}
+                          </span>
                         </div>
                         <div className="space-y-1.5 text-sm pl-2 border-l-2 border-primary/40">
-                          <Row label="Infrastructure (40%)" value={p.infra} currency={p.currency} icon={<Building2 className="h-3 w-3" />} />
-                          <Row label="Projects (60%)" value={p.lab} currency={p.currency} icon={<FlaskConical className="h-3 w-3" />} />
+                          <Row
+                            label="Infrastructure (40%)"
+                            value={p.infra}
+                            currency={p.currency}
+                            icon={<Building2 className="h-3 w-3" />}
+                          />
+                          <Row
+                            label="Projects (60%)"
+                            value={p.lab}
+                            currency={p.currency}
+                            icon={<FlaskConical className="h-3 w-3" />}
+                          />
                         </div>
                       </div>
                     </div>
@@ -750,7 +825,6 @@ export default function Declaration() {
           )}
         </Card>
 
-
         {/* Shared settings — reused for all missions linked to the organization */}
         <Card className="mb-8">
           <CardHeader className="py-4 px-6 flex-row items-center">
@@ -764,9 +838,13 @@ export default function Declaration() {
               </CardTitle>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">
-                  (reused for all missions linked to the organization)
+                  reused for all missions linked to the organization
                 </span>
-                {settingsOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                {settingsOpen ? (
+                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                )}
               </div>
             </button>
           </CardHeader>
@@ -783,7 +861,11 @@ export default function Declaration() {
                     <Badge key={n} variant="secondary" className="gap-1 py-1.5 px-3">
                       <span className="text-xs text-muted-foreground">Internal {i + 1} —</span> {n}
                       {!DEFAULT_INTERNALS.includes(n) && (
-                        <button onClick={() => setRoster((r) => r.filter((x) => x !== n))} className="ml-1 hover:text-destructive" aria-label="remove">
+                        <button
+                          onClick={() => setRoster((r) => r.filter((x) => x !== n))}
+                          className="ml-1 hover:text-destructive"
+                          aria-label="remove"
+                        >
                           <Trash2 className="h-3 w-3" />
                         </button>
                       )}
@@ -798,7 +880,9 @@ export default function Declaration() {
                     onKeyDown={(e) => e.key === "Enter" && addRoster()}
                     className="max-w-sm"
                   />
-                  <Button variant="outline" onClick={addRoster}><Plus className="h-4 w-4 mr-1" /> Ajouter</Button>
+                  <Button variant="outline" onClick={addRoster}>
+                    <Plus className="h-4 w-4 mr-1" /> Ajouter
+                  </Button>
                 </div>
               </div>
 
@@ -817,7 +901,11 @@ export default function Declaration() {
                       <Badge key={t} variant="outline" className={`gap-1 py-1.5 px-3 ${meta.tone}`}>
                         {meta.label}
                         {!DEFAULT_DELIVERY_TYPES.includes(t) && !inUse && (
-                          <button onClick={() => setDeliveryTypes((d) => d.filter((x) => x !== t))} className="ml-1 hover:text-destructive" aria-label="remove">
+                          <button
+                            onClick={() => setDeliveryTypes((d) => d.filter((x) => x !== t))}
+                            className="ml-1 hover:text-destructive"
+                            aria-label="remove"
+                          >
                             <Trash2 className="h-3 w-3" />
                           </button>
                         )}
@@ -833,14 +921,14 @@ export default function Declaration() {
                     onKeyDown={(e) => e.key === "Enter" && addDeliveryType()}
                     className="max-w-sm"
                   />
-                  <Button variant="outline" onClick={addDeliveryType}><Plus className="h-4 w-4 mr-1" /> Ajouter</Button>
+                  <Button variant="outline" onClick={addDeliveryType}>
+                    <Plus className="h-4 w-4 mr-1" /> Ajouter
+                  </Button>
                 </div>
               </div>
             </CardContent>
           )}
         </Card>
-
-
 
         {/* Mission selector */}
         <div className="mb-6">
@@ -850,7 +938,9 @@ export default function Declaration() {
           <div className="flex gap-3 overflow-x-auto pb-2">
             {missions
               .map((m, idx) => ({ m, t: totals[idx], idx }))
-              .filter(({ m }) => m.client.trim() !== "" || m.budget > 0 || m.internal.length > 0 || m.external.length > 0)
+              .filter(
+                ({ m }) => m.client.trim() !== "" || m.budget > 0 || m.internal.length > 0 || m.external.length > 0,
+              )
               .map(({ m, t }) => {
                 const isActive = m.id === activeId;
                 const isDragging = dragId === m.id;
@@ -887,7 +977,10 @@ export default function Declaration() {
                         next.splice(to, 0, moved);
                         // Persist new sort_order to DB
                         next.forEach(async (item, i) => {
-                          const { error } = await supabase.from("declaration_missions").update({ sort_order: i }).eq("id", item.id);
+                          const { error } = await supabase
+                            .from("declaration_missions")
+                            .update({ sort_order: i })
+                            .eq("id", item.id);
                           if (error) console.error("sort_order persist error", error);
                         });
                         return next;
@@ -914,12 +1007,22 @@ export default function Declaration() {
                     </div>
                     <div className="font-semibold truncate">{m.client || "Mission sans nom"}</div>
                     <div className="text-xs text-muted-foreground mt-2 space-y-1">
-                      <div>Budget {fmt(m.budget)} {m.currency || "TND"}</div>
-                      <div>Reste {fmt(t?.rest ?? 0)} {m.currency || "TND"}</div>
+                      <div>
+                        Budget {fmt(m.budget)} {m.currency || "TND"}
+                      </div>
+                      <div>
+                        Reste {fmt(t?.rest ?? 0)} {m.currency || "TND"}
+                      </div>
                       <div className="flex items-center gap-1">
-                        {m.client_paid
-                          ? <><CheckCircle2 className="h-3 w-3 text-emerald-600" /> Paid by the client</>
-                          : <><Clock className="h-3 w-3 text-amber-600" /> Not Paid Yet</>}
+                        {m.client_paid ? (
+                          <>
+                            <CheckCircle2 className="h-3 w-3 text-emerald-600" /> Paid by the client
+                          </>
+                        ) : (
+                          <>
+                            <Clock className="h-3 w-3 text-amber-600" /> Not Paid Yet
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -958,10 +1061,14 @@ export default function Declaration() {
                       value={activeMission.type}
                       onValueChange={(v) => update(activeMission.id, { type: v as DeliveryType })}
                     >
-                      <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="bg-background">
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         {[...new Set([...deliveryTypes, activeMission.type].filter(Boolean))].map((t) => (
-                          <SelectItem key={t} value={t}>{getTypeMeta(t).label}</SelectItem>
+                          <SelectItem key={t} value={t}>
+                            {getTypeMeta(t).label}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -982,10 +1089,14 @@ export default function Declaration() {
                         value={activeMission.currency || "TND"}
                         onValueChange={(v) => update(activeMission.id, { currency: v as Currency })}
                       >
-                        <SelectTrigger className="bg-background w-[90px]"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="bg-background w-[90px]">
+                          <SelectValue />
+                        </SelectTrigger>
                         <SelectContent>
                           {CURRENCIES.map((c) => (
-                            <SelectItem key={c} value={c}>{c}</SelectItem>
+                            <SelectItem key={c} value={c}>
+                              {c}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -1008,9 +1119,15 @@ export default function Declaration() {
                     onCheckedChange={(v) => update(activeMission.id, { client_paid: v })}
                   />
                   <Label htmlFor={`paid-client-${activeMission.id}`} className="cursor-pointer flex items-center gap-1">
-                    {activeMission.client_paid
-                      ? <><CheckCircle2 className="h-3 w-3 text-emerald-600" /> Paid by the client</>
-                      : <><Clock className="h-3 w-3 text-amber-600" /> Not Paid Yet</>}
+                    {activeMission.client_paid ? (
+                      <>
+                        <CheckCircle2 className="h-3 w-3 text-emerald-600" /> Paid by the client
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="h-3 w-3 text-amber-600" /> Not Paid Yet
+                      </>
+                    )}
                   </Label>
                 </div>
               </div>
@@ -1071,34 +1188,79 @@ export default function Declaration() {
   );
 }
 
-function Row({ label, value, currency = "TND", icon }: { label: string; value: number; currency?: Currency; icon?: React.ReactNode }) {
+function Row({
+  label,
+  value,
+  currency = "TND",
+  icon,
+}: {
+  label: string;
+  value: number;
+  currency?: Currency;
+  icon?: React.ReactNode;
+}) {
   return (
     <div className="flex justify-between items-center">
-      <span className="text-muted-foreground flex items-center gap-1">{icon}{label}</span>
-      <span className="font-medium">{fmt(value)} {currency}</span>
+      <span className="text-muted-foreground flex items-center gap-1">
+        {icon}
+        {label}
+      </span>
+      <span className="font-medium">
+        {fmt(value)} {currency}
+      </span>
     </div>
   );
 }
 
-function Stat({ label, value, currency = "TND", highlight }: { label: string; value: number; currency?: Currency; highlight?: "positive" | "negative" }) {
+function Stat({
+  label,
+  value,
+  currency = "TND",
+  highlight,
+}: {
+  label: string;
+  value: number;
+  currency?: Currency;
+  highlight?: "positive" | "negative";
+}) {
   const tone =
-    highlight === "positive" ? "border-emerald-500/40 bg-emerald-500/5"
-    : highlight === "negative" ? "border-destructive/40 bg-destructive/5"
-    : "bg-muted/20";
+    highlight === "positive"
+      ? "border-emerald-500/40 bg-emerald-500/5"
+      : highlight === "negative"
+        ? "border-destructive/40 bg-destructive/5"
+        : "bg-muted/20";
   return (
     <div className={`rounded-md border p-3 ${tone}`}>
       <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="font-semibold text-lg">{fmt(value)} <span className="text-xs font-normal text-muted-foreground">{currency}</span></div>
+      <div className="font-semibold text-lg">
+        {fmt(value)} <span className="text-xs font-normal text-muted-foreground">{currency}</span>
+      </div>
     </div>
   );
 }
 
 function PayeeSection({
-  title, subtitle, accent, currency = "TND", payees, total, paid, due, nameOptions, onAdd, onUpdate, onRemove,
+  title,
+  subtitle,
+  accent,
+  currency = "TND",
+  payees,
+  total,
+  paid,
+  due,
+  nameOptions,
+  onAdd,
+  onUpdate,
+  onRemove,
 }: {
-  title: string; subtitle: string; accent: "primary" | "muted";
+  title: string;
+  subtitle: string;
+  accent: "primary" | "muted";
   currency?: Currency;
-  payees: Payee[]; total: number; paid: number; due: number;
+  payees: Payee[];
+  total: number;
+  paid: number;
+  due: number;
   nameOptions?: string[];
   onAdd: () => void;
   onUpdate: (pid: string, patch: Partial<Payee>) => void;
@@ -1111,7 +1273,9 @@ function PayeeSection({
           <h3 className="font-semibold">{title}</h3>
           <p className="text-xs text-muted-foreground">{subtitle}</p>
         </div>
-        <Button size="sm" variant="outline" onClick={onAdd}><Plus className="h-3 w-3 mr-1" /> Ajouter</Button>
+        <Button size="sm" variant="outline" onClick={onAdd}>
+          <Plus className="h-3 w-3 mr-1" /> Ajouter
+        </Button>
       </div>
 
       {payees.length === 0 ? (
@@ -1123,10 +1287,14 @@ function PayeeSection({
               <div className="col-span-12 md:col-span-5">
                 {nameOptions ? (
                   <Select value={p.name} onValueChange={(v) => onUpdate(p.id, { name: v })}>
-                      <SelectTrigger><SelectValue placeholder="Internal member" /></SelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Internal member" />
+                    </SelectTrigger>
                     <SelectContent>
                       {nameOptions.map((n) => (
-                        <SelectItem key={n} value={n}>{n}</SelectItem>
+                        <SelectItem key={n} value={n}>
+                          {n}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -1135,12 +1303,25 @@ function PayeeSection({
                 )}
               </div>
               <div className="col-span-7 md:col-span-3">
-                <Input type="number" placeholder="Montant" value={p.amount || ""} onChange={(e) => onUpdate(p.id, { amount: +e.target.value })} />
+                <Input
+                  type="number"
+                  placeholder="Montant"
+                  value={p.amount || ""}
+                  onChange={(e) => onUpdate(p.id, { amount: +e.target.value })}
+                />
               </div>
               <div className="col-span-4 md:col-span-3 flex items-center gap-2">
                 <Switch checked={p.paid} onCheckedChange={(v) => onUpdate(p.id, { paid: v })} id={`paid-${p.id}`} />
                 <Label htmlFor={`paid-${p.id}`} className="text-xs cursor-pointer flex items-center gap-1">
-                  {p.paid ? <><CheckCircle2 className="h-3 w-3 text-emerald-600" /> Paid</> : <><Clock className="h-3 w-3 text-amber-600" /> Pending</>}
+                  {p.paid ? (
+                    <>
+                      <CheckCircle2 className="h-3 w-3 text-emerald-600" /> Paid
+                    </>
+                  ) : (
+                    <>
+                      <Clock className="h-3 w-3 text-amber-600" /> Pending
+                    </>
+                  )}
                 </Label>
               </div>
               <div className="col-span-1 flex justify-end">
@@ -1156,15 +1337,21 @@ function PayeeSection({
       <div className="grid grid-cols-3 gap-2 mt-3 text-xs">
         <div className="rounded bg-muted/40 px-2 py-1.5">
           <div className="text-muted-foreground">Total</div>
-          <div className="font-semibold">{fmt(total)} {currency}</div>
+          <div className="font-semibold">
+            {fmt(total)} {currency}
+          </div>
         </div>
         <div className="rounded bg-emerald-500/10 px-2 py-1.5">
           <div className="text-muted-foreground">Paid</div>
-          <div className="font-semibold text-emerald-700">{fmt(paid)} {currency}</div>
+          <div className="font-semibold text-emerald-700">
+            {fmt(paid)} {currency}
+          </div>
         </div>
         <div className="rounded bg-amber-500/10 px-2 py-1.5">
           <div className="text-muted-foreground">À payer</div>
-          <div className="font-semibold text-amber-700">{fmt(due)} {currency}</div>
+          <div className="font-semibold text-amber-700">
+            {fmt(due)} {currency}
+          </div>
         </div>
       </div>
     </div>
