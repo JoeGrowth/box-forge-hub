@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Link2, Check, Clock, X as XIcon, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { Link2, Check, Clock, X as XIcon, Loader2, ChevronDown, ChevronUp, UserCog } from "lucide-react";
 import { toast } from "sonner";
 import {
   useEntityRoleAssignments,
