@@ -657,13 +657,6 @@ export default function Declaration() {
           </div>
         </div>
 
-        {/* Role slots for the active entity (optional profile linking) */}
-        {activeEntity && (
-          <div className="mb-6">
-            <EntityRoleSlots entityType="declaration_entity" entityId={activeEntity.id} canManage={isOwner} />
-          </div>
-        )}
-
         {/* Money Box */}
 
         <Card className="mb-6 border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 via-background to-background">
@@ -673,7 +666,7 @@ export default function Declaration() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
               <div className="rounded-lg border bg-background p-4">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
                   <ArrowDownCircle className="h-4 w-4 text-emerald-600" /> Inflow (Paid by the client)
@@ -718,216 +711,223 @@ export default function Declaration() {
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Pool dashboard – per currency */}
-        <Card className="mb-8 border-primary/40 bg-gradient-to-br from-primary/5 via-background to-background">
-          <CardHeader className="py-4 px-6 flex-row items-center">
-            <button
-              type="button"
-              onClick={() => setPoolOpen((v) => !v)}
-              className="w-full flex items-center justify-between flex-wrap gap-2 text-left"
-            >
-              <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-                <TrendingUp className="h-4 w-4 text-primary" /> Profit Distribution
-              </CardTitle>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">
-                  {pool.anyReached
-                    ? "Seuil atteint sur au moins une devise"
-                    : `Pool masqué · seuil ${fmt(THRESHOLD)} par devise`}
-                </span>
-                {poolOpen ? (
-                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                )}
+            {/* Role slots for the active entity (optional profile linking) */}
+            {activeEntity && (
+              <div className="mb-6">
+                <EntityRoleSlots entityType="declaration_entity" entityId={activeEntity.id} canManage={isOwner} />
               </div>
-            </button>
-          </CardHeader>
+            )}
 
-          {poolOpen && (
-            <CardContent className="space-y-6">
-              {pool.byCurrency.map((p) => (
-                <div key={p.currency} className="rounded-xl border bg-background/60 p-4">
-                  <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="font-semibold">
-                        {p.currency}
-                      </Badge>
-                      <span className="text-sm text-muted-foreground">
-                        Total Profit :{" "}
-                        <strong className="text-foreground">
-                          {fmt(p.totalRest)} {p.currency}
-                        </strong>
-                      </span>
-                    </div>
-                    {!p.reached && (
-                      <div className="flex items-center gap-2 min-w-[200px]">
-                        <Progress value={Math.min(100, (p.totalRest / THRESHOLD) * 100)} className="h-2 flex-1" />
-                        <span className="text-xs text-muted-foreground whitespace-nowrap">
-                          reste {fmt(p.pending)} {p.currency}
-                        </span>
-                      </div>
+            {/* Pool dashboard – per currency */}
+            <Card className="mb-8 border-primary/40 bg-gradient-to-br from-primary/5 via-background to-background">
+              <CardHeader className="py-4 px-6 flex-row items-center">
+                <button
+                  type="button"
+                  onClick={() => setPoolOpen((v) => !v)}
+                  className="w-full flex items-center justify-between flex-wrap gap-2 text-left"
+                >
+                  <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                    <TrendingUp className="h-4 w-4 text-primary" /> Profit Distribution
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">
+                      {pool.anyReached
+                        ? "Seuil atteint sur au moins une devise"
+                        : `Pool masqué · seuil ${fmt(THRESHOLD)} par devise`}
+                    </span>
+                    {poolOpen ? (
+                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
                     )}
                   </div>
+                </button>
+              </CardHeader>
 
-                  {p.reached ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="rounded-lg border bg-background p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-2 font-medium">
-                            <Users className="h-4 w-4 text-primary" /> Recognition · 30%
-                          </div>
-                          <span className="font-bold">
-                            {fmt(p.recognition)} {p.currency}
+              {poolOpen && (
+                <CardContent className="space-y-6">
+                  {pool.byCurrency.map((p) => (
+                    <div key={p.currency} className="rounded-xl border bg-background/60 p-4">
+                      <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="font-semibold">
+                            {p.currency}
+                          </Badge>
+                          <span className="text-sm text-muted-foreground">
+                            Total Profit :{" "}
+                            <strong className="text-foreground">
+                              {fmt(p.totalRest)} {p.currency}
+                            </strong>
                           </span>
                         </div>
-                        <div className="space-y-1.5 text-sm pl-2 border-l-2 border-primary/40">
-                          <Row label="Associé 1 (70%)" value={p.associe1} currency={p.currency} />
-                          <Row label="Associé 2 (30%)" value={p.associe2} currency={p.currency} />
-                        </div>
-                      </div>
-                      <div className="rounded-lg border bg-background p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-2 font-medium">
-                            <Building2 className="h-4 w-4 text-primary" /> Investment · 70%
+                        {!p.reached && (
+                          <div className="flex items-center gap-2 min-w-[200px]">
+                            <Progress value={Math.min(100, (p.totalRest / THRESHOLD) * 100)} className="h-2 flex-1" />
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+                              reste {fmt(p.pending)} {p.currency}
+                            </span>
                           </div>
-                          <span className="font-bold">
-                            {fmt(p.investment)} {p.currency}
-                          </span>
-                        </div>
-                        <div className="space-y-1.5 text-sm pl-2 border-l-2 border-primary/40">
-                          <Row
-                            label="Infrastructure (40%)"
-                            value={p.infra}
-                            currency={p.currency}
-                            icon={<Building2 className="h-3 w-3" />}
-                          />
-                          <Row
-                            label="Projects (60%)"
-                            value={p.lab}
-                            currency={p.currency}
-                            icon={<FlaskConical className="h-3 w-3" />}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-xs text-muted-foreground italic">
-                      Répartition activée dès que le cumul atteint {fmt(THRESHOLD)} {p.currency}.
-                    </p>
-                  )}
-                </div>
-              ))}
-            </CardContent>
-          )}
-        </Card>
-
-        {/* Shared settings — reused for all missions linked to the organization */}
-        <Card className="mb-8">
-          <CardHeader className="py-4 px-6 flex-row items-center">
-            <button
-              type="button"
-              onClick={() => setSettingsOpen((v) => !v)}
-              className="w-full flex items-center justify-between flex-wrap gap-2 text-left"
-            >
-              <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-                <Settings className="h-4 w-4 text-primary" /> Settings
-              </CardTitle>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">
-                  Reused for all missions linked to the organization
-                </span>
-                {settingsOpen ? (
-                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                )}
-              </div>
-            </button>
-          </CardHeader>
-
-          {settingsOpen && (
-            <CardContent className="space-y-6">
-              {/* Internal */}
-              <div>
-                <h4 className="text-sm font-medium flex items-center gap-2 mb-3">
-                  <Users className="h-3.5 w-3.5 text-muted-foreground" /> Internal
-                </h4>
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {roster.map((n, i) => (
-                    <Badge key={n} variant="secondary" className="gap-1 py-1.5 px-3">
-                      <span className="text-xs text-muted-foreground">Internal {i + 1} —</span> {n}
-                      {!DEFAULT_INTERNALS.includes(n) && (
-                        <button
-                          onClick={() => setRoster((r) => r.filter((x) => x !== n))}
-                          className="ml-1 hover:text-destructive"
-                          aria-label="remove"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </button>
-                      )}
-                    </Badge>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Add an internal member…"
-                    value={newRosterName}
-                    onChange={(e) => setNewRosterName(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && addRoster()}
-                    className="max-w-sm"
-                  />
-                  <Button variant="outline" onClick={addRoster}>
-                    <Plus className="h-4 w-4 mr-1" /> Ajouter
-                  </Button>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Delivery */}
-              <div>
-                <h4 className="text-sm font-medium flex items-center gap-2 mb-3">
-                  <Briefcase className="h-3.5 w-3.5 text-muted-foreground" /> Delivery
-                </h4>
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {deliveryTypes.map((t) => {
-                    const meta = getTypeMeta(t);
-                    const inUse = missions.some((m) => m.type === t);
-                    return (
-                      <Badge key={t} variant="outline" className={`gap-1 py-1.5 px-3 ${meta.tone}`}>
-                        {meta.label}
-                        {!DEFAULT_DELIVERY_TYPES.includes(t) && !inUse && (
-                          <button
-                            onClick={() => setDeliveryTypes((d) => d.filter((x) => x !== t))}
-                            className="ml-1 hover:text-destructive"
-                            aria-label="remove"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </button>
                         )}
-                      </Badge>
-                    );
-                  })}
-                </div>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Ajouter un type de livraison…"
-                    value={newDeliveryType}
-                    onChange={(e) => setNewDeliveryType(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && addDeliveryType()}
-                    className="max-w-sm"
-                  />
-                  <Button variant="outline" onClick={addDeliveryType}>
-                    <Plus className="h-4 w-4 mr-1" /> Ajouter
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          )}
+                      </div>
+
+                      {p.reached ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="rounded-lg border bg-background p-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center gap-2 font-medium">
+                                <Users className="h-4 w-4 text-primary" /> Recognition · 30%
+                              </div>
+                              <span className="font-bold">
+                                {fmt(p.recognition)} {p.currency}
+                              </span>
+                            </div>
+                            <div className="space-y-1.5 text-sm pl-2 border-l-2 border-primary/40">
+                              <Row label="Associé 1 (70%)" value={p.associe1} currency={p.currency} />
+                              <Row label="Associé 2 (30%)" value={p.associe2} currency={p.currency} />
+                            </div>
+                          </div>
+                          <div className="rounded-lg border bg-background p-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center gap-2 font-medium">
+                                <Building2 className="h-4 w-4 text-primary" /> Investment · 70%
+                              </div>
+                              <span className="font-bold">
+                                {fmt(p.investment)} {p.currency}
+                              </span>
+                            </div>
+                            <div className="space-y-1.5 text-sm pl-2 border-l-2 border-primary/40">
+                              <Row
+                                label="Infrastructure (40%)"
+                                value={p.infra}
+                                currency={p.currency}
+                                icon={<Building2 className="h-3 w-3" />}
+                              />
+                              <Row
+                                label="Projects (60%)"
+                                value={p.lab}
+                                currency={p.currency}
+                                icon={<FlaskConical className="h-3 w-3" />}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-muted-foreground italic">
+                          Répartition activée dès que le cumul atteint {fmt(THRESHOLD)} {p.currency}.
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </CardContent>
+              )}
+            </Card>
+
+            {/* Shared settings — reused for all missions linked to the organization */}
+            <Card className="mb-8">
+              <CardHeader className="py-4 px-6 flex-row items-center">
+                <button
+                  type="button"
+                  onClick={() => setSettingsOpen((v) => !v)}
+                  className="w-full flex items-center justify-between flex-wrap gap-2 text-left"
+                >
+                  <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                    <Settings className="h-4 w-4 text-primary" /> Settings
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">
+                      Reused for all missions linked to the organization
+                    </span>
+                    {settingsOpen ? (
+                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </div>
+                </button>
+              </CardHeader>
+
+              {settingsOpen && (
+                <CardContent className="space-y-6">
+                  {/* Internal */}
+                  <div>
+                    <h4 className="text-sm font-medium flex items-center gap-2 mb-3">
+                      <Users className="h-3.5 w-3.5 text-muted-foreground" /> Internal
+                    </h4>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {roster.map((n, i) => (
+                        <Badge key={n} variant="secondary" className="gap-1 py-1.5 px-3">
+                          <span className="text-xs text-muted-foreground">Internal {i + 1} —</span> {n}
+                          {!DEFAULT_INTERNALS.includes(n) && (
+                            <button
+                              onClick={() => setRoster((r) => r.filter((x) => x !== n))}
+                              className="ml-1 hover:text-destructive"
+                              aria-label="remove"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          )}
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Add an internal member…"
+                        value={newRosterName}
+                        onChange={(e) => setNewRosterName(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && addRoster()}
+                        className="max-w-sm"
+                      />
+                      <Button variant="outline" onClick={addRoster}>
+                        <Plus className="h-4 w-4 mr-1" /> Ajouter
+                      </Button>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Delivery */}
+                  <div>
+                    <h4 className="text-sm font-medium flex items-center gap-2 mb-3">
+                      <Briefcase className="h-3.5 w-3.5 text-muted-foreground" /> Delivery
+                    </h4>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {deliveryTypes.map((t) => {
+                        const meta = getTypeMeta(t);
+                        const inUse = missions.some((m) => m.type === t);
+                        return (
+                          <Badge key={t} variant="outline" className={`gap-1 py-1.5 px-3 ${meta.tone}`}>
+                            {meta.label}
+                            {!DEFAULT_DELIVERY_TYPES.includes(t) && !inUse && (
+                              <button
+                                onClick={() => setDeliveryTypes((d) => d.filter((x) => x !== t))}
+                                className="ml-1 hover:text-destructive"
+                                aria-label="remove"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            )}
+                          </Badge>
+                        );
+                      })}
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Ajouter un type de livraison…"
+                        value={newDeliveryType}
+                        onChange={(e) => setNewDeliveryType(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && addDeliveryType()}
+                        className="max-w-sm"
+                      />
+                      <Button variant="outline" onClick={addDeliveryType}>
+                        <Plus className="h-4 w-4 mr-1" /> Ajouter
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+          </CardContent>
         </Card>
 
         {/* Mission selector */}
