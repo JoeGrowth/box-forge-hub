@@ -731,8 +731,8 @@ export default function Declaration() {
                           <span className="font-bold">{fmt(p.investment)} {p.currency}</span>
                         </div>
                         <div className="space-y-1.5 text-sm pl-2 border-l-2 border-primary/40">
-                          <Row label="Infra (40%)" value={p.infra} currency={p.currency} icon={<Building2 className="h-3 w-3" />} />
-                          <Row label="Lab (60%)" value={p.lab} currency={p.currency} icon={<FlaskConical className="h-3 w-3" />} />
+                          <Row label="Infrastructure (40%)" value={p.infra} currency={p.currency} icon={<Building2 className="h-3 w-3" />} />
+                          <Row label="Projects (60%)" value={p.lab} currency={p.currency} icon={<FlaskConical className="h-3 w-3" />} />
                         </div>
                       </div>
                     </div>
