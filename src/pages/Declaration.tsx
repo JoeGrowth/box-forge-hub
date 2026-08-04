@@ -838,7 +838,7 @@ export default function Declaration() {
               </CardTitle>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">
-                  reused for all missions linked to the organization
+                  Reused for all missions linked to the organization
                 </span>
                 {settingsOpen ? (
                   <ChevronUp className="h-4 w-4 text-muted-foreground" />
