@@ -676,7 +676,7 @@ export default function Declaration() {
               className="w-full flex items-center justify-between flex-wrap gap-2 text-left"
             >
               <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-primary" /> Pool Structure
+                <TrendingUp className="h-5 w-5 text-primary" /> Profit Distribution
               </CardTitle>
               <div className="flex items-center gap-2">
                 {pool.anyReached
