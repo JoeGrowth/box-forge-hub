@@ -775,7 +775,7 @@ export default function Declaration() {
               </div>
               <div className="flex gap-2">
                 <Input
-                  placeholder="Ajouter un membre interne…"
+                  placeholder="Add an internal member…"
                   value={newRosterName}
                   onChange={(e) => setNewRosterName(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && addRoster()}
@@ -1105,7 +1105,7 @@ function PayeeSection({
               <div className="col-span-12 md:col-span-5">
                 {nameOptions ? (
                   <Select value={p.name} onValueChange={(v) => onUpdate(p.id, { name: v })}>
-                    <SelectTrigger><SelectValue placeholder="Membre interne" /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder="Internal member" /></SelectTrigger>
                     <SelectContent>
                       {nameOptions.map((n) => (
                         <SelectItem key={n} value={n}>{n}</SelectItem>
