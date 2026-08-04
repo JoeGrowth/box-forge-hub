@@ -760,9 +760,12 @@ export default function Declaration() {
               className="w-full flex items-center justify-between flex-wrap gap-2 text-left"
             >
               <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-                <Settings className="h-4 w-4 text-primary" /> Settings (reused for all missions linked to the organization)
+                <Settings className="h-4 w-4 text-primary" /> Settings
               </CardTitle>
               <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">
+                  (reused for all missions linked to the organization)
+                </span>
                 {settingsOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
               </div>
             </button>
