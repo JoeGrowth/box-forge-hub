@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Link2, Check, Clock, X as XIcon, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { Link2, Check, Clock, X as XIcon, Loader2, ChevronDown, ChevronUp, UserCog } from "lucide-react";
 import { toast } from "sonner";
 import {
   useEntityRoleAssignments,
@@ -43,7 +43,9 @@ export function EntityRoleSlots({ entityType, entityId, canManage }: Props) {
         onClick={() => setRolesOpen((v) => !v)}
         className="w-full flex items-center justify-between text-left"
       >
-        <h3 className="text-sm font-semibold">Roles</h3>
+        <h3 className="$1text-sm font-semibold flex items-center gap-2">
+          <UserCog className="h-4 w-4 text-primary" /> Roles
+        </h3>
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">
             Optional. Linking unlocks verified evidence for that person.
