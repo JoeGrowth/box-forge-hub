@@ -43,7 +43,7 @@ export function EntityRoleSlots({ entityType, entityId, canManage }: Props) {
         onClick={() => setRolesOpen((v) => !v)}
         className="w-full flex items-center justify-between text-left"
       >
-        <h3 className="$1text-sm font-semibold flex items-center gap-2">
+        <h3 className="text-sm font-semibold flex items-center gap-2 leading-none m-0">
           <UserCog className="h-4 w-4 text-primary" /> Roles
         </h3>
         <div className="flex items-center gap-2">
