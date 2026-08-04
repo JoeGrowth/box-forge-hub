@@ -696,7 +696,7 @@ export default function Declaration() {
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className="font-semibold">{p.currency}</Badge>
                       <span className="text-sm text-muted-foreground">
-                        Cumul Reste Structure : <strong className="text-foreground">{fmt(p.totalRest)} {p.currency}</strong>
+                        Total Profit : <strong className="text-foreground">{fmt(p.totalRest)} {p.currency}</strong>
                       </span>
                     </div>
                     {!p.reached && (
