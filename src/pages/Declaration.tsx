@@ -756,10 +756,10 @@ export default function Declaration() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Équipe interne */}
+            {/* Internal */}
             <div>
               <h4 className="text-sm font-medium flex items-center gap-2 mb-3">
-                <Users className="h-3.5 w-3.5 text-muted-foreground" /> Équipe interne
+                <Users className="h-3.5 w-3.5 text-muted-foreground" /> Internal
               </h4>
               <div className="flex flex-wrap gap-2 mb-3">
                 {roster.map((n, i) => (
@@ -787,10 +787,10 @@ export default function Declaration() {
 
             <Separator />
 
-            {/* Types de livraison */}
+            {/* Delivery */}
             <div>
               <h4 className="text-sm font-medium flex items-center gap-2 mb-3">
-                <Briefcase className="h-3.5 w-3.5 text-muted-foreground" /> Types de livraison
+                <Briefcase className="h-3.5 w-3.5 text-muted-foreground" /> Delivery
               </h4>
               <div className="flex flex-wrap gap-2 mb-3">
                 {deliveryTypes.map((t) => {
@@ -1000,8 +1000,8 @@ export default function Declaration() {
 
             <CardContent className="pt-6 space-y-6">
               <PayeeSection
-                title="Internes"
-                subtitle="Membres de la structure"
+                title="Internal"
+                subtitle="Internal members"
                 accent="primary"
                 currency={activeMission.currency || "TND"}
                 payees={activeMission.internal}
@@ -1015,8 +1015,8 @@ export default function Declaration() {
               />
 
               <PayeeSection
-                title="Externes"
-                subtitle="Prestataires hors structure"
+                title="External"
+                subtitle="External providers"
                 accent="muted"
                 currency={activeMission.currency || "TND"}
                 payees={activeMission.external}
@@ -1032,8 +1032,8 @@ export default function Declaration() {
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <Stat label="Budget" value={activeMission.budget} currency={activeMission.currency || "TND"} />
-                <Stat label="Internes" value={activeTotal.intT} currency={activeMission.currency || "TND"} />
-                <Stat label="Externes" value={activeTotal.extT} currency={activeMission.currency || "TND"} />
+                <Stat label="Internal" value={activeTotal.intT} currency={activeMission.currency || "TND"} />
+                <Stat label="External" value={activeTotal.extT} currency={activeMission.currency || "TND"} />
                 <Stat
                   label="Reste Structure"
                   value={activeTotal.rest}
