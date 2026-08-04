@@ -490,7 +490,7 @@ export default function Declaration() {
         {/* Header with entity selector */}
         <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
           <div className="flex-1 min-w-[260px]">
-            <h1 className="text-3xl font-bold tracking-tight">Statement of Missions</h1>
+            <h1 className="text-3xl font-bold tracking-tight">statement of the organization</h1>
             <p className="text-muted-foreground mt-1">
               Active entity · monitoring of shipments and cash flow.
             </p>
