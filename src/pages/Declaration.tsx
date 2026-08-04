@@ -680,9 +680,11 @@ export default function Declaration() {
                 <TrendingUp className="h-4 w-4 text-primary" /> Profit Distribution
               </CardTitle>
               <div className="flex items-center gap-2">
-                {pool.anyReached
-                  ? <Badge className="text-xs">Seuil atteint sur au moins une devise</Badge>
-                  : <Badge variant="secondary" className="text-xs">Pool masqué · seuil {fmt(THRESHOLD)} par devise</Badge>}
+                <span className="text-xs text-muted-foreground">
+                  {pool.anyReached
+                    ? "Seuil atteint sur au moins une devise"
+                    : `Pool masqué · seuil ${fmt(THRESHOLD)} par devise`}
+                </span>
                 {poolOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
               </div>
             </button>
@@ -758,9 +760,12 @@ export default function Declaration() {
               className="w-full flex items-center justify-between flex-wrap gap-2 text-left"
             >
               <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-                <Settings className="h-4 w-4 text-primary" /> Settings (reused for all missions linked to the organization)
+                <Settings className="h-4 w-4 text-primary" /> Settings
               </CardTitle>
               <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">
+                  (reused for all missions linked to the organization)
+                </span>
                 {settingsOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
               </div>
             </button>
