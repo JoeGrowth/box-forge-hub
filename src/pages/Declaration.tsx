@@ -751,76 +751,88 @@ export default function Declaration() {
 
         {/* Shared settings — reused for all missions linked to the organization */}
         <Card className="mb-8">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Settings className="h-4 w-4" /> (reused for all missions linked to the organization)
-            </CardTitle>
+          <CardHeader className="py-4 px-6 flex-row items-center">
+            <button
+              type="button"
+              onClick={() => setSettingsOpen((v) => !v)}
+              className="w-full flex items-center justify-between flex-wrap gap-2 text-left"
+            >
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5 text-primary" /> Settings (reused for all missions linked to the organization)
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                {settingsOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+              </div>
+            </button>
           </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Internal */}
-            <div>
-              <h4 className="text-sm font-medium flex items-center gap-2 mb-3">
-                <Users className="h-3.5 w-3.5 text-muted-foreground" /> Internal
-              </h4>
-              <div className="flex flex-wrap gap-2 mb-3">
-                {roster.map((n, i) => (
-                  <Badge key={n} variant="secondary" className="gap-1 py-1.5 px-3">
-                    <span className="text-xs text-muted-foreground">Internal {i + 1} —</span> {n}
-                    {!DEFAULT_INTERNALS.includes(n) && (
-                      <button onClick={() => setRoster((r) => r.filter((x) => x !== n))} className="ml-1 hover:text-destructive" aria-label="remove">
-                        <Trash2 className="h-3 w-3" />
-                      </button>
-                    )}
-                  </Badge>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Add an internal member…"
-                  value={newRosterName}
-                  onChange={(e) => setNewRosterName(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && addRoster()}
-                  className="max-w-sm"
-                />
-                <Button variant="outline" onClick={addRoster}><Plus className="h-4 w-4 mr-1" /> Ajouter</Button>
-              </div>
-            </div>
 
-            <Separator />
-
-            {/* Delivery */}
-            <div>
-              <h4 className="text-sm font-medium flex items-center gap-2 mb-3">
-                <Briefcase className="h-3.5 w-3.5 text-muted-foreground" /> Delivery
-              </h4>
-              <div className="flex flex-wrap gap-2 mb-3">
-                {deliveryTypes.map((t) => {
-                  const meta = getTypeMeta(t);
-                  const inUse = missions.some((m) => m.type === t);
-                  return (
-                    <Badge key={t} variant="outline" className={`gap-1 py-1.5 px-3 ${meta.tone}`}>
-                      {meta.label}
-                      {!DEFAULT_DELIVERY_TYPES.includes(t) && !inUse && (
-                        <button onClick={() => setDeliveryTypes((d) => d.filter((x) => x !== t))} className="ml-1 hover:text-destructive" aria-label="remove">
+          {settingsOpen && (
+            <CardContent className="space-y-6">
+              {/* Internal */}
+              <div>
+                <h4 className="text-sm font-medium flex items-center gap-2 mb-3">
+                  <Users className="h-3.5 w-3.5 text-muted-foreground" /> Internal
+                </h4>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {roster.map((n, i) => (
+                    <Badge key={n} variant="secondary" className="gap-1 py-1.5 px-3">
+                      <span className="text-xs text-muted-foreground">Internal {i + 1} —</span> {n}
+                      {!DEFAULT_INTERNALS.includes(n) && (
+                        <button onClick={() => setRoster((r) => r.filter((x) => x !== n))} className="ml-1 hover:text-destructive" aria-label="remove">
                           <Trash2 className="h-3 w-3" />
                         </button>
                       )}
                     </Badge>
-                  );
-                })}
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Add an internal member…"
+                    value={newRosterName}
+                    onChange={(e) => setNewRosterName(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && addRoster()}
+                    className="max-w-sm"
+                  />
+                  <Button variant="outline" onClick={addRoster}><Plus className="h-4 w-4 mr-1" /> Ajouter</Button>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Ajouter un type de livraison…"
-                  value={newDeliveryType}
-                  onChange={(e) => setNewDeliveryType(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && addDeliveryType()}
-                  className="max-w-sm"
-                />
-                <Button variant="outline" onClick={addDeliveryType}><Plus className="h-4 w-4 mr-1" /> Ajouter</Button>
+
+              <Separator />
+
+              {/* Delivery */}
+              <div>
+                <h4 className="text-sm font-medium flex items-center gap-2 mb-3">
+                  <Briefcase className="h-3.5 w-3.5 text-muted-foreground" /> Delivery
+                </h4>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {deliveryTypes.map((t) => {
+                    const meta = getTypeMeta(t);
+                    const inUse = missions.some((m) => m.type === t);
+                    return (
+                      <Badge key={t} variant="outline" className={`gap-1 py-1.5 px-3 ${meta.tone}`}>
+                        {meta.label}
+                        {!DEFAULT_DELIVERY_TYPES.includes(t) && !inUse && (
+                          <button onClick={() => setDeliveryTypes((d) => d.filter((x) => x !== t))} className="ml-1 hover:text-destructive" aria-label="remove">
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        )}
+                      </Badge>
+                    );
+                  })}
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Ajouter un type de livraison…"
+                    value={newDeliveryType}
+                    onChange={(e) => setNewDeliveryType(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && addDeliveryType()}
+                    className="max-w-sm"
+                  />
+                  <Button variant="outline" onClick={addDeliveryType}><Plus className="h-4 w-4 mr-1" /> Ajouter</Button>
+                </div>
               </div>
-            </div>
-          </CardContent>
+            </CardContent>
+          )}
         </Card>
 
 
