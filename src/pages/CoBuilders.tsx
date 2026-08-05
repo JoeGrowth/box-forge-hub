@@ -557,19 +557,46 @@ const CoBuilders = () => {
                       return s.charAt(0).toUpperCase() + s.slice(1);
                     };
 
+                    const slug = profileSlug(cobuilder.full_name, cobuilder.user_id);
+
                     return (
                       <div
                         key={cobuilder.id}
-                        className={`group rounded-2xl border p-6 transition-all duration-300 relative flex flex-col h-full shadow-sm hover:shadow-xl hover:-translate-y-1 ${getCardStyle()}`}
+                        role="link"
+                        tabIndex={0}
+                        onClick={() => navigate(`/u/${slug}`)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            navigate(`/u/${slug}`);
+                          }
+                        }}
+                        className={`group rounded-2xl border p-6 transition-all duration-300 relative flex flex-col h-full shadow-sm hover:shadow-xl hover:-translate-y-1 cursor-pointer ${getCardStyle()}`}
                       >
-                        {/* Preview Button - top right */}
-                        <button
-                          onClick={() => handlePreview(cobuilder)}
-                          className="absolute top-3 right-3 p-1.5 rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-foreground hover:bg-muted transition-all"
-                          title="Preview"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
+                        {/* Actions - top right */}
+                        <div className="absolute top-3 right-3 flex items-center gap-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSharePublicProfile(cobuilder);
+                            }}
+                            className="p-1.5 rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-foreground hover:bg-muted transition-all"
+                            title="Share public profile"
+                            aria-label="Share public profile"
+                          >
+                            <Share2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePreview(cobuilder);
+                            }}
+                            className="p-1.5 rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-foreground hover:bg-muted transition-all"
+                            title="Preview"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                        </div>
                         {/* Current User Badge */}
                         {isCurrentUser && (
                           <div className="mb-3">
