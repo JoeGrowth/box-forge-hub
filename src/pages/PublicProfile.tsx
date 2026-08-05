@@ -107,7 +107,7 @@ export default function PublicProfile() {
   const repStyle = reputation ? reputationLevelStyle(reputation.reputation_level) : null;
   const ownStyle = ownership ? ownershipLevelStyle(ownership.ownership_level) : null;
 
-  const fullUrl = typeof window !== "undefined" ? `${window.location.origin}/u/${slug}` : `/u/${slug}`;
+  const fullUrl = `https://box4solutions.com/u/${slug}`;
   const [sharing, setSharing] = useState(false);
   const handleShare = async () => {
     setSharing(true);

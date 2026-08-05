@@ -78,7 +78,7 @@ export default function PublishTalent() {
   );
 
   const slug = user ? profileSlug(profile?.full_name ?? null, user.id) : "";
-  const publicUrl = typeof window !== "undefined" && slug ? `${window.location.origin}/u/${slug}` : "";
+  const publicUrl = slug ? `https://box4solutions.com/u/${slug}` : "";
 
   const checks = useMemo(() => {
     const nrDone = Boolean(naturalRole?.description);

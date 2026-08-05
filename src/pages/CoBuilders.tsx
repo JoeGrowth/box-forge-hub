@@ -306,7 +306,7 @@ const CoBuilders = () => {
   };
 
   const handleSharePublicProfile = async (cobuilder: CoBuilder) => {
-    const url = `${window.location.origin}/u/${profileSlug(cobuilder.full_name, cobuilder.user_id)}`;
+    const url = `https://box4solutions.com/u/${profileSlug(cobuilder.full_name, cobuilder.user_id)}`;
     const shareData = {
       title: `${cobuilder.full_name || "Profile"} — Box4Solutions`,
       text: cobuilder.natural_role_description || "Professional talent profile",
