@@ -9,13 +9,14 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, User, Briefcase, Loader2, Pencil, Check, X, ShieldCheck, Award, MessageCircle, Rocket, Eye, Users, Sparkles, Lock } from "lucide-react";
+import { Search, User, Briefcase, Loader2, Pencil, Check, X, ShieldCheck, Award, MessageCircle, Rocket, Eye, Users, Sparkles, Lock, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { DirectorySkeletonGrid } from "@/components/ui/skeleton-card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useExpertiseBatch, type Expertise } from "@/hooks/useExpertise";
 import { useTrustBatch, trustLevelStyle } from "@/hooks/useTrust";
+import { profileSlug } from "./PublicProfile";
 
 type DirectoryFilter = "talents" | "cobuilders" | "advisors" | "initiators";
 const COBUILDER_STAGES = new Set(["capable", "monetizing", "building", "founder"]);
@@ -304,6 +305,32 @@ const CoBuilders = () => {
     }
   };
 
+  const handleSharePublicProfile = async (cobuilder: CoBuilder) => {
+    const url = `${window.location.origin}/u/${profileSlug(cobuilder.full_name, cobuilder.user_id)}`;
+    const shareData = {
+      title: `${cobuilder.full_name || "Profile"} — Box4Solutions`,
+      text: cobuilder.natural_role_description || "Professional talent profile",
+      url,
+    };
+    try {
+      if ((navigator as any).share) {
+        await (navigator as any).share(shareData);
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      toast.success("Public profile link copied");
+    } catch (e: any) {
+      if (e?.name === "AbortError") return;
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success("Public profile link copied");
+      } catch {
+        toast.error("Could not share this profile");
+      }
+    }
+  };
+
+
   const handlePreview = async (cobuilder: CoBuilder) => {
     setPreviewName(cobuilder.full_name || "Co-Builder");
     setPreviewOpen(true);
@@ -556,19 +583,46 @@ const CoBuilders = () => {
                       return s.charAt(0).toUpperCase() + s.slice(1);
                     };
 
+                    const slug = profileSlug(cobuilder.full_name, cobuilder.user_id);
+
                     return (
                       <div
                         key={cobuilder.id}
-                        className={`group rounded-2xl border p-6 transition-all duration-300 relative flex flex-col h-full shadow-sm hover:shadow-xl hover:-translate-y-1 ${getCardStyle()}`}
+                        role="link"
+                        tabIndex={0}
+                        onClick={() => navigate(`/u/${slug}`)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            navigate(`/u/${slug}`);
+                          }
+                        }}
+                        className={`group rounded-2xl border p-6 transition-all duration-300 relative flex flex-col h-full shadow-sm hover:shadow-xl hover:-translate-y-1 cursor-pointer ${getCardStyle()}`}
                       >
-                        {/* Preview Button - top right */}
-                        <button
-                          onClick={() => handlePreview(cobuilder)}
-                          className="absolute top-3 right-3 p-1.5 rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-foreground hover:bg-muted transition-all"
-                          title="Preview"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
+                        {/* Actions - top right */}
+                        <div className="absolute top-3 right-3 flex items-center gap-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSharePublicProfile(cobuilder);
+                            }}
+                            className="p-1.5 rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-foreground hover:bg-muted transition-all"
+                            title="Share public profile"
+                            aria-label="Share public profile"
+                          >
+                            <Share2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePreview(cobuilder);
+                            }}
+                            className="p-1.5 rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-foreground hover:bg-muted transition-all"
+                            title="Preview"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                        </div>
                         {/* Current User Badge */}
                         {isCurrentUser && (
                           <div className="mb-3">
@@ -686,7 +740,7 @@ const CoBuilders = () => {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => setEditingSkills(true)}
+                                onClick={(e) => { e.stopPropagation(); setEditingSkills(true); }}
                                 className="h-7 px-2 text-b4-teal hover:text-b4-teal/80"
                               >
                                 <Pencil className="w-3.5 h-3.5 mr-1" />
@@ -696,7 +750,7 @@ const CoBuilders = () => {
                           </div>
 
                           {isCurrentUser && editingSkills ? (
-                            <div className="space-y-2">
+                            <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
                               <Input
                                 placeholder="Enter skills separated by commas..."
                                 value={skillsInput}
@@ -780,7 +834,7 @@ const CoBuilders = () => {
                               <Button
                                 variant="teal"
                                 size="sm"
-                                onClick={() => navigate("/ladder")}
+                                onClick={(e) => { e.stopPropagation(); navigate("/ladder"); }}
                                 className="w-full gap-2"
                               >
                                 <ShieldCheck className="w-4 h-4" />
@@ -795,7 +849,7 @@ const CoBuilders = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleStartChat(cobuilder.user_id)}
+                                onClick={(e) => { e.stopPropagation(); handleStartChat(cobuilder.user_id); }}
                                 disabled={startingChat === cobuilder.user_id}
                                 className="w-full gap-2"
                               >
