@@ -695,7 +695,7 @@ export default function Declaration() {
               </div>
               <div className="rounded-lg border-2 border-emerald-500/40 bg-emerald-500/5 p-4">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                  <Wallet className="h-4 w-4 text-emerald-700" /> To be distributed
+                  <Wallet className="h-4 w-4 text-emerald-700" /> Available to distribute
                 </div>
                 <div className="space-y-1">
                   {CURRENCIES.map((c) => (
