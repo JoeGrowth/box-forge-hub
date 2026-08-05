@@ -740,7 +740,7 @@ const CoBuilders = () => {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => setEditingSkills(true)}
+                                onClick={(e) => { e.stopPropagation(); setEditingSkills(true); }}
                                 className="h-7 px-2 text-b4-teal hover:text-b4-teal/80"
                               >
                                 <Pencil className="w-3.5 h-3.5 mr-1" />
@@ -750,7 +750,7 @@ const CoBuilders = () => {
                           </div>
 
                           {isCurrentUser && editingSkills ? (
-                            <div className="space-y-2">
+                            <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
                               <Input
                                 placeholder="Enter skills separated by commas..."
                                 value={skillsInput}
@@ -834,7 +834,7 @@ const CoBuilders = () => {
                               <Button
                                 variant="teal"
                                 size="sm"
-                                onClick={() => navigate("/ladder")}
+                                onClick={(e) => { e.stopPropagation(); navigate("/ladder"); }}
                                 className="w-full gap-2"
                               >
                                 <ShieldCheck className="w-4 h-4" />
@@ -849,7 +849,7 @@ const CoBuilders = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleStartChat(cobuilder.user_id)}
+                                onClick={(e) => { e.stopPropagation(); handleStartChat(cobuilder.user_id); }}
                                 disabled={startingChat === cobuilder.user_id}
                                 className="w-full gap-2"
                               >
