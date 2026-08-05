@@ -254,7 +254,7 @@ export default function Kanban() {
   const [board, setBoard] = useState<BoardKey>("people");
 
   useEffect(() => {
-    document.title = "Kanban Boards | Box 4 Solutions";
+    document.title = "Pipeline | Box 4 Solutions";
   }, []);
 
   const Icon = BOARDS[board].icon;
@@ -262,10 +262,9 @@ export default function Kanban() {
   return (
     <main className="container mx-auto max-w-7xl px-4 py-8">
       <header className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Kanban</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Pipeline</h1>
         <p className="mt-1 text-muted-foreground">
-          Drag cards between columns to organize people, products and organizations. Your board is
-          private to you.
+          Drag people, products and organizations across stages to track your engagement flow. This board is private to you.
         </p>
       </header>
 
