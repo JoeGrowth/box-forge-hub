@@ -305,6 +305,32 @@ const CoBuilders = () => {
     }
   };
 
+  const handleSharePublicProfile = async (cobuilder: CoBuilder) => {
+    const url = `${window.location.origin}/u/${profileSlug(cobuilder.full_name, cobuilder.user_id)}`;
+    const shareData = {
+      title: `${cobuilder.full_name || "Profile"} — Box4Solutions`,
+      text: cobuilder.natural_role_description || "Professional talent profile",
+      url,
+    };
+    try {
+      if ((navigator as any).share) {
+        await (navigator as any).share(shareData);
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      toast.success("Public profile link copied");
+    } catch (e: any) {
+      if (e?.name === "AbortError") return;
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success("Public profile link copied");
+      } catch {
+        toast.error("Could not share this profile");
+      }
+    }
+  };
+
+
   const handlePreview = async (cobuilder: CoBuilder) => {
     setPreviewName(cobuilder.full_name || "Co-Builder");
     setPreviewOpen(true);
