@@ -4,7 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, CheckCircle2, Circle, FileText, Briefcase, Rocket, Compass, Target, TrendingUp, Lightbulb, User, Users, Handshake, Building2 } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Circle,
+  FileText,
+  Briefcase,
+  Rocket,
+  Compass,
+  Target,
+  TrendingUp,
+  Lightbulb,
+  User,
+  Users,
+  Handshake,
+  Building2,
+} from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,7 +51,6 @@ export function DashboardProgress() {
   const [ventureStarted, setVentureStarted] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
-
   const fetchProgress = useCallback(async () => {
     if (!user) return;
 
@@ -55,7 +69,9 @@ export function DashboardProgress() {
       supabase.from("nr_decoder_submissions").select("status").eq("user_id", user.id).maybeSingle(),
       supabase
         .from("profiles")
-        .select("professional_title, bio, primary_skills, summary_statement, key_projects, years_of_experience, education_certifications")
+        .select(
+          "professional_title, bio, primary_skills, summary_statement, key_projects, years_of_experience, education_certifications",
+        )
         .eq("user_id", user.id)
         .maybeSingle(),
       supabase.from("entrepreneurial_onboarding").select("is_completed").eq("user_id", user.id).maybeSingle(),
@@ -65,7 +81,7 @@ export function DashboardProgress() {
     ]);
 
     setConsultingStarted((consultingCount ?? 0) > 0);
-    setVentureStarted(((ideasCount ?? 0) + (applicationsCount ?? 0)) > 0);
+    setVentureStarted((ideasCount ?? 0) + (applicationsCount ?? 0) > 0);
 
     // Categorize closed missions by delivery mode
     const { data: closedOpps } = await supabase
@@ -74,7 +90,9 @@ export function DashboardProgress() {
       .eq("user_id", user.id)
       .eq("stage", "closed");
     const closedIds = (closedOpps ?? []).map((o: any) => o.id);
-    let solo = 0, contractors = 0, equity = 0;
+    let solo = 0,
+      contractors = 0,
+      equity = 0;
     if (closedIds.length > 0) {
       const { data: dists } = await supabase
         .from("consultant_opportunity_distributions")
@@ -87,7 +105,7 @@ export function DashboardProgress() {
       for (const id of closedIds) {
         const list = byOpp[id] || [];
         const hasEquity = list.some((r) =>
-          /associé|associe|equity|partner|co[- ]?builder/i.test(`${r.name} ${r.note ?? ""}`)
+          /associé|associe|equity|partner|co[- ]?builder/i.test(`${r.name} ${r.note ?? ""}`),
         );
         if (list.length <= 1) solo++;
         else if (hasEquity) equity++;
@@ -108,7 +126,7 @@ export function DashboardProgress() {
       nr.promise_check === true ||
       nr.practice_check === true ||
       nr.training_check === true ||
-      nr.consulting_check === true
+      nr.consulting_check === true,
     );
     setNaturalRoleComplete(nrDefined);
     // Users who completed the professional-track flow bypass the standalone
@@ -124,7 +142,8 @@ export function DashboardProgress() {
       filled(p.primary_skills) &&
       filled(p.key_projects) &&
       filled(p.education_certifications) &&
-      p.years_of_experience !== null && p.years_of_experience !== undefined
+      p.years_of_experience !== null &&
+      p.years_of_experience !== undefined,
     );
     setResumeComplete(resumeDone);
     setTrackRecordComplete(!!entOnboarding?.is_completed);
@@ -174,20 +193,54 @@ export function DashboardProgress() {
   useEffect(() => {
     fetchProgress();
     if (!user) return;
-    const onVisible = () => { if (document.visibilityState === "visible") fetchProgress(); };
+    const onVisible = () => {
+      if (document.visibilityState === "visible") fetchProgress();
+    };
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("focus", fetchProgress);
 
     const channel = supabase
       .channel(`dashboard-progress-${user.id}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "profiles", filter: `user_id=eq.${user.id}` }, fetchProgress)
-      .on("postgres_changes", { event: "*", schema: "public", table: "natural_roles", filter: `user_id=eq.${user.id}` }, fetchProgress)
-      .on("postgres_changes", { event: "*", schema: "public", table: "nr_decoder_submissions", filter: `user_id=eq.${user.id}` }, fetchProgress)
-      .on("postgres_changes", { event: "*", schema: "public", table: "entrepreneurial_onboarding", filter: `user_id=eq.${user.id}` }, fetchProgress)
-      .on("postgres_changes", { event: "*", schema: "public", table: "learning_journeys", filter: `user_id=eq.${user.id}` }, fetchProgress)
-      .on("postgres_changes", { event: "*", schema: "public", table: "consultant_opportunities", filter: `user_id=eq.${user.id}` }, fetchProgress)
-      .on("postgres_changes", { event: "*", schema: "public", table: "startup_ideas", filter: `creator_id=eq.${user.id}` }, fetchProgress)
-      .on("postgres_changes", { event: "*", schema: "public", table: "startup_applications", filter: `applicant_id=eq.${user.id}` }, fetchProgress)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "profiles", filter: `user_id=eq.${user.id}` },
+        fetchProgress,
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "natural_roles", filter: `user_id=eq.${user.id}` },
+        fetchProgress,
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "nr_decoder_submissions", filter: `user_id=eq.${user.id}` },
+        fetchProgress,
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "entrepreneurial_onboarding", filter: `user_id=eq.${user.id}` },
+        fetchProgress,
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "learning_journeys", filter: `user_id=eq.${user.id}` },
+        fetchProgress,
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "consultant_opportunities", filter: `user_id=eq.${user.id}` },
+        fetchProgress,
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "startup_ideas", filter: `creator_id=eq.${user.id}` },
+        fetchProgress,
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "startup_applications", filter: `applicant_id=eq.${user.id}` },
+        fetchProgress,
+      )
       .subscribe();
 
     return () => {
@@ -198,7 +251,10 @@ export function DashboardProgress() {
   }, [fetchProgress, user]);
 
   const getStatusBadge = (status: string) => {
-    const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "outline" | "destructive" }> = {
+    const statusConfig: Record<
+      string,
+      { label: string; variant: "default" | "secondary" | "outline" | "destructive" }
+    > = {
       not_started: { label: "Not Started", variant: "outline" },
       in_progress: { label: "In Progress", variant: "secondary" },
       pending_approval: { label: "Pending Review", variant: "default" },
@@ -210,13 +266,11 @@ export function DashboardProgress() {
   };
 
   // Check if onboarding is truly complete (step 5 AND completed flag)
-  const isOnboardingTrulyComplete = onboardingState?.onboarding_completed &&
-    (onboardingState?.current_step ?? 0) >= 5;
-
+  const isOnboardingTrulyComplete = onboardingState?.onboarding_completed && (onboardingState?.current_step ?? 0) >= 5;
 
   // Check if user is approved by admin
-  const isApproved = onboardingState?.journey_status === "approved" || 
-    onboardingState?.journey_status === "entrepreneur_approved";
+  const isApproved =
+    onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved";
 
   const coreReady = isOnboardingTrulyComplete && nrDecoderComplete && proTrackComplete && resumeComplete;
 
@@ -294,8 +348,7 @@ export function DashboardProgress() {
                 {
                   key: "talent-monetized" as const,
                   title: "Talent Monetized",
-                  description:
-                    "Solo and contractor missions delivered — your consulting engine is monetized.",
+                  description: "Solo and contractor missions delivered — your consulting engine is monetized.",
                   icon: CheckCircle2,
                   done: true,
                   cta: { label: "Review", href: "https://box4solutions.com/consulting-growth" },
@@ -309,12 +362,15 @@ export function DashboardProgress() {
                     "Close missions end-to-end on your own and with contractors — track opportunities through lead, proposal, delivery, payment, and accounting until your consulting engine runs.",
                   icon: Users,
                   done: totalDelivered >= 10,
-                  cta: { label: totalDelivered > 0 ? "Continue" : "Start", href: "https://box4solutions.com/consulting-growth" },
+                  cta: {
+                    label: totalDelivered > 0 ? "Continue" : "Start",
+                    href: "https://box4solutions.com/consulting-growth",
+                  },
                 },
               ]),
           {
             key: "add-organization" as const,
-            title: "Add an organization",
+            title: "Add Your organization",
             description:
               "Register your organization to unlock consulting contracts, project journeys, and team visibility.",
             icon: Building2,
@@ -324,8 +380,7 @@ export function DashboardProgress() {
           {
             key: "venture" as const,
             title: "Launch or Join a Venture",
-            description:
-              "Create your own startup project or apply to co-build an existing venture with equity.",
+            description: "Create your own startup project or apply to co-build an existing venture with equity.",
             icon: Lightbulb,
             done: false,
             cta: { label: ventureStarted ? "Continue" : "Start", href: "https://box4solutions.com/entrepreneurship" },
@@ -344,18 +399,14 @@ export function DashboardProgress() {
           },
         ]
       : []),
-
   ];
-
 
   if (!loaded) {
     return (
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between gap-3">
-            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-              Shape your talent
-            </CardTitle>
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">Shape your talent</CardTitle>
           </div>
           <Progress value={0} className="h-2" />
         </CardHeader>
@@ -372,18 +423,15 @@ export function DashboardProgress() {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between gap-3">
-          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-            Shape your talent
-          </CardTitle>
-          <span className="text-xs sm:text-sm text-muted-foreground flex-shrink-0">
-            {overallProgress()}% ready
-          </span>
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">Shape your talent</CardTitle>
+          <span className="text-xs sm:text-sm text-muted-foreground flex-shrink-0">{overallProgress()}% ready</span>
         </div>
         <p className="text-sm text-muted-foreground">
           Finish these milestones to unlock matches, opportunities and co-builders. Track your long-game in the{" "}
           <Link to="/ladder" className="text-b4-teal hover:underline font-medium">
             Professional Growth Path
-          </Link>.
+          </Link>
+          .
         </p>
         <Progress value={overallProgress()} className="h-2" />
       </CardHeader>
@@ -465,13 +513,10 @@ export function DashboardProgress() {
                     )}
                   </Button>
                 )}
-
               </div>
             );
           })}
-
         </div>
-
 
         <Button variant="ghost" className="w-full mt-4" asChild>
           <Link to="/certifications">
