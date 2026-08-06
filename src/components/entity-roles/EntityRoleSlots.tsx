@@ -58,9 +58,13 @@ export function EntityRoleSlots({ entityType, entityId, canManage }: Props) {
         </div>
       </button>
       {rolesOpen && (
-        <div className="grid gap-2 md:grid-cols-2">
-
-        {rows.map((r) => (
+        <div className="grid gap-4 md:grid-cols-2 items-start">
+          {[
+            rows.filter((r) => r.role_slug.startsWith("associe")),
+            rows.filter((r) => !r.role_slug.startsWith("associe")),
+          ].map((group, gi) => (
+            <div key={gi} className="space-y-2">
+        {group.map((r) => (
           <div key={r.id} className="flex items-center justify-between rounded-lg border p-3 bg-background">
             <div className="flex items-center gap-3 min-w-0">
               {r.linked_profile ? (
@@ -127,6 +131,8 @@ export function EntityRoleSlots({ entityType, entityId, canManage }: Props) {
             </div>
           </div>
         ))}
+            </div>
+          ))}
       </div>
       )}
 
