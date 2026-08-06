@@ -220,66 +220,24 @@ export function Navbar() {
               ))
             ) : isPreTalentFoundation ? (
               <>
-                {decoderDone ? (
-                  <>
-                    <Link
-                      to="/people"
-                      className={`text-sm font-medium transition-colors hover:text-b4-teal ${
-                        location.pathname === "/people" ? "text-b4-teal" : "text-muted-foreground"
-                      }`}
-                    >
-                      People
-                    </Link>
-                    <DropdownMenu open={growthOpen} onOpenChange={setGrowthOpen}>
-                      <DropdownMenuTrigger asChild>
-                        <button
-                          className={`text-sm font-medium transition-colors hover:text-b4-teal outline-none ${
-                            location.pathname === "/entrepreneurship" || location.pathname === "/ladder"
-                              ? "text-b4-teal"
-                              : "text-muted-foreground"
-                          }`}
-                          aria-label="Growth"
-                        >
-                          Growth
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56 mt-2">
-                        <DropdownMenuItem asChild>
-                          <Link to="/entrepreneurship" className="flex items-center gap-2 cursor-pointer">
-                            <Building2 size={16} />
-                            Studio
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link to="/ladder" className="flex items-center gap-2 cursor-pointer">
-                            <BarChart3 size={16} />
-                            Ladder
-                          </Link>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      to="/ladder"
-                      className={`text-sm font-medium transition-colors hover:text-b4-teal ${
-                        location.pathname === "/ladder" ? "text-b4-teal" : "text-muted-foreground"
-                      }`}
-                    >
-                      Ladder
-                    </Link>
-                    <Link
-                      to="/entrepreneurship"
-                      className={`text-sm font-medium transition-colors hover:text-b4-teal ${
-                        location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-muted-foreground"
-                      }`}
-                    >
-                      Growth
-                    </Link>
-                  </>
-                )}
+                <Link
+                  to="/ladder"
+                  className={`text-sm font-medium transition-colors hover:text-b4-teal ${
+                    location.pathname === "/ladder" ? "text-b4-teal" : "text-muted-foreground"
+                  }`}
+                >
+                  Ladder
+                </Link>
+                <Link
+                  to="/entrepreneurship"
+                  className={`text-sm font-medium transition-colors hover:text-b4-teal ${
+                    location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-muted-foreground"
+                  }`}
+                >
+                  Studio
+                </Link>
               </>
+
 
             ) : (
               <>
