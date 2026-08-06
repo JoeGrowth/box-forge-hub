@@ -323,6 +323,19 @@ export function Navbar() {
                         Opportunities
                       </Link>
                     </DropdownMenuItem>
+                    {talentReady && talentMonetized && (
+                      <DropdownMenuItem asChild>
+                        <Link
+                          to="/projects"
+                          className={`flex items-center gap-2 cursor-pointer ${
+                            location.pathname === "/projects" ? "text-b4-teal" : "text-foreground"
+                          }`}
+                        >
+                          <LayoutGrid size={16} />
+                          Projects
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     {hasTenderWork && (
                       <DropdownMenuItem asChild>
                         <Link
