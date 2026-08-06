@@ -6736,6 +6736,10 @@ export type Database = {
         Args: { _entity_id: string }
         Returns: undefined
       }
+      ensure_organization_role_slots: {
+        Args: { _org_id: string }
+        Returns: undefined
+      }
       evaluate_predicate: {
         Args: { _arg: string; _handler: string; _uid: string }
         Returns: boolean
