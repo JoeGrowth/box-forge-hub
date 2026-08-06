@@ -100,7 +100,6 @@ export function Navbar() {
 
   const { engines: engineAccess } = useEngineAccess();
   const { talentReady, missing } = useTalentReadiness();
-  const decoderDone = !missing.includes("Decode your natural role");
 
   // "My tender work" only appears once the user has applied to an opportunity.
   const [hasTenderWork, setHasTenderWork] = useState(false);
