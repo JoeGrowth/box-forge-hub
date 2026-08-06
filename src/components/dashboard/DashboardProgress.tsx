@@ -406,7 +406,7 @@ export function DashboardProgress() {
               ]),
           {
             key: "add-organization" as const,
-            title: "Add Your organization",
+            title: "Register Your organization",
             description:
               "Register your organization to unlock consulting contracts, project journeys, and team visibility.",
             icon: Building2,
