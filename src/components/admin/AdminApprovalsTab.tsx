@@ -98,12 +98,13 @@ export const AdminApprovalsTab = ({ onRefresh }: AdminApprovalsTabProps) => {
   const fetchPendingApprovals = async () => {
     setLoading(true);
     try {
-      // Fetch onboarding states with pending_approval status (completed onboarding)
+      // Fetch every user awaiting approval. We key off journey_status only —
+      // some users reach pending_approval without onboarding_completed being
+      // flipped, and filtering on that flag hid them from this queue.
       const { data: onboardingData, error: onboardingError } = await supabase
         .from("onboarding_state")
         .select("*")
-        .eq("journey_status", "pending_approval")
-        .eq("onboarding_completed", true);
+        .eq("journey_status", "pending_approval");
 
       if (onboardingError) throw onboardingError;
 
