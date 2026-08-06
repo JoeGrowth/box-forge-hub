@@ -554,7 +554,7 @@ const Messages = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
-      <div className="flex-1 flex pt-16 h-[calc(100vh-64px)]">
+      <div className="flex-1 flex pt-16 md:pt-20 h-[calc(100vh-64px)] md:h-[calc(100vh-80px)]">
         {/* Sidebar */}
         <div
           className={`${
