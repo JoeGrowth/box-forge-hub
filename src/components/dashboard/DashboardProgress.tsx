@@ -271,7 +271,8 @@ export function DashboardProgress() {
   ];
 
   const foundationDone = foundationSteps.every((s) => s.done);
-  const talentMonetized = soloDelivered >= 3 && contractorsDelivered >= 7;
+  const totalDelivered = soloDelivered + contractorsDelivered;
+  const talentMonetized = totalDelivered >= 10;
 
   const steps = [
     ...(foundationDone
@@ -297,29 +298,29 @@ export function DashboardProgress() {
                     "Solo and contractor missions delivered — your consulting engine is monetized.",
                   icon: CheckCircle2,
                   done: true,
-                  cta: { label: "Review", to: "/consulting-growth" },
+                  cta: { label: "Review", href: "https://box4solutions.com/consulting-growth" },
                 },
               ]
             : [
                 {
-                  key: "consulting-solo" as const,
-                  title: `Deliver Missions in Solo Mode (${Math.min(soloDelivered, 3)}/3)`,
+                  key: "consulting-growth" as const,
+                  title: `Deliver 10 Missions in Solo mode and with contractors (${Math.min(totalDelivered, 10)}/10)`,
                   description:
-                    "Close 3 missions end-to-end on your own — track opportunities through lead, proposal, delivery, payment, and accounting until your solo engine runs.",
-                  icon: User,
-                  done: soloDelivered >= 3,
-                  cta: { label: soloDelivered > 0 ? "Continue" : "Start", to: "/consulting-growth" },
-                },
-                {
-                  key: "consulting-contractors" as const,
-                  title: `Deliver Missions with other talents (${Math.min(contractorsDelivered, 7)}/7)`,
-                  description:
-                    "Split delivery with other talents on shared missions — share responsibilities, grow your collective track record, and scale your consulting engine beyond solo work.",
+                    "Close missions end-to-end on your own and with contractors — track opportunities through lead, proposal, delivery, payment, and accounting until your consulting engine runs.",
                   icon: Users,
-                  done: contractorsDelivered >= 7,
-                  cta: { label: contractorsDelivered > 0 ? "Continue" : "Start", to: "/consulting-growth" },
+                  done: totalDelivered >= 10,
+                  cta: { label: totalDelivered > 0 ? "Continue" : "Start", href: "https://box4solutions.com/consulting-growth" },
                 },
               ]),
+          {
+            key: "add-organization" as const,
+            title: "Add an organization",
+            description:
+              "Register your organization to unlock consulting contracts, project journeys, and team visibility.",
+            icon: Building2,
+            done: false,
+            cta: { label: "Add", href: "https://box4solutions.com/organizations" },
+          },
           {
             key: "venture" as const,
             title: "Launch or Join a Venture",
@@ -327,7 +328,7 @@ export function DashboardProgress() {
               "Create your own startup project or apply to co-build an existing venture with equity.",
             icon: Lightbulb,
             done: false,
-            cta: { label: ventureStarted ? "Continue" : "Start", to: "/entrepreneurship" },
+            cta: { label: ventureStarted ? "Continue" : "Start", href: "https://box4solutions.com/entrepreneurship" },
           },
         ]
       : []),
