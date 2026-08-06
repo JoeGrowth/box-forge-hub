@@ -99,7 +99,7 @@ export function Navbar() {
   const { canAccessBoosting, canAccessScaling, potentialRole } = useUserStatus();
 
   const { engines: engineAccess } = useEngineAccess();
-  const { talentReady, missing } = useTalentReadiness();
+  const { talentReady } = useTalentReadiness();
 
   // "My tender work" only appears once the user has applied to an opportunity.
   const [hasTenderWork, setHasTenderWork] = useState(false);
