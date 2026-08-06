@@ -832,21 +832,27 @@ export default function Declaration() {
                           <div className="rounded-lg border bg-background p-4">
                             <div className="flex items-center justify-between mb-3">
                               <div className="flex items-center gap-2 font-medium">
-                                <Users className="h-4 w-4 text-primary" /> Recognition · 30%
+                                <Users className="h-4 w-4 text-primary" /> Recognition · {p.recPct}%
                               </div>
                               <span className="font-bold">
                                 {fmt(p.recognition)} {p.currency}
                               </span>
                             </div>
                             <div className="space-y-1.5 text-sm pl-2 border-l-2 border-primary/40">
-                              <Row label="Associé 1 (70%)" value={p.associe1} currency={p.currency} />
-                              <Row label="Associé 2 (30%)" value={p.associe2} currency={p.currency} />
+                              {p.partners.map((pt) => (
+                                <Row
+                                  key={pt.id}
+                                  label={`${pt.name} (${pt.pct}%)`}
+                                  value={pt.amount}
+                                  currency={p.currency}
+                                />
+                              ))}
                             </div>
                           </div>
                           <div className="rounded-lg border bg-background p-4">
                             <div className="flex items-center justify-between mb-3">
                               <div className="flex items-center gap-2 font-medium">
-                                <Building2 className="h-4 w-4 text-primary" /> Investment · 70%
+                                <Building2 className="h-4 w-4 text-primary" /> Investment · {p.invPct}%
                               </div>
                               <span className="font-bold">
                                 {fmt(p.investment)} {p.currency}
@@ -854,13 +860,13 @@ export default function Declaration() {
                             </div>
                             <div className="space-y-1.5 text-sm pl-2 border-l-2 border-primary/40">
                               <Row
-                                label="Infrastructure (40%)"
+                                label={`Infrastructure (${split.infraPct}%)`}
                                 value={p.infra}
                                 currency={p.currency}
                                 icon={<Building2 className="h-3 w-3" />}
                               />
                               <Row
-                                label="Projects (60%)"
+                                label={`Projects (${100 - split.infraPct}%)`}
                                 value={p.lab}
                                 currency={p.currency}
                                 icon={<FlaskConical className="h-3 w-3" />}
