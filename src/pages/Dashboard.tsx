@@ -147,7 +147,7 @@ const Dashboard = () => {
             {!isFirstLogin && (
               <>
                 <DashboardHero />
-                {talentReady && !talentLoading && isCapable && <NextGoalBanner />}
+                {talentReady && !talentLoading && isCapable && !isMonetizing && <NextGoalBanner />}
               </>
             )}
             <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
@@ -159,7 +159,7 @@ const Dashboard = () => {
                     {showShapeTalent && <DashboardProgress />}
                     {isCapable && <CommitmentsPanel />}
                     {isCapable && <DashboardOpportunities />}
-                    {isCapable && !(talentReady && isMonetizing) && <ProgressionPathCard userId={user?.id} />}
+                    {isCapable && <ProgressionPathCard userId={user?.id} />}
                   </>
                 )}
               </div>
