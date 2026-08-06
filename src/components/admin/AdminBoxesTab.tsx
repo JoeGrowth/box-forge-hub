@@ -124,6 +124,18 @@ export function AdminBoxesTab() {
     load();
   };
 
+  const removeAdvisor = async (boxId: string, userId: string) => {
+    const { error } = await supabase
+      .from("box_advisors")
+      .update({ status: "inactive", accepting_requests: false })
+      .eq("box_id", boxId)
+      .eq("user_id", userId);
+    if (error) return toast.error(error.message);
+    toast.success("Advisor removed");
+    load();
+  };
+
+
   if (loading) return <div className="text-muted-foreground">Loading boxes...</div>;
 
   return (
