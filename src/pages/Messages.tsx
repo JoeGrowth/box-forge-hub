@@ -868,18 +868,12 @@ const Messages = () => {
               {/* Composer */}
               <div className="border-t border-border bg-card p-2 sm:p-4">
                 {pendingFile && (
-                  <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground bg-muted rounded-lg px-3 py-2">
+                  <p className="mb-2 text-xs text-muted-foreground flex items-center gap-1.5">
                     <Paperclip className="w-3.5 h-3.5" />
-                    <span className="truncate flex-1">{pendingFile.name}</span>
-                    <button
-                      className="hover:text-foreground"
-                      onClick={() => setPendingFile(null)}
-                      aria-label="Remove attachment"
-                    >
-                      Remove
-                    </button>
-                  </div>
+                    Attachment ready — add a note or send it now.
+                  </p>
                 )}
+
                 <div className="flex items-end gap-2">
                   <ChatFileUpload
                     userId={user?.id || ""}
