@@ -147,7 +147,9 @@ const Dashboard = () => {
             {!isFirstLogin && (
               <>
                 <DashboardHero />
-                {talentReady && !talentLoading && isCapable && !isMonetizing && <NextGoalBanner />}
+                {/* Next goal banner is only for users who have NOT completed
+                    the Talent Foundation set. */}
+                {!talentLoading && !talentReady && isCapable && !isMonetizing && <NextGoalBanner />}
               </>
             )}
             <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
