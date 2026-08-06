@@ -99,26 +99,39 @@ export function AdminBoxesTab() {
     load();
   };
 
-  const handleAssignAdmin = async () => {
-    if (!assignFor || !assignEmail) return;
-    const { data: prof } = await (supabase.from("profiles") as any).select("id").eq("email", assignEmail.trim()).maybeSingle();
-    if (!prof) {
-      toast.error("No user found with that email");
+  const searchAdmins = async (q: string) => {
+    setAssignQuery(q);
+    setSelectedUser(null);
+    if (!q.trim() || q.trim().length < 2) {
+      setAssignCandidates([]);
       return;
     }
+    const term = q.trim();
+    const { data } = await (supabase.from("profiles") as any)
+      .select("user_id,full_name,email,avatar_url")
+      .or(`email.ilike.%${term}%,full_name.ilike.%${term}%`)
+      .limit(10);
+    setAssignCandidates(data || []);
+  };
+
+  const handleAssignAdmin = async () => {
+    if (!assignFor || !selectedUser) return;
     const { error } = await supabase.from("box_ecosystem_admins").insert({
       box_id: assignFor.id,
-      user_id: prof.id,
+      user_id: selectedUser.user_id,
     });
     if (error) {
       toast.error(error.message);
       return;
     }
     toast.success("Box admin assigned");
-    setAssignEmail("");
+    setAssignQuery("");
+    setAssignCandidates([]);
+    setSelectedUser(null);
     setAssignFor(null);
     load();
   };
+
 
   const removeAdmin = async (boxId: string, userId: string) => {
     const { error } = await supabase.from("box_ecosystem_admins").delete().eq("box_id", boxId).eq("user_id", userId);
