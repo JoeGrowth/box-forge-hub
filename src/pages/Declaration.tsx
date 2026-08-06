@@ -168,32 +168,68 @@ export default function Declaration() {
     localStorage.setItem(deliveryKey, JSON.stringify(deliveryTypes));
   }, [deliveryTypes, deliveryKey]);
 
-  // Per-entity profit distribution split
+  // Per-entity profit distribution split (persisted in the database)
   const splitKey = activeEntityId ? `${SPLIT_KEY}:${activeEntityId}` : null;
 
-  useEffect(() => {
-    if (!splitKey) return;
-    try {
-      const raw = localStorage.getItem(splitKey);
-      const parsed = raw ? (JSON.parse(raw) as SplitConfig) : null;
-      setSplit(
-        parsed && Array.isArray(parsed.partners) && parsed.partners.length
-          ? {
-              recognitionPct: Math.min(MAX_RECOGNITION, Math.max(0, +parsed.recognitionPct || 0)),
-              infraPct: Math.min(100, Math.max(0, +parsed.infraPct || 0)),
-              partners: parsed.partners,
-            }
-          : DEFAULT_SPLIT,
-      );
-    } catch {
-      setSplit(DEFAULT_SPLIT);
-    }
-  }, [splitKey]);
+  const normalizeSplit = (parsed: any): SplitConfig | null =>
+    parsed && Array.isArray(parsed.partners) && parsed.partners.length
+      ? {
+          recognitionPct: Math.min(MAX_RECOGNITION, Math.max(0, +parsed.recognitionPct || 0)),
+          infraPct: Math.min(100, Math.max(0, +parsed.infraPct || 0)),
+          partners: parsed.partners,
+        }
+      : null;
 
-  const saveSplit = (next: SplitConfig) => {
+  useEffect(() => {
+    if (!activeEntityId) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("declaration_entities")
+        .select("split_config")
+        .eq("id", activeEntityId)
+        .maybeSingle();
+      if (cancelled) return;
+      const remote = normalizeSplit((data as any)?.split_config);
+      if (remote) {
+        setSplit(remote);
+        if (splitKey) localStorage.setItem(splitKey, JSON.stringify(remote));
+        return;
+      }
+      // Fall back to any legacy local value and migrate it to the backend
+      let local: SplitConfig | null = null;
+      try {
+        const raw = splitKey ? localStorage.getItem(splitKey) : null;
+        local = raw ? normalizeSplit(JSON.parse(raw)) : null;
+      } catch {
+        local = null;
+      }
+      setSplit(local ?? DEFAULT_SPLIT);
+      if (local) {
+        await supabase
+          .from("declaration_entities")
+          .update({ split_config: local as any })
+          .eq("id", activeEntityId);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeEntityId, splitKey]);
+
+  const saveSplit = async (next: SplitConfig) => {
     setSplit(next);
     if (splitKey) localStorage.setItem(splitKey, JSON.stringify(next));
+    if (!activeEntityId) return;
+    const { error } = await supabase
+      .from("declaration_entities")
+      .update({ split_config: next as any })
+      .eq("id", activeEntityId);
+    if (error) {
+      toast({ title: "Profit distribution not saved", description: error.message, variant: "destructive" });
+    }
   };
+
 
 
   // Load entities
