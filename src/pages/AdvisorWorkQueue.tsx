@@ -404,12 +404,13 @@ export default function AdvisorWorkQueue() {
     }
   };
 
+  const [profileUserId, setProfileUserId] = useState<string | null>(null);
+  const openProfile = (id: string) => setProfileUserId(id);
+
   if (loading) {
     return <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin" /></div>;
   }
 
-  const [profileUserId, setProfileUserId] = useState<string | null>(null);
-  const openProfile = (id: string) => setProfileUserId(id);
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
