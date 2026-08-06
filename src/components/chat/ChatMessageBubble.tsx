@@ -1,4 +1,4 @@
-import { FileText, Download, Image as ImageIcon } from "lucide-react";
+import { FileText, Download, Check, CheckCheck } from "lucide-react";
 import { format } from "date-fns";
 
 interface ChatMessageBubbleProps {
@@ -8,6 +8,8 @@ interface ChatMessageBubbleProps {
   fileUrl?: string | null;
   fileName?: string | null;
   fileType?: string | null;
+  isRead?: boolean;
+  grouped?: boolean;
 }
 
 export const ChatMessageBubble = ({
@@ -17,16 +19,18 @@ export const ChatMessageBubble = ({
   fileUrl,
   fileName,
   fileType,
+  isRead,
+  grouped,
 }: ChatMessageBubbleProps) => {
   const hasFile = fileUrl && fileName;
 
   return (
-    <div className={`flex ${isOwnMessage ? "justify-end" : "justify-start"}`}>
+    <div className={`flex ${isOwnMessage ? "justify-end" : "justify-start"} ${grouped ? "mt-1" : "mt-4"}`}>
       <div
-        className={`max-w-[75%] rounded-2xl px-4 py-2 ${
+        className={`max-w-[75%] px-4 py-2 rounded-2xl ${
           isOwnMessage
-            ? "bg-primary text-primary-foreground"
-            : "bg-muted text-foreground"
+            ? `bg-primary text-primary-foreground ${grouped ? "rounded-tr-md" : ""}`
+            : `bg-muted text-foreground ${grouped ? "rounded-tl-md" : ""}`
         }`}
       >
         {/* File attachment */}
@@ -34,7 +38,7 @@ export const ChatMessageBubble = ({
           <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="block mb-2">
             <img
               src={fileUrl}
-              alt={fileName || "Image"}
+              alt={fileName || "Shared image"}
               className="rounded-xl max-w-full max-h-60 object-cover cursor-pointer hover:opacity-90 transition-opacity"
               loading="lazy"
             />
@@ -64,18 +68,22 @@ export const ChatMessageBubble = ({
         )}
 
         {/* Text content */}
-        {content && (
-          <p className="text-sm whitespace-pre-wrap">{content}</p>
-        )}
+        {content && <p className="text-sm whitespace-pre-wrap break-words">{content}</p>}
 
-        {/* Timestamp */}
-        <p
-          className={`text-xs mt-1 ${
+        {/* Meta */}
+        <div
+          className={`flex items-center gap-1 mt-1 ${isOwnMessage ? "justify-end" : "justify-start"} ${
             isOwnMessage ? "text-primary-foreground/70" : "text-muted-foreground"
           }`}
         >
-          {format(new Date(createdAt), "HH:mm")}
-        </p>
+          <span className="text-[10px] leading-none">{format(new Date(createdAt), "HH:mm")}</span>
+          {isOwnMessage &&
+            (isRead ? (
+              <CheckCheck className="w-3 h-3" aria-label="Read" />
+            ) : (
+              <Check className="w-3 h-3" aria-label="Sent" />
+            ))}
+        </div>
       </div>
     </div>
   );
