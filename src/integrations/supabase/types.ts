@@ -1474,6 +1474,7 @@ export type Database = {
           name: string
           organization_id: string | null
           owner_id: string
+          split_config: Json
           updated_at: string
         }
         Insert: {
@@ -1482,6 +1483,7 @@ export type Database = {
           name: string
           organization_id?: string | null
           owner_id: string
+          split_config?: Json
           updated_at?: string
         }
         Update: {
@@ -1490,6 +1492,7 @@ export type Database = {
           name?: string
           organization_id?: string | null
           owner_id?: string
+          split_config?: Json
           updated_at?: string
         }
         Relationships: [
