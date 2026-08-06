@@ -394,9 +394,8 @@ export function DashboardProgress() {
             : [
                 {
                   key: "consulting-growth" as const,
-                  title: `Deliver 10 Missions in Solo mode and with contractors (${Math.min(totalDelivered, 10)}/10)`,
-                  description:
-                    "Close missions end-to-end on your own and with contractors",
+                  title: `Deliver Missions in Solo mode and with contractors (${Math.min(totalDelivered, 10)}/10)`,
+                  description: "Close missions end-to-end on your own and with contractors",
                   icon: Users,
                   done: totalDelivered >= 10,
                   cta: {
