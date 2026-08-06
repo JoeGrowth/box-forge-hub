@@ -99,7 +99,28 @@ export function Navbar() {
   const { canAccessBoosting, canAccessScaling, potentialRole } = useUserStatus();
 
   const { engines: engineAccess } = useEngineAccess();
-  const { talentReady } = useTalentReadiness();
+  const { talentReady, missing } = useTalentReadiness();
+  const decoderDone = !missing.includes("Decode your natural role");
+
+  // "My tender work" only appears once the user has applied to an opportunity.
+  const [hasTenderWork, setHasTenderWork] = useState(false);
+  useEffect(() => {
+    if (!user) {
+      setHasTenderWork(false);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { count } = await supabase
+        .from("opportunity_interactions")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id);
+      if (!cancelled) setHasTenderWork((count ?? 0) > 0);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   // Hydrate synchronously from localStorage (lazy initializer) so the Admin
   // button is present on first paint when cached — no flash, no layout shift.
@@ -185,39 +206,67 @@ export function Navbar() {
               ))
             ) : isPreTalentFoundation ? (
               <>
-                <Link
-                  to="/ladder"
-                  className={`text-sm font-medium transition-colors hover:text-b4-teal ${
-                    location.pathname === "/ladder" ? "text-b4-teal" : "text-muted-foreground"
-                  }`}
-                >
-                  Ladder
-                </Link>
-                <Link
-                  to="/people"
-                  className={`text-sm font-medium transition-colors hover:text-b4-teal ${
-                    location.pathname === "/people" ? "text-b4-teal" : "text-muted-foreground"
-                  }`}
-                >
-                  People
-                </Link>
-                <Link
-                  to="/organizations"
-                  className={`text-sm font-medium transition-colors hover:text-b4-teal ${
-                    location.pathname === "/organizations" ? "text-b4-teal" : "text-muted-foreground"
-                  }`}
-                >
-                  Organizations
-                </Link>
-                <Link
-                  to="/entrepreneurship"
-                  className={`text-sm font-medium transition-colors hover:text-b4-teal ${
-                    location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-muted-foreground"
-                  }`}
-                >
-                  Growth
-                </Link>
+                {decoderDone ? (
+                  <>
+                    <Link
+                      to="/people"
+                      className={`text-sm font-medium transition-colors hover:text-b4-teal ${
+                        location.pathname === "/people" ? "text-b4-teal" : "text-muted-foreground"
+                      }`}
+                    >
+                      People
+                    </Link>
+                    <DropdownMenu open={growthOpen} onOpenChange={setGrowthOpen}>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          className={`text-sm font-medium transition-colors hover:text-b4-teal outline-none ${
+                            location.pathname === "/entrepreneurship" || location.pathname === "/ladder"
+                              ? "text-b4-teal"
+                              : "text-muted-foreground"
+                          }`}
+                          aria-label="Growth"
+                        >
+                          Growth
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56 mt-2">
+                        <DropdownMenuItem asChild>
+                          <Link to="/entrepreneurship" className="flex items-center gap-2 cursor-pointer">
+                            <Building2 size={16} />
+                            Studio
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link to="/ladder" className="flex items-center gap-2 cursor-pointer">
+                            <BarChart3 size={16} />
+                            Ladder
+                          </Link>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to="/ladder"
+                      className={`text-sm font-medium transition-colors hover:text-b4-teal ${
+                        location.pathname === "/ladder" ? "text-b4-teal" : "text-muted-foreground"
+                      }`}
+                    >
+                      Ladder
+                    </Link>
+                    <Link
+                      to="/entrepreneurship"
+                      className={`text-sm font-medium transition-colors hover:text-b4-teal ${
+                        location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-muted-foreground"
+                      }`}
+                    >
+                      Growth
+                    </Link>
+                  </>
+                )}
               </>
+
             ) : (
               <>
                 <DropdownMenu open={ecosystemOpen} onOpenChange={setEcosystemOpen}>
@@ -237,30 +286,18 @@ export function Navbar() {
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56 mt-2">
-                    {stageRank >= STAGE_RANK.emerging && (
-                      <DropdownMenuItem asChild>
-                        <Link
-                          to="/people"
-                          className={`flex items-center gap-2 cursor-pointer ${
-                            location.pathname === "/people" ? "text-b4-teal" : "text-foreground"
-                          }`}
-                        >
-                          <Users size={16} />
-                          People
-                        </Link>
-                      </DropdownMenuItem>
-                    )}
                     <DropdownMenuItem asChild>
                       <Link
-                        to="/projects"
+                        to="/people"
                         className={`flex items-center gap-2 cursor-pointer ${
-                          location.pathname === "/projects" ? "text-b4-teal" : "text-foreground"
+                          location.pathname === "/people" ? "text-b4-teal" : "text-foreground"
                         }`}
                       >
-                        <Rocket size={16} />
-                        Projects
+                        <Users size={16} />
+                        People
                       </Link>
                     </DropdownMenuItem>
+
                     <DropdownMenuItem asChild>
                       <Link
                         to="/opportunities"
@@ -272,17 +309,20 @@ export function Navbar() {
                         Opportunities
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link
-                        to="/my-tender-work"
-                        className={`flex items-center gap-2 cursor-pointer ${
-                          location.pathname === "/my-tender-work" ? "text-b4-teal" : "text-foreground"
-                        }`}
-                      >
-                        <FileText size={16} />
-                        My tender work
-                      </Link>
-                    </DropdownMenuItem>
+                    {hasTenderWork && (
+                      <DropdownMenuItem asChild>
+                        <Link
+                          to="/my-tender-work"
+                          className={`flex items-center gap-2 cursor-pointer ${
+                            location.pathname === "/my-tender-work" ? "text-b4-teal" : "text-foreground"
+                          }`}
+                        >
+                          <FileText size={16} />
+                          My tender work
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+
                   </DropdownMenuContent>
                 </DropdownMenu>
 
@@ -460,65 +500,7 @@ export function Navbar() {
                 <>
                   {isPreTalentFoundation ? (
                     <>
-                      <Link
-                        to="/ladder"
-                        onClick={() => setIsOpen(false)}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                          location.pathname === "/ladder"
-                            ? "bg-muted text-b4-teal"
-                            : "text-muted-foreground hover:bg-muted"
-                        }`}
-                      >
-                        <BarChart3 size={16} />
-                        <span className="flex-1">Ladder</span>
-                      </Link>
-
-                      <Link
-                        to="/people"
-                        onClick={() => setIsOpen(false)}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                          location.pathname === "/people"
-                            ? "bg-muted text-b4-teal"
-                            : "text-muted-foreground hover:bg-muted"
-                        }`}
-                      >
-                        <Users size={16} />
-                        <span className="flex-1">People</span>
-                      </Link>
-
-                      <Link
-                        to="/organizations"
-                        onClick={() => setIsOpen(false)}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                          location.pathname === "/organizations"
-                            ? "bg-muted text-b4-teal"
-                            : "text-muted-foreground hover:bg-muted"
-                        }`}
-                      >
-                        <Building2 size={16} />
-                        <span className="flex-1">Organizations</span>
-                      </Link>
-
-                      <Link
-                        to="/entrepreneurship"
-                        onClick={() => setIsOpen(false)}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                          location.pathname === "/entrepreneurship"
-                            ? "bg-muted text-b4-teal"
-                            : "text-muted-foreground hover:bg-muted"
-                        }`}
-                      >
-                        <Rocket size={16} />
-                        <span className="flex-1">Growth</span>
-                      </Link>
-                    </>
-                  ) : (
-                    <>
-                      <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Ecosystem
-                      </div>
-
-                      {stageRank >= STAGE_RANK.emerging && (
+                      {decoderDone && (
                         <Link
                           to="/people"
                           onClick={() => setIsOpen(false)}
@@ -533,18 +515,73 @@ export function Navbar() {
                         </Link>
                       )}
 
+                      <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Growth
+                      </div>
+
+                      {decoderDone && (
+                        <Link
+                          to="/entrepreneurship"
+                          onClick={() => setIsOpen(false)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                            location.pathname === "/entrepreneurship"
+                              ? "bg-muted text-b4-teal"
+                              : "text-muted-foreground hover:bg-muted"
+                          }`}
+                        >
+                          <Building2 size={16} />
+                          <span className="flex-1">Studio</span>
+                        </Link>
+                      )}
+
+                      {!decoderDone && (
+                        <Link
+                          to="/entrepreneurship"
+                          onClick={() => setIsOpen(false)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                            location.pathname === "/entrepreneurship"
+                              ? "bg-muted text-b4-teal"
+                              : "text-muted-foreground hover:bg-muted"
+                          }`}
+                        >
+                          <Rocket size={16} />
+                          <span className="flex-1">Growth</span>
+                        </Link>
+                      )}
+
                       <Link
-                        to="/projects"
+                        to="/ladder"
                         onClick={() => setIsOpen(false)}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                          location.pathname === "/projects"
+                          location.pathname === "/ladder"
                             ? "bg-muted text-b4-teal"
                             : "text-muted-foreground hover:bg-muted"
                         }`}
                       >
-                        <Rocket size={16} />
-                        <span className="flex-1">Projects</span>
+                        <BarChart3 size={16} />
+                        <span className="flex-1">Ladder</span>
                       </Link>
+                    </>
+
+                  ) : (
+                    <>
+                      <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Ecosystem
+                      </div>
+
+                      <Link
+                        to="/people"
+                        onClick={() => setIsOpen(false)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                          location.pathname === "/people"
+                            ? "bg-muted text-b4-teal"
+                            : "text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        <Users size={16} />
+                        <span className="flex-1">People</span>
+                      </Link>
+
 
                       <Link
                         to="/opportunities"
@@ -559,18 +596,21 @@ export function Navbar() {
                         <span className="flex-1">Opportunities</span>
                       </Link>
 
-                      <Link
-                        to="/my-tender-work"
-                        onClick={() => setIsOpen(false)}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                          location.pathname === "/my-tender-work"
-                            ? "bg-muted text-b4-teal"
-                            : "text-muted-foreground hover:bg-muted"
-                        }`}
-                      >
-                        <FileText size={16} />
-                        <span className="flex-1">My tender work</span>
-                      </Link>
+                      {hasTenderWork && (
+                        <Link
+                          to="/my-tender-work"
+                          onClick={() => setIsOpen(false)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                            location.pathname === "/my-tender-work"
+                              ? "bg-muted text-b4-teal"
+                              : "text-muted-foreground hover:bg-muted"
+                          }`}
+                        >
+                          <FileText size={16} />
+                          <span className="flex-1">My tender work</span>
+                        </Link>
+                      )}
+
 
                       <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Growth
