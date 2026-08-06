@@ -104,23 +104,37 @@ export function Navbar() {
 
   // "My tender work" only appears once the user has applied to an opportunity.
   const [hasTenderWork, setHasTenderWork] = useState(false);
+  // "Projects" appears once the talent is monetized (10 closed missions).
+  const [talentMonetized, setTalentMonetized] = useState(false);
   useEffect(() => {
     if (!user) {
       setHasTenderWork(false);
+      setTalentMonetized(false);
       return;
     }
     let cancelled = false;
     (async () => {
-      const { count } = await supabase
-        .from("opportunity_interactions")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", user.id);
-      if (!cancelled) setHasTenderWork((count ?? 0) > 0);
+      const [{ count }, { count: closedCount }] = await Promise.all([
+        supabase
+          .from("opportunity_interactions")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id),
+        supabase
+          .from("consultant_opportunities")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .eq("stage", "closed"),
+      ]);
+      if (!cancelled) {
+        setHasTenderWork((count ?? 0) > 0);
+        setTalentMonetized((closedCount ?? 0) >= 10);
+      }
     })();
     return () => {
       cancelled = true;
     };
   }, [user]);
+
 
   // Hydrate synchronously from localStorage (lazy initializer) so the Admin
   // button is present on first paint when cached — no flash, no layout shift.
@@ -309,6 +323,19 @@ export function Navbar() {
                         Opportunities
                       </Link>
                     </DropdownMenuItem>
+                    {talentReady && talentMonetized && (
+                      <DropdownMenuItem asChild>
+                        <Link
+                          to="/projects"
+                          className={`flex items-center gap-2 cursor-pointer ${
+                            location.pathname === "/projects" ? "text-b4-teal" : "text-foreground"
+                          }`}
+                        >
+                          <LayoutGrid size={16} />
+                          Projects
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     {hasTenderWork && (
                       <DropdownMenuItem asChild>
                         <Link
@@ -595,6 +622,21 @@ export function Navbar() {
                         <Briefcase size={16} />
                         <span className="flex-1">Opportunities</span>
                       </Link>
+
+                      {talentReady && talentMonetized && (
+                        <Link
+                          to="/projects"
+                          onClick={() => setIsOpen(false)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                            location.pathname === "/projects"
+                              ? "bg-muted text-b4-teal"
+                              : "text-muted-foreground hover:bg-muted"
+                          }`}
+                        >
+                          <LayoutGrid size={16} />
+                          <span className="flex-1">Projects</span>
+                        </Link>
+                      )}
 
                       {hasTenderWork && (
                         <Link
