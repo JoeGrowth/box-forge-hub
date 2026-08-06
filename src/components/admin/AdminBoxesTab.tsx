@@ -109,11 +109,12 @@ export function AdminBoxesTab() {
     }
     const term = q.trim();
     const { data } = await (supabase.from("profiles") as any)
-      .select("user_id,full_name,email,avatar_url")
-      .or(`email.ilike.%${term}%,full_name.ilike.%${term}%`)
+      .select("user_id,full_name,avatar_url")
+      .ilike("full_name", `%${term}%`)
       .limit(10);
     setAssignCandidates(data || []);
   };
+
 
   const handleAssignAdmin = async () => {
     if (!assignFor || !selectedUser) return;
