@@ -159,7 +159,7 @@ const Dashboard = () => {
                     {showShapeTalent && <DashboardProgress />}
                     {isCapable && <CommitmentsPanel />}
                     {isCapable && <DashboardOpportunities />}
-                    {isCapable && !(talentReady && isMonetizing) && <ProgressionPathCard userId={user?.id} />}
+                    {isCapable && <ProgressionPathCard userId={user?.id} />}
                   </>
                 )}
               </div>
