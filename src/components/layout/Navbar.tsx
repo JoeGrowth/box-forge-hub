@@ -99,8 +99,7 @@ export function Navbar() {
   const { canAccessBoosting, canAccessScaling, potentialRole } = useUserStatus();
 
   const { engines: engineAccess } = useEngineAccess();
-  const { talentReady, missing } = useTalentReadiness();
-  const decoderDone = !missing.includes("Decode your natural role");
+  const { talentReady } = useTalentReadiness();
 
   // "My tender work" only appears once the user has applied to an opportunity.
   const [hasTenderWork, setHasTenderWork] = useState(false);
@@ -220,66 +219,24 @@ export function Navbar() {
               ))
             ) : isPreTalentFoundation ? (
               <>
-                {decoderDone ? (
-                  <>
-                    <Link
-                      to="/people"
-                      className={`text-sm font-medium transition-colors hover:text-b4-teal ${
-                        location.pathname === "/people" ? "text-b4-teal" : "text-muted-foreground"
-                      }`}
-                    >
-                      People
-                    </Link>
-                    <DropdownMenu open={growthOpen} onOpenChange={setGrowthOpen}>
-                      <DropdownMenuTrigger asChild>
-                        <button
-                          className={`text-sm font-medium transition-colors hover:text-b4-teal outline-none ${
-                            location.pathname === "/entrepreneurship" || location.pathname === "/ladder"
-                              ? "text-b4-teal"
-                              : "text-muted-foreground"
-                          }`}
-                          aria-label="Growth"
-                        >
-                          Growth
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56 mt-2">
-                        <DropdownMenuItem asChild>
-                          <Link to="/entrepreneurship" className="flex items-center gap-2 cursor-pointer">
-                            <Building2 size={16} />
-                            Studio
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link to="/ladder" className="flex items-center gap-2 cursor-pointer">
-                            <BarChart3 size={16} />
-                            Ladder
-                          </Link>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      to="/ladder"
-                      className={`text-sm font-medium transition-colors hover:text-b4-teal ${
-                        location.pathname === "/ladder" ? "text-b4-teal" : "text-muted-foreground"
-                      }`}
-                    >
-                      Ladder
-                    </Link>
-                    <Link
-                      to="/entrepreneurship"
-                      className={`text-sm font-medium transition-colors hover:text-b4-teal ${
-                        location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-muted-foreground"
-                      }`}
-                    >
-                      Growth
-                    </Link>
-                  </>
-                )}
+                <Link
+                  to="/ladder"
+                  className={`text-sm font-medium transition-colors hover:text-b4-teal ${
+                    location.pathname === "/ladder" ? "text-b4-teal" : "text-muted-foreground"
+                  }`}
+                >
+                  Ladder
+                </Link>
+                <Link
+                  to="/entrepreneurship"
+                  className={`text-sm font-medium transition-colors hover:text-b4-teal ${
+                    location.pathname === "/entrepreneurship" ? "text-b4-teal" : "text-muted-foreground"
+                  }`}
+                >
+                  Studio
+                </Link>
               </>
+
 
             ) : (
               <>
@@ -527,55 +484,6 @@ export function Navbar() {
                 <>
                   {isPreTalentFoundation ? (
                     <>
-                      {decoderDone && (
-                        <Link
-                          to="/people"
-                          onClick={() => setIsOpen(false)}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                            location.pathname === "/people"
-                              ? "bg-muted text-b4-teal"
-                              : "text-muted-foreground hover:bg-muted"
-                          }`}
-                        >
-                          <Users size={16} />
-                          <span className="flex-1">People</span>
-                        </Link>
-                      )}
-
-                      <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Growth
-                      </div>
-
-                      {decoderDone && (
-                        <Link
-                          to="/entrepreneurship"
-                          onClick={() => setIsOpen(false)}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                            location.pathname === "/entrepreneurship"
-                              ? "bg-muted text-b4-teal"
-                              : "text-muted-foreground hover:bg-muted"
-                          }`}
-                        >
-                          <Building2 size={16} />
-                          <span className="flex-1">Studio</span>
-                        </Link>
-                      )}
-
-                      {!decoderDone && (
-                        <Link
-                          to="/entrepreneurship"
-                          onClick={() => setIsOpen(false)}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                            location.pathname === "/entrepreneurship"
-                              ? "bg-muted text-b4-teal"
-                              : "text-muted-foreground hover:bg-muted"
-                          }`}
-                        >
-                          <Rocket size={16} />
-                          <span className="flex-1">Growth</span>
-                        </Link>
-                      )}
-
                       <Link
                         to="/ladder"
                         onClick={() => setIsOpen(false)}
@@ -588,7 +496,21 @@ export function Navbar() {
                         <BarChart3 size={16} />
                         <span className="flex-1">Ladder</span>
                       </Link>
+
+                      <Link
+                        to="/entrepreneurship"
+                        onClick={() => setIsOpen(false)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                          location.pathname === "/entrepreneurship"
+                            ? "bg-muted text-b4-teal"
+                            : "text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        <Building2 size={16} />
+                        <span className="flex-1">Studio</span>
+                      </Link>
                     </>
+
 
                   ) : (
                     <>
