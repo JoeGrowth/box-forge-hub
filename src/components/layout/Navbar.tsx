@@ -104,23 +104,37 @@ export function Navbar() {
 
   // "My tender work" only appears once the user has applied to an opportunity.
   const [hasTenderWork, setHasTenderWork] = useState(false);
+  // "Projects" appears once the talent is monetized (10 closed missions).
+  const [talentMonetized, setTalentMonetized] = useState(false);
   useEffect(() => {
     if (!user) {
       setHasTenderWork(false);
+      setTalentMonetized(false);
       return;
     }
     let cancelled = false;
     (async () => {
-      const { count } = await supabase
-        .from("opportunity_interactions")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", user.id);
-      if (!cancelled) setHasTenderWork((count ?? 0) > 0);
+      const [{ count }, { count: closedCount }] = await Promise.all([
+        supabase
+          .from("opportunity_interactions")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id),
+        supabase
+          .from("consultant_opportunities")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .eq("stage", "closed"),
+      ]);
+      if (!cancelled) {
+        setHasTenderWork((count ?? 0) > 0);
+        setTalentMonetized((closedCount ?? 0) >= 10);
+      }
     })();
     return () => {
       cancelled = true;
     };
   }, [user]);
+
 
   // Hydrate synchronously from localStorage (lazy initializer) so the Admin
   // button is present on first paint when cached — no flash, no layout shift.
