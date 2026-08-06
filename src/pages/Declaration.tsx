@@ -58,6 +58,16 @@ const DEFAULT_INTERNALS = ["Structure Handler", "Process Handler"];
 const ROSTER_KEY = "declaration_internal_roster_v1";
 const ACTIVE_ENTITY_KEY = "declaration_active_entity_v1";
 const DELIVERY_TYPES_KEY = "declaration_delivery_types_v1";
+const SPLIT_KEY = "declaration_split_config_v1";
+
+type Partner = { id: string; name: string; pct: number };
+type SplitConfig = { recognitionPct: number; infraPct: number; partners: Partner[] };
+const MAX_RECOGNITION = 45;
+const DEFAULT_SPLIT: SplitConfig = {
+  recognitionPct: 30,
+  infraPct: 40,
+  partners: [{ id: "p1", name: "Associé 1", pct: 100 }],
+};
 const DEFAULT_DELIVERY_TYPES = ["consulting", "training"];
 const THRESHOLD = 1000;
 const CURRENCIES: Currency[] = ["TND", "EUR", "USD"];
@@ -116,6 +126,8 @@ export default function Declaration() {
   const [collabAccess, setCollabAccess] = useState<"view" | "edit">("edit");
   const [poolOpen, setPoolOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [split, setSplit] = useState<SplitConfig>(DEFAULT_SPLIT);
+  const [splitDialogOpen, setSplitDialogOpen] = useState(false);
 
   const activeEntity = entities.find((e) => e.id === activeEntityId);
   const isOwner = !!activeEntity && activeEntity.owner_id === user?.id;
@@ -155,6 +167,34 @@ export default function Declaration() {
     if (!deliveryKey) return;
     localStorage.setItem(deliveryKey, JSON.stringify(deliveryTypes));
   }, [deliveryTypes, deliveryKey]);
+
+  // Per-entity profit distribution split
+  const splitKey = activeEntityId ? `${SPLIT_KEY}:${activeEntityId}` : null;
+
+  useEffect(() => {
+    if (!splitKey) return;
+    try {
+      const raw = localStorage.getItem(splitKey);
+      const parsed = raw ? (JSON.parse(raw) as SplitConfig) : null;
+      setSplit(
+        parsed && Array.isArray(parsed.partners) && parsed.partners.length
+          ? {
+              recognitionPct: Math.min(MAX_RECOGNITION, Math.max(0, +parsed.recognitionPct || 0)),
+              infraPct: Math.min(100, Math.max(0, +parsed.infraPct || 0)),
+              partners: parsed.partners,
+            }
+          : DEFAULT_SPLIT,
+      );
+    } catch {
+      setSplit(DEFAULT_SPLIT);
+    }
+  }, [splitKey]);
+
+  const saveSplit = (next: SplitConfig) => {
+    setSplit(next);
+    if (splitKey) localStorage.setItem(splitKey, JSON.stringify(next));
+  };
+
 
   // Load entities
   const loadEntities = useCallback(async () => {
@@ -417,8 +457,10 @@ export default function Declaration() {
     const byCurrency = CURRENCIES.map((cur) => {
       const rest = totalRest[cur];
       const distributable = rest >= THRESHOLD ? rest : 0;
-      const recognition = distributable * 0.3;
-      const investment = distributable * 0.7;
+      const recPct = Math.min(MAX_RECOGNITION, Math.max(0, split.recognitionPct));
+      const recognition = (distributable * recPct) / 100;
+      const investment = distributable - recognition;
+      const partnerTotal = split.partners.reduce((s, p) => s + (+p.pct || 0), 0) || 100;
       return {
         currency: cur,
         totalRest: rest,
@@ -426,15 +468,19 @@ export default function Declaration() {
         pending: rest < THRESHOLD ? THRESHOLD - rest : 0,
         recognition,
         investment,
-        associe1: recognition * 0.7,
-        associe2: recognition * 0.3,
-        infra: investment * 0.4,
-        lab: investment * 0.6,
+        recPct,
+        invPct: 100 - recPct,
+        partners: split.partners.map((p) => ({
+          ...p,
+          amount: (recognition * (+p.pct || 0)) / partnerTotal,
+        })),
+        infra: (investment * Math.min(100, Math.max(0, split.infraPct))) / 100,
+        lab: (investment * (100 - Math.min(100, Math.max(0, split.infraPct)))) / 100,
         reached: rest >= THRESHOLD,
       };
     });
     return { byCurrency, anyReached: byCurrency.some((p) => p.reached) };
-  }, [missions, totals]);
+  }, [missions, totals, split]);
 
   // Money Box per currency (TND/EUR/USD)
   const moneyBox = useMemo(() => {
@@ -743,6 +789,16 @@ export default function Declaration() {
                     )}
                   </div>
                 </button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="ml-2 h-8 w-8 shrink-0"
+                  title="Configure distribution %"
+                  onClick={() => setSplitDialogOpen(true)}
+                >
+                  <Settings className="h-4 w-4 text-muted-foreground" />
+                </Button>
               </CardHeader>
 
               {poolOpen && (
@@ -776,21 +832,27 @@ export default function Declaration() {
                           <div className="rounded-lg border bg-background p-4">
                             <div className="flex items-center justify-between mb-3">
                               <div className="flex items-center gap-2 font-medium">
-                                <Users className="h-4 w-4 text-primary" /> Recognition · 30%
+                                <Users className="h-4 w-4 text-primary" /> Recognition · {p.recPct}%
                               </div>
                               <span className="font-bold">
                                 {fmt(p.recognition)} {p.currency}
                               </span>
                             </div>
                             <div className="space-y-1.5 text-sm pl-2 border-l-2 border-primary/40">
-                              <Row label="Associé 1 (70%)" value={p.associe1} currency={p.currency} />
-                              <Row label="Associé 2 (30%)" value={p.associe2} currency={p.currency} />
+                              {p.partners.map((pt) => (
+                                <Row
+                                  key={pt.id}
+                                  label={`${pt.name} (${pt.pct}%)`}
+                                  value={pt.amount}
+                                  currency={p.currency}
+                                />
+                              ))}
                             </div>
                           </div>
                           <div className="rounded-lg border bg-background p-4">
                             <div className="flex items-center justify-between mb-3">
                               <div className="flex items-center gap-2 font-medium">
-                                <Building2 className="h-4 w-4 text-primary" /> Investment · 70%
+                                <Building2 className="h-4 w-4 text-primary" /> Investment · {p.invPct}%
                               </div>
                               <span className="font-bold">
                                 {fmt(p.investment)} {p.currency}
@@ -798,13 +860,13 @@ export default function Declaration() {
                             </div>
                             <div className="space-y-1.5 text-sm pl-2 border-l-2 border-primary/40">
                               <Row
-                                label="Infrastructure (40%)"
+                                label={`Infrastructure (${split.infraPct}%)`}
                                 value={p.infra}
                                 currency={p.currency}
                                 icon={<Building2 className="h-3 w-3" />}
                               />
                               <Row
-                                label="Projects (60%)"
+                                label={`Projects (${100 - split.infraPct}%)`}
                                 value={p.lab}
                                 currency={p.currency}
                                 icon={<FlaskConical className="h-3 w-3" />}
@@ -822,6 +884,135 @@ export default function Declaration() {
                 </CardContent>
               )}
             </Card>
+
+            {/* Profit distribution settings */}
+            <Dialog open={splitDialogOpen} onOpenChange={setSplitDialogOpen}>
+              <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Profit distribution settings</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-6">
+                  <div>
+                    <Label className="text-sm font-semibold">Recognition vs Investment</Label>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Recognition can never exceed {MAX_RECOGNITION}%. The rest goes to Investment.
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <Input
+                        type="number"
+                        min={0}
+                        max={MAX_RECOGNITION}
+                        value={split.recognitionPct}
+                        onChange={(e) => {
+                          const v = Math.min(MAX_RECOGNITION, Math.max(0, +e.target.value || 0));
+                          saveSplit({ ...split, recognitionPct: v });
+                        }}
+                        className="w-24"
+                      />
+                      <span className="text-sm text-muted-foreground">
+                        Recognition % · Investment {100 - split.recognitionPct}%
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-semibold">Investment split</Label>
+                    <div className="flex items-center gap-3 mt-2">
+                      <Input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={split.infraPct}
+                        onChange={(e) => {
+                          const v = Math.min(100, Math.max(0, +e.target.value || 0));
+                          saveSplit({ ...split, infraPct: v });
+                        }}
+                        className="w-24"
+                      />
+                      <span className="text-sm text-muted-foreground">
+                        Infrastructure % · Projects {100 - split.infraPct}%
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <Label className="text-sm font-semibold">Associés (Recognition)</Label>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          const n = split.partners.length + 1;
+                          saveSplit({
+                            ...split,
+                            partners: [
+                              ...split.partners,
+                              { id: crypto.randomUUID(), name: `Associé ${n}`, pct: 0 },
+                            ],
+                          });
+                        }}
+                      >
+                        <Plus className="h-4 w-4 mr-1" /> Add associé
+                      </Button>
+                    </div>
+                    <div className="space-y-2">
+                      {split.partners.map((pt, i) => (
+                        <div key={pt.id} className="flex items-center gap-2">
+                          <Input
+                            value={pt.name}
+                            onChange={(e) => {
+                              const partners = [...split.partners];
+                              partners[i] = { ...pt, name: e.target.value };
+                              saveSplit({ ...split, partners });
+                            }}
+                            className="flex-1"
+                          />
+                          <Input
+                            type="number"
+                            min={0}
+                            max={100}
+                            value={pt.pct}
+                            onChange={(e) => {
+                              const partners = [...split.partners];
+                              partners[i] = { ...pt, pct: Math.min(100, Math.max(0, +e.target.value || 0)) };
+                              saveSplit({ ...split, partners });
+                            }}
+                            className="w-20"
+                          />
+                          <span className="text-xs text-muted-foreground">%</span>
+                          {split.partners.length > 1 && (
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() =>
+                                saveSplit({ ...split, partners: split.partners.filter((x) => x.id !== pt.id) })
+                              }
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    <p
+                      className={`text-xs mt-2 ${
+                        split.partners.reduce((s, x) => s + (+x.pct || 0), 0) === 100
+                          ? "text-muted-foreground"
+                          : "text-destructive"
+                      }`}
+                    >
+                      Total : {split.partners.reduce((s, x) => s + (+x.pct || 0), 0)}% (must equal 100%)
+                    </p>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => saveSplit(DEFAULT_SPLIT)}>
+                    Reset
+                  </Button>
+                  <Button onClick={() => setSplitDialogOpen(false)}>Done</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </CardContent>
         </Card>
 
