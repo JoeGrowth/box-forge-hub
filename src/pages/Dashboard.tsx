@@ -147,7 +147,7 @@ const Dashboard = () => {
             {!isFirstLogin && (
               <>
                 <DashboardHero />
-                {talentReady && !talentLoading && isCapable && <NextGoalBanner />}
+                {talentReady && !talentLoading && isCapable && !isMonetizing && <NextGoalBanner />}
               </>
             )}
             <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
