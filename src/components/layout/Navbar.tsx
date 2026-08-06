@@ -485,55 +485,6 @@ export function Navbar() {
                 <>
                   {isPreTalentFoundation ? (
                     <>
-                      {decoderDone && (
-                        <Link
-                          to="/people"
-                          onClick={() => setIsOpen(false)}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                            location.pathname === "/people"
-                              ? "bg-muted text-b4-teal"
-                              : "text-muted-foreground hover:bg-muted"
-                          }`}
-                        >
-                          <Users size={16} />
-                          <span className="flex-1">People</span>
-                        </Link>
-                      )}
-
-                      <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Growth
-                      </div>
-
-                      {decoderDone && (
-                        <Link
-                          to="/entrepreneurship"
-                          onClick={() => setIsOpen(false)}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                            location.pathname === "/entrepreneurship"
-                              ? "bg-muted text-b4-teal"
-                              : "text-muted-foreground hover:bg-muted"
-                          }`}
-                        >
-                          <Building2 size={16} />
-                          <span className="flex-1">Studio</span>
-                        </Link>
-                      )}
-
-                      {!decoderDone && (
-                        <Link
-                          to="/entrepreneurship"
-                          onClick={() => setIsOpen(false)}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                            location.pathname === "/entrepreneurship"
-                              ? "bg-muted text-b4-teal"
-                              : "text-muted-foreground hover:bg-muted"
-                          }`}
-                        >
-                          <Rocket size={16} />
-                          <span className="flex-1">Growth</span>
-                        </Link>
-                      )}
-
                       <Link
                         to="/ladder"
                         onClick={() => setIsOpen(false)}
@@ -546,7 +497,21 @@ export function Navbar() {
                         <BarChart3 size={16} />
                         <span className="flex-1">Ladder</span>
                       </Link>
+
+                      <Link
+                        to="/entrepreneurship"
+                        onClick={() => setIsOpen(false)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                          location.pathname === "/entrepreneurship"
+                            ? "bg-muted text-b4-teal"
+                            : "text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        <Building2 size={16} />
+                        <span className="flex-1">Studio</span>
+                      </Link>
                     </>
+
 
                   ) : (
                     <>
