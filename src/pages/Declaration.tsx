@@ -457,8 +457,10 @@ export default function Declaration() {
     const byCurrency = CURRENCIES.map((cur) => {
       const rest = totalRest[cur];
       const distributable = rest >= THRESHOLD ? rest : 0;
-      const recognition = distributable * 0.3;
-      const investment = distributable * 0.7;
+      const recPct = Math.min(MAX_RECOGNITION, Math.max(0, split.recognitionPct));
+      const recognition = (distributable * recPct) / 100;
+      const investment = distributable - recognition;
+      const partnerTotal = split.partners.reduce((s, p) => s + (+p.pct || 0), 0) || 100;
       return {
         currency: cur,
         totalRest: rest,
@@ -466,15 +468,19 @@ export default function Declaration() {
         pending: rest < THRESHOLD ? THRESHOLD - rest : 0,
         recognition,
         investment,
-        associe1: recognition * 0.7,
-        associe2: recognition * 0.3,
-        infra: investment * 0.4,
-        lab: investment * 0.6,
+        recPct,
+        invPct: 100 - recPct,
+        partners: split.partners.map((p) => ({
+          ...p,
+          amount: (recognition * (+p.pct || 0)) / partnerTotal,
+        })),
+        infra: (investment * Math.min(100, Math.max(0, split.infraPct))) / 100,
+        lab: (investment * (100 - Math.min(100, Math.max(0, split.infraPct)))) / 100,
         reached: rest >= THRESHOLD,
       };
     });
     return { byCurrency, anyReached: byCurrency.some((p) => p.reached) };
-  }, [missions, totals]);
+  }, [missions, totals, split]);
 
   // Money Box per currency (TND/EUR/USD)
   const moneyBox = useMemo(() => {
