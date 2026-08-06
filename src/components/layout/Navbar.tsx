@@ -583,19 +583,6 @@ export function Navbar() {
                       )}
 
                       <Link
-                        to="/projects"
-                        onClick={() => setIsOpen(false)}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                          location.pathname === "/projects"
-                            ? "bg-muted text-b4-teal"
-                            : "text-muted-foreground hover:bg-muted"
-                        }`}
-                      >
-                        <Rocket size={16} />
-                        <span className="flex-1">Projects</span>
-                      </Link>
-
-                      <Link
                         to="/opportunities"
                         onClick={() => setIsOpen(false)}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
@@ -608,18 +595,21 @@ export function Navbar() {
                         <span className="flex-1">Opportunities</span>
                       </Link>
 
-                      <Link
-                        to="/my-tender-work"
-                        onClick={() => setIsOpen(false)}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                          location.pathname === "/my-tender-work"
-                            ? "bg-muted text-b4-teal"
-                            : "text-muted-foreground hover:bg-muted"
-                        }`}
-                      >
-                        <FileText size={16} />
-                        <span className="flex-1">My tender work</span>
-                      </Link>
+                      {hasTenderWork && (
+                        <Link
+                          to="/my-tender-work"
+                          onClick={() => setIsOpen(false)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                            location.pathname === "/my-tender-work"
+                              ? "bg-muted text-b4-teal"
+                              : "text-muted-foreground hover:bg-muted"
+                          }`}
+                        >
+                          <FileText size={16} />
+                          <span className="flex-1">My tender work</span>
+                        </Link>
+                      )}
+
 
                       <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Growth
