@@ -35,7 +35,10 @@ export function AdminBoxesTab() {
   const [newBox, setNewBox] = useState({ name: "", slug: "", domain: "", description: "" });
 
   const [assignFor, setAssignFor] = useState<Box | null>(null);
-  const [assignEmail, setAssignEmail] = useState("");
+  const [assignQuery, setAssignQuery] = useState("");
+  const [assignCandidates, setAssignCandidates] = useState<{ user_id: string; full_name: string | null; email: string | null; avatar_url: string | null }[]>([]);
+  const [selectedUser, setSelectedUser] = useState<{ user_id: string; full_name: string | null; email: string | null; avatar_url: string | null } | null>(null);
+
 
   const load = async () => {
     setLoading(true);
