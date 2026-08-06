@@ -407,8 +407,7 @@ export function DashboardProgress() {
           {
             key: "add-organization" as const,
             title: "Register Your organization",
-            description:
-              "Register your organization to unlock consulting contracts, project journeys, and team visibility.",
+            description: "Unlock consulting contracts, project journeys, and team visibility.",
             icon: Building2,
             done: orgFunded,
             cta: { label: orgFunded ? "View" : "Add", href: "https://box4solutions.com/organizations" },
