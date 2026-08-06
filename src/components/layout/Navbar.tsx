@@ -300,6 +300,19 @@ export function Navbar() {
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56 mt-2">
+                    {talentReady && talentMonetized && (
+                      <DropdownMenuItem asChild>
+                        <Link
+                          to="/projects"
+                          className={`flex items-center gap-2 cursor-pointer ${
+                            location.pathname === "/projects" ? "text-b4-teal" : "text-foreground"
+                          }`}
+                        >
+                          <Rocket size={16} />
+                          Projects
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem asChild>
                       <Link
                         to="/people"
@@ -323,19 +336,6 @@ export function Navbar() {
                         Opportunities
                       </Link>
                     </DropdownMenuItem>
-                    {talentReady && talentMonetized && (
-                      <DropdownMenuItem asChild>
-                        <Link
-                          to="/projects"
-                          className={`flex items-center gap-2 cursor-pointer ${
-                            location.pathname === "/projects" ? "text-b4-teal" : "text-foreground"
-                          }`}
-                        >
-                          <LayoutGrid size={16} />
-                          Projects
-                        </Link>
-                      </DropdownMenuItem>
-                    )}
                     {hasTenderWork && (
                       <DropdownMenuItem asChild>
                         <Link
