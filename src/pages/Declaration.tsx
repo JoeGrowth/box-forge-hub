@@ -884,6 +884,135 @@ export default function Declaration() {
                 </CardContent>
               )}
             </Card>
+
+            {/* Profit distribution settings */}
+            <Dialog open={splitDialogOpen} onOpenChange={setSplitDialogOpen}>
+              <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Profit distribution settings</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-6">
+                  <div>
+                    <Label className="text-sm font-semibold">Recognition vs Investment</Label>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Recognition can never exceed {MAX_RECOGNITION}%. The rest goes to Investment.
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <Input
+                        type="number"
+                        min={0}
+                        max={MAX_RECOGNITION}
+                        value={split.recognitionPct}
+                        onChange={(e) => {
+                          const v = Math.min(MAX_RECOGNITION, Math.max(0, +e.target.value || 0));
+                          saveSplit({ ...split, recognitionPct: v });
+                        }}
+                        className="w-24"
+                      />
+                      <span className="text-sm text-muted-foreground">
+                        Recognition % · Investment {100 - split.recognitionPct}%
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-semibold">Investment split</Label>
+                    <div className="flex items-center gap-3 mt-2">
+                      <Input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={split.infraPct}
+                        onChange={(e) => {
+                          const v = Math.min(100, Math.max(0, +e.target.value || 0));
+                          saveSplit({ ...split, infraPct: v });
+                        }}
+                        className="w-24"
+                      />
+                      <span className="text-sm text-muted-foreground">
+                        Infrastructure % · Projects {100 - split.infraPct}%
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <Label className="text-sm font-semibold">Associés (Recognition)</Label>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          const n = split.partners.length + 1;
+                          saveSplit({
+                            ...split,
+                            partners: [
+                              ...split.partners,
+                              { id: crypto.randomUUID(), name: `Associé ${n}`, pct: 0 },
+                            ],
+                          });
+                        }}
+                      >
+                        <Plus className="h-4 w-4 mr-1" /> Add associé
+                      </Button>
+                    </div>
+                    <div className="space-y-2">
+                      {split.partners.map((pt, i) => (
+                        <div key={pt.id} className="flex items-center gap-2">
+                          <Input
+                            value={pt.name}
+                            onChange={(e) => {
+                              const partners = [...split.partners];
+                              partners[i] = { ...pt, name: e.target.value };
+                              saveSplit({ ...split, partners });
+                            }}
+                            className="flex-1"
+                          />
+                          <Input
+                            type="number"
+                            min={0}
+                            max={100}
+                            value={pt.pct}
+                            onChange={(e) => {
+                              const partners = [...split.partners];
+                              partners[i] = { ...pt, pct: Math.min(100, Math.max(0, +e.target.value || 0)) };
+                              saveSplit({ ...split, partners });
+                            }}
+                            className="w-20"
+                          />
+                          <span className="text-xs text-muted-foreground">%</span>
+                          {split.partners.length > 1 && (
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() =>
+                                saveSplit({ ...split, partners: split.partners.filter((x) => x.id !== pt.id) })
+                              }
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    <p
+                      className={`text-xs mt-2 ${
+                        split.partners.reduce((s, x) => s + (+x.pct || 0), 0) === 100
+                          ? "text-muted-foreground"
+                          : "text-destructive"
+                      }`}
+                    >
+                      Total : {split.partners.reduce((s, x) => s + (+x.pct || 0), 0)}% (must equal 100%)
+                    </p>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => saveSplit(DEFAULT_SPLIT)}>
+                    Reset
+                  </Button>
+                  <Button onClick={() => setSplitDialogOpen(false)}>Done</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </CardContent>
         </Card>
 
