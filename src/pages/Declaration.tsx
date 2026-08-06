@@ -168,6 +168,34 @@ export default function Declaration() {
     localStorage.setItem(deliveryKey, JSON.stringify(deliveryTypes));
   }, [deliveryTypes, deliveryKey]);
 
+  // Per-entity profit distribution split
+  const splitKey = activeEntityId ? `${SPLIT_KEY}:${activeEntityId}` : null;
+
+  useEffect(() => {
+    if (!splitKey) return;
+    try {
+      const raw = localStorage.getItem(splitKey);
+      const parsed = raw ? (JSON.parse(raw) as SplitConfig) : null;
+      setSplit(
+        parsed && Array.isArray(parsed.partners) && parsed.partners.length
+          ? {
+              recognitionPct: Math.min(MAX_RECOGNITION, Math.max(0, +parsed.recognitionPct || 0)),
+              infraPct: Math.min(100, Math.max(0, +parsed.infraPct || 0)),
+              partners: parsed.partners,
+            }
+          : DEFAULT_SPLIT,
+      );
+    } catch {
+      setSplit(DEFAULT_SPLIT);
+    }
+  }, [splitKey]);
+
+  const saveSplit = (next: SplitConfig) => {
+    setSplit(next);
+    if (splitKey) localStorage.setItem(splitKey, JSON.stringify(next));
+  };
+
+
   // Load entities
   const loadEntities = useCallback(async () => {
     if (!user) return;
