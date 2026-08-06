@@ -18,7 +18,7 @@ interface Props {
 }
 
 // Which slugs require equity input.
-const OWNER_SLUGS = new Set(["associe_1", "associe_2"]);
+const OWNER_SLUGS = new Set(["associe_1", "associe_2", "associe_3", "associe_4"]);
 
 export function EntityRoleSlots({ entityType, entityId, canManage }: Props) {
   const { data: rows = [], isLoading } = useEntityRoleAssignments(entityType, entityId);
