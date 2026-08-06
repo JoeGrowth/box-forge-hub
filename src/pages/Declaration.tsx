@@ -126,6 +126,8 @@ export default function Declaration() {
   const [collabAccess, setCollabAccess] = useState<"view" | "edit">("edit");
   const [poolOpen, setPoolOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [split, setSplit] = useState<SplitConfig>(DEFAULT_SPLIT);
+  const [splitDialogOpen, setSplitDialogOpen] = useState(false);
 
   const activeEntity = entities.find((e) => e.id === activeEntityId);
   const isOwner = !!activeEntity && activeEntity.owner_id === user?.id;
