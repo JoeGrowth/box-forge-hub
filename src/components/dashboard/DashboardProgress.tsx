@@ -49,6 +49,7 @@ export function DashboardProgress() {
   const [contractorsDelivered, setContractorsDelivered] = useState(0);
   const [equityDelivered, setEquityDelivered] = useState(0);
   const [ventureStarted, setVentureStarted] = useState(false);
+  const [orgFunded, setOrgFunded] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
   const fetchProgress = useCallback(async () => {
@@ -116,7 +117,43 @@ export function DashboardProgress() {
     setContractorsDelivered(contractors);
     setEquityDelivered(equity);
 
+    // "Add your organization" is done when the user administers at least one
+    // organization whose declaration inflow (client-paid missions) exceeds 100.
+    const [{ data: ownedOrgs }, { data: adminMemberships }] = await Promise.all([
+      supabase.from("organizations").select("id").eq("created_by", user.id),
+      supabase.from("organization_members").select("organization_id").eq("user_id", user.id).eq("role", "admin"),
+    ]);
+    const adminOrgIds = Array.from(
+      new Set([
+        ...((ownedOrgs ?? []) as any[]).map((o) => o.id),
+        ...((adminMemberships ?? []) as any[]).map((m) => m.organization_id),
+      ]),
+    );
+    let funded = false;
+    if (adminOrgIds.length > 0) {
+      const { data: entities } = await supabase
+        .from("declaration_entities")
+        .select("id")
+        .in("organization_id", adminOrgIds);
+      const entityIds = ((entities ?? []) as any[]).map((e) => e.id);
+      if (entityIds.length > 0) {
+        const { data: missions } = await supabase
+          .from("declaration_missions")
+          .select("budget, currency, client_paid")
+          .in("entity_id", entityIds)
+          .eq("client_paid", true);
+        const totals: Record<string, number> = {};
+        ((missions ?? []) as any[]).forEach((m) => {
+          const cur = m.currency || "TND";
+          totals[cur] = (totals[cur] ?? 0) + Number(m.budget || 0);
+        });
+        funded = Object.values(totals).some((v) => v > 100);
+      }
+    }
+    setOrgFunded(funded);
+
     const nr: any = naturalRole || {};
+
     // Professional Track Record is filled when the natural role is defined
     // via ANY path (decoder quiz, professional-track wizard, or sub-checks).
     const nrDefined = Boolean(
@@ -374,8 +411,8 @@ export function DashboardProgress() {
             description:
               "Register your organization to unlock consulting contracts, project journeys, and team visibility.",
             icon: Building2,
-            done: false,
-            cta: { label: "Add", href: "https://box4solutions.com/organizations" },
+            done: orgFunded,
+            cta: { label: orgFunded ? "View" : "Add", href: "https://box4solutions.com/organizations" },
           },
           {
             key: "venture" as const,
