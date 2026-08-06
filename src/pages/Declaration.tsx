@@ -58,6 +58,16 @@ const DEFAULT_INTERNALS = ["Structure Handler", "Process Handler"];
 const ROSTER_KEY = "declaration_internal_roster_v1";
 const ACTIVE_ENTITY_KEY = "declaration_active_entity_v1";
 const DELIVERY_TYPES_KEY = "declaration_delivery_types_v1";
+const SPLIT_KEY = "declaration_split_config_v1";
+
+type Partner = { id: string; name: string; pct: number };
+type SplitConfig = { recognitionPct: number; infraPct: number; partners: Partner[] };
+const MAX_RECOGNITION = 45;
+const DEFAULT_SPLIT: SplitConfig = {
+  recognitionPct: 30,
+  infraPct: 40,
+  partners: [{ id: "p1", name: "Associé 1", pct: 100 }],
+};
 const DEFAULT_DELIVERY_TYPES = ["consulting", "training"];
 const THRESHOLD = 1000;
 const CURRENCIES: Currency[] = ["TND", "EUR", "USD"];
