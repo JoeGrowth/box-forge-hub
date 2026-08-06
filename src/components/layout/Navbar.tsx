@@ -286,19 +286,18 @@ export function Navbar() {
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56 mt-2">
-                    {stageRank >= STAGE_RANK.emerging && (
-                      <DropdownMenuItem asChild>
-                        <Link
-                          to="/people"
-                          className={`flex items-center gap-2 cursor-pointer ${
-                            location.pathname === "/people" ? "text-b4-teal" : "text-foreground"
-                          }`}
-                        >
-                          <Users size={16} />
-                          People
-                        </Link>
-                      </DropdownMenuItem>
-                    )}
+                    <DropdownMenuItem asChild>
+                      <Link
+                        to="/people"
+                        className={`flex items-center gap-2 cursor-pointer ${
+                          location.pathname === "/people" ? "text-b4-teal" : "text-foreground"
+                        }`}
+                      >
+                        <Users size={16} />
+                        People
+                      </Link>
+                    </DropdownMenuItem>
+
                     <DropdownMenuItem asChild>
                       <Link
                         to="/opportunities"
