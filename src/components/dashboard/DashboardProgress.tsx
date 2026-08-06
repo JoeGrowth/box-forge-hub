@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, CheckCircle2, Circle, FileText, Briefcase, Rocket, Compass, Target, TrendingUp, Lightbulb, User, Users, Handshake } from "lucide-react";
+import { ArrowRight, CheckCircle2, Circle, FileText, Briefcase, Rocket, Compass, Target, TrendingUp, Lightbulb, User, Users, Handshake, Building2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
@@ -271,7 +271,8 @@ export function DashboardProgress() {
   ];
 
   const foundationDone = foundationSteps.every((s) => s.done);
-  const talentMonetized = soloDelivered >= 3 && contractorsDelivered >= 7;
+  const totalDelivered = soloDelivered + contractorsDelivered;
+  const talentMonetized = totalDelivered >= 10;
 
   const steps = [
     ...(foundationDone
@@ -297,29 +298,29 @@ export function DashboardProgress() {
                     "Solo and contractor missions delivered — your consulting engine is monetized.",
                   icon: CheckCircle2,
                   done: true,
-                  cta: { label: "Review", to: "/consulting-growth" },
+                  cta: { label: "Review", href: "https://box4solutions.com/consulting-growth" },
                 },
               ]
             : [
                 {
-                  key: "consulting-solo" as const,
-                  title: `Deliver Missions in Solo Mode (${Math.min(soloDelivered, 3)}/3)`,
+                  key: "consulting-growth" as const,
+                  title: `Deliver 10 Missions in Solo mode and with contractors (${Math.min(totalDelivered, 10)}/10)`,
                   description:
-                    "Close 3 missions end-to-end on your own — track opportunities through lead, proposal, delivery, payment, and accounting until your solo engine runs.",
-                  icon: User,
-                  done: soloDelivered >= 3,
-                  cta: { label: soloDelivered > 0 ? "Continue" : "Start", to: "/consulting-growth" },
-                },
-                {
-                  key: "consulting-contractors" as const,
-                  title: `Deliver Missions with other talents (${Math.min(contractorsDelivered, 7)}/7)`,
-                  description:
-                    "Split delivery with other talents on shared missions — share responsibilities, grow your collective track record, and scale your consulting engine beyond solo work.",
+                    "Close missions end-to-end on your own and with contractors — track opportunities through lead, proposal, delivery, payment, and accounting until your consulting engine runs.",
                   icon: Users,
-                  done: contractorsDelivered >= 7,
-                  cta: { label: contractorsDelivered > 0 ? "Continue" : "Start", to: "/consulting-growth" },
+                  done: totalDelivered >= 10,
+                  cta: { label: totalDelivered > 0 ? "Continue" : "Start", href: "https://box4solutions.com/consulting-growth" },
                 },
               ]),
+          {
+            key: "add-organization" as const,
+            title: "Add an organization",
+            description:
+              "Register your organization to unlock consulting contracts, project journeys, and team visibility.",
+            icon: Building2,
+            done: false,
+            cta: { label: "Add", href: "https://box4solutions.com/organizations" },
+          },
           {
             key: "venture" as const,
             title: "Launch or Join a Venture",
@@ -327,7 +328,7 @@ export function DashboardProgress() {
               "Create your own startup project or apply to co-build an existing venture with equity.",
             icon: Lightbulb,
             done: false,
-            cta: { label: ventureStarted ? "Continue" : "Start", to: "/entrepreneurship" },
+            cta: { label: ventureStarted ? "Continue" : "Start", href: "https://box4solutions.com/entrepreneurship" },
           },
         ]
       : []),
@@ -427,22 +428,41 @@ export function DashboardProgress() {
                     asChild
                     className="w-full sm:w-auto sm:min-w-[110px] flex-shrink-0"
                   >
-                    <Link
-                      to={step.cta.to}
-                      onClick={() => {
-                        if (!user) return;
-                        try {
-                          if (step.key === "venture") {
-                            localStorage.setItem(`b4:venture-start-clicked:${user.id}`, "1");
-                          } else if (step.key === "consulting-growth") {
-                            localStorage.setItem(`b4:consulting-start-clicked:${user.id}`, "1");
-                          }
-                        } catch {}
-                      }}
-                    >
-                      {step.cta.label}
-                    </Link>
-
+                    {"href" in step.cta ? (
+                      <a
+                        href={step.cta.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => {
+                          if (!user) return;
+                          try {
+                            if (step.key === "venture") {
+                              localStorage.setItem(`b4:venture-start-clicked:${user.id}`, "1");
+                            } else if (step.key === "consulting-growth") {
+                              localStorage.setItem(`b4:consulting-start-clicked:${user.id}`, "1");
+                            }
+                          } catch {}
+                        }}
+                      >
+                        {step.cta.label}
+                      </a>
+                    ) : (
+                      <Link
+                        to={step.cta.to}
+                        onClick={() => {
+                          if (!user) return;
+                          try {
+                            if (step.key === "venture") {
+                              localStorage.setItem(`b4:venture-start-clicked:${user.id}`, "1");
+                            } else if (step.key === "consulting-growth") {
+                              localStorage.setItem(`b4:consulting-start-clicked:${user.id}`, "1");
+                            }
+                          } catch {}
+                        }}
+                      >
+                        {step.cta.label}
+                      </Link>
+                    )}
                   </Button>
                 )}
 
