@@ -603,6 +603,7 @@ export default function OrganizationPage() {
 
         {/* MEMBERS */}
         <TabsContent value="members" className="space-y-3">
+          <EntityRoleSlots entityType="organization" entityId={org.id} canManage={canAdmin} />
           {canAdmin && <InviteMemberRow orgId={org.id} onAdded={reloadMembers} />}
           <div className="rounded-xl border border-border bg-card divide-y divide-border">
             {members.map((m) => {
