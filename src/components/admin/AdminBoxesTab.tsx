@@ -35,7 +35,11 @@ export function AdminBoxesTab() {
   const [newBox, setNewBox] = useState({ name: "", slug: "", domain: "", description: "" });
 
   const [assignFor, setAssignFor] = useState<Box | null>(null);
-  const [assignEmail, setAssignEmail] = useState("");
+  const [assignQuery, setAssignQuery] = useState("");
+  const [assignCandidates, setAssignCandidates] = useState<{ user_id: string; full_name: string | null; avatar_url: string | null }[]>([]);
+  const [selectedUser, setSelectedUser] = useState<{ user_id: string; full_name: string | null; avatar_url: string | null } | null>(null);
+
+
 
   const load = async () => {
     setLoading(true);
@@ -96,26 +100,40 @@ export function AdminBoxesTab() {
     load();
   };
 
-  const handleAssignAdmin = async () => {
-    if (!assignFor || !assignEmail) return;
-    const { data: prof } = await (supabase.from("profiles") as any).select("id").eq("email", assignEmail.trim()).maybeSingle();
-    if (!prof) {
-      toast.error("No user found with that email");
+  const searchAdmins = async (q: string) => {
+    setAssignQuery(q);
+    setSelectedUser(null);
+    if (!q.trim() || q.trim().length < 2) {
+      setAssignCandidates([]);
       return;
     }
+    const term = q.trim();
+    const { data } = await (supabase.from("profiles") as any)
+      .select("user_id,full_name,avatar_url")
+      .ilike("full_name", `%${term}%`)
+      .limit(10);
+    setAssignCandidates(data || []);
+  };
+
+
+  const handleAssignAdmin = async () => {
+    if (!assignFor || !selectedUser) return;
     const { error } = await supabase.from("box_ecosystem_admins").insert({
       box_id: assignFor.id,
-      user_id: prof.id,
+      user_id: selectedUser.user_id,
     });
     if (error) {
       toast.error(error.message);
       return;
     }
     toast.success("Box admin assigned");
-    setAssignEmail("");
+    setAssignQuery("");
+    setAssignCandidates([]);
+    setSelectedUser(null);
     setAssignFor(null);
     load();
   };
+
 
   const removeAdmin = async (boxId: string, userId: string) => {
     const { error } = await supabase.from("box_ecosystem_admins").delete().eq("box_id", boxId).eq("user_id", userId);
@@ -225,16 +243,37 @@ export function AdminBoxesTab() {
         {boxes.length === 0 && <p className="text-muted-foreground">No boxes yet. Create one to get started.</p>}
       </div>
 
-      <Dialog open={!!assignFor} onOpenChange={(o) => !o && setAssignFor(null)}>
+      <Dialog open={!!assignFor} onOpenChange={(o) => { if (!o) { setAssignFor(null); setAssignQuery(""); setAssignCandidates([]); setSelectedUser(null); } }}>
         <DialogContent>
           <DialogHeader><DialogTitle>Assign Box Admin — {assignFor?.name}</DialogTitle></DialogHeader>
-          <div className="space-y-2">
-            <Label>User email</Label>
-            <Input value={assignEmail} onChange={(e) => setAssignEmail(e.target.value)} placeholder="user@example.com" />
+          <div className="space-y-3">
+            <Label>User full name</Label>
+            <Input value={assignQuery} onChange={(e) => searchAdmins(e.target.value)} placeholder="houssem kaabi" />
+            {assignCandidates.length > 0 && !selectedUser && (
+              <ul className="rounded-md border border-border bg-muted/30 divide-y divide-border max-h-48 overflow-auto">
+                {assignCandidates.map((c) => (
+                  <li key={c.user_id}>
+                    <button onClick={() => setSelectedUser(c)} className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-muted transition-colors">
+                      <Avatar className="h-6 w-6"><AvatarImage src={c.avatar_url || undefined} /><AvatarFallback>{(c.full_name || "U").charAt(0).toUpperCase()}</AvatarFallback></Avatar>
+                      <span className="text-sm truncate">{c.full_name || "Unknown"}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {selectedUser && (
+              <div className="flex items-center gap-2 rounded-md border border-border bg-muted/30 px-3 py-2">
+                <Avatar className="h-6 w-6"><AvatarImage src={selectedUser.avatar_url || undefined} /><AvatarFallback>{(selectedUser.full_name || "U").charAt(0).toUpperCase()}</AvatarFallback></Avatar>
+                <span className="text-sm font-medium">{selectedUser.full_name || "Unknown"}</span>
+                <button onClick={() => setSelectedUser(null)} className="ml-auto text-xs text-muted-foreground hover:text-foreground underline">Change</button>
+              </div>
+            )}
           </div>
-          <DialogFooter><Button onClick={handleAssignAdmin}>Assign</Button></DialogFooter>
+
+          <DialogFooter><Button onClick={handleAssignAdmin} disabled={!selectedUser}>Assign</Button></DialogFooter>
         </DialogContent>
       </Dialog>
+
     </div>
   );
 }
