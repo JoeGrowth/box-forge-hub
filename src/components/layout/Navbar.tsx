@@ -301,17 +301,6 @@ export function Navbar() {
                     )}
                     <DropdownMenuItem asChild>
                       <Link
-                        to="/projects"
-                        className={`flex items-center gap-2 cursor-pointer ${
-                          location.pathname === "/projects" ? "text-b4-teal" : "text-foreground"
-                        }`}
-                      >
-                        <Rocket size={16} />
-                        Projects
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link
                         to="/opportunities"
                         className={`flex items-center gap-2 cursor-pointer ${
                           location.pathname === "/opportunities" ? "text-b4-teal" : "text-foreground"
@@ -321,17 +310,20 @@ export function Navbar() {
                         Opportunities
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link
-                        to="/my-tender-work"
-                        className={`flex items-center gap-2 cursor-pointer ${
-                          location.pathname === "/my-tender-work" ? "text-b4-teal" : "text-foreground"
-                        }`}
-                      >
-                        <FileText size={16} />
-                        My tender work
-                      </Link>
-                    </DropdownMenuItem>
+                    {hasTenderWork && (
+                      <DropdownMenuItem asChild>
+                        <Link
+                          to="/my-tender-work"
+                          className={`flex items-center gap-2 cursor-pointer ${
+                            location.pathname === "/my-tender-work" ? "text-b4-teal" : "text-foreground"
+                          }`}
+                        >
+                          <FileText size={16} />
+                          My tender work
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+
                   </DropdownMenuContent>
                 </DropdownMenu>
 
