@@ -192,7 +192,7 @@ export function AdminBoxesTab() {
                       <li key={a.user_id} className="flex items-center justify-between text-sm bg-muted/40 rounded px-2 py-1">
                         <div className="flex items-center gap-2 min-w-0">
                           <Avatar className="h-6 w-6"><AvatarImage src={a.avatar_url || undefined} /><AvatarFallback>{(a.full_name || "U").charAt(0).toUpperCase()}</AvatarFallback></Avatar>
-                          <span className="truncate">{a.full_name || "Unknown user"}</span>
+                          <span className="truncate">{a.full_name || "Deleted user"}</span>
                         </div>
                         <button onClick={() => removeAdmin(b.id, a.user_id)} className="text-destructive hover:opacity-70"><Trash2 className="h-3 w-3" /></button>
                       </li>
@@ -210,7 +210,7 @@ export function AdminBoxesTab() {
                       <li key={a.user_id} className="flex items-center justify-between text-sm bg-muted/40 rounded px-2 py-1">
                         <div className="flex items-center gap-2 min-w-0">
                           <Avatar className="h-6 w-6"><AvatarImage src={a.avatar_url || undefined} /><AvatarFallback>{(a.full_name || "U").charAt(0).toUpperCase()}</AvatarFallback></Avatar>
-                          <span className="truncate">{a.full_name || "Unknown user"}</span>
+                          <span className="truncate">{a.full_name || "Deleted user"}</span>
                         </div>
                         <button onClick={() => removeAdvisor(b.id, a.user_id)} className="text-destructive hover:opacity-70"><Trash2 className="h-3 w-3" /></button>
                       </li>
