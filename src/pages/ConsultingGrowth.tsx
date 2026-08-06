@@ -302,7 +302,7 @@ export default function ConsultingGrowth({ embedded = false }: { embedded?: bool
           <div className="min-w-0">
             <h2 className="text-lg font-semibold tracking-tight">Your Consultancy</h2>
             <p className="text-sm text-muted-foreground">
-              Track each mission and move it forward, one stage at a time.
+              track opportunities through lead, proposal, delivery, payment, and accounting until your consulting engine runs.
             </p>
           </div>
           <Button
