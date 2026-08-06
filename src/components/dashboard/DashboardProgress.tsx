@@ -411,8 +411,8 @@ export function DashboardProgress() {
             description:
               "Register your organization to unlock consulting contracts, project journeys, and team visibility.",
             icon: Building2,
-            done: false,
-            cta: { label: "Add", href: "https://box4solutions.com/organizations" },
+            done: orgFunded,
+            cta: { label: orgFunded ? "View" : "Add", href: "https://box4solutions.com/organizations" },
           },
           {
             key: "venture" as const,
