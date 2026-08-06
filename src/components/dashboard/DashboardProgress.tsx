@@ -428,22 +428,41 @@ export function DashboardProgress() {
                     asChild
                     className="w-full sm:w-auto sm:min-w-[110px] flex-shrink-0"
                   >
-                    <Link
-                      to={step.cta.to}
-                      onClick={() => {
-                        if (!user) return;
-                        try {
-                          if (step.key === "venture") {
-                            localStorage.setItem(`b4:venture-start-clicked:${user.id}`, "1");
-                          } else if (step.key === "consulting-growth") {
-                            localStorage.setItem(`b4:consulting-start-clicked:${user.id}`, "1");
-                          }
-                        } catch {}
-                      }}
-                    >
-                      {step.cta.label}
-                    </Link>
-
+                    {"href" in step.cta ? (
+                      <a
+                        href={step.cta.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => {
+                          if (!user) return;
+                          try {
+                            if (step.key === "venture") {
+                              localStorage.setItem(`b4:venture-start-clicked:${user.id}`, "1");
+                            } else if (step.key === "consulting-growth") {
+                              localStorage.setItem(`b4:consulting-start-clicked:${user.id}`, "1");
+                            }
+                          } catch {}
+                        }}
+                      >
+                        {step.cta.label}
+                      </a>
+                    ) : (
+                      <Link
+                        to={step.cta.to}
+                        onClick={() => {
+                          if (!user) return;
+                          try {
+                            if (step.key === "venture") {
+                              localStorage.setItem(`b4:venture-start-clicked:${user.id}`, "1");
+                            } else if (step.key === "consulting-growth") {
+                              localStorage.setItem(`b4:consulting-start-clicked:${user.id}`, "1");
+                            }
+                          } catch {}
+                        }}
+                      >
+                        {step.cta.label}
+                      </Link>
+                    )}
                   </Button>
                 )}
 
