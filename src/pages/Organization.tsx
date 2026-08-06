@@ -36,6 +36,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { EntityRoleSlots } from "@/components/entity-roles/EntityRoleSlots";
 import {
   Select,
   SelectContent,
