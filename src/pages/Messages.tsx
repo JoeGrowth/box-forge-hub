@@ -49,7 +49,7 @@ interface Profile {
   user_id: string;
   full_name: string | null;
   avatar_url: string | null;
-  title?: string | null;
+  professional_title?: string | null;
 }
 
 interface ConversationWithDetails {
@@ -157,7 +157,7 @@ const Messages = () => {
           otherIds.size
             ? supabase
                 .from("profiles")
-                .select("user_id, full_name, avatar_url, title")
+                .select("user_id, full_name, avatar_url, professional_title")
                 .in("user_id", Array.from(otherIds))
             : Promise.resolve({ data: [] as Profile[] } as never),
           appIds.length
@@ -230,7 +230,7 @@ const Messages = () => {
           otherUserId,
           otherUserName: profile?.full_name || null,
           otherUserAvatar: profile?.avatar_url || null,
-          otherUserTitle: profile?.title || null,
+          otherUserTitle: profile?.professional_title || null,
           lastMessage: summary?.last.content || null,
           lastMessageTime: summary?.last.created_at || null,
           lastMessageFromMe: summary?.last.sender_id === user.id,
@@ -254,7 +254,7 @@ const Messages = () => {
           otherUserId,
           otherUserName: profile?.full_name || null,
           otherUserAvatar: profile?.avatar_url || null,
-          otherUserTitle: profile?.title || null,
+          otherUserTitle: profile?.professional_title || null,
           lastMessage: summary?.last.content || null,
           lastMessageTime: summary?.last.created_at || null,
           lastMessageFromMe: summary?.last.sender_id === user.id,
@@ -327,7 +327,7 @@ const Messages = () => {
       try {
         const { data: profileData } = await supabase
           .from("profiles")
-          .select("user_id, full_name, avatar_url, title")
+          .select("user_id, full_name, avatar_url, professional_title")
           .eq("user_id", selectedConversation.otherUserId)
           .maybeSingle();
 
@@ -413,7 +413,7 @@ const Messages = () => {
       setSearchingPeople(true);
       let query = supabase
         .from("profiles")
-        .select("user_id, full_name, avatar_url, title")
+        .select("user_id, full_name, avatar_url, professional_title")
         .neq("user_id", user.id)
         .limit(12);
       if (peopleQuery.trim()) query = query.ilike("full_name", `%${peopleQuery.trim()}%`);
@@ -619,8 +619,8 @@ const Messages = () => {
                             </Avatar>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium truncate">{p.full_name || "Unnamed"}</p>
-                              {p.title && (
-                                <p className="text-xs text-muted-foreground truncate">{p.title}</p>
+                              {p.professional_title && (
+                                <p className="text-xs text-muted-foreground truncate">{p.professional_title}</p>
                               )}
                             </div>
                             {startingChat === p.user_id && (
@@ -773,7 +773,7 @@ const Messages = () => {
                       {otherUser?.full_name || selectedConversation.otherUserName || "Loading..."}
                     </h2>
                     <p className="text-xs text-muted-foreground truncate">
-                      {otherUser?.title ||
+                      {otherUser?.professional_title ||
                         (selectedConversation.type === "application"
                           ? "Venture application"
                           : "Direct message")}
