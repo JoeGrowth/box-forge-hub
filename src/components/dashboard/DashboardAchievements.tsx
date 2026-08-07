@@ -10,6 +10,7 @@ import {
   Users,
   Zap,
   Trophy,
+  Box as BoxIcon,
   CheckCircle
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -41,11 +42,13 @@ export function DashboardAchievements() {
       { data: teamMemberships },
       { data: nrDecoder },
       { data: closedOpps },
+      { count: boxAdminCount },
     ] = await Promise.all([
       supabase.from("startup_ideas").select("review_status").eq("creator_id", user.id),
       supabase.from("startup_team_members").select("*").eq("member_user_id", user.id),
       supabase.from("nr_decoder_submissions").select("status").eq("user_id", user.id).single(),
       supabase.from("consultant_opportunities").select("id").eq("user_id", user.id).eq("stage", "closed"),
+      supabase.from("box_ecosystem_admins").select("id", { count: "exact", head: true }).eq("user_id", user.id),
     ]);
 
     const closedIds = (closedOpps ?? []).map((o: any) => o.id);
@@ -81,6 +84,7 @@ export function DashboardAchievements() {
     const a5 = (ideas?.length || 0) > 0;
     const a6 = (teamMemberships?.length || 0) > 0;
     const a7 = talentMonetized;
+    const a8 = (boxAdminCount ?? 0) > 0;
 
     const achievementsList: Achievement[] = [
       {
@@ -132,6 +136,13 @@ export function DashboardAchievements() {
         earned: a7,
         color: "text-pink-500",
       },
+      {
+        icon: BoxIcon,
+        title: "Box",
+        description: "Assigned to manage a box",
+        earned: a8,
+        color: "text-amber-500",
+      },
     ];
 
     setAchievements(achievementsList);
@@ -151,6 +162,7 @@ export function DashboardAchievements() {
       .on("postgres_changes", { event: "*", schema: "public", table: "startup_ideas", filter: `creator_id=eq.${user.id}` }, fetchAchievements)
       .on("postgres_changes", { event: "*", schema: "public", table: "startup_team_members", filter: `member_user_id=eq.${user.id}` }, fetchAchievements)
       .on("postgres_changes", { event: "*", schema: "public", table: "nr_decoder_submissions", filter: `user_id=eq.${user.id}` }, fetchAchievements)
+      .on("postgres_changes", { event: "*", schema: "public", table: "box_ecosystem_admins", filter: `user_id=eq.${user.id}` }, fetchAchievements)
       .subscribe();
 
     return () => {
