@@ -50,6 +50,7 @@ export function DashboardProgress() {
   const [equityDelivered, setEquityDelivered] = useState(0);
   const [ventureStarted, setVentureStarted] = useState(false);
   const [orgFunded, setOrgFunded] = useState(false);
+  const [ventureDone, setVentureDone] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
   const fetchProgress = useCallback(async () => {
@@ -151,6 +152,21 @@ export function DashboardProgress() {
       }
     }
     setOrgFunded(funded);
+
+    // "Launch or Join a Venture" mirrors ladder stages 3 & 4:
+    // 3 startup team memberships (co-builder) AND 2 approved ideas (founder).
+    const [teamRes, approvedIdeasRes] = await Promise.all([
+      supabase
+        .from("startup_team_members")
+        .select("id", { count: "exact", head: true })
+        .eq("member_user_id", user.id),
+      supabase
+        .from("startup_ideas")
+        .select("id", { count: "exact", head: true })
+        .eq("creator_id", user.id)
+        .eq("review_status", "approved"),
+    ]);
+    setVentureDone(((teamRes as any).count ?? 0) >= 3 && ((approvedIdeasRes as any).count ?? 0) >= 2);
 
     const nr: any = naturalRole || {};
 
@@ -417,8 +433,8 @@ export function DashboardProgress() {
             title: "Launch or Join a Venture",
             description: "Create your own startup project or apply to co-build an existing venture with equity.",
             icon: Lightbulb,
-            done: false,
-            cta: { label: ventureStarted ? "Continue" : "Start", href: "https://box4solutions.com/entrepreneurship" },
+            done: ventureDone,
+            cta: { label: ventureDone ? "View" : ventureStarted ? "Continue" : "Start", href: "https://box4solutions.com/entrepreneurship" },
           },
         ]
       : []),
