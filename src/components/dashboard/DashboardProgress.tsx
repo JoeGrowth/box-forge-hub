@@ -433,8 +433,8 @@ export function DashboardProgress() {
             title: "Launch or Join a Venture",
             description: "Create your own startup project or apply to co-build an existing venture with equity.",
             icon: Lightbulb,
-            done: false,
-            cta: { label: ventureStarted ? "Continue" : "Start", href: "https://box4solutions.com/entrepreneurship" },
+            done: ventureDone,
+            cta: { label: ventureDone ? "View" : ventureStarted ? "Continue" : "Start", href: "https://box4solutions.com/entrepreneurship" },
           },
         ]
       : []),
