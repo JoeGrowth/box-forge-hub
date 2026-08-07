@@ -138,6 +138,11 @@ export function ManageYourBoxCard() {
     );
   }
 
+  // Once both responsibilities are confirmed, the card is no longer needed.
+  if (advisorDone && managerDone) {
+    return null;
+  }
+
   const rows = [
     {
       key: "advisor",
