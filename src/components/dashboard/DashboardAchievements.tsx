@@ -41,11 +41,13 @@ export function DashboardAchievements() {
       { data: teamMemberships },
       { data: nrDecoder },
       { data: closedOpps },
+      { count: boxAdminCount },
     ] = await Promise.all([
       supabase.from("startup_ideas").select("review_status").eq("creator_id", user.id),
       supabase.from("startup_team_members").select("*").eq("member_user_id", user.id),
       supabase.from("nr_decoder_submissions").select("status").eq("user_id", user.id).single(),
       supabase.from("consultant_opportunities").select("id").eq("user_id", user.id).eq("stage", "closed"),
+      supabase.from("box_ecosystem_admins").select("id", { count: "exact", head: true }).eq("user_id", user.id),
     ]);
 
     const closedIds = (closedOpps ?? []).map((o: any) => o.id);
