@@ -121,7 +121,7 @@ export function useShapeYourTalentComplete(): ShapeYourTalentCompleteState {
     const filled = (v: unknown) =>
       v !== null && v !== undefined && String(v).trim().length > 0;
 
-    const p = profile || {};
+    const p = (profile || {}) as Record<string, unknown>;
     const resumeDone = Boolean(
       filled(p.professional_title) &&
         filled(p.bio) &&
@@ -136,14 +136,14 @@ export function useShapeYourTalentComplete(): ShapeYourTalentCompleteState {
     const trackRecordDone = Boolean(entOnboarding?.is_completed);
 
     const nrDefined = Boolean(
-      (typeof (p as any).description === "string" &&
-        (p as any).description?.trim().length > 0) ||
-        (p as any).is_ready === true ||
-        (p as any).status === "defined" ||
-        (p as any).promise_check === true ||
-        (p as any).practice_check === true ||
-        (p as any).training_check === true ||
-        (p as any).consulting_check === true
+      (typeof p.description === "string" &&
+        p.description?.trim().length > 0) ||
+        p.is_ready === true ||
+        p.status === "defined" ||
+        p.promise_check === true ||
+        p.practice_check === true ||
+        p.training_check === true ||
+        p.consulting_check === true
     );
 
     const decoderDone = !!nrDecoder || nrDefined;
