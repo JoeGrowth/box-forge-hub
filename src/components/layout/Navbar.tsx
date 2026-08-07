@@ -318,7 +318,8 @@ export function Navbar() {
                       className={`text-sm font-medium transition-colors hover:text-b4-teal outline-none ${
                         location.pathname === "/entrepreneurship" ||
                         location.pathname === "/organizations" ||
-                        location.pathname === "/ladder"
+                        location.pathname === "/ladder" ||
+                        location.pathname === "/boxes"
                           ? "text-b4-teal"
                           : "text-muted-foreground"
                       }`}
@@ -350,17 +351,31 @@ export function Navbar() {
                         Organizations
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link
-                        to="/ladder"
-                        className={`flex items-center gap-2 cursor-pointer ${
-                          location.pathname === "/ladder" ? "text-b4-teal" : "text-foreground"
-                        }`}
-                      >
-                        <BarChart3 size={16} />
-                        Ladder
-                      </Link>
-                    </DropdownMenuItem>
+                    {shapeYourTalentComplete ? (
+                      <DropdownMenuItem asChild>
+                        <Link
+                          to="/boxes"
+                          className={`flex items-center gap-2 cursor-pointer ${
+                            location.pathname === "/boxes" ? "text-b4-teal" : "text-foreground"
+                          }`}
+                        >
+                          <Package size={16} />
+                          Boxes
+                        </Link>
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem asChild>
+                        <Link
+                          to="/ladder"
+                          className={`flex items-center gap-2 cursor-pointer ${
+                            location.pathname === "/ladder" ? "text-b4-teal" : "text-foreground"
+                          }`}
+                        >
+                          <BarChart3 size={16} />
+                          Ladder
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
 
