@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogT
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { Plus, ExternalLink, UserPlus, Users, Trash2 } from "lucide-react";
+import { BoxRoleRequestsPanel } from "@/components/admin/BoxRoleRequestsPanel";
 
 interface Box {
   id: string;
@@ -158,6 +159,7 @@ export function AdminBoxesTab() {
 
   return (
     <div className="space-y-4">
+      <BoxRoleRequestsPanel onChanged={load} />
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Boxes</h2>
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
