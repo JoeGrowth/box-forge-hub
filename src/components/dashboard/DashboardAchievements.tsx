@@ -136,6 +136,13 @@ export function DashboardAchievements() {
         earned: a7,
         color: "text-pink-500",
       },
+      {
+        icon: BoxIcon,
+        title: "Box",
+        description: "Assigned to manage a box",
+        earned: a8,
+        color: "text-amber-500",
+      },
     ];
 
     setAchievements(achievementsList);
