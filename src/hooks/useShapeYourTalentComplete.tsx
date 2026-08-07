@@ -66,6 +66,7 @@ export function useShapeYourTalentComplete(): ShapeYourTalentCompleteState {
 
     const [
       { data: nrDecoder },
+      { data: naturalRole },
       { data: profile },
       { data: entOnboarding },
       { count: consultingCount },
@@ -77,6 +78,13 @@ export function useShapeYourTalentComplete(): ShapeYourTalentCompleteState {
       supabase
         .from("nr_decoder_submissions")
         .select("status")
+        .eq("user_id", uid)
+        .maybeSingle(),
+      supabase
+        .from("natural_roles")
+        .select(
+          "description, status, is_ready, promise_check, practice_check, training_check, consulting_check"
+        )
         .eq("user_id", uid)
         .maybeSingle(),
       supabase
