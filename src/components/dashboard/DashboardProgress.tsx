@@ -475,7 +475,15 @@ export function DashboardProgress() {
     );
   }
 
+  // Once every milestone is achieved, the card is hidden so the dashboard
+  // stays focused on active goals. Learning paths remain reachable via
+  // /certifications and the navbar.
+  if (shapeYourTalentComplete) {
+    return null;
+  }
+
   return (
+
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between gap-3">
