@@ -101,6 +101,7 @@ export function Navbar() {
 
   const { engines: engineAccess } = useEngineAccess();
   const { talentReady } = useTalentReadiness();
+  const { shapeYourTalentComplete } = useShapeYourTalentComplete();
 
   // "My tender work" only appears once the user has applied to an opportunity.
   const [hasTenderWork, setHasTenderWork] = useState(false);
