@@ -10,6 +10,7 @@ import {
   Users,
   Zap,
   Trophy,
+  Box as BoxIcon,
   CheckCircle
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
