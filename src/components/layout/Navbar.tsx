@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { useEngineAccess, type EngineKey } from "@/hooks/useEngineAccess";
 import { useTalentReadiness } from "@/hooks/useTalentReadiness";
+import { useShapeYourTalentComplete } from "@/hooks/useShapeYourTalentComplete";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { useNextBestActions } from "@/hooks/useNextBestActions";
