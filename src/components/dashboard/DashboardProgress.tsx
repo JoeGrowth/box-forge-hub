@@ -381,6 +381,11 @@ export function DashboardProgress() {
   const totalDelivered = soloDelivered + contractorsDelivered;
   const talentMonetized = totalDelivered >= 10;
 
+  // Shape your talent is fully complete when all four milestones are done.
+  const shapeYourTalentComplete =
+    foundationDone && talentMonetized && orgFunded && ventureDone;
+
+
   const steps = [
     ...(foundationDone
       ? [
