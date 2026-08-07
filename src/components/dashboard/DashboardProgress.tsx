@@ -157,10 +157,7 @@ export function DashboardProgress() {
     // "Launch or Join a Venture" mirrors ladder stages 3 & 4:
     // 3 startup team memberships (co-builder) AND 2 approved ideas (founder).
     const [teamRes, approvedIdeasRes] = await Promise.all([
-      supabase
-        .from("startup_team_members")
-        .select("id", { count: "exact", head: true })
-        .eq("member_user_id", user.id),
+      supabase.from("startup_team_members").select("id", { count: "exact", head: true }).eq("member_user_id", user.id),
       supabase
         .from("startup_ideas")
         .select("id", { count: "exact", head: true })
@@ -383,9 +380,7 @@ export function DashboardProgress() {
   const talentMonetized = totalDelivered >= 10;
 
   // Shape your talent is fully complete when all four milestones are done.
-  const shapeYourTalentComplete =
-    foundationDone && talentMonetized && orgFunded && ventureDone;
-
+  const shapeYourTalentComplete = foundationDone && talentMonetized && orgFunded && ventureDone;
 
   const steps = [
     ...(foundationDone
@@ -416,8 +411,8 @@ export function DashboardProgress() {
             : [
                 {
                   key: "consulting-growth" as const,
-                  title: `Deliver Missions in Solo mode and with contractors (${Math.min(totalDelivered, 10)}/10)`,
-                  description: "Close missions end-to-end on your own and with contractors",
+                  title: `Talent Monetization in solo mode and with contractors (${Math.min(totalDelivered, 10)}/10)`,
+                  description: "Deliver missions end-to-end on your own and with contractors",
                   icon: Users,
                   done: totalDelivered >= 10,
                   cta: {
@@ -440,7 +435,10 @@ export function DashboardProgress() {
             description: "Create your own startup project or apply to co-build an existing venture with equity.",
             icon: Lightbulb,
             done: ventureDone,
-            cta: { label: ventureDone ? "View" : ventureStarted ? "Continue" : "Start", href: "https://box4solutions.com/entrepreneurship" },
+            cta: {
+              label: ventureDone ? "View" : ventureStarted ? "Continue" : "Start",
+              href: "https://box4solutions.com/entrepreneurship",
+            },
           },
         ]
       : []),
@@ -483,7 +481,6 @@ export function DashboardProgress() {
   }
 
   return (
-
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between gap-3">
