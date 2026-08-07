@@ -143,15 +143,16 @@ export function useShapeYourTalentComplete(): ShapeYourTalentCompleteState {
 
     const trackRecordDone = Boolean(entOnboarding?.is_completed);
 
+    const nr = (naturalRole || {}) as Record<string, unknown>;
     const nrDefined = Boolean(
-      (typeof p.description === "string" &&
-        p.description?.trim().length > 0) ||
-        p.is_ready === true ||
-        p.status === "defined" ||
-        p.promise_check === true ||
-        p.practice_check === true ||
-        p.training_check === true ||
-        p.consulting_check === true
+      (typeof nr.description === "string" &&
+        nr.description?.trim().length > 0) ||
+        nr.is_ready === true ||
+        nr.status === "defined" ||
+        nr.promise_check === true ||
+        nr.practice_check === true ||
+        nr.training_check === true ||
+        nr.consulting_check === true
     );
 
     const decoderDone = !!nrDecoder || nrDefined;
