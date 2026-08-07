@@ -152,6 +152,21 @@ export function DashboardProgress() {
     }
     setOrgFunded(funded);
 
+    // "Launch or Join a Venture" mirrors ladder stages 3 & 4:
+    // 3 startup team memberships (co-builder) AND 2 approved ideas (founder).
+    const [teamRes, approvedIdeasRes] = await Promise.all([
+      supabase
+        .from("startup_team_members")
+        .select("id", { count: "exact", head: true })
+        .eq("member_user_id", user.id),
+      supabase
+        .from("startup_ideas")
+        .select("id", { count: "exact", head: true })
+        .eq("creator_id", user.id)
+        .eq("review_status", "approved"),
+    ]);
+    setVentureDone(((teamRes as any).count ?? 0) >= 3 && ((approvedIdeasRes as any).count ?? 0) >= 2);
+
     const nr: any = naturalRole || {};
 
     // Professional Track Record is filled when the natural role is defined
