@@ -82,6 +82,7 @@ export function DashboardAchievements() {
     const a4 = onboardingState?.journey_status === "approved" || onboardingState?.journey_status === "entrepreneur_approved";
     const a5 = (ideas?.length || 0) > 0;
     const a6 = (teamMemberships?.length || 0) > 0;
+    const a7 = talentMonetized;
     const a8 = (boxAdminCount ?? 0) > 0;
 
     const achievementsList: Achievement[] = [
