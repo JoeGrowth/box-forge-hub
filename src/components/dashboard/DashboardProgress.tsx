@@ -24,6 +24,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
 import { useCallback } from "react";
+import { ManageYourBoxCard } from "@/components/dashboard/ManageYourBoxCard";
 
 interface JourneyProgress {
   type: string;
@@ -475,11 +476,10 @@ export function DashboardProgress() {
     );
   }
 
-  // Once every milestone is achieved, the card is hidden so the dashboard
-  // stays focused on active goals. Learning paths remain reachable via
-  // /certifications and the navbar.
+  // Once every milestone is achieved, the shape-your-talent card is replaced
+  // by the next responsibility layer: managing a box.
   if (shapeYourTalentComplete) {
-    return null;
+    return <ManageYourBoxCard />;
   }
 
   return (
