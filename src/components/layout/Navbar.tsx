@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { useEngineAccess, type EngineKey } from "@/hooks/useEngineAccess";
 import { useTalentReadiness } from "@/hooks/useTalentReadiness";
+import { useShapeYourTalentComplete } from "@/hooks/useShapeYourTalentComplete";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserStatus } from "@/hooks/useUserStatus";
 import { useNextBestActions } from "@/hooks/useNextBestActions";
@@ -100,6 +101,7 @@ export function Navbar() {
 
   const { engines: engineAccess } = useEngineAccess();
   const { talentReady } = useTalentReadiness();
+  const { shapeYourTalentComplete } = useShapeYourTalentComplete();
 
   // "My tender work" only appears once the user has applied to an opportunity.
   const [hasTenderWork, setHasTenderWork] = useState(false);
@@ -316,7 +318,8 @@ export function Navbar() {
                       className={`text-sm font-medium transition-colors hover:text-b4-teal outline-none ${
                         location.pathname === "/entrepreneurship" ||
                         location.pathname === "/organizations" ||
-                        location.pathname === "/ladder"
+                        location.pathname === "/ladder" ||
+                        location.pathname === "/boxes"
                           ? "text-b4-teal"
                           : "text-muted-foreground"
                       }`}
@@ -348,17 +351,31 @@ export function Navbar() {
                         Organizations
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link
-                        to="/ladder"
-                        className={`flex items-center gap-2 cursor-pointer ${
-                          location.pathname === "/ladder" ? "text-b4-teal" : "text-foreground"
-                        }`}
-                      >
-                        <BarChart3 size={16} />
-                        Ladder
-                      </Link>
-                    </DropdownMenuItem>
+                    {shapeYourTalentComplete ? (
+                      <DropdownMenuItem asChild>
+                        <Link
+                          to="/boxes"
+                          className={`flex items-center gap-2 cursor-pointer ${
+                            location.pathname === "/boxes" ? "text-b4-teal" : "text-foreground"
+                          }`}
+                        >
+                          <Package size={16} />
+                          Boxes
+                        </Link>
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem asChild>
+                        <Link
+                          to="/ladder"
+                          className={`flex items-center gap-2 cursor-pointer ${
+                            location.pathname === "/ladder" ? "text-b4-teal" : "text-foreground"
+                          }`}
+                        >
+                          <BarChart3 size={16} />
+                          Ladder
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
 
@@ -606,19 +623,33 @@ export function Navbar() {
                         <span className="flex-1">Organizations</span>
                       </Link>
 
-
-                      <Link
-                        to="/ladder"
-                        onClick={() => setIsOpen(false)}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                          location.pathname === "/ladder"
-                            ? "bg-muted text-b4-teal"
-                            : "text-muted-foreground hover:bg-muted"
-                        }`}
-                      >
-                        <BarChart3 size={16} />
-                        <span className="flex-1">Ladder</span>
-                      </Link>
+                      {shapeYourTalentComplete ? (
+                        <Link
+                          to="/boxes"
+                          onClick={() => setIsOpen(false)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                            location.pathname === "/boxes"
+                              ? "bg-muted text-b4-teal"
+                              : "text-muted-foreground hover:bg-muted"
+                          }`}
+                        >
+                          <Package size={16} />
+                          <span className="flex-1">Boxes</span>
+                        </Link>
+                      ) : (
+                        <Link
+                          to="/ladder"
+                          onClick={() => setIsOpen(false)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                            location.pathname === "/ladder"
+                              ? "bg-muted text-b4-teal"
+                              : "text-muted-foreground hover:bg-muted"
+                          }`}
+                        >
+                          <BarChart3 size={16} />
+                          <span className="flex-1">Ladder</span>
+                        </Link>
+                      )}
 
                       {isAdmin && visibleMoreLinks.length > 0 && (
                         <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
