@@ -162,6 +162,7 @@ export function DashboardAchievements() {
       .on("postgres_changes", { event: "*", schema: "public", table: "startup_ideas", filter: `creator_id=eq.${user.id}` }, fetchAchievements)
       .on("postgres_changes", { event: "*", schema: "public", table: "startup_team_members", filter: `member_user_id=eq.${user.id}` }, fetchAchievements)
       .on("postgres_changes", { event: "*", schema: "public", table: "nr_decoder_submissions", filter: `user_id=eq.${user.id}` }, fetchAchievements)
+      .on("postgres_changes", { event: "*", schema: "public", table: "box_ecosystem_admins", filter: `user_id=eq.${user.id}` }, fetchAchievements)
       .subscribe();
 
     return () => {
