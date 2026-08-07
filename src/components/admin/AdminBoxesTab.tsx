@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogT
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { Plus, ExternalLink, UserPlus, Users, Trash2 } from "lucide-react";
+import { BoxRoleRequestsPanel } from "@/components/admin/BoxRoleRequestsPanel";
 
 interface Box {
   id: string;
