@@ -50,6 +50,7 @@ export function DashboardProgress() {
   const [equityDelivered, setEquityDelivered] = useState(0);
   const [ventureStarted, setVentureStarted] = useState(false);
   const [orgFunded, setOrgFunded] = useState(false);
+  const [ventureDone, setVentureDone] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
   const fetchProgress = useCallback(async () => {
