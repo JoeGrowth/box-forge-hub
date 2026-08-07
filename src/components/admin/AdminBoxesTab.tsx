@@ -158,6 +158,7 @@ export function AdminBoxesTab() {
 
   return (
     <div className="space-y-4">
+      <BoxRoleRequestsPanel onChanged={load} />
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Boxes</h2>
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
