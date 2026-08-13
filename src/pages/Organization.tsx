@@ -807,7 +807,7 @@ function DailyTab({ orgId, canEdit, tasks, onTasksChange }: { orgId: string; can
       <div className="rounded-xl border border-border bg-card p-4 space-y-3">
         <div className="flex items-center gap-2">
           <Presentation className="w-4 h-4 text-primary" />
-          <h3 className="font-semibold">Presentations done</h3>
+          <h3 className="font-semibold">Presentations</h3>
           <Badge variant="outline" className="ml-auto">{presentations.length}</Badge>
         </div>
         {canEdit && (
@@ -826,6 +826,16 @@ function DailyTab({ orgId, canEdit, tasks, onTasksChange }: { orgId: string; can
               />
               <Button onClick={addPresentation} disabled={!presTitle.trim() || !presUrl.trim()}>
                 <Plus className="w-3 h-3 mr-1" /> Add
+              </Button>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setPresTitle("Onboarding Presentation")}
+                disabled={presTitle === "Onboarding Presentation"}
+              >
+                <Presentation className="w-3 h-3 mr-1" /> Onboarding Presentation
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
