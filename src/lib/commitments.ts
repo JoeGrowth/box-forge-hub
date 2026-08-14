@@ -75,6 +75,29 @@ export async function failCommitment(id: string) {
   if (error) throw error;
 }
 
+export async function cancelCommitment(id: string) {
+  const { error } = await supabase
+    .from("commitments")
+    .update({ status: "cancelled", cancelled_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) throw error;
+}
+
+export async function resetCommitment(id: string) {
+  const { error } = await supabase
+    .from("commitments")
+    .update({
+      status: "pending",
+      started_at: null,
+      due_at: null,
+      completed_at: null,
+      cancelled_at: null,
+    })
+    .eq("id", id);
+  if (error) throw error;
+}
+
+
 export async function addCheckpoint(input: {
   commitment_id: string;
   owner_id: string;
