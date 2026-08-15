@@ -388,8 +388,8 @@ function PersonDialog({
             )}
           </div>
 
-
           <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+
             <p className="text-sm font-medium text-foreground">Track Record in {orgName}</p>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
