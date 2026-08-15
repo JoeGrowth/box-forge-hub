@@ -4043,6 +4043,59 @@ export type Database = {
           },
         ]
       }
+      organization_people: {
+        Row: {
+          activities_count: number
+          created_at: string
+          created_by: string | null
+          crew_type: string | null
+          full_name: string
+          has_expertise: boolean
+          id: string
+          notes: string | null
+          organization_id: string
+          tier: string
+          updated_at: string
+          years_contribution: number
+        }
+        Insert: {
+          activities_count?: number
+          created_at?: string
+          created_by?: string | null
+          crew_type?: string | null
+          full_name: string
+          has_expertise?: boolean
+          id?: string
+          notes?: string | null
+          organization_id: string
+          tier: string
+          updated_at?: string
+          years_contribution?: number
+        }
+        Update: {
+          activities_count?: number
+          created_at?: string
+          created_by?: string | null
+          crew_type?: string | null
+          full_name?: string
+          has_expertise?: boolean
+          id?: string
+          notes?: string | null
+          organization_id?: string
+          tier?: string
+          updated_at?: string
+          years_contribution?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_people_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_product_iterations: {
         Row: {
           archived_at: string | null
