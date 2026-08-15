@@ -17,13 +17,6 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Heart, Users, GraduationCap, Plus, Trash2, Pencil, Activity, CalendarClock } from "lucide-react";
 
 type Tier = "friend" | "crew" | "mentor";
@@ -242,76 +235,161 @@ function PersonDialog({
     else { toast({ title: person ? "Person updated" : "Person added" }); onSaved(); }
   };
 
+  const TIERS: { value: Tier; label: string; desc: string; icon: typeof Heart }[] = [
+    { value: "friend", label: "Friend", desc: "Interested participant", icon: Heart },
+    { value: "crew", label: "Crew Member", desc: "Proven contributor", icon: Users },
+    { value: "mentor", label: "Mentor", desc: "Support system", icon: GraduationCap },
+  ];
+
+  const helbaLocked = tier === "crew" && crewType === "helba";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{person ? "Edit person" : "Add person"}</DialogTitle>
           <DialogDescription>Place this person in the right community layer.</DialogDescription>
         </DialogHeader>
-        <div className="space-y-3">
-          <div>
-            <Label>Full name</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Houssem Kaabi" />
+
+        <div className="space-y-5">
+          <div className="space-y-1.5">
+            <Label htmlFor="person-name">Full name</Label>
+            <Input
+              id="person-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Houssem Kaabi"
+              autoFocus
+            />
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <Label>Layer</Label>
-              <Select value={tier} onValueChange={(v) => setTier(v as Tier)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="friend">Friend — interested participant</SelectItem>
-                  <SelectItem value="crew">Crew Member (Internal)</SelectItem>
-                  <SelectItem value="mentor">Mentor / Support System</SelectItem>
-                </SelectContent>
-              </Select>
+
+          <div className="space-y-2">
+            <Label>Community layer</Label>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {TIERS.map((t) => {
+                const Icon = t.icon;
+                const active = tier === t.value;
+                return (
+                  <button
+                    key={t.value}
+                    type="button"
+                    onClick={() => setTier(t.value)}
+                    className={`rounded-lg border p-3 text-left transition-colors ${
+                      active
+                        ? "border-primary bg-primary/5 ring-1 ring-primary"
+                        : "border-border hover:bg-muted/50"
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 ${active ? "text-primary" : "text-muted-foreground"}`} />
+                    <p className="mt-1.5 text-sm font-medium text-foreground">{t.label}</p>
+                    <p className="text-xs text-muted-foreground">{t.desc}</p>
+                  </button>
+                );
+              })}
             </div>
-            {tier === "crew" && (
-              <div>
-                <Label>Crew type</Label>
-                <Select value={crewType} onValueChange={(v) => setCrewType(v as CrewType)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="chouch_ward">Chouch Ward — Li elleh</SelectItem>
-                    <SelectItem value="ch3ir">Ch3ir — volunteer</SelectItem>
-                    <SelectItem value="helba">Helba — paid with expertise</SelectItem>
-                  </SelectContent>
-                </Select>
+          </div>
+
+          {tier === "crew" && (
+            <div className="space-y-2">
+              <Label>Crew type</Label>
+              <div className="grid gap-2 sm:grid-cols-3">
+                {(Object.keys(CREW_META) as CrewType[]).map((ct) => {
+                  const active = crewType === ct;
+                  return (
+                    <button
+                      key={ct}
+                      type="button"
+                      onClick={() => setCrewType(ct)}
+                      className={`rounded-lg border p-3 text-left transition-colors ${
+                        active ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-muted/50"
+                      }`}
+                    >
+                      <Badge className={CREW_META[ct].className}>{CREW_META[ct].label}</Badge>
+                      <p className="mt-1.5 text-xs text-muted-foreground">{CREW_META[ct].desc}</p>
+                    </button>
+                  );
+                })}
               </div>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label>Expertise</Label>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { v: "yes", l: "With expertise" },
+                { v: "no", l: "Without expertise" },
+              ].map((o) => {
+                const current = helbaLocked ? "yes" : expertise;
+                const active = current === o.v;
+                return (
+                  <button
+                    key={o.v}
+                    type="button"
+                    disabled={helbaLocked}
+                    onClick={() => setExpertise(o.v)}
+                    className={`rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-60 ${
+                      active ? "border-primary bg-primary/5 font-medium text-foreground" : "border-border text-muted-foreground hover:bg-muted/50"
+                    }`}
+                  >
+                    {o.l}
+                  </button>
+                );
+              })}
+            </div>
+            {helbaLocked && (
+              <p className="text-xs text-muted-foreground">Helba is paid with expertise — locked.</p>
             )}
-            <div>
-              <Label>Expertise</Label>
-              <Select
-                value={tier === "crew" && crewType === "helba" ? "yes" : expertise}
-                onValueChange={setExpertise}
-                disabled={tier === "crew" && crewType === "helba"}
-              >
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="yes">With expertise</SelectItem>
-                  <SelectItem value="no">Without expertise</SelectItem>
-                </SelectContent>
-              </Select>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="person-activities" className="flex items-center gap-1.5">
+                <Activity className="w-3.5 h-3.5 text-muted-foreground" /> Activities contributed to
+              </Label>
+              <Input
+                id="person-activities"
+                type="number"
+                min="0"
+                value={activities}
+                onChange={(e) => setActivities(e.target.value)}
+              />
             </div>
-            <div>
-              <Label>Number of activities contributed to</Label>
-              <Input type="number" min="0" value={activities} onChange={(e) => setActivities(e.target.value)} />
-            </div>
-            <div>
-              <Label>Number of years of contribution</Label>
-              <Input type="number" min="0" step="0.5" value={years} onChange={(e) => setYears(e.target.value)} />
+            <div className="space-y-1.5">
+              <Label htmlFor="person-years" className="flex items-center gap-1.5">
+                <CalendarClock className="w-3.5 h-3.5 text-muted-foreground" /> Years of contribution
+              </Label>
+              <Input
+                id="person-years"
+                type="number"
+                min="0"
+                step="0.5"
+                value={years}
+                onChange={(e) => setYears(e.target.value)}
+              />
             </div>
           </div>
-          <div>
-            <Label>Notes (optional)</Label>
-            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} />
+
+          <div className="space-y-1.5">
+            <Label htmlFor="person-notes">Notes (optional)</Label>
+            <Textarea
+              id="person-notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={2}
+              placeholder="Context, role, how they contribute…"
+            />
           </div>
         </div>
+
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={save} disabled={saving}>{saving ? "Saving…" : "Save"}</Button>
+          <Button onClick={save} disabled={saving || !name.trim()}>
+            {saving ? "Saving…" : person ? "Save changes" : "Add person"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
+
