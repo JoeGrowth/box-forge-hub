@@ -4054,6 +4054,7 @@ export type Database = {
           id: string
           notes: string | null
           organization_id: string
+          present_type: string | null
           tier: string
           updated_at: string
           years_contribution: number
@@ -4068,6 +4069,7 @@ export type Database = {
           id?: string
           notes?: string | null
           organization_id: string
+          present_type?: string | null
           tier: string
           updated_at?: string
           years_contribution?: number
@@ -4082,6 +4084,7 @@ export type Database = {
           id?: string
           notes?: string | null
           organization_id?: string
+          present_type?: string | null
           tier?: string
           updated_at?: string
           years_contribution?: number

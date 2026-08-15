@@ -29,16 +29,24 @@ export interface OrgPerson {
   tier: Tier;
   crew_type: CrewType | null;
   has_expertise: boolean;
+  present_type: "7areka" | "wagafa" | null;
   activities_count: number;
   years_contribution: number;
   notes: string | null;
 }
+
 
 const CREW_META: Record<CrewType, { label: string; desc: string; className: string }> = {
   chouch_ward: { label: "Chouch Ward", desc: "Li elleh — with/without expertise", className: "bg-rose-500/10 text-rose-700 border-rose-200" },
   ch3ir: { label: "Ch3ir", desc: "Volunteer — with/without expertise", className: "bg-amber-500/10 text-amber-700 border-amber-200" },
   helba: { label: "Helba", desc: "Paid — with expertise", className: "bg-emerald-500/10 text-emerald-700 border-emerald-200" },
 };
+
+const PRESENT_META: Record<NonNullable<OrgPerson["present_type"]>, { label: string; desc: string; className: string }> = {
+  "7areka": { label: "7areka", desc: "Active movement — energy deployed into action", className: "bg-blue-500/10 text-blue-700 border-blue-200" },
+  wagafa: { label: "Wagafa", desc: "Steady presence — holding position and clarity", className: "bg-violet-500/10 text-violet-700 border-violet-200" },
+};
+
 
 export function OrgPeopleTab({
   orgId,
@@ -140,6 +148,8 @@ export function OrgPeopleTab({
                         <p className="font-medium text-foreground truncate">{p.full_name}</p>
                         {p.crew_type && <Badge className={CREW_META[p.crew_type].className}>{CREW_META[p.crew_type].label}</Badge>}
                         <Badge variant="outline">{p.has_expertise ? "With expertise" : "Without expertise"}</Badge>
+                        {p.present_type && <Badge className={PRESENT_META[p.present_type].className}>{PRESENT_META[p.present_type].label}</Badge>}
+
                       </div>
                       <div className="mt-2 rounded-lg border border-border bg-muted/30 p-2.5">
                         <p className="text-xs font-medium text-foreground">Track Record in {orgName}</p>
@@ -204,6 +214,7 @@ function PersonDialog({
   const [tier, setTier] = useState<Tier>("friend");
   const [crewType, setCrewType] = useState<CrewType>("ch3ir");
   const [expertise, setExpertise] = useState("no");
+  const [presentType, setPresentType] = useState<"7areka" | "wagafa" | null>(null);
   const [activities, setActivities] = useState("0");
   const [years, setYears] = useState("0");
   const [notes, setNotes] = useState("");
@@ -215,24 +226,30 @@ function PersonDialog({
     setTier(person?.tier ?? "friend");
     setCrewType(person?.crew_type ?? "ch3ir");
     setExpertise(person?.has_expertise ? "yes" : "no");
+    setPresentType(person?.present_type ?? null);
     setActivities(String(person?.activities_count ?? 0));
     setYears(String(person?.years_contribution ?? 0));
     setNotes(person?.notes ?? "");
   }, [open, person]);
 
+
+
   const save = async () => {
     if (!name.trim()) { toast({ title: "Name required", variant: "destructive" }); return; }
     setSaving(true);
+    const hasExpertise = tier === "crew" && crewType === "helba" ? true : expertise === "yes";
     const payload = {
       organization_id: orgId,
       full_name: name.trim(),
       tier,
       crew_type: tier === "crew" ? crewType : null,
-      has_expertise: tier === "crew" && crewType === "helba" ? true : expertise === "yes",
+      has_expertise: hasExpertise,
+      present_type: hasExpertise ? presentType : null,
       activities_count: Number(activities) || 0,
       years_contribution: Number(years) || 0,
       notes: notes.trim() || null,
     };
+
     const { error } = person
       ? await (supabase as any).from("organization_people").update(payload).eq("id", person.id)
       : await (supabase as any).from("organization_people").insert(payload);
@@ -329,15 +346,19 @@ function PersonDialog({
                 const current = helbaLocked ? "yes" : expertise;
                 const active = current === o.v;
                 return (
-                  <button
+                    <button
                     key={o.v}
                     type="button"
                     disabled={helbaLocked}
-                    onClick={() => setExpertise(o.v)}
+                    onClick={() => {
+                      setExpertise(o.v);
+                      if (o.v === "no") setPresentType(null);
+                    }}
                     className={`rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-60 ${
                       active ? "border-primary bg-primary/5 font-medium text-foreground" : "border-border text-muted-foreground hover:bg-muted/50"
                     }`}
                   >
+
                     {o.l}
                   </button>
                 );
@@ -346,9 +367,33 @@ function PersonDialog({
             {helbaLocked && (
               <p className="text-xs text-muted-foreground">Helba is paid with expertise — locked.</p>
             )}
+            {(helbaLocked || expertise === "yes") && (
+              <div className="space-y-2 pt-2">
+                <Label>Present</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(Object.keys(PRESENT_META) as Array<NonNullable<OrgPerson["present_type"]>>).map((pt) => {
+                    const active = presentType === pt;
+                    return (
+                      <button
+                        key={pt}
+                        type="button"
+                        onClick={() => setPresentType(pt)}
+                        className={`rounded-lg border p-3 text-left transition-colors ${
+                          active ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-muted/50"
+                        }`}
+                      >
+                        <Badge className={PRESENT_META[pt].className}>{PRESENT_META[pt].label}</Badge>
+                        <p className="mt-1.5 text-xs text-muted-foreground">{PRESENT_META[pt].desc}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+
             <p className="text-sm font-medium text-foreground">Track Record in {orgName}</p>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
