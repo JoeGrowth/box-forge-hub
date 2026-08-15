@@ -227,10 +227,12 @@ function PersonDialog({
     setTier(person?.tier ?? "friend");
     setCrewType(person?.crew_type ?? "ch3ir");
     setExpertise(person?.has_expertise ? "yes" : "no");
+    setPresentType(person?.present_type ?? null);
     setActivities(String(person?.activities_count ?? 0));
     setYears(String(person?.years_contribution ?? 0));
     setNotes(person?.notes ?? "");
   }, [open, person]);
+
 
   const save = async () => {
     if (!name.trim()) { toast({ title: "Name required", variant: "destructive" }); return; }
