@@ -237,7 +237,7 @@ export default function Declaration() {
     if (!user) return;
     const { data, error } = await supabase
       .from("declaration_entities")
-      .select("*")
+      .select("*, organization:organizations(name)")
       .order("created_at", { ascending: true });
     if (error) {
       toast({ title: "Erreur chargement entités", description: error.message, variant: "destructive" });
@@ -245,8 +245,8 @@ export default function Declaration() {
     }
     setEntities((data || []) as Entity[]);
     const saved = localStorage.getItem(ACTIVE_ENTITY_KEY);
-    const preselect = entityParam && data?.find((e) => e.id === entityParam);
-    const found = data?.find((e) => e.id === saved);
+    const preselect = entityParam && data?.find((e: any) => e.id === entityParam);
+    const found = data?.find((e: any) => e.id === saved);
     setActiveEntityId(preselect?.id ?? found?.id ?? data?.[0]?.id ?? null);
   }, [user, entityParam]);
 
