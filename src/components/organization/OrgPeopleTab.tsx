@@ -220,7 +220,6 @@ function PersonDialog({
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
 
-
   useEffect(() => {
     if (!open) return;
     setName(person?.full_name ?? "");
@@ -232,6 +231,7 @@ function PersonDialog({
     setYears(String(person?.years_contribution ?? 0));
     setNotes(person?.notes ?? "");
   }, [open, person]);
+
 
 
   const save = async () => {
