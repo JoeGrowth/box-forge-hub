@@ -408,7 +408,7 @@ export function MyOrganizationsSection() {
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <Link to={`/org/${o.slug}`} className="font-semibold text-foreground hover:underline truncate block">
-                              {o.name}
+                            {o.name.split(" — ")[0]}
                             </Link>
                             <div className="flex flex-wrap items-center gap-1.5 mt-1">
                               <span className="text-xs text-muted-foreground capitalize">
