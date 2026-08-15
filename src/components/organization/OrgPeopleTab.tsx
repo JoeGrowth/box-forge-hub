@@ -457,7 +457,7 @@ function PersonDialog({
             {tier === "mentor" && (
               <p className="text-xs text-muted-foreground">Mentors always carry expertise — locked.</p>
             )}
-            {tier === "crew" && (helbaLocked || expertise === "yes") && (
+            {tier === "crew" && (
               <div className="space-y-2 pt-2">
                 <Label>Presence</Label>
                 <div className="grid grid-cols-2 gap-2">
