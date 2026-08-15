@@ -331,7 +331,7 @@ function PersonDialog({
       tier,
       crew_type: tier === "crew" ? crewType : null,
       has_expertise: hasExpertise,
-      present_type: tier === "crew" && hasExpertise ? presentType : null,
+      present_type: tier === "crew" ? presentType : null,
       activities_count: Number(activities) || 0,
       years_contribution: Number(years) || 0,
       notes: notes.trim() || null,
