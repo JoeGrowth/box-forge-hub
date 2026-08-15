@@ -1,0 +1,1 @@
+ALTER TABLE public.organization_people ADD COLUMN present_type text NULL CHECK (present_type IN ('7areka', 'wagafa'));
