@@ -363,7 +363,31 @@ function PersonDialog({
             {helbaLocked && (
               <p className="text-xs text-muted-foreground">Helba is paid with expertise — locked.</p>
             )}
+            {(helbaLocked || expertise === "yes") && (
+              <div className="space-y-2 pt-2">
+                <Label>Present</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(Object.keys(PRESENT_META) as Array<NonNullable<OrgPerson["present_type"]>>).map((pt) => {
+                    const active = presentType === pt;
+                    return (
+                      <button
+                        key={pt}
+                        type="button"
+                        onClick={() => setPresentType(pt)}
+                        className={`rounded-lg border p-3 text-left transition-colors ${
+                          active ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-muted/50"
+                        }`}
+                      >
+                        <Badge className={PRESENT_META[pt].className}>{PRESENT_META[pt].label}</Badge>
+                        <p className="mt-1.5 text-xs text-muted-foreground">{PRESENT_META[pt].desc}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
+
 
           <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
             <p className="text-sm font-medium text-foreground">Track Record in {orgName}</p>
