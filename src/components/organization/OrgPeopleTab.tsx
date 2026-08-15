@@ -176,6 +176,7 @@ export function OrgPeopleTab({
         open={open}
         onOpenChange={setOpen}
         orgId={orgId}
+        orgName={orgName}
         person={editing}
         onSaved={() => { setOpen(false); load(); }}
       />
