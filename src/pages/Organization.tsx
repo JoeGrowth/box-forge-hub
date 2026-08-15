@@ -330,7 +330,7 @@ export default function OrganizationPage() {
           </label>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-2xl font-bold">{org.name}</h1>
+              <h1 className="text-2xl font-bold">{org.name.split(" — ")[0]}</h1>
               {(() => {
                 const hasCert = legalDocs.some((d) => d.name.toLowerCase().startsWith("certificate of incorporation"));
                 return (
