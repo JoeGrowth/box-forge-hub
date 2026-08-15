@@ -62,6 +62,7 @@ export function OrgPeopleTab({
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<OrgPerson | null>(null);
+  const [collapsed, setCollapsed] = useState<Set<Tier>>(new Set());
 
   const load = useCallback(async () => {
     setLoading(true);
