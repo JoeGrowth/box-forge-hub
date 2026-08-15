@@ -148,7 +148,7 @@ export function OrgPeopleTab({
                         <p className="font-medium text-foreground truncate">{p.full_name}</p>
                         {p.crew_type && <Badge className={CREW_META[p.crew_type].className}>{CREW_META[p.crew_type].label}</Badge>}
                         <Badge variant="outline">{p.has_expertise ? "With expertise" : "Without expertise"}</Badge>
-                        {p.present_type && <Badge className={PRESENT_META[p.present_type].className}>{PRESENT_META[p.present_type].label}</Badge>}
+                        {p.tier === "crew" && p.present_type && <Badge className={PRESENT_META[p.present_type].className}>{PRESENT_META[p.present_type].label}</Badge>}
 
                       </div>
                       <div className="mt-2 rounded-lg border border-border bg-muted/30 p-2.5">
