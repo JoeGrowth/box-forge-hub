@@ -187,12 +187,14 @@ function PersonDialog({
   open,
   onOpenChange,
   orgId,
+  orgName,
   person,
   onSaved,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   orgId: string;
+  orgName: string;
   person: OrgPerson | null;
   onSaved: () => void;
 }) {
