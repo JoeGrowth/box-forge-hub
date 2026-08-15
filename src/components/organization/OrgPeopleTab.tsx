@@ -346,15 +346,19 @@ function PersonDialog({
                 const current = helbaLocked ? "yes" : expertise;
                 const active = current === o.v;
                 return (
-                  <button
+                    <button
                     key={o.v}
                     type="button"
                     disabled={helbaLocked}
-                    onClick={() => setExpertise(o.v)}
+                    onClick={() => {
+                      setExpertise(o.v);
+                      if (o.v === "no") setPresentType(null);
+                    }}
                     className={`rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-60 ${
                       active ? "border-primary bg-primary/5 font-medium text-foreground" : "border-border text-muted-foreground hover:bg-muted/50"
                     }`}
                   >
+
                     {o.l}
                   </button>
                 );
