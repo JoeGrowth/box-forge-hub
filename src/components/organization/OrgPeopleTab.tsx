@@ -29,10 +29,12 @@ export interface OrgPerson {
   tier: Tier;
   crew_type: CrewType | null;
   has_expertise: boolean;
+  present_type: "7areka" | "wagafa" | null;
   activities_count: number;
   years_contribution: number;
   notes: string | null;
 }
+
 
 const CREW_META: Record<CrewType, { label: string; desc: string; className: string }> = {
   chouch_ward: { label: "Chouch Ward", desc: "Li elleh — with/without expertise", className: "bg-rose-500/10 text-rose-700 border-rose-200" },
