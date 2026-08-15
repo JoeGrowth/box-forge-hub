@@ -214,10 +214,12 @@ function PersonDialog({
   const [tier, setTier] = useState<Tier>("friend");
   const [crewType, setCrewType] = useState<CrewType>("ch3ir");
   const [expertise, setExpertise] = useState("no");
+  const [presentType, setPresentType] = useState<"7areka" | "wagafa" | null>(null);
   const [activities, setActivities] = useState("0");
   const [years, setYears] = useState("0");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+
 
   useEffect(() => {
     if (!open) return;
