@@ -148,7 +148,7 @@ export function OrgPeopleTab({
                         <p className="font-medium text-foreground truncate">{p.full_name}</p>
                         {p.crew_type && <Badge className={CREW_META[p.crew_type].className}>{CREW_META[p.crew_type].label}</Badge>}
                         <Badge variant="outline">{p.has_expertise ? "With expertise" : "Without expertise"}</Badge>
-                        {p.present_type && <Badge className={PRESENT_META[p.present_type].className}>{PRESENT_META[p.present_type].label}</Badge>}
+                        {p.tier === "crew" && p.present_type && <Badge className={PRESENT_META[p.present_type].className}>{PRESENT_META[p.present_type].label}</Badge>}
 
                       </div>
                       <div className="mt-2 rounded-lg border border-border bg-muted/30 p-2.5">
@@ -237,14 +237,15 @@ function PersonDialog({
   const save = async () => {
     if (!name.trim()) { toast({ title: "Name required", variant: "destructive" }); return; }
     setSaving(true);
-    const hasExpertise = tier === "crew" && crewType === "helba" ? true : expertise === "yes";
+    const hasExpertise =
+      (tier === "crew" && crewType === "helba") || tier === "mentor" ? true : expertise === "yes";
     const payload = {
       organization_id: orgId,
       full_name: name.trim(),
       tier,
       crew_type: tier === "crew" ? crewType : null,
       has_expertise: hasExpertise,
-      present_type: hasExpertise ? presentType : null,
+      present_type: tier === "crew" && hasExpertise ? presentType : null,
       activities_count: Number(activities) || 0,
       years_contribution: Number(years) || 0,
       notes: notes.trim() || null,
@@ -265,6 +266,7 @@ function PersonDialog({
   ];
 
   const helbaLocked = tier === "crew" && crewType === "helba";
+  const expertiseLocked = helbaLocked || tier === "mentor";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -343,13 +345,13 @@ function PersonDialog({
                 { v: "yes", l: "With expertise" },
                 { v: "no", l: "Without expertise" },
               ].map((o) => {
-                const current = helbaLocked ? "yes" : expertise;
+                const current = expertiseLocked ? "yes" : expertise;
                 const active = current === o.v;
                 return (
                     <button
                     key={o.v}
                     type="button"
-                    disabled={helbaLocked}
+                    disabled={expertiseLocked}
                     onClick={() => {
                       setExpertise(o.v);
                       if (o.v === "no") setPresentType(null);
@@ -367,9 +369,12 @@ function PersonDialog({
             {helbaLocked && (
               <p className="text-xs text-muted-foreground">Helba is paid with expertise — locked.</p>
             )}
-            {(helbaLocked || expertise === "yes") && (
+            {tier === "mentor" && (
+              <p className="text-xs text-muted-foreground">Mentors always carry expertise — locked.</p>
+            )}
+            {tier === "crew" && (helbaLocked || expertise === "yes") && (
               <div className="space-y-2 pt-2">
-                <Label>Present</Label>
+                <Label>Presence</Label>
                 <div className="grid grid-cols-2 gap-2">
                   {(Object.keys(PRESENT_META) as Array<NonNullable<OrgPerson["present_type"]>>).map((pt) => {
                     const active = presentType === pt;
