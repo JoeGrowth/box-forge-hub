@@ -345,13 +345,13 @@ function PersonDialog({
                 { v: "yes", l: "With expertise" },
                 { v: "no", l: "Without expertise" },
               ].map((o) => {
-                const current = helbaLocked ? "yes" : expertise;
+                const current = expertiseLocked ? "yes" : expertise;
                 const active = current === o.v;
                 return (
                     <button
                     key={o.v}
                     type="button"
-                    disabled={helbaLocked}
+                    disabled={expertiseLocked}
                     onClick={() => {
                       setExpertise(o.v);
                       if (o.v === "no") setPresentType(null);
@@ -369,9 +369,12 @@ function PersonDialog({
             {helbaLocked && (
               <p className="text-xs text-muted-foreground">Helba is paid with expertise — locked.</p>
             )}
-            {(helbaLocked || expertise === "yes") && (
+            {tier === "mentor" && (
+              <p className="text-xs text-muted-foreground">Mentors always carry expertise — locked.</p>
+            )}
+            {tier === "crew" && (helbaLocked || expertise === "yes") && (
               <div className="space-y-2 pt-2">
-                <Label>Present</Label>
+                <Label>Presence</Label>
                 <div className="grid grid-cols-2 gap-2">
                   {(Object.keys(PRESENT_META) as Array<NonNullable<OrgPerson["present_type"]>>).map((pt) => {
                     const active = presentType === pt;
