@@ -51,7 +51,7 @@ type Mission = {
   external: Payee[];
   sort_order: number;
 };
-type Entity = { id: string; owner_id: string; name: string };
+type Entity = { id: string; owner_id: string; name: string; organization_id?: string | null; organization?: { name: string } | null };
 type Collaborator = { id: string; entity_id: string; collaborator_email: string; access: "view" | "edit" };
 
 const DEFAULT_INTERNALS = ["Structure Handler", "Process Handler"];
