@@ -94,6 +94,13 @@ export function CommitmentsPanel() {
     return { activeCount: active.length, dueToday, dueSoon };
   }, [open]);
 
+  const checkpointDay = useMemo(() => {
+    if (!checkpointTarget?.started_at) return 1;
+    const started = new Date(checkpointTarget.started_at).getTime();
+    return Math.max(1, Math.ceil((Date.now() - started) / 86400000));
+  }, [checkpointTarget]);
+
+
   async function handleCreate() {
     if (!newTitle.trim()) return;
     try {
