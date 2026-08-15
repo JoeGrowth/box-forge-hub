@@ -331,7 +331,7 @@ function PersonDialog({
       tier,
       crew_type: tier === "crew" ? crewType : null,
       has_expertise: hasExpertise,
-      present_type: tier === "crew" && hasExpertise ? presentType : null,
+      present_type: tier === "crew" ? presentType : null,
       activities_count: Number(activities) || 0,
       years_contribution: Number(years) || 0,
       notes: notes.trim() || null,
@@ -440,7 +440,6 @@ function PersonDialog({
                     disabled={expertiseLocked}
                     onClick={() => {
                       setExpertise(o.v);
-                      if (o.v === "no") setPresentType(null);
                     }}
                     className={`rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-60 ${
                       active ? "border-primary bg-primary/5 font-medium text-foreground" : "border-border text-muted-foreground hover:bg-muted/50"
@@ -458,7 +457,7 @@ function PersonDialog({
             {tier === "mentor" && (
               <p className="text-xs text-muted-foreground">Mentors always carry expertise — locked.</p>
             )}
-            {tier === "crew" && (helbaLocked || expertise === "yes") && (
+            {tier === "crew" && (
               <div className="space-y-2 pt-2">
                 <Label>Presence</Label>
                 <div className="grid grid-cols-2 gap-2">
