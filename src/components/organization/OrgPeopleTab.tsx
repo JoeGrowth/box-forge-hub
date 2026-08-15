@@ -17,7 +17,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Heart, Users, GraduationCap, Plus, Trash2, Pencil, Activity, CalendarClock } from "lucide-react";
+import { Heart, Users, GraduationCap, Plus, Trash2, Pencil, Activity, CalendarClock, ChevronDown, ChevronRight } from "lucide-react";
 
 type Tier = "friend" | "crew" | "mentor";
 type CrewType = "chouch_ward" | "ch3ir" | "helba";
