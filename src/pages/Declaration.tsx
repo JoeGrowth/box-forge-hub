@@ -51,7 +51,7 @@ type Mission = {
   external: Payee[];
   sort_order: number;
 };
-type Entity = { id: string; owner_id: string; name: string };
+type Entity = { id: string; owner_id: string; name: string; organization_id?: string | null; organization?: { name: string } | null };
 type Collaborator = { id: string; entity_id: string; collaborator_email: string; access: "view" | "edit" };
 
 const DEFAULT_INTERNALS = ["Structure Handler", "Process Handler"];
@@ -237,7 +237,7 @@ export default function Declaration() {
     if (!user) return;
     const { data, error } = await supabase
       .from("declaration_entities")
-      .select("*")
+      .select("*, organization:organizations(name)")
       .order("created_at", { ascending: true });
     if (error) {
       toast({ title: "Erreur chargement entités", description: error.message, variant: "destructive" });
@@ -245,8 +245,8 @@ export default function Declaration() {
     }
     setEntities((data || []) as Entity[]);
     const saved = localStorage.getItem(ACTIVE_ENTITY_KEY);
-    const preselect = entityParam && data?.find((e) => e.id === entityParam);
-    const found = data?.find((e) => e.id === saved);
+    const preselect = entityParam && data?.find((e: any) => e.id === entityParam);
+    const found = data?.find((e: any) => e.id === saved);
     setActiveEntityId(preselect?.id ?? found?.id ?? data?.[0]?.id ?? null);
   }, [user, entityParam]);
 
@@ -777,7 +777,7 @@ export default function Declaration() {
               </div>
               <div className="rounded-lg border-2 border-emerald-500/40 bg-emerald-500/5 p-4">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                  <Wallet className="h-4 w-4 text-emerald-700" /> Available in {activeEntity?.name || "Account"} Account
+                  <Wallet className="h-4 w-4 text-emerald-700" /> Available in {(activeEntity?.organization?.name || activeEntity?.name || "Account")} Account
                 </div>
                 <div className="space-y-1">
                   {CURRENCIES.map((c) => (
