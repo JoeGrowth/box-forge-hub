@@ -42,6 +42,12 @@ const CREW_META: Record<CrewType, { label: string; desc: string; className: stri
   helba: { label: "Helba", desc: "Paid — with expertise", className: "bg-emerald-500/10 text-emerald-700 border-emerald-200" },
 };
 
+const PRESENT_META: Record<NonNullable<OrgPerson["present_type"]>, { label: string; desc: string; className: string }> = {
+  "7areka": { label: "7areka", desc: "Active movement — energy deployed into action", className: "bg-blue-500/10 text-blue-700 border-blue-200" },
+  wagafa: { label: "Wagafa", desc: "Steady presence — holding position and clarity", className: "bg-violet-500/10 text-violet-700 border-violet-200" },
+};
+
+
 export function OrgPeopleTab({
   orgId,
   orgName,
