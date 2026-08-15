@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -98,6 +98,7 @@ export function CommitmentCard({
 }: Props) {
   const meta = STATUS_META[commitment.status];
   const StatusIcon = meta.icon;
+  const [showAllCheckpoints, setShowAllCheckpoints] = useState(false);
 
   const { daysRemaining, progressPct } = useMemo(() => {
     if (!commitment.due_at || !commitment.started_at)
@@ -187,30 +188,72 @@ export function CommitmentCard({
             </div>
             <Progress value={progressPct} className="h-1.5" />
 
-            {sortedCheckpoints.length > 0 ? (
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs text-muted-foreground">Latest checkpoints:</span>
-                {sortedCheckpoints.slice(0, 2).map((cp) => (
-                  <span
-                    key={cp.id}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-b4-teal/10 px-2 py-1 text-xs text-b4-teal"
-                  >
-                    <Flag className="w-3 h-3" />
-                    {cp.label}
-                    <span className="text-b4-teal/70">· {formatDate(cp.completed_at)}</span>
-                  </span>
-                ))}
-                {sortedCheckpoints.length > 2 && (
-                  <span className="text-xs text-muted-foreground">
-                    +{sortedCheckpoints.length - 2} more
-                  </span>
-                )}
+            <div className="rounded-lg border border-border/60 bg-muted/30 p-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Checkpoints
+                </span>
+                <span className="text-[11px] text-muted-foreground">
+                  {sortedCheckpoints.length} logged
+                </span>
               </div>
-            ) : (
-              <p className="text-xs text-muted-foreground">
-                No checkpoints yet. Log one to keep momentum.
-              </p>
-            )}
+
+              {sortedCheckpoints.length > 0 ? (
+                <>
+                  <ol className="relative space-y-3 pl-4 before:absolute before:left-[5px] before:top-1.5 before:bottom-1.5 before:w-px before:bg-border">
+                    {(showAllCheckpoints
+                      ? sortedCheckpoints
+                      : sortedCheckpoints.slice(0, 3)
+                    ).map((cp, i) => (
+                      <li key={cp.id} className="relative">
+                        <span
+                          className={cn(
+                            "absolute -left-4 top-1 w-[11px] h-[11px] rounded-full border-2 border-background",
+                            i === 0 && !showAllCheckpoints
+                              ? "bg-b4-teal"
+                              : "bg-b4-teal/40"
+                          )}
+                        />
+                        <div className="flex items-baseline justify-between gap-2">
+                          <p className="text-xs font-medium text-foreground break-words">
+                            {cp.label}
+                          </p>
+                          <span className="shrink-0 text-[10px] text-muted-foreground tabular-nums">
+                            Day {cp.day_offset} · {formatDate(cp.completed_at)}
+                          </span>
+                        </div>
+                        {cp.note && (
+                          <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2 break-words">
+                            {cp.note}
+                          </p>
+                        )}
+                      </li>
+                    ))}
+                  </ol>
+                  {sortedCheckpoints.length > 3 && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAllCheckpoints((v) => !v)}
+                      className="mt-2 text-[11px] font-medium text-b4-teal hover:underline"
+                    >
+                      {showAllCheckpoints
+                        ? "Show less"
+                        : `Show ${sortedCheckpoints.length - 3} earlier checkpoint${
+                            sortedCheckpoints.length - 3 === 1 ? "" : "s"
+                          }`}
+                    </button>
+                  )}
+                </>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Flag className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                  <p className="text-xs text-muted-foreground">
+                    No checkpoints yet. Log one to keep momentum.
+                  </p>
+                </div>
+              )}
+            </div>
+
           </div>
         )}
 

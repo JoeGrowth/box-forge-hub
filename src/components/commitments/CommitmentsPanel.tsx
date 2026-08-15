@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Plus, Target, CalendarClock, PlayCircle, ChevronDown } from "lucide-react";
+import { Plus, Target, CalendarClock, PlayCircle, ChevronDown, Flag } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -30,6 +30,13 @@ const SUGGESTIONS = [
   "Run 10 sales calls",
   "Close 5 deliverables end-to-end",
   "Build and publish a landing page",
+];
+
+const CHECKPOINT_PRESETS = [
+  "Made progress",
+  "Hit a blocker",
+  "Halfway there",
+  "Shipped something",
 ];
 
 export function CommitmentsPanel() {
@@ -86,6 +93,13 @@ export function CommitmentsPanel() {
     }).length;
     return { activeCount: active.length, dueToday, dueSoon };
   }, [open]);
+
+  const checkpointDay = useMemo(() => {
+    if (!checkpointTarget?.started_at) return 1;
+    const started = new Date(checkpointTarget.started_at).getTime();
+    return Math.max(1, Math.ceil((Date.now() - started) / 86400000));
+  }, [checkpointTarget]);
+
 
   async function handleCreate() {
     if (!newTitle.trim()) return;
@@ -337,8 +351,21 @@ export function CommitmentsPanel() {
       <Dialog open={!!checkpointTarget} onOpenChange={(o) => !o && setCheckpointTarget(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Log checkpoint</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Flag className="w-4 h-4 text-b4-teal" />
+              Log checkpoint
+            </DialogTitle>
           </DialogHeader>
+          {checkpointTarget && (
+            <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2 flex items-center justify-between gap-3">
+              <span className="text-sm font-medium text-foreground truncate">
+                {checkpointTarget.title}
+              </span>
+              <span className="shrink-0 text-[11px] font-medium text-b4-teal bg-b4-teal/10 rounded-full px-2 py-0.5">
+                Day {checkpointDay}
+              </span>
+            </div>
+          )}
           <div className="space-y-3">
             <div className="space-y-1.5">
               <Label htmlFor="cpl">What did you accomplish?</Label>
@@ -346,8 +373,21 @@ export function CommitmentsPanel() {
                 id="cpl"
                 value={cpLabel}
                 onChange={(e) => setCpLabel(e.target.value)}
-                placeholder="Day 7 — interviewed 6 users"
+                placeholder={`Day ${checkpointDay} — interviewed 6 users`}
+                autoFocus
               />
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {CHECKPOINT_PRESETS.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setCpLabel(`Day ${checkpointDay} — ${p}`)}
+                    className="text-[11px] rounded-full border border-border px-2 py-1 text-muted-foreground hover:border-b4-teal hover:text-b4-teal transition-colors"
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="cpn">Evidence or notes (optional)</Label>
@@ -356,6 +396,7 @@ export function CommitmentsPanel() {
                 value={cpNote}
                 onChange={(e) => setCpNote(e.target.value)}
                 rows={3}
+                placeholder="Link, number, or proof that shows this really happened."
               />
             </div>
           </div>
@@ -363,7 +404,9 @@ export function CommitmentsPanel() {
             <Button variant="outline" onClick={() => setCheckpointTarget(null)}>
               Cancel
             </Button>
-            <Button onClick={handleCheckpointSubmit}>Log checkpoint</Button>
+            <Button onClick={handleCheckpointSubmit} disabled={!cpLabel.trim()}>
+              Log checkpoint
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
