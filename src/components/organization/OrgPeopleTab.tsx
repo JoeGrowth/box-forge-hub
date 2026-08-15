@@ -266,6 +266,7 @@ function PersonDialog({
   ];
 
   const helbaLocked = tier === "crew" && crewType === "helba";
+  const expertiseLocked = helbaLocked || tier === "mentor";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
