@@ -37,6 +37,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { EntityRoleSlots } from "@/components/entity-roles/EntityRoleSlots";
+import { OrgPeopleTab } from "@/components/organization/OrgPeopleTab";
 import {
   Select,
   SelectContent,
@@ -82,6 +83,7 @@ import {
   ChevronRight,
   RefreshCw,
   DollarSign,
+  Heart,
 } from "lucide-react";
 import jsPDF from "jspdf";
 import { syncDistEntities, createDistEntity, deleteDistEntityRemote, type DistEntity } from "@/pages/Distribution";
@@ -412,6 +414,7 @@ export default function OrganizationPage() {
           <TabsTrigger value="distribution"><PieChart className="w-3 h-3 mr-1" /> Distribution</TabsTrigger>
           <TabsTrigger value="declaration"><ClipboardList className="w-3 h-3 mr-1" /> Declaration ({declarations.length})</TabsTrigger>
           <TabsTrigger value="journey"><Lightbulb className="w-3 h-3 mr-1" /> Project Journey</TabsTrigger>
+          <TabsTrigger value="people"><Heart className="w-3 h-3 mr-1" /> People</TabsTrigger>
           <TabsTrigger value="members"><Users className="w-3 h-3 mr-1" /> Members ({members.length})</TabsTrigger>
         </TabsList>
 
@@ -601,6 +604,11 @@ export default function OrganizationPage() {
         </TabsContent>
 
 
+
+        {/* PEOPLE */}
+        <TabsContent value="people" className="space-y-3">
+          <OrgPeopleTab orgId={org.id} orgName={org.name} canEdit={canEdit} />
+        </TabsContent>
 
         {/* MEMBERS */}
         <TabsContent value="members" className="space-y-3">
