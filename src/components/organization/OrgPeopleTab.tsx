@@ -17,7 +17,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Heart, Users, GraduationCap, Plus, Trash2, Pencil, Activity, CalendarClock } from "lucide-react";
+import { Heart, Users, GraduationCap, Plus, Trash2, Pencil, Activity, CalendarClock, ChevronDown, ChevronRight } from "lucide-react";
 
 type Tier = "friend" | "crew" | "mentor";
 type CrewType = "chouch_ward" | "ch3ir" | "helba";
@@ -62,6 +62,7 @@ export function OrgPeopleTab({
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<OrgPerson | null>(null);
+  const [collapsed, setCollapsed] = useState<Set<Tier>>(new Set());
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -142,9 +143,22 @@ export function OrgPeopleTab({
         groups.map((g) => {
           const rows = people.filter((p) => p.tier === g.tier);
           const Icon = g.icon;
+          const isCollapsed = collapsed.has(g.tier);
+          const toggle = () => {
+            setCollapsed((prev) => {
+              const next = new Set(prev);
+              if (next.has(g.tier)) next.delete(g.tier);
+              else next.add(g.tier);
+              return next;
+            });
+          };
           return (
             <div key={g.tier} className="overflow-hidden rounded-xl border border-border bg-card">
-              <div className="flex items-start justify-between gap-3 border-b border-border bg-muted/30 p-4">
+              <button
+                type="button"
+                onClick={toggle}
+                className="flex w-full items-start justify-between gap-3 border-b border-border bg-muted/30 p-4 text-left transition-colors hover:bg-muted/50"
+              >
                 <div className="flex items-start gap-3">
                   <div className="rounded-lg bg-background p-2 shadow-sm"><Icon className="w-4 h-4 text-primary" /></div>
                   <div>
@@ -152,94 +166,101 @@ export function OrgPeopleTab({
                     <p className="text-xs text-muted-foreground">{g.subtitle}</p>
                   </div>
                 </div>
-                <Badge variant="secondary">{rows.length}</Badge>
-              </div>
-
-              {g.tier === "crew" && (
-                <div className="grid gap-2 border-b border-border p-4 sm:grid-cols-3">
-                  {(Object.keys(CREW_META) as CrewType[]).map((ct) => (
-                    <div key={ct} className="rounded-lg border border-border bg-background p-3">
-                      <div className="flex items-center justify-between gap-2">
-                        <Badge className={CREW_META[ct].className}>{CREW_META[ct].label}</Badge>
-                        <span className="text-sm font-semibold text-foreground">
-                          {rows.filter((r) => r.crew_type === ct).length}
-                        </span>
-                      </div>
-                      <p className="mt-1.5 text-xs text-muted-foreground">{CREW_META[ct].desc}</p>
-                    </div>
-                  ))}
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">{rows.length}</Badge>
+                  {isCollapsed ? <ChevronRight className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                 </div>
-              )}
+              </button>
 
-              {rows.length === 0 ? (
-                <div className="p-6 text-center">
-                  <p className="text-sm text-muted-foreground">No one listed yet.</p>
-                  {canEdit && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="mt-3"
-                      onClick={() => { setEditing(null); setOpen(true); }}
-                    >
-                      <Plus className="w-4 h-4 mr-1" /> Add person
-                    </Button>
-                  )}
-                </div>
-              ) : (
-                <div className="grid gap-3 p-4 sm:grid-cols-2">
-                  {rows.map((p) => (
-                    <div
-                      key={p.id}
-                      className="group relative rounded-xl border border-border bg-background p-4 transition-shadow hover:shadow-md"
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
-                          {initials(p.full_name)}
+              {!isCollapsed && (
+                <>
+                  {g.tier === "crew" && (
+                    <div className="grid gap-2 border-b border-border p-4 sm:grid-cols-3">
+                      {(Object.keys(CREW_META) as CrewType[]).map((ct) => (
+                        <div key={ct} className="rounded-lg border border-border bg-background p-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <Badge className={CREW_META[ct].className}>{CREW_META[ct].label}</Badge>
+                            <span className="text-sm font-semibold text-foreground">
+                              {rows.filter((r) => r.crew_type === ct).length}
+                            </span>
+                          </div>
+                          <p className="mt-1.5 text-xs text-muted-foreground">{CREW_META[ct].desc}</p>
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate font-medium text-foreground">{p.full_name}</p>
-                          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                            {p.crew_type && <Badge className={CREW_META[p.crew_type].className}>{CREW_META[p.crew_type].label}</Badge>}
-                            <Badge variant="outline">{p.has_expertise ? "With expertise" : "Without expertise"}</Badge>
-                            {p.tier === "crew" && p.present_type && (
-                              <Badge className={PRESENT_META[p.present_type].className}>{PRESENT_META[p.present_type].label}</Badge>
+                      ))}
+                    </div>
+                  )}
+
+                  {rows.length === 0 ? (
+                    <div className="p-6 text-center">
+                      <p className="text-sm text-muted-foreground">No one listed yet.</p>
+                      {canEdit && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="mt-3"
+                          onClick={() => { setEditing(null); setOpen(true); }}
+                        >
+                          <Plus className="w-4 h-4 mr-1" /> Add person
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="grid gap-3 p-4 sm:grid-cols-2">
+                      {rows.map((p) => (
+                        <div
+                          key={p.id}
+                          className="group relative rounded-xl border border-border bg-background p-4 transition-shadow hover:shadow-md"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                              {initials(p.full_name)}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate font-medium text-foreground">{p.full_name}</p>
+                              <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                                {p.crew_type && <Badge className={CREW_META[p.crew_type].className}>{CREW_META[p.crew_type].label}</Badge>}
+                                <Badge variant="outline">{p.has_expertise ? "With expertise" : "Without expertise"}</Badge>
+                                {p.tier === "crew" && p.present_type && (
+                                  <Badge className={PRESENT_META[p.present_type].className}>{PRESENT_META[p.present_type].label}</Badge>
+                                )}
+                              </div>
+                            </div>
+                            {canEdit && (
+                              <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+                                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setEditing(p); setOpen(true); }}>
+                                  <Pencil className="w-4 h-4" />
+                                </Button>
+                                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => remove(p.id)}>
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
                             )}
                           </div>
-                        </div>
-                        {canEdit && (
-                          <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
-                            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setEditing(p); setOpen(true); }}>
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                            <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => remove(p.id)}>
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        )}
-                      </div>
 
-                      <div className="mt-3 rounded-lg border border-border bg-muted/30 p-3">
-                        <p className="text-xs font-medium text-foreground">Track Record in {orgName}</p>
-                        <div className="mt-2 grid grid-cols-2 gap-2">
-                          <div className="rounded-md bg-background p-2">
-                            <p className="text-base font-semibold leading-none text-foreground">{p.activities_count}</p>
-                            <p className="mt-1 inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-                              <Activity className="w-3 h-3" /> activities
-                            </p>
+                          <div className="mt-3 rounded-lg border border-border bg-muted/30 p-3">
+                            <p className="text-xs font-medium text-foreground">Track Record in {orgName}</p>
+                            <div className="mt-2 grid grid-cols-2 gap-2">
+                              <div className="rounded-md bg-background p-2">
+                                <p className="text-base font-semibold leading-none text-foreground">{p.activities_count}</p>
+                                <p className="mt-1 inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                                  <Activity className="w-3 h-3" /> activities
+                                </p>
+                              </div>
+                              <div className="rounded-md bg-background p-2">
+                                <p className="text-base font-semibold leading-none text-foreground">{p.years_contribution}</p>
+                                <p className="mt-1 inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                                  <CalendarClock className="w-3 h-3" /> years
+                                </p>
+                              </div>
+                            </div>
                           </div>
-                          <div className="rounded-md bg-background p-2">
-                            <p className="text-base font-semibold leading-none text-foreground">{p.years_contribution}</p>
-                            <p className="mt-1 inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-                              <CalendarClock className="w-3 h-3" /> years
-                            </p>
-                          </div>
-                        </div>
-                      </div>
 
-                      {p.notes && <p className="mt-2 text-xs text-muted-foreground">{p.notes}</p>}
+                          {p.notes && <p className="mt-2 text-xs text-muted-foreground">{p.notes}</p>}
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  )}
+                </>
               )}
             </div>
           );
