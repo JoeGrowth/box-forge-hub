@@ -292,7 +292,7 @@ export function OrgPeopleTab({
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant="secondary">{ts.total.toLocaleString()}</Badge>
+                <Badge variant="secondary">{headerCount.toLocaleString()}</Badge>
                 {isCollapsed ? <ChevronRight className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
               </div>
             </button>
