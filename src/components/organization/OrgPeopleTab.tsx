@@ -129,6 +129,11 @@ export function OrgPeopleTab({
           <p className="text-sm text-muted-foreground">
             Community layers around {orgName} — from interest to proven contribution.
           </p>
+          {canEdit && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              Drag a person onto another layer to promote them — Friend → Crew Member → Mentor.
+            </p>
+          )}
         </div>
         {canEdit && (
           <Button size="sm" onClick={() => { setEditing(null); setOpen(true); }}>
