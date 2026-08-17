@@ -365,15 +365,60 @@ function PersonDialog({
 
         <div className="space-y-5">
           <div className="space-y-1.5">
-            <Label htmlFor="person-name">Full name</Label>
+            <Label htmlFor="person-name">Name & last name</Label>
             <Input
               id="person-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Houssem Kaabi"
+              placeholder="e.g. Imen Harrazi"
               autoFocus
             />
           </div>
+
+          {tier === "friend" && (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="person-email">Email</Label>
+                <Input
+                  id="person-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="imen@example.com"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="person-phone">Phone</Label>
+                <Input
+                  id="person-phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+216 00 000 000"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="person-age">Age</Label>
+                <Input
+                  id="person-age"
+                  type="number"
+                  min="0"
+                  value={age}
+                  onChange={(e) => setAge(e.target.value)}
+                  placeholder="e.g. 28"
+                />
+              </div>
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label htmlFor="person-events">Events participated in</Label>
+                <Input
+                  id="person-events"
+                  value={events}
+                  onChange={(e) => setEvents(e.target.value)}
+                  placeholder="e.g. Zomita Launch, Community Day 2026"
+                />
+              </div>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label>Community layer</Label>
