@@ -538,9 +538,10 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
                 </TableHead>
                 <TableHead onClick={() => toggleSort("name")} className="cursor-pointer select-none hover:text-foreground">User Name</TableHead>
                 <TableHead onClick={() => toggleSort("vision")} className="cursor-pointer select-none hover:text-foreground">Vision</TableHead>
-                <TableHead onClick={() => toggleSort("status")} className="cursor-pointer select-none hover:text-foreground">Status</TableHead>
-                <TableHead onClick={() => toggleSort("boost")} className="cursor-pointer select-none hover:text-foreground">Boost</TableHead>
-                <TableHead onClick={() => toggleSort("scaling")} className="cursor-pointer select-none hover:text-foreground">Scaling</TableHead>
+                <TableHead onClick={() => toggleSort("tfs")} className="cursor-pointer select-none hover:text-foreground" title="Talent Foundation set">TFS</TableHead>
+                <TableHead onClick={() => toggleSort("tm")} className="cursor-pointer select-none hover:text-foreground" title="Talent Monetization in solo mode and with contractors (0/10)">TM</TableHead>
+                <TableHead onClick={() => toggleSort("ryo")} className="cursor-pointer select-none hover:text-foreground" title="Register Your organization">RYO</TableHead>
+                <TableHead onClick={() => toggleSort("ljv")} className="cursor-pointer select-none hover:text-foreground" title="Launch or Join a Venture">LJV</TableHead>
                 <TableHead onClick={() => toggleSort("pr")} className="cursor-pointer select-none hover:text-foreground">PR</TableHead>
                 <TableHead onClick={() => toggleSort("joined")} className="cursor-pointer select-none hover:text-foreground">Joined</TableHead>
                 <TableHead className="w-[80px]">Actions</TableHead>
