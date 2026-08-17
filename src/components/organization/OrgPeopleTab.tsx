@@ -149,16 +149,18 @@ export function OrgPeopleTab({
     const [{ count: total }, { count: crew }, { data: contrib }, { data: crewRows }] = await Promise.all([
       (supabase as any).from("organization_people").select("id", { count: "exact", head: true }).eq("organization_id", orgId),
       (supabase as any).from("organization_people").select("id", { count: "exact", head: true }).eq("organization_id", orgId).eq("tier", "crew"),
-      (supabase as any).from("organization_people").select("activities_count, years_contribution").eq("organization_id", orgId).neq("tier", "friend"),
+      (supabase as any).from("organization_people").select("activities_count, years_contribution").eq("organization_id", orgId).eq("tier", "crew"),
       (supabase as any).from("organization_people").select("crew_type").eq("organization_id", orgId).eq("tier", "crew"),
     ]);
     const rows = (contrib ?? []) as { activities_count: number; years_contribution: number }[];
     setStats({
       total: total ?? 0,
       crew: crew ?? 0,
-      activities: rows.reduce((s, r) => s + (r.activities_count || 0), 0),
-      years: rows.reduce((s, r) => s + (Number(r.years_contribution) || 0), 0),
+      // Auto-computed maxima across crew members
+      activities: rows.reduce((m, r) => Math.max(m, Number(r.activities_count) || 0), 0),
+      years: rows.reduce((m, r) => Math.max(m, Number(r.years_contribution) || 0), 0),
     });
+
     const bd: Record<CrewType, number> = { chouch_ward: 0, ch3ir: 0, helba: 0 };
     ((crewRows ?? []) as { crew_type: CrewType | null }[]).forEach((r) => {
       if (r.crew_type && bd[r.crew_type] !== undefined) bd[r.crew_type] += 1;
