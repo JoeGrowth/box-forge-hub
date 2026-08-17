@@ -128,6 +128,7 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await onRefresh();
+    await refreshMilestones();
     setIsRefreshing(false);
     toast({ title: "Users refreshed" });
   };
@@ -587,7 +588,7 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
             <TableBody>
               {sortedUsers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center text-muted-foreground py-12">
+                  <TableCell colSpan={10} className="text-center text-muted-foreground py-12">
                     No users found
                   </TableCell>
                 </TableRow>
