@@ -63,6 +63,7 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const { get: getMilestones, refresh: refreshMilestones } = useAdminUserMilestones(users);
 
   // Column sort state — click a header to sort asc, click again to sort desc.
   type SortKey = "name" | "vision" | "tfs" | "tm" | "ryo" | "ljv" | "pr" | "joined";
