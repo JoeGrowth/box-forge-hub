@@ -88,18 +88,21 @@ export function OrgPeopleTab({
   const [collapsed, setCollapsed] = useState<Set<Tier>>(new Set(["friend"]));
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<Tier | null>(null);
+  // Crew is browsed by category first: pick a crew type, then see its cards.
+  const [selectedCrew, setSelectedCrew] = useState<CrewType | null>(null);
 
   // Search inputs are debounced so typing never fires a query per keystroke.
   const [searchInput, setSearchInput] = useState<Record<Tier, string>>({ friend: "", crew: "", mentor: "" });
 
   const fetchTier = useCallback(
-    async (tier: Tier, page: number, search: string, append: boolean) => {
+    async (tier: Tier, page: number, search: string, append: boolean, crewType?: CrewType | null) => {
       setState((s) => ({ ...s, [tier]: { ...s[tier], loading: true } }));
       let q = (supabase as any)
         .from("organization_people")
         .select("*", { count: "exact" })
         .eq("organization_id", orgId)
         .eq("tier", tier);
+      if (tier === "crew" && crewType) q = q.eq("crew_type", crewType);
       if (search.trim()) q = q.ilike("full_name", `%${search.trim()}%`);
       const { data, count } = await q
         .order("full_name", { ascending: true })
@@ -118,6 +121,7 @@ export function OrgPeopleTab({
     },
     [orgId],
   );
+
 
   const loadStats = useCallback(async () => {
     const base = () => (supabase as any).from("organization_people").eq("organization_id", orgId);
