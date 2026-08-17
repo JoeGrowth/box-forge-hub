@@ -59,10 +59,12 @@ export async function rankCandidates({
       .or(
         `advisor_id.in.(${candidateIds.join(",")}),user_id.in.(${candidateIds.join(",")})`,
       ),
-    sb.from("user_skills").select("user_id, skill_id").in("user_id", candidateIds),
+    sb.from("user_skills").select("user_id, skill_tag_id").in("user_id", candidateIds),
     sb
       .from("entrepreneurial_onboarding")
-      .select("user_id, completion_score")
+      .select(
+        "user_id, has_developed_project, has_built_product, has_run_business, has_served_on_board, has_led_team",
+      )
       .in("user_id", candidateIds),
     opportunity.box_id
       ? sb
@@ -103,13 +105,21 @@ export async function rankCandidates({
   const skillsByUser = new Map<string, Set<string>>();
   (skillsRes.data ?? []).forEach((r: any) => {
     const set = skillsByUser.get(r.user_id) ?? new Set<string>();
-    set.add(r.skill_id);
+    set.add(r.skill_tag_id);
     skillsByUser.set(r.user_id, set);
   });
 
+  // Track record density = share of the 5 entrepreneurial areas declared (0..1).
   const track = new Map<string, number>();
   (trackRes.data ?? []).forEach((r: any) => {
-    if (r.completion_score != null) track.set(r.user_id, Number(r.completion_score));
+    const declared = [
+      r.has_developed_project,
+      r.has_built_product,
+      r.has_run_business,
+      r.has_served_on_board,
+      r.has_led_team,
+    ].filter(Boolean).length;
+    track.set(r.user_id, declared / 5);
   });
 
   const boxOverlap = new Set<string>(
