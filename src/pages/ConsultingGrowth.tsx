@@ -343,21 +343,23 @@ export default function ConsultingGrowth({ embedded = false }: { embedded?: bool
 
       {/* Opportunities */}
       <div className={`space-y-3 ${advisorGraduated ? "opacity-50 pointer-events-none" : ""}`}>
-        <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div className="flex items-end justify-between gap-3 flex-wrap">
           <div className="min-w-0">
-            <h2 className="text-lg font-semibold tracking-tight">Your Consultancy</h2>
+            <h2 className="font-display text-lg font-semibold tracking-tight">Your Consultancy</h2>
             <p className="text-sm text-muted-foreground">
-              track opportunities through lead, proposal, delivery, payment, and accounting until your consulting engine runs.
+              Track opportunities through lead, proposal, delivery, payment, and accounting until your consulting engine runs.
             </p>
           </div>
           <Button
             size="sm"
+            variant="outline"
             onClick={() => setDialogOpen(true)}
             className="shrink-0 w-full sm:w-auto"
           >
             <Plus className="w-4 h-4 mr-1" /> Add opportunity
           </Button>
         </div>
+
 
         {/* Stage tabs — horizontal pipeline */}
         {(() => {
