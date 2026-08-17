@@ -540,18 +540,22 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
           </Button>
         </div>
         
-        <div className="flex flex-wrap gap-2">
-          <span className="text-sm text-muted-foreground py-1">Status:</span>
-          {(["all", "joined", "resume", "boost", "scale"] as StatusFilter[]).map((status) => (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="py-1 text-sm text-muted-foreground">Milestone:</span>
+          {(["all", "tfs", "tm", "ryo", "ljv"] as StatusFilter[]).map((status) => (
             <Button
               key={status}
               variant={statusFilter === status ? "default" : "outline"}
               size="sm"
               onClick={() => setStatusFilter(status)}
             >
-              {status.charAt(0).toUpperCase() + status.slice(1)}
+              {FILTER_LABELS[status]}
             </Button>
           ))}
+          <span className="text-xs text-muted-foreground">
+            TFS = Talent Foundation set · TM = Talent Monetization (0/10) · RYO = Register Your organization · LJV =
+            Launch or Join a Venture
+          </span>
         </div>
       </div>
 
