@@ -35,21 +35,26 @@ async function fetchTitles(recs: OpportunityRecommendation[]) {
   }
   const titles: Record<string, { title: string; subtitle: string | null }> = {};
 
+  // Each table exposes different columns — select per table, never a shared shape.
+  const SOURCES: Record<string, { table: string; titleCol: string; subtitleCol: string | null }> = {
+    startup: { table: "startup_ideas", titleCol: "title", subtitleCol: "sector" },
+    job: { table: "job_opportunities", titleCol: "title", subtitleCol: "sector" },
+    training: { table: "training_opportunities", titleCol: "title", subtitleCol: "sector" },
+    consulting: { table: "consulting_services", titleCol: "service_title", subtitleCol: null },
+    tender: { table: "tenders", titleCol: "title", subtitleCol: "sector" },
+  };
+
   await Promise.all(
     Object.entries(byKind).map(async ([kind, ids]) => {
-      const table = ({
-        startup: "startup_ideas",
-        job: "job_opportunities",
-        training: "training_opportunities",
-        consulting: "consulting_services",
-        tender: "tenders",
-      } as Record<string, string>)[kind];
-      if (!table) return;
-      const { data } = await (supabase.from(table as any) as any)
-        .select("id, title, sector")
-        .in("id", ids);
+      const src = SOURCES[kind];
+      if (!src) return;
+      const cols = ["id", src.titleCol, src.subtitleCol].filter(Boolean).join(", ");
+      const { data } = await (supabase.from(src.table as any) as any).select(cols).in("id", ids);
       for (const row of data ?? []) {
-        titles[`${kind}:${row.id}`] = { title: row.title, subtitle: row.sector ?? null };
+        titles[`${kind}:${row.id}`] = {
+          title: row[src.titleCol] ?? "Opportunity",
+          subtitle: src.subtitleCol ? row[src.subtitleCol] ?? null : null,
+        };
       }
     })
   );
