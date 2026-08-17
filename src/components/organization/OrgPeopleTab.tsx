@@ -67,6 +67,27 @@ export function OrgPeopleTab({
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<OrgPerson | null>(null);
   const [collapsed, setCollapsed] = useState<Set<Tier>>(new Set());
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState<Tier | null>(null);
+
+  const handleDrop = (tier: Tier) => {
+    setDragOver(null);
+    const id = dragId;
+    setDragId(null);
+    if (!id || !canEdit) return;
+    const p = people.find((x) => x.id === id);
+    if (!p || p.tier === tier) return;
+    // Open the dialog pre-moved to the new tier so details can be completed.
+    setEditing({
+      ...p,
+      tier,
+      crew_type: tier === "crew" ? p.crew_type ?? "ch3ir" : null,
+      present_type: tier === "crew" ? p.present_type : null,
+      has_expertise: tier === "mentor" ? true : p.has_expertise,
+    });
+    setOpen(true);
+  };
+
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -108,6 +129,11 @@ export function OrgPeopleTab({
           <p className="text-sm text-muted-foreground">
             Community layers around {orgName} — from interest to proven contribution.
           </p>
+          {canEdit && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              Drag a person onto another layer to promote them — Friend → Crew Member → Mentor.
+            </p>
+          )}
         </div>
         {canEdit && (
           <Button size="sm" onClick={() => { setEditing(null); setOpen(true); }}>
@@ -157,7 +183,15 @@ export function OrgPeopleTab({
             });
           };
           return (
-            <div key={g.tier} className="overflow-hidden rounded-xl border border-border bg-card">
+            <div
+              key={g.tier}
+              onDragOver={(e) => { if (dragId && canEdit) { e.preventDefault(); setDragOver(g.tier); } }}
+              onDragLeave={() => setDragOver((t) => (t === g.tier ? null : t))}
+              onDrop={(e) => { e.preventDefault(); handleDrop(g.tier); }}
+              className={`overflow-hidden rounded-xl border bg-card transition-colors ${
+                dragOver === g.tier && dragId ? "border-primary ring-2 ring-primary/30" : "border-border"
+              }`}
+            >
               <button
                 type="button"
                 onClick={toggle}
@@ -213,7 +247,12 @@ export function OrgPeopleTab({
                       {rows.map((p) => (
                         <div
                           key={p.id}
-                          className="group relative rounded-xl border border-border bg-background p-4 transition-shadow hover:shadow-md"
+                          draggable={canEdit}
+                          onDragStart={(e) => { setDragId(p.id); e.dataTransfer.effectAllowed = "move"; }}
+                          onDragEnd={() => { setDragId(null); setDragOver(null); }}
+                          className={`group relative rounded-xl border border-border bg-background p-4 transition-shadow hover:shadow-md ${
+                            canEdit ? "cursor-grab active:cursor-grabbing" : ""
+                          } ${dragId === p.id ? "opacity-50" : ""}`}
                         >
                           <div className="flex items-start gap-3">
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
