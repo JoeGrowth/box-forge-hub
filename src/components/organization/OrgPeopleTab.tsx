@@ -532,9 +532,22 @@ export function OrgPeopleTab({
           </div>
         );
       })}
-
-
-
+      <AlertDialog open={!!pendingDelete} onOpenChange={(v) => !v && setPendingDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove {pendingDelete?.full_name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes them from the {orgName} community list. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmRemove} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <PersonDialog
         open={open}
@@ -542,8 +555,10 @@ export function OrgPeopleTab({
         orgId={orgId}
         orgName={orgName}
         person={editing}
+        defaultTier={presetTier}
         onSaved={() => { setOpen(false); reloadAll(); }}
       />
+
     </div>
   );
 }
