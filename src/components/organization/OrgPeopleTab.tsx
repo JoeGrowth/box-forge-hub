@@ -67,6 +67,27 @@ export function OrgPeopleTab({
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<OrgPerson | null>(null);
   const [collapsed, setCollapsed] = useState<Set<Tier>>(new Set());
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState<Tier | null>(null);
+
+  const handleDrop = (tier: Tier) => {
+    setDragOver(null);
+    const id = dragId;
+    setDragId(null);
+    if (!id || !canEdit) return;
+    const p = people.find((x) => x.id === id);
+    if (!p || p.tier === tier) return;
+    // Open the dialog pre-moved to the new tier so details can be completed.
+    setEditing({
+      ...p,
+      tier,
+      crew_type: tier === "crew" ? p.crew_type ?? "ch3ir" : null,
+      present_type: tier === "crew" ? p.present_type : null,
+      has_expertise: tier === "mentor" ? true : p.has_expertise,
+    });
+    setOpen(true);
+  };
+
 
   const load = useCallback(async () => {
     setLoading(true);
