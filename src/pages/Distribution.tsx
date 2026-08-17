@@ -418,8 +418,12 @@ function DistributionBuilder({
 
 
       <Card ref={missionRef}>
-        <CardHeader>
-          <CardTitle className="text-base">Mission Setup</CardTitle>
+        <CardHeader className="border-b border-border/60">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Briefcase className="w-4 h-4 text-primary" /> Mission Setup
+          </CardTitle>
+          <p className="text-xs text-muted-foreground mt-1">Client, intitulé, itération et budget de la mission.</p>
+
         </CardHeader>
         <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="space-y-1.5">
