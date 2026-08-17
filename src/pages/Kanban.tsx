@@ -169,7 +169,7 @@ function Board({ board }: { board: BoardKey }) {
 
   if (loading) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid min-w-0 gap-4 md:grid-cols-2 xl:grid-cols-4">
         {config.columns.map((c) => (
           <Skeleton key={c.key} className="h-64 w-full rounded-xl" />
         ))}
@@ -178,7 +178,7 @@ function Board({ board }: { board: BoardKey }) {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div className="grid min-w-0 gap-4 md:grid-cols-2 xl:grid-cols-4">
       {config.columns.map((column) => {
         const cards = grouped[column.key] ?? [];
         const isOver = overColumn === column.key;
@@ -196,7 +196,7 @@ function Board({ board }: { board: BoardKey }) {
               if (dragging) move(dragging, column.key);
               setDragging(null);
             }}
-            className={`rounded-xl border bg-muted/30 p-3 transition-colors ${
+            className={`min-w-0 rounded-xl border bg-muted/30 p-3 transition-colors ${
               isOver ? "border-primary bg-primary/5" : "border-border"
             }`}
           >

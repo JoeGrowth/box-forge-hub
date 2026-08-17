@@ -679,8 +679,8 @@ export default function Portfolio() {
                   onOpenChange={(o) => setOpenEntities((p) => ({ ...p, [entity.id]: o }))}
                 >
                   <Card className="border-border/80">
-                    <div className="flex w-full items-center justify-between gap-3 p-6">
-                      <CollapsibleTrigger className="flex flex-1 items-center justify-between gap-3 text-left">
+                    <div className="flex w-full min-w-0 flex-wrap items-center justify-between gap-3 p-6">
+                      <CollapsibleTrigger className="flex min-w-0 flex-1 items-center justify-between gap-3 text-left">
                         <div>
                           <h2 className="text-xl font-bold tracking-tight">{entity.name}</h2>
                           {entity.subtitle && (
@@ -697,7 +697,7 @@ export default function Portfolio() {
                         </div>
                       </CollapsibleTrigger>
                       {canEdit && (
-                        <div className="ml-2 flex shrink-0 items-center gap-1">
+                        <div className="flex shrink-0 items-center gap-1">
                           <Button size="sm" variant="outline" onClick={() => openAddProduct(entity)}>
                             <Plus className="h-4 w-4 mr-1" /> Product
                           </Button>
@@ -733,7 +733,7 @@ export default function Portfolio() {
                           >
                             <div className="rounded-lg border border-border bg-card/60">
                               <div className="flex w-full items-center justify-between gap-2 px-5 py-4">
-                                <CollapsibleTrigger className="flex flex-1 items-center justify-between gap-3 text-left">
+                                <CollapsibleTrigger className="flex min-w-0 flex-1 items-center justify-between gap-3 text-left">
                                   <div>
                                     <h3 className="font-semibold">{product.name}</h3>
                                     {product.core_engine_title && (

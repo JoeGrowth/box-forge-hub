@@ -1056,7 +1056,7 @@ const Entrepreneurship = () => {
                               )}
                             </div>
                           )}
-                          <Button variant="outline" size="sm" className="mt-3" onClick={() => setSuggestDomainOpen(true)}>
+                          <Button variant="outline" size="sm" className="mt-3 h-auto w-full whitespace-normal text-left sm:w-auto" onClick={() => setSuggestDomainOpen(true)}>
                             <Sparkles className="w-3.5 h-3.5 mr-1.5" />
                             Suggest domain based on my Natural Role
                           </Button>
