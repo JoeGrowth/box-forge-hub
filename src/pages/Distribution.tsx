@@ -1106,11 +1106,15 @@ export default function Distribution() {
         <main className="pt-24 pb-16">
           <div className="container mx-auto px-4 max-w-6xl">
             {/* Header — matches Déclaration des Missions style */}
-            <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
+            <div className="mb-8 rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-background to-b4-teal/10 p-6 flex items-start justify-between gap-4 flex-wrap">
               <div className="flex-1 min-w-[260px]">
+                <Badge variant="outline" className="mb-2 gap-1">
+                  <Wallet className="h-3 w-3" /> Money Box
+                </Badge>
                 <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground tracking-tight">
                   Distribution des Missions
                 </h1>
+
                 <p className="text-muted-foreground mt-1">
                   {activeEntity
                     ? <>Entité active · <strong className="text-foreground">{activeEntity.name}</strong> · répartition budgétaire par mission, formation ou événement.</>
