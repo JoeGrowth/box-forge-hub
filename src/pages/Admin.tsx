@@ -267,7 +267,7 @@ const Admin = () => {
                 </TabsTrigger>
                 <TabsTrigger value="decoder" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
                   <Brain className="h-4 w-4 shrink-0" />
-                  NR Decoder
+                  NR
                 </TabsTrigger>
                 <TabsTrigger value="approvals" className="flex min-h-11 min-w-0 items-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
                   <UserCheck className="h-4 w-4 shrink-0" />

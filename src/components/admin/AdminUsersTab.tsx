@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { UserWithDetails } from "@/hooks/useAdmin";
+import { useAdminUserMilestones } from "@/hooks/useAdminUserMilestones";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Table,
@@ -38,6 +39,7 @@ import {
   X,
   Eye,
   ShieldCheck,
+  Check,
 } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { AdminUserPreviewDialog } from "./AdminUserPreviewDialog";
@@ -54,7 +56,31 @@ interface AdminUsersTabProps {
   onRefresh: () => Promise<any>;
 }
 
-type StatusFilter = "all" | "joined" | "resume" | "boost" | "scale";
+type StatusFilter = "all" | "tfs" | "tm" | "ryo" | "ljv";
+
+const FILTER_LABELS: Record<StatusFilter, string> = {
+  all: "All",
+  tfs: "TFS",
+  tm: "TM",
+  ryo: "RYO",
+  ljv: "LJV",
+};
+
+/** Compact checked/unchecked pill used for the four talent milestones. */
+function MilestoneBadge({ done, label }: { done: boolean; label: string }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold ${
+        done
+          ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600"
+          : "border-border bg-muted text-muted-foreground"
+      }`}
+    >
+      {done ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+      {label}
+    </span>
+  );
+}
 type DeleteType = "soft" | "hard";
 type DeleteStep = "choose" | "confirm_code" | "processing";
 
@@ -63,9 +89,10 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const { get: getMilestones, refresh: refreshMilestones } = useAdminUserMilestones(users);
 
   // Column sort state — click a header to sort asc, click again to sort desc.
-  type SortKey = "name" | "vision" | "status" | "boost" | "scaling" | "pr" | "joined";
+  type SortKey = "name" | "vision" | "tfs" | "tm" | "ryo" | "ljv" | "pr" | "joined";
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const toggleSort = (key: SortKey) => {
@@ -101,6 +128,7 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await onRefresh();
+    await refreshMilestones();
     setIsRefreshing(false);
     toast({ title: "Users refreshed" });
   };
@@ -116,7 +144,12 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
   const filteredUsers = users
     .filter((u) => {
       if (statusFilter === "all") return true;
-      return getUserStatusLevel(u) === statusFilter;
+      const m = getMilestones(u.id);
+      if (statusFilter === "tfs") return m.tfs;
+      if (statusFilter === "tm") return m.tm;
+      if (statusFilter === "ryo") return m.ryo;
+      if (statusFilter === "ljv") return m.ljv;
+      return true;
     })
     .filter((u) => {
       if (!searchQuery) return true;
@@ -147,9 +180,10 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
     switch (key) {
       case "name": return (u.profile?.full_name || "").toLowerCase();
       case "vision": return visionRank(u);
-      case "status": return statusRank[getUserStatusLevel(u)] ?? 0;
-      case "boost": return boostValue(u);
-      case "scaling": return scalingValue(u);
+      case "tfs": return getMilestones(u.id).tfs ? 1 : 0;
+      case "tm": return getMilestones(u.id).tmCount;
+      case "ryo": return getMilestones(u.id).ryo ? 1 : 0;
+      case "ljv": return getMilestones(u.id).ljv ? 1 : 0;
       case "pr": return u.progressionScore || 0;
       case "joined": return new Date(u.created_at).getTime();
     }
@@ -507,18 +541,22 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
           </Button>
         </div>
         
-        <div className="flex flex-wrap gap-2">
-          <span className="text-sm text-muted-foreground py-1">Status:</span>
-          {(["all", "joined", "resume", "boost", "scale"] as StatusFilter[]).map((status) => (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="py-1 text-sm text-muted-foreground">Milestone:</span>
+          {(["all", "tfs", "tm", "ryo", "ljv"] as StatusFilter[]).map((status) => (
             <Button
               key={status}
               variant={statusFilter === status ? "default" : "outline"}
               size="sm"
               onClick={() => setStatusFilter(status)}
             >
-              {status.charAt(0).toUpperCase() + status.slice(1)}
+              {FILTER_LABELS[status]}
             </Button>
           ))}
+          <span className="text-xs text-muted-foreground">
+            TFS = Talent Foundation set · TM = Talent Monetization (0/10) · RYO = Register Your organization · LJV =
+            Launch or Join a Venture
+          </span>
         </div>
       </div>
 
@@ -538,9 +576,10 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
                 </TableHead>
                 <TableHead onClick={() => toggleSort("name")} className="cursor-pointer select-none hover:text-foreground">User Name</TableHead>
                 <TableHead onClick={() => toggleSort("vision")} className="cursor-pointer select-none hover:text-foreground">Vision</TableHead>
-                <TableHead onClick={() => toggleSort("status")} className="cursor-pointer select-none hover:text-foreground">Status</TableHead>
-                <TableHead onClick={() => toggleSort("boost")} className="cursor-pointer select-none hover:text-foreground">Boost</TableHead>
-                <TableHead onClick={() => toggleSort("scaling")} className="cursor-pointer select-none hover:text-foreground">Scaling</TableHead>
+                <TableHead onClick={() => toggleSort("tfs")} className="cursor-pointer select-none hover:text-foreground" title="Talent Foundation set">TFS</TableHead>
+                <TableHead onClick={() => toggleSort("tm")} className="cursor-pointer select-none hover:text-foreground" title="Talent Monetization in solo mode and with contractors (0/10)">TM</TableHead>
+                <TableHead onClick={() => toggleSort("ryo")} className="cursor-pointer select-none hover:text-foreground" title="Register Your organization">RYO</TableHead>
+                <TableHead onClick={() => toggleSort("ljv")} className="cursor-pointer select-none hover:text-foreground" title="Launch or Join a Venture">LJV</TableHead>
                 <TableHead onClick={() => toggleSort("pr")} className="cursor-pointer select-none hover:text-foreground">PR</TableHead>
                 <TableHead onClick={() => toggleSort("joined")} className="cursor-pointer select-none hover:text-foreground">Joined</TableHead>
                 <TableHead className="w-[80px]">Actions</TableHead>
@@ -549,17 +588,13 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
             <TableBody>
               {sortedUsers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center text-muted-foreground py-12">
+                  <TableCell colSpan={10} className="text-center text-muted-foreground py-12">
                     No users found
                   </TableCell>
                 </TableRow>
               ) : (
                 sortedUsers.map((user) => {
-                  const statusLevel = getUserStatusLevel(user);
-                  const showBoost = statusLevel === "boost" || statusLevel === "scale";
-                  const showScaling = statusLevel === "scale";
-                  const certLabel = getCertificationLabel(user);
-                  const scalingLabel = getScalingLabel(user);
+                  const ms = getMilestones(user.id);
                   const visionLabel = getVisionLabel(user);
                   const isSelected = selectedUserIds.has(user.id);
 
@@ -603,29 +638,19 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
                       </TableCell>
 
                       <TableCell>
-                        <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border ${getStatusBadgeClass(user)}`}>
-                          {getStatusLabel(user)}
-                        </span>
+                        <MilestoneBadge done={ms.tfs} label="TFS" />
                       </TableCell>
 
                       <TableCell>
-                        {showBoost && certLabel ? (
-                          <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border bg-amber-500/10 text-amber-600 border-amber-500/20">
-                            Boost {certLabel}
-                          </span>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">—</span>
-                        )}
+                        <MilestoneBadge done={ms.tm} label={`TM ${Math.min(ms.tmCount, 10)}/10`} />
                       </TableCell>
 
                       <TableCell>
-                        {showScaling && scalingLabel ? (
-                          <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border bg-purple-500/10 text-purple-600 border-purple-500/20">
-                            {scalingLabel}
-                          </span>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">—</span>
-                        )}
+                        <MilestoneBadge done={ms.ryo} label="RYO" />
+                      </TableCell>
+
+                      <TableCell>
+                        <MilestoneBadge done={ms.ljv} label="LJV" />
                       </TableCell>
 
                       <TableCell>
