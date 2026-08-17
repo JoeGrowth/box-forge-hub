@@ -116,7 +116,12 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
   const filteredUsers = users
     .filter((u) => {
       if (statusFilter === "all") return true;
-      return getUserStatusLevel(u) === statusFilter;
+      const m = getMilestones(u.id);
+      if (statusFilter === "tfs") return m.tfs;
+      if (statusFilter === "tm") return m.tm;
+      if (statusFilter === "ryo") return m.ryo;
+      if (statusFilter === "ljv") return m.ljv;
+      return true;
     })
     .filter((u) => {
       if (!searchQuery) return true;
