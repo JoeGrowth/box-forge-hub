@@ -564,11 +564,7 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
                 </TableRow>
               ) : (
                 sortedUsers.map((user) => {
-                  const statusLevel = getUserStatusLevel(user);
-                  const showBoost = statusLevel === "boost" || statusLevel === "scale";
-                  const showScaling = statusLevel === "scale";
-                  const certLabel = getCertificationLabel(user);
-                  const scalingLabel = getScalingLabel(user);
+                  const ms = getMilestones(user.id);
                   const visionLabel = getVisionLabel(user);
                   const isSelected = selectedUserIds.has(user.id);
 
