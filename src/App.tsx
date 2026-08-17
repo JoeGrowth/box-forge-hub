@@ -86,6 +86,7 @@ import AdvisorWorkQueue from "./pages/AdvisorWorkQueue";
 import ClickAnalytics from "./pages/admin/ClickAnalytics";
 import Distribution from "./pages/Distribution";
 import ConsultingGrowth from "./pages/ConsultingGrowth";
+import Income from "./pages/Income";
 import BrandEntity from "./pages/BrandEntity";
 import Calcul from "./pages/Calcul";
 import PublishTalent from "./pages/PublishTalent";
@@ -175,6 +176,7 @@ const App = () => (
                   <Route path="/publish-training" element={<GatedRoute talentGate><PublishTraining /></GatedRoute>} />
                   <Route path="/publish-job" element={<GatedRoute talentGate orgAdminOnly><PublishJob /></GatedRoute>} />
                   <Route path="/consulting-growth" element={<ProtectedRoute><ConsultingGrowth /></ProtectedRoute>} />
+                  <Route path="/income" element={<ProtectedRoute><Income /></ProtectedRoute>} />
                   <Route path="/opportunities/:category/:id" element={<GatedRoute talentGate><OpportunityDetail /></GatedRoute>} />
                   {/* Legacy: old links pointed at startup ideas only. */}
                   <Route path="/opportunities/:id" element={<GatedRoute talentGate><OpportunityDetail /></GatedRoute>} />
