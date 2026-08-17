@@ -162,19 +162,27 @@ function Board({ board }: { board: BoardKey }) {
   }, [items, columnOf, config.columns, positions]);
 
 
-  const persist = async (columnKey: string, ordered: KanbanItem[]) => {
-    if (!user) return;
-    const rows = ordered.map((item, index) => ({
-      user_id: user.id,
-      board,
-      item_id: item.id,
-      column_key: columnKey,
-      position: index,
-    }));
+  // Writes the full board layout so no column can keep a stale position.
+  const persistBoard = async (layout: Record<string, KanbanItem[]>) => {
+    if (!user) return true;
+    const rows = Object.entries(layout).flatMap(([columnKey, list]) =>
+      list.map((item, index) => ({
+        user_id: user.id,
+        board,
+        item_id: item.id,
+        column_key: columnKey,
+        position: index,
+      })),
+    );
+    if (rows.length === 0) return true;
     const { error } = await supabase
       .from("kanban_placements")
       .upsert(rows, { onConflict: "user_id,board,item_id" });
-    if (error) toast.error("Could not save the order");
+    if (error) {
+      toast.error("Could not save the order");
+      return false;
+    }
+    return true;
   };
 
   const move = async (itemId: string, columnKey: string, targetIndex?: number) => {
@@ -188,18 +196,32 @@ function Board({ board }: { board: BoardKey }) {
 
     if (previousColumn === columnKey && (grouped[columnKey] ?? []).every((i, idx) => i.id === ordered[idx]?.id)) return;
 
-    setPlacements((p) => ({ ...p, [itemId]: columnKey }));
-    setPositions((p) => {
-      const next = { ...p };
-      ordered.forEach((i, idx) => (next[i.id] = idx));
+    const layout: Record<string, KanbanItem[]> = {};
+    config.columns.forEach((c) => {
+      layout[c.key] =
+        c.key === columnKey
+          ? ordered
+          : (grouped[c.key] ?? []).filter((i) => i.id !== itemId);
+    });
+
+    const previousPlacements = placements;
+    const previousPositions = positions;
+
+    setPlacements(() => {
+      const next: Record<string, string> = {};
+      Object.entries(layout).forEach(([key, list]) => list.forEach((i) => (next[i.id] = key)));
+      return next;
+    });
+    setPositions(() => {
+      const next: Record<string, number> = {};
+      Object.values(layout).forEach((list) => list.forEach((i, idx) => (next[i.id] = idx)));
       return next;
     });
 
-    await persist(columnKey, ordered);
-
-    if (previousColumn !== columnKey) {
-      const source = (grouped[previousColumn] ?? []).filter((i) => i.id !== itemId);
-      await persist(previousColumn, source);
+    const ok = await persistBoard(layout);
+    if (!ok) {
+      setPlacements(previousPlacements);
+      setPositions(previousPositions);
     }
   };
 
