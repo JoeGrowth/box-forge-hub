@@ -426,7 +426,7 @@ export function OrgPeopleTab({
                           size="sm"
                           variant="outline"
                           disabled={ts.loading}
-                          onClick={() => fetchTier(g.tier, ts.page + 1, ts.search, true)}
+                          onClick={() => fetchTier(g.tier, ts.page + 1, ts.search, true, g.tier === "crew" ? selectedCrew : null)}
                         >
                           {ts.loading ? "Loading…" : `Load more (${(ts.total - rows.length).toLocaleString()} left)`}
                         </Button>
