@@ -44,10 +44,14 @@ export function TrustBlock({ userId, variant = "compact", className }: Props) {
           relRes,
           trackRes,
         ] = await Promise.all([
-          sb.from("profiles").select("natural_role").eq("id", userId).maybeSingle(),
+          sb
+            .from("natural_roles")
+            .select("description")
+            .eq("user_id", userId)
+            .maybeSingle(),
           sb
             .from("user_skills")
-            .select("skill_id, skill_tags(name)")
+            .select("skill_tag_id, skill_tags(name)")
             .eq("user_id", userId)
             .limit(5),
           sb
