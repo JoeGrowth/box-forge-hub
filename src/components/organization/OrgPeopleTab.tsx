@@ -218,11 +218,11 @@ export function OrgPeopleTab({
                             <div className="min-w-0 flex-1">
                               <p className="truncate font-medium text-foreground">{p.full_name}</p>
                               <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                                {p.crew_type && <Badge className={CREW_META[p.crew_type].className}>{CREW_META[p.crew_type].label}</Badge>}
-                                <Badge variant="outline">{p.has_expertise ? "With expertise" : "Without expertise"}</Badge>
                                 {p.tier === "crew" && p.present_type && (
                                   <Badge className={PRESENT_META[p.present_type].className}>{PRESENT_META[p.present_type].label}</Badge>
                                 )}
+                                {p.crew_type && <Badge className={CREW_META[p.crew_type].className}>{CREW_META[p.crew_type].label}</Badge>}
+                                <Badge variant="outline">{p.has_expertise ? "With expertise" : "Without expertise"}</Badge>
                               </div>
                             </div>
                             {canEdit && (
