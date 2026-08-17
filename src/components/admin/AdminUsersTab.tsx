@@ -54,7 +54,7 @@ interface AdminUsersTabProps {
   onRefresh: () => Promise<any>;
 }
 
-type StatusFilter = "all" | "joined" | "resume" | "boost" | "scale";
+type StatusFilter = "all" | "tfs" | "tm" | "ryo" | "ljv";
 type DeleteType = "soft" | "hard";
 type DeleteStep = "choose" | "confirm_code" | "processing";
 
