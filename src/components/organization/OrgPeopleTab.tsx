@@ -343,7 +343,7 @@ export function OrgPeopleTab({
                 <Button
                   size="sm"
                   variant="outline"
-                  className="shrink-0"
+                  className="shrink-0 sm:w-[120px] justify-center"
                   onClick={() => startAdd(g.tier)}
                 >
                   <Plus className="w-4 h-4 sm:mr-1" />
