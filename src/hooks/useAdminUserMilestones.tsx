@@ -161,7 +161,11 @@ export function useAdminUserMilestones(
           nr.training_check === true ||
           nr.consulting_check === true,
       );
-      const intentDone = Boolean(u.onboarding?.onboarding_completed && (u.onboarding?.current_step ?? 0) >= 5);
+      // Mirrors useOnboarding: a finished 5-question session counts as completed
+      // intent even when the legacy onboarding_state flag was never flipped.
+      const intentDone =
+        sessionDone.has(u.id) ||
+        Boolean(u.onboarding?.onboarding_completed && (u.onboarding?.current_step ?? 0) >= 5);
       const resumeDone = Boolean(
         filled(p.professional_title) &&
           filled(p.bio) &&
