@@ -103,7 +103,10 @@ export function OrgPeopleTab({
   });
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<OrgPerson | null>(null);
+  const [presetTier, setPresetTier] = useState<Tier>("friend");
+  const [pendingDelete, setPendingDelete] = useState<OrgPerson | null>(null);
   const [collapsed, setCollapsed] = useState<Set<Tier>>(new Set(["friend"]));
+
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<Tier | null>(null);
   // Crew is browsed by category first: pick a crew type, then see its cards.
