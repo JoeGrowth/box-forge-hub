@@ -530,48 +530,51 @@ function PersonDialog({
             </div>
           )}
 
-          <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
-
-            <p className="text-sm font-medium text-foreground">Track Record in {orgName}</p>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="person-activities" className="flex items-center gap-1.5 text-xs">
-                  <Activity className="w-3.5 h-3.5 text-muted-foreground" /> Activities contributed to
-                </Label>
-                <Input
-                  id="person-activities"
-                  type="number"
-                  min="0"
-                  value={activities}
-                  onChange={(e) => setActivities(e.target.value)}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="person-years" className="flex items-center gap-1.5 text-xs">
-                  <CalendarClock className="w-3.5 h-3.5 text-muted-foreground" /> Years of contribution
-                </Label>
-                <Input
-                  id="person-years"
-                  type="number"
-                  min="0"
-                  step="0.5"
-                  value={years}
-                  onChange={(e) => setYears(e.target.value)}
-                />
+          {tier !== "friend" && (
+            <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+              <p className="text-sm font-medium text-foreground">Track Record in {orgName}</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label htmlFor="person-activities" className="flex items-center gap-1.5 text-xs">
+                    <Activity className="w-3.5 h-3.5 text-muted-foreground" /> Activities contributed to
+                  </Label>
+                  <Input
+                    id="person-activities"
+                    type="number"
+                    min="0"
+                    value={activities}
+                    onChange={(e) => setActivities(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="person-years" className="flex items-center gap-1.5 text-xs">
+                    <CalendarClock className="w-3.5 h-3.5 text-muted-foreground" /> Years of contribution
+                  </Label>
+                  <Input
+                    id="person-years"
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={years}
+                    onChange={(e) => setYears(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
-          <div className="space-y-1.5">
-            <Label htmlFor="person-notes">Notes (optional)</Label>
-            <Textarea
-              id="person-notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={2}
-              placeholder="Context, role, how they contribute…"
-            />
-          </div>
+          {tier !== "friend" && (
+            <div className="space-y-1.5">
+              <Label htmlFor="person-notes">Notes (optional)</Label>
+              <Textarea
+                id="person-notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={2}
+                placeholder="Context, role, how they contribute…"
+              />
+            </div>
+          )}
         </div>
 
         <DialogFooter>
