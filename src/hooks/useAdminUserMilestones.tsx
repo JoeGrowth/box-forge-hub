@@ -146,6 +146,14 @@ export function useAdminUserMilestones(
     const nrById: Record<string, any> = {};
     ((naturalRoles ?? []) as any[]).forEach((n) => (nrById[n.user_id] = n));
     const decoderSet = new Set(((decoders ?? []) as any[]).map((d) => d.user_id));
+    const sessionDone = new Set(
+      ((onboardingSessions ?? []) as any[])
+        .filter((s) => {
+          const steps = Array.isArray(s.completed_steps) ? (s.completed_steps as number[]) : [];
+          return Boolean(s.completed_at) || [1, 2, 3, 4, 5].every((step) => steps.includes(step));
+        })
+        .map((s) => s.user_id),
+    );
     const filled = (v: any) => v !== null && v !== undefined && String(v).trim().length > 0;
 
     const next: Record<string, UserMilestones> = {};
