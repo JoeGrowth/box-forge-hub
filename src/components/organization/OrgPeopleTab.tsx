@@ -242,7 +242,7 @@ export function OrgPeopleTab({
 
   const groups: { tier: Tier; title: string; subtitle: string; icon: typeof Heart; addLabel: string }[] = [
     { tier: "friend", title: `Friend of ${orgName}`, subtitle: "Interested participant.", icon: Heart, addLabel: "Add friend" },
-    { tier: "crew", title: `Crew Member ${orgName} (Internal)`, subtitle: "Trusted contributor with proven contribution.", icon: Users, addLabel: "Add crew member" },
+    { tier: "crew", title: `Crew Member ${orgName} (Internal)`, subtitle: "Trusted contributor with proven contribution.", icon: Users, addLabel: "Add crew" },
     { tier: "mentor", title: `Mentor / Support System ${orgName}`, subtitle: "Knowledge carrier and ecosystem builder.", icon: GraduationCap, addLabel: "Add mentor" },
   ];
 
@@ -343,7 +343,7 @@ export function OrgPeopleTab({
                 <Button
                   size="sm"
                   variant="outline"
-                  className="shrink-0"
+                  className="shrink-0 sm:w-[120px] justify-center"
                   onClick={() => startAdd(g.tier)}
                 >
                   <Plus className="w-4 h-4 sm:mr-1" />
