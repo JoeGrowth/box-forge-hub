@@ -70,9 +70,12 @@ function Board({ board }: { board: BoardKey }) {
   const config = BOARDS[board];
   const [items, setItems] = useState<KanbanItem[]>([]);
   const [placements, setPlacements] = useState<Record<string, string>>({});
+  const [positions, setPositions] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [dragging, setDragging] = useState<string | null>(null);
   const [overColumn, setOverColumn] = useState<string | null>(null);
+  const [dropIndex, setDropIndex] = useState<number | null>(null);
+
 
   const load = useCallback(async () => {
     setLoading(true);
