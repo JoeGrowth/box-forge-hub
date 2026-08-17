@@ -178,7 +178,15 @@ export function OrgPeopleTab({
             });
           };
           return (
-            <div key={g.tier} className="overflow-hidden rounded-xl border border-border bg-card">
+            <div
+              key={g.tier}
+              onDragOver={(e) => { if (dragId && canEdit) { e.preventDefault(); setDragOver(g.tier); } }}
+              onDragLeave={() => setDragOver((t) => (t === g.tier ? null : t))}
+              onDrop={(e) => { e.preventDefault(); handleDrop(g.tier); }}
+              className={`overflow-hidden rounded-xl border bg-card transition-colors ${
+                dragOver === g.tier && dragId ? "border-primary ring-2 ring-primary/30" : "border-border"
+              }`}
+            >
               <button
                 type="button"
                 onClick={toggle}
