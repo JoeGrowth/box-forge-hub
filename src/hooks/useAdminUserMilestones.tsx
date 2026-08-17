@@ -62,6 +62,7 @@ export function useAdminUserMilestones(
       supabase.from("organization_members").select("organization_id, user_id").in("user_id", ids).eq("role", "admin"),
       supabase.from("startup_team_members").select("member_user_id").in("member_user_id", ids),
       supabase.from("startup_ideas").select("creator_id").in("creator_id", ids).eq("review_status", "approved"),
+      supabase.from("onboarding_sessions").select("user_id, completed_steps, completed_at").in("user_id", ids),
     ]);
 
     // --- Talent Monetization: classify closed missions per user
