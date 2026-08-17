@@ -479,15 +479,33 @@ export function OrgPeopleTab({
                               )}
                             </div>
                             {canEdit && (
-                              <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
-                                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setEditing(p); setOpen(true); }}>
+                              <div className="flex items-center gap-0.5 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button size="icon" variant="ghost" className="h-8 w-8" aria-label="Move to another layer">
+                                      <MoveRight className="w-4 h-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>Move to layer</DropdownMenuLabel>
+                                    {(["friend", "crew", "mentor"] as Tier[])
+                                      .filter((t) => t !== p.tier)
+                                      .map((t) => (
+                                        <DropdownMenuItem key={t} onSelect={() => moveToTier(p, t)}>
+                                          {TIER_LABEL[t]}
+                                        </DropdownMenuItem>
+                                      ))}
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                                <Button size="icon" variant="ghost" className="h-8 w-8" aria-label="Edit person" onClick={() => { setEditing(p); setPresetTier(p.tier); setOpen(true); }}>
                                   <Pencil className="w-4 h-4" />
                                 </Button>
-                                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => remove(p.id)}>
+                                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" aria-label="Remove person" onClick={() => setPendingDelete(p)}>
                                   <Trash2 className="w-4 h-4" />
                                 </Button>
                               </div>
                             )}
+
                           </div>
 
                           {p.tier !== "friend" && p.notes && <p className="mt-2 text-xs text-muted-foreground">{p.notes}</p>}
