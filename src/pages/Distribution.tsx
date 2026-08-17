@@ -516,8 +516,16 @@ function DistributionBuilder({
 
 
       <Card>
-        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <CardTitle className="text-base">Charges</CardTitle>
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-border/60">
+          <div>
+            <CardTitle className="text-base flex items-center gap-2">
+              <ClipboardList className="w-4 h-4 text-b4-coral" /> Charges
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-1">
+              Coûts externes déduits du budget avant distribution.
+            </p>
+          </div>
+
           <Button
             size="sm"
             variant="outline"
