@@ -265,15 +265,59 @@ export default function ConsultingGrowth({ embedded = false }: { embedded?: bool
   // must operate through /organizations instead of this personal pipeline.
   const advisorGraduated = closed.length >= MILESTONE;
 
+  const stats = [
+    { label: "Revenue collected", value: `${totalRevenue.toLocaleString()}`, sub: items[0]?.currency || "EUR", icon: DollarSign },
+    { label: "Missions closed", value: `${closed.length}`, sub: `of ${MILESTONE} milestone`, icon: CheckCircle2 },
+    { label: "In pipeline", value: `${pipeline.length}`, sub: "active missions", icon: Briefcase },
+    { label: "Paying clients", value: `${activeClients}`, sub: "unique", icon: Users },
+  ];
+
   return (
     <>
     <div className={embedded ? "space-y-6" : "container mx-auto px-4 pt-24 pb-8 max-w-5xl space-y-6"}>
       {!embedded && (
-        <div className="flex items-start justify-between gap-4 mb-2 flex-wrap">
-          <div className="flex-1 min-w-[260px]">
-            <h1 className="font-display text-xl font-bold text-foreground">Your Talent, Monetized</h1>
+        <header className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-background to-accent/10 p-5 sm:p-7">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-0">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide text-primary">
+                <TrendingUp className="w-3 h-3" /> Consulting engine
+              </span>
+              <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground mt-3">Your Talent, Monetized</h1>
+              <p className="text-sm text-muted-foreground mt-1 max-w-xl">
+                Run every mission from lead to payment. Close {MILESTONE} to graduate into an advisor brand.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button variant="outline" size="sm" onClick={load} disabled={loading}>
+                {loading ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-1" />} Refresh
+              </Button>
+              <Button size="sm" onClick={() => setDialogOpen(true)}>
+                <Plus className="w-4 h-4 mr-1" /> Add opportunity
+              </Button>
+            </div>
           </div>
-        </div>
+
+          <div className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+            {stats.map(s => (
+              <div key={s.label} className="rounded-xl border border-border/70 bg-card/70 backdrop-blur-sm p-3">
+                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                  <s.icon className="w-3.5 h-3.5 text-primary" />
+                  <span className="truncate">{s.label}</span>
+                </div>
+                <p className="font-display text-xl font-bold text-foreground mt-1 leading-none">{s.value}</p>
+                <p className="text-[11px] text-muted-foreground mt-1 truncate">{s.sub}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-4">
+            <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
+              <span>Advisor milestone</span>
+              <span className="font-medium text-foreground">{closed.length}/{MILESTONE}</span>
+            </div>
+            <Progress value={milestonePct} className="h-2" />
+          </div>
+        </header>
       )}
 
       <NextGoalBanner pageStage="advisor" />
@@ -296,23 +340,26 @@ export default function ConsultingGrowth({ embedded = false }: { embedded?: bool
 
 
 
+
       {/* Opportunities */}
       <div className={`space-y-3 ${advisorGraduated ? "opacity-50 pointer-events-none" : ""}`}>
-        <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div className="flex items-end justify-between gap-3 flex-wrap">
           <div className="min-w-0">
-            <h2 className="text-lg font-semibold tracking-tight">Your Consultancy</h2>
+            <h2 className="font-display text-lg font-semibold tracking-tight">Your Consultancy</h2>
             <p className="text-sm text-muted-foreground">
-              track opportunities through lead, proposal, delivery, payment, and accounting until your consulting engine runs.
+              Track opportunities through lead, proposal, delivery, payment, and accounting until your consulting engine runs.
             </p>
           </div>
           <Button
             size="sm"
+            variant="outline"
             onClick={() => setDialogOpen(true)}
             className="shrink-0 w-full sm:w-auto"
           >
             <Plus className="w-4 h-4 mr-1" /> Add opportunity
           </Button>
         </div>
+
 
         {/* Stage tabs — horizontal pipeline */}
         {(() => {
@@ -366,11 +413,21 @@ export default function ConsultingGrowth({ embedded = false }: { embedded?: bool
 
         {(() => {
           const filtered = stageFilter === "all" ? items : items.filter(i => i.stage === stageFilter);
-          if (loading) return <div className="text-sm text-muted-foreground">Loading&hellip;</div>;
+          if (loading) {
+            return (
+              <div className="space-y-3">
+                {[0, 1, 2].map(i => (
+                  <div key={i} className="h-28 rounded-xl border border-border bg-muted/30 animate-pulse" />
+                ))}
+              </div>
+            );
+          }
           if (filtered.length === 0) {
             return (
-              <div className="rounded-xl border border-dashed border-border p-12 text-center">
-                <Briefcase className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
+              <div className="rounded-xl border border-dashed border-border bg-muted/20 p-12 text-center">
+                <div className="w-12 h-12 mx-auto rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+                  <Briefcase className="w-6 h-6 text-primary" />
+                </div>
                 <p className="font-medium text-foreground">
                   {stageFilter === "all" ? "Nothing in the pipeline yet" : "No missions in this stage"}
                 </p>
@@ -379,6 +436,11 @@ export default function ConsultingGrowth({ embedded = false }: { embedded?: bool
                     ? "Add your first opportunity to start the flow."
                     : "Move a mission to this stage from another tab."}
                 </p>
+                {stageFilter === "all" && (
+                  <Button size="sm" className="mt-4" onClick={() => setDialogOpen(true)}>
+                    <Plus className="w-4 h-4 mr-1" /> Add opportunity
+                  </Button>
+                )}
               </div>
             );
           }
@@ -387,10 +449,13 @@ export default function ConsultingGrowth({ embedded = false }: { embedded?: bool
               {filtered.map(o => {
                 const idx = stageIndex(o.stage);
                 const isOpen = expandedId === o.id;
+                const StageIcon = STAGES[idx]?.icon ?? Briefcase;
                 return (
                   <div
                     key={o.id}
-                    className="rounded-xl border border-border bg-card overflow-hidden"
+                    className={`rounded-xl border bg-card overflow-hidden transition-all ${
+                      isOpen ? "border-primary/40 shadow-sm" : "border-border hover:border-primary/25"
+                    }`}
                   >
                     <button
                       onClick={() => {
@@ -401,35 +466,47 @@ export default function ConsultingGrowth({ embedded = false }: { embedded?: bool
                         }
                         setExpandedId(isOpen ? null : o.id);
                       }}
-                      className="w-full text-left p-5 hover:bg-muted/30 transition"
+                      className="w-full text-left p-4 sm:p-5 hover:bg-muted/30 transition"
                     >
-                      <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start gap-3">
+                        <div className="w-9 h-9 shrink-0 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <StageIcon className="w-4 h-4 text-primary" />
+                        </div>
                         <div className="min-w-0 flex-1">
-                          <h3 className="font-semibold text-foreground">{o.title}</h3>
-                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                          <h3 className="font-semibold text-foreground truncate">{o.title}</h3>
+                          <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                             <p className="text-xs text-muted-foreground">{o.client_name || "—"}</p>
-                            <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4">{o.source}</Badge>
+                            <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4 capitalize">{String(o.source).replace(/_/g, " ")}</Badge>
+                            {o.paid_at && (
+                              <Badge className="text-[10px] py-0 px-1.5 h-4 bg-primary/10 text-primary hover:bg-primary/10">Paid</Badge>
+                            )}
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          {o.total_amount && (
-                            <span className="text-xs text-muted-foreground">
+                        <div className="flex flex-col items-end gap-1.5 shrink-0">
+                          <Badge variant="secondary" className="text-[11px]">{STAGES[idx]?.short}</Badge>
+                          {o.total_amount ? (
+                            <span className="text-xs font-medium text-foreground">
                               {Number(o.total_amount).toLocaleString()} {o.currency}
                             </span>
-                          )}
-                          <Badge variant="secondary">{STAGES[idx]?.short}</Badge>
+                          ) : null}
                         </div>
                       </div>
-                      <div className="mt-4 flex gap-1">
-                        {STAGES.slice(0, 6).map((s, i) => (
-                          <div
-                            key={s.value}
-                            className={`h-1.5 flex-1 rounded ${i <= idx ? "bg-primary" : "bg-muted"}`}
-                            title={s.short}
-                          />
-                        ))}
+                      <div className="mt-4 flex items-center gap-2">
+                        <div className="flex gap-1 flex-1">
+                          {STAGES.slice(0, 6).map((s, i) => (
+                            <div
+                              key={s.value}
+                              className={`h-1.5 flex-1 rounded-full transition-colors ${
+                                i < idx ? "bg-primary/50" : i === idx ? "bg-primary" : "bg-muted"
+                              }`}
+                              title={s.short}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-[11px] text-muted-foreground shrink-0">{idx + 1}/{STAGES.length}</span>
                       </div>
                     </button>
+
                     {isOpen && stageFilter !== "all" && (
                       <div className="border-t border-border bg-muted/10 p-5">
                         <StagePanel
