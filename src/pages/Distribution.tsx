@@ -477,6 +477,44 @@ function DistributionBuilder({
         </CardContent>
       </Card>
 
+      {/* KPI summary */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Budget</p>
+          <p className="mt-1 text-xl font-semibold font-mono tabular-nums">{fmt(Number(budget) || 0)}</p>
+          <p className="text-[11px] text-muted-foreground">{currency}</p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Total charges</p>
+          <p className="mt-1 text-xl font-semibold font-mono tabular-nums text-b4-coral">{fmt(chargesTotal)}</p>
+          <p className="text-[11px] text-muted-foreground">
+            {(Number(budget) || 0) > 0
+              ? `${(Math.round((chargesTotal / (Number(budget) || 1)) * 10000) / 100).toFixed(2)}% du budget`
+              : "—"}
+          </p>
+        </div>
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
+          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Pool à distribuer</p>
+          <p className="mt-1 text-xl font-semibold font-mono tabular-nums text-primary">{fmt(internalPool)}</p>
+          <p className="text-[11px] text-muted-foreground">{people.length} personne{people.length > 1 ? "s" : ""}</p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Tâches allouées</p>
+          <p
+            className={`mt-1 text-xl font-semibold font-mono tabular-nums ${
+              totalPercent === 100 ? "text-b4-teal" : "text-amber-600"
+            }`}
+          >
+            {totalPercent}%
+          </p>
+          <p className="text-[11px] text-muted-foreground">
+            {totalPercent === 100 ? "Distribution complète" : "Doit atteindre 100%"}
+          </p>
+        </div>
+      </div>
+
+
+
       <Card>
         <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <CardTitle className="text-base">Charges</CardTitle>
