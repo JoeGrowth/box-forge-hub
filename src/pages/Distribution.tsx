@@ -856,12 +856,22 @@ function DistributionBuilder({
         </CardContent>
       </Card>
 
-      <div className="flex flex-wrap items-center gap-3 justify-end sticky bottom-4 bg-background/80 backdrop-blur p-3 rounded-xl border border-border">
-        {editingId && (
-          <Badge variant="outline" className="mr-auto">
-            <Pencil className="w-3 h-3 mr-1" /> Editing existing distribution
+      <div className="h-20" aria-hidden />
+
+      <div className="sticky bottom-4 z-30 flex flex-wrap items-center gap-3 rounded-xl border border-border bg-background/90 p-3 pr-4 shadow-lg backdrop-blur">
+        <div className="mr-auto flex flex-wrap items-center gap-2">
+          {editingId && (
+            <Badge variant="outline">
+              <Pencil className="w-3 h-3 mr-1" /> Editing existing distribution
+            </Badge>
+          )}
+          <Badge variant={totalPercent === 100 ? "secondary" : "destructive"}>
+            Tasks {totalPercent}%
           </Badge>
-        )}
+          <span className="text-xs text-muted-foreground font-mono tabular-nums">
+            Pool {fmt(internalPool)} {currency}
+          </span>
+        </div>
         <Button variant="outline" onClick={resetForm} disabled={saving}>
           <RefreshCw className="w-4 h-4 mr-1" /> {editingId ? "Cancel edit" : "Start new distribution"}
         </Button>
@@ -869,7 +879,9 @@ function DistributionBuilder({
           {saving ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Save className="w-4 h-4 mr-1" />}
           {editingId ? "Update distribution" : "Save distribution"}
         </Button>
+        <span className="hidden sm:block w-32" aria-hidden />
       </div>
+
     </div>
   );
 }
