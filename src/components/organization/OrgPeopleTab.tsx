@@ -299,13 +299,49 @@ export function OrgPeopleTab({
 
             {!isCollapsed && (
               <>
+                {g.tier === "crew" && (
+                  <div className="grid gap-2 border-b border-border p-4 sm:grid-cols-3">
+                    {(Object.keys(CREW_META) as CrewType[]).map((ct) => {
+                      const active = selectedCrew === ct;
+                      return (
+                        <button
+                          key={ct}
+                          type="button"
+                          onClick={() => setSelectedCrew(active ? null : ct)}
+                          className={`rounded-lg border p-3 text-left transition-colors ${
+                            active ? "border-primary bg-primary/5 ring-1 ring-primary/30" : "border-border bg-background hover:bg-muted/50"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <Badge className={CREW_META[ct].className}>{CREW_META[ct].label}</Badge>
+                            <span className="text-sm font-semibold text-foreground">{crewBreakdown[ct]}</span>
+                          </div>
+                          <p className="mt-1.5 text-xs text-muted-foreground">{CREW_META[ct].desc}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {g.tier === "crew" && !selectedCrew && (
+                  <p className="p-4 text-sm text-muted-foreground">
+                    Select a crew category above to see its members.
+                  </p>
+                )}
+
+                {showList && (
                 <div className="flex flex-wrap items-center gap-2 border-b border-border p-3">
+                  {g.tier === "crew" && selectedCrew && (
+                    <Button size="sm" variant="ghost" onClick={() => setSelectedCrew(null)}>
+                      ← All categories
+                    </Button>
+                  )}
                   <div className="relative min-w-[200px] flex-1">
                     <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       value={searchInput[g.tier]}
                       onChange={(e) => setSearchInput((s) => ({ ...s, [g.tier]: e.target.value }))}
-                      placeholder={`Search ${g.tier === "friend" ? "friends" : g.tier === "crew" ? "crew members" : "mentors"} by name…`}
+                      placeholder={`Search ${g.tier === "friend" ? "friends" : g.tier === "crew" ? CREW_META[selectedCrew!].label : "mentors"} by name…`}
                       className="pl-8"
                     />
                   </div>
@@ -313,24 +349,12 @@ export function OrgPeopleTab({
                     Showing {rows.length.toLocaleString()} of {ts.total.toLocaleString()}
                   </span>
                 </div>
-
-                {g.tier === "crew" && (
-                  <div className="grid gap-2 border-b border-border p-4 sm:grid-cols-3">
-                    {(Object.keys(CREW_META) as CrewType[]).map((ct) => (
-                      <div key={ct} className="rounded-lg border border-border bg-background p-3">
-                        <div className="flex items-center justify-between gap-2">
-                          <Badge className={CREW_META[ct].className}>{CREW_META[ct].label}</Badge>
-                          <span className="text-sm font-semibold text-foreground">{crewBreakdown[ct]}</span>
-                        </div>
-                        <p className="mt-1.5 text-xs text-muted-foreground">{CREW_META[ct].desc}</p>
-                      </div>
-                    ))}
-                  </div>
                 )}
 
-                {ts.loading && rows.length === 0 ? (
+                {!showList ? null : ts.loading && rows.length === 0 ? (
                   <div className="grid gap-3 p-4 sm:grid-cols-2">
                     {[0, 1, 2, 3].map((i) => (
+
                       <div key={i} className="h-20 animate-pulse rounded-xl border border-border bg-muted/40" />
                     ))}
                   </div>
