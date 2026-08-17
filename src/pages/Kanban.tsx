@@ -118,19 +118,22 @@ function Board({ board }: { board: BoardKey }) {
     }
 
     let placementMap: Record<string, string> = {};
+    const positionMap: Record<string, number> = {};
     if (user) {
       const { data: rows } = await supabase
         .from("kanban_placements")
-        .select("item_id, column_key")
+        .select("item_id, column_key, position")
         .eq("user_id", user.id)
         .eq("board", board);
       ((rows as any[]) ?? []).forEach((r) => {
         placementMap[r.item_id] = r.column_key;
+        if (typeof r.position === "number") positionMap[r.item_id] = r.position;
       });
     }
 
     setItems(mapped);
     setPlacements(placementMap);
+    setPositions(positionMap);
     setLoading(false);
   }, [board, user]);
 
@@ -146,29 +149,58 @@ function Board({ board }: { board: BoardKey }) {
   const grouped = useMemo(() => {
     const map: Record<string, KanbanItem[]> = {};
     config.columns.forEach((c) => (map[c.key] = []));
-    items.forEach((item) => {
+    items.forEach((item, index) => {
       const key = columnOf(item.id);
       (map[key] ?? map[config.columns[0].key]).push(item);
+      if (positions[item.id] === undefined) positions[item.id] = 1000 + index;
+    });
+    Object.keys(map).forEach((key) => {
+      map[key].sort((a, b) => (positions[a.id] ?? 0) - (positions[b.id] ?? 0));
     });
     return map;
-  }, [items, columnOf, config.columns]);
+  }, [items, columnOf, config.columns, positions]);
 
-  const move = async (itemId: string, columnKey: string) => {
-    const previous = columnOf(itemId);
-    if (previous === columnKey) return;
-    setPlacements((p) => ({ ...p, [itemId]: columnKey }));
+  const persist = async (columnKey: string, ordered: KanbanItem[]) => {
     if (!user) return;
+    const rows = ordered.map((item, index) => ({
+      user_id: user.id,
+      board,
+      item_id: item.id,
+      column_key: columnKey,
+      position: index,
+    }));
     const { error } = await supabase
       .from("kanban_placements")
-      .upsert(
-        { user_id: user.id, board, item_id: itemId, column_key: columnKey },
-        { onConflict: "user_id,board,item_id" },
-      );
-    if (error) {
-      setPlacements((p) => ({ ...p, [itemId]: previous }));
-      toast.error("Could not save the move");
+      .upsert(rows, { onConflict: "user_id,board,item_id" });
+    if (error) toast.error("Could not save the order");
+  };
+
+  const move = async (itemId: string, columnKey: string, targetIndex?: number) => {
+    const previousColumn = columnOf(itemId);
+    const item = items.find((i) => i.id === itemId);
+    if (!item) return;
+
+    const current = (grouped[columnKey] ?? []).filter((i) => i.id !== itemId);
+    const index = targetIndex === undefined ? current.length : Math.max(0, Math.min(targetIndex, current.length));
+    const ordered = [...current.slice(0, index), item, ...current.slice(index)];
+
+    if (previousColumn === columnKey && (grouped[columnKey] ?? []).every((i, idx) => i.id === ordered[idx]?.id)) return;
+
+    setPlacements((p) => ({ ...p, [itemId]: columnKey }));
+    setPositions((p) => {
+      const next = { ...p };
+      ordered.forEach((i, idx) => (next[i.id] = idx));
+      return next;
+    });
+
+    await persist(columnKey, ordered);
+
+    if (previousColumn !== columnKey) {
+      const source = (grouped[previousColumn] ?? []).filter((i) => i.id !== itemId);
+      await persist(previousColumn, source);
     }
   };
+
 
   if (loading) {
     return (
