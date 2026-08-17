@@ -33,6 +33,10 @@ export interface OrgPerson {
   activities_count: number;
   years_contribution: number;
   notes: string | null;
+  email: string | null;
+  phone: string | null;
+  age: number | null;
+  events_participated: string | null;
 }
 
 
