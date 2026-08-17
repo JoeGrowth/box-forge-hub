@@ -250,8 +250,8 @@ const Opportunities = () => {
         sb.from("job_opportunities").select("*").eq("status", "published").order("created_at", { ascending: false }),
         sb.from("consulting_services").select("*").eq("is_active", true).order("created_at", { ascending: false }),
         sb.from("opportunity_interactions").select("opportunity_id").eq("user_id", user.id),
-        sb.from("startup_team_members").select("startup_idea_id").eq("user_id", user.id),
-        sb.from("startup_applications").select("startup_idea_id, status").eq("applicant_id", user.id),
+        sb.from("startup_team_members").select("startup_id").eq("member_user_id", user.id),
+        sb.from("startup_applications").select("startup_id, status").eq("applicant_id", user.id),
       ]);
 
       const startupData = startupsRes.data || [];
@@ -311,13 +311,13 @@ const Opportunities = () => {
       setAppliedIds(new Set(
         [
           ...((interactionsRes?.data as any[]) || []).map((r: any) => r.opportunity_id),
-          ...((appsRes?.data as any[]) || []).map((r: any) => r.startup_idea_id),
+          ...((appsRes?.data as any[]) || []).map((r: any) => r.startup_id),
         ].filter(Boolean)
       ));
       setMineIds(new Set(
         [
-          ...((teamRes?.data as any[]) || []).map((r: any) => r.startup_idea_id),
-          ...((appsRes?.data as any[]) || []).filter((r: any) => r.status === "accepted").map((r: any) => r.startup_idea_id),
+          ...((teamRes?.data as any[]) || []).map((r: any) => r.startup_id),
+          ...((appsRes?.data as any[]) || []).filter((r: any) => r.status === "accepted").map((r: any) => r.startup_id),
         ].filter(Boolean)
       ));
       const created = new Set<string>();
