@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Briefcase, GraduationCap, CalendarDays, Save, RefreshCw, Loader2, Lock, FolderOpen, Eye, Pencil, Building2, Settings, ClipboardList, ChevronDown, ChevronUp, Copy } from "lucide-react";
+import { Plus, Trash2, Briefcase, GraduationCap, CalendarDays, Save, RefreshCw, Loader2, Lock, FolderOpen, Eye, Pencil, Building2, Settings, ClipboardList, ChevronDown, ChevronUp, Copy, Users, ListChecks, Wallet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -418,8 +418,12 @@ function DistributionBuilder({
 
 
       <Card ref={missionRef}>
-        <CardHeader>
-          <CardTitle className="text-base">Mission Setup</CardTitle>
+        <CardHeader className="border-b border-border/60">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Briefcase className="w-4 h-4 text-primary" /> Mission Setup
+          </CardTitle>
+          <p className="text-xs text-muted-foreground mt-1">Client, intitulé, itération et budget de la mission.</p>
+
         </CardHeader>
         <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="space-y-1.5">
@@ -477,9 +481,55 @@ function DistributionBuilder({
         </CardContent>
       </Card>
 
+      {/* KPI summary */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Budget</p>
+          <p className="mt-1 text-xl font-semibold font-mono tabular-nums">{fmt(Number(budget) || 0)}</p>
+          <p className="text-[11px] text-muted-foreground">{currency}</p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Total charges</p>
+          <p className="mt-1 text-xl font-semibold font-mono tabular-nums text-b4-coral">{fmt(chargesTotal)}</p>
+          <p className="text-[11px] text-muted-foreground">
+            {(Number(budget) || 0) > 0
+              ? `${(Math.round((chargesTotal / (Number(budget) || 1)) * 10000) / 100).toFixed(2)}% du budget`
+              : "—"}
+          </p>
+        </div>
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
+          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Pool à distribuer</p>
+          <p className="mt-1 text-xl font-semibold font-mono tabular-nums text-primary">{fmt(internalPool)}</p>
+          <p className="text-[11px] text-muted-foreground">{people.length} personne{people.length > 1 ? "s" : ""}</p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Tâches allouées</p>
+          <p
+            className={`mt-1 text-xl font-semibold font-mono tabular-nums ${
+              totalPercent === 100 ? "text-b4-teal" : "text-amber-600"
+            }`}
+          >
+            {totalPercent}%
+          </p>
+          <p className="text-[11px] text-muted-foreground">
+            {totalPercent === 100 ? "Distribution complète" : "Doit atteindre 100%"}
+          </p>
+        </div>
+      </div>
+
+
+
       <Card>
-        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <CardTitle className="text-base">Charges</CardTitle>
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-border/60">
+          <div>
+            <CardTitle className="text-base flex items-center gap-2">
+              <ClipboardList className="w-4 h-4 text-b4-coral" /> Charges
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-1">
+              Coûts externes déduits du budget avant distribution.
+            </p>
+          </div>
+
           <Button
             size="sm"
             variant="outline"
@@ -594,8 +644,16 @@ function DistributionBuilder({
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <CardTitle className="text-base">People splitting the pool</CardTitle>
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-border/60">
+          <div>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Users className="w-4 h-4 text-b4-teal" /> People splitting the pool
+              <Badge variant="secondary">{people.length}</Badge>
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-1">
+              Chaque personne reçoit une part par tâche (en %).
+            </p>
+          </div>
           <div className="flex flex-wrap gap-2">
             <Button
               size="sm"
@@ -613,28 +671,50 @@ function DistributionBuilder({
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="flex flex-wrap gap-3">
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {people.map((p, i) => (
-            <Input
+            <div
               key={i}
-              value={p}
-              onChange={(e) =>
-                setPeople((prev) => prev.map((v, idx) => (idx === i ? e.target.value : v)))
-              }
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && i === people.length - 1) {
-                  setPeople((prev) => [...prev, `Person (${prev.length + 1})`]);
-                }
-              }}
-              className="w-full sm:w-48"
-            />
+              className="flex items-center gap-3 rounded-lg border border-border bg-muted/20 p-2.5"
+            >
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                {(p || "?").trim().charAt(0).toUpperCase() || "?"}
+              </div>
+              <div className="min-w-0 flex-1 space-y-1">
+                <Input
+                  value={p}
+                  onChange={(e) =>
+                    setPeople((prev) => prev.map((v, idx) => (idx === i ? e.target.value : v)))
+                  }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && i === people.length - 1) {
+                      setPeople((prev) => [...prev, `Person (${prev.length + 1})`]);
+                    }
+                  }}
+                  className="h-8"
+                />
+                <p className="text-[11px] text-muted-foreground font-mono tabular-nums">
+                  {fmt(perPersonTotal[i] || 0)} {currency}
+                </p>
+              </div>
+            </div>
           ))}
         </CardContent>
+
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <CardTitle className="text-base">Internal &amp; Structure — task distribution</CardTitle>
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-border/60">
+          <div>
+            <CardTitle className="text-base flex items-center gap-2">
+              <ListChecks className="w-4 h-4 text-primary" /> Internal &amp; Structure — task distribution
+              <Badge variant={totalPercent === 100 ? "secondary" : "destructive"}>{totalPercent}%</Badge>
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-1">
+              Pool de {fmt(internalPool)} {currency} réparti par tâche, puis par personne.
+            </p>
+          </div>
+
           <Button
             size="sm"
             variant="outline"
@@ -1026,11 +1106,15 @@ export default function Distribution() {
         <main className="pt-24 pb-16">
           <div className="container mx-auto px-4 max-w-6xl">
             {/* Header — matches Déclaration des Missions style */}
-            <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
+            <div className="mb-8 rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-background to-b4-teal/10 p-6 flex items-start justify-between gap-4 flex-wrap">
               <div className="flex-1 min-w-[260px]">
+                <Badge variant="outline" className="mb-2 gap-1">
+                  <Wallet className="h-3 w-3" /> Money Box
+                </Badge>
                 <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground tracking-tight">
                   Distribution des Missions
                 </h1>
+
                 <p className="text-muted-foreground mt-1">
                   {activeEntity
                     ? <>Entité active · <strong className="text-foreground">{activeEntity.name}</strong> · répartition budgétaire par mission, formation ou événement.</>
