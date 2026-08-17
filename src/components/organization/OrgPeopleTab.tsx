@@ -198,14 +198,10 @@ export function OrgPeopleTab({
   }, [searchInput]);
 
 
-  const handleDrop = (tier: Tier) => {
-    setDragOver(null);
-    const id = dragId;
-    setDragId(null);
-    if (!id || !canEdit) return;
-    const all = [...state.friend.rows, ...state.crew.rows, ...state.mentor.rows];
-    const p = all.find((x) => x.id === id);
-    if (!p || p.tier === tier) return;
+  // Promote/demote a person into another layer — used by both drag-drop and the
+  // "Move to layer" menu so the flow works on touch devices too.
+  const moveToTier = (p: OrgPerson, tier: Tier) => {
+    if (!canEdit || p.tier === tier) return;
     setEditing({
       ...p,
       tier,
@@ -213,21 +209,42 @@ export function OrgPeopleTab({
       present_type: tier === "crew" ? p.present_type : null,
       has_expertise: tier === "mentor" ? true : p.has_expertise,
     });
+    setPresetTier(tier);
     setOpen(true);
   };
 
-  const remove = async (id: string) => {
-    if (!confirm("Remove this person?")) return;
-    const { error } = await (supabase as any).from("organization_people").delete().eq("id", id);
-    if (error) toast({ title: "Remove failed", description: error.message, variant: "destructive" });
-    else { toast({ title: "Person removed" }); reloadAll(); }
+  const handleDrop = (tier: Tier) => {
+    setDragOver(null);
+    const id = dragId;
+    setDragId(null);
+    if (!id || !canEdit) return;
+    const all = [...state.friend.rows, ...state.crew.rows, ...state.mentor.rows];
+    const p = all.find((x) => x.id === id);
+    if (p) moveToTier(p, tier);
   };
 
-  const groups: { tier: Tier; title: string; subtitle: string; icon: typeof Heart }[] = [
-    { tier: "friend", title: `Friend of ${orgName}`, subtitle: "Interested participant.", icon: Heart },
-    { tier: "crew", title: `Crew Member ${orgName} (Internal)`, subtitle: "Trusted contributor with proven contribution.", icon: Users },
-    { tier: "mentor", title: `Mentor / Support System ${orgName}`, subtitle: "Knowledge carrier and ecosystem builder.", icon: GraduationCap },
+  const startAdd = (tier: Tier) => {
+    setEditing(null);
+    setPresetTier(tier);
+    setOpen(true);
+  };
+
+  const confirmRemove = async () => {
+    const target = pendingDelete;
+    setPendingDelete(null);
+    if (!target) return;
+    const { error } = await (supabase as any).from("organization_people").delete().eq("id", target.id);
+    if (error) toast({ title: "Remove failed", description: error.message, variant: "destructive" });
+    else { toast({ title: `${target.full_name} removed` }); reloadAll(); }
+  };
+
+  const groups: { tier: Tier; title: string; subtitle: string; icon: typeof Heart; addLabel: string }[] = [
+    { tier: "friend", title: `Friend of ${orgName}`, subtitle: "Interested participant.", icon: Heart, addLabel: "Add friend" },
+    { tier: "crew", title: `Crew Member ${orgName} (Internal)`, subtitle: "Trusted contributor with proven contribution.", icon: Users, addLabel: "Add crew member" },
+    { tier: "mentor", title: `Mentor / Support System ${orgName}`, subtitle: "Knowledge carrier and ecosystem builder.", icon: GraduationCap, addLabel: "Add mentor" },
   ];
+
+  const TIER_LABEL: Record<Tier, string> = { friend: "Friend", crew: "Crew Member", mentor: "Mentor" };
 
   const initials = (n: string) =>
     n.trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("");
@@ -242,16 +259,17 @@ export function OrgPeopleTab({
           </p>
           {canEdit && (
             <p className="mt-1 text-xs text-muted-foreground">
-              Drag a person onto another layer to promote them — Friend → Crew Member → Mentor.
+              Drag a card onto another layer — or use the card menu — to move someone between layers.
             </p>
           )}
         </div>
         {canEdit && (
-          <Button size="sm" onClick={() => { setEditing(null); setOpen(true); }}>
+          <Button size="sm" onClick={() => startAdd("friend")}>
             <Plus className="w-4 h-4 mr-1" /> Add person
           </Button>
         )}
       </div>
+
 
       <div className="grid gap-3 sm:grid-cols-4">
         {[
