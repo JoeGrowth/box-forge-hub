@@ -316,6 +316,9 @@ function PersonDialog({
 
   const save = async () => {
     if (!name.trim()) { toast({ title: "Name required", variant: "destructive" }); return; }
+    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      toast({ title: "Invalid email", variant: "destructive" }); return;
+    }
     setSaving(true);
     const hasExpertise =
       (tier === "crew" && crewType === "helba") || tier === "mentor" ? true : expertise === "yes";
@@ -326,9 +329,13 @@ function PersonDialog({
       crew_type: tier === "crew" ? crewType : null,
       has_expertise: hasExpertise,
       present_type: tier === "crew" ? presentType : null,
-      activities_count: Number(activities) || 0,
-      years_contribution: Number(years) || 0,
-      notes: notes.trim() || null,
+      activities_count: tier === "friend" ? 0 : Number(activities) || 0,
+      years_contribution: tier === "friend" ? 0 : Number(years) || 0,
+      notes: tier === "friend" ? null : notes.trim() || null,
+      email: tier === "friend" ? email.trim() || null : null,
+      phone: tier === "friend" ? phone.trim() || null : null,
+      age: tier === "friend" ? (age ? Number(age) : null) : null,
+      events_participated: tier === "friend" ? events.trim() || null : null,
     };
 
     const { error } = person
