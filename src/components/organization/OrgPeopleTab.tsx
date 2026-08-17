@@ -318,23 +318,38 @@ export function OrgPeopleTab({
               dragOver === g.tier && dragId ? "border-primary ring-2 ring-primary/30" : "border-border"
             }`}
           >
-            <button
-              type="button"
-              onClick={toggle}
-              className="flex w-full items-start justify-between gap-3 border-b border-border bg-muted/30 p-4 text-left transition-colors hover:bg-muted/50"
-            >
-              <div className="flex items-start gap-3">
-                <div className="rounded-lg bg-background p-2 shadow-sm"><Icon className="w-4 h-4 text-primary" /></div>
-                <div>
-                  <p className="font-medium text-foreground">{g.title}</p>
-                  <p className="text-xs text-muted-foreground">{g.subtitle}</p>
+            <div className="flex items-start gap-2 border-b border-border bg-muted/30 p-4">
+              <button
+                type="button"
+                onClick={toggle}
+                aria-expanded={!isCollapsed}
+                className="flex flex-1 items-start justify-between gap-3 text-left"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="rounded-lg bg-background p-2 shadow-sm"><Icon className="w-4 h-4 text-primary" /></div>
+                  <div>
+                    <p className="font-medium text-foreground">{g.title}</p>
+                    <p className="text-xs text-muted-foreground">{g.subtitle}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary">{headerCount.toLocaleString()}</Badge>
-                {isCollapsed ? <ChevronRight className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
-              </div>
-            </button>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">{headerCount.toLocaleString()}</Badge>
+                  {isCollapsed ? <ChevronRight className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                </div>
+              </button>
+              {canEdit && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="shrink-0"
+                  onClick={() => startAdd(g.tier)}
+                >
+                  <Plus className="w-4 h-4 sm:mr-1" />
+                  <span className="hidden sm:inline">{g.addLabel}</span>
+                </Button>
+              )}
+            </div>
+
 
             {!isCollapsed && (
               <>
