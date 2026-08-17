@@ -612,29 +612,19 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
                       </TableCell>
 
                       <TableCell>
-                        <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border ${getStatusBadgeClass(user)}`}>
-                          {getStatusLabel(user)}
-                        </span>
+                        <MilestoneBadge done={ms.tfs} label="TFS" />
                       </TableCell>
 
                       <TableCell>
-                        {showBoost && certLabel ? (
-                          <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border bg-amber-500/10 text-amber-600 border-amber-500/20">
-                            Boost {certLabel}
-                          </span>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">—</span>
-                        )}
+                        <MilestoneBadge done={ms.tm} label={`TM ${Math.min(ms.tmCount, 10)}/10`} />
                       </TableCell>
 
                       <TableCell>
-                        {showScaling && scalingLabel ? (
-                          <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border bg-purple-500/10 text-purple-600 border-purple-500/20">
-                            {scalingLabel}
-                          </span>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">—</span>
-                        )}
+                        <MilestoneBadge done={ms.ryo} label="RYO" />
+                      </TableCell>
+
+                      <TableCell>
+                        <MilestoneBadge done={ms.ljv} label="LJV" />
                       </TableCell>
 
                       <TableCell>
