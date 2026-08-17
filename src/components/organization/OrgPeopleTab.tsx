@@ -33,6 +33,10 @@ export interface OrgPerson {
   activities_count: number;
   years_contribution: number;
   notes: string | null;
+  email: string | null;
+  phone: string | null;
+  age: number | null;
+  events_participated: string | null;
 }
 
 
@@ -218,12 +222,31 @@ export function OrgPeopleTab({
                             <div className="min-w-0 flex-1">
                               <p className="truncate font-medium text-foreground">{p.full_name}</p>
                               <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                                {p.tier === "crew" && p.present_type && (
-                                  <Badge className={PRESENT_META[p.present_type].className}>{PRESENT_META[p.present_type].label}</Badge>
+                                {p.tier === "friend" ? (
+                                  <>
+                                    {p.age !== null && p.age !== undefined && (
+                                      <Badge variant="secondary">{p.age} years old</Badge>
+                                    )}
+                                    {p.events_participated && (
+                                      <Badge variant="outline">{p.events_participated}</Badge>
+                                    )}
+                                  </>
+                                ) : (
+                                  <>
+                                    {p.tier === "crew" && p.present_type && (
+                                      <Badge className={PRESENT_META[p.present_type].className}>{PRESENT_META[p.present_type].label}</Badge>
+                                    )}
+                                    {p.crew_type && <Badge className={CREW_META[p.crew_type].className}>{CREW_META[p.crew_type].label}</Badge>}
+                                    <Badge variant="outline">{p.has_expertise ? "With expertise" : "Without expertise"}</Badge>
+                                  </>
                                 )}
-                                {p.crew_type && <Badge className={CREW_META[p.crew_type].className}>{CREW_META[p.crew_type].label}</Badge>}
-                                <Badge variant="outline">{p.has_expertise ? "With expertise" : "Without expertise"}</Badge>
                               </div>
+                              {p.tier === "friend" && (p.email || p.phone) && (
+                                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                                  {p.email && <span className="truncate">{p.email}</span>}
+                                  {p.phone && <span>{p.phone}</span>}
+                                </div>
+                              )}
                             </div>
                             {canEdit && (
                               <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
@@ -237,7 +260,7 @@ export function OrgPeopleTab({
                             )}
                           </div>
 
-                          {p.notes && <p className="mt-2 text-xs text-muted-foreground">{p.notes}</p>}
+                          {p.tier !== "friend" && p.notes && <p className="mt-2 text-xs text-muted-foreground">{p.notes}</p>}
                         </div>
                       ))}
                     </div>
@@ -286,6 +309,10 @@ function PersonDialog({
   const [activities, setActivities] = useState("0");
   const [years, setYears] = useState("0");
   const [notes, setNotes] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [age, setAge] = useState("");
+  const [events, setEvents] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -298,12 +325,19 @@ function PersonDialog({
     setActivities(String(person?.activities_count ?? 0));
     setYears(String(person?.years_contribution ?? 0));
     setNotes(person?.notes ?? "");
+    setEmail(person?.email ?? "");
+    setPhone(person?.phone ?? "");
+    setAge(person?.age ? String(person.age) : "");
+    setEvents(person?.events_participated ?? "");
   }, [open, person]);
 
 
 
   const save = async () => {
     if (!name.trim()) { toast({ title: "Name required", variant: "destructive" }); return; }
+    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      toast({ title: "Invalid email", variant: "destructive" }); return;
+    }
     setSaving(true);
     const hasExpertise =
       (tier === "crew" && crewType === "helba") || tier === "mentor" ? true : expertise === "yes";
@@ -314,9 +348,13 @@ function PersonDialog({
       crew_type: tier === "crew" ? crewType : null,
       has_expertise: hasExpertise,
       present_type: tier === "crew" ? presentType : null,
-      activities_count: Number(activities) || 0,
-      years_contribution: Number(years) || 0,
-      notes: notes.trim() || null,
+      activities_count: tier === "friend" ? 0 : Number(activities) || 0,
+      years_contribution: tier === "friend" ? 0 : Number(years) || 0,
+      notes: tier === "friend" ? null : notes.trim() || null,
+      email: tier === "friend" ? email.trim() || null : null,
+      phone: tier === "friend" ? phone.trim() || null : null,
+      age: tier === "friend" ? (age ? Number(age) : null) : null,
+      events_participated: tier === "friend" ? events.trim() || null : null,
     };
 
     const { error } = person
@@ -346,15 +384,60 @@ function PersonDialog({
 
         <div className="space-y-5">
           <div className="space-y-1.5">
-            <Label htmlFor="person-name">Full name</Label>
+            <Label htmlFor="person-name">Name & last name</Label>
             <Input
               id="person-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Houssem Kaabi"
+              placeholder="e.g. Imen Harrazi"
               autoFocus
             />
           </div>
+
+          {tier === "friend" && (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="person-email">Email</Label>
+                <Input
+                  id="person-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="imen@example.com"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="person-phone">Phone</Label>
+                <Input
+                  id="person-phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+216 00 000 000"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="person-age">Age</Label>
+                <Input
+                  id="person-age"
+                  type="number"
+                  min="0"
+                  value={age}
+                  onChange={(e) => setAge(e.target.value)}
+                  placeholder="e.g. 28"
+                />
+              </div>
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label htmlFor="person-events">Events participated in</Label>
+                <Input
+                  id="person-events"
+                  value={events}
+                  onChange={(e) => setEvents(e.target.value)}
+                  placeholder="e.g. Zomita Launch, Community Day 2026"
+                />
+              </div>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label>Community layer</Label>
@@ -406,106 +489,111 @@ function PersonDialog({
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label>Expertise</Label>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { v: "yes", l: "With expertise" },
-                { v: "no", l: "Without expertise" },
-              ].map((o) => {
-                const current = expertiseLocked ? "yes" : expertise;
-                const active = current === o.v;
-                return (
-                    <button
-                    key={o.v}
-                    type="button"
-                    disabled={expertiseLocked}
-                    onClick={() => {
-                      setExpertise(o.v);
-                    }}
-                    className={`rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-60 ${
-                      active ? "border-primary bg-primary/5 font-medium text-foreground" : "border-border text-muted-foreground hover:bg-muted/50"
-                    }`}
-                  >
-
-                    {o.l}
-                  </button>
-                );
-              })}
-            </div>
-            {helbaLocked && (
-              <p className="text-xs text-muted-foreground">Helba is paid with expertise — locked.</p>
-            )}
-            {tier === "mentor" && (
-              <p className="text-xs text-muted-foreground">Mentors always carry expertise — locked.</p>
-            )}
-            {tier === "crew" && (
-              <div className="space-y-2 pt-2">
-                <Label>Presence</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  {(Object.keys(PRESENT_META) as Array<NonNullable<OrgPerson["present_type"]>>).map((pt) => {
-                    const active = presentType === pt;
-                    return (
+          {tier !== "friend" && (
+            <div className="space-y-2">
+              <Label>Expertise</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { v: "yes", l: "With expertise" },
+                  { v: "no", l: "Without expertise" },
+                ].map((o) => {
+                  const current = expertiseLocked ? "yes" : expertise;
+                  const active = current === o.v;
+                  return (
                       <button
-                        key={pt}
-                        type="button"
-                        onClick={() => setPresentType(pt)}
-                        className={`rounded-lg border p-3 text-left transition-colors ${
-                          active ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-muted/50"
-                        }`}
-                      >
-                        <Badge className={PRESENT_META[pt].className}>{PRESENT_META[pt].label}</Badge>
-                        <p className="mt-1.5 text-xs text-muted-foreground">{PRESENT_META[pt].desc}</p>
-                      </button>
-                    );
-                  })}
+                      key={o.v}
+                      type="button"
+                      disabled={expertiseLocked}
+                      onClick={() => {
+                        setExpertise(o.v);
+                      }}
+                      className={`rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-60 ${
+                        active ? "border-primary bg-primary/5 font-medium text-foreground" : "border-border text-muted-foreground hover:bg-muted/50"
+                      }`}
+                    >
+
+                      {o.l}
+                    </button>
+                  );
+                })}
+              </div>
+              {helbaLocked && (
+                <p className="text-xs text-muted-foreground">Helba is paid with expertise — locked.</p>
+              )}
+              {tier === "mentor" && (
+                <p className="text-xs text-muted-foreground">Mentors always carry expertise — locked.</p>
+              )}
+              {tier === "crew" && (
+                <div className="space-y-2 pt-2">
+                  <Label>Presence</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {(Object.keys(PRESENT_META) as Array<NonNullable<OrgPerson["present_type"]>>).map((pt) => {
+                      const active = presentType === pt;
+                      return (
+                        <button
+                          key={pt}
+                          type="button"
+                          onClick={() => setPresentType(pt)}
+                          className={`rounded-lg border p-3 text-left transition-colors ${
+                            active ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-muted/50"
+                          }`}
+                        >
+                          <Badge className={PRESENT_META[pt].className}>{PRESENT_META[pt].label}</Badge>
+                          <p className="mt-1.5 text-xs text-muted-foreground">{PRESENT_META[pt].desc}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {tier !== "friend" && (
+            <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+              <p className="text-sm font-medium text-foreground">Track Record in {orgName}</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label htmlFor="person-activities" className="flex items-center gap-1.5 text-xs">
+                    <Activity className="w-3.5 h-3.5 text-muted-foreground" /> Activities contributed to
+                  </Label>
+                  <Input
+                    id="person-activities"
+                    type="number"
+                    min="0"
+                    value={activities}
+                    onChange={(e) => setActivities(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="person-years" className="flex items-center gap-1.5 text-xs">
+                    <CalendarClock className="w-3.5 h-3.5 text-muted-foreground" /> Years of contribution
+                  </Label>
+                  <Input
+                    id="person-years"
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={years}
+                    onChange={(e) => setYears(e.target.value)}
+                  />
                 </div>
               </div>
-            )}
-          </div>
-
-          <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
-
-            <p className="text-sm font-medium text-foreground">Track Record in {orgName}</p>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="person-activities" className="flex items-center gap-1.5 text-xs">
-                  <Activity className="w-3.5 h-3.5 text-muted-foreground" /> Activities contributed to
-                </Label>
-                <Input
-                  id="person-activities"
-                  type="number"
-                  min="0"
-                  value={activities}
-                  onChange={(e) => setActivities(e.target.value)}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="person-years" className="flex items-center gap-1.5 text-xs">
-                  <CalendarClock className="w-3.5 h-3.5 text-muted-foreground" /> Years of contribution
-                </Label>
-                <Input
-                  id="person-years"
-                  type="number"
-                  min="0"
-                  step="0.5"
-                  value={years}
-                  onChange={(e) => setYears(e.target.value)}
-                />
-              </div>
             </div>
-          </div>
+          )}
 
-          <div className="space-y-1.5">
-            <Label htmlFor="person-notes">Notes (optional)</Label>
-            <Textarea
-              id="person-notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={2}
-              placeholder="Context, role, how they contribute…"
-            />
-          </div>
+          {tier !== "friend" && (
+            <div className="space-y-1.5">
+              <Label htmlFor="person-notes">Notes (optional)</Label>
+              <Textarea
+                id="person-notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={2}
+                placeholder="Context, role, how they contribute…"
+              />
+            </div>
+          )}
         </div>
 
         <DialogFooter>

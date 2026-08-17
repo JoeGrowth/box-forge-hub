@@ -4046,14 +4046,18 @@ export type Database = {
       organization_people: {
         Row: {
           activities_count: number
+          age: number | null
           created_at: string
           created_by: string | null
           crew_type: string | null
+          email: string | null
+          events_participated: string | null
           full_name: string
           has_expertise: boolean
           id: string
           notes: string | null
           organization_id: string
+          phone: string | null
           present_type: string | null
           tier: string
           updated_at: string
@@ -4061,14 +4065,18 @@ export type Database = {
         }
         Insert: {
           activities_count?: number
+          age?: number | null
           created_at?: string
           created_by?: string | null
           crew_type?: string | null
+          email?: string | null
+          events_participated?: string | null
           full_name: string
           has_expertise?: boolean
           id?: string
           notes?: string | null
           organization_id: string
+          phone?: string | null
           present_type?: string | null
           tier: string
           updated_at?: string
@@ -4076,14 +4084,18 @@ export type Database = {
         }
         Update: {
           activities_count?: number
+          age?: number | null
           created_at?: string
           created_by?: string | null
           crew_type?: string | null
+          email?: string | null
+          events_participated?: string | null
           full_name?: string
           has_expertise?: boolean
           id?: string
           notes?: string | null
           organization_id?: string
+          phone?: string | null
           present_type?: string | null
           tier?: string
           updated_at?: string
