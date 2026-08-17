@@ -644,8 +644,16 @@ function DistributionBuilder({
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <CardTitle className="text-base">People splitting the pool</CardTitle>
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-border/60">
+          <div>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Users className="w-4 h-4 text-b4-teal" /> People splitting the pool
+              <Badge variant="secondary">{people.length}</Badge>
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-1">
+              Chaque personne reçoit une part par tâche (en %).
+            </p>
+          </div>
           <div className="flex flex-wrap gap-2">
             <Button
               size="sm"
@@ -663,23 +671,36 @@ function DistributionBuilder({
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="flex flex-wrap gap-3">
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {people.map((p, i) => (
-            <Input
+            <div
               key={i}
-              value={p}
-              onChange={(e) =>
-                setPeople((prev) => prev.map((v, idx) => (idx === i ? e.target.value : v)))
-              }
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && i === people.length - 1) {
-                  setPeople((prev) => [...prev, `Person (${prev.length + 1})`]);
-                }
-              }}
-              className="w-full sm:w-48"
-            />
+              className="flex items-center gap-3 rounded-lg border border-border bg-muted/20 p-2.5"
+            >
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                {(p || "?").trim().charAt(0).toUpperCase() || "?"}
+              </div>
+              <div className="min-w-0 flex-1 space-y-1">
+                <Input
+                  value={p}
+                  onChange={(e) =>
+                    setPeople((prev) => prev.map((v, idx) => (idx === i ? e.target.value : v)))
+                  }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && i === people.length - 1) {
+                      setPeople((prev) => [...prev, `Person (${prev.length + 1})`]);
+                    }
+                  }}
+                  className="h-8"
+                />
+                <p className="text-[11px] text-muted-foreground font-mono tabular-nums">
+                  {fmt(perPersonTotal[i] || 0)} {currency}
+                </p>
+              </div>
+            </div>
           ))}
         </CardContent>
+
       </Card>
 
       <Card>
