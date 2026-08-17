@@ -273,20 +273,24 @@ export function OrgPeopleTab({
       </div>
 
 
-      <div className="grid gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
         {[
-          { label: "People", value: stats.total, icon: Users },
-          { label: "Crew members", value: stats.crew, icon: Heart },
-          { label: "Maximum number of activities", value: stats.activities, icon: Activity },
-          { label: "Maximum years contributed", value: stats.years, icon: CalendarClock },
+          { label: "People", shortLabel: "People", value: stats.total, icon: Users },
+          { label: "Crew members", shortLabel: "Crew", value: stats.crew, icon: Heart },
+          { label: "Maximum number of activities", shortLabel: "Max activities", value: stats.activities, icon: Activity },
+          { label: "Maximum years contributed", shortLabel: "Max years", value: stats.years, icon: CalendarClock },
         ].map((s) => {
           const Icon = s.icon;
           return (
-            <div key={s.label} className="rounded-xl border border-border bg-card p-3">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Icon className="w-3.5 h-3.5" /> {s.label}
+            <div key={s.label} className="rounded-xl border border-border bg-card p-2.5 sm:p-3">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <div className="rounded-md bg-primary/10 p-1">
+                  <Icon className="w-3 h-3 text-primary" />
+                </div>
+                <span className="hidden sm:inline">{s.label}</span>
+                <span className="sm:hidden">{s.shortLabel}</span>
               </div>
-              <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
+              <p className="mt-1.5 text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
                 {s.value.toLocaleString()}
               </p>
             </div>
