@@ -569,6 +569,7 @@ function PersonDialog({
   orgId,
   orgName,
   person,
+  defaultTier = "friend",
   onSaved,
 }: {
   open: boolean;
@@ -576,6 +577,7 @@ function PersonDialog({
   orgId: string;
   orgName: string;
   person: OrgPerson | null;
+  defaultTier?: Tier;
   onSaved: () => void;
 }) {
   const { toast } = useToast();
@@ -596,7 +598,8 @@ function PersonDialog({
   useEffect(() => {
     if (!open) return;
     setName(person?.full_name ?? "");
-    setTier(person?.tier ?? "friend");
+    setTier(person?.tier ?? defaultTier);
+
     setCrewType(person?.crew_type ?? "ch3ir");
     setExpertise(person?.has_expertise ? "yes" : "no");
     setPresentType(person?.present_type ?? null);
