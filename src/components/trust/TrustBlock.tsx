@@ -176,7 +176,7 @@ export function TrustBlock({ userId, variant = "compact", className }: Props) {
           <Stat icon={<CheckCircle2 className="h-3.5 w-3.5" />} label="Verified contributions" value={data.verified_contributions} />
           <Stat icon={<Award className="h-3.5 w-3.5" />} label="Milestones earned" value={data.milestones_earned} />
           <Stat icon={<Users className="h-3.5 w-3.5" />} label="Active relationships" value={data.active_relationships} />
-          <Stat icon={<Briefcase className="h-3.5 w-3.5" />} label="Track record" value={data.track_record_density != null ? `${Math.round(data.track_record_density * 100)}%` : "—"} />
+          <Stat icon={<Briefcase className="h-3.5 w-3.5" />} label="Track record" value={data.track_record_density != null ? `${data.track_record_density}%` : "—"} />
         </div>
       </CardContent>
     </Card>
