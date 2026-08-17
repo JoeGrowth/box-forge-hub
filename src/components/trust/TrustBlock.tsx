@@ -69,14 +69,29 @@ export function TrustBlock({ userId, variant = "compact", className }: Props) {
             .eq("status", "active"),
           sb
             .from("entrepreneurial_onboarding")
-            .select("completion_score")
+            .select("has_developed_project, has_built_product, has_run_business, has_served_on_board, has_led_team, is_completed")
             .eq("user_id", userId)
             .maybeSingle(),
         ]);
 
         if (cancelled) return;
+        // Track record density = share of the 5 entrepreneurial areas actually declared.
+        const track = trackRes.data as any;
+        const density = track
+          ? Math.round(
+              ([
+                track.has_developed_project,
+                track.has_built_product,
+                track.has_run_business,
+                track.has_served_on_board,
+                track.has_led_team,
+              ].filter(Boolean).length /
+                5) *
+                100
+            )
+          : null;
         setData({
-          natural_role: (profileRes.data as any)?.natural_role ?? null,
+          natural_role: (profileRes.data as any)?.description ?? null,
           top_skills:
             ((skillsRes.data as any[]) ?? [])
               .map((r) => r.skill_tags?.name)
@@ -84,8 +99,7 @@ export function TrustBlock({ userId, variant = "compact", className }: Props) {
           verified_contributions: contribRes.count ?? 0,
           milestones_earned: milestonesRes.count ?? 0,
           active_relationships: relRes.count ?? 0,
-          track_record_density:
-            (trackRes.data as any)?.completion_score ?? null,
+          track_record_density: density,
         });
       } finally {
         if (!cancelled) setLoading(false);
