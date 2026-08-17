@@ -258,14 +258,17 @@ export function OrgPeopleTab({
         const rows = ts.rows;
         const Icon = g.icon;
         const isCollapsed = collapsed.has(g.tier);
+        const showList = g.tier !== "crew" || !!selectedCrew;
+        const headerCount = g.tier === "crew" ? stats.crew : ts.total;
         const toggle = () => {
           setCollapsed((prev) => {
             const next = new Set(prev);
             if (next.has(g.tier)) next.delete(g.tier);
-            else next.add(g.tier);
+            else { next.add(g.tier); if (g.tier === "crew") setSelectedCrew(null); }
             return next;
           });
         };
+
         return (
           <div
             key={g.tier}
