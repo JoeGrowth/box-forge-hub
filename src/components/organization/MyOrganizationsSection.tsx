@@ -393,7 +393,7 @@ export function MyOrganizationsSection() {
                 return (
                   <div
                     key={o.id}
-                    className="rounded-xl border border-border bg-card p-5 transition hover:border-primary/40 hover:shadow-sm"
+                    className="min-w-0 overflow-hidden rounded-xl border border-border bg-card p-5 transition hover:border-primary/40 hover:shadow-sm"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                       <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
@@ -441,7 +441,7 @@ export function MyOrganizationsSection() {
                         </div>
 
                         {o.description && (
-                          <p className="text-sm text-muted-foreground mt-3 line-clamp-2">{o.description}</p>
+                          <p className="text-sm text-muted-foreground mt-3 line-clamp-2 break-words">{o.description}</p>
                         )}
 
                         {o.type === "company" && !incorporatedIds.has(o.id) && (

@@ -458,8 +458,8 @@ const CoBuilders = () => {
           {/* Search and Filter */}
           <section className="py-8 border-b border-border">
             <div className="container mx-auto px-4 flex flex-col md:flex-row md:items-center gap-4">
-              <Tabs value={filter} onValueChange={(v) => setFilter(v as DirectoryFilter)}>
-                <TabsList>
+              <Tabs value={filter} onValueChange={(v) => setFilter(v as DirectoryFilter)} className="min-w-0 max-w-full">
+                <TabsList className="flex w-full max-w-full overflow-x-auto md:w-auto">
                   <TabsTrigger value="talents" className="gap-1.5">
                     <Sparkles className="w-3.5 h-3.5" /> Talents
                   </TabsTrigger>

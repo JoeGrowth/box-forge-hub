@@ -613,9 +613,9 @@ export default function Declaration() {
             <h1 className="text-3xl font-bold tracking-tight">Statement of the organization</h1>
             <p className="text-muted-foreground mt-1">Active entity · monitoring of shipments and cash flow</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:w-auto">
             <Select value={activeEntityId ?? ""} onValueChange={setActiveEntityId}>
-              <SelectTrigger className="w-[220px]">
+              <SelectTrigger className="w-full sm:w-[220px]">
                 <Building2 className="h-4 w-4 mr-2 text-muted-foreground" />
                 <SelectValue placeholder="Choisir une entité" />
               </SelectTrigger>

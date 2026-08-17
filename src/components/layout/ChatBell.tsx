@@ -75,7 +75,7 @@ export function ChatBell() {
             .from("profiles")
             .select("full_name, avatar_url")
             .eq("user_id", otherUserId)
-            .single();
+            .maybeSingle();
 
           const { data: lastMsg } = await supabase
             .from("chat_messages")
@@ -83,7 +83,7 @@ export function ChatBell() {
             .eq("conversation_id", conv.id)
             .order("created_at", { ascending: false })
             .limit(1)
-            .single();
+            .maybeSingle();
 
           const { count } = await supabase
             .from("chat_messages")
@@ -120,7 +120,7 @@ export function ChatBell() {
             .from("profiles")
             .select("full_name, avatar_url")
             .eq("user_id", otherUserId)
-            .single();
+            .maybeSingle();
 
           const { data: lastMsg } = await supabase
             .from("direct_messages")
@@ -128,7 +128,7 @@ export function ChatBell() {
             .eq("conversation_id", conv.id)
             .order("created_at", { ascending: false })
             .limit(1)
-            .single();
+            .maybeSingle();
 
           const { count } = await supabase
             .from("direct_messages")
