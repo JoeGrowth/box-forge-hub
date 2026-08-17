@@ -45,6 +45,7 @@ export function useAdminUserMilestones(
       { data: adminMemberships },
       { data: teamMembers },
       { data: approvedIdeas },
+      { data: onboardingSessions },
     ] = await Promise.all([
       supabase
         .from("profiles")
@@ -62,6 +63,7 @@ export function useAdminUserMilestones(
       supabase.from("organization_members").select("organization_id, user_id").in("user_id", ids).eq("role", "admin"),
       supabase.from("startup_team_members").select("member_user_id").in("member_user_id", ids),
       supabase.from("startup_ideas").select("creator_id").in("creator_id", ids).eq("review_status", "approved"),
+      supabase.from("onboarding_sessions").select("user_id, completed_steps, completed_at").in("user_id", ids),
     ]);
 
     // --- Talent Monetization: classify closed missions per user
@@ -144,6 +146,14 @@ export function useAdminUserMilestones(
     const nrById: Record<string, any> = {};
     ((naturalRoles ?? []) as any[]).forEach((n) => (nrById[n.user_id] = n));
     const decoderSet = new Set(((decoders ?? []) as any[]).map((d) => d.user_id));
+    const sessionDone = new Set(
+      ((onboardingSessions ?? []) as any[])
+        .filter((s) => {
+          const steps = Array.isArray(s.completed_steps) ? (s.completed_steps as number[]) : [];
+          return Boolean(s.completed_at) || [1, 2, 3, 4, 5].every((step) => steps.includes(step));
+        })
+        .map((s) => s.user_id),
+    );
     const filled = (v: any) => v !== null && v !== undefined && String(v).trim().length > 0;
 
     const next: Record<string, UserMilestones> = {};
@@ -159,7 +169,11 @@ export function useAdminUserMilestones(
           nr.training_check === true ||
           nr.consulting_check === true,
       );
-      const intentDone = Boolean(u.onboarding?.onboarding_completed && (u.onboarding?.current_step ?? 0) >= 5);
+      // Mirrors useOnboarding: a finished 5-question session counts as completed
+      // intent even when the legacy onboarding_state flag was never flipped.
+      const intentDone =
+        sessionDone.has(u.id) ||
+        Boolean(u.onboarding?.onboarding_completed && (u.onboarding?.current_step ?? 0) >= 5);
       const resumeDone = Boolean(
         filled(p.professional_title) &&
           filled(p.bio) &&
