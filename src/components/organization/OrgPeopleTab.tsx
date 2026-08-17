@@ -17,7 +17,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Heart, Users, GraduationCap, Plus, Trash2, Pencil, Activity, CalendarClock, ChevronDown, ChevronRight } from "lucide-react";
+import { Heart, Users, GraduationCap, Plus, Trash2, Pencil, Activity, CalendarClock, ChevronDown, ChevronRight, Search } from "lucide-react";
 
 type Tier = "friend" | "crew" | "mentor";
 type CrewType = "chouch_ward" | "ch3ir" | "helba";
@@ -52,6 +52,18 @@ const PRESENT_META: Record<NonNullable<OrgPerson["present_type"]>, { label: stri
 };
 
 
+const PAGE_SIZE = 24;
+
+type TierState = {
+  rows: OrgPerson[];
+  total: number;
+  page: number;
+  loading: boolean;
+  search: string;
+};
+
+const emptyTierState = (): TierState => ({ rows: [], total: 0, page: 0, loading: true, search: "" });
+
 export function OrgPeopleTab({
   orgId,
   orgName,
@@ -62,22 +74,102 @@ export function OrgPeopleTab({
   canEdit: boolean;
 }) {
   const { toast } = useToast();
-  const [people, setPeople] = useState<OrgPerson[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [state, setState] = useState<Record<Tier, TierState>>({
+    friend: emptyTierState(),
+    crew: emptyTierState(),
+    mentor: emptyTierState(),
+  });
+  const [stats, setStats] = useState({ total: 0, crew: 0, activities: 0, years: 0 });
+  const [crewBreakdown, setCrewBreakdown] = useState<Record<CrewType, number>>({
+    chouch_ward: 0, ch3ir: 0, helba: 0,
+  });
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<OrgPerson | null>(null);
-  const [collapsed, setCollapsed] = useState<Set<Tier>>(new Set());
+  const [collapsed, setCollapsed] = useState<Set<Tier>>(new Set(["friend"]));
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<Tier | null>(null);
+
+  // Search inputs are debounced so typing never fires a query per keystroke.
+  const [searchInput, setSearchInput] = useState<Record<Tier, string>>({ friend: "", crew: "", mentor: "" });
+
+  const fetchTier = useCallback(
+    async (tier: Tier, page: number, search: string, append: boolean) => {
+      setState((s) => ({ ...s, [tier]: { ...s[tier], loading: true } }));
+      let q = (supabase as any)
+        .from("organization_people")
+        .select("*", { count: "exact" })
+        .eq("organization_id", orgId)
+        .eq("tier", tier);
+      if (search.trim()) q = q.ilike("full_name", `%${search.trim()}%`);
+      const { data, count } = await q
+        .order("full_name", { ascending: true })
+        .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+      const rows = (data ?? []) as OrgPerson[];
+      setState((s) => ({
+        ...s,
+        [tier]: {
+          rows: append ? [...s[tier].rows, ...rows] : rows,
+          total: count ?? rows.length,
+          page,
+          loading: false,
+          search,
+        },
+      }));
+    },
+    [orgId],
+  );
+
+  const loadStats = useCallback(async () => {
+    const base = () => (supabase as any).from("organization_people").eq("organization_id", orgId);
+    const [{ count: total }, { count: crew }, { data: contrib }, { data: crewRows }] = await Promise.all([
+      (supabase as any).from("organization_people").select("id", { count: "exact", head: true }).eq("organization_id", orgId),
+      (supabase as any).from("organization_people").select("id", { count: "exact", head: true }).eq("organization_id", orgId).eq("tier", "crew"),
+      (supabase as any).from("organization_people").select("activities_count, years_contribution").eq("organization_id", orgId).neq("tier", "friend"),
+      (supabase as any).from("organization_people").select("crew_type").eq("organization_id", orgId).eq("tier", "crew"),
+    ]);
+    const rows = (contrib ?? []) as { activities_count: number; years_contribution: number }[];
+    setStats({
+      total: total ?? 0,
+      crew: crew ?? 0,
+      activities: rows.reduce((s, r) => s + (r.activities_count || 0), 0),
+      years: rows.reduce((s, r) => s + (Number(r.years_contribution) || 0), 0),
+    });
+    const bd: Record<CrewType, number> = { chouch_ward: 0, ch3ir: 0, helba: 0 };
+    ((crewRows ?? []) as { crew_type: CrewType | null }[]).forEach((r) => {
+      if (r.crew_type && bd[r.crew_type] !== undefined) bd[r.crew_type] += 1;
+    });
+    setCrewBreakdown(bd);
+  }, [orgId]);
+
+  const reloadAll = useCallback(() => {
+    loadStats();
+    (["friend", "crew", "mentor"] as Tier[]).forEach((t) => fetchTier(t, 0, searchInput[t], false));
+  }, [loadStats, fetchTier, searchInput]);
+
+  useEffect(() => {
+    loadStats();
+    (["friend", "crew", "mentor"] as Tier[]).forEach((t) => fetchTier(t, 0, "", false));
+  }, [loadStats, fetchTier]);
+
+  // Debounced search per tier.
+  useEffect(() => {
+    const timers = (["friend", "crew", "mentor"] as Tier[]).map((t) =>
+      setTimeout(() => {
+        if (searchInput[t] !== state[t].search) fetchTier(t, 0, searchInput[t], false);
+      }, 350),
+    );
+    return () => timers.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
 
   const handleDrop = (tier: Tier) => {
     setDragOver(null);
     const id = dragId;
     setDragId(null);
     if (!id || !canEdit) return;
-    const p = people.find((x) => x.id === id);
+    const all = [...state.friend.rows, ...state.crew.rows, ...state.mentor.rows];
+    const p = all.find((x) => x.id === id);
     if (!p || p.tier === tier) return;
-    // Open the dialog pre-moved to the new tier so details can be completed.
     setEditing({
       ...p,
       tier,
@@ -88,25 +180,11 @@ export function OrgPeopleTab({
     setOpen(true);
   };
 
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    const { data } = await (supabase as any)
-      .from("organization_people")
-      .select("*")
-      .eq("organization_id", orgId)
-      .order("created_at", { ascending: true });
-    setPeople((data ?? []) as OrgPerson[]);
-    setLoading(false);
-  }, [orgId]);
-
-  useEffect(() => { load(); }, [load]);
-
   const remove = async (id: string) => {
     if (!confirm("Remove this person?")) return;
     const { error } = await (supabase as any).from("organization_people").delete().eq("id", id);
     if (error) toast({ title: "Remove failed", description: error.message, variant: "destructive" });
-    else { toast({ title: "Person removed" }); load(); }
+    else { toast({ title: "Person removed" }); reloadAll(); }
   };
 
   const groups: { tier: Tier; title: string; subtitle: string; icon: typeof Heart }[] = [
@@ -117,9 +195,6 @@ export function OrgPeopleTab({
 
   const initials = (n: string) =>
     n.trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("");
-
-  const totalActivities = people.reduce((s, p) => s + (p.activities_count || 0), 0);
-  const totalYears = people.reduce((s, p) => s + (Number(p.years_contribution) || 0), 0);
 
   return (
     <div className="space-y-5">
@@ -142,134 +217,150 @@ export function OrgPeopleTab({
         )}
       </div>
 
-      {!loading && (
-        <div className="grid gap-3 sm:grid-cols-4">
-          {[
-            { label: "People", value: people.length, icon: Users },
-            { label: "Crew members", value: people.filter((p) => p.tier === "crew").length, icon: Heart },
-            { label: "Activities", value: totalActivities, icon: Activity },
-            { label: "Years contributed", value: totalYears, icon: CalendarClock },
-          ].map((s) => {
-            const Icon = s.icon;
-            return (
-              <div key={s.label} className="rounded-xl border border-border bg-card p-3">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Icon className="w-3.5 h-3.5" /> {s.label}
-                </div>
-                <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">{s.value}</p>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {loading ? (
-        <div className="grid gap-3 sm:grid-cols-2">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="h-24 animate-pulse rounded-xl border border-border bg-muted/40" />
-          ))}
-        </div>
-      ) : (
-        groups.map((g) => {
-          const rows = people.filter((p) => p.tier === g.tier);
-          const Icon = g.icon;
-          const isCollapsed = collapsed.has(g.tier);
-          const toggle = () => {
-            setCollapsed((prev) => {
-              const next = new Set(prev);
-              if (next.has(g.tier)) next.delete(g.tier);
-              else next.add(g.tier);
-              return next;
-            });
-          };
+      <div className="grid gap-3 sm:grid-cols-4">
+        {[
+          { label: "People", value: stats.total, icon: Users },
+          { label: "Crew members", value: stats.crew, icon: Heart },
+          { label: "Activities", value: stats.activities, icon: Activity },
+          { label: "Years contributed", value: stats.years, icon: CalendarClock },
+        ].map((s) => {
+          const Icon = s.icon;
           return (
-            <div
-              key={g.tier}
-              onDragOver={(e) => { if (dragId && canEdit) { e.preventDefault(); setDragOver(g.tier); } }}
-              onDragLeave={() => setDragOver((t) => (t === g.tier ? null : t))}
-              onDrop={(e) => { e.preventDefault(); handleDrop(g.tier); }}
-              className={`overflow-hidden rounded-xl border bg-card transition-colors ${
-                dragOver === g.tier && dragId ? "border-primary ring-2 ring-primary/30" : "border-border"
-              }`}
+            <div key={s.label} className="rounded-xl border border-border bg-card p-3">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Icon className="w-3.5 h-3.5" /> {s.label}
+              </div>
+              <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
+                {s.value.toLocaleString()}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+
+      {groups.map((g) => {
+        const ts = state[g.tier];
+        const rows = ts.rows;
+        const Icon = g.icon;
+        const isCollapsed = collapsed.has(g.tier);
+        const toggle = () => {
+          setCollapsed((prev) => {
+            const next = new Set(prev);
+            if (next.has(g.tier)) next.delete(g.tier);
+            else next.add(g.tier);
+            return next;
+          });
+        };
+        return (
+          <div
+            key={g.tier}
+            onDragOver={(e) => { if (dragId && canEdit) { e.preventDefault(); setDragOver(g.tier); } }}
+            onDragLeave={() => setDragOver((t) => (t === g.tier ? null : t))}
+            onDrop={(e) => { e.preventDefault(); handleDrop(g.tier); }}
+            className={`overflow-hidden rounded-xl border bg-card transition-colors ${
+              dragOver === g.tier && dragId ? "border-primary ring-2 ring-primary/30" : "border-border"
+            }`}
+          >
+            <button
+              type="button"
+              onClick={toggle}
+              className="flex w-full items-start justify-between gap-3 border-b border-border bg-muted/30 p-4 text-left transition-colors hover:bg-muted/50"
             >
-              <button
-                type="button"
-                onClick={toggle}
-                className="flex w-full items-start justify-between gap-3 border-b border-border bg-muted/30 p-4 text-left transition-colors hover:bg-muted/50"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="rounded-lg bg-background p-2 shadow-sm"><Icon className="w-4 h-4 text-primary" /></div>
-                  <div>
-                    <p className="font-medium text-foreground">{g.title}</p>
-                    <p className="text-xs text-muted-foreground">{g.subtitle}</p>
+              <div className="flex items-start gap-3">
+                <div className="rounded-lg bg-background p-2 shadow-sm"><Icon className="w-4 h-4 text-primary" /></div>
+                <div>
+                  <p className="font-medium text-foreground">{g.title}</p>
+                  <p className="text-xs text-muted-foreground">{g.subtitle}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary">{ts.total.toLocaleString()}</Badge>
+                {isCollapsed ? <ChevronRight className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+              </div>
+            </button>
+
+            {!isCollapsed && (
+              <>
+                <div className="flex flex-wrap items-center gap-2 border-b border-border p-3">
+                  <div className="relative min-w-[200px] flex-1">
+                    <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      value={searchInput[g.tier]}
+                      onChange={(e) => setSearchInput((s) => ({ ...s, [g.tier]: e.target.value }))}
+                      placeholder={`Search ${g.tier === "friend" ? "friends" : g.tier === "crew" ? "crew members" : "mentors"} by name…`}
+                      className="pl-8"
+                    />
                   </div>
+                  <span className="text-xs text-muted-foreground">
+                    Showing {rows.length.toLocaleString()} of {ts.total.toLocaleString()}
+                  </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary">{rows.length}</Badge>
-                  {isCollapsed ? <ChevronRight className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
-                </div>
-              </button>
 
-              {!isCollapsed && (
-                <>
-                  {g.tier === "crew" && (
-                    <div className="grid gap-2 border-b border-border p-4 sm:grid-cols-3">
-                      {(Object.keys(CREW_META) as CrewType[]).map((ct) => (
-                        <div key={ct} className="rounded-lg border border-border bg-background p-3">
-                          <div className="flex items-center justify-between gap-2">
-                            <Badge className={CREW_META[ct].className}>{CREW_META[ct].label}</Badge>
-                            <span className="text-sm font-semibold text-foreground">
-                              {rows.filter((r) => r.crew_type === ct).length}
-                            </span>
-                          </div>
-                          <p className="mt-1.5 text-xs text-muted-foreground">{CREW_META[ct].desc}</p>
+                {g.tier === "crew" && (
+                  <div className="grid gap-2 border-b border-border p-4 sm:grid-cols-3">
+                    {(Object.keys(CREW_META) as CrewType[]).map((ct) => (
+                      <div key={ct} className="rounded-lg border border-border bg-background p-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <Badge className={CREW_META[ct].className}>{CREW_META[ct].label}</Badge>
+                          <span className="text-sm font-semibold text-foreground">{crewBreakdown[ct]}</span>
                         </div>
-                      ))}
-                    </div>
-                  )}
+                        <p className="mt-1.5 text-xs text-muted-foreground">{CREW_META[ct].desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
-                  {rows.length === 0 ? (
-                    <div className="p-6 text-center">
-                      <p className="text-sm text-muted-foreground">No one listed yet.</p>
-                      {canEdit && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="mt-3"
-                          onClick={() => { setEditing(null); setOpen(true); }}
-                        >
-                          <Plus className="w-4 h-4 mr-1" /> Add person
-                        </Button>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="grid gap-3 p-4 sm:grid-cols-2">
+                {ts.loading && rows.length === 0 ? (
+                  <div className="grid gap-3 p-4 sm:grid-cols-2">
+                    {[0, 1, 2, 3].map((i) => (
+                      <div key={i} className="h-20 animate-pulse rounded-xl border border-border bg-muted/40" />
+                    ))}
+                  </div>
+                ) : rows.length === 0 ? (
+                  <div className="p-6 text-center">
+                    <p className="text-sm text-muted-foreground">
+                      {searchInput[g.tier] ? "No match for this search." : "No one listed yet."}
+                    </p>
+                    {canEdit && !searchInput[g.tier] && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="mt-3"
+                        onClick={() => { setEditing(null); setOpen(true); }}
+                      >
+                        <Plus className="w-4 h-4 mr-1" /> Add person
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <div className="grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3">
                       {rows.map((p) => (
                         <div
                           key={p.id}
                           draggable={canEdit}
                           onDragStart={(e) => { setDragId(p.id); e.dataTransfer.effectAllowed = "move"; }}
                           onDragEnd={() => { setDragId(null); setDragOver(null); }}
-                          className={`group relative rounded-xl border border-border bg-background p-4 transition-shadow hover:shadow-md ${
+                          className={`group relative rounded-xl border border-border bg-background p-3 transition-shadow hover:shadow-md ${
                             canEdit ? "cursor-grab active:cursor-grabbing" : ""
                           } ${dragId === p.id ? "opacity-50" : ""}`}
                         >
                           <div className="flex items-start gap-3">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
                               {initials(p.full_name)}
                             </div>
-                              <div className="min-w-0 flex-1">
-                                <p className="truncate font-medium text-foreground">{p.full_name}</p>
-                                {p.tier !== "friend" && (
-                                  <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                                    {p.tier === "crew" && p.present_type && (
-                                      <Badge className={PRESENT_META[p.present_type].className}>{PRESENT_META[p.present_type].label}</Badge>
-                                    )}
-                                    {p.crew_type && <Badge className={CREW_META[p.crew_type].className}>{CREW_META[p.crew_type].label}</Badge>}
-                                    <Badge variant="outline">{p.has_expertise ? "With expertise" : "Without expertise"}</Badge>
-                                  </div>
-                                )}
-                              </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate font-medium text-foreground">{p.full_name}</p>
+                              {p.tier !== "friend" && (
+                                <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                                  {p.tier === "crew" && p.present_type && (
+                                    <Badge className={PRESENT_META[p.present_type].className}>{PRESENT_META[p.present_type].label}</Badge>
+                                  )}
+                                  {p.crew_type && <Badge className={CREW_META[p.crew_type].className}>{CREW_META[p.crew_type].label}</Badge>}
+                                  <Badge variant="outline">{p.has_expertise ? "With expertise" : "Without expertise"}</Badge>
+                                </div>
+                              )}
+                            </div>
                             {canEdit && (
                               <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
                                 <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setEditing(p); setOpen(true); }}>
@@ -286,13 +377,28 @@ export function OrgPeopleTab({
                         </div>
                       ))}
                     </div>
-                  )}
-                </>
-              )}
-            </div>
-          );
-        })
-      )}
+
+                    {rows.length < ts.total && (
+                      <div className="flex justify-center border-t border-border p-3">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={ts.loading}
+                          onClick={() => fetchTier(g.tier, ts.page + 1, ts.search, true)}
+                        >
+                          {ts.loading ? "Loading…" : `Load more (${(ts.total - rows.length).toLocaleString()} left)`}
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
+            )}
+          </div>
+        );
+      })}
+
+
 
 
       <PersonDialog
@@ -301,7 +407,7 @@ export function OrgPeopleTab({
         orgId={orgId}
         orgName={orgName}
         person={editing}
-        onSaved={() => { setOpen(false); load(); }}
+        onSaved={() => { setOpen(false); reloadAll(); }}
       />
     </div>
   );
