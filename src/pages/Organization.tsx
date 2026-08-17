@@ -173,6 +173,9 @@ export default function OrganizationPage() {
 
   const dailyOpenCount = dailyTasks.filter(t => !t.done).length;
 
+  const tabCount = 7 + (legalDocs.length >= 1 ? 2 : 0);
+  const desktopGrid = tabCount === 9 ? "lg:grid-cols-9" : "lg:grid-cols-7";
+
   const loadOpps = useCallback(async () => {
     if (!org) return;
     const [{ data: js }, { data: ts }, { data: ds }, { data: lg }] = await Promise.all([
@@ -402,36 +405,36 @@ export default function OrganizationPage() {
       </div>
 
       <Tabs defaultValue={searchParams.get("tab") || "legal"} className="space-y-4">
-        <TabsList className="mb-2 grid h-auto w-full grid-cols-2 gap-2 p-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9">
-          <TabsTrigger value="legal" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+        <TabsList className={cn("mb-2 grid h-auto w-full grid-cols-2 gap-2 p-2 sm:grid-cols-3", desktopGrid)}>
+          <TabsTrigger value="legal" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
             <Scale className="w-4 h-4 shrink-0" /> Legal ({legalDocs.length})
           </TabsTrigger>
-          <TabsTrigger value="daily" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+          <TabsTrigger value="daily" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
             <CalendarCheck className="w-4 h-4 shrink-0" /> Operational ({dailyOpenCount})
           </TabsTrigger>
           {legalDocs.length >= 1 && (
             <>
-              <TabsTrigger value="jobs" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+              <TabsTrigger value="jobs" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
                 <Briefcase className="w-4 h-4 shrink-0" /> Jobs ({jobs.length})
               </TabsTrigger>
-              <TabsTrigger value="tenders" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+              <TabsTrigger value="tenders" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
                 <FileText className="w-4 h-4 shrink-0" /> Tenders ({tenders.length})
               </TabsTrigger>
             </>
           )}
-          <TabsTrigger value="distribution" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+          <TabsTrigger value="distribution" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
             <PieChart className="w-4 h-4 shrink-0" /> Distribution
           </TabsTrigger>
-          <TabsTrigger value="declaration" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+          <TabsTrigger value="declaration" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
             <ClipboardList className="w-4 h-4 shrink-0" /> Declaration ({declarations.length})
           </TabsTrigger>
-          <TabsTrigger value="journey" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+          <TabsTrigger value="journey" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
             <Lightbulb className="w-4 h-4 shrink-0" /> Project Journey
           </TabsTrigger>
-          <TabsTrigger value="people" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+          <TabsTrigger value="people" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
             <Heart className="w-4 h-4 shrink-0" /> People
           </TabsTrigger>
-          <TabsTrigger value="members" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+          <TabsTrigger value="members" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
             <Users className="w-4 h-4 shrink-0" /> Members ({members.length})
           </TabsTrigger>
         </TabsList>
