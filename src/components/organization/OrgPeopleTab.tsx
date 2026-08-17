@@ -396,8 +396,18 @@ export function OrgPeopleTab({
                       value={searchInput[g.tier]}
                       onChange={(e) => setSearchInput((s) => ({ ...s, [g.tier]: e.target.value }))}
                       placeholder={`Search ${g.tier === "friend" ? "friends" : g.tier === "crew" ? CREW_META[selectedCrew!].label : "mentors"} by name…`}
-                      className="pl-8"
+                      className="pl-8 pr-8"
                     />
+                    {searchInput[g.tier] && (
+                      <button
+                        type="button"
+                        aria-label="Clear search"
+                        onClick={() => setSearchInput((s) => ({ ...s, [g.tier]: "" }))}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    )}
                   </div>
                   <span className="text-xs text-muted-foreground">
                     Showing {rows.length.toLocaleString()} of {ts.total.toLocaleString()}
@@ -413,21 +423,32 @@ export function OrgPeopleTab({
                     ))}
                   </div>
                 ) : rows.length === 0 ? (
-                  <div className="p-6 text-center">
-                    <p className="text-sm text-muted-foreground">
-                      {searchInput[g.tier] ? "No match for this search." : "No one listed yet."}
+                  <div className="p-8 text-center">
+                    <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                      <Icon className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <p className="mt-3 text-sm font-medium text-foreground">
+                      {searchInput[g.tier] ? "No match for this search." : `No ${TIER_LABEL[g.tier].toLowerCase()} listed yet.`}
                     </p>
-                    {canEdit && !searchInput[g.tier] && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {searchInput[g.tier] ? "Try a different name or clear the search." : g.subtitle}
+                    </p>
+                    {searchInput[g.tier] ? (
                       <Button
                         size="sm"
-                        variant="outline"
+                        variant="ghost"
                         className="mt-3"
-                        onClick={() => { setEditing(null); setOpen(true); }}
+                        onClick={() => setSearchInput((s) => ({ ...s, [g.tier]: "" }))}
                       >
-                        <Plus className="w-4 h-4 mr-1" /> Add person
+                        Clear search
                       </Button>
-                    )}
+                    ) : canEdit ? (
+                      <Button size="sm" variant="outline" className="mt-3" onClick={() => startAdd(g.tier)}>
+                        <Plus className="w-4 h-4 mr-1" /> {g.addLabel}
+                      </Button>
+                    ) : null}
                   </div>
+
                 ) : (
                   <>
                     <div className="grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3">
