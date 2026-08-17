@@ -59,10 +59,12 @@ export async function rankCandidates({
       .or(
         `advisor_id.in.(${candidateIds.join(",")}),user_id.in.(${candidateIds.join(",")})`,
       ),
-    sb.from("user_skills").select("user_id, skill_id").in("user_id", candidateIds),
+    sb.from("user_skills").select("user_id, skill_tag_id").in("user_id", candidateIds),
     sb
       .from("entrepreneurial_onboarding")
-      .select("user_id, completion_score")
+      .select(
+        "user_id, has_developed_project, has_built_product, has_run_business, has_served_on_board, has_led_team",
+      )
       .in("user_id", candidateIds),
     opportunity.box_id
       ? sb
