@@ -416,6 +416,32 @@ function PersonDialog({
             />
           </div>
 
+          <div className="space-y-2">
+            <Label>Community layer</Label>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {TIERS.map((t) => {
+                const Icon = t.icon;
+                const active = tier === t.value;
+                return (
+                  <button
+                    key={t.value}
+                    type="button"
+                    onClick={() => setTier(t.value)}
+                    className={`rounded-lg border p-3 text-left transition-colors ${
+                      active
+                        ? "border-primary bg-primary/5 ring-1 ring-primary"
+                        : "border-border hover:bg-muted/50"
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 ${active ? "text-primary" : "text-muted-foreground"}`} />
+                    <p className="mt-1.5 text-sm font-medium text-foreground">{t.label}</p>
+                    <p className="text-xs text-muted-foreground">{t.desc}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {tier === "friend" && (
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
@@ -461,31 +487,6 @@ function PersonDialog({
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label>Community layer</Label>
-            <div className="grid gap-2 sm:grid-cols-3">
-              {TIERS.map((t) => {
-                const Icon = t.icon;
-                const active = tier === t.value;
-                return (
-                  <button
-                    key={t.value}
-                    type="button"
-                    onClick={() => setTier(t.value)}
-                    className={`rounded-lg border p-3 text-left transition-colors ${
-                      active
-                        ? "border-primary bg-primary/5 ring-1 ring-primary"
-                        : "border-border hover:bg-muted/50"
-                    }`}
-                  >
-                    <Icon className={`w-4 h-4 ${active ? "text-primary" : "text-muted-foreground"}`} />
-                    <p className="mt-1.5 text-sm font-medium text-foreground">{t.label}</p>
-                    <p className="text-xs text-muted-foreground">{t.desc}</p>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
 
           {tier === "crew" && (
             <div className="space-y-2">
