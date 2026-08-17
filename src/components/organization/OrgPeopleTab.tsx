@@ -147,24 +147,35 @@ export function OrgPeopleTab({
 
   const reloadAll = useCallback(() => {
     loadStats();
-    (["friend", "crew", "mentor"] as Tier[]).forEach((t) => fetchTier(t, 0, searchInput[t], false));
-  }, [loadStats, fetchTier, searchInput]);
+    (["friend", "crew", "mentor"] as Tier[]).forEach((t) =>
+      fetchTier(t, 0, searchInput[t], false, t === "crew" ? selectedCrew : null),
+    );
+  }, [loadStats, fetchTier, searchInput, selectedCrew]);
 
   useEffect(() => {
     loadStats();
-    (["friend", "crew", "mentor"] as Tier[]).forEach((t) => fetchTier(t, 0, "", false));
+    (["friend", "mentor"] as Tier[]).forEach((t) => fetchTier(t, 0, "", false));
   }, [loadStats, fetchTier]);
+
+  // Crew rows load only after a category is picked.
+  useEffect(() => {
+    if (selectedCrew) fetchTier("crew", 0, "", false, selectedCrew);
+    else setState((s) => ({ ...s, crew: { ...emptyTierState(), loading: false } }));
+    setSearchInput((s) => ({ ...s, crew: "" }));
+  }, [selectedCrew, fetchTier]);
 
   // Debounced search per tier.
   useEffect(() => {
     const timers = (["friend", "crew", "mentor"] as Tier[]).map((t) =>
       setTimeout(() => {
-        if (searchInput[t] !== state[t].search) fetchTier(t, 0, searchInput[t], false);
+        if (t === "crew" && !selectedCrew) return;
+        if (searchInput[t] !== state[t].search) fetchTier(t, 0, searchInput[t], false, t === "crew" ? selectedCrew : null);
       }, 350),
     );
     return () => timers.forEach(clearTimeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchInput]);
+
 
   const handleDrop = (tier: Tier) => {
     setDragOver(null);
