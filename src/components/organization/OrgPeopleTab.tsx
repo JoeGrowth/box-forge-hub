@@ -407,7 +407,7 @@ export function OrgPeopleTab({
         orgId={orgId}
         orgName={orgName}
         person={editing}
-        onSaved={() => { setOpen(false); load(); }}
+        onSaved={() => { setOpen(false); reloadAll(); }}
       />
     </div>
   );
