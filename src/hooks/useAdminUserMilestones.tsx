@@ -45,6 +45,7 @@ export function useAdminUserMilestones(
       { data: adminMemberships },
       { data: teamMembers },
       { data: approvedIdeas },
+      { data: onboardingSessions },
     ] = await Promise.all([
       supabase
         .from("profiles")
