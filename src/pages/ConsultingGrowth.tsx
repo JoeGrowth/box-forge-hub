@@ -265,15 +265,59 @@ export default function ConsultingGrowth({ embedded = false }: { embedded?: bool
   // must operate through /organizations instead of this personal pipeline.
   const advisorGraduated = closed.length >= MILESTONE;
 
+  const stats = [
+    { label: "Revenue collected", value: `${totalRevenue.toLocaleString()}`, sub: items[0]?.currency || "EUR", icon: DollarSign },
+    { label: "Missions closed", value: `${closed.length}`, sub: `of ${MILESTONE} milestone`, icon: CheckCircle2 },
+    { label: "In pipeline", value: `${pipeline.length}`, sub: "active missions", icon: Briefcase },
+    { label: "Paying clients", value: `${activeClients}`, sub: "unique", icon: Users },
+  ];
+
   return (
     <>
     <div className={embedded ? "space-y-6" : "container mx-auto px-4 pt-24 pb-8 max-w-5xl space-y-6"}>
       {!embedded && (
-        <div className="flex items-start justify-between gap-4 mb-2 flex-wrap">
-          <div className="flex-1 min-w-[260px]">
-            <h1 className="font-display text-xl font-bold text-foreground">Your Talent, Monetized</h1>
+        <header className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-background to-accent/10 p-5 sm:p-7">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-0">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide text-primary">
+                <TrendingUp className="w-3 h-3" /> Consulting engine
+              </span>
+              <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground mt-3">Your Talent, Monetized</h1>
+              <p className="text-sm text-muted-foreground mt-1 max-w-xl">
+                Run every mission from lead to payment. Close {MILESTONE} to graduate into an advisor brand.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button variant="outline" size="sm" onClick={load} disabled={loading}>
+                {loading ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-1" />} Refresh
+              </Button>
+              <Button size="sm" onClick={() => setDialogOpen(true)}>
+                <Plus className="w-4 h-4 mr-1" /> Add opportunity
+              </Button>
+            </div>
           </div>
-        </div>
+
+          <div className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+            {stats.map(s => (
+              <div key={s.label} className="rounded-xl border border-border/70 bg-card/70 backdrop-blur-sm p-3">
+                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                  <s.icon className="w-3.5 h-3.5 text-primary" />
+                  <span className="truncate">{s.label}</span>
+                </div>
+                <p className="font-display text-xl font-bold text-foreground mt-1 leading-none">{s.value}</p>
+                <p className="text-[11px] text-muted-foreground mt-1 truncate">{s.sub}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-4">
+            <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
+              <span>Advisor milestone</span>
+              <span className="font-medium text-foreground">{closed.length}/{MILESTONE}</span>
+            </div>
+            <Progress value={milestonePct} className="h-2" />
+          </div>
+        </header>
       )}
 
       <NextGoalBanner pageStage="advisor" />
@@ -293,6 +337,7 @@ export default function ConsultingGrowth({ embedded = false }: { embedded?: bool
           </CardContent>
         </Card>
       )}
+
 
 
 
