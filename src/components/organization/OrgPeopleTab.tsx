@@ -610,7 +610,7 @@ function PersonDialog({
     setPhone(person?.phone ?? "");
     setAge(person?.age ? String(person.age) : "");
     setEvents(person?.events_participated ?? "");
-  }, [open, person]);
+  }, [open, person, defaultTier]);
 
 
 
