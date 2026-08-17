@@ -336,7 +336,7 @@ export default function Kanban() {
   const Icon = BOARDS[board].icon;
 
   return (
-    <main className="container mx-auto max-w-7xl px-4 py-8">
+    <main className="container mx-auto max-w-7xl px-4 pt-24 md:pt-28 pb-8">
       <header className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Pipeline</h1>
         <p className="mt-1 text-muted-foreground">
