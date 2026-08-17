@@ -219,35 +219,18 @@ export function OrgPeopleTab({
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
                               {initials(p.full_name)}
                             </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate font-medium text-foreground">{p.full_name}</p>
-                              <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                                {p.tier === "friend" ? (
-                                  <>
-                                    {p.age !== null && p.age !== undefined && (
-                                      <Badge variant="secondary">{p.age} years old</Badge>
-                                    )}
-                                    {p.events_participated && (
-                                      <Badge variant="outline">{p.events_participated}</Badge>
-                                    )}
-                                  </>
-                                ) : (
-                                  <>
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate font-medium text-foreground">{p.full_name}</p>
+                                {p.tier !== "friend" && (
+                                  <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                                     {p.tier === "crew" && p.present_type && (
                                       <Badge className={PRESENT_META[p.present_type].className}>{PRESENT_META[p.present_type].label}</Badge>
                                     )}
                                     {p.crew_type && <Badge className={CREW_META[p.crew_type].className}>{CREW_META[p.crew_type].label}</Badge>}
                                     <Badge variant="outline">{p.has_expertise ? "With expertise" : "Without expertise"}</Badge>
-                                  </>
+                                  </div>
                                 )}
                               </div>
-                              {p.tier === "friend" && (p.email || p.phone) && (
-                                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                                  {p.email && <span className="truncate">{p.email}</span>}
-                                  {p.phone && <span>{p.phone}</span>}
-                                </div>
-                              )}
-                            </div>
                             {canEdit && (
                               <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
                                 <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setEditing(p); setOpen(true); }}>
