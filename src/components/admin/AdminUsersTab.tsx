@@ -65,7 +65,7 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Column sort state — click a header to sort asc, click again to sort desc.
-  type SortKey = "name" | "vision" | "status" | "boost" | "scaling" | "pr" | "joined";
+  type SortKey = "name" | "vision" | "tfs" | "tm" | "ryo" | "ljv" | "pr" | "joined";
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const toggleSort = (key: SortKey) => {
