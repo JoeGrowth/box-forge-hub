@@ -70,9 +70,12 @@ function Board({ board }: { board: BoardKey }) {
   const config = BOARDS[board];
   const [items, setItems] = useState<KanbanItem[]>([]);
   const [placements, setPlacements] = useState<Record<string, string>>({});
+  const [positions, setPositions] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [dragging, setDragging] = useState<string | null>(null);
   const [overColumn, setOverColumn] = useState<string | null>(null);
+  const [dropIndex, setDropIndex] = useState<number | null>(null);
+
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -115,19 +118,22 @@ function Board({ board }: { board: BoardKey }) {
     }
 
     let placementMap: Record<string, string> = {};
+    const positionMap: Record<string, number> = {};
     if (user) {
       const { data: rows } = await supabase
         .from("kanban_placements")
-        .select("item_id, column_key")
+        .select("item_id, column_key, position")
         .eq("user_id", user.id)
         .eq("board", board);
       ((rows as any[]) ?? []).forEach((r) => {
         placementMap[r.item_id] = r.column_key;
+        if (typeof r.position === "number") positionMap[r.item_id] = r.position;
       });
     }
 
     setItems(mapped);
     setPlacements(placementMap);
+    setPositions(positionMap);
     setLoading(false);
   }, [board, user]);
 
@@ -142,30 +148,61 @@ function Board({ board }: { board: BoardKey }) {
 
   const grouped = useMemo(() => {
     const map: Record<string, KanbanItem[]> = {};
+    const rank: Record<string, number> = {};
     config.columns.forEach((c) => (map[c.key] = []));
-    items.forEach((item) => {
+    items.forEach((item, index) => {
       const key = columnOf(item.id);
       (map[key] ?? map[config.columns[0].key]).push(item);
+      rank[item.id] = positions[item.id] ?? 1000 + index;
+    });
+    Object.keys(map).forEach((key) => {
+      map[key].sort((a, b) => (rank[a.id] ?? 0) - (rank[b.id] ?? 0));
     });
     return map;
-  }, [items, columnOf, config.columns]);
+  }, [items, columnOf, config.columns, positions]);
 
-  const move = async (itemId: string, columnKey: string) => {
-    const previous = columnOf(itemId);
-    if (previous === columnKey) return;
-    setPlacements((p) => ({ ...p, [itemId]: columnKey }));
+
+  const persist = async (columnKey: string, ordered: KanbanItem[]) => {
     if (!user) return;
+    const rows = ordered.map((item, index) => ({
+      user_id: user.id,
+      board,
+      item_id: item.id,
+      column_key: columnKey,
+      position: index,
+    }));
     const { error } = await supabase
       .from("kanban_placements")
-      .upsert(
-        { user_id: user.id, board, item_id: itemId, column_key: columnKey },
-        { onConflict: "user_id,board,item_id" },
-      );
-    if (error) {
-      setPlacements((p) => ({ ...p, [itemId]: previous }));
-      toast.error("Could not save the move");
+      .upsert(rows, { onConflict: "user_id,board,item_id" });
+    if (error) toast.error("Could not save the order");
+  };
+
+  const move = async (itemId: string, columnKey: string, targetIndex?: number) => {
+    const previousColumn = columnOf(itemId);
+    const item = items.find((i) => i.id === itemId);
+    if (!item) return;
+
+    const current = (grouped[columnKey] ?? []).filter((i) => i.id !== itemId);
+    const index = targetIndex === undefined ? current.length : Math.max(0, Math.min(targetIndex, current.length));
+    const ordered = [...current.slice(0, index), item, ...current.slice(index)];
+
+    if (previousColumn === columnKey && (grouped[columnKey] ?? []).every((i, idx) => i.id === ordered[idx]?.id)) return;
+
+    setPlacements((p) => ({ ...p, [itemId]: columnKey }));
+    setPositions((p) => {
+      const next = { ...p };
+      ordered.forEach((i, idx) => (next[i.id] = idx));
+      return next;
+    });
+
+    await persist(columnKey, ordered);
+
+    if (previousColumn !== columnKey) {
+      const source = (grouped[previousColumn] ?? []).filter((i) => i.id !== itemId);
+      await persist(previousColumn, source);
     }
   };
+
 
   if (loading) {
     return (
@@ -192,8 +229,9 @@ function Board({ board }: { board: BoardKey }) {
             onDragLeave={() => setOverColumn((c) => (c === column.key ? null : c))}
             onDrop={(e) => {
               e.preventDefault();
+              if (dragging) move(dragging, column.key, dropIndex ?? undefined);
               setOverColumn(null);
-              if (dragging) move(dragging, column.key);
+              setDropIndex(null);
               setDragging(null);
             }}
             className={`min-w-0 rounded-xl border bg-muted/30 p-3 transition-colors ${
@@ -209,34 +247,50 @@ function Board({ board }: { board: BoardKey }) {
             </div>
 
             <div className="space-y-2 min-h-[120px]">
-              {cards.map((item) => (
-                <Card
-                  key={item.id}
-                  draggable
-                  onDragStart={() => setDragging(item.id)}
-                  onDragEnd={() => {
-                    setDragging(null);
-                    setOverColumn(null);
-                  }}
-                  className={`flex cursor-grab items-center gap-3 p-3 active:cursor-grabbing ${
-                    dragging === item.id ? "opacity-50" : ""
-                  }`}
-                >
-                  <GripVertical className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  {board !== "products" && (
-                    <Avatar className="h-8 w-8 shrink-0">
-                      <AvatarImage src={item.imageUrl ?? undefined} alt={item.title} />
-                      <AvatarFallback className="text-xs">{initials(item.title)}</AvatarFallback>
-                    </Avatar>
-                  )}
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{item.title}</p>
-                    {item.subtitle && (
-                      <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
+              {cards.map((item, index) => {
+                const showLine = isOver && dragging && dragging !== item.id && dropIndex === index;
+                return (
+                  <div key={item.id}>
+                    {showLine && <div className="mb-2 h-0.5 rounded-full bg-primary" />}
+                    <Card
+                      draggable
+                      onDragStart={() => setDragging(item.id)}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const after = e.clientY > rect.top + rect.height / 2;
+                        setOverColumn(column.key);
+                        setDropIndex(index + (after ? 1 : 0));
+                      }}
+                      onDragEnd={() => {
+                        setDragging(null);
+                        setOverColumn(null);
+                        setDropIndex(null);
+                      }}
+                      className={`flex cursor-grab items-center gap-3 p-3 active:cursor-grabbing ${
+                        dragging === item.id ? "opacity-50" : ""
+                      }`}
+                    >
+                      <GripVertical className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      {board !== "products" && (
+                        <Avatar className="h-8 w-8 shrink-0">
+                          <AvatarImage src={item.imageUrl ?? undefined} alt={item.title} />
+                          <AvatarFallback className="text-xs">{initials(item.title)}</AvatarFallback>
+                        </Avatar>
+                      )}
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{item.title}</p>
+                        {item.subtitle && (
+                          <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
+                        )}
+                      </div>
+                    </Card>
+                    {isOver && dragging && dragging !== item.id && dropIndex === index + 1 && (
+                      <div className="mt-2 h-0.5 rounded-full bg-primary" />
                     )}
                   </div>
-                </Card>
-              ))}
+                );
+              })}
               {cards.length === 0 && (
                 <p className="px-1 py-6 text-center text-xs text-muted-foreground">
                   Drop cards here
