@@ -17,7 +17,25 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Heart, Users, GraduationCap, Plus, Trash2, Pencil, Activity, CalendarClock, ChevronDown, ChevronRight, Search } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Heart, Users, GraduationCap, Plus, Trash2, Pencil, Activity, CalendarClock, ChevronDown, ChevronRight, Search, MoveRight, X } from "lucide-react";
+
 
 type Tier = "friend" | "crew" | "mentor";
 type CrewType = "chouch_ward" | "ch3ir" | "helba";
@@ -85,7 +103,10 @@ export function OrgPeopleTab({
   });
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<OrgPerson | null>(null);
+  const [presetTier, setPresetTier] = useState<Tier>("friend");
+  const [pendingDelete, setPendingDelete] = useState<OrgPerson | null>(null);
   const [collapsed, setCollapsed] = useState<Set<Tier>>(new Set(["friend"]));
+
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<Tier | null>(null);
   // Crew is browsed by category first: pick a crew type, then see its cards.
@@ -177,14 +198,10 @@ export function OrgPeopleTab({
   }, [searchInput]);
 
 
-  const handleDrop = (tier: Tier) => {
-    setDragOver(null);
-    const id = dragId;
-    setDragId(null);
-    if (!id || !canEdit) return;
-    const all = [...state.friend.rows, ...state.crew.rows, ...state.mentor.rows];
-    const p = all.find((x) => x.id === id);
-    if (!p || p.tier === tier) return;
+  // Promote/demote a person into another layer — used by both drag-drop and the
+  // "Move to layer" menu so the flow works on touch devices too.
+  const moveToTier = (p: OrgPerson, tier: Tier) => {
+    if (!canEdit || p.tier === tier) return;
     setEditing({
       ...p,
       tier,
@@ -192,21 +209,42 @@ export function OrgPeopleTab({
       present_type: tier === "crew" ? p.present_type : null,
       has_expertise: tier === "mentor" ? true : p.has_expertise,
     });
+    setPresetTier(tier);
     setOpen(true);
   };
 
-  const remove = async (id: string) => {
-    if (!confirm("Remove this person?")) return;
-    const { error } = await (supabase as any).from("organization_people").delete().eq("id", id);
-    if (error) toast({ title: "Remove failed", description: error.message, variant: "destructive" });
-    else { toast({ title: "Person removed" }); reloadAll(); }
+  const handleDrop = (tier: Tier) => {
+    setDragOver(null);
+    const id = dragId;
+    setDragId(null);
+    if (!id || !canEdit) return;
+    const all = [...state.friend.rows, ...state.crew.rows, ...state.mentor.rows];
+    const p = all.find((x) => x.id === id);
+    if (p) moveToTier(p, tier);
   };
 
-  const groups: { tier: Tier; title: string; subtitle: string; icon: typeof Heart }[] = [
-    { tier: "friend", title: `Friend of ${orgName}`, subtitle: "Interested participant.", icon: Heart },
-    { tier: "crew", title: `Crew Member ${orgName} (Internal)`, subtitle: "Trusted contributor with proven contribution.", icon: Users },
-    { tier: "mentor", title: `Mentor / Support System ${orgName}`, subtitle: "Knowledge carrier and ecosystem builder.", icon: GraduationCap },
+  const startAdd = (tier: Tier) => {
+    setEditing(null);
+    setPresetTier(tier);
+    setOpen(true);
+  };
+
+  const confirmRemove = async () => {
+    const target = pendingDelete;
+    setPendingDelete(null);
+    if (!target) return;
+    const { error } = await (supabase as any).from("organization_people").delete().eq("id", target.id);
+    if (error) toast({ title: "Remove failed", description: error.message, variant: "destructive" });
+    else { toast({ title: `${target.full_name} removed` }); reloadAll(); }
+  };
+
+  const groups: { tier: Tier; title: string; subtitle: string; icon: typeof Heart; addLabel: string }[] = [
+    { tier: "friend", title: `Friend of ${orgName}`, subtitle: "Interested participant.", icon: Heart, addLabel: "Add friend" },
+    { tier: "crew", title: `Crew Member ${orgName} (Internal)`, subtitle: "Trusted contributor with proven contribution.", icon: Users, addLabel: "Add crew member" },
+    { tier: "mentor", title: `Mentor / Support System ${orgName}`, subtitle: "Knowledge carrier and ecosystem builder.", icon: GraduationCap, addLabel: "Add mentor" },
   ];
+
+  const TIER_LABEL: Record<Tier, string> = { friend: "Friend", crew: "Crew Member", mentor: "Mentor" };
 
   const initials = (n: string) =>
     n.trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("");
@@ -221,16 +259,17 @@ export function OrgPeopleTab({
           </p>
           {canEdit && (
             <p className="mt-1 text-xs text-muted-foreground">
-              Drag a person onto another layer to promote them — Friend → Crew Member → Mentor.
+              Drag a card onto another layer — or use the card menu — to move someone between layers.
             </p>
           )}
         </div>
         {canEdit && (
-          <Button size="sm" onClick={() => { setEditing(null); setOpen(true); }}>
+          <Button size="sm" onClick={() => startAdd("friend")}>
             <Plus className="w-4 h-4 mr-1" /> Add person
           </Button>
         )}
       </div>
+
 
       <div className="grid gap-3 sm:grid-cols-4">
         {[
@@ -279,23 +318,38 @@ export function OrgPeopleTab({
               dragOver === g.tier && dragId ? "border-primary ring-2 ring-primary/30" : "border-border"
             }`}
           >
-            <button
-              type="button"
-              onClick={toggle}
-              className="flex w-full items-start justify-between gap-3 border-b border-border bg-muted/30 p-4 text-left transition-colors hover:bg-muted/50"
-            >
-              <div className="flex items-start gap-3">
-                <div className="rounded-lg bg-background p-2 shadow-sm"><Icon className="w-4 h-4 text-primary" /></div>
-                <div>
-                  <p className="font-medium text-foreground">{g.title}</p>
-                  <p className="text-xs text-muted-foreground">{g.subtitle}</p>
+            <div className="flex items-start gap-2 border-b border-border bg-muted/30 p-4">
+              <button
+                type="button"
+                onClick={toggle}
+                aria-expanded={!isCollapsed}
+                className="flex flex-1 items-start justify-between gap-3 text-left"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="rounded-lg bg-background p-2 shadow-sm"><Icon className="w-4 h-4 text-primary" /></div>
+                  <div>
+                    <p className="font-medium text-foreground">{g.title}</p>
+                    <p className="text-xs text-muted-foreground">{g.subtitle}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary">{headerCount.toLocaleString()}</Badge>
-                {isCollapsed ? <ChevronRight className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
-              </div>
-            </button>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">{headerCount.toLocaleString()}</Badge>
+                  {isCollapsed ? <ChevronRight className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                </div>
+              </button>
+              {canEdit && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="shrink-0"
+                  onClick={() => startAdd(g.tier)}
+                >
+                  <Plus className="w-4 h-4 sm:mr-1" />
+                  <span className="hidden sm:inline">{g.addLabel}</span>
+                </Button>
+              )}
+            </div>
+
 
             {!isCollapsed && (
               <>
@@ -342,8 +396,18 @@ export function OrgPeopleTab({
                       value={searchInput[g.tier]}
                       onChange={(e) => setSearchInput((s) => ({ ...s, [g.tier]: e.target.value }))}
                       placeholder={`Search ${g.tier === "friend" ? "friends" : g.tier === "crew" ? CREW_META[selectedCrew!].label : "mentors"} by name…`}
-                      className="pl-8"
+                      className="pl-8 pr-8"
                     />
+                    {searchInput[g.tier] && (
+                      <button
+                        type="button"
+                        aria-label="Clear search"
+                        onClick={() => setSearchInput((s) => ({ ...s, [g.tier]: "" }))}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    )}
                   </div>
                   <span className="text-xs text-muted-foreground">
                     Showing {rows.length.toLocaleString()} of {ts.total.toLocaleString()}
@@ -359,21 +423,32 @@ export function OrgPeopleTab({
                     ))}
                   </div>
                 ) : rows.length === 0 ? (
-                  <div className="p-6 text-center">
-                    <p className="text-sm text-muted-foreground">
-                      {searchInput[g.tier] ? "No match for this search." : "No one listed yet."}
+                  <div className="p-8 text-center">
+                    <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                      <Icon className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <p className="mt-3 text-sm font-medium text-foreground">
+                      {searchInput[g.tier] ? "No match for this search." : `No ${TIER_LABEL[g.tier].toLowerCase()} listed yet.`}
                     </p>
-                    {canEdit && !searchInput[g.tier] && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {searchInput[g.tier] ? "Try a different name or clear the search." : g.subtitle}
+                    </p>
+                    {searchInput[g.tier] ? (
                       <Button
                         size="sm"
-                        variant="outline"
+                        variant="ghost"
                         className="mt-3"
-                        onClick={() => { setEditing(null); setOpen(true); }}
+                        onClick={() => setSearchInput((s) => ({ ...s, [g.tier]: "" }))}
                       >
-                        <Plus className="w-4 h-4 mr-1" /> Add person
+                        Clear search
                       </Button>
-                    )}
+                    ) : canEdit ? (
+                      <Button size="sm" variant="outline" className="mt-3" onClick={() => startAdd(g.tier)}>
+                        <Plus className="w-4 h-4 mr-1" /> {g.addLabel}
+                      </Button>
+                    ) : null}
                   </div>
+
                 ) : (
                   <>
                     <div className="grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -404,15 +479,33 @@ export function OrgPeopleTab({
                               )}
                             </div>
                             {canEdit && (
-                              <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
-                                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setEditing(p); setOpen(true); }}>
+                              <div className="flex items-center gap-0.5 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button size="icon" variant="ghost" className="h-8 w-8" aria-label="Move to another layer">
+                                      <MoveRight className="w-4 h-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>Move to layer</DropdownMenuLabel>
+                                    {(["friend", "crew", "mentor"] as Tier[])
+                                      .filter((t) => t !== p.tier)
+                                      .map((t) => (
+                                        <DropdownMenuItem key={t} onSelect={() => moveToTier(p, t)}>
+                                          {TIER_LABEL[t]}
+                                        </DropdownMenuItem>
+                                      ))}
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                                <Button size="icon" variant="ghost" className="h-8 w-8" aria-label="Edit person" onClick={() => { setEditing(p); setPresetTier(p.tier); setOpen(true); }}>
                                   <Pencil className="w-4 h-4" />
                                 </Button>
-                                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => remove(p.id)}>
+                                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" aria-label="Remove person" onClick={() => setPendingDelete(p)}>
                                   <Trash2 className="w-4 h-4" />
                                 </Button>
                               </div>
                             )}
+
                           </div>
 
                           {p.tier !== "friend" && p.notes && <p className="mt-2 text-xs text-muted-foreground">{p.notes}</p>}
@@ -439,9 +532,22 @@ export function OrgPeopleTab({
           </div>
         );
       })}
-
-
-
+      <AlertDialog open={!!pendingDelete} onOpenChange={(v) => !v && setPendingDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove {pendingDelete?.full_name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes them from the {orgName} community list. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmRemove} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <PersonDialog
         open={open}
@@ -449,8 +555,10 @@ export function OrgPeopleTab({
         orgId={orgId}
         orgName={orgName}
         person={editing}
+        defaultTier={presetTier}
         onSaved={() => { setOpen(false); reloadAll(); }}
       />
+
     </div>
   );
 }
@@ -461,6 +569,7 @@ function PersonDialog({
   orgId,
   orgName,
   person,
+  defaultTier = "friend",
   onSaved,
 }: {
   open: boolean;
@@ -468,6 +577,7 @@ function PersonDialog({
   orgId: string;
   orgName: string;
   person: OrgPerson | null;
+  defaultTier?: Tier;
   onSaved: () => void;
 }) {
   const { toast } = useToast();
@@ -488,7 +598,8 @@ function PersonDialog({
   useEffect(() => {
     if (!open) return;
     setName(person?.full_name ?? "");
-    setTier(person?.tier ?? "friend");
+    setTier(person?.tier ?? defaultTier);
+
     setCrewType(person?.crew_type ?? "ch3ir");
     setExpertise(person?.has_expertise ? "yes" : "no");
     setPresentType(person?.present_type ?? null);
@@ -499,7 +610,7 @@ function PersonDialog({
     setPhone(person?.phone ?? "");
     setAge(person?.age ? String(person.age) : "");
     setEvents(person?.events_participated ?? "");
-  }, [open, person]);
+  }, [open, person, defaultTier]);
 
 
 
