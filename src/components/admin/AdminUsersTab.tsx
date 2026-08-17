@@ -147,9 +147,10 @@ export function AdminUsersTab({ users, onRefresh }: AdminUsersTabProps) {
     switch (key) {
       case "name": return (u.profile?.full_name || "").toLowerCase();
       case "vision": return visionRank(u);
-      case "status": return statusRank[getUserStatusLevel(u)] ?? 0;
-      case "boost": return boostValue(u);
-      case "scaling": return scalingValue(u);
+      case "tfs": return getMilestones(u.id).tfs ? 1 : 0;
+      case "tm": return getMilestones(u.id).tmCount;
+      case "ryo": return getMilestones(u.id).ryo ? 1 : 0;
+      case "ljv": return getMilestones(u.id).ljv ? 1 : 0;
       case "pr": return u.progressionScore || 0;
       case "joined": return new Date(u.created_at).getTime();
     }
