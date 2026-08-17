@@ -402,20 +402,38 @@ export default function OrganizationPage() {
       </div>
 
       <Tabs defaultValue={searchParams.get("tab") || "legal"} className="space-y-4">
-        <TabsList className="flex-wrap h-auto justify-start">
-          <TabsTrigger value="legal"><Scale className="w-3 h-3 mr-1" /> Legal ({legalDocs.length})</TabsTrigger>
-          <TabsTrigger value="daily"><CalendarCheck className="w-3 h-3 mr-1" /> Operational ({dailyOpenCount})</TabsTrigger>
+        <TabsList className="mb-2 grid h-auto w-full grid-cols-2 gap-2 p-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9">
+          <TabsTrigger value="legal" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+            <Scale className="w-4 h-4 shrink-0" /> Legal ({legalDocs.length})
+          </TabsTrigger>
+          <TabsTrigger value="daily" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+            <CalendarCheck className="w-4 h-4 shrink-0" /> Operational ({dailyOpenCount})
+          </TabsTrigger>
           {legalDocs.length >= 1 && (
             <>
-              <TabsTrigger value="jobs"><Briefcase className="w-3 h-3 mr-1" /> Jobs ({jobs.length})</TabsTrigger>
-              <TabsTrigger value="tenders"><FileText className="w-3 h-3 mr-1" /> Tenders ({tenders.length})</TabsTrigger>
+              <TabsTrigger value="jobs" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+                <Briefcase className="w-4 h-4 shrink-0" /> Jobs ({jobs.length})
+              </TabsTrigger>
+              <TabsTrigger value="tenders" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+                <FileText className="w-4 h-4 shrink-0" /> Tenders ({tenders.length})
+              </TabsTrigger>
             </>
           )}
-          <TabsTrigger value="distribution"><PieChart className="w-3 h-3 mr-1" /> Distribution</TabsTrigger>
-          <TabsTrigger value="declaration"><ClipboardList className="w-3 h-3 mr-1" /> Declaration ({declarations.length})</TabsTrigger>
-          <TabsTrigger value="journey"><Lightbulb className="w-3 h-3 mr-1" /> Project Journey</TabsTrigger>
-          <TabsTrigger value="people"><Heart className="w-3 h-3 mr-1" /> People</TabsTrigger>
-          <TabsTrigger value="members"><Users className="w-3 h-3 mr-1" /> Members ({members.length})</TabsTrigger>
+          <TabsTrigger value="distribution" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+            <PieChart className="w-4 h-4 shrink-0" /> Distribution
+          </TabsTrigger>
+          <TabsTrigger value="declaration" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+            <ClipboardList className="w-4 h-4 shrink-0" /> Declaration ({declarations.length})
+          </TabsTrigger>
+          <TabsTrigger value="journey" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+            <Lightbulb className="w-4 h-4 shrink-0" /> Project Journey
+          </TabsTrigger>
+          <TabsTrigger value="people" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+            <Heart className="w-4 h-4 shrink-0" /> People
+          </TabsTrigger>
+          <TabsTrigger value="members" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm">
+            <Users className="w-4 h-4 shrink-0" /> Members ({members.length})
+          </TabsTrigger>
         </TabsList>
 
 
