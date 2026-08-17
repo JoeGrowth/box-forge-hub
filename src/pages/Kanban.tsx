@@ -229,8 +229,9 @@ function Board({ board }: { board: BoardKey }) {
             onDragLeave={() => setOverColumn((c) => (c === column.key ? null : c))}
             onDrop={(e) => {
               e.preventDefault();
+              if (dragging) move(dragging, column.key, dropIndex ?? undefined);
               setOverColumn(null);
-              if (dragging) move(dragging, column.key);
+              setDropIndex(null);
               setDragging(null);
             }}
             className={`min-w-0 rounded-xl border bg-muted/30 p-3 transition-colors ${
@@ -246,40 +247,58 @@ function Board({ board }: { board: BoardKey }) {
             </div>
 
             <div className="space-y-2 min-h-[120px]">
-              {cards.map((item) => (
-                <Card
-                  key={item.id}
-                  draggable
-                  onDragStart={() => setDragging(item.id)}
-                  onDragEnd={() => {
-                    setDragging(null);
-                    setOverColumn(null);
-                  }}
-                  className={`flex cursor-grab items-center gap-3 p-3 active:cursor-grabbing ${
-                    dragging === item.id ? "opacity-50" : ""
-                  }`}
-                >
-                  <GripVertical className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  {board !== "products" && (
-                    <Avatar className="h-8 w-8 shrink-0">
-                      <AvatarImage src={item.imageUrl ?? undefined} alt={item.title} />
-                      <AvatarFallback className="text-xs">{initials(item.title)}</AvatarFallback>
-                    </Avatar>
-                  )}
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{item.title}</p>
-                    {item.subtitle && (
-                      <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
+              {cards.map((item, index) => {
+                const showLine = isOver && dragging && dragging !== item.id && dropIndex === index;
+                return (
+                  <div key={item.id}>
+                    {showLine && <div className="mb-2 h-0.5 rounded-full bg-primary" />}
+                    <Card
+                      draggable
+                      onDragStart={() => setDragging(item.id)}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const after = e.clientY > rect.top + rect.height / 2;
+                        setOverColumn(column.key);
+                        setDropIndex(index + (after ? 1 : 0));
+                      }}
+                      onDragEnd={() => {
+                        setDragging(null);
+                        setOverColumn(null);
+                        setDropIndex(null);
+                      }}
+                      className={`flex cursor-grab items-center gap-3 p-3 active:cursor-grabbing ${
+                        dragging === item.id ? "opacity-50" : ""
+                      }`}
+                    >
+                      <GripVertical className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      {board !== "products" && (
+                        <Avatar className="h-8 w-8 shrink-0">
+                          <AvatarImage src={item.imageUrl ?? undefined} alt={item.title} />
+                          <AvatarFallback className="text-xs">{initials(item.title)}</AvatarFallback>
+                        </Avatar>
+                      )}
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{item.title}</p>
+                        {item.subtitle && (
+                          <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
+                        )}
+                      </div>
+                    </Card>
+                    {isOver && dragging && dragging !== item.id && dropIndex === index + 1 && (
+                      <div className="mt-2 h-0.5 rounded-full bg-primary" />
                     )}
                   </div>
-                </Card>
-              ))}
+                );
+              })}
               {cards.length === 0 && (
                 <p className="px-1 py-6 text-center text-xs text-muted-foreground">
                   Drop cards here
                 </p>
               )}
             </div>
+          </div>
+
           </div>
         );
       })}
