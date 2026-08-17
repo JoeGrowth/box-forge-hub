@@ -237,24 +237,6 @@ export function OrgPeopleTab({
                             )}
                           </div>
 
-                          <div className="mt-3 rounded-lg border border-border bg-muted/30 p-3">
-                            <p className="text-xs font-medium text-foreground">Track Record in {orgName}</p>
-                            <div className="mt-2 grid grid-cols-2 gap-2">
-                              <div className="rounded-md bg-background p-2">
-                                <p className="text-base font-semibold leading-none text-foreground">{p.years_contribution}</p>
-                                <p className="mt-1 inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-                                  <CalendarClock className="w-3 h-3" /> years
-                                </p>
-                              </div>
-                              <div className="rounded-md bg-background p-2">
-                                <p className="text-base font-semibold leading-none text-foreground">{p.activities_count}</p>
-                                <p className="mt-1 inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-                                  <Activity className="w-3 h-3" /> activities
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-
                           {p.notes && <p className="mt-2 text-xs text-muted-foreground">{p.notes}</p>}
                         </div>
                       ))}
