@@ -275,8 +275,8 @@ export function OrgPeopleTab({
         {[
           { label: "People", value: stats.total, icon: Users },
           { label: "Crew members", value: stats.crew, icon: Heart },
-          { label: "Activities", value: stats.activities, icon: Activity },
-          { label: "Years contributed", value: stats.years, icon: CalendarClock },
+          { label: "Maximum number of activities", value: stats.activities, icon: Activity },
+          { label: "Maximum years contributed", value: stats.years, icon: CalendarClock },
         ].map((s) => {
           const Icon = s.icon;
           return (
@@ -837,7 +837,7 @@ function PersonDialog({
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label htmlFor="person-activities" className="flex items-center gap-1.5 text-xs">
-                    <Activity className="w-3.5 h-3.5 text-muted-foreground" /> Activities contributed to
+                    <Activity className="w-3.5 h-3.5 text-muted-foreground" /> Maximum number of activities
                   </Label>
                   <Input
                     id="person-activities"
@@ -849,7 +849,7 @@ function PersonDialog({
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="person-years" className="flex items-center gap-1.5 text-xs">
-                    <CalendarClock className="w-3.5 h-3.5 text-muted-foreground" /> Years of contribution
+                    <CalendarClock className="w-3.5 h-3.5 text-muted-foreground" /> Maximum years contributed
                   </Label>
                   <Input
                     id="person-years"
