@@ -290,6 +290,10 @@ function PersonDialog({
   const [activities, setActivities] = useState("0");
   const [years, setYears] = useState("0");
   const [notes, setNotes] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [age, setAge] = useState("");
+  const [events, setEvents] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -302,6 +306,10 @@ function PersonDialog({
     setActivities(String(person?.activities_count ?? 0));
     setYears(String(person?.years_contribution ?? 0));
     setNotes(person?.notes ?? "");
+    setEmail(person?.email ?? "");
+    setPhone(person?.phone ?? "");
+    setAge(person?.age ? String(person.age) : "");
+    setEvents(person?.events_participated ?? "");
   }, [open, person]);
 
 
