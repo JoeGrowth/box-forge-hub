@@ -88,18 +88,21 @@ export function OrgPeopleTab({
   const [collapsed, setCollapsed] = useState<Set<Tier>>(new Set(["friend"]));
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<Tier | null>(null);
+  // Crew is browsed by category first: pick a crew type, then see its cards.
+  const [selectedCrew, setSelectedCrew] = useState<CrewType | null>(null);
 
   // Search inputs are debounced so typing never fires a query per keystroke.
   const [searchInput, setSearchInput] = useState<Record<Tier, string>>({ friend: "", crew: "", mentor: "" });
 
   const fetchTier = useCallback(
-    async (tier: Tier, page: number, search: string, append: boolean) => {
+    async (tier: Tier, page: number, search: string, append: boolean, crewType?: CrewType | null) => {
       setState((s) => ({ ...s, [tier]: { ...s[tier], loading: true } }));
       let q = (supabase as any)
         .from("organization_people")
         .select("*", { count: "exact" })
         .eq("organization_id", orgId)
         .eq("tier", tier);
+      if (tier === "crew" && crewType) q = q.eq("crew_type", crewType);
       if (search.trim()) q = q.ilike("full_name", `%${search.trim()}%`);
       const { data, count } = await q
         .order("full_name", { ascending: true })
@@ -118,6 +121,7 @@ export function OrgPeopleTab({
     },
     [orgId],
   );
+
 
   const loadStats = useCallback(async () => {
     const base = () => (supabase as any).from("organization_people").eq("organization_id", orgId);
@@ -143,24 +147,35 @@ export function OrgPeopleTab({
 
   const reloadAll = useCallback(() => {
     loadStats();
-    (["friend", "crew", "mentor"] as Tier[]).forEach((t) => fetchTier(t, 0, searchInput[t], false));
-  }, [loadStats, fetchTier, searchInput]);
+    (["friend", "crew", "mentor"] as Tier[]).forEach((t) =>
+      fetchTier(t, 0, searchInput[t], false, t === "crew" ? selectedCrew : null),
+    );
+  }, [loadStats, fetchTier, searchInput, selectedCrew]);
 
   useEffect(() => {
     loadStats();
-    (["friend", "crew", "mentor"] as Tier[]).forEach((t) => fetchTier(t, 0, "", false));
+    (["friend", "mentor"] as Tier[]).forEach((t) => fetchTier(t, 0, "", false));
   }, [loadStats, fetchTier]);
+
+  // Crew rows load only after a category is picked.
+  useEffect(() => {
+    if (selectedCrew) fetchTier("crew", 0, "", false, selectedCrew);
+    else setState((s) => ({ ...s, crew: { ...emptyTierState(), loading: false } }));
+    setSearchInput((s) => ({ ...s, crew: "" }));
+  }, [selectedCrew, fetchTier]);
 
   // Debounced search per tier.
   useEffect(() => {
     const timers = (["friend", "crew", "mentor"] as Tier[]).map((t) =>
       setTimeout(() => {
-        if (searchInput[t] !== state[t].search) fetchTier(t, 0, searchInput[t], false);
+        if (t === "crew" && !selectedCrew) return;
+        if (searchInput[t] !== state[t].search) fetchTier(t, 0, searchInput[t], false, t === "crew" ? selectedCrew : null);
       }, 350),
     );
     return () => timers.forEach(clearTimeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchInput]);
+
 
   const handleDrop = (tier: Tier) => {
     setDragOver(null);
@@ -243,14 +258,17 @@ export function OrgPeopleTab({
         const rows = ts.rows;
         const Icon = g.icon;
         const isCollapsed = collapsed.has(g.tier);
+        const showList = g.tier !== "crew" || !!selectedCrew;
+        const headerCount = g.tier === "crew" ? stats.crew : ts.total;
         const toggle = () => {
           setCollapsed((prev) => {
             const next = new Set(prev);
             if (next.has(g.tier)) next.delete(g.tier);
-            else next.add(g.tier);
+            else { next.add(g.tier); if (g.tier === "crew") setSelectedCrew(null); }
             return next;
           });
         };
+
         return (
           <div
             key={g.tier}
@@ -274,20 +292,56 @@ export function OrgPeopleTab({
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant="secondary">{ts.total.toLocaleString()}</Badge>
+                <Badge variant="secondary">{headerCount.toLocaleString()}</Badge>
                 {isCollapsed ? <ChevronRight className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
               </div>
             </button>
 
             {!isCollapsed && (
               <>
+                {g.tier === "crew" && (
+                  <div className="grid gap-2 border-b border-border p-4 sm:grid-cols-3">
+                    {(Object.keys(CREW_META) as CrewType[]).map((ct) => {
+                      const active = selectedCrew === ct;
+                      return (
+                        <button
+                          key={ct}
+                          type="button"
+                          onClick={() => setSelectedCrew(active ? null : ct)}
+                          className={`rounded-lg border p-3 text-left transition-colors ${
+                            active ? "border-primary bg-primary/5 ring-1 ring-primary/30" : "border-border bg-background hover:bg-muted/50"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <Badge className={CREW_META[ct].className}>{CREW_META[ct].label}</Badge>
+                            <span className="text-sm font-semibold text-foreground">{crewBreakdown[ct]}</span>
+                          </div>
+                          <p className="mt-1.5 text-xs text-muted-foreground">{CREW_META[ct].desc}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {g.tier === "crew" && !selectedCrew && (
+                  <p className="p-4 text-sm text-muted-foreground">
+                    Select a crew category above to see its members.
+                  </p>
+                )}
+
+                {showList && (
                 <div className="flex flex-wrap items-center gap-2 border-b border-border p-3">
+                  {g.tier === "crew" && selectedCrew && (
+                    <Button size="sm" variant="ghost" onClick={() => setSelectedCrew(null)}>
+                      ← All categories
+                    </Button>
+                  )}
                   <div className="relative min-w-[200px] flex-1">
                     <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       value={searchInput[g.tier]}
                       onChange={(e) => setSearchInput((s) => ({ ...s, [g.tier]: e.target.value }))}
-                      placeholder={`Search ${g.tier === "friend" ? "friends" : g.tier === "crew" ? "crew members" : "mentors"} by name…`}
+                      placeholder={`Search ${g.tier === "friend" ? "friends" : g.tier === "crew" ? CREW_META[selectedCrew!].label : "mentors"} by name…`}
                       className="pl-8"
                     />
                   </div>
@@ -295,24 +349,12 @@ export function OrgPeopleTab({
                     Showing {rows.length.toLocaleString()} of {ts.total.toLocaleString()}
                   </span>
                 </div>
-
-                {g.tier === "crew" && (
-                  <div className="grid gap-2 border-b border-border p-4 sm:grid-cols-3">
-                    {(Object.keys(CREW_META) as CrewType[]).map((ct) => (
-                      <div key={ct} className="rounded-lg border border-border bg-background p-3">
-                        <div className="flex items-center justify-between gap-2">
-                          <Badge className={CREW_META[ct].className}>{CREW_META[ct].label}</Badge>
-                          <span className="text-sm font-semibold text-foreground">{crewBreakdown[ct]}</span>
-                        </div>
-                        <p className="mt-1.5 text-xs text-muted-foreground">{CREW_META[ct].desc}</p>
-                      </div>
-                    ))}
-                  </div>
                 )}
 
-                {ts.loading && rows.length === 0 ? (
+                {!showList ? null : ts.loading && rows.length === 0 ? (
                   <div className="grid gap-3 p-4 sm:grid-cols-2">
                     {[0, 1, 2, 3].map((i) => (
+
                       <div key={i} className="h-20 animate-pulse rounded-xl border border-border bg-muted/40" />
                     ))}
                   </div>
@@ -384,7 +426,7 @@ export function OrgPeopleTab({
                           size="sm"
                           variant="outline"
                           disabled={ts.loading}
-                          onClick={() => fetchTier(g.tier, ts.page + 1, ts.search, true)}
+                          onClick={() => fetchTier(g.tier, ts.page + 1, ts.search, true, g.tier === "crew" ? selectedCrew : null)}
                         >
                           {ts.loading ? "Loading…" : `Load more (${(ts.total - rows.length).toLocaleString()} left)`}
                         </Button>
