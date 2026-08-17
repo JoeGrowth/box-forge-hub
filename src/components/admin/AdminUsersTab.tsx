@@ -56,6 +56,30 @@ interface AdminUsersTabProps {
 }
 
 type StatusFilter = "all" | "tfs" | "tm" | "ryo" | "ljv";
+
+const FILTER_LABELS: Record<StatusFilter, string> = {
+  all: "All",
+  tfs: "TFS",
+  tm: "TM",
+  ryo: "RYO",
+  ljv: "LJV",
+};
+
+/** Compact checked/unchecked pill used for the four talent milestones. */
+function MilestoneBadge({ done, label }: { done: boolean; label: string }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold ${
+        done
+          ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600"
+          : "border-border bg-muted text-muted-foreground"
+      }`}
+    >
+      {done ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+      {label}
+    </span>
+  );
+}
 type DeleteType = "soft" | "hard";
 type DeleteStep = "choose" | "confirm_code" | "processing";
 
