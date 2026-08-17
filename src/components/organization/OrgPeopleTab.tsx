@@ -242,7 +242,12 @@ export function OrgPeopleTab({
                       {rows.map((p) => (
                         <div
                           key={p.id}
-                          className="group relative rounded-xl border border-border bg-background p-4 transition-shadow hover:shadow-md"
+                          draggable={canEdit}
+                          onDragStart={(e) => { setDragId(p.id); e.dataTransfer.effectAllowed = "move"; }}
+                          onDragEnd={() => { setDragId(null); setDragOver(null); }}
+                          className={`group relative rounded-xl border border-border bg-background p-4 transition-shadow hover:shadow-md ${
+                            canEdit ? "cursor-grab active:cursor-grabbing" : ""
+                          } ${dragId === p.id ? "opacity-50" : ""}`}
                         >
                           <div className="flex items-start gap-3">
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
