@@ -3,7 +3,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
-  ({ className, type, onWheel, ...props }, ref) => {
+  ({ className, type, onWheel, onFocus, ...props }, ref) => {
     return (
       <input
         type={type}
@@ -11,6 +11,14 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           // Scrolling over a focused number input must never change its value.
           if (type === "number") e.currentTarget.blur();
           onWheel?.(e);
+        }}
+        onFocus={(e) => {
+          // For number inputs with a default 0, select all on focus so typing
+          // replaces the value instead of appending (e.g. 01 when typing 1).
+          if (type === "number" && /^0(\.0+)?$/.test(e.currentTarget.value)) {
+            e.currentTarget.select();
+          }
+          onFocus?.(e);
         }}
         className={cn(
           "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
@@ -23,6 +31,7 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
     );
   },
 );
+
 
 Input.displayName = "Input";
 
