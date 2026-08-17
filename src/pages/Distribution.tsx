@@ -422,7 +422,7 @@ function DistributionBuilder({
           <CardTitle className="text-base flex items-center gap-2">
             <Briefcase className="w-4 h-4 text-primary" /> Mission Setup
           </CardTitle>
-          <p className="text-xs text-muted-foreground mt-1">Client, intitulé, itération et budget de la mission.</p>
+          <p className="text-xs text-muted-foreground mt-1">Client, mission title, iteration and budget.</p>
 
         </CardHeader>
         <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -493,17 +493,17 @@ function DistributionBuilder({
           <p className="mt-1 text-xl font-semibold font-mono tabular-nums text-b4-coral">{fmt(chargesTotal)}</p>
           <p className="text-[11px] text-muted-foreground">
             {(Number(budget) || 0) > 0
-              ? `${(Math.round((chargesTotal / (Number(budget) || 1)) * 10000) / 100).toFixed(2)}% du budget`
+              ? `${(Math.round((chargesTotal / (Number(budget) || 1)) * 10000) / 100).toFixed(2)}% of budget`
               : "—"}
           </p>
         </div>
         <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
-          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Pool à distribuer</p>
+          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Pool to distribute</p>
           <p className="mt-1 text-xl font-semibold font-mono tabular-nums text-primary">{fmt(internalPool)}</p>
-          <p className="text-[11px] text-muted-foreground">{people.length} personne{people.length > 1 ? "s" : ""}</p>
+          <p className="text-[11px] text-muted-foreground">{people.length} {people.length > 1 ? "people" : "person"}</p>
         </div>
         <div className="rounded-xl border border-border bg-card p-4">
-          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Tâches allouées</p>
+          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Tasks allocated</p>
           <p
             className={`mt-1 text-xl font-semibold font-mono tabular-nums ${
               totalPercent === 100 ? "text-b4-teal" : "text-amber-600"
@@ -512,7 +512,7 @@ function DistributionBuilder({
             {totalPercent}%
           </p>
           <p className="text-[11px] text-muted-foreground">
-            {totalPercent === 100 ? "Distribution complète" : "Doit atteindre 100%"}
+            {totalPercent === 100 ? "Fully distributed" : "Must reach 100%"}
           </p>
         </div>
       </div>
@@ -526,7 +526,7 @@ function DistributionBuilder({
               <ClipboardList className="w-4 h-4 text-b4-coral" /> Charges
             </CardTitle>
             <p className="text-xs text-muted-foreground mt-1">
-              Coûts externes déduits du budget avant distribution.
+              External costs deducted from the budget before distribution.
             </p>
           </div>
 
@@ -651,7 +651,7 @@ function DistributionBuilder({
               <Badge variant="secondary">{people.length}</Badge>
             </CardTitle>
             <p className="text-xs text-muted-foreground mt-1">
-              Chaque personne reçoit une part par tâche (en %).
+              Each person receives a share of every task (in %).
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -711,7 +711,7 @@ function DistributionBuilder({
               <Badge variant={totalPercent === 100 ? "secondary" : "destructive"}>{totalPercent}%</Badge>
             </CardTitle>
             <p className="text-xs text-muted-foreground mt-1">
-              Pool de {fmt(internalPool)} {currency} réparti par tâche, puis par personne.
+              Pool of {fmt(internalPool)} {currency} split by task, then by person.
             </p>
           </div>
 
@@ -856,12 +856,22 @@ function DistributionBuilder({
         </CardContent>
       </Card>
 
-      <div className="flex flex-wrap items-center gap-3 justify-end sticky bottom-4 bg-background/80 backdrop-blur p-3 rounded-xl border border-border">
-        {editingId && (
-          <Badge variant="outline" className="mr-auto">
-            <Pencil className="w-3 h-3 mr-1" /> Editing existing distribution
+      <div className="h-20" aria-hidden />
+
+      <div className="sticky bottom-4 z-30 flex flex-wrap items-center gap-3 rounded-xl border border-border bg-background/90 p-3 pr-4 shadow-lg backdrop-blur">
+        <div className="mr-auto flex flex-wrap items-center gap-2">
+          {editingId && (
+            <Badge variant="outline">
+              <Pencil className="w-3 h-3 mr-1" /> Editing existing distribution
+            </Badge>
+          )}
+          <Badge variant={totalPercent === 100 ? "secondary" : "destructive"}>
+            Tasks {totalPercent}%
           </Badge>
-        )}
+          <span className="text-xs text-muted-foreground font-mono tabular-nums">
+            Pool {fmt(internalPool)} {currency}
+          </span>
+        </div>
         <Button variant="outline" onClick={resetForm} disabled={saving}>
           <RefreshCw className="w-4 h-4 mr-1" /> {editingId ? "Cancel edit" : "Start new distribution"}
         </Button>
@@ -869,7 +879,9 @@ function DistributionBuilder({
           {saving ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Save className="w-4 h-4 mr-1" />}
           {editingId ? "Update distribution" : "Save distribution"}
         </Button>
+        <span className="hidden sm:block w-32" aria-hidden />
       </div>
+
     </div>
   );
 }
@@ -1117,15 +1129,15 @@ export default function Distribution() {
 
                 <p className="text-muted-foreground mt-1">
                   {activeEntity
-                    ? <>Entité active · <strong className="text-foreground">{activeEntity.name}</strong> · répartition budgétaire par mission, formation ou événement.</>
-                    : <>Choisir une entité pour organiser les répartitions budgétaires.</>}
+                    ? <>Active entity · <strong className="text-foreground">{activeEntity.name}</strong> · budget split by mission, training or event.</>
+                    : <>Pick an entity to organise its budget distributions.</>}
                 </p>
               </div>
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 <Select value={activeEntityId ?? ""} onValueChange={setActiveEntityId}>
                   <SelectTrigger className="flex-1 sm:w-[240px]">
                     <Building2 className="h-4 w-4 mr-2 text-muted-foreground" />
-                    <SelectValue placeholder="Choisir une entité" />
+                    <SelectValue placeholder="Select an entity" />
                   </SelectTrigger>
                   <SelectContent>
                     {entities.map((e) => (
