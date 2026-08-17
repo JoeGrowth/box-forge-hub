@@ -704,8 +704,17 @@ function DistributionBuilder({
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <CardTitle className="text-base">Internal &amp; Structure — task distribution</CardTitle>
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-border/60">
+          <div>
+            <CardTitle className="text-base flex items-center gap-2">
+              <ListChecks className="w-4 h-4 text-primary" /> Internal &amp; Structure — task distribution
+              <Badge variant={totalPercent === 100 ? "secondary" : "destructive"}>{totalPercent}%</Badge>
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-1">
+              Pool de {fmt(internalPool)} {currency} réparti par tâche, puis par personne.
+            </p>
+          </div>
+
           <Button
             size="sm"
             variant="outline"
