@@ -470,63 +470,65 @@ function PersonDialog({
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label>Expertise</Label>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { v: "yes", l: "With expertise" },
-                { v: "no", l: "Without expertise" },
-              ].map((o) => {
-                const current = expertiseLocked ? "yes" : expertise;
-                const active = current === o.v;
-                return (
-                    <button
-                    key={o.v}
-                    type="button"
-                    disabled={expertiseLocked}
-                    onClick={() => {
-                      setExpertise(o.v);
-                    }}
-                    className={`rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-60 ${
-                      active ? "border-primary bg-primary/5 font-medium text-foreground" : "border-border text-muted-foreground hover:bg-muted/50"
-                    }`}
-                  >
-
-                    {o.l}
-                  </button>
-                );
-              })}
-            </div>
-            {helbaLocked && (
-              <p className="text-xs text-muted-foreground">Helba is paid with expertise — locked.</p>
-            )}
-            {tier === "mentor" && (
-              <p className="text-xs text-muted-foreground">Mentors always carry expertise — locked.</p>
-            )}
-            {tier === "crew" && (
-              <div className="space-y-2 pt-2">
-                <Label>Presence</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  {(Object.keys(PRESENT_META) as Array<NonNullable<OrgPerson["present_type"]>>).map((pt) => {
-                    const active = presentType === pt;
-                    return (
+          {tier !== "friend" && (
+            <div className="space-y-2">
+              <Label>Expertise</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { v: "yes", l: "With expertise" },
+                  { v: "no", l: "Without expertise" },
+                ].map((o) => {
+                  const current = expertiseLocked ? "yes" : expertise;
+                  const active = current === o.v;
+                  return (
                       <button
-                        key={pt}
-                        type="button"
-                        onClick={() => setPresentType(pt)}
-                        className={`rounded-lg border p-3 text-left transition-colors ${
-                          active ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-muted/50"
-                        }`}
-                      >
-                        <Badge className={PRESENT_META[pt].className}>{PRESENT_META[pt].label}</Badge>
-                        <p className="mt-1.5 text-xs text-muted-foreground">{PRESENT_META[pt].desc}</p>
-                      </button>
-                    );
-                  })}
-                </div>
+                      key={o.v}
+                      type="button"
+                      disabled={expertiseLocked}
+                      onClick={() => {
+                        setExpertise(o.v);
+                      }}
+                      className={`rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-60 ${
+                        active ? "border-primary bg-primary/5 font-medium text-foreground" : "border-border text-muted-foreground hover:bg-muted/50"
+                      }`}
+                    >
+
+                      {o.l}
+                    </button>
+                  );
+                })}
               </div>
-            )}
-          </div>
+              {helbaLocked && (
+                <p className="text-xs text-muted-foreground">Helba is paid with expertise — locked.</p>
+              )}
+              {tier === "mentor" && (
+                <p className="text-xs text-muted-foreground">Mentors always carry expertise — locked.</p>
+              )}
+              {tier === "crew" && (
+                <div className="space-y-2 pt-2">
+                  <Label>Presence</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {(Object.keys(PRESENT_META) as Array<NonNullable<OrgPerson["present_type"]>>).map((pt) => {
+                      const active = presentType === pt;
+                      return (
+                        <button
+                          key={pt}
+                          type="button"
+                          onClick={() => setPresentType(pt)}
+                          className={`rounded-lg border p-3 text-left transition-colors ${
+                            active ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-muted/50"
+                          }`}
+                        >
+                          <Badge className={PRESENT_META[pt].className}>{PRESENT_META[pt].label}</Badge>
+                          <p className="mt-1.5 text-xs text-muted-foreground">{PRESENT_META[pt].desc}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
 
