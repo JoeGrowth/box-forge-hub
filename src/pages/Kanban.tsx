@@ -298,8 +298,6 @@ function Board({ board }: { board: BoardKey }) {
               )}
             </div>
           </div>
-
-          </div>
         );
       })}
     </div>
