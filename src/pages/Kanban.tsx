@@ -148,17 +148,19 @@ function Board({ board }: { board: BoardKey }) {
 
   const grouped = useMemo(() => {
     const map: Record<string, KanbanItem[]> = {};
+    const rank: Record<string, number> = {};
     config.columns.forEach((c) => (map[c.key] = []));
     items.forEach((item, index) => {
       const key = columnOf(item.id);
       (map[key] ?? map[config.columns[0].key]).push(item);
-      if (positions[item.id] === undefined) positions[item.id] = 1000 + index;
+      rank[item.id] = positions[item.id] ?? 1000 + index;
     });
     Object.keys(map).forEach((key) => {
-      map[key].sort((a, b) => (positions[a.id] ?? 0) - (positions[b.id] ?? 0));
+      map[key].sort((a, b) => (rank[a.id] ?? 0) - (rank[b.id] ?? 0));
     });
     return map;
   }, [items, columnOf, config.columns, positions]);
+
 
   const persist = async (columnKey: string, ordered: KanbanItem[]) => {
     if (!user) return;
