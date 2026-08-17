@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { UserWithDetails } from "@/hooks/useAdmin";
+import { useAdminUserMilestones } from "@/hooks/useAdminUserMilestones";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Table,
