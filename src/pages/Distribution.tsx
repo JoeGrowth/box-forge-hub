@@ -394,7 +394,7 @@ function DistributionBuilder({
                   })}
                   <TableRow className="border-t-2 font-semibold">
                     <TableCell></TableCell>
-                    <TableCell colSpan={2}>Total Reste structure</TableCell>
+                    <TableCell colSpan={2}>Total Structural reserve</TableCell>
                     <TableCell></TableCell>
                     <TableCell className="text-right font-mono">
                       {fmt(saved.reduce((sum, r) => {
@@ -627,7 +627,7 @@ function DistributionBuilder({
                 <TableCell />
               </TableRow>
               <TableRow className="font-semibold">
-                <TableCell>Total Reste structure</TableCell>
+                <TableCell>Total Structural reserve</TableCell>
                 <TableCell className="text-right">
                   {(Number(budget) || 0) > 0
                     ? `${(Math.round((internalPool / (Number(budget) || 1)) * 10000) / 100).toFixed(2)}%`

@@ -1397,7 +1397,7 @@ export default function Declaration() {
                 <Stat label="Internal" value={activeTotal.intT} currency={activeMission.currency || "TND"} />
                 <Stat label="External" value={activeTotal.extT} currency={activeMission.currency || "TND"} />
                 <Stat
-                  label="Reste Structure"
+                  label="Structural reserve"
                   value={activeTotal.rest}
                   currency={activeMission.currency || "TND"}
                   highlight={activeTotal.rest >= 0 ? "positive" : "negative"}
