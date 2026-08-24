@@ -1384,6 +1384,8 @@ function OrgDistributionsTab({ orgId, orgName, canEdit }: { orgId: string; orgNa
 
   return (
     <>
+      <DistributionModels orgId={orgId} orgName={orgName} canEdit={canEdit} entities={entities} />
+
       {canEdit && (
         <div className="rounded-xl border border-dashed border-border bg-card p-4 flex gap-2 flex-wrap items-end">
           <div className="flex-1 min-w-[220px]">
