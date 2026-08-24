@@ -6888,6 +6888,7 @@ export type Database = {
         Args: { _event_id: string }
         Returns: number
       }
+      distribution_entity_org: { Args: { _entity_id: string }; Returns: string }
       emit_opportunity_event: {
         Args: {
           _actor_id: string
