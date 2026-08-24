@@ -589,7 +589,12 @@ function DistributionBuilder({
             <TableBody>
               {charges.map((c, idx) => {
                 const budgetNum = Number(budget) || 0;
-                const pct = budgetNum > 0 ? Math.round(((Number(c.amount) || 0) / budgetNum) * 10000) / 100 : 0;
+                const pct =
+                  c.fixed && c.percent !== undefined && c.percent !== null
+                    ? Number(c.percent)
+                    : budgetNum > 0
+                      ? Math.round(((Number(c.amount) || 0) / budgetNum) * 10000) / 100
+                      : 0;
                 return (
                 <TableRow key={c.id}>
                   <TableCell>
@@ -610,12 +615,16 @@ function DistributionBuilder({
                       <Input
                         type="number"
                         step="0.01"
-                        className="text-right pr-6"
+                        readOnly={c.system}
+                        title={c.system ? "Platform fee — set by the platform" : undefined}
+                        className={`text-right pr-6 ${c.system ? "bg-muted/40" : ""}`}
                         value={pct}
                         onChange={(e) => {
+                          if (c.system) return;
                           const v = parseFloat(e.target.value);
                           const nextPct = isNaN(v) ? 0 : v;
                           updateCharge(c.id, {
+                            ...(c.fixed ? { percent: nextPct } : {}),
                             amount: Math.round((nextPct / 100) * budgetNum * 100) / 100,
                           });
                         }}
@@ -628,9 +637,19 @@ function DistributionBuilder({
                   <TableCell>
                     <Input
                       type="number"
-                      className="text-right"
+                      className={`text-right ${c.system ? "bg-muted/40" : ""}`}
                       value={c.amount}
-                      onChange={(e) => updateCharge(c.id, { amount: parseFloat(e.target.value) || 0 })}
+                      readOnly={c.system}
+                      onChange={(e) => {
+                        if (c.system) return;
+                        const amount = parseFloat(e.target.value) || 0;
+                        updateCharge(c.id, {
+                          amount,
+                          ...(c.fixed
+                            ? { percent: budgetNum > 0 ? Math.round((amount / budgetNum) * 10000) / 100 : 0 }
+                            : {}),
+                        });
+                      }}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && idx === charges.length - 1) {
                           setCharges((p) => [...p, { id: uid(), label: "New charge", amount: 0 }]);
