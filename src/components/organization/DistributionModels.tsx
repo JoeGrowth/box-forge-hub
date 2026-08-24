@@ -150,7 +150,7 @@ export function DistributionModels({
         name: m.name,
         description: m.description,
         tasks: Array.isArray(m.tasks) ? m.tasks : [],
-        charges: Array.isArray(m.charges) ? m.charges : [],
+        charges: withBaseCharges(Array.isArray(m.charges) ? m.charges : []),
       })),
     );
   }, [orgId]);
