@@ -276,9 +276,10 @@ function DistributionBuilder({
       tasks,
       people,
     };
+    const { user_id: _owner, ...updatePayload } = payload; // keep the original owner on edits
     const { error } = editingId
       ? await (supabase.from("distribution_records" as any) as any)
-          .update(payload)
+          .update(updatePayload)
           .eq("id", editingId)
       : await (supabase.from("distribution_records" as any) as any).insert(payload);
     setSaving(false);
