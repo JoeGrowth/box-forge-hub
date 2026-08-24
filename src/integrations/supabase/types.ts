@@ -1769,6 +1769,50 @@ export type Database = {
         }
         Relationships: []
       }
+      distribution_models: {
+        Row: {
+          charges: Json
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          org_id: string | null
+          tasks: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          charges?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          org_id?: string | null
+          tasks?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          charges?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          org_id?: string | null
+          tasks?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "distribution_models_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       distribution_records: {
         Row: {
           budget: number
