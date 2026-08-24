@@ -149,6 +149,7 @@ export default function OrganizationPage() {
   const [jobs, setJobs] = useState<JobRow[]>([]);
   const [tenders, setTenders] = useState<TenderRow[]>([]);
   const [declarations, setDeclarations] = useState<{ id: string; name: string; created_at: string }[]>([]);
+  const [distModelCount, setDistModelCount] = useState(0);
   const [legalDocs, setLegalDocs] = useState<{ id: string; name: string; storage_path: string; created_at: string; size_bytes: number | null }[]>([]);
   const [newDeclName, setNewDeclName] = useState("");
   const [creatingDecl, setCreatingDecl] = useState(false);
