@@ -193,6 +193,37 @@ export function DistributionModels({
 
 
 
+  const loadMissions = useCallback(async () => {
+    const ids = entities.map((e) => e.id);
+    if (ids.length === 0) {
+      setMissions([]);
+      return;
+    }
+    const { data } = await (supabase.from("distribution_records" as never) as never as any)
+      .select("id,kind,title,client,budget,currency,budget_label,iteration,created_at")
+      .order("created_at", { ascending: false });
+    setMissions(
+      ((data as any[]) ?? []).filter((r) => {
+        const k = String(r.kind || "");
+        const [folder, rest] = k.split(":");
+        return ids.includes(folder) && String(rest || "").startsWith("model-");
+      }),
+    );
+  }, [entities]);
+
+  useEffect(() => {
+    void loadMissions();
+  }, [loadMissions]);
+
+  const deleteMission = async (id: string) => {
+    if (!confirm("Delete this mission distribution page?")) return;
+    const { error } = await (supabase.from("distribution_records" as never) as never as any)
+      .delete()
+      .eq("id", id);
+    if (error) toast.error(error.message);
+    else void loadMissions();
+  };
+
   const reload = useCallback(async () => {
     const { data } = await (supabase.from("distribution_models" as never) as never as any)
       .select("id,name,description,tasks,charges")
