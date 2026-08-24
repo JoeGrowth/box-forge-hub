@@ -1089,7 +1089,30 @@ export default function Distribution() {
     return () => { cancelled = true; };
   }, [entityParam, user]);
 
+  // Load the distribution model referenced by ?model=<id> (applied from an org).
+  useEffect(() => {
+    let cancelled = false;
+    if (!modelParam) { setAppliedModel(null); return; }
+    (async () => {
+      try {
+        const { data } = await (supabase.from("distribution_models" as any) as any)
+          .select("id,name,tasks,charges")
+          .eq("id", modelParam)
+          .maybeSingle();
+        if (cancelled || !data) return;
+        setAppliedModel({
+          id: data.id,
+          name: data.name,
+          tasks: Array.isArray(data.tasks) ? data.tasks : [],
+          charges: Array.isArray(data.charges) ? data.charges : [],
+        });
+      } catch {}
+    })();
+    return () => { cancelled = true; };
+  }, [modelParam]);
+
   useEffect(() => { localStorage.setItem(DIST_ENTITIES_KEY, JSON.stringify(entities)); }, [entities]);
+
   useEffect(() => {
     if (activeEntityId) localStorage.setItem(DIST_ACTIVE_ENTITY_KEY, activeEntityId);
   }, [activeEntityId]);
