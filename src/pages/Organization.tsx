@@ -149,6 +149,7 @@ export default function OrganizationPage() {
   const [jobs, setJobs] = useState<JobRow[]>([]);
   const [tenders, setTenders] = useState<TenderRow[]>([]);
   const [declarations, setDeclarations] = useState<{ id: string; name: string; created_at: string }[]>([]);
+  const [distModelCount, setDistModelCount] = useState(0);
   const [legalDocs, setLegalDocs] = useState<{ id: string; name: string; storage_path: string; created_at: string; size_bytes: number | null }[]>([]);
   const [newDeclName, setNewDeclName] = useState("");
   const [creatingDecl, setCreatingDecl] = useState(false);
@@ -180,17 +181,19 @@ export default function OrganizationPage() {
 
   const loadOpps = useCallback(async () => {
     if (!org) return;
-    const [{ data: js }, { data: ts }, { data: ds }, { data: lg }] = await Promise.all([
+    const [{ data: js }, { data: ts }, { data: ds }, { data: lg }, { count: dm }] = await Promise.all([
       supabase.from("job_opportunities").select("*").eq("organization_id", org.id).order("created_at", { ascending: false }),
       supabase.from("tenders").select("*").eq("organization_id", org.id).order("created_at", { ascending: false }),
       supabase.from("declaration_entities").select("id, name, created_at").eq("organization_id", org.id).order("created_at", { ascending: true }),
       supabase.from("organization_legal_documents").select("id, name, storage_path, created_at, size_bytes").eq("organization_id", org.id).order("created_at", { ascending: false }),
+      (supabase.from("distribution_models" as never) as never as any).select("id", { count: "exact", head: true }).eq("org_id", org.id),
     ]);
     const tenderRows = (ts as TenderRow[]) ?? [];
     setJobs((js as JobRow[]) ?? []);
     setTenders(tenderRows);
     setDeclarations((ds as any) ?? []);
     setLegalDocs((lg as any) ?? []);
+    setDistModelCount(Number(dm) || 0);
 
     if (tenderRows.length > 0) {
       const ids = tenderRows.map((t) => t.id);
@@ -425,7 +428,7 @@ export default function OrganizationPage() {
             </>
           )}
           <TabsTrigger value="distribution" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
-            <PieChart className="w-4 h-4 shrink-0" /> Distribution
+            <PieChart className="w-4 h-4 shrink-0" /> Distribution ({distModelCount})
           </TabsTrigger>
           <TabsTrigger value="declaration" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
             <ClipboardList className="w-4 h-4 shrink-0" /> Declaration ({declarations.length})
