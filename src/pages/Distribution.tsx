@@ -70,6 +70,9 @@ function DistributionBuilder({
   defaultBudgetLabel,
   defaultTasks,
   defaultCharges,
+  defaultClient = "",
+  defaultBudget = 0,
+  autoIteration = false,
 }: {
   kind: Kind;
   kindLabel?: string;
@@ -77,14 +80,17 @@ function DistributionBuilder({
   defaultBudgetLabel: string;
   defaultTasks: Task[];
   defaultCharges: Charge[];
+  defaultClient?: string;
+  defaultBudget?: number;
+  autoIteration?: boolean;
 }) {
   const label = kindLabel ?? kind;
   const { user } = useAuth();
   const [resetKey, setResetKey] = useState(0);
-  const [client, setClient] = useState("");
+  const [client, setClient] = useState(defaultClient);
   const [title, setTitle] = useState(defaultTitle);
   const [iteration, setIteration] = useState<number>(1);
-  const [budget, setBudget] = useState<number>(0);
+  const [budget, setBudget] = useState<number>(defaultBudget);
   const [currency, setCurrency] = useState<string>("TND");
   const [budgetLabel, setBudgetLabel] = useState(defaultBudgetLabel);
   const [charges, setCharges] = useState<Charge[]>(withBaseCharges(defaultCharges));
@@ -96,6 +102,7 @@ function DistributionBuilder({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showSaved, setShowSaved] = useState(false);
   const missionRef = useRef<HTMLDivElement>(null);
+
 
   const fetchSaved = useCallback(async () => {
     if (!user) return;
