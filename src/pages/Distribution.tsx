@@ -1482,17 +1482,30 @@ export function EntityCategories({
         </Dialog>
       </div>
 
-      {active && (
-        <DistributionBuilder
-          key={`${scopeId}:${active.id}`}
-          kind={active.kind ?? `${scopeId}:${active.id}`}
-          kindLabel={active.name}
-          defaultTitle=""
-          defaultBudgetLabel="Budget"
-          defaultTasks={genericTasks()}
-          defaultCharges={genericCharges()}
-        />
-      )}
+      {active && (() => {
+        const useModel =
+          !!model && active.name.trim().toLowerCase() === model.name.trim().toLowerCase();
+        return (
+          <DistributionBuilder
+            key={`${scopeId}:${active.id}:${useModel ? model!.id : "base"}`}
+            kind={active.kind ?? `${scopeId}:${active.id}`}
+            kindLabel={active.name}
+            defaultTitle=""
+            defaultBudgetLabel="Budget"
+            defaultTasks={
+              useModel
+                ? model!.tasks.map((t) => ({ ...t, id: uid() }))
+                : genericTasks()
+            }
+            defaultCharges={
+              useModel
+                ? model!.charges.map((c) => ({ ...c, id: uid() }))
+                : genericCharges()
+            }
+          />
+        );
+      })()}
+
     </div>
   );
 }
