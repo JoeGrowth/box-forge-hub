@@ -1231,7 +1231,7 @@ export default function Distribution() {
                 </CardContent>
               </Card>
             ) : (
-              <EntityCategories scopeId={activeEntity.id} scopeLabel={activeEntity.name} />
+              <EntityCategories scopeId={activeEntity.id} scopeLabel={activeEntity.name} model={appliedModel} />
             )}
 
           </div>
