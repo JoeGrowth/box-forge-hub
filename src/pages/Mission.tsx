@@ -2,7 +2,7 @@
 // One page per mission, created from a distribution model in an organization.
 // Same visual language as /distribution, but scoped to this mission only.
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -25,10 +25,13 @@ import {
   ListChecks,
   Wallet,
   ArrowLeft,
+  FileDown,
+  Check,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { exportMissionPdf } from "@/lib/missionPdfExport";
 
 type Task = { id: string; label: string; percent: number; locked?: boolean; personShares?: number[] };
 type Charge = { id: string; label: string; amount: number; fixed?: boolean; percent?: number; system?: boolean };
@@ -57,6 +60,9 @@ export default function Mission() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [people, setPeople] = useState<string[]>(["Person (1)", "Person (2)"]);
   const [modelName, setModelName] = useState<string>("");
+  const [dirty, setDirty] = useState(false);
+  const [savedAt, setSavedAt] = useState<Date | null>(null);
+  const readyRef = useRef(false);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -80,6 +86,11 @@ export default function Mission() {
     setPeople(Array.isArray(data.people) && data.people.length ? data.people : ["Person (1)", "Person (2)"]);
     setModelName(data.budget_label && data.budget_label !== "Budget" ? data.budget_label : "");
     setLoading(false);
+    readyRef.current = false;
+    setDirty(false);
+    setTimeout(() => {
+      readyRef.current = true;
+    }, 0);
   }, [id]);
 
   useEffect(() => {
@@ -101,6 +112,10 @@ export default function Mission() {
       return changed ? next : prev;
     });
   }, [budget]);
+
+  useEffect(() => {
+    if (readyRef.current) setDirty(true);
+  }, [client, title, iteration, budget, currency, charges, tasks, people]);
 
   const chargesTotal = useMemo(() => charges.reduce((s, c) => s + (Number(c.amount) || 0), 0), [charges]);
   const internalPool = Math.max(0, (Number(budget) || 0) - chargesTotal);
@@ -149,38 +164,93 @@ export default function Mission() {
       return copy;
     });
 
+  // Server persistence. `silent` is used by the autosave loop.
+  const persist = useCallback(
+    async (silent = false) => {
+      if (!id || !user) {
+        if (!silent) toast.error("Sign in to save this mission.");
+        return false;
+      }
+      if (!title.trim()) {
+        if (!silent) toast.error("Mission title is required.");
+        return false;
+      }
+      setSaving(true);
+      const { data, error } = await (supabase.from("distribution_records" as never) as never as any)
+        .update({
+          client: client.trim() || null,
+          title: title.trim(),
+          iteration: Math.max(1, Number(iteration) || 1),
+          budget,
+          currency,
+          charges,
+          tasks,
+          people,
+        })
+        .eq("id", id)
+        .select("id");
+      setSaving(false);
+      if (error) {
+        if (!silent) toast.error(error.message);
+        return false;
+      }
+      if (!Array.isArray(data) || data.length === 0) {
+        if (!silent) toast.error("You do not have permission to edit this mission.");
+        return false;
+      }
+      setSavedAt(new Date());
+      setDirty(false);
+      return true;
+    },
+    [id, user, title, client, iteration, budget, currency, charges, tasks, people],
+  );
+
   const save = async () => {
-    if (!user) {
-      toast.error("Sign in to save this mission.");
-      return;
-    }
-    if (!title.trim()) {
-      toast.error("Mission title is required.");
-      return;
-    }
     if (totalPercent !== 100) {
-      toast.error(`Task percentages must total 100% (currently ${totalPercent}%).`);
-      return;
+      toast.warning(`Saved, but task percentages total ${totalPercent}% (should be 100%).`);
     }
-    setSaving(true);
-    const { error } = await (supabase.from("distribution_records" as never) as never as any)
-      .update({
-        client: client.trim() || null,
-        title: title.trim(),
-        iteration: Math.max(1, Number(iteration) || 1),
-        budget,
-        currency,
-        charges,
-        tasks,
-        people,
-      })
-      .eq("id", id);
-    setSaving(false);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    toast.success("Mission distribution saved.");
+    const ok = await persist(false);
+    if (ok && totalPercent === 100) toast.success("Mission distribution saved.");
+  };
+
+  // Autosave every change (debounced) so nothing lives only in the browser.
+  useEffect(() => {
+    if (loading || notFound || !dirty) return;
+    const t = setTimeout(() => void persist(true), 1200);
+    return () => clearTimeout(t);
+  }, [dirty, loading, notFound, persist]);
+
+  const downloadPdf = () => {
+    exportMissionPdf({
+      title,
+      client,
+      iteration,
+      modelName,
+      budget: Number(budget) || 0,
+      currency,
+      chargesTotal,
+      internalPool,
+      totalPercent,
+      charges: charges.map((c) => {
+        const budgetNum = Number(budget) || 0;
+        const pct =
+          c.fixed && c.percent !== undefined && c.percent !== null
+            ? Number(c.percent)
+            : budgetNum > 0
+              ? Math.round(((Number(c.amount) || 0) / budgetNum) * 10000) / 100
+              : 0;
+        return { label: c.label, percent: pct, amount: Number(c.amount) || 0 };
+      }),
+      people,
+      perPersonTotal,
+      tasks: tasks.map((t, i) => ({
+        label: t.label,
+        percent: Number(t.percent) || 0,
+        amount: taskAmounts[i] || 0,
+        locked: t.locked,
+        perPerson: perPersonPerTask[i],
+      })),
+    });
   };
 
   return (
@@ -218,6 +288,31 @@ export default function Mission() {
                     {client ? <>Client · <strong className="text-foreground">{client}</strong> · </> : null}
                     Iteration ({iteration}){modelName ? <> · model {modelName}</> : null}
                   </p>
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    <Button size="sm" variant="outline" onClick={downloadPdf}>
+                      <FileDown className="mr-1 h-4 w-4" /> Export PDF
+                    </Button>
+                    <Button size="sm" onClick={save} disabled={saving}>
+                      {saving ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Save className="mr-1 h-4 w-4" />}
+                      Save mission
+                    </Button>
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                      {saving ? (
+                        <>
+                          <Loader2 className="h-3 w-3 animate-spin" /> Saving…
+                        </>
+                      ) : dirty ? (
+                        "Unsaved changes"
+                      ) : savedAt ? (
+                        <>
+                          <Check className="h-3 w-3 text-b4-teal" /> Saved{" "}
+                          {savedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        </>
+                      ) : (
+                        "Autosave on"
+                      )}
+                    </span>
+                  </div>
                 </div>
 
                 <Card>
