@@ -377,36 +377,68 @@ export function DistributionModels({
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs uppercase tracking-wide text-muted-foreground">Charges (default amounts)</Label>
+                <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Charges (fixed % first, then default amounts)
+                </Label>
                 {editing.charges.map((c, i) => (
                   <div key={c.id} className="flex items-center gap-2">
                     <Input
                       value={c.label}
+                      readOnly={c.fixed}
+                      className={`flex-1 ${c.fixed ? "bg-muted/40 font-medium" : ""}`}
                       onChange={(e) => {
+                        if (c.fixed) return;
                         const charges = [...editing.charges];
                         charges[i] = { ...c, label: e.target.value };
                         setEditing({ ...editing, charges });
                       }}
-                      className="flex-1"
                     />
-                    <Input
-                      type="number"
-                      value={c.amount}
-                      onChange={(e) => {
-                        const charges = [...editing.charges];
-                        charges[i] = { ...c, amount: Number(e.target.value) || 0 };
-                        setEditing({ ...editing, charges });
-                      }}
-                      className="w-24 text-right font-mono"
-                    />
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                      onClick={() => setEditing({ ...editing, charges: editing.charges.filter((x) => x.id !== c.id) })}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+                    {c.fixed ? (
+                      <div className="relative w-24">
+                        <Input
+                          type="number"
+                          step="0.01"
+                          readOnly={c.system}
+                          title={c.system ? "Platform fee — set by the platform" : undefined}
+                          value={c.percent ?? 0}
+                          onChange={(e) => {
+                            if (c.system) return;
+                            const charges = [...editing.charges];
+                            charges[i] = { ...c, percent: Number(e.target.value) || 0 };
+                            setEditing({ ...editing, charges });
+                          }}
+                          className={`pr-6 text-right font-mono ${c.system ? "bg-muted/40" : ""}`}
+                        />
+                        <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                          %
+                        </span>
+                      </div>
+                    ) : (
+                      <Input
+                        type="number"
+                        value={c.amount}
+                        onChange={(e) => {
+                          const charges = [...editing.charges];
+                          charges[i] = { ...c, amount: Number(e.target.value) || 0 };
+                          setEditing({ ...editing, charges });
+                        }}
+                        className="w-24 text-right font-mono"
+                      />
+                    )}
+                    {c.fixed ? (
+                      <span className="flex h-8 w-8 items-center justify-center text-muted-foreground">
+                        <Lock className="h-3.5 w-3.5" />
+                      </span>
+                    ) : (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        onClick={() => setEditing({ ...editing, charges: editing.charges.filter((x) => x.id !== c.id) })}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
                   </div>
                 ))}
                 <Button
