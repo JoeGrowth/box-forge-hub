@@ -142,6 +142,7 @@ export function DistributionModels({
   const [applyTitle, setApplyTitle] = useState("");
   const [applyBudget, setApplyBudget] = useState<string>("");
   const [creating, setCreating] = useState(false);
+  const [missions, setMissions] = useState<any[]>([]);
   const navigate = useNavigate();
 
   // Each mission gets its own dedicated page: we create one distribution record
