@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Plus, Trash2, Layers, ArrowRight, Copy, Pencil, Lock } from "lucide-react";
+import { Plus, Trash2, Layers, ArrowRight, Copy, Pencil, Lock, FileText } from "lucide-react";
 
 type ModelTask = { id: string; label: string; percent: number; locked?: boolean };
 type ModelCharge = { id: string; label: string; amount: number; percent?: number; fixed?: boolean; system?: boolean };
@@ -189,6 +189,7 @@ export function DistributionModels({
     setApplyClient("");
     setApplyTitle("");
     setApplyBudget("");
+    void loadMissions();
     navigate(`/mission/${data.id}`);
   };
 
