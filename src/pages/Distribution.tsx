@@ -1340,6 +1340,23 @@ export function EntityCategories({
     if (activeCatId) localStorage.setItem(ACTIVE_CAT_KEY(scopeId), activeCatId);
   }, [activeCatId, scopeId]);
 
+  // When a distribution model is applied from the organization page, make sure
+  // a category named after that model exists and is the active one.
+  useEffect(() => {
+    if (!initialised || !model) return;
+    const existing = cats.find(
+      (c) => c.name.trim().toLowerCase() === model.name.trim().toLowerCase(),
+    );
+    if (existing) {
+      setActiveCatId(existing.id);
+      return;
+    }
+    const cat: Category = { id: uid(), name: model.name };
+    setCats((p) => [...p, cat]);
+    setActiveCatId(cat.id);
+  }, [initialised, model, cats]);
+
+
   const addCategory = () => {
     const name = newName.trim();
     if (!name) return;
