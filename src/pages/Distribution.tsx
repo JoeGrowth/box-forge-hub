@@ -1007,10 +1007,13 @@ export async function deleteDistEntityRemote(id: string) {
 export default function Distribution() {
   const [searchParams] = useSearchParams();
   const entityParam = searchParams.get("entity");
+  const modelParam = searchParams.get("model");
+  const [appliedModel, setAppliedModel] = useState<AppliedModel | null>(null);
   const [entities, setEntities] = useState<DistEntity[]>([]);
   const [activeEntityId, setActiveEntityId] = useState<string | null>(null);
   const [manageOpen, setManageOpen] = useState(false);
   const [newEntityName, setNewEntityName] = useState("");
+
 
   const { user } = useAuth();
 
