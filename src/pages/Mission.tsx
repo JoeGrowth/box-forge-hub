@@ -2,7 +2,7 @@
 // One page per mission, created from a distribution model in an organization.
 // Same visual language as /distribution, but scoped to this mission only.
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -25,10 +25,13 @@ import {
   ListChecks,
   Wallet,
   ArrowLeft,
+  FileDown,
+  Check,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { exportMissionPdf } from "@/lib/missionPdfExport";
 
 type Task = { id: string; label: string; percent: number; locked?: boolean; personShares?: number[] };
 type Charge = { id: string; label: string; amount: number; fixed?: boolean; percent?: number; system?: boolean };
@@ -57,6 +60,9 @@ export default function Mission() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [people, setPeople] = useState<string[]>(["Person (1)", "Person (2)"]);
   const [modelName, setModelName] = useState<string>("");
+  const [dirty, setDirty] = useState(false);
+  const [savedAt, setSavedAt] = useState<Date | null>(null);
+  const readyRef = useRef(false);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -80,6 +86,11 @@ export default function Mission() {
     setPeople(Array.isArray(data.people) && data.people.length ? data.people : ["Person (1)", "Person (2)"]);
     setModelName(data.budget_label && data.budget_label !== "Budget" ? data.budget_label : "");
     setLoading(false);
+    readyRef.current = false;
+    setDirty(false);
+    setTimeout(() => {
+      readyRef.current = true;
+    }, 0);
   }, [id]);
 
   useEffect(() => {
