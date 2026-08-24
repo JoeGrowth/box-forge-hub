@@ -119,6 +119,14 @@ function DistributionBuilder({
     fetchSaved();
   }, [fetchSaved]);
 
+  // When a mission is created from a distribution model, the iteration number is
+  // derived from how many missions were already distributed with that model.
+  useEffect(() => {
+    if (!autoIteration || editingId) return;
+    setIteration(saved.length + 1);
+  }, [autoIteration, saved, editingId]);
+
+
   // Fixed charges are percentage-driven: keep their amount in sync with the budget.
   useEffect(() => {
     const budgetNum = Number(budget) || 0;
