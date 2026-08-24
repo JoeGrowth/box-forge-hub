@@ -38,6 +38,8 @@ import {
 } from "@/components/ui/dialog";
 import { EntityRoleSlots } from "@/components/entity-roles/EntityRoleSlots";
 import { OrgPeopleTab } from "@/components/organization/OrgPeopleTab";
+import { DistributionModels } from "@/components/organization/DistributionModels";
+
 import {
   Select,
   SelectContent,
