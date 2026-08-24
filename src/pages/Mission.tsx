@@ -149,38 +149,93 @@ export default function Mission() {
       return copy;
     });
 
+  // Server persistence. `silent` is used by the autosave loop.
+  const persist = useCallback(
+    async (silent = false) => {
+      if (!id || !user) {
+        if (!silent) toast.error("Sign in to save this mission.");
+        return false;
+      }
+      if (!title.trim()) {
+        if (!silent) toast.error("Mission title is required.");
+        return false;
+      }
+      setSaving(true);
+      const { data, error } = await (supabase.from("distribution_records" as never) as never as any)
+        .update({
+          client: client.trim() || null,
+          title: title.trim(),
+          iteration: Math.max(1, Number(iteration) || 1),
+          budget,
+          currency,
+          charges,
+          tasks,
+          people,
+        })
+        .eq("id", id)
+        .select("id");
+      setSaving(false);
+      if (error) {
+        if (!silent) toast.error(error.message);
+        return false;
+      }
+      if (!Array.isArray(data) || data.length === 0) {
+        if (!silent) toast.error("You do not have permission to edit this mission.");
+        return false;
+      }
+      setSavedAt(new Date());
+      setDirty(false);
+      return true;
+    },
+    [id, user, title, client, iteration, budget, currency, charges, tasks, people],
+  );
+
   const save = async () => {
-    if (!user) {
-      toast.error("Sign in to save this mission.");
-      return;
-    }
-    if (!title.trim()) {
-      toast.error("Mission title is required.");
-      return;
-    }
     if (totalPercent !== 100) {
-      toast.error(`Task percentages must total 100% (currently ${totalPercent}%).`);
-      return;
+      toast.warning(`Saved, but task percentages total ${totalPercent}% (should be 100%).`);
     }
-    setSaving(true);
-    const { error } = await (supabase.from("distribution_records" as never) as never as any)
-      .update({
-        client: client.trim() || null,
-        title: title.trim(),
-        iteration: Math.max(1, Number(iteration) || 1),
-        budget,
-        currency,
-        charges,
-        tasks,
-        people,
-      })
-      .eq("id", id);
-    setSaving(false);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    toast.success("Mission distribution saved.");
+    const ok = await persist(false);
+    if (ok && totalPercent === 100) toast.success("Mission distribution saved.");
+  };
+
+  // Autosave every change (debounced) so nothing lives only in the browser.
+  useEffect(() => {
+    if (loading || notFound || !dirty) return;
+    const t = setTimeout(() => void persist(true), 1200);
+    return () => clearTimeout(t);
+  }, [dirty, loading, notFound, persist]);
+
+  const downloadPdf = () => {
+    exportMissionPdf({
+      title,
+      client,
+      iteration,
+      modelName,
+      budget: Number(budget) || 0,
+      currency,
+      chargesTotal,
+      internalPool,
+      totalPercent,
+      charges: charges.map((c) => {
+        const budgetNum = Number(budget) || 0;
+        const pct =
+          c.fixed && c.percent !== undefined && c.percent !== null
+            ? Number(c.percent)
+            : budgetNum > 0
+              ? Math.round(((Number(c.amount) || 0) / budgetNum) * 10000) / 100
+              : 0;
+        return { label: c.label, percent: pct, amount: Number(c.amount) || 0 };
+      }),
+      people,
+      perPersonTotal,
+      tasks: tasks.map((t, i) => ({
+        label: t.label,
+        percent: Number(t.percent) || 0,
+        amount: taskAmounts[i] || 0,
+        locked: t.locked,
+        perPerson: perPersonPerTask[i],
+      })),
+    });
   };
 
   return (
