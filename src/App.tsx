@@ -85,6 +85,7 @@ import ActivationHub from "./pages/ActivationHub";
 import AdvisorWorkQueue from "./pages/AdvisorWorkQueue";
 import ClickAnalytics from "./pages/admin/ClickAnalytics";
 import Distribution from "./pages/Distribution";
+import Mission from "./pages/Mission";
 import ConsultingGrowth from "./pages/ConsultingGrowth";
 import Income from "./pages/Income";
 import BrandEntity from "./pages/BrandEntity";
