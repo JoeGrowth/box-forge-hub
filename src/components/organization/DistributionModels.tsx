@@ -28,7 +28,7 @@ import { toast } from "sonner";
 import { Plus, Trash2, Layers, ArrowRight, Copy, Pencil } from "lucide-react";
 
 type ModelTask = { id: string; label: string; percent: number; locked?: boolean };
-type ModelCharge = { id: string; label: string; amount: number };
+type ModelCharge = { id: string; label: string; amount: number; percent?: number; fixed?: boolean; system?: boolean };
 
 export type DistributionModel = {
   id: string;
@@ -39,6 +39,40 @@ export type DistributionModel = {
 };
 
 const uid = () => Math.random().toString(36).slice(2, 9);
+
+// Fixed charges every model starts with. Percentages are editable by the user,
+// except Platform Fees which is controlled by the platform (code only).
+const PLATFORM_FEE_PERCENT = 1;
+const BASE_CHARGES: Array<{ label: string; percent: number; system?: boolean; aliases?: string[] }> = [
+  { label: "Broker", percent: 5 },
+  { label: "Administration", percent: 5 },
+  { label: "Quality Ensurance", percent: 5, aliases: ["Quality", "Quality Assurance"] },
+  { label: "Platform Fees", percent: PLATFORM_FEE_PERCENT, system: true, aliases: ["Platform Fee"] },
+];
+const norm = (v: unknown) => String(v || "").trim().toLowerCase();
+const BASE_LABELS = BASE_CHARGES.flatMap((b) => [b.label, ...(b.aliases ?? [])]);
+
+const withBaseCharges = (list: ModelCharge[]): ModelCharge[] => {
+  const arr = Array.isArray(list) ? list : [];
+  const rest = arr.filter((c) => !BASE_LABELS.some((l) => norm(l) === norm(c.label)));
+  const base = BASE_CHARGES.map((b) => {
+    const existing = arr.find((c) => [b.label, ...(b.aliases ?? [])].some((l) => norm(l) === norm(c.label)));
+    const percent = b.system
+      ? b.percent
+      : existing?.percent !== undefined && existing?.percent !== null
+        ? Number(existing.percent)
+        : b.percent;
+    return {
+      id: uid(),
+      label: b.label,
+      amount: Number(existing?.amount) || 0,
+      percent,
+      fixed: true,
+      system: b.system,
+    } as ModelCharge;
+  });
+  return [...base, ...rest.map((c) => ({ ...c, fixed: false }))];
+};
 
 const PRESETS: Record<string, { tasks: Omit<ModelTask, "id">[]; charges: Omit<ModelCharge, "id">[] }> = {
   Consulting: {
