@@ -1312,18 +1312,22 @@ const genericCharges = (): Charge[] => [
 ];
 
 export type AppliedModel = { id: string; name: string; tasks: Task[]; charges: Charge[] };
+export type MissionPrefill = { client: string; title: string; budget: number };
 
 export function EntityCategories({
   scopeId,
   scopeLabel,
   defaults,
   model,
+  prefill,
 }: {
   scopeId: string;
   scopeLabel: string;
   defaults?: string[];
   model?: AppliedModel | null;
+  prefill?: MissionPrefill | null;
 }) {
+
 
   const { user } = useAuth();
   const [cats, setCats] = useState<Category[]>([]);
