@@ -1007,10 +1007,13 @@ export async function deleteDistEntityRemote(id: string) {
 export default function Distribution() {
   const [searchParams] = useSearchParams();
   const entityParam = searchParams.get("entity");
+  const modelParam = searchParams.get("model");
+  const [appliedModel, setAppliedModel] = useState<AppliedModel | null>(null);
   const [entities, setEntities] = useState<DistEntity[]>([]);
   const [activeEntityId, setActiveEntityId] = useState<string | null>(null);
   const [manageOpen, setManageOpen] = useState(false);
   const [newEntityName, setNewEntityName] = useState("");
+
 
   const { user } = useAuth();
 
@@ -1086,7 +1089,30 @@ export default function Distribution() {
     return () => { cancelled = true; };
   }, [entityParam, user]);
 
+  // Load the distribution model referenced by ?model=<id> (applied from an org).
+  useEffect(() => {
+    let cancelled = false;
+    if (!modelParam) { setAppliedModel(null); return; }
+    (async () => {
+      try {
+        const { data } = await (supabase.from("distribution_models" as any) as any)
+          .select("id,name,tasks,charges")
+          .eq("id", modelParam)
+          .maybeSingle();
+        if (cancelled || !data) return;
+        setAppliedModel({
+          id: data.id,
+          name: data.name,
+          tasks: Array.isArray(data.tasks) ? data.tasks : [],
+          charges: Array.isArray(data.charges) ? data.charges : [],
+        });
+      } catch {}
+    })();
+    return () => { cancelled = true; };
+  }, [modelParam]);
+
   useEffect(() => { localStorage.setItem(DIST_ENTITIES_KEY, JSON.stringify(entities)); }, [entities]);
+
   useEffect(() => {
     if (activeEntityId) localStorage.setItem(DIST_ACTIVE_ENTITY_KEY, activeEntityId);
   }, [activeEntityId]);
@@ -1205,7 +1231,7 @@ export default function Distribution() {
                 </CardContent>
               </Card>
             ) : (
-              <EntityCategories scopeId={activeEntity.id} scopeLabel={activeEntity.name} />
+              <EntityCategories scopeId={activeEntity.id} scopeLabel={activeEntity.name} model={appliedModel} />
             )}
 
           </div>
@@ -1231,15 +1257,20 @@ const genericCharges = (): Charge[] => [
   { id: uid(), label: "Materials", amount: 0 },
 ];
 
+export type AppliedModel = { id: string; name: string; tasks: Task[]; charges: Charge[] };
+
 export function EntityCategories({
   scopeId,
   scopeLabel,
   defaults,
+  model,
 }: {
   scopeId: string;
   scopeLabel: string;
   defaults?: string[];
+  model?: AppliedModel | null;
 }) {
+
   const { user } = useAuth();
   const [cats, setCats] = useState<Category[]>([]);
   const [activeCatId, setActiveCatId] = useState<string | null>(null);
@@ -1334,6 +1365,23 @@ export function EntityCategories({
   useEffect(() => {
     if (activeCatId) localStorage.setItem(ACTIVE_CAT_KEY(scopeId), activeCatId);
   }, [activeCatId, scopeId]);
+
+  // When a distribution model is applied from the organization page, make sure
+  // a category named after that model exists and is the active one.
+  useEffect(() => {
+    if (!initialised || !model) return;
+    const existing = cats.find(
+      (c) => c.name.trim().toLowerCase() === model.name.trim().toLowerCase(),
+    );
+    if (existing) {
+      setActiveCatId(existing.id);
+      return;
+    }
+    const cat: Category = { id: uid(), name: model.name };
+    setCats((p) => [...p, cat]);
+    setActiveCatId(cat.id);
+  }, [initialised, model, cats]);
+
 
   const addCategory = () => {
     const name = newName.trim();
@@ -1460,17 +1508,30 @@ export function EntityCategories({
         </Dialog>
       </div>
 
-      {active && (
-        <DistributionBuilder
-          key={`${scopeId}:${active.id}`}
-          kind={active.kind ?? `${scopeId}:${active.id}`}
-          kindLabel={active.name}
-          defaultTitle=""
-          defaultBudgetLabel="Budget"
-          defaultTasks={genericTasks()}
-          defaultCharges={genericCharges()}
-        />
-      )}
+      {active && (() => {
+        const useModel =
+          !!model && active.name.trim().toLowerCase() === model.name.trim().toLowerCase();
+        return (
+          <DistributionBuilder
+            key={`${scopeId}:${active.id}:${useModel ? model!.id : "base"}`}
+            kind={active.kind ?? `${scopeId}:${active.id}`}
+            kindLabel={active.name}
+            defaultTitle=""
+            defaultBudgetLabel="Budget"
+            defaultTasks={
+              useModel
+                ? model!.tasks.map((t) => ({ ...t, id: uid() }))
+                : genericTasks()
+            }
+            defaultCharges={
+              useModel
+                ? model!.charges.map((c) => ({ ...c, id: uid() }))
+                : genericCharges()
+            }
+          />
+        );
+      })()}
+
     </div>
   );
 }
