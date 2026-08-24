@@ -1077,6 +1077,14 @@ export default function Distribution() {
   const [searchParams] = useSearchParams();
   const entityParam = searchParams.get("entity");
   const modelParam = searchParams.get("model");
+  const missionPrefill: MissionPrefill | null = searchParams.get("title")
+    ? {
+        client: searchParams.get("client") ?? "",
+        title: searchParams.get("title") ?? "",
+        budget: Number(searchParams.get("budget")) || 0,
+      }
+    : null;
+
   const [appliedModel, setAppliedModel] = useState<AppliedModel | null>(null);
   const [entities, setEntities] = useState<DistEntity[]>([]);
   const [activeEntityId, setActiveEntityId] = useState<string | null>(null);
