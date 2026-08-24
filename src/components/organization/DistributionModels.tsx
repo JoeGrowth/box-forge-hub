@@ -25,10 +25,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Plus, Trash2, Layers, ArrowRight, Copy, Pencil } from "lucide-react";
+import { Plus, Trash2, Layers, ArrowRight, Copy, Pencil, Lock } from "lucide-react";
 
 type ModelTask = { id: string; label: string; percent: number; locked?: boolean };
-type ModelCharge = { id: string; label: string; amount: number };
+type ModelCharge = { id: string; label: string; amount: number; percent?: number; fixed?: boolean; system?: boolean };
 
 export type DistributionModel = {
   id: string;
@@ -39,6 +39,40 @@ export type DistributionModel = {
 };
 
 const uid = () => Math.random().toString(36).slice(2, 9);
+
+// Fixed charges every model starts with. Percentages are editable by the user,
+// except Platform Fees which is controlled by the platform (code only).
+const PLATFORM_FEE_PERCENT = 1;
+const BASE_CHARGES: Array<{ label: string; percent: number; system?: boolean; aliases?: string[] }> = [
+  { label: "Broker", percent: 5 },
+  { label: "Administration", percent: 5 },
+  { label: "Quality Ensurance", percent: 5, aliases: ["Quality", "Quality Assurance"] },
+  { label: "Platform Fees", percent: PLATFORM_FEE_PERCENT, system: true, aliases: ["Platform Fee"] },
+];
+const norm = (v: unknown) => String(v || "").trim().toLowerCase();
+const BASE_LABELS = BASE_CHARGES.flatMap((b) => [b.label, ...(b.aliases ?? [])]);
+
+const withBaseCharges = (list: ModelCharge[]): ModelCharge[] => {
+  const arr = Array.isArray(list) ? list : [];
+  const rest = arr.filter((c) => !BASE_LABELS.some((l) => norm(l) === norm(c.label)));
+  const base = BASE_CHARGES.map((b) => {
+    const existing = arr.find((c) => [b.label, ...(b.aliases ?? [])].some((l) => norm(l) === norm(c.label)));
+    const percent = b.system
+      ? b.percent
+      : existing?.percent !== undefined && existing?.percent !== null
+        ? Number(existing.percent)
+        : b.percent;
+    return {
+      id: uid(),
+      label: b.label,
+      amount: Number(existing?.amount) || 0,
+      percent,
+      fixed: true,
+      system: b.system,
+    } as ModelCharge;
+  });
+  return [...base, ...rest.map((c) => ({ ...c, fixed: false }))];
+};
 
 const PRESETS: Record<string, { tasks: Omit<ModelTask, "id">[]; charges: Omit<ModelCharge, "id">[] }> = {
   Consulting: {
@@ -116,7 +150,7 @@ export function DistributionModels({
         name: m.name,
         description: m.description,
         tasks: Array.isArray(m.tasks) ? m.tasks : [],
-        charges: Array.isArray(m.charges) ? m.charges : [],
+        charges: withBaseCharges(Array.isArray(m.charges) ? m.charges : []),
       })),
     );
   }, [orgId]);
@@ -132,7 +166,7 @@ export function DistributionModels({
       name: preset === "Blank" ? "" : `${preset} model`,
       description: null,
       tasks: p.tasks.map((t) => ({ ...t, id: uid() })),
-      charges: p.charges.map((c) => ({ ...c, id: uid() })),
+      charges: withBaseCharges(p.charges.map((c) => ({ ...c, id: uid() }))),
     });
     setOpen(true);
   };
@@ -188,7 +222,7 @@ export function DistributionModels({
       name: `${m.name} (copy)`,
       description: m.description,
       tasks: m.tasks.map((t) => ({ ...t, id: uid() })),
-      charges: m.charges.map((c) => ({ ...c, id: uid() })),
+      charges: withBaseCharges(m.charges.map((c) => ({ ...c, id: uid() }))),
     });
     setOpen(true);
   };
@@ -343,36 +377,68 @@ export function DistributionModels({
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs uppercase tracking-wide text-muted-foreground">Charges (default amounts)</Label>
+                <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Charges (fixed % first, then default amounts)
+                </Label>
                 {editing.charges.map((c, i) => (
                   <div key={c.id} className="flex items-center gap-2">
                     <Input
                       value={c.label}
+                      readOnly={c.fixed}
+                      className={`flex-1 ${c.fixed ? "bg-muted/40 font-medium" : ""}`}
                       onChange={(e) => {
+                        if (c.fixed) return;
                         const charges = [...editing.charges];
                         charges[i] = { ...c, label: e.target.value };
                         setEditing({ ...editing, charges });
                       }}
-                      className="flex-1"
                     />
-                    <Input
-                      type="number"
-                      value={c.amount}
-                      onChange={(e) => {
-                        const charges = [...editing.charges];
-                        charges[i] = { ...c, amount: Number(e.target.value) || 0 };
-                        setEditing({ ...editing, charges });
-                      }}
-                      className="w-24 text-right font-mono"
-                    />
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                      onClick={() => setEditing({ ...editing, charges: editing.charges.filter((x) => x.id !== c.id) })}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+                    {c.fixed ? (
+                      <div className="relative w-24">
+                        <Input
+                          type="number"
+                          step="0.01"
+                          readOnly={c.system}
+                          title={c.system ? "Platform fee — set by the platform" : undefined}
+                          value={c.percent ?? 0}
+                          onChange={(e) => {
+                            if (c.system) return;
+                            const charges = [...editing.charges];
+                            charges[i] = { ...c, percent: Number(e.target.value) || 0 };
+                            setEditing({ ...editing, charges });
+                          }}
+                          className={`pr-6 text-right font-mono ${c.system ? "bg-muted/40" : ""}`}
+                        />
+                        <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                          %
+                        </span>
+                      </div>
+                    ) : (
+                      <Input
+                        type="number"
+                        value={c.amount}
+                        onChange={(e) => {
+                          const charges = [...editing.charges];
+                          charges[i] = { ...c, amount: Number(e.target.value) || 0 };
+                          setEditing({ ...editing, charges });
+                        }}
+                        className="w-24 text-right font-mono"
+                      />
+                    )}
+                    {c.fixed ? (
+                      <span className="flex h-8 w-8 items-center justify-center text-muted-foreground">
+                        <Lock className="h-3.5 w-3.5" />
+                      </span>
+                    ) : (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        onClick={() => setEditing({ ...editing, charges: editing.charges.filter((x) => x.id !== c.id) })}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
                   </div>
                 ))}
                 <Button

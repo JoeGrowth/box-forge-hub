@@ -21,20 +21,40 @@ import { formatDistanceToNow } from "date-fns";
 
 
 type Task = { id: string; label: string; percent: number; locked?: boolean; personShares?: number[] };
-type Charge = { id: string; label: string; amount: number; fixed?: boolean };
+type Charge = { id: string; label: string; amount: number; fixed?: boolean; percent?: number; system?: boolean };
 type Kind = string;
 
 const uid = () => Math.random().toString(36).slice(2, 9);
-const BASE_CHARGE_LABELS = ["Broker", "Administration", "Quality"];
+// Fixed charges present on every distribution. Percentages are defaults the user
+// can change — except Platform Fees, which is set by the platform (code only).
+const BASE_CHARGES: Array<{ label: string; percent: number; system?: boolean; aliases?: string[] }> = [
+  { label: "Broker", percent: 5 },
+  { label: "Administration", percent: 5 },
+  { label: "Quality Ensurance", percent: 5, aliases: ["Quality", "Quality Assurance"] },
+  { label: "Platform Fees", percent: 1, system: true, aliases: ["Platform Fee"] },
+];
+const BASE_CHARGE_LABELS = BASE_CHARGES.flatMap((b) => [b.label, ...(b.aliases ?? [])]);
 const withBaseCharges = (list: Charge[]): Charge[] => {
-  const rest = (Array.isArray(list) ? list : []).filter(
-    (c) => !BASE_CHARGE_LABELS.some((b) => b.toLowerCase() === String(c.label || "").trim().toLowerCase()),
-  );
-  const base = BASE_CHARGE_LABELS.map((label) => {
-    const existing = (Array.isArray(list) ? list : []).find(
-      (c) => String(c.label || "").trim().toLowerCase() === label.toLowerCase(),
+  const arr = Array.isArray(list) ? list : [];
+  const norm = (v: unknown) => String(v || "").trim().toLowerCase();
+  const rest = arr.filter((c) => !BASE_CHARGE_LABELS.some((b) => norm(b) === norm(c.label)));
+  const base = BASE_CHARGES.map((b) => {
+    const existing = arr.find((c) =>
+      [b.label, ...(b.aliases ?? [])].some((l) => norm(l) === norm(c.label)),
     );
-    return { id: uid(), label, amount: Number(existing?.amount) || 0, fixed: true } as Charge;
+    const percent = b.system
+      ? b.percent
+      : existing?.percent !== undefined && existing?.percent !== null
+        ? Number(existing.percent)
+        : b.percent;
+    return {
+      id: uid(),
+      label: b.label,
+      amount: Number(existing?.amount) || 0,
+      percent,
+      fixed: true,
+      system: b.system,
+    } as Charge;
   });
   return [...base, ...rest.map((c) => ({ ...c, fixed: false }))];
 };
@@ -92,6 +112,22 @@ function DistributionBuilder({
   useEffect(() => {
     fetchSaved();
   }, [fetchSaved]);
+
+  // Fixed charges are percentage-driven: keep their amount in sync with the budget.
+  useEffect(() => {
+    const budgetNum = Number(budget) || 0;
+    setCharges((prev) => {
+      let changed = false;
+      const next = prev.map((c) => {
+        if (!c.fixed || c.percent === undefined || c.percent === null) return c;
+        const amount = Math.round(((Number(c.percent) || 0) / 100) * budgetNum * 100) / 100;
+        if (amount === c.amount) return c;
+        changed = true;
+        return { ...c, amount };
+      });
+      return changed ? next : prev;
+    });
+  }, [budget]);
 
   const chargesTotal = useMemo(() => charges.reduce((s, c) => s + (Number(c.amount) || 0), 0), [charges]);
   const internalPool = Math.max(0, (Number(budget) || 0) - chargesTotal);
@@ -553,7 +589,12 @@ function DistributionBuilder({
             <TableBody>
               {charges.map((c, idx) => {
                 const budgetNum = Number(budget) || 0;
-                const pct = budgetNum > 0 ? Math.round(((Number(c.amount) || 0) / budgetNum) * 10000) / 100 : 0;
+                const pct =
+                  c.fixed && c.percent !== undefined && c.percent !== null
+                    ? Number(c.percent)
+                    : budgetNum > 0
+                      ? Math.round(((Number(c.amount) || 0) / budgetNum) * 10000) / 100
+                      : 0;
                 return (
                 <TableRow key={c.id}>
                   <TableCell>
@@ -574,12 +615,16 @@ function DistributionBuilder({
                       <Input
                         type="number"
                         step="0.01"
-                        className="text-right pr-6"
+                        readOnly={c.system}
+                        title={c.system ? "Platform fee — set by the platform" : undefined}
+                        className={`text-right pr-6 ${c.system ? "bg-muted/40" : ""}`}
                         value={pct}
                         onChange={(e) => {
+                          if (c.system) return;
                           const v = parseFloat(e.target.value);
                           const nextPct = isNaN(v) ? 0 : v;
                           updateCharge(c.id, {
+                            ...(c.fixed ? { percent: nextPct } : {}),
                             amount: Math.round((nextPct / 100) * budgetNum * 100) / 100,
                           });
                         }}
@@ -592,9 +637,19 @@ function DistributionBuilder({
                   <TableCell>
                     <Input
                       type="number"
-                      className="text-right"
+                      className={`text-right ${c.system ? "bg-muted/40" : ""}`}
                       value={c.amount}
-                      onChange={(e) => updateCharge(c.id, { amount: parseFloat(e.target.value) || 0 })}
+                      readOnly={c.system}
+                      onChange={(e) => {
+                        if (c.system) return;
+                        const amount = parseFloat(e.target.value) || 0;
+                        updateCharge(c.id, {
+                          amount,
+                          ...(c.fixed
+                            ? { percent: budgetNum > 0 ? Math.round((amount / budgetNum) * 10000) / 100 : 0 }
+                            : {}),
+                        });
+                      }}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && idx === charges.length - 1) {
                           setCharges((p) => [...p, { id: uid(), label: "New charge", amount: 0 }]);
