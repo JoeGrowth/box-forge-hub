@@ -166,7 +166,7 @@ export function DistributionModels({
       name: preset === "Blank" ? "" : `${preset} model`,
       description: null,
       tasks: p.tasks.map((t) => ({ ...t, id: uid() })),
-      charges: p.charges.map((c) => ({ ...c, id: uid() })),
+      charges: withBaseCharges(p.charges.map((c) => ({ ...c, id: uid() }))),
     });
     setOpen(true);
   };
