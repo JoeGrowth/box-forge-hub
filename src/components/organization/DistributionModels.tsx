@@ -138,6 +138,10 @@ export function DistributionModels({
   const [saving, setSaving] = useState(false);
   const [applyTarget, setApplyTarget] = useState<DistributionModel | null>(null);
   const [applyEntity, setApplyEntity] = useState<string>("");
+  const [applyClient, setApplyClient] = useState("");
+  const [applyTitle, setApplyTitle] = useState("");
+  const [applyBudget, setApplyBudget] = useState<string>("");
+
 
   const reload = useCallback(async () => {
     const { data } = await (supabase.from("distribution_models" as never) as never as any)
@@ -460,41 +464,92 @@ export function DistributionModels({
       </Dialog>
 
       {/* Apply model to a mission */}
-      <Dialog open={!!applyTarget} onOpenChange={(o) => !o && setApplyTarget(null)}>
+      <Dialog
+        open={!!applyTarget}
+        onOpenChange={(o) => {
+          if (!o) {
+            setApplyTarget(null);
+            setApplyClient("");
+            setApplyTitle("");
+            setApplyBudget("");
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Distribute a mission with "{applyTarget?.name}"</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <Label className="text-xs uppercase tracking-wide text-muted-foreground">Distribution entity</Label>
-            {entities.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Create a distribution entity first (below) — the mission is saved inside it.
-              </p>
-            ) : (
-              <Select value={applyEntity} onValueChange={setApplyEntity}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select entity" />
-                </SelectTrigger>
-                <SelectContent>
-                  {entities.map((e) => (
-                    <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+            <div>
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Distribution entity</Label>
+              {entities.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Create a distribution entity first (below) — the mission is saved inside it.
+                </p>
+              ) : (
+                <Select value={applyEntity} onValueChange={setApplyEntity}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select entity" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {entities.map((e) => (
+                      <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+            <div>
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Client</Label>
+              <Input
+                value={applyClient}
+                onChange={(e) => setApplyClient(e.target.value)}
+                placeholder="e.g. Ministry of Health"
+              />
+            </div>
+            <div>
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Mission title</Label>
+              <Input
+                value={applyTitle}
+                onChange={(e) => setApplyTitle(e.target.value)}
+                placeholder="e.g. Digital audit — phase 1"
+              />
+            </div>
+            <div>
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Budget</Label>
+              <Input
+                type="number"
+                value={applyBudget}
+                onChange={(e) => setApplyBudget(e.target.value)}
+                placeholder="0"
+                className="text-right font-mono"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              The iteration number is calculated automatically from how many times this model has already been used.
+            </p>
           </div>
           <DialogFooter>
             {entities.length > 0 && applyTarget && applyEntity && (
-              <Button asChild>
-                <Link to={`/distribution?entity=${applyEntity}&model=${applyTarget.id}`}>
-                  Open workspace <ArrowRight className="ml-1 h-3 w-3" />
+              <Button asChild disabled={!applyTitle.trim()}>
+                <Link
+                  to={`/distribution?entity=${applyEntity}&model=${applyTarget.id}&client=${encodeURIComponent(
+                    applyClient.trim(),
+                  )}&title=${encodeURIComponent(applyTitle.trim())}&budget=${encodeURIComponent(
+                    String(Number(applyBudget) || 0),
+                  )}`}
+                  onClick={(e) => {
+                    if (!applyTitle.trim()) e.preventDefault();
+                  }}
+                >
+                  Create mission page <ArrowRight className="ml-1 h-3 w-3" />
                 </Link>
               </Button>
             )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
     </div>
   );
 }

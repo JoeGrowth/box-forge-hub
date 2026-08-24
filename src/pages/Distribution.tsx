@@ -70,6 +70,9 @@ function DistributionBuilder({
   defaultBudgetLabel,
   defaultTasks,
   defaultCharges,
+  defaultClient = "",
+  defaultBudget = 0,
+  autoIteration = false,
 }: {
   kind: Kind;
   kindLabel?: string;
@@ -77,14 +80,17 @@ function DistributionBuilder({
   defaultBudgetLabel: string;
   defaultTasks: Task[];
   defaultCharges: Charge[];
+  defaultClient?: string;
+  defaultBudget?: number;
+  autoIteration?: boolean;
 }) {
   const label = kindLabel ?? kind;
   const { user } = useAuth();
   const [resetKey, setResetKey] = useState(0);
-  const [client, setClient] = useState("");
+  const [client, setClient] = useState(defaultClient);
   const [title, setTitle] = useState(defaultTitle);
   const [iteration, setIteration] = useState<number>(1);
-  const [budget, setBudget] = useState<number>(0);
+  const [budget, setBudget] = useState<number>(defaultBudget);
   const [currency, setCurrency] = useState<string>("TND");
   const [budgetLabel, setBudgetLabel] = useState(defaultBudgetLabel);
   const [charges, setCharges] = useState<Charge[]>(withBaseCharges(defaultCharges));
@@ -96,6 +102,7 @@ function DistributionBuilder({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showSaved, setShowSaved] = useState(false);
   const missionRef = useRef<HTMLDivElement>(null);
+
 
   const fetchSaved = useCallback(async () => {
     if (!user) return;
@@ -111,6 +118,14 @@ function DistributionBuilder({
   useEffect(() => {
     fetchSaved();
   }, [fetchSaved]);
+
+  // When a mission is created from a distribution model, the iteration number is
+  // derived from how many missions were already distributed with that model.
+  useEffect(() => {
+    if (!autoIteration || editingId) return;
+    setIteration(saved.length + 1);
+  }, [autoIteration, saved, editingId]);
+
 
   // Fixed charges are percentage-driven: keep their amount in sync with the budget.
   useEffect(() => {
@@ -1062,6 +1077,14 @@ export default function Distribution() {
   const [searchParams] = useSearchParams();
   const entityParam = searchParams.get("entity");
   const modelParam = searchParams.get("model");
+  const missionPrefill: MissionPrefill | null = searchParams.get("title")
+    ? {
+        client: searchParams.get("client") ?? "",
+        title: searchParams.get("title") ?? "",
+        budget: Number(searchParams.get("budget")) || 0,
+      }
+    : null;
+
   const [appliedModel, setAppliedModel] = useState<AppliedModel | null>(null);
   const [entities, setEntities] = useState<DistEntity[]>([]);
   const [activeEntityId, setActiveEntityId] = useState<string | null>(null);
@@ -1285,7 +1308,7 @@ export default function Distribution() {
                 </CardContent>
               </Card>
             ) : (
-              <EntityCategories scopeId={activeEntity.id} scopeLabel={activeEntity.name} model={appliedModel} />
+              <EntityCategories scopeId={activeEntity.id} scopeLabel={activeEntity.name} model={appliedModel} prefill={missionPrefill} />
             )}
 
           </div>
@@ -1312,18 +1335,22 @@ const genericCharges = (): Charge[] => [
 ];
 
 export type AppliedModel = { id: string; name: string; tasks: Task[]; charges: Charge[] };
+export type MissionPrefill = { client: string; title: string; budget: number };
 
 export function EntityCategories({
   scopeId,
   scopeLabel,
   defaults,
   model,
+  prefill,
 }: {
   scopeId: string;
   scopeLabel: string;
   defaults?: string[];
   model?: AppliedModel | null;
+  prefill?: MissionPrefill | null;
 }) {
+
 
   const { user } = useAuth();
   const [cats, setCats] = useState<Category[]>([]);
@@ -1563,12 +1590,16 @@ export function EntityCategories({
       {active && (() => {
         const useModel =
           !!model && active.name.trim().toLowerCase() === model.name.trim().toLowerCase();
+        const missionPrefill = useModel && prefill?.title ? prefill : null;
         return (
           <DistributionBuilder
-            key={`${scopeId}:${active.id}:${useModel ? model!.id : "base"}`}
+            key={`${scopeId}:${active.id}:${useModel ? model!.id : "base"}:${missionPrefill?.title ?? ""}`}
             kind={active.kind ?? `${scopeId}:${active.id}`}
             kindLabel={active.name}
-            defaultTitle=""
+            defaultTitle={missionPrefill?.title ?? ""}
+            defaultClient={missionPrefill?.client ?? ""}
+            defaultBudget={missionPrefill?.budget ?? 0}
+            autoIteration={!!missionPrefill}
             defaultBudgetLabel="Budget"
             defaultTasks={
               useModel
@@ -1583,6 +1614,7 @@ export function EntityCategories({
           />
         );
       })()}
+
 
     </div>
   );
