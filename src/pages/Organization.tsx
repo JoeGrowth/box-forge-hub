@@ -428,7 +428,7 @@ export default function OrganizationPage() {
             </>
           )}
           <TabsTrigger value="distribution" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
-            <PieChart className="w-4 h-4 shrink-0" /> Distribution
+            <PieChart className="w-4 h-4 shrink-0" /> Distribution ({distModelCount})
           </TabsTrigger>
           <TabsTrigger value="declaration" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
             <ClipboardList className="w-4 h-4 shrink-0" /> Declaration ({declarations.length})
