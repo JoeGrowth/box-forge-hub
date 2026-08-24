@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Plus, Trash2, Layers, ArrowRight, Copy, Pencil, Lock } from "lucide-react";
+import { Plus, Trash2, Layers, ArrowRight, Copy, Pencil, Lock, FileText } from "lucide-react";
 
 type ModelTask = { id: string; label: string; percent: number; locked?: boolean };
 type ModelCharge = { id: string; label: string; amount: number; percent?: number; fixed?: boolean; system?: boolean };
@@ -142,6 +142,7 @@ export function DistributionModels({
   const [applyTitle, setApplyTitle] = useState("");
   const [applyBudget, setApplyBudget] = useState<string>("");
   const [creating, setCreating] = useState(false);
+  const [missions, setMissions] = useState<any[]>([]);
   const navigate = useNavigate();
 
   // Each mission gets its own dedicated page: we create one distribution record
@@ -188,10 +189,42 @@ export function DistributionModels({
     setApplyClient("");
     setApplyTitle("");
     setApplyBudget("");
+    void loadMissions();
     navigate(`/mission/${data.id}`);
   };
 
 
+
+  const loadMissions = useCallback(async () => {
+    const ids = entities.map((e) => e.id);
+    if (ids.length === 0) {
+      setMissions([]);
+      return;
+    }
+    const { data } = await (supabase.from("distribution_records" as never) as never as any)
+      .select("id,kind,title,client,budget,currency,budget_label,iteration,created_at")
+      .order("created_at", { ascending: false });
+    setMissions(
+      ((data as any[]) ?? []).filter((r) => {
+        const k = String(r.kind || "");
+        const [folder, rest] = k.split(":");
+        return ids.includes(folder) && String(rest || "").startsWith("model-");
+      }),
+    );
+  }, [entities]);
+
+  useEffect(() => {
+    void loadMissions();
+  }, [loadMissions]);
+
+  const deleteMission = async (id: string) => {
+    if (!confirm("Delete this mission distribution page?")) return;
+    const { error } = await (supabase.from("distribution_records" as never) as never as any)
+      .delete()
+      .eq("id", id);
+    if (error) toast.error(error.message);
+    else void loadMissions();
+  };
 
   const reload = useCallback(async () => {
     const { data } = await (supabase.from("distribution_models" as never) as never as any)
@@ -359,6 +392,55 @@ export function DistributionModels({
           ))}
         </div>
       )}
+
+      {/* Mission distribution pages created from models */}
+      <div className="space-y-2 border-t border-border pt-3">
+        <p className="flex items-center gap-2 text-sm font-medium text-foreground">
+          <FileText className="h-4 w-4 text-primary" /> Mission distribution pages ({missions.length})
+        </p>
+        {missions.length === 0 ? (
+          <p className="rounded-lg border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
+            No mission pages yet — distribute a mission with a model above.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {missions.map((m) => {
+              const folder = entities.find((e) => e.id === String(m.kind || "").split(":")[0]);
+              return (
+                <div key={m.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border p-3">
+                  <div className="min-w-0">
+                    <p className="truncate font-medium text-foreground">{m.title || "Untitled mission"}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {m.client ? `${m.client} · ` : ""}Iteration ({Number(m.iteration) || 1})
+                      {m.budget_label ? ` · model ${m.budget_label}` : ""}
+                      {folder ? ` · ${folder.name}` : ""}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <Badge variant="secondary" className="font-mono text-[10px]">
+                      {(Number(m.budget) || 0).toLocaleString()} {m.currency || "TND"}
+                    </Badge>
+                    <Button size="sm" variant="outline" onClick={() => navigate(`/mission/${m.id}`)}>
+                      Open <ArrowRight className="ml-1 h-3 w-3" />
+                    </Button>
+                    {canEdit && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                        onClick={() => deleteMission(m.id)}
+                        title="Delete mission page"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* Create / edit model */}
       <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setEditing(null); }}>
