@@ -1382,7 +1382,7 @@ function OrgDistributionsTab({ orgId, orgName, canEdit }: { orgId: string; orgNa
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Delete this distribution entity?")) return;
+    if (!confirm("Delete this distribution folder?")) return;
     await deleteDistEntityRemote(id);
     void reload();
   };
@@ -1394,7 +1394,7 @@ function OrgDistributionsTab({ orgId, orgName, canEdit }: { orgId: string; orgNa
       {canEdit && (
         <div className="rounded-xl border border-dashed border-border bg-card p-4 flex gap-2 flex-wrap items-end">
           <div className="flex-1 min-w-[220px]">
-            <Label className="text-xs uppercase tracking-wide text-muted-foreground">New distribution entity</Label>
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">New distribution folder</Label>
             <Input
               value={newName}
               onChange={(e) => setNewName(e.target.value)}

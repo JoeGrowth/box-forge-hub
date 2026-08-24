@@ -481,10 +481,10 @@ export function DistributionModels({
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Distribution entity</Label>
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Distribution folder</Label>
               {entities.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  Create a distribution entity first (below) — the mission is saved inside it.
+                  Create a distribution folder first (below) — the mission is saved inside it.
                 </p>
               ) : (
                 <Select value={applyEntity} onValueChange={setApplyEntity}>
