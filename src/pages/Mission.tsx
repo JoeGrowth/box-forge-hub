@@ -113,6 +113,10 @@ export default function Mission() {
     });
   }, [budget]);
 
+  useEffect(() => {
+    if (readyRef.current) setDirty(true);
+  }, [client, title, iteration, budget, currency, charges, tasks, people]);
+
   const chargesTotal = useMemo(() => charges.reduce((s, c) => s + (Number(c.amount) || 0), 0), [charges]);
   const internalPool = Math.max(0, (Number(budget) || 0) - chargesTotal);
   const totalPercent = useMemo(() => tasks.reduce((s, t) => s + (Number(t.percent) || 0), 0), [tasks]);
@@ -284,6 +288,31 @@ export default function Mission() {
                     {client ? <>Client · <strong className="text-foreground">{client}</strong> · </> : null}
                     Iteration ({iteration}){modelName ? <> · model {modelName}</> : null}
                   </p>
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    <Button size="sm" variant="outline" onClick={downloadPdf}>
+                      <FileDown className="mr-1 h-4 w-4" /> Export PDF
+                    </Button>
+                    <Button size="sm" onClick={save} disabled={saving}>
+                      {saving ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Save className="mr-1 h-4 w-4" />}
+                      Save mission
+                    </Button>
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                      {saving ? (
+                        <>
+                          <Loader2 className="h-3 w-3 animate-spin" /> Saving…
+                        </>
+                      ) : dirty ? (
+                        "Unsaved changes"
+                      ) : savedAt ? (
+                        <>
+                          <Check className="h-3 w-3 text-b4-teal" /> Saved{" "}
+                          {savedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        </>
+                      ) : (
+                        "Autosave on"
+                      )}
+                    </span>
+                  </div>
                 </div>
 
                 <Card>
