@@ -138,6 +138,10 @@ export function DistributionModels({
   const [saving, setSaving] = useState(false);
   const [applyTarget, setApplyTarget] = useState<DistributionModel | null>(null);
   const [applyEntity, setApplyEntity] = useState<string>("");
+  const [applyClient, setApplyClient] = useState("");
+  const [applyTitle, setApplyTitle] = useState("");
+  const [applyBudget, setApplyBudget] = useState<string>("");
+
 
   const reload = useCallback(async () => {
     const { data } = await (supabase.from("distribution_models" as never) as never as any)
