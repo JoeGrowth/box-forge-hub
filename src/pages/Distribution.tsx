@@ -113,6 +113,22 @@ function DistributionBuilder({
     fetchSaved();
   }, [fetchSaved]);
 
+  // Fixed charges are percentage-driven: keep their amount in sync with the budget.
+  useEffect(() => {
+    const budgetNum = Number(budget) || 0;
+    setCharges((prev) => {
+      let changed = false;
+      const next = prev.map((c) => {
+        if (!c.fixed || c.percent === undefined || c.percent === null) return c;
+        const amount = Math.round(((Number(c.percent) || 0) / 100) * budgetNum * 100) / 100;
+        if (amount === c.amount) return c;
+        changed = true;
+        return { ...c, amount };
+      });
+      return changed ? next : prev;
+    });
+  }, [budget]);
+
   const chargesTotal = useMemo(() => charges.reduce((s, c) => s + (Number(c.amount) || 0), 0), [charges]);
   const internalPool = Math.max(0, (Number(budget) || 0) - chargesTotal);
   const totalPercent = useMemo(() => tasks.reduce((s, t) => s + (Number(t.percent) || 0), 0), [tasks]);
