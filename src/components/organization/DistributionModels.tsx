@@ -531,19 +531,8 @@ export function DistributionModels({
           </div>
           <DialogFooter>
             {entities.length > 0 && applyTarget && applyEntity && (
-              <Button asChild disabled={!applyTitle.trim()}>
-                <Link
-                  to={`/distribution?entity=${applyEntity}&model=${applyTarget.id}&client=${encodeURIComponent(
-                    applyClient.trim(),
-                  )}&title=${encodeURIComponent(applyTitle.trim())}&budget=${encodeURIComponent(
-                    String(Number(applyBudget) || 0),
-                  )}`}
-                  onClick={(e) => {
-                    if (!applyTitle.trim()) e.preventDefault();
-                  }}
-                >
-                  Create mission page <ArrowRight className="ml-1 h-3 w-3" />
-                </Link>
+              <Button onClick={createMissionPage} disabled={!applyTitle.trim() || creating}>
+                {creating ? "Creating…" : "Create mission page"} <ArrowRight className="ml-1 h-3 w-3" />
               </Button>
             )}
           </DialogFooter>
