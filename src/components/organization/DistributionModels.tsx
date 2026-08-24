@@ -3,7 +3,7 @@
 // applied to any mission inside the Distribution workspace.
 
 import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -141,6 +141,56 @@ export function DistributionModels({
   const [applyClient, setApplyClient] = useState("");
   const [applyTitle, setApplyTitle] = useState("");
   const [applyBudget, setApplyBudget] = useState<string>("");
+  const [creating, setCreating] = useState(false);
+  const navigate = useNavigate();
+
+  // Each mission gets its own dedicated page: we create one distribution record
+  // from the selected model and open /mission/<id>.
+  const createMissionPage = async () => {
+    if (!applyTarget || !applyEntity || !user) return;
+    const title = applyTitle.trim();
+    if (!title) return;
+    setCreating(true);
+    const kind = `${applyEntity}:model-${applyTarget.id}`;
+    const table = () => supabase.from("distribution_records" as never) as never as any;
+    const { count } = await table().select("id", { count: "exact", head: true }).eq("kind", kind);
+    const budgetNum = Number(applyBudget) || 0;
+    const charges = withBaseCharges(applyTarget.charges).map((c) => ({
+      ...c,
+      id: uid(),
+      amount:
+        c.fixed && c.percent !== undefined && c.percent !== null
+          ? Math.round(((Number(c.percent) || 0) / 100) * budgetNum * 100) / 100
+          : Number(c.amount) || 0,
+    }));
+    const { data, error } = await table()
+      .insert({
+        user_id: user.id,
+        kind,
+        client: applyClient.trim() || null,
+        title,
+        iteration: (count ?? 0) + 1,
+        budget_label: applyTarget.name,
+        budget: budgetNum,
+        currency: "TND",
+        charges,
+        tasks: applyTarget.tasks.map((t) => ({ ...t, id: uid() })),
+        people: ["Person (1)", "Person (2)"],
+      })
+      .select("id")
+      .maybeSingle();
+    setCreating(false);
+    if (error || !data?.id) {
+      toast.error(error?.message ?? "Could not create the mission page.");
+      return;
+    }
+    setApplyTarget(null);
+    setApplyClient("");
+    setApplyTitle("");
+    setApplyBudget("");
+    navigate(`/mission/${data.id}`);
+  };
+
 
 
   const reload = useCallback(async () => {
@@ -531,19 +581,8 @@ export function DistributionModels({
           </div>
           <DialogFooter>
             {entities.length > 0 && applyTarget && applyEntity && (
-              <Button asChild disabled={!applyTitle.trim()}>
-                <Link
-                  to={`/distribution?entity=${applyEntity}&model=${applyTarget.id}&client=${encodeURIComponent(
-                    applyClient.trim(),
-                  )}&title=${encodeURIComponent(applyTitle.trim())}&budget=${encodeURIComponent(
-                    String(Number(applyBudget) || 0),
-                  )}`}
-                  onClick={(e) => {
-                    if (!applyTitle.trim()) e.preventDefault();
-                  }}
-                >
-                  Create mission page <ArrowRight className="ml-1 h-3 w-3" />
-                </Link>
+              <Button onClick={createMissionPage} disabled={!applyTitle.trim() || creating}>
+                {creating ? "Creating…" : "Create mission page"} <ArrowRight className="ml-1 h-3 w-3" />
               </Button>
             )}
           </DialogFooter>
