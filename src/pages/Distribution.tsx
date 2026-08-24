@@ -102,7 +102,6 @@ function DistributionBuilder({
     setLoadingSaved(true);
     const { data } = await (supabase.from("distribution_records" as any) as any)
       .select("*")
-      .eq("user_id", user.id)
       .eq("kind", kind)
       .order("created_at", { ascending: true });
     setSaved(data || []);
@@ -277,9 +276,10 @@ function DistributionBuilder({
       tasks,
       people,
     };
+    const { user_id: _owner, ...updatePayload } = payload; // keep the original owner on edits
     const { error } = editingId
       ? await (supabase.from("distribution_records" as any) as any)
-          .update(payload)
+          .update(updatePayload)
           .eq("id", editingId)
       : await (supabase.from("distribution_records" as any) as any).insert(payload);
     setSaving(false);
@@ -1017,8 +1017,7 @@ export async function syncDistEntities(userId?: string, orgId?: string): Promise
   if (!userId) return orgId ? local.filter((e) => e.orgId === orgId) : local;
   try {
     const { data } = await (supabase.from("distribution_entities" as any) as any)
-      .select("id,name,org_id,created_at")
-      .eq("user_id", userId);
+      .select("id,name,org_id,created_at");
     const remote: DistEntity[] = ((data as any[]) ?? []).map((r) => ({
       id: r.id, name: r.name, orgId: r.org_id ?? undefined, createdAt: r.created_at,
     }));
@@ -1350,7 +1349,6 @@ export function EntityCategories({
         try {
           const { data } = await (supabase.from("distribution_categories" as any) as any)
             .select("id,name,kind")
-            .eq("user_id", user.id)
             .eq("entity_id", scopeId);
           const remote: Category[] = ((data as any[]) ?? []).map((r) => ({ id: r.id, name: r.name, kind: r.kind ?? undefined }));
           const remoteIds = new Set(remote.map((r) => r.id));
@@ -1368,7 +1366,6 @@ export function EntityCategories({
           try {
             const { data } = await (supabase.from("distribution_records" as any) as any)
               .select("kind")
-              .eq("user_id", user.id)
               .like("kind", `${scopeId}:%`);
             const catIds = Array.from(new Set(((data as any[]) ?? []).map((r) => String(r.kind).split(":")[1]).filter(Boolean)));
             if (catIds.length) {
@@ -1411,7 +1408,7 @@ export function EntityCategories({
         );
         const ids = cats.map((c) => c.id);
         let del = (supabase.from("distribution_categories" as any) as any)
-          .delete().eq("user_id", user.id).eq("entity_id", scopeId);
+          .delete().eq("entity_id", scopeId);
         if (ids.length) del = del.not("id", "in", `(${ids.map((i) => `"${i}"`).join(",")})`);
         await del;
       } catch {}
