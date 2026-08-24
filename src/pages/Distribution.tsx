@@ -1567,12 +1567,16 @@ export function EntityCategories({
       {active && (() => {
         const useModel =
           !!model && active.name.trim().toLowerCase() === model.name.trim().toLowerCase();
+        const missionPrefill = useModel && prefill?.title ? prefill : null;
         return (
           <DistributionBuilder
-            key={`${scopeId}:${active.id}:${useModel ? model!.id : "base"}`}
+            key={`${scopeId}:${active.id}:${useModel ? model!.id : "base"}:${missionPrefill?.title ?? ""}`}
             kind={active.kind ?? `${scopeId}:${active.id}`}
             kindLabel={active.name}
-            defaultTitle=""
+            defaultTitle={missionPrefill?.title ?? ""}
+            defaultClient={missionPrefill?.client ?? ""}
+            defaultBudget={missionPrefill?.budget ?? 0}
+            autoIteration={!!missionPrefill}
             defaultBudgetLabel="Budget"
             defaultTasks={
               useModel
@@ -1587,6 +1591,7 @@ export function EntityCategories({
           />
         );
       })()}
+
 
     </div>
   );
