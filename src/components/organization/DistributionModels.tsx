@@ -222,7 +222,7 @@ export function DistributionModels({
       name: `${m.name} (copy)`,
       description: m.description,
       tasks: m.tasks.map((t) => ({ ...t, id: uid() })),
-      charges: m.charges.map((c) => ({ ...c, id: uid() })),
+      charges: withBaseCharges(m.charges.map((c) => ({ ...c, id: uid() }))),
     });
     setOpen(true);
   };
