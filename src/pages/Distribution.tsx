@@ -1231,15 +1231,20 @@ const genericCharges = (): Charge[] => [
   { id: uid(), label: "Materials", amount: 0 },
 ];
 
+export type AppliedModel = { id: string; name: string; tasks: Task[]; charges: Charge[] };
+
 export function EntityCategories({
   scopeId,
   scopeLabel,
   defaults,
+  model,
 }: {
   scopeId: string;
   scopeLabel: string;
   defaults?: string[];
+  model?: AppliedModel | null;
 }) {
+
   const { user } = useAuth();
   const [cats, setCats] = useState<Category[]>([]);
   const [activeCatId, setActiveCatId] = useState<string | null>(null);
