@@ -598,7 +598,7 @@ function PersonDialog({
   const [notes, setNotes] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [age, setAge] = useState("");
+  const [birthDate, setBirthDate] = useState("");
   const [events, setEvents] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -615,7 +615,7 @@ function PersonDialog({
     setNotes(person?.notes ?? "");
     setEmail(person?.email ?? "");
     setPhone(person?.phone ?? "");
-    setAge(person?.age ? String(person.age) : "");
+    setBirthDate(person?.birth_date ?? "");
     setEvents(person?.events_participated ?? "");
   }, [open, person, defaultTier]);
 
