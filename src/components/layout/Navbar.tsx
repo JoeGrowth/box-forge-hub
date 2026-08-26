@@ -27,6 +27,7 @@ import {
   BarChart3,
   Users,
   LayoutGrid,
+  Settings,
 } from "lucide-react";
 import { useEngineAccess, type EngineKey } from "@/hooks/useEngineAccess";
 import { useTalentReadiness } from "@/hooks/useTalentReadiness";
@@ -245,10 +246,11 @@ export function Navbar() {
                   <DropdownMenuTrigger asChild>
                     <button
                       className={`text-sm font-medium transition-colors hover:text-b4-teal outline-none ${
-                        location.pathname === "/people" ||
+                      location.pathname === "/people" ||
                         location.pathname === "/projects" ||
                         location.pathname === "/opportunities" ||
-                        location.pathname === "/my-tender-work"
+                        location.pathname === "/my-tender-work" ||
+                        location.pathname === "/opsmanagement"
                           ? "text-b4-teal"
                           : "text-muted-foreground"
                       }`}
@@ -304,6 +306,19 @@ export function Navbar() {
                         >
                           <FileText size={16} />
                           My tender work
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    {isAdmin && (
+                      <DropdownMenuItem asChild>
+                        <Link
+                          to="/opsmanagement"
+                          className={`flex items-center gap-2 cursor-pointer ${
+                            location.pathname === "/opsmanagement" ? "text-b4-teal" : "text-foreground"
+                          }`}
+                        >
+                          <Settings size={16} />
+                          Ops
                         </Link>
                       </DropdownMenuItem>
                     )}
@@ -588,6 +603,21 @@ export function Navbar() {
                         >
                           <FileText size={16} />
                           <span className="flex-1">My tender work</span>
+                        </Link>
+                      )}
+
+                      {isAdmin && (
+                        <Link
+                          to="/opsmanagement"
+                          onClick={() => setIsOpen(false)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                            location.pathname === "/opsmanagement"
+                              ? "bg-muted text-b4-teal"
+                              : "text-muted-foreground hover:bg-muted"
+                          }`}
+                        >
+                          <Settings size={16} />
+                          <span className="flex-1">Ops</span>
                         </Link>
                       )}
 
