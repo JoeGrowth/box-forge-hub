@@ -815,7 +815,7 @@ function PersonDialog({
                 <div className="space-y-2 pt-2">
                   <Label>Presence</Label>
                   <div className="grid grid-cols-2 gap-2">
-                    {(Object.keys(PRESENT_META) as Array<NonNullable<OrgPerson["present_type"]>>).map((pt) => {
+                    {(["wagafa", "7areka"] as Array<NonNullable<OrgPerson["present_type"]>>).map((pt) => {
                       const active = presentType === pt;
                       return (
                         <button
