@@ -33,7 +33,6 @@ import {
   Pencil,
   ArrowRight,
   Trash2,
-  Cog,
   Search,
   Filter,
   Rocket,
