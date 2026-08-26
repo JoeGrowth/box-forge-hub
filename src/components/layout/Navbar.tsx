@@ -246,10 +246,11 @@ export function Navbar() {
                   <DropdownMenuTrigger asChild>
                     <button
                       className={`text-sm font-medium transition-colors hover:text-b4-teal outline-none ${
-                        location.pathname === "/people" ||
+                      location.pathname === "/people" ||
                         location.pathname === "/projects" ||
                         location.pathname === "/opportunities" ||
-                        location.pathname === "/my-tender-work"
+                        location.pathname === "/my-tender-work" ||
+                        location.pathname === "/opsmanagement"
                           ? "text-b4-teal"
                           : "text-muted-foreground"
                       }`}
