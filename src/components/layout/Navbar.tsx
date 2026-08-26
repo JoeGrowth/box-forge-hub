@@ -309,6 +309,19 @@ export function Navbar() {
                         </Link>
                       </DropdownMenuItem>
                     )}
+                    {isAdmin && (
+                      <DropdownMenuItem asChild>
+                        <Link
+                          to="/opsmanagement"
+                          className={`flex items-center gap-2 cursor-pointer ${
+                            location.pathname === "/opsmanagement" ? "text-b4-teal" : "text-foreground"
+                          }`}
+                        >
+                          <Settings size={16} />
+                          Ops
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
 
                   </DropdownMenuContent>
                 </DropdownMenu>
