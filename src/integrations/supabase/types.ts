@@ -4091,6 +4091,7 @@ export type Database = {
         Row: {
           activities_count: number
           age: number | null
+          birth_date: string | null
           created_at: string
           created_by: string | null
           crew_type: string | null
@@ -4110,6 +4111,7 @@ export type Database = {
         Insert: {
           activities_count?: number
           age?: number | null
+          birth_date?: string | null
           created_at?: string
           created_by?: string | null
           crew_type?: string | null
@@ -4129,6 +4131,7 @@ export type Database = {
         Update: {
           activities_count?: number
           age?: number | null
+          birth_date?: string | null
           created_at?: string
           created_by?: string | null
           crew_type?: string | null
