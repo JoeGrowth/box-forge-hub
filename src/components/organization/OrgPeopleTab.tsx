@@ -54,6 +54,7 @@ export interface OrgPerson {
   email: string | null;
   phone: string | null;
   age: number | null;
+  birth_date: string | null;
   events_participated: string | null;
 }
 
