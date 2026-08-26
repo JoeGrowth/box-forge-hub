@@ -59,14 +59,14 @@ export interface OrgPerson {
 
 
 const CREW_META: Record<CrewType, { label: string; desc: string; className: string }> = {
-  chouch_ward: { label: "Chouch Ward", desc: "Li elleh — with/without expertise", className: "bg-rose-500/10 text-rose-700 border-rose-200" },
+  chouch_ward: { label: "Chouch Ward", desc: "Li elleh — with/without expertise", className: "bg-blue-500/10 text-blue-700 border-blue-200" },
   ch3ir: { label: "Ch3ir", desc: "Volunteer — with/without expertise", className: "bg-amber-500/10 text-amber-700 border-amber-200" },
-  helba: { label: "Helba", desc: "Paid — with expertise", className: "bg-emerald-500/10 text-emerald-700 border-emerald-200" },
+  helba: { label: "Helba", desc: "Paid — with expertise", className: "bg-violet-500/10 text-violet-700 border-violet-200" },
 };
 
 const PRESENT_META: Record<NonNullable<OrgPerson["present_type"]>, { label: string; desc: string; className: string }> = {
-  "7areka": { label: "7areka", desc: "Active movement — energy deployed into action", className: "bg-blue-500/10 text-blue-700 border-blue-200" },
-  wagafa: { label: "Wagafa", desc: "Steady presence — holding position and clarity", className: "bg-violet-500/10 text-violet-700 border-violet-200" },
+  wagafa: { label: "Wagafa", desc: "Steady presence — holding position and clarity", className: "bg-rose-500/10 text-rose-700 border-rose-200" },
+  "7areka": { label: "7areka", desc: "Active movement — energy deployed into action", className: "bg-emerald-500/10 text-emerald-700 border-emerald-200" },
 };
 
 
@@ -815,7 +815,7 @@ function PersonDialog({
                 <div className="space-y-2 pt-2">
                   <Label>Presence</Label>
                   <div className="grid grid-cols-2 gap-2">
-                    {(Object.keys(PRESENT_META) as Array<NonNullable<OrgPerson["present_type"]>>).map((pt) => {
+                    {(["wagafa", "7areka"] as Array<NonNullable<OrgPerson["present_type"]>>).map((pt) => {
                       const active = presentType === pt;
                       return (
                         <button
