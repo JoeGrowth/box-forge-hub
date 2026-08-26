@@ -606,6 +606,21 @@ export function Navbar() {
                         </Link>
                       )}
 
+                      {isAdmin && (
+                        <Link
+                          to="/opsmanagement"
+                          onClick={() => setIsOpen(false)}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                            location.pathname === "/opsmanagement"
+                              ? "bg-muted text-b4-teal"
+                              : "text-muted-foreground hover:bg-muted"
+                          }`}
+                        >
+                          <Settings size={16} />
+                          <span className="flex-1">Ops</span>
+                        </Link>
+                      )}
+
 
                       <div className="px-4 pt-3 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Growth
