@@ -54,6 +54,7 @@ export interface OrgPerson {
   email: string | null;
   phone: string | null;
   age: number | null;
+  birth_date: string | null;
   events_participated: string | null;
 }
 
@@ -597,7 +598,7 @@ function PersonDialog({
   const [notes, setNotes] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [age, setAge] = useState("");
+  const [birthDate, setBirthDate] = useState("");
   const [events, setEvents] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -614,11 +615,23 @@ function PersonDialog({
     setNotes(person?.notes ?? "");
     setEmail(person?.email ?? "");
     setPhone(person?.phone ?? "");
-    setAge(person?.age ? String(person.age) : "");
+    setBirthDate(person?.birth_date ?? "");
     setEvents(person?.events_participated ?? "");
   }, [open, person, defaultTier]);
 
 
+
+  const calcAge = (bd: string): number | null => {
+    if (!bd) return null;
+    const b = new Date(bd);
+    if (isNaN(b.getTime())) return null;
+    const now = new Date();
+    let a = now.getFullYear() - b.getFullYear();
+    const m = now.getMonth() - b.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < b.getDate())) a--;
+    return a >= 0 ? a : null;
+  };
+  const computedAge = calcAge(birthDate);
 
   const save = async () => {
     if (!name.trim()) { toast({ title: "Name required", variant: "destructive" }); return; }
@@ -640,7 +653,8 @@ function PersonDialog({
       notes: tier === "friend" ? null : notes.trim() || null,
       email: tier === "friend" ? email.trim() || null : null,
       phone: tier === "friend" ? phone.trim() || null : null,
-      age: tier === "friend" ? (age ? Number(age) : null) : null,
+      age: tier === "friend" ? computedAge : null,
+      birth_date: tier === "friend" ? (birthDate || null) : null,
       events_participated: tier === "friend" ? events.trim() || null : null,
     };
 
@@ -730,15 +744,17 @@ function PersonDialog({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="person-age">Age</Label>
+                <Label htmlFor="person-birthdate">Birth date</Label>
                 <Input
-                  id="person-age"
-                  type="number"
-                  min="0"
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                  placeholder="e.g. 28"
+                  id="person-birthdate"
+                  type="date"
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(e.target.value)}
+                  max={new Date().toISOString().slice(0, 10)}
                 />
+                {computedAge !== null && (
+                  <p className="text-xs text-muted-foreground">Age: {computedAge} years old</p>
+                )}
               </div>
               <div className="space-y-1.5 sm:col-span-2">
                 <Label htmlFor="person-events">Events participated in</Label>
