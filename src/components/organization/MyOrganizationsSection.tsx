@@ -33,7 +33,6 @@ import {
   Pencil,
   ArrowRight,
   Trash2,
-  Cog,
   Search,
   Filter,
   Rocket,
@@ -249,9 +248,6 @@ export function MyOrganizationsSection() {
           </div>
           {talentReady && (
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 w-full sm:w-auto">
-              <Link to="/opsmanagement" className="w-full sm:w-auto">
-                <Button variant="outline" className="w-full sm:w-auto"><Cog className="w-4 h-4 mr-1" /> Ops management</Button>
-              </Link>
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
                   <Button className="w-full sm:w-auto"><Plus className="w-4 h-4 mr-1" /> New organization</Button>
