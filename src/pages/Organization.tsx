@@ -39,6 +39,7 @@ import {
 import { EntityRoleSlots } from "@/components/entity-roles/EntityRoleSlots";
 import { OrgPeopleTab } from "@/components/organization/OrgPeopleTab";
 import { DistributionModels } from "@/components/organization/DistributionModels";
+import { OrgProjectsTab } from "@/components/organization/OrgProjectsTab";
 
 import {
   Select,
@@ -176,8 +177,8 @@ export default function OrganizationPage() {
 
   const dailyOpenCount = dailyTasks.filter(t => !t.done).length;
 
-  const tabCount = 7 + (legalDocs.length >= 1 ? 2 : 0);
-  const desktopGrid = tabCount === 9 ? "lg:grid-cols-9" : "lg:grid-cols-7";
+  const tabCount = 8 + (legalDocs.length >= 1 ? 2 : 0);
+  const desktopGrid = tabCount === 10 ? "lg:grid-cols-10" : "lg:grid-cols-8";
 
   const loadOpps = useCallback(async () => {
     if (!org) return;
@@ -434,8 +435,12 @@ export default function OrganizationPage() {
             <ClipboardList className="w-4 h-4 shrink-0" /> Declaration ({declarations.length})
           </TabsTrigger>
           <TabsTrigger value="journey" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
-            <Lightbulb className="w-4 h-4 shrink-0" /> Project Journey
+            <Lightbulb className="w-4 h-4 shrink-0" /> Product Journey
           </TabsTrigger>
+          <TabsTrigger value="projects" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
+            <Rocket className="w-4 h-4 shrink-0" /> Project Journey
+          </TabsTrigger>
+
           <TabsTrigger value="people" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
             <Heart className="w-4 h-4 shrink-0" /> People
           </TabsTrigger>
@@ -707,7 +712,7 @@ export default function OrganizationPage() {
           <DailyTab orgId={org.id} canEdit={canEdit} tasks={dailyTasks} onTasksChange={saveDailyTasks} />
         </TabsContent>
 
-        {/* PROJECT JOURNEY */}
+        {/* PRODUCT JOURNEY */}
         <TabsContent value="journey" className="space-y-3">
           <ProjectJourneyTab
             orgId={org.id}
@@ -717,6 +722,12 @@ export default function OrganizationPage() {
             canManage={canAdmin}
           />
         </TabsContent>
+
+        {/* PROJECT JOURNEY (internal projects) */}
+        <TabsContent value="projects" className="space-y-3">
+          <OrgProjectsTab orgId={org.id} canEdit={canEdit} userId={user?.id} />
+        </TabsContent>
+
 
 
 
