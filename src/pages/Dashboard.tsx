@@ -64,6 +64,7 @@ const Dashboard = () => {
   const { onboardingState, loading: onboardingLoading } = useOnboarding();
   const { talentReady, loading: talentLoading } = useTalentReadiness();
   const { progression } = useNextBestActions(user?.id);
+  const { shapeYourTalentComplete } = useShapeYourTalentComplete();
   const [draftAccepted, setDraftAccepted] = useState<boolean | null>(null);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -161,6 +162,7 @@ const Dashboard = () => {
                 ) : (
                   <>
                     {showShapeTalent && <DashboardProgress />}
+                    {shapeYourTalentComplete && <MyOrgProjectsCard />}
                     {isCapable && <CommitmentsPanel />}
                     {isCapable && <DashboardOpportunities />}
                     {isCapable && <ProgressionPathCard userId={user?.id} />}
