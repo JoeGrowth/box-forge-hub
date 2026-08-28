@@ -39,6 +39,7 @@ import {
 import { EntityRoleSlots } from "@/components/entity-roles/EntityRoleSlots";
 import { OrgPeopleTab } from "@/components/organization/OrgPeopleTab";
 import { DistributionModels } from "@/components/organization/DistributionModels";
+import { OrgProjectsTab } from "@/components/organization/OrgProjectsTab";
 
 import {
   Select,
