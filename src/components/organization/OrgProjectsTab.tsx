@@ -227,11 +227,7 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
                   </div>
                   <Progress
                     value={p.progress}
-                    className={cn(
-                      "h-2",
-                      p.progress === 100 && "[&>div]:bg-emerald-500",
-                      p.progress === 0 && "bg-muted"
-                    )}
+                    className="h-2"
                   />
                 </div>
               </div>
