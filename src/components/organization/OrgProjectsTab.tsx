@@ -14,6 +14,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 import { Plus, Pencil, Trash2, Rocket, CalendarDays, User } from "lucide-react";
 
 type OrgProject = {
