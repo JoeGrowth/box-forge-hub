@@ -711,7 +711,7 @@ export default function OrganizationPage() {
           <DailyTab orgId={org.id} canEdit={canEdit} tasks={dailyTasks} onTasksChange={saveDailyTasks} />
         </TabsContent>
 
-        {/* PROJECT JOURNEY */}
+        {/* PRODUCT JOURNEY */}
         <TabsContent value="journey" className="space-y-3">
           <ProjectJourneyTab
             orgId={org.id}
@@ -721,6 +721,12 @@ export default function OrganizationPage() {
             canManage={canAdmin}
           />
         </TabsContent>
+
+        {/* PROJECT JOURNEY (internal projects) */}
+        <TabsContent value="projects" className="space-y-3">
+          <OrgProjectsTab orgId={org.id} canEdit={canEdit} userId={user?.id} />
+        </TabsContent>
+
 
 
 
