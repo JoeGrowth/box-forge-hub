@@ -18,6 +18,8 @@ import { DashboardOpportunities } from "@/components/dashboard/DashboardOpportun
 import { DashboardAchievements } from "@/components/dashboard/DashboardAchievements";
 import { ProgressionPathCard } from "@/components/profile/ProgressionPathCard";
 import { CommitmentsPanel } from "@/components/commitments/CommitmentsPanel";
+import { MyOrgProjectsCard } from "@/components/dashboard/MyOrgProjectsCard";
+import { useShapeYourTalentComplete } from "@/hooks/useShapeYourTalentComplete";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -62,6 +64,7 @@ const Dashboard = () => {
   const { onboardingState, loading: onboardingLoading } = useOnboarding();
   const { talentReady, loading: talentLoading } = useTalentReadiness();
   const { progression } = useNextBestActions(user?.id);
+  const { shapeYourTalentComplete } = useShapeYourTalentComplete();
   const [draftAccepted, setDraftAccepted] = useState<boolean | null>(null);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -159,6 +162,7 @@ const Dashboard = () => {
                 ) : (
                   <>
                     {showShapeTalent && <DashboardProgress />}
+                    {shapeYourTalentComplete && <MyOrgProjectsCard />}
                     {isCapable && <CommitmentsPanel />}
                     {isCapable && <DashboardOpportunities />}
                     {isCapable && <ProgressionPathCard userId={user?.id} />}
