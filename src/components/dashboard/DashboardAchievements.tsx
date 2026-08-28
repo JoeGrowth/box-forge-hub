@@ -178,6 +178,12 @@ export function DashboardAchievements({ onAllEarnedChange }: DashboardAchievemen
 
   const earnedCount = achievements.filter((a) => a.earned).length;
 
+  useEffect(() => {
+    if (onAllEarnedChange && achievements.length > 0) {
+      onAllEarnedChange(earnedCount === achievements.length);
+    }
+  }, [achievements, earnedCount, onAllEarnedChange]);
+
   return (
     <Card>
       <CardHeader>
