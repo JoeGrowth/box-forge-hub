@@ -435,10 +435,10 @@ export default function OrganizationPage() {
             <ClipboardList className="w-4 h-4 shrink-0" /> Declaration ({declarations.length})
           </TabsTrigger>
           <TabsTrigger value="journey" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
-            <Lightbulb className="w-4 h-4 shrink-0" /> Product Journey
+            <Lightbulb className="w-4 h-4 shrink-0" /> Product
           </TabsTrigger>
           <TabsTrigger value="projects" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
-            <Rocket className="w-4 h-4 shrink-0" /> Project Journey
+            <Rocket className="w-4 h-4 shrink-0" /> Project
           </TabsTrigger>
 
           <TabsTrigger value="people" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
@@ -1778,7 +1778,7 @@ function ProductJourneySection({ orgId, userId, canManage }: { orgId: string; us
     if (!userId) return;
     setSavingProduct(true);
     const nextPos = (products[products.length - 1]?.position ?? 0) + 1;
-    const name = newProductName.trim() || `Product Journey (${nextPos})`;
+    const name = newProductName.trim() || `Product (${nextPos})`;
     const { error } = await (supabase as any)
       .from("organization_products")
       .insert({ organization_id: orgId, name, position: nextPos, created_by: userId });
@@ -1838,7 +1838,7 @@ function ProductJourneySection({ orgId, userId, canManage }: { orgId: string; us
         <div>
           <div className="flex items-center gap-2">
             <Rocket className="w-4 h-4 text-primary" />
-            <h3 className="text-lg font-semibold text-foreground">Product Journeys</h3>
+            <h3 className="text-lg font-semibold text-foreground">Products</h3>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
             Track every product this entity ships. Each product has its own versioned case-study trail — v1 spreadsheet, v2 platform, v3 optimized…
@@ -1870,7 +1870,7 @@ function ProductJourneySection({ orgId, userId, canManage }: { orgId: string; us
             <Input
               value={newProductName}
               onChange={(e) => setNewProductName(e.target.value)}
-              placeholder={`Product Journey (${(products[products.length - 1]?.position ?? 0) + 1})`}
+              placeholder={`Product (${(products[products.length - 1]?.position ?? 0) + 1})`}
             />
           </div>
           <Button size="sm" onClick={addProduct} disabled={savingProduct}>

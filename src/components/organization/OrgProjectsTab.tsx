@@ -1,4 +1,4 @@
-// Project Journey — manage internal projects of an organization.
+// Project — manage internal projects of an organization.
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -111,7 +111,7 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="text-lg font-semibold text-foreground">Project Journey</h3>
+          <h3 className="text-lg font-semibold text-foreground">Project</h3>
           <p className="text-sm text-muted-foreground">Projects run inside this organization, with status and progress.</p>
         </div>
         {canEdit && (
