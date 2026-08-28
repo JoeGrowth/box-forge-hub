@@ -18,6 +18,8 @@ import { DashboardOpportunities } from "@/components/dashboard/DashboardOpportun
 import { DashboardAchievements } from "@/components/dashboard/DashboardAchievements";
 import { ProgressionPathCard } from "@/components/profile/ProgressionPathCard";
 import { CommitmentsPanel } from "@/components/commitments/CommitmentsPanel";
+import { MyOrgProjectsCard } from "@/components/dashboard/MyOrgProjectsCard";
+import { useShapeYourTalentComplete } from "@/hooks/useShapeYourTalentComplete";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
