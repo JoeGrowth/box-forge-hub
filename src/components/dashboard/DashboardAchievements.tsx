@@ -26,7 +26,11 @@ interface Achievement {
   color: string;
 }
 
-export function DashboardAchievements() {
+interface DashboardAchievementsProps {
+  onAllEarnedChange?: (allEarned: boolean) => void;
+}
+
+export function DashboardAchievements({ onAllEarnedChange }: DashboardAchievementsProps) {
   const { user } = useAuth();
   const { onboardingState } = useOnboarding();
   const { talentReady } = useTalentReadiness();
@@ -173,6 +177,12 @@ export function DashboardAchievements() {
   }, [fetchAchievements, user]);
 
   const earnedCount = achievements.filter((a) => a.earned).length;
+
+  useEffect(() => {
+    if (onAllEarnedChange && achievements.length > 0) {
+      onAllEarnedChange(earnedCount === achievements.length);
+    }
+  }, [achievements, earnedCount, onAllEarnedChange]);
 
   return (
     <Card>

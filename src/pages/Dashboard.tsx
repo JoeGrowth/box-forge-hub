@@ -66,6 +66,7 @@ const Dashboard = () => {
   const { progression } = useNextBestActions(user?.id);
   const { shapeYourTalentComplete } = useShapeYourTalentComplete();
   const [draftAccepted, setDraftAccepted] = useState<boolean | null>(null);
+  const [allBadgesEarned, setAllBadgesEarned] = useState(false);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -164,14 +165,14 @@ const Dashboard = () => {
                     {showShapeTalent && <DashboardProgress />}
                     {shapeYourTalentComplete && <MyOrgProjectsCard />}
                     {isCapable && <CommitmentsPanel />}
-                    {isCapable && <DashboardOpportunities />}
-                    {isCapable && <ProgressionPathCard userId={user?.id} />}
+                    {isCapable && !allBadgesEarned && <DashboardOpportunities />}
+                    {isCapable && !allBadgesEarned && <ProgressionPathCard userId={user?.id} />}
                   </>
                 )}
               </div>
               <div className="space-y-6 md:space-y-8 min-w-0">
-                {isCapable && <DashboardNextSteps />}
-                <DashboardAchievements />
+                {isCapable && !allBadgesEarned && <DashboardNextSteps />}
+                <DashboardAchievements onAllEarnedChange={setAllBadgesEarned} />
               </div>
             </div>
 
