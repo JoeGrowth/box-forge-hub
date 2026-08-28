@@ -126,9 +126,10 @@ export function MyOrgProjectsCard() {
                 <div className="mt-3 flex items-center gap-3">
                   <Progress
                     value={p.progress}
-                    className="h-2 flex-1"
-                    indicatorClassName={cn(
-                      p.progress >= 100 ? "bg-emerald-500" : p.progress === 0 ? "bg-muted-foreground/30" : "bg-primary",
+                    className={cn(
+                      "h-2 flex-1",
+                      p.progress === 100 && "[&>div]:bg-emerald-500",
+                      p.progress === 0 && "bg-muted",
                     )}
                   />
                   <span className="text-xs text-muted-foreground w-10 text-right">{p.progress}%</span>
