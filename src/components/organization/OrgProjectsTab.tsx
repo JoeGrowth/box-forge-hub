@@ -14,7 +14,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
+
 import { Plus, Pencil, Trash2, Rocket, CalendarDays, User } from "lucide-react";
 
 type OrgProject = {
@@ -227,11 +227,7 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
                   </div>
                   <Progress
                     value={p.progress}
-                    className={cn(
-                      "h-2",
-                      p.progress === 100 && "[&>div]:bg-emerald-500",
-                      p.progress === 0 && "bg-muted"
-                    )}
+                    className="h-2"
                   />
                 </div>
               </div>
