@@ -26,7 +26,11 @@ interface Achievement {
   color: string;
 }
 
-export function DashboardAchievements() {
+interface DashboardAchievementsProps {
+  onAllEarnedChange?: (allEarned: boolean) => void;
+}
+
+export function DashboardAchievements({ onAllEarnedChange }: DashboardAchievementsProps) {
   const { user } = useAuth();
   const { onboardingState } = useOnboarding();
   const { talentReady } = useTalentReadiness();

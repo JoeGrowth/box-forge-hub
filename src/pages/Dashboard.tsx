@@ -66,6 +66,7 @@ const Dashboard = () => {
   const { progression } = useNextBestActions(user?.id);
   const { shapeYourTalentComplete } = useShapeYourTalentComplete();
   const [draftAccepted, setDraftAccepted] = useState<boolean | null>(null);
+  const [allBadgesEarned, setAllBadgesEarned] = useState(false);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
