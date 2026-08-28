@@ -434,8 +434,12 @@ export default function OrganizationPage() {
             <ClipboardList className="w-4 h-4 shrink-0" /> Declaration ({declarations.length})
           </TabsTrigger>
           <TabsTrigger value="journey" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
-            <Lightbulb className="w-4 h-4 shrink-0" /> Project Journey
+            <Lightbulb className="w-4 h-4 shrink-0" /> Product Journey
           </TabsTrigger>
+          <TabsTrigger value="projects" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
+            <Rocket className="w-4 h-4 shrink-0" /> Project Journey
+          </TabsTrigger>
+
           <TabsTrigger value="people" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
             <Heart className="w-4 h-4 shrink-0" /> People
           </TabsTrigger>
