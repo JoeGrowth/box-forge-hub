@@ -176,8 +176,8 @@ export default function OrganizationPage() {
 
   const dailyOpenCount = dailyTasks.filter(t => !t.done).length;
 
-  const tabCount = 7 + (legalDocs.length >= 1 ? 2 : 0);
-  const desktopGrid = tabCount === 9 ? "lg:grid-cols-9" : "lg:grid-cols-7";
+  const tabCount = 8 + (legalDocs.length >= 1 ? 2 : 0);
+  const desktopGrid = tabCount === 10 ? "lg:grid-cols-10" : "lg:grid-cols-8";
 
   const loadOpps = useCallback(async () => {
     if (!org) return;
