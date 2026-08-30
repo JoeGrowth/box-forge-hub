@@ -106,7 +106,7 @@ export function MyOrgProjectsCard() {
             return (
               <Link
                 key={p.id}
-                to={`/org/${p.orgSlug}`}
+                to={`/org/${p.orgSlug}?tab=projects`}
                 className="block rounded-lg border border-border p-4 hover:border-primary/40 hover:bg-muted/40 transition-colors"
               >
                 <div className="flex items-start justify-between gap-3">
