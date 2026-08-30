@@ -1,5 +1,5 @@
 // Project — manage internal projects of an organization.
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type MouseEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -113,7 +113,7 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
     }
   };
 
-  const handleBarInteract = (e: React.MouseEvent<HTMLDivElement>, p: OrgProject) => {
+  const handleBarInteract = (e: MouseEvent<HTMLDivElement>, p: OrgProject) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const pct = ((e.clientX - rect.left) / rect.width) * 100;
     updateProgress(p, Math.round(pct / 5) * 5);
