@@ -15,7 +15,10 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
-import { Plus, Pencil, Trash2, Rocket, CalendarDays, User } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Plus, Pencil, Trash2, Rocket, CalendarDays, User, Loader2 } from "lucide-react";
+
+type TalentCandidate = { user_id: string; full_name: string | null; avatar_url: string | null };
 
 type OrgProject = {
   id: string;
@@ -49,6 +52,22 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<OrgProject | null>(null);
   const [draft, setDraft] = useState({ ...emptyDraft });
+  const [leadResults, setLeadResults] = useState<TalentCandidate[]>([]);
+  const [leadSearching, setLeadSearching] = useState(false);
+  const [leadFocused, setLeadFocused] = useState(false);
+
+  const searchTalents = async (q: string) => {
+    setDraft((d) => ({ ...d, lead: q }));
+    if (q.trim().length < 2) { setLeadResults([]); return; }
+    setLeadSearching(true);
+    const { data } = await supabase
+      .from("profiles")
+      .select("user_id, full_name, avatar_url")
+      .ilike("full_name", `%${q.trim()}%`)
+      .limit(8);
+    setLeadResults((data ?? []) as TalentCandidate[]);
+    setLeadSearching(false);
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -163,7 +182,35 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
                   </div>
                   <div>
                     <Label>Lead</Label>
-                    <Input value={draft.lead} onChange={(e) => setDraft({ ...draft, lead: e.target.value })} placeholder="Owner name" />
+                    <div className="relative">
+                      <Input
+                        value={draft.lead}
+                        onChange={(e) => searchTalents(e.target.value)}
+                        onFocus={() => setLeadFocused(true)}
+                        onBlur={() => setTimeout(() => setLeadFocused(false), 150)}
+                        placeholder="Owner name (e.g. Imen Harrazi)"
+                      />
+                      {leadSearching && <Loader2 className="absolute right-2 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />}
+                      {leadFocused && leadResults.length > 0 && (
+                        <div className="absolute z-50 mt-1 w-full rounded-lg border border-border bg-popover shadow-md divide-y max-h-56 overflow-auto">
+                          {leadResults.map((c) => (
+                            <button
+                              key={c.user_id}
+                              type="button"
+                              onMouseDown={(e) => e.preventDefault()}
+                              onClick={() => { setDraft((d) => ({ ...d, lead: c.full_name ?? "" })); setLeadResults([]); }}
+                              className="w-full flex items-center gap-2 p-2 text-left hover:bg-muted/60"
+                            >
+                              <Avatar className="h-7 w-7">
+                                <AvatarImage src={c.avatar_url ?? undefined} />
+                                <AvatarFallback>{(c.full_name ?? "?").slice(0, 1)}</AvatarFallback>
+                              </Avatar>
+                              <span className="text-sm text-foreground">{c.full_name ?? "Unnamed"}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div>
                     <Label>Start date</Label>
