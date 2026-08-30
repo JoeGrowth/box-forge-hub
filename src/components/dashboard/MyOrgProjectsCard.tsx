@@ -104,24 +104,19 @@ export function MyOrgProjectsCard() {
               </span>
               Your projects
               {!loading && (
-                <Badge variant="secondary" className="ml-1 font-medium">{rows.length}</Badge>
+                <Badge variant="secondary" className="ml-1 font-medium">{activeRows.length}</Badge>
               )}
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1.5">
-              Projects you can edit across your organizations.
+              Active projects you can edit across your organizations.
             </p>
           </div>
 
-          {!loading && rows.length > 0 && (
+          {!loading && activeRows.length > 0 && (
             <div className="flex items-center gap-4 text-right shrink-0">
               <div>
                 <p className="text-lg font-semibold leading-none text-foreground">{activeCount}</p>
                 <p className="text-[11px] uppercase tracking-wide text-muted-foreground mt-1">Active</p>
-              </div>
-              <div className="h-8 w-px bg-border" />
-              <div>
-                <p className="text-lg font-semibold leading-none text-foreground">{doneCount}</p>
-                <p className="text-[11px] uppercase tracking-wide text-muted-foreground mt-1">Done</p>
               </div>
               <div className="h-8 w-px bg-border" />
               <div>
