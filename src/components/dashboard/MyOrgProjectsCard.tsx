@@ -135,7 +135,7 @@ export function MyOrgProjectsCard() {
             <Skeleton className="h-24 w-full rounded-xl" />
           </>
         ) : (
-          rows.map((p) => {
+          activeRows.map((p) => {
             const meta = STATUS_META[p.status] ?? STATUS_META.planned;
             const initials = p.name
               .split(/\s+/)
