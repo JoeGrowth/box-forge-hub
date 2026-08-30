@@ -81,12 +81,13 @@ export function MyOrgProjectsCard() {
     return () => { cancelled = true; };
   }, [user]);
 
-  if (!loading && rows.length === 0) return null;
+  const activeRows = rows.filter((r) => r.status === "active");
 
-  const activeCount = rows.filter((r) => r.status === "active").length;
-  const doneCount = rows.filter((r) => r.status === "done").length;
-  const avgProgress = rows.length
-    ? Math.round(rows.reduce((sum, r) => sum + (r.progress ?? 0), 0) / rows.length)
+  if (!loading && activeRows.length === 0) return null;
+
+  const activeCount = activeRows.length;
+  const avgProgress = activeRows.length
+    ? Math.round(activeRows.reduce((sum, r) => sum + (r.progress ?? 0), 0) / activeRows.length)
     : 0;
 
   return (
