@@ -52,6 +52,22 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<OrgProject | null>(null);
   const [draft, setDraft] = useState({ ...emptyDraft });
+  const [leadResults, setLeadResults] = useState<TalentCandidate[]>([]);
+  const [leadSearching, setLeadSearching] = useState(false);
+  const [leadFocused, setLeadFocused] = useState(false);
+
+  const searchTalents = async (q: string) => {
+    setDraft((d) => ({ ...d, lead: q }));
+    if (q.trim().length < 2) { setLeadResults([]); return; }
+    setLeadSearching(true);
+    const { data } = await supabase
+      .from("profiles")
+      .select("user_id, full_name, avatar_url")
+      .ilike("full_name", `%${q.trim()}%`)
+      .limit(8);
+    setLeadResults((data ?? []) as TalentCandidate[]);
+    setLeadSearching(false);
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
