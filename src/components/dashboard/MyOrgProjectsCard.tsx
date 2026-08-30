@@ -81,12 +81,13 @@ export function MyOrgProjectsCard() {
     return () => { cancelled = true; };
   }, [user]);
 
-  if (!loading && rows.length === 0) return null;
+  const activeRows = rows.filter((r) => r.status === "active");
 
-  const activeCount = rows.filter((r) => r.status === "active").length;
-  const doneCount = rows.filter((r) => r.status === "done").length;
-  const avgProgress = rows.length
-    ? Math.round(rows.reduce((sum, r) => sum + (r.progress ?? 0), 0) / rows.length)
+  if (!loading && activeRows.length === 0) return null;
+
+  const activeCount = activeRows.length;
+  const avgProgress = activeRows.length
+    ? Math.round(activeRows.reduce((sum, r) => sum + (r.progress ?? 0), 0) / activeRows.length)
     : 0;
 
   return (
@@ -103,24 +104,19 @@ export function MyOrgProjectsCard() {
               </span>
               Your projects
               {!loading && (
-                <Badge variant="secondary" className="ml-1 font-medium">{rows.length}</Badge>
+                <Badge variant="secondary" className="ml-1 font-medium">{activeRows.length}</Badge>
               )}
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1.5">
-              Projects you can edit across your organizations.
+              Active projects you can edit across your organizations.
             </p>
           </div>
 
-          {!loading && rows.length > 0 && (
+          {!loading && activeRows.length > 0 && (
             <div className="flex items-center gap-4 text-right shrink-0">
               <div>
                 <p className="text-lg font-semibold leading-none text-foreground">{activeCount}</p>
                 <p className="text-[11px] uppercase tracking-wide text-muted-foreground mt-1">Active</p>
-              </div>
-              <div className="h-8 w-px bg-border" />
-              <div>
-                <p className="text-lg font-semibold leading-none text-foreground">{doneCount}</p>
-                <p className="text-[11px] uppercase tracking-wide text-muted-foreground mt-1">Done</p>
               </div>
               <div className="h-8 w-px bg-border" />
               <div>
@@ -139,7 +135,7 @@ export function MyOrgProjectsCard() {
             <Skeleton className="h-24 w-full rounded-xl" />
           </>
         ) : (
-          rows.map((p) => {
+          activeRows.map((p) => {
             const meta = STATUS_META[p.status] ?? STATUS_META.planned;
             const initials = p.name
               .split(/\s+/)
