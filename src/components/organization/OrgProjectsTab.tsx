@@ -99,6 +99,26 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
     load();
   };
 
+  const updateProgress = async (p: OrgProject, value: number) => {
+    const v = Math.max(0, Math.min(100, Math.round(value)));
+    if (v === p.progress) return;
+    setProjects((prev) => prev.map((x) => (x.id === p.id ? { ...x, progress: v } : x)));
+    const { error } = await supabase
+      .from("organization_projects" as any)
+      .update({ progress: v })
+      .eq("id", p.id);
+    if (error) {
+      toast({ title: "Update failed", description: error.message, variant: "destructive" });
+      load();
+    }
+  };
+
+  const handleBarInteract = (e: React.MouseEvent<HTMLDivElement>, p: OrgProject) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pct = ((e.clientX - rect.left) / rect.width) * 100;
+    updateProgress(p, Math.round(pct / 5) * 5);
+  };
+
   const remove = async (p: OrgProject) => {
     if (!confirm(`Delete project "${p.name}"?`)) return;
     const { error } = await supabase.from("organization_projects" as any).delete().eq("id", p.id);
