@@ -243,12 +243,18 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
                 </div>
                 <div className="mt-3">
                   <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                    <span>Progress</span><span>{p.progress}%</span>
+                    <span>Progress{canEdit && " · click the bar to update"}</span><span>{p.progress}%</span>
                   </div>
-                  <Progress
-                    value={p.progress}
-                    className="h-2"
-                  />
+                  <div
+                    onClick={canEdit ? (e) => handleBarInteract(e, p) : undefined}
+                    className={canEdit ? "cursor-pointer group" : undefined}
+                    title={canEdit ? "Click to set progress" : undefined}
+                  >
+                    <Progress
+                      value={p.progress}
+                      className={`h-2 pointer-events-none ${canEdit ? "group-hover:h-3 transition-all" : ""}`}
+                    />
+                  </div>
                 </div>
               </div>
             );
