@@ -632,7 +632,7 @@ export function DistributionModels({
               <Label className="text-xs uppercase tracking-wide text-muted-foreground">Distribution folder</Label>
               {entities.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  Create a distribution folder first (below) — the mission is saved inside it.
+                  No folder yet — one named "{orgName} distribution" will be created automatically.
                 </p>
               ) : (
                 <Select value={applyEntity} onValueChange={setApplyEntity}>
