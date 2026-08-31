@@ -25,6 +25,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { createDistEntity } from "@/pages/Distribution";
+
 import { Plus, Trash2, Layers, ArrowRight, Copy, Pencil, Lock, FileText } from "lucide-react";
 
 type ModelTask = { id: string; label: string; percent: number; locked?: boolean };
