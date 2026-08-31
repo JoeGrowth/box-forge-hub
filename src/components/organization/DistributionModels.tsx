@@ -148,13 +148,27 @@ export function DistributionModels({
   // Each mission gets its own dedicated page: we create one distribution record
   // from the selected model and open /mission/<id>.
   const createMissionPage = async () => {
-    if (!applyTarget || !applyEntity || !user) return;
+    if (!applyTarget || !user) return;
     const title = applyTitle.trim();
     if (!title) return;
     setCreating(true);
-    const kind = `${applyEntity}:model-${applyTarget.id}`;
+    // No distribution folder yet → create a default one so the flow never blocks.
+    let entityId = applyEntity;
+    if (!entityId) {
+      try {
+        const ent = await createDistEntity(`${orgName} distribution`, user.id, orgId);
+        entityId = ent.id;
+        setApplyEntity(ent.id);
+      } catch {
+        setCreating(false);
+        toast.error("Could not create a distribution folder.");
+        return;
+      }
+    }
+    const kind = `${entityId}:model-${applyTarget.id}`;
     const table = () => supabase.from("distribution_records" as never) as never as any;
     const { count } = await table().select("id", { count: "exact", head: true }).eq("kind", kind);
+
     const budgetNum = Number(applyBudget) || 0;
     const charges = withBaseCharges(applyTarget.charges).map((c) => ({
       ...c,
