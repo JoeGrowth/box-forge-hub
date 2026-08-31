@@ -678,11 +678,9 @@ export function DistributionModels({
             </p>
           </div>
           <DialogFooter>
-            {entities.length > 0 && applyTarget && applyEntity && (
-              <Button onClick={createMissionPage} disabled={!applyTitle.trim() || creating}>
-                {creating ? "Creating…" : "Create mission page"} <ArrowRight className="ml-1 h-3 w-3" />
-              </Button>
-            )}
+            <Button onClick={createMissionPage} disabled={!applyTitle.trim() || creating}>
+              {creating ? "Creating…" : "Create mission page"} <ArrowRight className="ml-1 h-3 w-3" />
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
