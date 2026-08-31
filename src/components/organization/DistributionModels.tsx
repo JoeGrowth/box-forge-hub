@@ -25,6 +25,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { createDistEntity } from "@/pages/Distribution";
+
 import { Plus, Trash2, Layers, ArrowRight, Copy, Pencil, Lock, FileText } from "lucide-react";
 
 type ModelTask = { id: string; label: string; percent: number; locked?: boolean };
@@ -148,13 +150,27 @@ export function DistributionModels({
   // Each mission gets its own dedicated page: we create one distribution record
   // from the selected model and open /mission/<id>.
   const createMissionPage = async () => {
-    if (!applyTarget || !applyEntity || !user) return;
+    if (!applyTarget || !user) return;
     const title = applyTitle.trim();
     if (!title) return;
     setCreating(true);
-    const kind = `${applyEntity}:model-${applyTarget.id}`;
+    // No distribution folder yet → create a default one so the flow never blocks.
+    let entityId = applyEntity;
+    if (!entityId) {
+      try {
+        const ent = await createDistEntity(`${orgName} distribution`, user.id, orgId);
+        entityId = ent.id;
+        setApplyEntity(ent.id);
+      } catch {
+        setCreating(false);
+        toast.error("Could not create a distribution folder.");
+        return;
+      }
+    }
+    const kind = `${entityId}:model-${applyTarget.id}`;
     const table = () => supabase.from("distribution_records" as never) as never as any;
     const { count } = await table().select("id", { count: "exact", head: true }).eq("kind", kind);
+
     const budgetNum = Number(applyBudget) || 0;
     const charges = withBaseCharges(applyTarget.charges).map((c) => ({
       ...c,
@@ -616,7 +632,7 @@ export function DistributionModels({
               <Label className="text-xs uppercase tracking-wide text-muted-foreground">Distribution folder</Label>
               {entities.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  Create a distribution folder first (below) — the mission is saved inside it.
+                  No folder yet — one named "{orgName} distribution" will be created automatically.
                 </p>
               ) : (
                 <Select value={applyEntity} onValueChange={setApplyEntity}>
@@ -662,11 +678,9 @@ export function DistributionModels({
             </p>
           </div>
           <DialogFooter>
-            {entities.length > 0 && applyTarget && applyEntity && (
-              <Button onClick={createMissionPage} disabled={!applyTitle.trim() || creating}>
-                {creating ? "Creating…" : "Create mission page"} <ArrowRight className="ml-1 h-3 w-3" />
-              </Button>
-            )}
+            <Button onClick={createMissionPage} disabled={!applyTitle.trim() || creating}>
+              {creating ? "Creating…" : "Create mission page"} <ArrowRight className="ml-1 h-3 w-3" />
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
