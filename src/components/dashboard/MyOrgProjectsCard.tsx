@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import { Rocket, ArrowRight, CalendarDays, User } from "lucide-react";
+import { Rocket, ArrowRight, CalendarDays, User, AlertTriangle } from "lucide-react";
 
 type Row = {
   id: string;
