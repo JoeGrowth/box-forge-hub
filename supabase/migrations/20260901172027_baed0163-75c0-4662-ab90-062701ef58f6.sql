@@ -1,0 +1,1 @@
+ALTER TABLE public.organization_projects ADD COLUMN IF NOT EXISTS status_note text;
