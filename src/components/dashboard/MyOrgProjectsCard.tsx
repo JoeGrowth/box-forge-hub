@@ -73,6 +73,7 @@ export function MyOrgProjectsCard() {
           lead: p.lead,
           target_date: p.target_date,
           progress: p.progress ?? 0,
+          status_note: p.status_note,
           orgName: byId.get(p.organization_id)?.name ?? "",
           orgSlug: byId.get(p.organization_id)?.slug ?? "",
         })),
