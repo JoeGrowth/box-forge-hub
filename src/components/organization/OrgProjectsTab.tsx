@@ -16,7 +16,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Pencil, Trash2, Rocket, CalendarDays, User, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Rocket, CalendarDays, User, Loader2, AlertTriangle } from "lucide-react";
 
 type TalentCandidate = { user_id: string; full_name: string | null; avatar_url: string | null };
 
@@ -30,6 +30,7 @@ type OrgProject = {
   start_date: string | null;
   target_date: string | null;
   progress: number;
+  status_note: string | null;
 };
 
 const STATUSES = [
@@ -42,7 +43,7 @@ const statusMeta = (s: string) => STATUSES.find((x) => x.value === s) ?? STATUSE
 
 const emptyDraft = {
   name: "", description: "", status: "planned", lead: "",
-  start_date: "", target_date: "", progress: 0,
+  start_date: "", target_date: "", progress: 0, status_note: "",
 };
 
 export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canEdit: boolean; userId?: string }) {
@@ -93,6 +94,7 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
       start_date: p.start_date ?? "",
       target_date: p.target_date ?? "",
       progress: p.progress ?? 0,
+      status_note: p.status_note ?? "",
     });
     setOpen(true);
   };
@@ -108,6 +110,7 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
       start_date: draft.start_date || null,
       target_date: draft.target_date || null,
       progress: Math.max(0, Math.min(100, Number(draft.progress) || 0)),
+      status_note: draft.status_note.trim() || null,
     };
     const { error } = editing
       ? await supabase.from("organization_projects" as any).update(payload).eq("id", editing.id)
@@ -223,10 +226,18 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
                   <div>
                     <Label>Progress (%)</Label>
                     <Input type="number" min={0} max={100} value={draft.progress} onChange={(e) => setDraft({ ...draft, progress: Number(e.target.value) })} />
-                  </div>
-                </div>
-              </div>
-              <DialogFooter>
+                   </div>
+                   <div>
+                     <Label>Blocker / where it stands</Label>
+                     <Input
+                       value={draft.status_note}
+                       onChange={(e) => setDraft({ ...draft, status_note: e.target.value })}
+                       placeholder="e.g. Waiting for Mehdi to give access"
+                     />
+                   </div>
+                 </div>
+               </div>
+               <DialogFooter>
                 <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
                 <Button onClick={save}>{editing ? "Save changes" : "Add project"}</Button>
               </DialogFooter>
@@ -275,8 +286,14 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
                           {p.start_date || "—"} → {p.target_date || "—"}
                         </span>
                       )}
-                    </div>
-                  </div>
+                     </div>
+                     {p.status_note && (
+                       <div className="mt-2 flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1.5 text-xs text-amber-700 dark:text-amber-400">
+                         <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                         <span>{p.status_note}</span>
+                       </div>
+                     )}
+                   </div>
                   {canEdit && (
                     <div className="flex items-center gap-1">
                       <Button variant="ghost" size="icon" onClick={() => openEdit(p)} title="Edit project">

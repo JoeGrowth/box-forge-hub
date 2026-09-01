@@ -4316,6 +4316,7 @@ export type Database = {
           progress: number
           start_date: string | null
           status: string
+          status_note: string | null
           target_date: string | null
           updated_at: string
         }
@@ -4331,6 +4332,7 @@ export type Database = {
           progress?: number
           start_date?: string | null
           status?: string
+          status_note?: string | null
           target_date?: string | null
           updated_at?: string
         }
@@ -4346,6 +4348,7 @@ export type Database = {
           progress?: number
           start_date?: string | null
           status?: string
+          status_note?: string | null
           target_date?: string | null
           updated_at?: string
         }
