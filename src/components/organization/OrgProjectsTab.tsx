@@ -16,7 +16,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Pencil, Trash2, Rocket, CalendarDays, User, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Rocket, CalendarDays, User, Loader2, AlertTriangle } from "lucide-react";
 
 type TalentCandidate = { user_id: string; full_name: string | null; avatar_url: string | null };
 
