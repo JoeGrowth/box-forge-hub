@@ -30,6 +30,7 @@ type OrgProject = {
   start_date: string | null;
   target_date: string | null;
   progress: number;
+  status_note: string | null;
 };
 
 const STATUSES = [
@@ -42,7 +43,7 @@ const statusMeta = (s: string) => STATUSES.find((x) => x.value === s) ?? STATUSE
 
 const emptyDraft = {
   name: "", description: "", status: "planned", lead: "",
-  start_date: "", target_date: "", progress: 0,
+  start_date: "", target_date: "", progress: 0, status_note: "",
 };
 
 export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canEdit: boolean; userId?: string }) {
@@ -93,6 +94,7 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
       start_date: p.start_date ?? "",
       target_date: p.target_date ?? "",
       progress: p.progress ?? 0,
+      status_note: p.status_note ?? "",
     });
     setOpen(true);
   };
@@ -108,6 +110,7 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
       start_date: draft.start_date || null,
       target_date: draft.target_date || null,
       progress: Math.max(0, Math.min(100, Number(draft.progress) || 0)),
+      status_note: draft.status_note.trim() || null,
     };
     const { error } = editing
       ? await supabase.from("organization_projects" as any).update(payload).eq("id", editing.id)
