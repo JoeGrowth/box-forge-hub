@@ -186,6 +186,12 @@ export function MyOrgProjectsCard() {
                         )}
                       </div>
                     )}
+                    {p.status_note && (
+                      <div className="mt-2 flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1.5 text-xs text-amber-700 dark:text-amber-400">
+                        <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                        <span>{p.status_note}</span>
+                      </div>
+                    )}
 
                     <div className="mt-3 flex items-center gap-3">
                       <Progress value={p.progress} className="h-1.5 flex-1" />
