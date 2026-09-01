@@ -19,6 +19,7 @@ type Row = {
   lead: string | null;
   target_date: string | null;
   progress: number;
+  status_note: string | null;
   orgName: string;
   orgSlug: string;
 };
