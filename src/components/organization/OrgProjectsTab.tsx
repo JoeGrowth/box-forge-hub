@@ -226,10 +226,18 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
                   <div>
                     <Label>Progress (%)</Label>
                     <Input type="number" min={0} max={100} value={draft.progress} onChange={(e) => setDraft({ ...draft, progress: Number(e.target.value) })} />
-                  </div>
-                </div>
-              </div>
-              <DialogFooter>
+                   </div>
+                   <div>
+                     <Label>Blocker / where it stands</Label>
+                     <Input
+                       value={draft.status_note}
+                       onChange={(e) => setDraft({ ...draft, status_note: e.target.value })}
+                       placeholder="e.g. Waiting for Mehdi to give access"
+                     />
+                   </div>
+                 </div>
+               </div>
+               <DialogFooter>
                 <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
                 <Button onClick={save}>{editing ? "Save changes" : "Add project"}</Button>
               </DialogFooter>
