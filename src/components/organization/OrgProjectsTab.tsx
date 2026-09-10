@@ -56,6 +56,7 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
   const [leadResults, setLeadResults] = useState<TalentCandidate[]>([]);
   const [leadSearching, setLeadSearching] = useState(false);
   const [leadFocused, setLeadFocused] = useState(false);
+  const [showArchive, setShowArchive] = useState(false);
 
   const searchTalents = async (q: string) => {
     setDraft((d) => ({ ...d, lead: q }));
