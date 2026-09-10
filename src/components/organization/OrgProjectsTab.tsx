@@ -16,7 +16,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Pencil, Trash2, Rocket, CalendarDays, User, Loader2, AlertTriangle } from "lucide-react";
+import { Plus, Pencil, Trash2, Rocket, CalendarDays, User, Loader2, AlertTriangle, Archive, ChevronDown, ChevronUp, RotateCcw } from "lucide-react";
 
 type TalentCandidate = { user_id: string; full_name: string | null; avatar_url: string | null };
 
@@ -56,6 +56,7 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
   const [leadResults, setLeadResults] = useState<TalentCandidate[]>([]);
   const [leadSearching, setLeadSearching] = useState(false);
   const [leadFocused, setLeadFocused] = useState(false);
+  const [showArchive, setShowArchive] = useState(false);
 
   const searchTalents = async (q: string) => {
     setDraft((d) => ({ ...d, lead: q }));
@@ -101,15 +102,16 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
 
   const save = async () => {
     if (!draft.name.trim()) return;
+    const progressValue = Math.max(0, Math.min(100, Number(draft.progress) || 0));
     const payload: any = {
       organization_id: orgId,
       name: draft.name.trim(),
       description: draft.description.trim() || null,
-      status: draft.status,
+      status: progressValue >= 100 ? "done" : draft.status === "done" ? "active" : draft.status,
       lead: draft.lead.trim() || null,
       start_date: draft.start_date || null,
       target_date: draft.target_date || null,
-      progress: Math.max(0, Math.min(100, Number(draft.progress) || 0)),
+      progress: progressValue,
       status_note: draft.status_note.trim() || null,
     };
     const { error } = editing
@@ -124,11 +126,15 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
   const updateProgress = async (p: OrgProject, value: number) => {
     const v = Math.max(0, Math.min(100, Math.round(value)));
     if (v === p.progress) return;
-    setProjects((prev) => prev.map((x) => (x.id === p.id ? { ...x, progress: v } : x)));
+    const nextStatus = v >= 100 ? "done" : p.status === "done" ? "active" : p.status;
+    setProjects((prev) => prev.map((x) => (x.id === p.id ? { ...x, progress: v, status: nextStatus } : x)));
     const { error } = await supabase
       .from("organization_projects" as any)
-      .update({ progress: v })
+      .update({ progress: v, status: nextStatus })
       .eq("id", p.id);
+    if (!error && v >= 100 && p.status !== "done") {
+      toast({ title: "Project closed", description: `"${p.name}" reached 100% and moved to the archive.` });
+    }
     if (error) {
       toast({ title: "Update failed", description: error.message, variant: "destructive" });
       load();
@@ -148,6 +154,9 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
     load();
   };
 
+  const isClosed = (p: OrgProject) => p.status === "done" || (p.progress ?? 0) >= 100;
+  const openProjects = projects.filter((p) => !isClosed(p));
+  const archivedProjects = projects.filter(isClosed);
   const counts = STATUSES.map((s) => ({ ...s, count: projects.filter((p) => p.status === s.value).length }));
 
   return (
@@ -267,7 +276,10 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
         </div>
       ) : (
         <div className="space-y-3">
-          {projects.map((p) => {
+          {openProjects.length === 0 && (
+            <p className="text-sm text-muted-foreground">All projects are finished — see the archive below.</p>
+          )}
+          {openProjects.map((p) => {
             const meta = statusMeta(p.status);
             return (
               <div key={p.id} className="rounded-xl border border-border bg-card p-4">
@@ -323,6 +335,49 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
               </div>
             );
           })}
+        </div>
+      )}
+
+      {!loading && archivedProjects.length > 0 && (
+        <div className="rounded-xl border border-border bg-muted/30">
+          <button
+            type="button"
+            onClick={() => setShowArchive((v) => !v)}
+            className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left"
+          >
+            <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+              <Archive className="w-4 h-4 text-muted-foreground" />
+              Archive · finished projects
+              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30">
+                {archivedProjects.length}
+              </Badge>
+            </span>
+            {showArchive ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+          </button>
+          {showArchive && (
+            <div className="px-4 pb-4 space-y-2">
+              {archivedProjects.map((p) => (
+                <div key={p.id} className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-3 py-2">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{p.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Closed at {p.progress}%{p.target_date ? ` · ${p.target_date}` : ""}{p.lead ? ` · ${p.lead}` : ""}
+                    </p>
+                  </div>
+                  {canEdit && (
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button variant="ghost" size="icon" onClick={() => updateProgress(p, 90)} title="Reopen project">
+                        <RotateCcw className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => remove(p)} title="Delete project">
+                        <Trash2 className="w-4 h-4 text-destructive" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

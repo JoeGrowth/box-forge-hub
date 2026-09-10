@@ -83,7 +83,7 @@ export function MyOrgProjectsCard() {
     return () => { cancelled = true; };
   }, [user]);
 
-  const activeRows = rows.filter((r) => r.status === "active");
+  const activeRows = rows.filter((r) => r.status === "active" && (r.progress ?? 0) < 100);
 
   if (!loading && activeRows.length === 0) return null;
 
