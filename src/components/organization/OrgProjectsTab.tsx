@@ -125,11 +125,15 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
   const updateProgress = async (p: OrgProject, value: number) => {
     const v = Math.max(0, Math.min(100, Math.round(value)));
     if (v === p.progress) return;
-    setProjects((prev) => prev.map((x) => (x.id === p.id ? { ...x, progress: v } : x)));
+    const nextStatus = v >= 100 ? "done" : p.status === "done" ? "active" : p.status;
+    setProjects((prev) => prev.map((x) => (x.id === p.id ? { ...x, progress: v, status: nextStatus } : x)));
     const { error } = await supabase
       .from("organization_projects" as any)
-      .update({ progress: v })
+      .update({ progress: v, status: nextStatus })
       .eq("id", p.id);
+    if (!error && v >= 100 && p.status !== "done") {
+      toast({ title: "Project closed", description: `"${p.name}" reached 100% and moved to the archive.` });
+    }
     if (error) {
       toast({ title: "Update failed", description: error.message, variant: "destructive" });
       load();
