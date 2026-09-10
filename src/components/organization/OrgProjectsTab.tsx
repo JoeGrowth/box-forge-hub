@@ -101,11 +101,12 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
 
   const save = async () => {
     if (!draft.name.trim()) return;
+    const progressValue = Math.max(0, Math.min(100, Number(draft.progress) || 0));
     const payload: any = {
       organization_id: orgId,
       name: draft.name.trim(),
       description: draft.description.trim() || null,
-      status: draft.status,
+      status: progressValue >= 100 ? "done" : draft.status === "done" ? "active" : draft.status,
       lead: draft.lead.trim() || null,
       start_date: draft.start_date || null,
       target_date: draft.target_date || null,
