@@ -110,7 +110,7 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
       lead: draft.lead.trim() || null,
       start_date: draft.start_date || null,
       target_date: draft.target_date || null,
-      progress: Math.max(0, Math.min(100, Number(draft.progress) || 0)),
+      progress: progressValue,
       status_note: draft.status_note.trim() || null,
     };
     const { error } = editing
