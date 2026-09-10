@@ -154,6 +154,9 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
     load();
   };
 
+  const isClosed = (p: OrgProject) => p.status === "done" || (p.progress ?? 0) >= 100;
+  const openProjects = projects.filter((p) => !isClosed(p));
+  const archivedProjects = projects.filter(isClosed);
   const counts = STATUSES.map((s) => ({ ...s, count: projects.filter((p) => p.status === s.value).length }));
 
   return (
