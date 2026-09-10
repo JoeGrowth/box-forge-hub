@@ -333,6 +333,49 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
           })}
         </div>
       )}
+
+      {!loading && archivedProjects.length > 0 && (
+        <div className="rounded-xl border border-border bg-muted/30">
+          <button
+            type="button"
+            onClick={() => setShowArchive((v) => !v)}
+            className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left"
+          >
+            <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+              <Archive className="w-4 h-4 text-muted-foreground" />
+              Archive · finished projects
+              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30">
+                {archivedProjects.length}
+              </Badge>
+            </span>
+            {showArchive ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+          </button>
+          {showArchive && (
+            <div className="px-4 pb-4 space-y-2">
+              {archivedProjects.map((p) => (
+                <div key={p.id} className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-3 py-2">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{p.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Closed at {p.progress}%{p.target_date ? ` · ${p.target_date}` : ""}{p.lead ? ` · ${p.lead}` : ""}
+                    </p>
+                  </div>
+                  {canEdit && (
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button variant="ghost" size="icon" onClick={() => updateProgress(p, 90)} title="Reopen project">
+                        <RotateCcw className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => remove(p)} title="Delete project">
+                        <Trash2 className="w-4 h-4 text-destructive" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
