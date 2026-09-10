@@ -272,7 +272,10 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
         </div>
       ) : (
         <div className="space-y-3">
-          {projects.map((p) => {
+          {openProjects.length === 0 && (
+            <p className="text-sm text-muted-foreground">All projects are finished — see the archive below.</p>
+          )}
+          {openProjects.map((p) => {
             const meta = statusMeta(p.status);
             return (
               <div key={p.id} className="rounded-xl border border-border bg-card p-4">
