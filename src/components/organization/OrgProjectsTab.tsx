@@ -297,17 +297,17 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
         ))}
       </div>
 
-      {!loading && canEdit && orgName && !hasOrgProject && (
+      {!loading && canEdit && orgName && (!hasOrgProject || !legacyLinked) && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 p-4">
           <div className="min-w-0">
-            <p className="text-sm font-medium text-foreground">{orgName} is not tracked as a project yet</p>
+            <p className="text-sm font-medium text-foreground">{orgName} is not published as a venture yet</p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Add it here to follow its progress, lead and blockers like any other project.
+              Publish it to track it here and make it visible in Projects and in Your Legacy.
             </p>
           </div>
           <Button onClick={addOrgAsProject} disabled={adding}>
             {adding ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Plus className="w-4 h-4 mr-1" />}
-            Add {orgName} as a project
+            Publish {orgName} to Projects & Legacy
           </Button>
         </div>
       )}
