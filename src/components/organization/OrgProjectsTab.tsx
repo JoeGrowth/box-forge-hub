@@ -176,6 +176,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
   const openProjects = projects.filter((p) => !isClosed(p));
   const archivedProjects = projects.filter(isClosed);
   const counts = STATUSES.map((s) => ({ ...s, count: projects.filter((p) => p.status === s.value).length }));
+  const hasOrgProject = !!orgName && projects.some((p) => p.name.trim().toLowerCase() === orgName.trim().toLowerCase());
 
   return (
     <div className="space-y-4">
