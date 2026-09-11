@@ -57,6 +57,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
   const [leadSearching, setLeadSearching] = useState(false);
   const [leadFocused, setLeadFocused] = useState(false);
   const [showArchive, setShowArchive] = useState(false);
+  const [legacyLinked, setLegacyLinked] = useState(true);
 
   const searchTalents = async (q: string) => {
     setDraft((d) => ({ ...d, lead: q }));
