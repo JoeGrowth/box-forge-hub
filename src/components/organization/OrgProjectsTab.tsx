@@ -147,6 +147,24 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
     updateProgress(p, Math.round(pct / 5) * 5);
   };
 
+  const [adding, setAdding] = useState(false);
+  const addOrgAsProject = async () => {
+    if (!orgName) return;
+    setAdding(true);
+    const { error } = await supabase.from("organization_projects" as any).insert({
+      organization_id: orgId,
+      name: orgName,
+      description: `Core project track for ${orgName}.`,
+      status: "active",
+      progress: 0,
+      created_by: userId ?? null,
+    });
+    setAdding(false);
+    if (error) return toast({ title: "Could not add", description: error.message, variant: "destructive" });
+    toast({ title: `${orgName} added to projects` });
+    load();
+  };
+
   const remove = async (p: OrgProject) => {
     if (!confirm(`Delete project "${p.name}"?`)) return;
     const { error } = await supabase.from("organization_projects" as any).delete().eq("id", p.id);
