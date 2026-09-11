@@ -73,12 +73,16 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("organization_projects" as any)
-      .select("*")
-      .eq("organization_id", orgId)
-      .order("created_at", { ascending: false });
+    const [{ data }, { data: idea }] = await Promise.all([
+      supabase
+        .from("organization_projects" as any)
+        .select("*")
+        .eq("organization_id", orgId)
+        .order("created_at", { ascending: false }),
+      supabase.from("startup_ideas").select("id").eq("organization_id", orgId).maybeSingle(),
+    ]);
     setProjects(((data as any[]) ?? []) as OrgProject[]);
+    setLegacyLinked(!!idea?.id);
     setLoading(false);
   }, [orgId]);
 
