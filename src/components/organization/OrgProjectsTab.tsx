@@ -46,7 +46,7 @@ const emptyDraft = {
   start_date: "", target_date: "", progress: 0, status_note: "",
 };
 
-export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canEdit: boolean; userId?: string }) {
+export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: string; orgName?: string; canEdit: boolean; userId?: string }) {
   const { toast } = useToast();
   const [projects, setProjects] = useState<OrgProject[]>([]);
   const [loading, setLoading] = useState(true);
@@ -147,6 +147,24 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
     updateProgress(p, Math.round(pct / 5) * 5);
   };
 
+  const [adding, setAdding] = useState(false);
+  const addOrgAsProject = async () => {
+    if (!orgName) return;
+    setAdding(true);
+    const { error } = await supabase.from("organization_projects" as any).insert({
+      organization_id: orgId,
+      name: orgName,
+      description: `Core project track for ${orgName}.`,
+      status: "active",
+      progress: 0,
+      created_by: userId ?? null,
+    });
+    setAdding(false);
+    if (error) return toast({ title: "Could not add", description: error.message, variant: "destructive" });
+    toast({ title: `${orgName} added to projects` });
+    load();
+  };
+
   const remove = async (p: OrgProject) => {
     if (!confirm(`Delete project "${p.name}"?`)) return;
     const { error } = await supabase.from("organization_projects" as any).delete().eq("id", p.id);
@@ -158,6 +176,7 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
   const openProjects = projects.filter((p) => !isClosed(p));
   const archivedProjects = projects.filter(isClosed);
   const counts = STATUSES.map((s) => ({ ...s, count: projects.filter((p) => p.status === s.value).length }));
+  const hasOrgProject = !!orgName && projects.some((p) => p.name.trim().toLowerCase() === orgName.trim().toLowerCase());
 
   return (
     <div className="space-y-4">
@@ -263,6 +282,21 @@ export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canE
           </div>
         ))}
       </div>
+
+      {!loading && canEdit && orgName && !hasOrgProject && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 p-4">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-foreground">{orgName} is not tracked as a project yet</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Add it here to follow its progress, lead and blockers like any other project.
+            </p>
+          </div>
+          <Button onClick={addOrgAsProject} disabled={adding}>
+            {adding ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Plus className="w-4 h-4 mr-1" />}
+            Add {orgName} as a project
+          </Button>
+        </div>
+      )}
 
       {loading ? (
         <p className="text-sm text-muted-foreground">Loading projects…</p>

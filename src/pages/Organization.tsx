@@ -725,7 +725,7 @@ export default function OrganizationPage() {
 
         {/* PROJECT JOURNEY (internal projects) */}
         <TabsContent value="projects" className="space-y-3">
-          <OrgProjectsTab orgId={org.id} canEdit={canEdit} userId={user?.id} />
+          <OrgProjectsTab orgId={org.id} orgName={org.name} canEdit={canEdit} userId={user?.id} />
         </TabsContent>
 
 
