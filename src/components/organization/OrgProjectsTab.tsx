@@ -46,7 +46,7 @@ const emptyDraft = {
   start_date: "", target_date: "", progress: 0, status_note: "",
 };
 
-export function OrgProjectsTab({ orgId, canEdit, userId }: { orgId: string; canEdit: boolean; userId?: string }) {
+export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: string; orgName?: string; canEdit: boolean; userId?: string }) {
   const { toast } = useToast();
   const [projects, setProjects] = useState<OrgProject[]>([]);
   const [loading, setLoading] = useState(true);
