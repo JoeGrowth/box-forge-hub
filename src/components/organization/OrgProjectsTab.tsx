@@ -282,6 +282,21 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
         ))}
       </div>
 
+      {!loading && canEdit && orgName && !hasOrgProject && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 p-4">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-foreground">{orgName} is not tracked as a project yet</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Add it here to follow its progress, lead and blockers like any other project.
+            </p>
+          </div>
+          <Button onClick={addOrgAsProject} disabled={adding}>
+            {adding ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Plus className="w-4 h-4 mr-1" />}
+            Add {orgName} as a project
+          </Button>
+        </div>
+      )}
+
       {loading ? (
         <p className="text-sm text-muted-foreground">Loading projects…</p>
       ) : projects.length === 0 ? (
