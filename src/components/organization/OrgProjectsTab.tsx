@@ -156,17 +156,26 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
   const addOrgAsProject = async () => {
     if (!orgName) return;
     setAdding(true);
-    const { error } = await supabase.from("organization_projects" as any).insert({
-      organization_id: orgId,
-      name: orgName,
-      description: `Core project track for ${orgName}.`,
-      status: "active",
-      progress: 0,
-      created_by: userId ?? null,
-    });
+    if (!hasOrgProject) {
+      const { error } = await supabase.from("organization_projects" as any).insert({
+        organization_id: orgId,
+        name: orgName,
+        description: `Core project track for ${orgName}.`,
+        status: "active",
+        progress: 0,
+        created_by: userId ?? null,
+      });
+      if (error) {
+        setAdding(false);
+        return toast({ title: "Could not add", description: error.message, variant: "destructive" });
+      }
+    }
+    const { error: linkError } = await supabase.rpc("link_organization_to_legacy" as any, { _org_id: orgId });
     setAdding(false);
-    if (error) return toast({ title: "Could not add", description: error.message, variant: "destructive" });
-    toast({ title: `${orgName} added to projects` });
+    if (linkError) {
+      return toast({ title: "Could not publish", description: linkError.message, variant: "destructive" });
+    }
+    toast({ title: `${orgName} is now tracked`, description: "It appears in Projects and in Your Legacy." });
     load();
   };
 
