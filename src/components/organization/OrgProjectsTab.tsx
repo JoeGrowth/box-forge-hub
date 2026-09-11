@@ -57,6 +57,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
   const [leadSearching, setLeadSearching] = useState(false);
   const [leadFocused, setLeadFocused] = useState(false);
   const [showArchive, setShowArchive] = useState(false);
+  const [legacyLinked, setLegacyLinked] = useState(true);
 
   const searchTalents = async (q: string) => {
     setDraft((d) => ({ ...d, lead: q }));
@@ -73,12 +74,16 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("organization_projects" as any)
-      .select("*")
-      .eq("organization_id", orgId)
-      .order("created_at", { ascending: false });
+    const [{ data }, { data: idea }] = await Promise.all([
+      supabase
+        .from("organization_projects" as any)
+        .select("*")
+        .eq("organization_id", orgId)
+        .order("created_at", { ascending: false }),
+      supabase.from("startup_ideas").select("id").eq("organization_id", orgId).maybeSingle(),
+    ]);
     setProjects(((data as any[]) ?? []) as OrgProject[]);
+    setLegacyLinked(!!idea?.id);
     setLoading(false);
   }, [orgId]);
 
@@ -151,17 +156,26 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
   const addOrgAsProject = async () => {
     if (!orgName) return;
     setAdding(true);
-    const { error } = await supabase.from("organization_projects" as any).insert({
-      organization_id: orgId,
-      name: orgName,
-      description: `Core project track for ${orgName}.`,
-      status: "active",
-      progress: 0,
-      created_by: userId ?? null,
-    });
+    if (!hasOrgProject) {
+      const { error } = await supabase.from("organization_projects" as any).insert({
+        organization_id: orgId,
+        name: orgName,
+        description: `Core project track for ${orgName}.`,
+        status: "active",
+        progress: 0,
+        created_by: userId ?? null,
+      });
+      if (error) {
+        setAdding(false);
+        return toast({ title: "Could not add", description: error.message, variant: "destructive" });
+      }
+    }
+    const { error: linkError } = await supabase.rpc("link_organization_to_legacy" as any, { _org_id: orgId });
     setAdding(false);
-    if (error) return toast({ title: "Could not add", description: error.message, variant: "destructive" });
-    toast({ title: `${orgName} added to projects` });
+    if (linkError) {
+      return toast({ title: "Could not publish", description: linkError.message, variant: "destructive" });
+    }
+    toast({ title: `${orgName} is now tracked`, description: "It appears in Projects and in Your Legacy." });
     load();
   };
 
@@ -283,17 +297,17 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
         ))}
       </div>
 
-      {!loading && canEdit && orgName && !hasOrgProject && (
+      {!loading && canEdit && orgName && (!hasOrgProject || !legacyLinked) && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/5 p-4">
           <div className="min-w-0">
-            <p className="text-sm font-medium text-foreground">{orgName} is not tracked as a project yet</p>
+            <p className="text-sm font-medium text-foreground">{orgName} is not published as a venture yet</p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Add it here to follow its progress, lead and blockers like any other project.
+              Publish it to track it here and make it visible in Projects and in Your Legacy.
             </p>
           </div>
           <Button onClick={addOrgAsProject} disabled={adding}>
             {adding ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Plus className="w-4 h-4 mr-1" />}
-            Add {orgName} as a project
+            Publish {orgName} to Projects & Legacy
           </Button>
         </div>
       )}

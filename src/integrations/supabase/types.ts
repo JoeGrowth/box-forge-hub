@@ -7183,6 +7183,10 @@ export type Database = {
       is_org_member: { Args: { _org: string; _user: string }; Returns: boolean }
       is_plan_shared_with_me: { Args: { _plan_id: string }; Returns: boolean }
       legacy_expertise_calc: { Args: { _user_id: string }; Returns: Json }
+      link_organization_to_legacy: {
+        Args: { _org_id: string }
+        Returns: string
+      }
       list_box_advisors_public: {
         Args: { _box_id: string }
         Returns: {
