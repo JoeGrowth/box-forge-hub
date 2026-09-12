@@ -52,7 +52,9 @@ import {
   Lock,
   DollarSign,
   PieChart,
-  Target
+  Target,
+  Plus,
+  X
 } from "lucide-react";
 
 interface StartupIdea {
