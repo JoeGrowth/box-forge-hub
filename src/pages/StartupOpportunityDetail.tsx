@@ -472,26 +472,66 @@ const StartupOpportunityDetail = () => {
                 </div>
 
                 {/* Roles Needed */}
-                {idea.roles_needed && idea.roles_needed.length > 0 && (
+                {((idea.roles_needed && idea.roles_needed.length > 0) || isCreator) && (
                   <div className="bg-card rounded-2xl border border-border p-8">
                     <h2 className="font-display text-xl font-bold text-foreground mb-4">
                       Roles Needed
                     </h2>
-                    <div className="grid sm:grid-cols-2 gap-3">
-                      {idea.roles_needed.map((role, i) => (
-                        <div 
-                          key={i}
-                          className="flex items-center gap-3 p-4 rounded-xl bg-b4-teal/5 border border-b4-teal/20"
-                        >
-                          <div className="w-10 h-10 rounded-lg bg-b4-teal/10 flex items-center justify-center">
-                            <Briefcase className="w-5 h-5 text-b4-teal" />
+                    {idea.roles_needed && idea.roles_needed.length > 0 ? (
+                      <div className="grid sm:grid-cols-2 gap-3">
+                        {idea.roles_needed.map((role, i) => (
+                          <div 
+                            key={i}
+                            className="flex items-center gap-3 p-4 rounded-xl bg-b4-teal/5 border border-b4-teal/20"
+                          >
+                            <div className="w-10 h-10 rounded-lg bg-b4-teal/10 flex items-center justify-center">
+                              <Briefcase className="w-5 h-5 text-b4-teal" />
+                            </div>
+                            <span className="font-medium text-foreground flex-1">{role}</span>
+                            {isCreator && (
+                              <button
+                                type="button"
+                                aria-label={`Remove ${role}`}
+                                onClick={() => saveRoles((idea.roles_needed ?? []).filter((r) => r !== role))}
+                                className="text-muted-foreground hover:text-destructive"
+                                disabled={savingRoles}
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            )}
                           </div>
-                          <span className="font-medium text-foreground">{role}</span>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        {isCreator
+                          ? "No roles listed yet. Add the roles you are looking for so co-builders know how to join."
+                          : "No roles listed yet."}
+                      </p>
+                    )}
+
+                    {isCreator && (
+                      <div className="mt-5 flex flex-col sm:flex-row gap-2">
+                        <Input
+                          value={newRole}
+                          onChange={(e) => setNewRole(e.target.value)}
+                          placeholder="e.g., Marketing Lead, Developer"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              addRole();
+                            }
+                          }}
+                        />
+                        <Button type="button" variant="outline" onClick={addRole} disabled={savingRoles || !newRole.trim()}>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add role
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
+
               </div>
 
               {/* Sidebar */}
