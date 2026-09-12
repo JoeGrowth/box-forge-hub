@@ -105,7 +105,7 @@ export function Navbar() {
 
   // "My tender work" only appears once the user has applied to an opportunity.
   const [hasTenderWork, setHasTenderWork] = useState(false);
-  // "Projects" appears once the talent is monetized (10 closed missions).
+  // "Ideas" appears once the talent is monetized (10 closed missions).
   const [talentMonetized, setTalentMonetized] = useState(false);
   useEffect(() => {
     if (!user) {
@@ -247,7 +247,7 @@ export function Navbar() {
                     <button
                       className={`text-sm font-medium transition-colors hover:text-b4-teal outline-none ${
                       location.pathname === "/people" ||
-                        location.pathname === "/projects" ||
+                        location.pathname === "/ideas" ||
                         location.pathname === "/opportunities" ||
                         location.pathname === "/my-tender-work" ||
                         location.pathname === "/opsmanagement"
@@ -263,13 +263,13 @@ export function Navbar() {
                     {talentReady && talentMonetized && (
                       <DropdownMenuItem asChild>
                         <Link
-                          to="/projects"
+                          to="/ideas"
                           className={`flex items-center gap-2 cursor-pointer ${
-                            location.pathname === "/projects" ? "text-b4-teal" : "text-foreground"
+                            location.pathname === "/ideas" ? "text-b4-teal" : "text-foreground"
                           }`}
                         >
                           <Rocket size={16} />
-                          Projects
+                          Ideas
                         </Link>
                       </DropdownMenuItem>
                     )}
@@ -551,16 +551,16 @@ export function Navbar() {
 
                       {talentReady && talentMonetized && (
                         <Link
-                          to="/projects"
+                          to="/ideas"
                           onClick={() => setIsOpen(false)}
                           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                            location.pathname === "/projects"
+                            location.pathname === "/ideas"
                               ? "bg-muted text-b4-teal"
                               : "text-muted-foreground hover:bg-muted"
                           }`}
                         >
                           <Rocket size={16} />
-                          <span className="flex-1">Projects</span>
+                          <span className="flex-1">Ideas</span>
                         </Link>
                       )}
 

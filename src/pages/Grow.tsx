@@ -114,7 +114,7 @@ export default function Grow() {
               <TrackStage label="Foundation" outcome="Create idea" href="/create-idea" done={ideaFoundationDone} loading={loading} />
               <TrackStage label="Validated" outcome="Approved venture" href="/entrepreneurship" done={ideaFoundationDone} loading={loading} />
               <TrackStage label="Monetized" outcome="Revenue / equity" href="/entrepreneurship" done={false} loading={loading} />
-              <TrackStage label="Grown" outcome="Team & systems" href="/projects" done={false} loading={loading} />
+              <TrackStage label="Grown" outcome="Team & systems" href="/ideas" done={false} loading={loading} />
               <TrackStage label="Scaled" outcome="Company / box" href="/boxes" done={false} loading={loading} />
             </ul>
 
