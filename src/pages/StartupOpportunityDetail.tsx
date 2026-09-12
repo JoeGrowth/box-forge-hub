@@ -52,7 +52,9 @@ import {
   Lock,
   DollarSign,
   PieChart,
-  Target
+  Target,
+  Plus,
+  X
 } from "lucide-react";
 
 interface StartupIdea {
@@ -107,6 +109,40 @@ const StartupOpportunityDetail = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [hasCoBuilderCert, setHasCoBuilderCert] = useState(false);
   const [dialogStep, setDialogStep] = useState<1 | 2>(1);
+  const [newRole, setNewRole] = useState("");
+  const [savingRoles, setSavingRoles] = useState(false);
+
+  const isCreator = !!user && !!idea && user.id === idea.creator_id;
+
+  const saveRoles = async (roles: string[]) => {
+    if (!idea) return;
+    setSavingRoles(true);
+    const { error } = await supabase
+      .from("startup_ideas")
+      .update({ roles_needed: roles.length > 0 ? roles : null })
+      .eq("id", idea.id)
+      .eq("creator_id", idea.creator_id);
+    setSavingRoles(false);
+    if (error) {
+      toast({ title: "Could not save roles", description: error.message, variant: "destructive" });
+      return;
+    }
+    setIdea({ ...idea, roles_needed: roles.length > 0 ? roles : null });
+    toast({ title: "Roles updated" });
+  };
+
+  const addRole = () => {
+    const value = newRole.trim();
+    if (!value) return;
+    const current = idea?.roles_needed ?? [];
+    if (current.includes(value)) {
+      setNewRole("");
+      return;
+    }
+    setNewRole("");
+    void saveRoles([...current, value]);
+  };
+
 
   // Compensation proposal state
   const [includeSalary, setIncludeSalary] = useState(false);
@@ -472,26 +508,66 @@ const StartupOpportunityDetail = () => {
                 </div>
 
                 {/* Roles Needed */}
-                {idea.roles_needed && idea.roles_needed.length > 0 && (
+                {((idea.roles_needed && idea.roles_needed.length > 0) || isCreator) && (
                   <div className="bg-card rounded-2xl border border-border p-8">
                     <h2 className="font-display text-xl font-bold text-foreground mb-4">
                       Roles Needed
                     </h2>
-                    <div className="grid sm:grid-cols-2 gap-3">
-                      {idea.roles_needed.map((role, i) => (
-                        <div 
-                          key={i}
-                          className="flex items-center gap-3 p-4 rounded-xl bg-b4-teal/5 border border-b4-teal/20"
-                        >
-                          <div className="w-10 h-10 rounded-lg bg-b4-teal/10 flex items-center justify-center">
-                            <Briefcase className="w-5 h-5 text-b4-teal" />
+                    {idea.roles_needed && idea.roles_needed.length > 0 ? (
+                      <div className="grid sm:grid-cols-2 gap-3">
+                        {idea.roles_needed.map((role, i) => (
+                          <div 
+                            key={i}
+                            className="flex items-center gap-3 p-4 rounded-xl bg-b4-teal/5 border border-b4-teal/20"
+                          >
+                            <div className="w-10 h-10 rounded-lg bg-b4-teal/10 flex items-center justify-center">
+                              <Briefcase className="w-5 h-5 text-b4-teal" />
+                            </div>
+                            <span className="font-medium text-foreground flex-1">{role}</span>
+                            {isCreator && (
+                              <button
+                                type="button"
+                                aria-label={`Remove ${role}`}
+                                onClick={() => saveRoles((idea.roles_needed ?? []).filter((r) => r !== role))}
+                                className="text-muted-foreground hover:text-destructive"
+                                disabled={savingRoles}
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            )}
                           </div>
-                          <span className="font-medium text-foreground">{role}</span>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        {isCreator
+                          ? "No roles listed yet. Add the roles you are looking for so co-builders know how to join."
+                          : "No roles listed yet."}
+                      </p>
+                    )}
+
+                    {isCreator && (
+                      <div className="mt-5 flex flex-col sm:flex-row gap-2">
+                        <Input
+                          value={newRole}
+                          onChange={(e) => setNewRole(e.target.value)}
+                          placeholder="e.g., Marketing Lead, Developer"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              addRole();
+                            }
+                          }}
+                        />
+                        <Button type="button" variant="outline" onClick={addRole} disabled={savingRoles || !newRole.trim()}>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add role
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
+
               </div>
 
               {/* Sidebar */}
