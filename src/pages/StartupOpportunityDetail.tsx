@@ -109,6 +109,40 @@ const StartupOpportunityDetail = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [hasCoBuilderCert, setHasCoBuilderCert] = useState(false);
   const [dialogStep, setDialogStep] = useState<1 | 2>(1);
+  const [newRole, setNewRole] = useState("");
+  const [savingRoles, setSavingRoles] = useState(false);
+
+  const isCreator = !!user && !!idea && user.id === idea.creator_id;
+
+  const saveRoles = async (roles: string[]) => {
+    if (!idea) return;
+    setSavingRoles(true);
+    const { error } = await supabase
+      .from("startup_ideas")
+      .update({ roles_needed: roles.length > 0 ? roles : null })
+      .eq("id", idea.id)
+      .eq("creator_id", idea.creator_id);
+    setSavingRoles(false);
+    if (error) {
+      toast({ title: "Could not save roles", description: error.message, variant: "destructive" });
+      return;
+    }
+    setIdea({ ...idea, roles_needed: roles.length > 0 ? roles : null });
+    toast({ title: "Roles updated" });
+  };
+
+  const addRole = () => {
+    const value = newRole.trim();
+    if (!value) return;
+    const current = idea?.roles_needed ?? [];
+    if (current.includes(value)) {
+      setNewRole("");
+      return;
+    }
+    setNewRole("");
+    void saveRoles([...current, value]);
+  };
+
 
   // Compensation proposal state
   const [includeSalary, setIncludeSalary] = useState(false);
