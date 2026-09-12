@@ -365,11 +365,11 @@ export default function OrganizationPage() {
                 </Badge>
               )}
             </div>
-            {canAdmin ? (
+            {canEdit ? (
               <EditableOrgDescription
                 orgId={org.id}
                 initialDescription={org.description}
-                onSaved={(v) => { (org as any).description = v; }}
+                onSaved={(v) => setOrg((current) => current ? { ...current, description: v } : current)}
               />
             ) : (
               org.description && <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">{org.description}</p>
@@ -2566,7 +2566,7 @@ function EditableOrgDescription({
     setSaving(false);
     setEditing(false);
     onSaved?.(desc);
-    toast({ title: "Description updated", description: "Synced with your Legacy Initiated card." });
+    toast({ title: "Description updated", description: "The current description will also appear in Ideas." });
   };
 
   if (!editing) {
@@ -2590,7 +2590,7 @@ function EditableOrgDescription({
         value={value}
         onChange={(e) => setValue(e.target.value)}
         rows={4}
-        placeholder="Describe this organization — this description will also appear on your Legacy Initiated card."
+        placeholder="Describe this organization — this description will also appear in Ideas."
       />
       <div className="flex items-center gap-2">
         <Button size="sm" onClick={save} disabled={saving}>
