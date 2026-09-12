@@ -22,6 +22,7 @@ interface StartupIdea {
   is_looking_for_cobuilders: boolean | null;
   created_at: string;
   status: string | null;
+  organization_id: string | null;
 }
 
 const getEpisodeLabel = (episode: string) => {
@@ -48,6 +49,7 @@ const Ecosystem = () => {
   const [myProjects, setMyProjects] = useState<StartupIdea[]>([]);
   const [creatorNames, setCreatorNames] = useState<Record<string, string>>({});
   const [teamCounts, setTeamCounts] = useState<Record<string, number>>({});
+  const [organizationDescriptions, setOrganizationDescriptions] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [applyProject, setApplyProject] = useState<StartupIdea | null>(null);
   const [activeTab, setActiveTab] = useState("all");
@@ -67,6 +69,26 @@ const Ecosystem = () => {
         const others = list.filter((p) => p.creator_id !== user.id);
         setMyProjects(mine);
         setBrowseProjects(others);
+
+        const ideaIds = list.map((p) => p.id);
+        const organizationIds = list.map((p) => p.organization_id).filter((id): id is string => Boolean(id));
+        const [linkedByIdea, linkedById] = await Promise.all([
+          ideaIds.length
+            ? supabase.from("organizations").select("id, source_idea_id, description").in("source_idea_id", ideaIds)
+            : Promise.resolve({ data: [] }),
+          organizationIds.length
+            ? supabase.from("organizations").select("id, source_idea_id, description").in("id", organizationIds)
+            : Promise.resolve({ data: [] }),
+        ]);
+        const descriptions: Record<string, string> = {};
+        for (const organization of [...(linkedByIdea.data || []), ...(linkedById.data || [])] as Array<{ id: string; source_idea_id: string | null; description: string | null }>) {
+          if (!organization.description) continue;
+          if (organization.source_idea_id) descriptions[organization.source_idea_id] = organization.description;
+          for (const idea of list) {
+            if (idea.organization_id === organization.id) descriptions[idea.id] = organization.description;
+          }
+        }
+        setOrganizationDescriptions(descriptions);
 
         const creatorIds = [...new Set(others.map((p) => p.creator_id))];
         if (creatorIds.length > 0) {
@@ -107,7 +129,9 @@ const Ecosystem = () => {
           {project.sector && (
             <p className="text-sm text-muted-foreground italic mb-2">{project.sector}</p>
           )}
-          <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{project.description}</p>
+          <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+            {organizationDescriptions[project.id] || project.description}
+          </p>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4 text-sm">
             <div>
