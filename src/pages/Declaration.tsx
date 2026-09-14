@@ -297,15 +297,19 @@ export default function Declaration() {
     else setMissions([]);
   }, [activeEntityId, loadMissions]);
 
-  // Deep link: open the mission passed in the URL and scroll it into view.
+  // Deep link: open the mission passed in the URL and scroll it into view — once only,
+  // so later edits never re-scroll the page while the user is typing.
+  const deepLinkDone = useRef<string | null>(null);
   useEffect(() => {
     if (!missionParam || !missions.length) return;
+    if (deepLinkDone.current === missionParam) return;
     if (!missions.some((m) => m.id === missionParam)) return;
+    deepLinkDone.current = missionParam;
     setActiveId(missionParam);
     const t = setTimeout(() => {
-      document
-        .getElementById(`mission-card-${missionParam}`)
-        ?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+      const el = document.getElementById(`mission-card-${missionParam}`);
+      if (!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
     }, 250);
     return () => clearTimeout(t);
   }, [missionParam, missions]);
