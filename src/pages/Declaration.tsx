@@ -432,21 +432,49 @@ export default function Declaration() {
     }
   };
 
+  // Debounced saving: typing stays smooth, one write per pause instead of per keystroke.
+  const flushMission = useCallback((id: string) => {
+    const timer = saveTimers.current[id];
+    if (timer) {
+      clearTimeout(timer);
+      delete saveTimers.current[id];
+    }
+    const patch = pendingPatches.current[id];
+    if (!patch || Object.keys(patch).length === 0) return;
+    delete pendingPatches.current[id];
+    setSavingIds((s) => ({ ...s, [id]: true }));
+    persistMission(id, patch).finally(() => setSavingIds((s) => ({ ...s, [id]: false })));
+  }, []);
+
+  const queueSave = useCallback(
+    (id: string, patch: Partial<Mission>) => {
+      pendingPatches.current[id] = { ...(pendingPatches.current[id] || {}), ...patch };
+      if (saveTimers.current[id]) clearTimeout(saveTimers.current[id]);
+      saveTimers.current[id] = setTimeout(() => flushMission(id), 700);
+    },
+    [flushMission],
+  );
+
+  // Flush anything still pending when leaving the page.
+  useEffect(
+    () => () => {
+      Object.keys(pendingPatches.current).forEach((id) => {
+        const patch = pendingPatches.current[id];
+        if (patch) persistMission(id, patch);
+      });
+      Object.values(saveTimers.current).forEach((t) => clearTimeout(t));
+    },
+    [],
+  );
+
   const update = (id: string, patch: Partial<Mission>) => {
     setMissions((ms) => ms.map((m) => (m.id === id ? { ...m, ...patch } : m)));
-    persistMission(id, patch);
+    queueSave(id, patch);
   };
 
-  const updatePayees = async (id: string, kind: "internal" | "external", payees: Payee[]) => {
+  const updatePayees = (id: string, kind: "internal" | "external", payees: Payee[]) => {
     setMissions((ms) => ms.map((m) => (m.id === id ? { ...m, [kind]: payees } : m)));
-    const { error } = await supabase
-      .from("declaration_missions")
-      .update({ [kind]: payees })
-      .eq("id", id);
-    if (error) {
-      console.error("updatePayees error", error);
-      toast({ title: "Sauvegarde échouée", description: error.message, variant: "destructive" });
-    }
+    queueSave(id, { [kind]: payees } as Partial<Mission>);
   };
 
   const addPayee = (id: string, kind: "internal" | "external") => {
