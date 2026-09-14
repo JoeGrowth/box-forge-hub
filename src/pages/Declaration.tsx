@@ -292,6 +292,19 @@ export default function Declaration() {
     else setMissions([]);
   }, [activeEntityId, loadMissions]);
 
+  // Deep link: open the mission passed in the URL and scroll it into view.
+  useEffect(() => {
+    if (!missionParam || !missions.length) return;
+    if (!missions.some((m) => m.id === missionParam)) return;
+    setActiveId(missionParam);
+    const t = setTimeout(() => {
+      document
+        .getElementById(`mission-card-${missionParam}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+    }, 250);
+    return () => clearTimeout(t);
+  }, [missionParam, missions]);
+
   // Load collaborators when dialog opens
   useEffect(() => {
     if (!entityDialogOpen || !activeEntityId) return;
