@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Plus,
@@ -18,6 +18,7 @@ import {
   UserPlus,
   ChevronDown,
   ChevronUp,
+  GripVertical,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -112,6 +113,10 @@ export default function Declaration() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const [dragArmedId, setDragArmedId] = useState<string | null>(null);
+  const [savingIds, setSavingIds] = useState<Record<string, boolean>>({});
+  const pendingPatches = useRef<Record<string, Partial<Mission>>>({});
+  const saveTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const [loading, setLoading] = useState(true);
 
   const [roster, setRoster] = useState<string[]>(DEFAULT_INTERNALS);
@@ -292,15 +297,19 @@ export default function Declaration() {
     else setMissions([]);
   }, [activeEntityId, loadMissions]);
 
-  // Deep link: open the mission passed in the URL and scroll it into view.
+  // Deep link: open the mission passed in the URL and scroll it into view — once only,
+  // so later edits never re-scroll the page while the user is typing.
+  const deepLinkDone = useRef<string | null>(null);
   useEffect(() => {
     if (!missionParam || !missions.length) return;
+    if (deepLinkDone.current === missionParam) return;
     if (!missions.some((m) => m.id === missionParam)) return;
+    deepLinkDone.current = missionParam;
     setActiveId(missionParam);
     const t = setTimeout(() => {
-      document
-        .getElementById(`mission-card-${missionParam}`)
-        ?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+      const el = document.getElementById(`mission-card-${missionParam}`);
+      if (!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
     }, 250);
     return () => clearTimeout(t);
   }, [missionParam, missions]);
@@ -432,21 +441,49 @@ export default function Declaration() {
     }
   };
 
+  // Debounced saving: typing stays smooth, one write per pause instead of per keystroke.
+  const flushMission = useCallback((id: string) => {
+    const timer = saveTimers.current[id];
+    if (timer) {
+      clearTimeout(timer);
+      delete saveTimers.current[id];
+    }
+    const patch = pendingPatches.current[id];
+    if (!patch || Object.keys(patch).length === 0) return;
+    delete pendingPatches.current[id];
+    setSavingIds((s) => ({ ...s, [id]: true }));
+    persistMission(id, patch).finally(() => setSavingIds((s) => ({ ...s, [id]: false })));
+  }, []);
+
+  const queueSave = useCallback(
+    (id: string, patch: Partial<Mission>) => {
+      pendingPatches.current[id] = { ...(pendingPatches.current[id] || {}), ...patch };
+      if (saveTimers.current[id]) clearTimeout(saveTimers.current[id]);
+      saveTimers.current[id] = setTimeout(() => flushMission(id), 700);
+    },
+    [flushMission],
+  );
+
+  // Flush anything still pending when leaving the page.
+  useEffect(
+    () => () => {
+      Object.keys(pendingPatches.current).forEach((id) => {
+        const patch = pendingPatches.current[id];
+        if (patch) persistMission(id, patch);
+      });
+      Object.values(saveTimers.current).forEach((t) => clearTimeout(t));
+    },
+    [],
+  );
+
   const update = (id: string, patch: Partial<Mission>) => {
     setMissions((ms) => ms.map((m) => (m.id === id ? { ...m, ...patch } : m)));
-    persistMission(id, patch);
+    queueSave(id, patch);
   };
 
-  const updatePayees = async (id: string, kind: "internal" | "external", payees: Payee[]) => {
+  const updatePayees = (id: string, kind: "internal" | "external", payees: Payee[]) => {
     setMissions((ms) => ms.map((m) => (m.id === id ? { ...m, [kind]: payees } : m)));
-    const { error } = await supabase
-      .from("declaration_missions")
-      .update({ [kind]: payees })
-      .eq("id", id);
-    if (error) {
-      console.error("updatePayees error", error);
-      toast({ title: "Sauvegarde échouée", description: error.message, variant: "destructive" });
-    }
+    queueSave(id, { [kind]: payees } as Partial<Mission>);
   };
 
   const addPayee = (id: string, kind: "internal" | "external") => {
@@ -1174,7 +1211,7 @@ export default function Declaration() {
         {/* Mission selector */}
         <div className="mb-6">
           <h2 className="text-sm font-medium text-muted-foreground mb-3">
-            Missions · cliquez pour éditer · glissez pour réordonner
+            Missions · cliquez pour éditer · utilisez la poignée pour réordonner
           </h2>
           <div className="flex gap-3 overflow-x-auto pb-2">
             {missions
@@ -1189,12 +1226,17 @@ export default function Declaration() {
                 return (
                   <div
                     key={m.id}
-                    draggable
+                    draggable={dragArmedId === m.id}
                     onDragStart={(e) => {
+                      if (dragArmedId !== m.id) {
+                        e.preventDefault();
+                        return;
+                      }
                       setDragId(m.id);
                       e.dataTransfer.effectAllowed = "move";
                     }}
                     onDragOver={(e) => {
+                      if (!dragId) return;
                       e.preventDefault();
                       e.dataTransfer.dropEffect = "move";
                       if (dragOverId !== m.id) setDragOverId(m.id);
@@ -1207,6 +1249,7 @@ export default function Declaration() {
                       if (!dragId || dragId === m.id) {
                         setDragId(null);
                         setDragOverId(null);
+                        setDragArmedId(null);
                         return;
                       }
                       setMissions((ms) => {
@@ -1228,14 +1271,16 @@ export default function Declaration() {
                       });
                       setDragId(null);
                       setDragOverId(null);
+                      setDragArmedId(null);
                     }}
                     onDragEnd={() => {
                       setDragId(null);
                       setDragOverId(null);
+                      setDragArmedId(null);
                     }}
                     id={`mission-card-${m.id}`}
                     onClick={() => setActiveId(m.id)}
-                    className={`flex-shrink-0 text-left rounded-xl border p-4 min-w-[220px] max-w-[260px] transition-all hover:shadow-sm cursor-grab active:cursor-grabbing ${
+                    className={`flex-shrink-0 text-left rounded-xl border p-4 min-w-[220px] max-w-[260px] transition-all hover:shadow-sm cursor-pointer ${
                       isActive
                         ? "border-primary/60 bg-primary/[0.04] ring-1 ring-primary/20"
                         : "border-muted bg-card hover:border-primary/30"
@@ -1245,7 +1290,21 @@ export default function Declaration() {
                       <Badge variant="outline" className={getTypeMeta(m.type).tone}>
                         {getTypeMeta(m.type).label}
                       </Badge>
-                      {isActive && <span className="h-2 w-2 rounded-full bg-primary" />}
+                      <div className="flex items-center gap-1.5">
+                        {savingIds[m.id] && <span className="text-[10px] text-muted-foreground">…</span>}
+                        {isActive && <span className="h-2 w-2 rounded-full bg-primary" />}
+                        <span
+                          role="button"
+                          aria-label="Réordonner la mission"
+                          title="Glisser pour réordonner"
+                          onMouseDown={() => setDragArmedId(m.id)}
+                          onTouchStart={() => setDragArmedId(m.id)}
+                          onClick={(e) => e.stopPropagation()}
+                          className="cursor-grab active:cursor-grabbing text-muted-foreground/60 hover:text-foreground"
+                        >
+                          <GripVertical className="h-4 w-4" />
+                        </span>
+                      </div>
                     </div>
                     <div className="font-semibold truncate">{m.client || "Mission sans nom"}</div>
                     <div className="text-xs text-muted-foreground mt-2 space-y-1">
