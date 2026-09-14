@@ -104,6 +104,7 @@ export default function Declaration() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const entityParam = searchParams.get("entity");
+  const missionParam = searchParams.get("mission");
 
   const [entities, setEntities] = useState<Entity[]>([]);
   const [activeEntityId, setActiveEntityId] = useState<string | null>(null);
