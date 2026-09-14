@@ -11,6 +11,7 @@ import { Wallet, ArrowRight, Building2, Clock } from "lucide-react";
 
 type Row = {
   id: string;
+  entityId: string;
   client: string;
   type: string;
   budget: number;
