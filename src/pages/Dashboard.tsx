@@ -165,6 +165,7 @@ const Dashboard = () => {
                   <>
                     {showShapeTalent && <DashboardProgress />}
                     {shapeYourTalentComplete && <MyOrgProjectsCard />}
+                    {shapeYourTalentComplete && <MyMissionsCard />}
                     {isCapable && <CommitmentsPanel />}
                     {isCapable && !allBadgesEarned && <DashboardOpportunities />}
                     {isCapable && !allBadgesEarned && <ProgressionPathCard userId={user?.id} />}
