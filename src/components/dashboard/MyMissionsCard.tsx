@@ -57,6 +57,7 @@ export function MyMissionsCard() {
           const e = byId.get(m.entity_id);
           return {
             id: m.id,
+            entityId: m.entity_id,
             client: m.client,
             type: m.type,
             budget: Number(m.budget ?? 0),
