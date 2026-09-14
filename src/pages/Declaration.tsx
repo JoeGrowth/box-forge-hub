@@ -112,6 +112,10 @@ export default function Declaration() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const [dragArmedId, setDragArmedId] = useState<string | null>(null);
+  const [savingIds, setSavingIds] = useState<Record<string, boolean>>({});
+  const pendingPatches = useRef<Record<string, Partial<Mission>>>({});
+  const saveTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const [loading, setLoading] = useState(true);
 
   const [roster, setRoster] = useState<string[]>(DEFAULT_INTERNALS);
