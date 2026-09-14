@@ -50,7 +50,10 @@ export function MyMissionsCard() {
 
       if (cancelled) return;
       setRows(
-        ((missions as any[]) ?? []).map((m) => {
+        ((missions as any[]) ?? [])
+          // Skip blank draft rows: no client name and no budget yet.
+          .filter((m) => String(m.client ?? "").trim() !== "" && Number(m.budget ?? 0) > 0)
+          .map((m) => {
           const e = byId.get(m.entity_id);
           return {
             id: m.id,
