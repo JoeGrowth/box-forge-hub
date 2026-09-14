@@ -1233,6 +1233,7 @@ export default function Declaration() {
                       setDragId(null);
                       setDragOverId(null);
                     }}
+                    id={`mission-card-${m.id}`}
                     onClick={() => setActiveId(m.id)}
                     className={`flex-shrink-0 text-left rounded-xl border p-4 min-w-[220px] max-w-[260px] transition-all hover:shadow-sm cursor-grab active:cursor-grabbing ${
                       isActive
