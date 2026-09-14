@@ -104,6 +104,7 @@ export default function Declaration() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const entityParam = searchParams.get("entity");
+  const missionParam = searchParams.get("mission");
 
   const [entities, setEntities] = useState<Entity[]>([]);
   const [activeEntityId, setActiveEntityId] = useState<string | null>(null);
@@ -290,6 +291,19 @@ export default function Declaration() {
     if (activeEntityId) loadMissions(activeEntityId);
     else setMissions([]);
   }, [activeEntityId, loadMissions]);
+
+  // Deep link: open the mission passed in the URL and scroll it into view.
+  useEffect(() => {
+    if (!missionParam || !missions.length) return;
+    if (!missions.some((m) => m.id === missionParam)) return;
+    setActiveId(missionParam);
+    const t = setTimeout(() => {
+      document
+        .getElementById(`mission-card-${missionParam}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+    }, 250);
+    return () => clearTimeout(t);
+  }, [missionParam, missions]);
 
   // Load collaborators when dialog opens
   useEffect(() => {
@@ -1219,6 +1233,7 @@ export default function Declaration() {
                       setDragId(null);
                       setDragOverId(null);
                     }}
+                    id={`mission-card-${m.id}`}
                     onClick={() => setActiveId(m.id)}
                     className={`flex-shrink-0 text-left rounded-xl border p-4 min-w-[220px] max-w-[260px] transition-all hover:shadow-sm cursor-grab active:cursor-grabbing ${
                       isActive

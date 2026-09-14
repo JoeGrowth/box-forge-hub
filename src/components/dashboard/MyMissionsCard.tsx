@@ -11,6 +11,7 @@ import { Wallet, ArrowRight, Building2, Clock } from "lucide-react";
 
 type Row = {
   id: string;
+  entityId: string;
   client: string;
   type: string;
   budget: number;
@@ -57,6 +58,7 @@ export function MyMissionsCard() {
           const e = byId.get(m.entity_id);
           return {
             id: m.id,
+            entityId: m.entity_id,
             client: m.client,
             type: m.type,
             budget: Number(m.budget ?? 0),
@@ -124,7 +126,7 @@ export function MyMissionsCard() {
           rows.map((m) => (
             <Link
               key={m.id}
-              to="/declaration"
+              to={`/declaration?entity=${m.entityId}&mission=${m.id}`}
               className="group block rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/40 hover:bg-muted/40 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <div className="flex items-start justify-between gap-3">
