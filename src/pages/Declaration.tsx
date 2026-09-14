@@ -18,6 +18,7 @@ import {
   UserPlus,
   ChevronDown,
   ChevronUp,
+  GripVertical,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1206,7 +1207,7 @@ export default function Declaration() {
         {/* Mission selector */}
         <div className="mb-6">
           <h2 className="text-sm font-medium text-muted-foreground mb-3">
-            Missions · cliquez pour éditer · glissez pour réordonner
+            Missions · cliquez pour éditer · utilisez la poignée pour réordonner
           </h2>
           <div className="flex gap-3 overflow-x-auto pb-2">
             {missions
@@ -1221,12 +1222,17 @@ export default function Declaration() {
                 return (
                   <div
                     key={m.id}
-                    draggable
+                    draggable={dragArmedId === m.id}
                     onDragStart={(e) => {
+                      if (dragArmedId !== m.id) {
+                        e.preventDefault();
+                        return;
+                      }
                       setDragId(m.id);
                       e.dataTransfer.effectAllowed = "move";
                     }}
                     onDragOver={(e) => {
+                      if (!dragId) return;
                       e.preventDefault();
                       e.dataTransfer.dropEffect = "move";
                       if (dragOverId !== m.id) setDragOverId(m.id);
@@ -1239,6 +1245,7 @@ export default function Declaration() {
                       if (!dragId || dragId === m.id) {
                         setDragId(null);
                         setDragOverId(null);
+                        setDragArmedId(null);
                         return;
                       }
                       setMissions((ms) => {
@@ -1260,14 +1267,16 @@ export default function Declaration() {
                       });
                       setDragId(null);
                       setDragOverId(null);
+                      setDragArmedId(null);
                     }}
                     onDragEnd={() => {
                       setDragId(null);
                       setDragOverId(null);
+                      setDragArmedId(null);
                     }}
                     id={`mission-card-${m.id}`}
                     onClick={() => setActiveId(m.id)}
-                    className={`flex-shrink-0 text-left rounded-xl border p-4 min-w-[220px] max-w-[260px] transition-all hover:shadow-sm cursor-grab active:cursor-grabbing ${
+                    className={`flex-shrink-0 text-left rounded-xl border p-4 min-w-[220px] max-w-[260px] transition-all hover:shadow-sm cursor-pointer ${
                       isActive
                         ? "border-primary/60 bg-primary/[0.04] ring-1 ring-primary/20"
                         : "border-muted bg-card hover:border-primary/30"
@@ -1277,7 +1286,21 @@ export default function Declaration() {
                       <Badge variant="outline" className={getTypeMeta(m.type).tone}>
                         {getTypeMeta(m.type).label}
                       </Badge>
-                      {isActive && <span className="h-2 w-2 rounded-full bg-primary" />}
+                      <div className="flex items-center gap-1.5">
+                        {savingIds[m.id] && <span className="text-[10px] text-muted-foreground">…</span>}
+                        {isActive && <span className="h-2 w-2 rounded-full bg-primary" />}
+                        <span
+                          role="button"
+                          aria-label="Réordonner la mission"
+                          title="Glisser pour réordonner"
+                          onMouseDown={() => setDragArmedId(m.id)}
+                          onTouchStart={() => setDragArmedId(m.id)}
+                          onClick={(e) => e.stopPropagation()}
+                          className="cursor-grab active:cursor-grabbing text-muted-foreground/60 hover:text-foreground"
+                        >
+                          <GripVertical className="h-4 w-4" />
+                        </span>
+                      </div>
                     </div>
                     <div className="font-semibold truncate">{m.client || "Mission sans nom"}</div>
                     <div className="text-xs text-muted-foreground mt-2 space-y-1">
