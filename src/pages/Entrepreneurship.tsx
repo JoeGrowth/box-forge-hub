@@ -476,18 +476,20 @@ const Entrepreneurship = () => {
                   <UserRoundCog className="h-4 w-4" />
                 </Button>
               )}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                onClick={() => {
-                  setIdeaToDelete({ id: project.id, title: project.title });
-                  setDeleteDialogOpen(true);
-                }}
-                title="Delete idea"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              {isOwner && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                  onClick={() => {
+                    setIdeaToDelete({ id: project.id, title: project.title });
+                    setDeleteDialogOpen(true);
+                  }}
+                  title="Delete idea"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           )}
         </div>
