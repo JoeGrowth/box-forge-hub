@@ -262,6 +262,27 @@ const Entrepreneurship = () => {
 
 
 
+  const createOrgFromIdea = async (ideaId: string, title: string) => {
+    setCreatingOrgFor(ideaId);
+    try {
+      const { data, error } = await supabase.rpc("admin_create_org_from_idea" as any, { _idea_id: ideaId });
+      if (error) throw error;
+      const { data: org } = await supabase
+        .from("organizations")
+        .select("id, slug, is_public")
+        .eq("id", data as string)
+        .maybeSingle();
+      if (org) {
+        setLinkedOrgs((prev) => ({ ...prev, [ideaId]: org as any }));
+      }
+      toast({ title: "Organization created", description: `"${title}" now has an organization.` });
+    } catch (err: any) {
+      toast({ title: "Could not create organization", description: err.message ?? "Try again.", variant: "destructive" });
+    } finally {
+      setCreatingOrgFor(null);
+    }
+  };
+
   const fetchData = async () => {
     if (!user) return;
     setLoading(true);
