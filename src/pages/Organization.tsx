@@ -2563,6 +2563,18 @@ function EditableOrgDescription({
       .from("startup_ideas")
       .update({ description: desc } as any)
       .eq("organization_id", orgId);
+    // Also sync when the link is stored on the organization side.
+    const { data: linkedOrg } = await supabase
+      .from("organizations")
+      .select("source_idea_id")
+      .eq("id", orgId)
+      .maybeSingle();
+    if (linkedOrg?.source_idea_id) {
+      await supabase
+        .from("startup_ideas")
+        .update({ description: desc } as any)
+        .eq("id", linkedOrg.source_idea_id);
+    }
     setSaving(false);
     setEditing(false);
     onSaved?.(desc);

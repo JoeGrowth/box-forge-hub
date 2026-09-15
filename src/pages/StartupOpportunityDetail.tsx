@@ -67,6 +67,7 @@ interface StartupIdea {
   review_status: string;
   created_at: string;
   creator_id: string;
+  organization_id?: string | null;
 }
 
 interface CreatorProfile {
@@ -111,8 +112,37 @@ const StartupOpportunityDetail = () => {
   const [dialogStep, setDialogStep] = useState<1 | 2>(1);
   const [newRole, setNewRole] = useState("");
   const [savingRoles, setSavingRoles] = useState(false);
+  const [editingDesc, setEditingDesc] = useState(false);
+  const [descDraft, setDescDraft] = useState("");
+  const [savingDesc, setSavingDesc] = useState(false);
 
   const isCreator = !!user && !!idea && user.id === idea.creator_id;
+
+  const saveDescription = async () => {
+    if (!idea) return;
+    const desc = descDraft.trim();
+    if (!desc) return;
+    setSavingDesc(true);
+    const { error } = await supabase
+      .from("startup_ideas")
+      .update({ description: desc })
+      .eq("id", idea.id)
+      .eq("creator_id", idea.creator_id);
+    if (error) {
+      setSavingDesc(false);
+      toast({ title: "Could not save description", description: error.message, variant: "destructive" });
+      return;
+    }
+    // Keep the linked organization page in sync (both link directions).
+    await supabase.from("organizations").update({ description: desc } as any).eq("source_idea_id", idea.id);
+    if (idea.organization_id) {
+      await supabase.from("organizations").update({ description: desc } as any).eq("id", idea.organization_id);
+    }
+    setSavingDesc(false);
+    setEditingDesc(false);
+    setIdea({ ...idea, description: desc });
+    toast({ title: "Description updated", description: "It now also shows on the linked organization page." });
+  };
 
   const saveRoles = async (roles: string[]) => {
     if (!idea) return;
@@ -499,12 +529,45 @@ const StartupOpportunityDetail = () => {
               <div className="lg:col-span-2 space-y-8">
                 {/* Description */}
                 <div className="bg-card rounded-2xl border border-border p-8">
-                  <h2 className="font-display text-xl font-bold text-foreground mb-4">
-                    About This Opportunity
-                  </h2>
-                  <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                    {idea.description}
-                  </p>
+                  <div className="flex items-start justify-between gap-4 mb-4">
+                    <h2 className="font-display text-xl font-bold text-foreground">
+                      About This Opportunity
+                    </h2>
+                    {isCreator && !editingDesc && (
+                      <Button variant="outline" size="sm" onClick={() => { setDescDraft(idea.description || ""); setEditingDesc(true); }}>
+                        {idea.description?.trim() ? "Edit description" : "Add description"}
+                      </Button>
+                    )}
+                  </div>
+                  {editingDesc ? (
+                    <div className="space-y-3">
+                      <Textarea
+                        value={descDraft}
+                        onChange={(e) => setDescDraft(e.target.value)}
+                        rows={6}
+                        placeholder="Describe what you are building, for whom, and why it matters."
+                      />
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={saveDescription} disabled={savingDesc || !descDraft.trim()}>
+                          {savingDesc ? "Saving..." : "Save"}
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => setEditingDesc(false)} disabled={savingDesc}>
+                          Cancel
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        This description is shared with the linked organization page.
+                      </p>
+                    </div>
+                  ) : idea.description?.trim() ? (
+                    <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                      {idea.description}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-muted-foreground italic">
+                      {isCreator ? "No description yet. Add one so co-builders understand this venture." : "No description yet."}
+                    </p>
+                  )}
                 </div>
 
                 {/* Roles Needed */}
