@@ -67,6 +67,7 @@ interface StartupIdea {
   review_status: string;
   created_at: string;
   creator_id: string;
+  organization_id?: string | null;
 }
 
 interface CreatorProfile {
