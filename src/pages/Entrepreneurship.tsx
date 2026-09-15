@@ -92,6 +92,8 @@ const getReviewStatusBadgeClasses = (status: string) => {
 
 const Entrepreneurship = () => {
   const { user } = useAuth();
+  const { isAdmin } = useAdmin();
+  const [creatingOrgFor, setCreatingOrgFor] = useState<string | null>(null);
   const { engines, loading: accessLoading } = useEngineAccess();
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
