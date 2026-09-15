@@ -446,9 +446,23 @@ const Entrepreneurship = () => {
             )}
             <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
           </div>
-          {isOwner && (
+          {(isOwner || isAdmin) && (
             <div className="flex items-center gap-1 shrink-0">
-              {project.current_episode === "development" && (
+              {isAdmin && !org && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                  disabled={creatingOrgFor === project.id}
+                  onClick={() => createOrgFromIdea(project.id, project.title)}
+                  title="Create organization from this idea (admin)"
+                >
+                  {creatingOrgFor === project.id
+                    ? <Loader2 className="h-4 w-4 animate-spin" />
+                    : <Building2 className="h-4 w-4" />}
+                </Button>
+              )}
+              {isOwner && project.current_episode === "development" && (
                 <Button
                   variant="ghost"
                   size="icon"
