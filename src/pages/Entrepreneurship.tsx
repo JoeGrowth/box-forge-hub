@@ -22,6 +22,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdmin } from "@/hooks/useAdmin";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -92,6 +93,8 @@ const getReviewStatusBadgeClasses = (status: string) => {
 
 const Entrepreneurship = () => {
   const { user } = useAuth();
+  const { isAdmin } = useAdmin();
+  const [creatingOrgFor, setCreatingOrgFor] = useState<string | null>(null);
   const { engines, loading: accessLoading } = useEngineAccess();
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -258,6 +261,27 @@ const Entrepreneurship = () => {
   };
 
 
+
+  const createOrgFromIdea = async (ideaId: string, title: string) => {
+    setCreatingOrgFor(ideaId);
+    try {
+      const { data, error } = await supabase.rpc("admin_create_org_from_idea" as any, { _idea_id: ideaId });
+      if (error) throw error;
+      const { data: org } = await supabase
+        .from("organizations")
+        .select("id, slug, is_public")
+        .eq("id", data as string)
+        .maybeSingle();
+      if (org) {
+        setLinkedOrgs((prev) => ({ ...prev, [ideaId]: org as any }));
+      }
+      toast({ title: "Organization created", description: `"${title}" now has an organization.` });
+    } catch (err: any) {
+      toast({ title: "Could not create organization", description: err.message ?? "Try again.", variant: "destructive" });
+    } finally {
+      setCreatingOrgFor(null);
+    }
+  };
 
   const fetchData = async () => {
     if (!user) return;
@@ -443,9 +467,23 @@ const Entrepreneurship = () => {
             )}
             <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
           </div>
-          {isOwner && (
+          {(isOwner || isAdmin) && (
             <div className="flex items-center gap-1 shrink-0">
-              {project.current_episode === "development" && (
+              {isAdmin && !org && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                  disabled={creatingOrgFor === project.id}
+                  onClick={() => createOrgFromIdea(project.id, project.title)}
+                  title="Create organization from this idea (admin)"
+                >
+                  {creatingOrgFor === project.id
+                    ? <Loader2 className="h-4 w-4 animate-spin" />
+                    : <Building2 className="h-4 w-4" />}
+                </Button>
+              )}
+              {isOwner && project.current_episode === "development" && (
                 <Button
                   variant="ghost"
                   size="icon"
@@ -459,18 +497,20 @@ const Entrepreneurship = () => {
                   <UserRoundCog className="h-4 w-4" />
                 </Button>
               )}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                onClick={() => {
-                  setIdeaToDelete({ id: project.id, title: project.title });
-                  setDeleteDialogOpen(true);
-                }}
-                title="Delete idea"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              {isOwner && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                  onClick={() => {
+                    setIdeaToDelete({ id: project.id, title: project.title });
+                    setDeleteDialogOpen(true);
+                  }}
+                  title="Delete idea"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           )}
         </div>
