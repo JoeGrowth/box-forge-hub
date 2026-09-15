@@ -111,8 +111,37 @@ const StartupOpportunityDetail = () => {
   const [dialogStep, setDialogStep] = useState<1 | 2>(1);
   const [newRole, setNewRole] = useState("");
   const [savingRoles, setSavingRoles] = useState(false);
+  const [editingDesc, setEditingDesc] = useState(false);
+  const [descDraft, setDescDraft] = useState("");
+  const [savingDesc, setSavingDesc] = useState(false);
 
   const isCreator = !!user && !!idea && user.id === idea.creator_id;
+
+  const saveDescription = async () => {
+    if (!idea) return;
+    const desc = descDraft.trim();
+    if (!desc) return;
+    setSavingDesc(true);
+    const { error } = await supabase
+      .from("startup_ideas")
+      .update({ description: desc })
+      .eq("id", idea.id)
+      .eq("creator_id", idea.creator_id);
+    if (error) {
+      setSavingDesc(false);
+      toast({ title: "Could not save description", description: error.message, variant: "destructive" });
+      return;
+    }
+    // Keep the linked organization page in sync (both link directions).
+    await supabase.from("organizations").update({ description: desc } as any).eq("source_idea_id", idea.id);
+    if (idea.organization_id) {
+      await supabase.from("organizations").update({ description: desc } as any).eq("id", idea.organization_id);
+    }
+    setSavingDesc(false);
+    setEditingDesc(false);
+    setIdea({ ...idea, description: desc });
+    toast({ title: "Description updated", description: "It now also shows on the linked organization page." });
+  };
 
   const saveRoles = async (roles: string[]) => {
     if (!idea) return;
