@@ -6846,6 +6846,10 @@ export type Database = {
         Args: { _aggregate_type: string; _event_type: string }
         Returns: string
       }
+      admin_create_org_from_idea: {
+        Args: { _idea_id: string }
+        Returns: string
+      }
       apply_experience_validation: {
         Args: {
           _aggregate_external_id: string
