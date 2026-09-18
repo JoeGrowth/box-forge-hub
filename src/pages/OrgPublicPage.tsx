@@ -32,6 +32,7 @@ export default function OrgPublicPage() {
   const [org, setOrg] = useState<Org | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [loggedOut, setLoggedOut] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
@@ -44,8 +45,11 @@ export default function OrgPublicPage() {
         .eq("slug", slug)
         .maybeSingle();
       if (cancelled) return;
-      if (error || !data) setNotFound(true);
-      else setOrg(data as Org);
+      if (error || !data) {
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (!cancelled && !sessionData.session) setLoggedOut(true);
+        setNotFound(true);
+      } else setOrg(data as Org);
       setLoading(false);
     })();
     return () => { cancelled = true; };
@@ -65,10 +69,16 @@ export default function OrgPublicPage() {
         <Building2 className="w-12 h-12 text-muted-foreground mb-4" />
         <h1 className="text-2xl font-bold text-foreground">Page not found</h1>
         <p className="text-sm text-muted-foreground mt-2 max-w-md">
-          No organization or page exists at <span className="font-mono">/{slug}</span>.
+          {loggedOut
+            ? "This page is available to signed-in members. Log in to view it."
+            : <>No organization or page exists at <span className="font-mono">/{slug}</span>.</>}
         </p>
         <Button asChild className="mt-6">
-          <Link to="/"><ArrowLeft className="w-4 h-4 mr-1" /> Back to home</Link>
+          {loggedOut ? (
+            <Link to="/auth"><ArrowLeft className="w-4 h-4 mr-1" /> Log in</Link>
+          ) : (
+            <Link to="/"><ArrowLeft className="w-4 h-4 mr-1" /> Back to home</Link>
+          )}
         </Button>
       </div>
     );
