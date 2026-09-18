@@ -423,6 +423,16 @@ export function MyOrganizationsSection() {
                               )}
                             </div>
                           </div>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7 text-muted-foreground hover:text-primary shrink-0"
+                            asChild
+                          >
+                            <Link to={`/${o.slug}`} aria-label={`Preview ${o.name}`}>
+                              <Eye className="w-3.5 h-3.5" />
+                            </Link>
+                          </Button>
                           {canDelete && (
                             <Button
                               size="icon"
