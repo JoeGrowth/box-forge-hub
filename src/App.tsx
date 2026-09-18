@@ -73,6 +73,7 @@ import OpsManagement from "./pages/OpsManagement";
 import ThreeS from "./pages/ThreeS";
 import Procuring from "./pages/Procuring";
 import ElSpace from "./pages/ElSpace";
+import OrgPublicPage from "./pages/OrgPublicPage";
 import PublishConsulting from "./pages/PublishConsulting";
 import PublishTraining from "./pages/PublishTraining";
 import PublishJob from "./pages/PublishJob";
@@ -266,8 +267,9 @@ const App = () => (
                   <Route path="/explore" element={<Navigate to="/paths" replace />} />
                   <Route path="/growth" element={<Navigate to="/paths" replace />} />
                   <Route path="/map" element={<Navigate to="/onboarding/map" replace />} />
-                  <Route path="/beta" element={<Navigate to="/admin/beta" replace />} />
-                  </Route>
+                   <Route path="/beta" element={<Navigate to="/admin/beta" replace />} />
+                   <Route path="/:slug" element={<OrgPublicPage />} />
+                   </Route>
 
                   <Route path="*" element={<NotFound />} />
                 </Routes>
