@@ -53,6 +53,15 @@ const BASE_CHARGES: Array<{ label: string; percent: number; system?: boolean; al
 ];
 const norm = (v: unknown) => String(v || "").trim().toLowerCase();
 const BASE_LABELS = BASE_CHARGES.flatMap((b) => [b.label, ...(b.aliases ?? [])]);
+const isStructuralReserve = (label: unknown) =>
+  /structural reserve|rest structure|rest for the structure/.test(norm(label));
+
+const normalizeTaskLocks = (tasks: ModelTask[]): ModelTask[] =>
+  tasks.map((task) =>
+    isStructuralReserve(task.label)
+      ? { ...task, locked: true }
+      : (({ locked: _locked, ...splitTask }) => splitTask)(task),
+  );
 
 const withBaseCharges = (list: ModelCharge[]): ModelCharge[] => {
   const arr = Array.isArray(list) ? list : [];
@@ -191,7 +200,7 @@ export function DistributionModels({
         budget: budgetNum,
         currency: "TND",
         charges,
-        tasks: applyTarget.tasks.map((t) => ({ ...t, id: uid() })),
+        tasks: normalizeTaskLocks(applyTarget.tasks).map((t) => ({ ...t, id: uid() })),
         people: ["Person (1)", "Person (2)"],
       })
       .select("id")
@@ -252,7 +261,7 @@ export function DistributionModels({
         id: m.id,
         name: m.name,
         description: m.description,
-        tasks: Array.isArray(m.tasks) ? m.tasks : [],
+        tasks: normalizeTaskLocks(Array.isArray(m.tasks) ? m.tasks : []),
         charges: withBaseCharges(Array.isArray(m.charges) ? m.charges : []),
       })),
     );
@@ -292,7 +301,7 @@ export function DistributionModels({
       org_id: orgId,
       name: editing.name.trim(),
       description: editing.description?.trim() || null,
-      tasks: editing.tasks,
+      tasks: normalizeTaskLocks(editing.tasks),
       charges: editing.charges,
     };
     const table = supabase.from("distribution_models" as never) as never as any;
