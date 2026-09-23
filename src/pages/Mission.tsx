@@ -37,6 +37,15 @@ type Task = { id: string; label: string; percent: number; locked?: boolean; pers
 type Charge = { id: string; label: string; amount: number; fixed?: boolean; percent?: number; system?: boolean };
 
 const uid = () => Math.random().toString(36).slice(2, 9);
+const normalizeTaskLocks = (items: Task[]): Task[] =>
+  items.map((task) => {
+    const isReserve = /structural reserve|rest structure|rest for the structure/.test(
+      String(task.label || "").trim().toLowerCase(),
+    );
+    if (isReserve) return { ...task, locked: true };
+    const { locked: _locked, ...splitTask } = task;
+    return splitTask;
+  });
 const fmt = (n: number) =>
   new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
     Number.isFinite(n) ? n : 0,
@@ -82,7 +91,7 @@ export default function Mission() {
     setBudget(Number(data.budget) || 0);
     setCurrency(data.currency || "TND");
     setCharges(Array.isArray(data.charges) ? data.charges : []);
-    setTasks(Array.isArray(data.tasks) ? data.tasks : []);
+    setTasks(normalizeTaskLocks(Array.isArray(data.tasks) ? data.tasks : []));
     setPeople(Array.isArray(data.people) && data.people.length ? data.people : ["Person (1)", "Person (2)"]);
     setModelName(data.budget_label && data.budget_label !== "Budget" ? data.budget_label : "");
     setLoading(false);
