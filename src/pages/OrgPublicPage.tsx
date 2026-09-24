@@ -116,7 +116,7 @@ export default function OrgPublicPage() {
       setProjects((pj.data as Project[]) ?? []);
       setProducts((pr.data as Product[]) ?? []);
       setIterations((it.data as Iteration[]) ?? []);
-      setPeople((pe.data as Person[]) ?? []);
+      setPeople(((pe.data as Person[]) ?? []).filter((p) => p.tier !== "database"));
       setLoading(false);
     })();
     return () => { cancelled = true; };

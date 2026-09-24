@@ -1,0 +1,2 @@
+ALTER TABLE public.organization_people DROP CONSTRAINT IF EXISTS organization_people_tier_check;
+ALTER TABLE public.organization_people ADD CONSTRAINT organization_people_tier_check CHECK (tier IN ('database','friend','crew','mentor'));
