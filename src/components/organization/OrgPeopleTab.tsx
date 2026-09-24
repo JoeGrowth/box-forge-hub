@@ -37,7 +37,7 @@ import {
 import { Heart, Users, GraduationCap, Plus, Trash2, Pencil, Activity, CalendarClock, ChevronDown, ChevronRight, Search, MoveRight, X } from "lucide-react";
 
 
-type Tier = "friend" | "crew" | "mentor";
+type Tier = "database" | "friend" | "crew" | "mentor";
 type CrewType = "chouch_ward" | "ch3ir" | "helba";
 
 export interface OrgPerson {
@@ -94,6 +94,7 @@ export function OrgPeopleTab({
 }) {
   const { toast } = useToast();
   const [state, setState] = useState<Record<Tier, TierState>>({
+    database: emptyTierState(),
     friend: emptyTierState(),
     crew: emptyTierState(),
     mentor: emptyTierState(),
@@ -114,7 +115,7 @@ export function OrgPeopleTab({
   const [selectedCrew, setSelectedCrew] = useState<CrewType | null>(null);
 
   // Search inputs are debounced so typing never fires a query per keystroke.
-  const [searchInput, setSearchInput] = useState<Record<Tier, string>>({ friend: "", crew: "", mentor: "" });
+  const [searchInput, setSearchInput] = useState<Record<Tier, string>>({ database: "", friend: "", crew: "", mentor: "" });
 
   const fetchTier = useCallback(
     async (tier: Tier, page: number, search: string, append: boolean, crewType?: CrewType | null) => {
@@ -171,14 +172,14 @@ export function OrgPeopleTab({
 
   const reloadAll = useCallback(() => {
     loadStats();
-    (["friend", "crew", "mentor"] as Tier[]).forEach((t) =>
+    (["database", "friend", "crew", "mentor"] as Tier[]).forEach((t) =>
       fetchTier(t, 0, searchInput[t], false, t === "crew" ? selectedCrew : null),
     );
   }, [loadStats, fetchTier, searchInput, selectedCrew]);
 
   useEffect(() => {
     loadStats();
-    (["friend", "mentor"] as Tier[]).forEach((t) => fetchTier(t, 0, "", false));
+    (["database", "friend", "mentor"] as Tier[]).forEach((t) => fetchTier(t, 0, "", false));
   }, [loadStats, fetchTier]);
 
   // Crew rows load only after a category is picked.
@@ -190,7 +191,7 @@ export function OrgPeopleTab({
 
   // Debounced search per tier.
   useEffect(() => {
-    const timers = (["friend", "crew", "mentor"] as Tier[]).map((t) =>
+    const timers = (["database", "friend", "crew", "mentor"] as Tier[]).map((t) =>
       setTimeout(() => {
         if (t === "crew" && !selectedCrew) return;
         if (searchInput[t] !== state[t].search) fetchTier(t, 0, searchInput[t], false, t === "crew" ? selectedCrew : null);
@@ -221,7 +222,7 @@ export function OrgPeopleTab({
     const id = dragId;
     setDragId(null);
     if (!id || !canEdit) return;
-    const all = [...state.friend.rows, ...state.crew.rows, ...state.mentor.rows];
+    const all = [...state.database.rows, ...state.friend.rows, ...state.crew.rows, ...state.mentor.rows];
     const p = all.find((x) => x.id === id);
     if (p) moveToTier(p, tier);
   };
@@ -242,12 +243,13 @@ export function OrgPeopleTab({
   };
 
   const groups: { tier: Tier; title: string; subtitle: string; icon: typeof Heart; addLabel: string }[] = [
+    { tier: "database", title: "Data base", subtitle: "Name only — drag the card later to Friend, Crew or Mentor.", icon: Database, addLabel: "Add to data base" },
     { tier: "friend", title: `Friend of ${orgName}`, subtitle: "Interested participant.", icon: Heart, addLabel: "Add friend" },
     { tier: "crew", title: `Crew Member ${orgName} (Internal)`, subtitle: "Trusted contributor with proven contribution.", icon: Users, addLabel: "Add crew" },
     { tier: "mentor", title: `Mentor / Support System ${orgName}`, subtitle: "Knowledge carrier and ecosystem builder.", icon: GraduationCap, addLabel: "Add mentor" },
   ];
 
-  const TIER_LABEL: Record<Tier, string> = { friend: "Friend", crew: "Crew Member", mentor: "Mentor" };
+  const TIER_LABEL: Record<Tier, string> = { database: "Data base", friend: "Friend", crew: "Crew Member", mentor: "Mentor" };
 
   const initials = (n: string) =>
     n.trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("");
@@ -267,7 +269,7 @@ export function OrgPeopleTab({
           )}
         </div>
         {canEdit && (
-          <Button size="sm" onClick={() => startAdd("friend")}>
+          <Button size="sm" onClick={() => startAdd("database")}>
             <Plus className="w-4 h-4 mr-1" /> Add person
           </Button>
         )}
@@ -402,7 +404,7 @@ export function OrgPeopleTab({
                     <Input
                       value={searchInput[g.tier]}
                       onChange={(e) => setSearchInput((s) => ({ ...s, [g.tier]: e.target.value }))}
-                      placeholder={`Search ${g.tier === "friend" ? "friends" : g.tier === "crew" ? CREW_META[selectedCrew!].label : "mentors"} by name…`}
+                      placeholder={`Search ${g.tier === "database" ? "data base" : g.tier === "friend" ? "friends" : g.tier === "crew" ? CREW_META[selectedCrew!].label : "mentors"} by name…`}
                       className="pl-8 pr-8"
                     />
                     {searchInput[g.tier] && (
@@ -475,7 +477,7 @@ export function OrgPeopleTab({
                             </div>
                             <div className="min-w-0 flex-1">
                               <p className="truncate font-medium text-foreground">{p.full_name}</p>
-                              {p.tier !== "friend" && (
+                              {p.tier !== "friend" && p.tier !== "database" && (
                                 <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                                   {p.tier === "crew" && p.present_type && (
                                     <Badge className={PRESENT_META[p.present_type].className}>{PRESENT_META[p.present_type].label}</Badge>
@@ -495,7 +497,7 @@ export function OrgPeopleTab({
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="end">
                                     <DropdownMenuLabel>Move to layer</DropdownMenuLabel>
-                                    {(["friend", "crew", "mentor"] as Tier[])
+                                    {(["database", "friend", "crew", "mentor"] as Tier[])
                                       .filter((t) => t !== p.tier)
                                       .map((t) => (
                                         <DropdownMenuItem key={t} onSelect={() => moveToTier(p, t)}>
@@ -515,7 +517,7 @@ export function OrgPeopleTab({
 
                           </div>
 
-                          {p.tier !== "friend" && p.notes && <p className="mt-2 text-xs text-muted-foreground">{p.notes}</p>}
+                          {p.tier !== "friend" && p.tier !== "database" && p.notes && <p className="mt-2 text-xs text-muted-foreground">{p.notes}</p>}
                         </div>
                       ))}
                     </div>
@@ -648,9 +650,9 @@ function PersonDialog({
       crew_type: tier === "crew" ? crewType : null,
       has_expertise: hasExpertise,
       present_type: tier === "crew" ? presentType : null,
-      activities_count: tier === "friend" ? 0 : Number(activities) || 0,
-      years_contribution: tier === "friend" ? 0 : Number(years) || 0,
-      notes: tier === "friend" ? null : notes.trim() || null,
+      activities_count: tier === "friend" || tier === "database" ? 0 : Number(activities) || 0,
+      years_contribution: tier === "friend" || tier === "database" ? 0 : Number(years) || 0,
+      notes: tier === "friend" || tier === "database" ? null : notes.trim() || null,
       email: tier === "friend" ? email.trim() || null : null,
       phone: tier === "friend" ? phone.trim() || null : null,
       age: tier === "friend" ? computedAge : null,
@@ -667,6 +669,7 @@ function PersonDialog({
   };
 
   const TIERS: { value: Tier; label: string; desc: string; icon: typeof Heart }[] = [
+    { value: "database", label: "Data base", desc: "Name only, sort later", icon: Database },
     { value: "friend", label: "Friend", desc: "Interested participant", icon: Heart },
     { value: "crew", label: "Crew Member", desc: "Proven contributor", icon: Users },
     { value: "mentor", label: "Mentor", desc: "Support system", icon: GraduationCap },
@@ -697,7 +700,7 @@ function PersonDialog({
 
           <div className="space-y-2">
             <Label>Community layer</Label>
-            <div className="grid gap-2 sm:grid-cols-3">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {TIERS.map((t) => {
                 const Icon = t.icon;
                 const active = tier === t.value;
