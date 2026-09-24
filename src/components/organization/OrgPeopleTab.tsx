@@ -34,7 +34,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Heart, Users, GraduationCap, Plus, Trash2, Pencil, Activity, CalendarClock, ChevronDown, ChevronRight, Search, MoveRight, X } from "lucide-react";
+import { Heart, Users, GraduationCap, Plus, Trash2, Pencil, Activity, CalendarClock, ChevronDown, ChevronRight, Search, MoveRight, X, Database } from "lucide-react";
 
 
 type Tier = "database" | "friend" | "crew" | "mentor";
@@ -796,7 +796,7 @@ function PersonDialog({
             </div>
           )}
 
-          {tier !== "friend" && (
+          {tier !== "friend" && tier !== "database" && (
             <div className="space-y-2">
               <Label>Expertise</Label>
               <div className="grid grid-cols-2 gap-2">
@@ -856,7 +856,7 @@ function PersonDialog({
             </div>
           )}
 
-          {tier !== "friend" && (
+          {tier !== "friend" && tier !== "database" && (
             <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
               <p className="text-sm font-medium text-foreground">Track Record in {orgName}</p>
               <div className="grid gap-3 sm:grid-cols-2">
@@ -889,7 +889,7 @@ function PersonDialog({
             </div>
           )}
 
-          {tier !== "friend" && (
+          {tier !== "friend" && tier !== "database" && (
             <div className="space-y-1.5">
               <Label htmlFor="person-notes">Notes (optional)</Label>
               <Textarea
