@@ -128,22 +128,21 @@ export default function Earnings() {
       const { data: profile } = await supabase
         .from("profiles")
         .select("full_name")
-        .eq("id", user.id)
+        .eq("user_id", user.id)
         .maybeSingle();
       setFullName((profile as { full_name: string | null } | null)?.full_name ?? "");
 
       const [recs, dEnts, decls, orgRows, peopleRows] = await Promise.all([
         supabase
           .from("distribution_records")
-          .select("id,kind,title,client,budget,currency,charges,tasks,people,created_at")
+          .select("id,kind,title,budget,currency,charges,tasks,people,created_at")
           .order("created_at", { ascending: false }),
         (supabase as any).from("distribution_entities").select("id,name,org_id"),
         supabase.from("declaration_entities").select("id,name,organization_id,split_config"),
         supabase.from("organizations").select("id,name,slug"),
         (supabase as any)
           .from("organization_people")
-          .select("organization_id")
-          .eq("user_id", user.id),
+          .select("organization_id,full_name,email"),
       ]);
 
       setRecords((recs.data ?? []) as unknown as DistRecord[]);
@@ -152,7 +151,13 @@ export default function Earnings() {
       setOrgs((orgRows.data ?? []) as OrgRow[]);
       setInternalOrgIds(
         new Set(
-          ((peopleRows.data ?? []) as { organization_id: string }[]).map((r) => r.organization_id),
+          ((peopleRows.data ?? []) as { organization_id: string; full_name: string | null; email: string | null }[])
+            .filter((r) => {
+              const n = (s: string | null | undefined) => (s ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+              const me = n((profile as { full_name: string | null } | null)?.full_name);
+              return (!!user.email && n(r.email) === n(user.email)) || (!!me && n(r.full_name) === me);
+            })
+            .map((r) => r.organization_id),
         ),
       );
       setLoading(false);
