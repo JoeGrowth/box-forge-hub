@@ -191,11 +191,6 @@ export default function Earnings() {
     const me = norm(fullName);
     const orgById = new Map(orgs.map((o) => [o.id, o]));
     const distById = new Map(distEntities.map((d) => [d.id, d]));
-    // declaration entity per organization
-    const declByOrg = new Map<string, DeclEntity>();
-    declEntities.forEach((d) => {
-      if (d.organization_id) declByOrg.set(d.organization_id, d);
-    });
 
     const out = new Map<string, EntityEarnings>();
     const ensure = (orgId: string | null, fallbackName: string): EntityEarnings => {
