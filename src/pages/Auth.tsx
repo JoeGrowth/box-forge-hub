@@ -77,7 +77,13 @@ const Auth = () => {
         onboardingState?.onboarding_completed;
 
       if (isCoBuilderComplete || isEntrepreneurComplete) {
-        navigate("/", { replace: true });
+        // Honor ?next= so deep links like /earnings survive the sign-in detour
+        const next = new URLSearchParams(window.location.search).get("next");
+        if (next && next.startsWith("/")) {
+          navigate(next, { replace: true });
+        } else {
+          navigate("/", { replace: true });
+        }
       } else if (onboardingState?.primary_role) {
         // Returning user mid-onboarding → resume compressed flow
         navigate("/onboarding", { replace: true });
