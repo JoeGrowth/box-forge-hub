@@ -28,6 +28,7 @@ import {
   Users,
   LayoutGrid,
   Settings,
+  Wallet,
 } from "lucide-react";
 import { useEngineAccess, type EngineKey } from "@/hooks/useEngineAccess";
 import { useTalentReadiness } from "@/hooks/useTalentReadiness";
@@ -77,6 +78,7 @@ const moreLinks: Array<{
   { name: "Squares", path: "/squares", icon: LayoutGrid },
   { name: "Programs", path: "/programs", icon: BookOpen },
   { name: "Paths", path: "/paths", icon: Activity },
+  { name: "Earnings", path: "/earnings", icon: Wallet },
 ];
 
 // Synchronous read of cached admin flag so first paint is stable.
