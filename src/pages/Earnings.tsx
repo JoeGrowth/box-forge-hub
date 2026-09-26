@@ -233,7 +233,6 @@ export default function Earnings() {
         rest[cur] = (rest[cur] ?? 0) + Math.max(0, (Number(m.budget) || 0) - used);
       }
       const orgId = decl.organization_id ?? null;
-      if (orgId) assocDeclOrgs.add(orgId);
       for (const [cur, r] of Object.entries(rest)) {
         if (r < 1000) continue;
         const amount = (((r * recPct) / 100) * (Number(partner.pct) || 0)) / partnerTotal;
