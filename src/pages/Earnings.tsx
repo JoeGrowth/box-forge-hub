@@ -128,14 +128,14 @@ export default function Earnings() {
       const { data: profile } = await supabase
         .from("profiles")
         .select("full_name")
-        .eq("id", user.id)
+        .eq("user_id", user.id)
         .maybeSingle();
       setFullName((profile as { full_name: string | null } | null)?.full_name ?? "");
 
       const [recs, dEnts, decls, orgRows, peopleRows] = await Promise.all([
         supabase
           .from("distribution_records")
-          .select("id,kind,title,client,budget,currency,charges,tasks,people,created_at")
+          .select("id,kind,title,budget,currency,charges,tasks,people,created_at")
           .order("created_at", { ascending: false }),
         (supabase as any).from("distribution_entities").select("id,name,org_id"),
         supabase.from("declaration_entities").select("id,name,organization_id,split_config"),
