@@ -191,11 +191,6 @@ export default function Earnings() {
     const me = norm(fullName);
     const orgById = new Map(orgs.map((o) => [o.id, o]));
     const distById = new Map(distEntities.map((d) => [d.id, d]));
-    // declaration entity per organization
-    const declByOrg = new Map<string, DeclEntity>();
-    declEntities.forEach((d) => {
-      if (d.organization_id) declByOrg.set(d.organization_id, d);
-    });
 
     const out = new Map<string, EntityEarnings>();
     const ensure = (orgId: string | null, fallbackName: string): EntityEarnings => {
@@ -218,7 +213,6 @@ export default function Earnings() {
     };
 
     // --- Associé via linked slot: replicate the declaration "Statement of the organization" ---
-    const assocDeclOrgs = new Set<string>();
     for (const slot of myAssocSlots) {
       const decl = declEntities.find((d) => d.id === slot.entity_id);
       if (!decl) continue;
@@ -239,7 +233,6 @@ export default function Earnings() {
         rest[cur] = (rest[cur] ?? 0) + Math.max(0, (Number(m.budget) || 0) - used);
       }
       const orgId = decl.organization_id ?? null;
-      if (orgId) assocDeclOrgs.add(orgId);
       for (const [cur, r] of Object.entries(rest)) {
         if (r < 1000) continue;
         const amount = (((r * recPct) / 100) * (Number(partner.pct) || 0)) / partnerTotal;
@@ -299,28 +292,6 @@ export default function Earnings() {
         addAmount(e, currency, amount);
       }
 
-      // --- Associé: my name is in the org's declaration Recognition split ---
-      if (orgId && !assocDeclOrgs.has(orgId)) {
-        const decl = declByOrg.get(orgId);
-        const partner = decl?.split_config?.partners?.find((p) => norm(p.name) === me && me !== "");
-        if (decl && partner) {
-          const recognitionPct = Number(decl.split_config?.recognitionPct ?? 30);
-          const pool = Math.max(0, budget - chargesTotal) * (recognitionPct / 100);
-          const amount = (pool * (Number(partner.pct) || 0)) / 100;
-          const e = ensure(orgId, entityName);
-          e.roles.add("associe");
-          e.missions.push({
-            recordId: r.id,
-            title,
-            client: r.client,
-            amount,
-            currency,
-            role: "associe",
-            createdAt: r.created_at,
-          });
-          addAmount(e, currency, amount);
-        }
-      }
     }
 
     // --- Internal member: I'm in the org's People section ---
