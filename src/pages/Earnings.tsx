@@ -294,28 +294,6 @@ export default function Earnings() {
         addAmount(e, currency, amount);
       }
 
-      // --- Associé: my name is in the org's declaration Recognition split ---
-      if (orgId && !assocDeclOrgs.has(orgId)) {
-        const decl = declByOrg.get(orgId);
-        const partner = decl?.split_config?.partners?.find((p) => norm(p.name) === me && me !== "");
-        if (decl && partner) {
-          const recognitionPct = Number(decl.split_config?.recognitionPct ?? 30);
-          const pool = Math.max(0, budget - chargesTotal) * (recognitionPct / 100);
-          const amount = (pool * (Number(partner.pct) || 0)) / 100;
-          const e = ensure(orgId, entityName);
-          e.roles.add("associe");
-          e.missions.push({
-            recordId: r.id,
-            title,
-            client: r.client,
-            amount,
-            currency,
-            role: "associe",
-            createdAt: r.created_at,
-          });
-          addAmount(e, currency, amount);
-        }
-      }
     }
 
     // --- Internal member: I'm in the org's People section ---
