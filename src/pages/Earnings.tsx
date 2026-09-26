@@ -142,8 +142,7 @@ export default function Earnings() {
         supabase.from("organizations").select("id,name,slug"),
         (supabase as any)
           .from("organization_people")
-          .select("organization_id")
-          .eq("user_id", user.id),
+          .select("organization_id,full_name,email"),
       ]);
 
       setRecords((recs.data ?? []) as unknown as DistRecord[]);
@@ -152,7 +151,13 @@ export default function Earnings() {
       setOrgs((orgRows.data ?? []) as OrgRow[]);
       setInternalOrgIds(
         new Set(
-          ((peopleRows.data ?? []) as { organization_id: string }[]).map((r) => r.organization_id),
+          ((peopleRows.data ?? []) as { organization_id: string; full_name: string | null; email: string | null }[])
+            .filter((r) => {
+              const n = (s: string | null | undefined) => (s ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+              const me = n((profile as { full_name: string | null } | null)?.full_name);
+              return (!!user.email && n(r.email) === n(user.email)) || (!!me && n(r.full_name) === me);
+            })
+            .map((r) => r.organization_id),
         ),
       );
       setLoading(false);
