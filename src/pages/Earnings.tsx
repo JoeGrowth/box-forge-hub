@@ -213,7 +213,6 @@ export default function Earnings() {
     };
 
     // --- Associé via linked slot: replicate the declaration "Statement of the organization" ---
-    const assocDeclOrgs = new Set<string>();
     for (const slot of myAssocSlots) {
       const decl = declEntities.find((d) => d.id === slot.entity_id);
       if (!decl) continue;
