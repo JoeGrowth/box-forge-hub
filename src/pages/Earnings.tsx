@@ -119,6 +119,10 @@ export default function Earnings() {
   const [declEntities, setDeclEntities] = useState<DeclEntity[]>([]);
   const [orgs, setOrgs] = useState<OrgRow[]>([]);
   const [internalOrgIds, setInternalOrgIds] = useState<Set<string>>(new Set());
+  const [myAssocSlots, setMyAssocSlots] = useState<{ entity_id: string; label: string | null; slot: number | null }[]>([]);
+  const [declMissions, setDeclMissions] = useState<
+    { entity_id: string; budget: number | null; currency: string | null; internal: any[]; external: any[] }[]
+  >([]);
 
   useEffect(() => {
     const load = async () => {
@@ -160,6 +164,23 @@ export default function Earnings() {
             .map((r) => r.organization_id),
         ),
       );
+      // Associé slots linked to me in declaration entities (Statement of the organization)
+      const { data: slots } = await (supabase as any)
+        .from("entity_role_assignments")
+        .select("entity_id,label,slot,role_slug")
+        .eq("linked_user_id", user.id)
+        .eq("status", "accepted")
+        .eq("entity_type", "declaration_entity")
+        .like("role_slug", "associe_%");
+      const slotRows = (slots ?? []) as { entity_id: string; label: string | null; slot: number | null }[];
+      setMyAssocSlots(slotRows);
+      if (slotRows.length) {
+        const { data: dm } = await (supabase as any)
+          .from("declaration_missions")
+          .select("entity_id,budget,currency,internal,external")
+          .in("entity_id", [...new Set(slotRows.map((r) => r.entity_id))]);
+        setDeclMissions(dm ?? []);
+      }
       setLoading(false);
     };
     load();
@@ -195,6 +216,48 @@ export default function Earnings() {
     const addAmount = (e: EntityEarnings, currency: string, amount: number) => {
       e.totals[currency] = (e.totals[currency] ?? 0) + amount;
     };
+
+    // --- Associé via linked slot: replicate the declaration "Statement of the organization" ---
+    const assocDeclOrgs = new Set<string>();
+    for (const slot of myAssocSlots) {
+      const decl = declEntities.find((d) => d.id === slot.entity_id);
+      if (!decl) continue;
+      const partners = decl.split_config?.partners ?? [];
+      const partner =
+        partners.find((p) => norm(p.name) === norm(slot.label)) ??
+        (slot.slot ? partners[slot.slot - 1] : undefined);
+      if (!partner) continue;
+      const recPct = Math.min(45, Math.max(0, Number(decl.split_config?.recognitionPct ?? 30)));
+      const partnerTotal = partners.reduce((s, p) => s + (Number(p.pct) || 0), 0) || 100;
+      const rest: Record<string, number> = {};
+      for (const m of declMissions.filter((x) => x.entity_id === decl.id)) {
+        const used = [...(m.internal ?? []), ...(m.external ?? [])].reduce(
+          (s: number, p: any) => s + (Number(p?.amount) || 0),
+          0,
+        );
+        const cur = m.currency || "TND";
+        rest[cur] = (rest[cur] ?? 0) + Math.max(0, (Number(m.budget) || 0) - used);
+      }
+      const orgId = decl.organization_id ?? null;
+      if (orgId) assocDeclOrgs.add(orgId);
+      for (const [cur, r] of Object.entries(rest)) {
+        if (r < 1000) continue;
+        const amount = (((r * recPct) / 100) * (Number(partner.pct) || 0)) / partnerTotal;
+        if (amount <= 0) continue;
+        const e = ensure(orgId, decl.name);
+        e.roles.add("associe");
+        e.missions.push({
+          recordId: `decl:${decl.id}:${cur}`,
+          title: `Statement of the organization — ${decl.name.trim()} (${slot.label ?? partner.name})`,
+          client: null,
+          amount,
+          currency: cur,
+          role: "associe",
+          createdAt: new Date().toISOString(),
+        });
+        addAmount(e, cur, amount);
+      }
+    }
 
     for (const r of records) {
       const budget = Number(r.budget ?? 0);
@@ -237,7 +300,7 @@ export default function Earnings() {
       }
 
       // --- Associé: my name is in the org's declaration Recognition split ---
-      if (orgId) {
+      if (orgId && !assocDeclOrgs.has(orgId)) {
         const decl = declByOrg.get(orgId);
         const partner = decl?.split_config?.partners?.find((p) => norm(p.name) === me && me !== "");
         if (decl && partner) {
@@ -285,7 +348,7 @@ export default function Earnings() {
       const sum = (e: EntityEarnings) => Object.values(e.totals).reduce((s, v) => s + v, 0);
       return sum(b) - sum(a);
     });
-  }, [user, fullName, records, distEntities, declEntities, orgs, internalOrgIds]);
+  }, [user, fullName, records, distEntities, declEntities, orgs, internalOrgIds, myAssocSlots, declMissions]);
 
   const grandTotals = useMemo(() => {
     const t: Record<string, number> = {};
