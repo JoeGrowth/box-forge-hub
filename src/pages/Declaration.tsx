@@ -55,7 +55,7 @@ type Mission = {
 type Entity = { id: string; owner_id: string; name: string; organization_id?: string | null; organization?: { name: string } | null };
 type Collaborator = { id: string; entity_id: string; collaborator_email: string; access: "view" | "edit" };
 
-const DEFAULT_INTERNALS = ["Structure Handler", "Process Handler"];
+const DEFAULT_INTERNALS = ["Structure Handler", "Process Handler", "Broker", "Administration", "Quality Assurance"];
 const ROSTER_KEY = "declaration_internal_roster_v1";
 const ACTIVE_ENTITY_KEY = "declaration_active_entity_v1";
 const DELIVERY_TYPES_KEY = "declaration_delivery_types_v1";
@@ -151,7 +151,13 @@ export default function Declaration() {
     try {
       const r = localStorage.getItem(rosterKey) ?? localStorage.getItem(ROSTER_KEY);
       const arr = r ? JSON.parse(r) : null;
-      setRoster(Array.isArray(arr) && arr.length ? arr : DEFAULT_INTERNALS);
+      // Backfill: entities saved before the extended default roster keep their
+      // members but gain the new default roles (Broker, Administration, QA).
+      setRoster(
+        Array.isArray(arr) && arr.length
+          ? Array.from(new Set([...arr, ...DEFAULT_INTERNALS]))
+          : DEFAULT_INTERNALS
+      );
     } catch {
       setRoster(DEFAULT_INTERNALS);
     }
