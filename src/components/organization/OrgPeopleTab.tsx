@@ -243,7 +243,7 @@ export function OrgPeopleTab({
   };
 
   const groups: { tier: Tier; title: string; subtitle: string; icon: typeof Heart; addLabel: string }[] = [
-    { tier: "database", title: "Data base", subtitle: "Name only — drag the card later to Friend, Crew or Mentor.", icon: Database, addLabel: "Add to data base" },
+    { tier: "database", title: "Data base", subtitle: "Name only — drag the card later to Friend, Crew or Mentor.", icon: Database, addLabel: "Add" },
     { tier: "friend", title: `Friend of ${orgName}`, subtitle: "Interested participant.", icon: Heart, addLabel: "Add friend" },
     { tier: "crew", title: `Crew Member ${orgName} (Internal)`, subtitle: "Trusted contributor with proven contribution.", icon: Users, addLabel: "Add crew" },
     { tier: "mentor", title: `Mentor / Support System ${orgName}`, subtitle: "Knowledge carrier and ecosystem builder.", icon: GraduationCap, addLabel: "Add mentor" },
