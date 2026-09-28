@@ -325,6 +325,78 @@ export default function Earnings() {
     });
   }, [user, fullName, records, distEntities, declEntities, orgs, internalOrgIds, myAssocSlots, declMissions]);
 
+  // Per-declaration summary: personal receipts (12 months), ownership %, remaining profit.
+  const declSummary = useMemo(() => {
+    const me = norm(fullName);
+    const first = me.split(" ")[0] ?? "";
+    const since = Date.now() - 365 * 24 * 3600 * 1000;
+    const byEntity = new Map<string, typeof allMySlots>();
+    allMySlots.forEach((s) => byEntity.set(s.entity_id, [...(byEntity.get(s.entity_id) ?? []), s]));
+    return [...byEntity.entries()]
+      .map(([entityId, slots]) => {
+        const decl = declEntities.find((d) => d.id === entityId);
+        if (!decl) return null;
+        const aliases = new Set<string>([me, first].filter(Boolean));
+        slots.forEach((s) => {
+          const l = norm(s.label);
+          if (l) aliases.add(l);
+          const suffix = l.split(/[–-]/).slice(1).join("-").trim();
+          if (suffix) aliases.add(suffix);
+        });
+        const partners = decl.split_config?.partners ?? [];
+        const partnerTotal = partners.reduce((s, p) => s + (Number(p.pct) || 0), 0) || 100;
+        const assoc = slots.find((s) => s.role_slug?.startsWith("associe_"));
+        const partner = assoc
+          ? partners.find((p) => norm(p.name) === norm(assoc.label)) ?? (assoc.slot ? partners[assoc.slot - 1] : undefined)
+          : undefined;
+        const ownership = partner ? ((Number(partner.pct) || 0) / partnerTotal) * 100 : 0;
+        const recPct = Math.min(45, Math.max(0, Number(decl.split_config?.recognitionPct ?? 30)));
+        const received: Record<string, number> = {};
+        const remaining: Record<string, number> = {};
+        for (const m of declMissions.filter((x) => x.entity_id === entityId)) {
+          const cur = m.currency || "TND";
+          const payees = [...(m.internal ?? []), ...(m.external ?? [])];
+          const recent = !m.created_at || new Date(m.created_at).getTime() >= since;
+          if (recent) {
+            for (const p of payees) {
+              if (p?.paid && aliases.has(norm(p?.name))) received[cur] = (received[cur] ?? 0) + (Number(p.amount) || 0);
+            }
+          }
+          const used = payees.reduce((s: number, p: any) => s + (Number(p?.amount) || 0), 0);
+          remaining[cur] = (remaining[cur] ?? 0) + Math.max(0, (Number(m.budget) || 0) - used);
+        }
+        // Remaining profit = rest after expenses/salaries, minus founder (Recognition) payouts.
+        const profit: Record<string, number> = {};
+        const myProfit: Record<string, number> = {};
+        const myRecognition: Record<string, number> = {};
+        for (const [cur, r] of Object.entries(remaining)) {
+          const rec = r >= 1000 ? (r * recPct) / 100 : 0;
+          profit[cur] = r - rec;
+          myProfit[cur] = ((r - rec) * ownership) / 100;
+          if (partner && rec > 0) myRecognition[cur] = (rec * ownership) / 100;
+        }
+        for (const [cur, v] of Object.entries(myRecognition)) received[cur] = (received[cur] ?? 0) + v;
+        return {
+          entityId,
+          name: decl.name.trim(),
+          roles: slots.map((s) => s.label ?? s.role_slug),
+          ownership,
+          received,
+          profit,
+          myProfit,
+        };
+      })
+      .filter(Boolean) as {
+      entityId: string; name: string; roles: string[]; ownership: number;
+      received: Record<string, number>; profit: Record<string, number>; myProfit: Record<string, number>;
+    }[];
+  }, [allMySlots, declEntities, declMissions, fullName]);
+
+  const money = (o: Record<string, number>) => {
+    const e = Object.entries(o).filter(([, v]) => Math.abs(v) >= 0.5);
+    return e.length ? e.map(([c, v]) => `${fmt(v)} ${c}`).join(" · ") : "—";
+  };
+
   const grandTotals = useMemo(() => {
     const t: Record<string, number> = {};
     entities.forEach((e) =>
