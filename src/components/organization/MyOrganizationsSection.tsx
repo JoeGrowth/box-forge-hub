@@ -186,13 +186,67 @@ export function MyOrganizationsSection() {
     }
 
     return [...list].sort((a, b) => {
+      const ap = orgOrder[a.organization.id];
+      const bp = orgOrder[b.organization.id];
+      if (ap !== undefined || bp !== undefined) {
+        if (ap === undefined) return 1;
+        if (bp === undefined) return -1;
+        if (ap !== bp) return ap - bp;
+      }
       const aHasLogo = !!a.organization.logo_url;
       const bHasLogo = !!b.organization.logo_url;
       if (aHasLogo && !bHasLogo) return -1;
       if (!aHasLogo && bHasLogo) return 1;
       return new Date(b.organization.created_at).getTime() - new Date(a.organization.created_at).getTime();
     });
-  }, [memberships, filter, typeFilter, sortBy, moneyBox]);
+  }, [memberships, filter, typeFilter, sortBy, moneyBox, orgOrder]);
+
+  // Load the user's saved organization order
+  useEffect(() => {
+    if (!user) { setOrgOrder({}); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("organization_orders")
+        .select("organization_id, position")
+        .eq("user_id", user.id);
+      if (cancelled) return;
+      const map: Record<string, number> = {};
+      (data ?? []).forEach((r: any) => { map[r.organization_id] = r.position; });
+      setOrgOrder(map);
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  // Drag-and-drop reordering is only available in the default view (no filter / sort)
+  const canReorder = sortBy === "default" && !filter && !typeFilter;
+
+  const handleDrop = async () => {
+    if (!draggingId || !user) return;
+    const ids = filtered.map(f => f.organization.id);
+    const from = ids.indexOf(draggingId);
+    if (from === -1) return;
+    ids.splice(from, 1);
+    let to = dropIndex ?? filtered.length;
+    if (to > from) to -= 1;
+    to = Math.max(0, Math.min(to, ids.length));
+    ids.splice(to, 0, draggingId);
+
+    const previousOrder = orgOrder;
+    const next: Record<string, number> = { ...orgOrder };
+    ids.forEach((id, i) => { next[id] = i; });
+    setOrgOrder(next);
+    setDraggingId(null);
+    setDropIndex(null);
+
+    const rows = ids.map((id, i) => ({ user_id: user.id, organization_id: id, position: i }));
+    const { error } = await (supabase.from as any)("organization_orders")
+      .upsert(rows, { onConflict: "user_id,organization_id" });
+    if (error) {
+      setOrgOrder(previousOrder);
+      toast({ title: "Could not save the order", description: error.message, variant: "destructive" });
+    }
+  };
 
   const create = async () => {
     if (!user || !name.trim()) return;
