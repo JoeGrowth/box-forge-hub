@@ -27,7 +27,7 @@ import {
 
 const norm = (s?: string | null) => (s ?? "").trim().toLowerCase().replace(/\s+/g, " ");
 const fmt = (n: number) =>
-  new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(Number.isFinite(n) ? n : 0);
+  new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 }).format(Number.isFinite(n) ? n : 0);
 
 type Role = "associe" | "internal" | "external";
 
@@ -210,7 +210,9 @@ export default function Earnings() {
           totals: {},
         });
       }
-      return out.get(key)!;
+      const entity = out.get(key);
+      if (!entity) throw new Error("Unable to create earnings entity");
+      return entity;
     };
     const addAmount = (e: EntityEarnings, currency: string, amount: number) => {
       e.totals[currency] = (e.totals[currency] ?? 0) + amount;
@@ -327,8 +329,6 @@ export default function Earnings() {
 
   // Per-declaration summary: personal receipts (12 months), ownership %, remaining profit.
   const declSummary = useMemo(() => {
-    const me = norm(fullName);
-    const first = me.split(" ")[0] ?? "";
     const since = Date.now() - 365 * 24 * 3600 * 1000;
     const byEntity = new Map<string, typeof allMySlots>();
     allMySlots.forEach((s) => byEntity.set(s.entity_id, [...(byEntity.get(s.entity_id) ?? []), s]));
@@ -336,13 +336,6 @@ export default function Earnings() {
       .map(([entityId, slots]) => {
         const decl = declEntities.find((d) => d.id === entityId);
         if (!decl) return null;
-        const aliases = new Set<string>([me, first].filter(Boolean));
-        slots.forEach((s) => {
-          const l = norm(s.label);
-          if (l) aliases.add(l);
-          const suffix = l.split(/[–-]/).slice(1).join("-").trim();
-          if (suffix) aliases.add(suffix);
-        });
         const partners = decl.split_config?.partners ?? [];
         const partnerTotal = partners.reduce((s, p) => s + (Number(p.pct) || 0), 0) || 100;
         const assoc = slots.find((s) => s.role_slug?.startsWith("associe_"));
@@ -353,29 +346,32 @@ export default function Earnings() {
         const recPct = Math.min(45, Math.max(0, Number(decl.split_config?.recognitionPct ?? 30)));
         const received: Record<string, number> = {};
         const remaining: Record<string, number> = {};
+        const recentRemaining: Record<string, number> = {};
         for (const m of declMissions.filter((x) => x.entity_id === entityId)) {
           const cur = m.currency || "TND";
           const payees = [...(m.internal ?? []), ...(m.external ?? [])];
           const recent = !m.created_at || new Date(m.created_at).getTime() >= since;
-          if (recent) {
-            for (const p of payees) {
-              if (p?.paid && aliases.has(norm(p?.name))) received[cur] = (received[cur] ?? 0) + (Number(p.amount) || 0);
-            }
-          }
           const used = payees.reduce((s: number, p: any) => s + (Number(p?.amount) || 0), 0);
-          remaining[cur] = (remaining[cur] ?? 0) + Math.max(0, (Number(m.budget) || 0) - used);
+          const rest = Math.max(0, (Number(m.budget) || 0) - used);
+          remaining[cur] = (remaining[cur] ?? 0) + rest;
+          if (recent) recentRemaining[cur] = (recentRemaining[cur] ?? 0) + rest;
         }
         // Remaining profit = rest after expenses/salaries, minus founder (Recognition) payouts.
         const profit: Record<string, number> = {};
         const myProfit: Record<string, number> = {};
-        const myRecognition: Record<string, number> = {};
         for (const [cur, r] of Object.entries(remaining)) {
           const rec = r >= 1000 ? (r * recPct) / 100 : 0;
           profit[cur] = r - rec;
           myProfit[cur] = ((r - rec) * ownership) / 100;
-          if (partner && rec > 0) myRecognition[cur] = (rec * ownership) / 100;
         }
-        for (const [cur, v] of Object.entries(myRecognition)) received[cur] = (received[cur] ?? 0) + v;
+        // "Received" is the exact Associé Recognition amount shown in the statement.
+        // Internal-role salary payments are deliberately not mixed into this figure.
+        if (partner) {
+          for (const [cur, r] of Object.entries(recentRemaining)) {
+            const rec = r >= 1000 ? (r * recPct) / 100 : 0;
+            if (rec > 0) received[cur] = (rec * ownership) / 100;
+          }
+        }
         return {
           entityId,
           name: decl.name.trim(),
@@ -390,7 +386,7 @@ export default function Earnings() {
       entityId: string; name: string; roles: string[]; ownership: number;
       received: Record<string, number>; profit: Record<string, number>; myProfit: Record<string, number>;
     }[];
-  }, [allMySlots, declEntities, declMissions, fullName]);
+  }, [allMySlots, declEntities, declMissions]);
 
   const money = (o: Record<string, number>) => {
     const e = Object.entries(o).filter(([, v]) => Math.abs(v) >= 0.5);
