@@ -1247,13 +1247,14 @@ function LegalTab({
   return (
     <div className="space-y-3">
       {canEdit && (() => {
-        const LEGAL_CATEGORIES: { label: string; hint: string }[] = [
-          { label: "Certificate of Incorporation", hint: "Promotes this entity to Company" },
-          { label: "Statutes", hint: "Articles of association / bylaws" },
-          { label: "Founders Agreement", hint: "Between co-founders" },
-          { label: "NDA", hint: "Non-disclosure agreement" },
-          { label: "Contract", hint: "Client / supplier / partnership" },
-        ];
+          const LEGAL_CATEGORIES: { label: string; hint: string }[] = [
+            { label: "Certificate of Incorporation", hint: "Promotes this entity to Company" },
+            { label: "Statutes", hint: "Articles of association / bylaws" },
+            { label: "Founders Agreement", hint: "Between co-founders" },
+            { label: "NDA", hint: "Non-disclosure agreement" },
+            { label: "Contract", hint: "Client / supplier / partnership" },
+            { label: "Pitch Deck", hint: "Investor / partner presentation" },
+          ];
         const hasCert = docs.some((d) => d.name.toLowerCase().startsWith("certificate of incorporation"));
         return (
           <div className="rounded-xl border border-dashed border-border bg-card p-4 space-y-3">
