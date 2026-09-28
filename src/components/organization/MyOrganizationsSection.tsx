@@ -426,7 +426,7 @@ export function MyOrganizationsSection() {
             </div>
           ) : (
             <div className="grid gap-4">
-              {filtered.map(({ organization: o, role }) => {
+              {filtered.map(({ organization: o, role }, index) => {
                 const RoleIcon = ROLE_ICON[role];
                 const canDelete = role === "admin";
                 const handleDelete = async (e: React.MouseEvent) => {
@@ -444,11 +444,33 @@ export function MyOrganizationsSection() {
                 const stage = (o.lifecycle_stage ?? "venture") as LifecycleStage;
                 const StageMeta = STAGE_META[stage];
                 const StageIcon = StageMeta.icon;
+                const showLine = canReorder && draggingId && draggingId !== o.id && dropIndex === index;
                 return (
-                  <div
-                    key={o.id}
-                    className="min-w-0 overflow-hidden rounded-xl border border-border bg-card p-5 transition hover:border-primary/40 hover:shadow-sm"
-                  >
+                  <div key={o.id}>
+                    {showLine && <div className="mb-2 h-0.5 rounded-full bg-primary" />}
+                    <div
+                      draggable={canReorder}
+                      onDragStart={() => setDraggingId(o.id)}
+                      onDragOver={(e) => {
+                        if (!canReorder || !draggingId) return;
+                        e.preventDefault();
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const after = e.clientY > rect.top + rect.height / 2;
+                        setDropIndex(index + (after ? 1 : 0));
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        handleDrop();
+                      }}
+                      onDragEnd={() => {
+                        setDraggingId(null);
+                        setDropIndex(null);
+                      }}
+                      title={canReorder ? "Drag to reorder" : undefined}
+                      className={`min-w-0 overflow-hidden rounded-xl border border-border bg-card p-5 transition hover:border-primary/40 hover:shadow-sm ${
+                        canReorder ? "cursor-grab active:cursor-grabbing" : ""
+                      } ${draggingId === o.id ? "opacity-50" : ""}`}
+                    >
                     <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                       <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
                         <OrgLogo
