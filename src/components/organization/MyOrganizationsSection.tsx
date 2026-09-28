@@ -42,6 +42,7 @@ import {
   FileWarning,
   ShieldCheck,
   Wallet,
+  GripVertical,
 } from "lucide-react";
 import { OrgLogo } from "@/components/organization/OrgLogo";
 
@@ -91,6 +92,9 @@ export function MyOrganizationsSection() {
   const [sortBy, setSortBy] = useState<SortKey>("default");
   const [moneyBox, setMoneyBox] = useState<Record<string, MoneyBox>>({});
   const [moneyBoxLoading, setMoneyBoxLoading] = useState(false);
+  const [orgOrder, setOrgOrder] = useState<Record<string, number>>({});
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dropIndex, setDropIndex] = useState<number | null>(null);
 
   const companyOrgIds = useMemo(
     () => memberships.filter(m => m.organization.type === "company").map(m => m.organization.id),
