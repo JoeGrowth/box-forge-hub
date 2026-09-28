@@ -433,6 +433,45 @@ export default function Earnings() {
             )}
           </div>
 
+          {!loading && declSummary.length > 0 && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Per declaration</CardTitle>
+                <CardDescription>
+                  Received = paid to you in the last 12 months (incl. your Recognition share). Profit = what
+                  remains after expenses, salaries and founder payments; taxes are not tracked, so treat it as approximate.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b text-left text-xs text-muted-foreground">
+                      <th className="py-2 pr-3 font-medium">Entity</th>
+                      <th className="py-2 pr-3 font-medium">Ownership</th>
+                      <th className="py-2 pr-3 font-medium">Received (12 mo)</th>
+                      <th className="py-2 pr-3 font-medium">Profit in entity</th>
+                      <th className="py-2 font-medium">Your share of profit</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {declSummary.map((d) => (
+                      <tr key={d.entityId} className="border-b last:border-0 align-top">
+                        <td className="py-2 pr-3">
+                          <p className="font-medium">{d.name}</p>
+                          <p className="text-xs text-muted-foreground">{d.roles.join(", ")}</p>
+                        </td>
+                        <td className="py-2 pr-3 font-semibold">{d.ownership.toFixed(2)}%</td>
+                        <td className="py-2 pr-3">{money(d.received)}</td>
+                        <td className="py-2 pr-3">{money(d.profit)}</td>
+                        <td className="py-2">{money(d.myProfit)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </CardContent>
+            </Card>
+          )}
+
           {loading ? (
             <div className="space-y-4">
               <Skeleton className="h-40 w-full" />
