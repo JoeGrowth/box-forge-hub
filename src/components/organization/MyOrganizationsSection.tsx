@@ -206,8 +206,7 @@ export function MyOrganizationsSection() {
     if (!user) { setOrgOrder({}); return; }
     let cancelled = false;
     (async () => {
-      const { data } = await supabase
-        .from("organization_orders")
+      const { data } = await (supabase.from as any)("organization_orders")
         .select("organization_id, position")
         .eq("user_id", user.id);
       if (cancelled) return;
