@@ -362,7 +362,7 @@ export default function Earnings() {
         for (const [cur, r] of Object.entries(remaining)) {
           const rec = r >= 1000 ? (r * recPct) / 100 : 0;
           profit[cur] = r - rec;
-          myProfit[cur] = ((r - rec) * ownership) / 100;
+          myProfit[cur] = partner ? (rec * ownership) / 100 : 0;
         }
         // "Received" is the exact Associé Recognition amount shown in the statement.
         // Internal-role salary payments are deliberately not mixed into this figure.
