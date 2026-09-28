@@ -554,6 +554,7 @@ export function MyOrganizationsSection() {
                         </div>
                       </div>
                     </div>
+                    </div>
                   </div>
                 );
               })}
