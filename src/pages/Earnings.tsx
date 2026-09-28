@@ -121,7 +121,10 @@ export default function Earnings() {
   const [internalOrgIds, setInternalOrgIds] = useState<Set<string>>(new Set());
   const [myAssocSlots, setMyAssocSlots] = useState<{ entity_id: string; label: string | null; slot: number | null }[]>([]);
   const [declMissions, setDeclMissions] = useState<
-    { entity_id: string; budget: number | null; currency: string | null; internal: any[]; external: any[] }[]
+    { entity_id: string; budget: number | null; currency: string | null; internal: any[]; external: any[]; created_at?: string }[]
+  >([]);
+  const [allMySlots, setAllMySlots] = useState<
+    { entity_id: string; label: string | null; slot: number | null; role_slug: string }[]
   >([]);
 
   useEffect(() => {
@@ -164,21 +167,22 @@ export default function Earnings() {
             .map((r) => r.organization_id),
         ),
       );
-      // Associé slots linked to me in declaration entities (Statement of the organization)
+      // All role slots linked to me in declaration entities (Statement of the organization)
       const { data: slots } = await (supabase as any)
         .from("entity_role_assignments")
         .select("entity_id,label,slot,role_slug")
         .eq("linked_user_id", user.id)
         .eq("status", "accepted")
-        .eq("entity_type", "declaration_entity")
-        .like("role_slug", "associe_%");
-      const slotRows = (slots ?? []) as { entity_id: string; label: string | null; slot: number | null }[];
+        .eq("entity_type", "declaration_entity");
+      const allSlots = (slots ?? []) as { entity_id: string; label: string | null; slot: number | null; role_slug: string }[];
+      setAllMySlots(allSlots);
+      const slotRows = allSlots.filter((s) => (s.role_slug ?? "").startsWith("associe_"));
       setMyAssocSlots(slotRows);
-      if (slotRows.length) {
+      if (allSlots.length) {
         const { data: dm } = await (supabase as any)
           .from("declaration_missions")
-          .select("entity_id,budget,currency,internal,external")
-          .in("entity_id", [...new Set(slotRows.map((r) => r.entity_id))]);
+          .select("entity_id,budget,currency,internal,external,created_at")
+          .in("entity_id", [...new Set(allSlots.map((r) => r.entity_id))]);
         setDeclMissions(dm ?? []);
       }
       setLoading(false);
