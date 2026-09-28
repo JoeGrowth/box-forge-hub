@@ -361,7 +361,8 @@ export default function Earnings() {
         const myProfit: Record<string, number> = {};
         for (const [cur, r] of Object.entries(remaining)) {
           const rec = r >= 1000 ? (r * recPct) / 100 : 0;
-          profit[cur] = r - rec;
+          // Match the statement's "Profit Distribution" base (before Investment/Recognition split).
+          profit[cur] = r;
           myProfit[cur] = partner ? (rec * ownership) / 100 : 0;
         }
         // "Received" is the exact Associé Recognition amount shown in the statement.
