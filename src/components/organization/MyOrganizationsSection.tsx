@@ -42,6 +42,7 @@ import {
   FileWarning,
   ShieldCheck,
   Wallet,
+  GripVertical,
 } from "lucide-react";
 import { OrgLogo } from "@/components/organization/OrgLogo";
 
@@ -91,6 +92,9 @@ export function MyOrganizationsSection() {
   const [sortBy, setSortBy] = useState<SortKey>("default");
   const [moneyBox, setMoneyBox] = useState<Record<string, MoneyBox>>({});
   const [moneyBoxLoading, setMoneyBoxLoading] = useState(false);
+  const [orgOrder, setOrgOrder] = useState<Record<string, number>>({});
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dropIndex, setDropIndex] = useState<number | null>(null);
 
   const companyOrgIds = useMemo(
     () => memberships.filter(m => m.organization.type === "company").map(m => m.organization.id),
@@ -182,13 +186,66 @@ export function MyOrganizationsSection() {
     }
 
     return [...list].sort((a, b) => {
+      const ap = orgOrder[a.organization.id];
+      const bp = orgOrder[b.organization.id];
+      if (ap !== undefined || bp !== undefined) {
+        if (ap === undefined) return 1;
+        if (bp === undefined) return -1;
+        if (ap !== bp) return ap - bp;
+      }
       const aHasLogo = !!a.organization.logo_url;
       const bHasLogo = !!b.organization.logo_url;
       if (aHasLogo && !bHasLogo) return -1;
       if (!aHasLogo && bHasLogo) return 1;
       return new Date(b.organization.created_at).getTime() - new Date(a.organization.created_at).getTime();
     });
-  }, [memberships, filter, typeFilter, sortBy, moneyBox]);
+  }, [memberships, filter, typeFilter, sortBy, moneyBox, orgOrder]);
+
+  // Load the user's saved organization order
+  useEffect(() => {
+    if (!user) { setOrgOrder({}); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await (supabase.from as any)("organization_orders")
+        .select("organization_id, position")
+        .eq("user_id", user.id);
+      if (cancelled) return;
+      const map: Record<string, number> = {};
+      (data ?? []).forEach((r: any) => { map[r.organization_id] = r.position; });
+      setOrgOrder(map);
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  // Drag-and-drop reordering is only available in the default view (no filter / sort)
+  const canReorder = sortBy === "default" && !filter && !typeFilter;
+
+  const handleDrop = async () => {
+    if (!draggingId || !user) return;
+    const ids = filtered.map(f => f.organization.id);
+    const from = ids.indexOf(draggingId);
+    if (from === -1) return;
+    ids.splice(from, 1);
+    let to = dropIndex ?? filtered.length;
+    if (to > from) to -= 1;
+    to = Math.max(0, Math.min(to, ids.length));
+    ids.splice(to, 0, draggingId);
+
+    const previousOrder = orgOrder;
+    const next: Record<string, number> = { ...orgOrder };
+    ids.forEach((id, i) => { next[id] = i; });
+    setOrgOrder(next);
+    setDraggingId(null);
+    setDropIndex(null);
+
+    const rows = ids.map((id, i) => ({ user_id: user.id, organization_id: id, position: i }));
+    const { error } = await (supabase.from as any)("organization_orders")
+      .upsert(rows, { onConflict: "user_id,organization_id" });
+    if (error) {
+      setOrgOrder(previousOrder);
+      toast({ title: "Could not save the order", description: error.message, variant: "destructive" });
+    }
+  };
 
   const create = async () => {
     if (!user || !name.trim()) return;
@@ -368,7 +425,7 @@ export function MyOrganizationsSection() {
             </div>
           ) : (
             <div className="grid gap-4">
-              {filtered.map(({ organization: o, role }) => {
+              {filtered.map(({ organization: o, role }, index) => {
                 const RoleIcon = ROLE_ICON[role];
                 const canDelete = role === "admin";
                 const handleDelete = async (e: React.MouseEvent) => {
@@ -386,11 +443,33 @@ export function MyOrganizationsSection() {
                 const stage = (o.lifecycle_stage ?? "venture") as LifecycleStage;
                 const StageMeta = STAGE_META[stage];
                 const StageIcon = StageMeta.icon;
+                const showLine = canReorder && draggingId && draggingId !== o.id && dropIndex === index;
                 return (
-                  <div
-                    key={o.id}
-                    className="min-w-0 overflow-hidden rounded-xl border border-border bg-card p-5 transition hover:border-primary/40 hover:shadow-sm"
-                  >
+                  <div key={o.id}>
+                    {showLine && <div className="mb-2 h-0.5 rounded-full bg-primary" />}
+                    <div
+                      draggable={canReorder}
+                      onDragStart={() => setDraggingId(o.id)}
+                      onDragOver={(e) => {
+                        if (!canReorder || !draggingId) return;
+                        e.preventDefault();
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const after = e.clientY > rect.top + rect.height / 2;
+                        setDropIndex(index + (after ? 1 : 0));
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        handleDrop();
+                      }}
+                      onDragEnd={() => {
+                        setDraggingId(null);
+                        setDropIndex(null);
+                      }}
+                      title={canReorder ? "Drag to reorder" : undefined}
+                      className={`min-w-0 overflow-hidden rounded-xl border border-border bg-card p-5 transition hover:border-primary/40 hover:shadow-sm ${
+                        canReorder ? "cursor-grab active:cursor-grabbing" : ""
+                      } ${draggingId === o.id ? "opacity-50" : ""}`}
+                    >
                     <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                       <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
                         <OrgLogo
@@ -424,6 +503,11 @@ export function MyOrganizationsSection() {
                             </div>
                           </div>
                           <div className="flex items-center gap-0.5 shrink-0">
+                            {canReorder && (
+                              <span className="text-muted-foreground/60 shrink-0 pr-1" title="Drag to reorder">
+                                <GripVertical className="w-4 h-4" />
+                              </span>
+                            )}
                             <Button
                               size="icon"
                               variant="ghost"
@@ -473,6 +557,7 @@ export function MyOrganizationsSection() {
                           </Link>
                         </div>
                       </div>
+                    </div>
                     </div>
                   </div>
                 );
