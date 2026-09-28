@@ -121,7 +121,10 @@ export default function Earnings() {
   const [internalOrgIds, setInternalOrgIds] = useState<Set<string>>(new Set());
   const [myAssocSlots, setMyAssocSlots] = useState<{ entity_id: string; label: string | null; slot: number | null }[]>([]);
   const [declMissions, setDeclMissions] = useState<
-    { entity_id: string; budget: number | null; currency: string | null; internal: any[]; external: any[] }[]
+    { entity_id: string; budget: number | null; currency: string | null; internal: any[]; external: any[]; created_at?: string }[]
+  >([]);
+  const [allMySlots, setAllMySlots] = useState<
+    { entity_id: string; label: string | null; slot: number | null; role_slug: string }[]
   >([]);
 
   useEffect(() => {
@@ -164,21 +167,22 @@ export default function Earnings() {
             .map((r) => r.organization_id),
         ),
       );
-      // Associé slots linked to me in declaration entities (Statement of the organization)
+      // All role slots linked to me in declaration entities (Statement of the organization)
       const { data: slots } = await (supabase as any)
         .from("entity_role_assignments")
         .select("entity_id,label,slot,role_slug")
         .eq("linked_user_id", user.id)
         .eq("status", "accepted")
-        .eq("entity_type", "declaration_entity")
-        .like("role_slug", "associe_%");
-      const slotRows = (slots ?? []) as { entity_id: string; label: string | null; slot: number | null }[];
+        .eq("entity_type", "declaration_entity");
+      const allSlots = (slots ?? []) as { entity_id: string; label: string | null; slot: number | null; role_slug: string }[];
+      setAllMySlots(allSlots);
+      const slotRows = allSlots.filter((s) => (s.role_slug ?? "").startsWith("associe_"));
       setMyAssocSlots(slotRows);
-      if (slotRows.length) {
+      if (allSlots.length) {
         const { data: dm } = await (supabase as any)
           .from("declaration_missions")
-          .select("entity_id,budget,currency,internal,external")
-          .in("entity_id", [...new Set(slotRows.map((r) => r.entity_id))]);
+          .select("entity_id,budget,currency,internal,external,created_at")
+          .in("entity_id", [...new Set(allSlots.map((r) => r.entity_id))]);
         setDeclMissions(dm ?? []);
       }
       setLoading(false);
@@ -321,6 +325,78 @@ export default function Earnings() {
     });
   }, [user, fullName, records, distEntities, declEntities, orgs, internalOrgIds, myAssocSlots, declMissions]);
 
+  // Per-declaration summary: personal receipts (12 months), ownership %, remaining profit.
+  const declSummary = useMemo(() => {
+    const me = norm(fullName);
+    const first = me.split(" ")[0] ?? "";
+    const since = Date.now() - 365 * 24 * 3600 * 1000;
+    const byEntity = new Map<string, typeof allMySlots>();
+    allMySlots.forEach((s) => byEntity.set(s.entity_id, [...(byEntity.get(s.entity_id) ?? []), s]));
+    return [...byEntity.entries()]
+      .map(([entityId, slots]) => {
+        const decl = declEntities.find((d) => d.id === entityId);
+        if (!decl) return null;
+        const aliases = new Set<string>([me, first].filter(Boolean));
+        slots.forEach((s) => {
+          const l = norm(s.label);
+          if (l) aliases.add(l);
+          const suffix = l.split(/[–-]/).slice(1).join("-").trim();
+          if (suffix) aliases.add(suffix);
+        });
+        const partners = decl.split_config?.partners ?? [];
+        const partnerTotal = partners.reduce((s, p) => s + (Number(p.pct) || 0), 0) || 100;
+        const assoc = slots.find((s) => s.role_slug?.startsWith("associe_"));
+        const partner = assoc
+          ? partners.find((p) => norm(p.name) === norm(assoc.label)) ?? (assoc.slot ? partners[assoc.slot - 1] : undefined)
+          : undefined;
+        const ownership = partner ? ((Number(partner.pct) || 0) / partnerTotal) * 100 : 0;
+        const recPct = Math.min(45, Math.max(0, Number(decl.split_config?.recognitionPct ?? 30)));
+        const received: Record<string, number> = {};
+        const remaining: Record<string, number> = {};
+        for (const m of declMissions.filter((x) => x.entity_id === entityId)) {
+          const cur = m.currency || "TND";
+          const payees = [...(m.internal ?? []), ...(m.external ?? [])];
+          const recent = !m.created_at || new Date(m.created_at).getTime() >= since;
+          if (recent) {
+            for (const p of payees) {
+              if (p?.paid && aliases.has(norm(p?.name))) received[cur] = (received[cur] ?? 0) + (Number(p.amount) || 0);
+            }
+          }
+          const used = payees.reduce((s: number, p: any) => s + (Number(p?.amount) || 0), 0);
+          remaining[cur] = (remaining[cur] ?? 0) + Math.max(0, (Number(m.budget) || 0) - used);
+        }
+        // Remaining profit = rest after expenses/salaries, minus founder (Recognition) payouts.
+        const profit: Record<string, number> = {};
+        const myProfit: Record<string, number> = {};
+        const myRecognition: Record<string, number> = {};
+        for (const [cur, r] of Object.entries(remaining)) {
+          const rec = r >= 1000 ? (r * recPct) / 100 : 0;
+          profit[cur] = r - rec;
+          myProfit[cur] = ((r - rec) * ownership) / 100;
+          if (partner && rec > 0) myRecognition[cur] = (rec * ownership) / 100;
+        }
+        for (const [cur, v] of Object.entries(myRecognition)) received[cur] = (received[cur] ?? 0) + v;
+        return {
+          entityId,
+          name: decl.name.trim(),
+          roles: slots.map((s) => s.label ?? s.role_slug),
+          ownership,
+          received,
+          profit,
+          myProfit,
+        };
+      })
+      .filter(Boolean) as {
+      entityId: string; name: string; roles: string[]; ownership: number;
+      received: Record<string, number>; profit: Record<string, number>; myProfit: Record<string, number>;
+    }[];
+  }, [allMySlots, declEntities, declMissions, fullName]);
+
+  const money = (o: Record<string, number>) => {
+    const e = Object.entries(o).filter(([, v]) => Math.abs(v) >= 0.5);
+    return e.length ? e.map(([c, v]) => `${fmt(v)} ${c}`).join(" · ") : "—";
+  };
+
   const grandTotals = useMemo(() => {
     const t: Record<string, number> = {};
     entities.forEach((e) =>
@@ -356,6 +432,45 @@ export default function Earnings() {
               </div>
             )}
           </div>
+
+          {!loading && declSummary.length > 0 && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Per declaration</CardTitle>
+                <CardDescription>
+                  Received = paid to you in the last 12 months (incl. your Recognition share). Profit = what
+                  remains after expenses, salaries and founder payments; taxes are not tracked, so treat it as approximate.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b text-left text-xs text-muted-foreground">
+                      <th className="py-2 pr-3 font-medium">Entity</th>
+                      <th className="py-2 pr-3 font-medium">Ownership</th>
+                      <th className="py-2 pr-3 font-medium">Received (12 mo)</th>
+                      <th className="py-2 pr-3 font-medium">Profit in entity</th>
+                      <th className="py-2 font-medium">Your share of profit</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {declSummary.map((d) => (
+                      <tr key={d.entityId} className="border-b last:border-0 align-top">
+                        <td className="py-2 pr-3">
+                          <p className="font-medium">{d.name}</p>
+                          <p className="text-xs text-muted-foreground">{d.roles.join(", ")}</p>
+                        </td>
+                        <td className="py-2 pr-3 font-semibold">{d.ownership.toFixed(2)}%</td>
+                        <td className="py-2 pr-3">{money(d.received)}</td>
+                        <td className="py-2 pr-3">{money(d.profit)}</td>
+                        <td className="py-2">{money(d.myProfit)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </CardContent>
+            </Card>
+          )}
 
           {loading ? (
             <div className="space-y-4">
