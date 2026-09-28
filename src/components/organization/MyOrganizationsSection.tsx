@@ -504,6 +504,11 @@ export function MyOrganizationsSection() {
                             </div>
                           </div>
                           <div className="flex items-center gap-0.5 shrink-0">
+                            {canReorder && (
+                              <span className="text-muted-foreground/60 shrink-0 pr-1" title="Drag to reorder">
+                                <GripVertical className="w-4 h-4" />
+                              </span>
+                            )}
                             <Button
                               size="icon"
                               variant="ghost"
