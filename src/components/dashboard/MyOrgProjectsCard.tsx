@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import { Rocket, ArrowRight, CalendarDays, User, AlertTriangle } from "lucide-react";
+import { Rocket, ArrowRight, CalendarDays, User, AlertTriangle, ChevronDown } from "lucide-react";
 
 type Row = {
   id: string;
@@ -111,7 +111,7 @@ export function MyOrgProjectsCard() {
       <div className="h-1 w-full bg-gradient-to-r from-b4-navy via-b4-teal to-b4-coral" />
 
       <CardHeader
-        className="pb-4"
+        className={`pb-4 ${activeRows.length > 3 && !loading ? "cursor-pointer select-none hover:bg-muted/30 transition-colors" : ""}`}
         {...(activeRows.length > 3 && !loading
           ? {
               onClick: () => setExpanded((v) => !v),
