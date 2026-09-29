@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Wallet, ArrowRight, Building2, Clock } from "lucide-react";
+import { Wallet, ArrowRight, Building2, Clock, ChevronDown } from "lucide-react";
 
 type Row = {
   id: string;
@@ -85,7 +85,23 @@ export function MyMissionsCard() {
     <Card className="overflow-hidden border-border/70">
       <div className="h-1 w-full bg-gradient-to-r from-b4-coral via-b4-teal to-b4-navy" />
 
-      <CardHeader className="pb-4">
+      <CardHeader
+        className={`pb-4 ${rows.length > 3 && !loading ? "cursor-pointer select-none hover:bg-muted/30 transition-colors" : ""}`}
+        {...(rows.length > 3 && !loading
+          ? {
+              onClick: () => setExpanded((v) => !v),
+              role: "button",
+              "aria-expanded": expanded,
+              tabIndex: 0,
+              onKeyDown: (e: React.KeyboardEvent) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setExpanded((v) => !v);
+                }
+              },
+            }
+          : {})}
+      >
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="min-w-0">
             <CardTitle className="flex items-center gap-2 text-lg">
@@ -95,6 +111,11 @@ export function MyMissionsCard() {
               Your missions
               {!loading && (
                 <Badge variant="secondary" className="ml-1 font-medium">{rows.length}</Badge>
+              )}
+              {!loading && rows.length > 3 && (
+                <ChevronDown
+                  className={`w-4 h-4 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`}
+                />
               )}
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1.5">
@@ -158,15 +179,6 @@ export function MyMissionsCard() {
               </div>
             </Link>
           ))
-        )}
-        {!loading && rows.length > 3 && (
-          <button
-            type="button"
-            onClick={() => setExpanded((v) => !v)}
-            className="w-full rounded-xl border border-border bg-card py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            {expanded ? "Show less" : `Show all ${rows.length}`}
-          </button>
         )}
       </CardContent>
     </Card>

@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Building2, ArrowRight, Rocket } from "lucide-react";
+import { Building2, ArrowRight, Rocket, ChevronDown } from "lucide-react";
 import { OrgLogo } from "@/components/organization/OrgLogo";
 
 type EntityRow = {
@@ -107,7 +107,23 @@ export function MyEntitiesCard() {
       {/* Accent rail */}
       <div className="h-1 w-full bg-gradient-to-r from-b4-navy via-b4-teal to-b4-coral" />
 
-      <CardHeader className="pb-4">
+      <CardHeader
+        className={`pb-4 ${rows.length > 3 && !loading ? "cursor-pointer select-none hover:bg-muted/30 transition-colors" : ""}`}
+        {...(rows.length > 3 && !loading
+          ? {
+              onClick: () => setExpanded((v) => !v),
+              role: "button",
+              "aria-expanded": expanded,
+              tabIndex: 0,
+              onKeyDown: (e: React.KeyboardEvent) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setExpanded((v) => !v);
+                }
+              },
+            }
+          : {})}
+      >
         <CardTitle className="flex items-center gap-2 text-lg">
           <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary">
             <Building2 className="w-4 h-4" />
@@ -115,6 +131,11 @@ export function MyEntitiesCard() {
           Your entities
           {!loading && (
             <Badge variant="secondary" className="ml-1 font-medium">{rows.length}</Badge>
+          )}
+          {!loading && rows.length > 3 && (
+            <ChevronDown
+              className={`w-4 h-4 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`}
+            />
           )}
         </CardTitle>
         <p className="text-sm text-muted-foreground mt-1.5">
@@ -186,15 +207,6 @@ export function MyEntitiesCard() {
               )}
             </Link>
           ))
-        )}
-        {!loading && rows.length > 3 && (
-          <button
-            type="button"
-            onClick={() => setExpanded((v) => !v)}
-            className="w-full rounded-xl border border-border bg-card py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            {expanded ? "Show less" : `Show all ${rows.length}`}
-          </button>
         )}
       </CardContent>
     </Card>
