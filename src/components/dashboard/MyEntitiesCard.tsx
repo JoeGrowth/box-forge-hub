@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Building2, ArrowRight, Rocket } from "lucide-react";
+import { OrgLogo } from "@/components/organization/OrgLogo";
 
 type EntityRow = {
   orgId: string;
@@ -130,7 +131,7 @@ export function MyEntitiesCard() {
                 <div className="flex items-start gap-3 min-w-0">
                   <div className="shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 to-b4-teal/15 flex items-center justify-center text-xs font-semibold text-primary overflow-hidden">
                     {e.logoUrl ? (
-                      <img src={e.logoUrl} alt="" className="w-full h-full object-cover" />
+                      <OrgLogo path={e.logoUrl} alt={`${e.orgName} logo`} className="w-full h-full object-cover" iconClassName="w-5 h-5 text-primary" />
                     ) : (
                       e.orgName.slice(0, 2).toUpperCase()
                     )}
