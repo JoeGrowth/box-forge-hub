@@ -84,7 +84,13 @@ export function MyOrgProjectsCard() {
   }, [user]);
 
   // Homepage shows only projects that have a "Blocker / where it stands" note.
-  const activeRows = rows.filter((r) => !!r.status_note);
+  // Core project track (published for the entity itself) is followed up in
+  // "Your entities" instead, so it never appears here.
+  const activeRows = rows.filter(
+    (r) =>
+      !!r.status_note &&
+      !(r.description ?? "").toLowerCase().includes("core project track"),
+  );
 
   if (!loading && activeRows.length === 0) return null;
 
