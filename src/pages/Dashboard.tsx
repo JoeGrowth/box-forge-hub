@@ -19,7 +19,7 @@ import { DashboardAchievements } from "@/components/dashboard/DashboardAchieveme
 import { ProgressionPathCard } from "@/components/profile/ProgressionPathCard";
 import { CommitmentsPanel } from "@/components/commitments/CommitmentsPanel";
 import { MyOrgProjectsCard } from "@/components/dashboard/MyOrgProjectsCard";
-import { MyMissionsCard } from "@/components/dashboard/MyMissionsCard";
+import { MyEntitiesCard } from "@/components/dashboard/MyEntitiesCard";
 import { useShapeYourTalentComplete } from "@/hooks/useShapeYourTalentComplete";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
@@ -165,6 +165,7 @@ const Dashboard = () => {
                   <>
                     {showShapeTalent && <DashboardProgress />}
                     {shapeYourTalentComplete && <MyOrgProjectsCard />}
+                    {shapeYourTalentComplete && <MyEntitiesCard />}
                     {shapeYourTalentComplete && <MyMissionsCard />}
                     {isCapable && <CommitmentsPanel />}
                     {isCapable && !allBadgesEarned && <DashboardOpportunities />}
