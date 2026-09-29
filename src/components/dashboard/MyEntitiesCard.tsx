@@ -110,7 +110,7 @@ export function MyEntitiesCard() {
           )}
         </CardTitle>
         <p className="text-sm text-muted-foreground mt-1.5">
-          Follow up the projects of each entity you are part of.
+          Entities with at least one blocked project.
         </p>
       </CardHeader>
 
