@@ -27,6 +27,7 @@ export function MyEntitiesCard() {
   const { user } = useAuth();
   const [rows, setRows] = useState<EntityRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -97,6 +98,8 @@ export function MyEntitiesCard() {
     return () => { cancelled = true; };
   }, [user]);
 
+  const visibleRows = expanded ? rows : rows.slice(0, 3);
+
   if (!loading && rows.length === 0) return null;
 
   return (
@@ -126,7 +129,7 @@ export function MyEntitiesCard() {
             <Skeleton className="h-24 w-full rounded-xl" />
           </>
         ) : (
-          rows.map((e) => (
+          visibleRows.map((e) => (
             <Link
               key={e.orgId}
               to={`/org/${e.orgSlug}?tab=projects`}
@@ -183,6 +186,15 @@ export function MyEntitiesCard() {
               )}
             </Link>
           ))
+        )}
+        {!loading && rows.length > 3 && (
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            className="w-full rounded-xl border border-border bg-card py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {expanded ? "Show less" : `Show all ${rows.length}`}
+          </button>
         )}
       </CardContent>
     </Card>
