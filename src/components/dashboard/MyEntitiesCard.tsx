@@ -85,8 +85,13 @@ export function MyEntitiesCard() {
             : null,
         };
       });
-      // Same rule as "Your projects": only entities with at least one blocked project.
-      setRows(allRows.filter((r) => r.blocked > 0));
+      // Same rule as "Your projects": only entities with at least one blocked project,
+      // ranked by core project track progress, highest first.
+      setRows(
+        allRows
+          .filter((r) => r.blocked > 0)
+          .sort((a, b) => (b.coreTrack?.progress ?? 0) - (a.coreTrack?.progress ?? 0)),
+      );
       setLoading(false);
     })();
     return () => { cancelled = true; };
