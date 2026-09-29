@@ -60,33 +60,33 @@ export function MyEntitiesCard() {
       });
 
       if (cancelled) return;
-      setRows(
-        orgs.map((o) => {
-          const list = byOrg.get(o.id) ?? [];
-          const open = list.filter((p) => p.status !== "done" && (p.progress ?? 0) < 100);
-          const avg = list.length
-            ? Math.round(list.reduce((s, p) => s + (p.progress ?? 0), 0) / list.length)
-            : 0;
-          // Core project track = the project published for the entity itself
-          const core =
-            list.find(
-              (p) => p.name.trim().toLowerCase() === o.name.trim().toLowerCase(),
-            ) ?? null;
-          return {
-            orgId: o.id,
-            orgName: o.name,
-            orgSlug: o.slug,
-            logoUrl: o.logo_url ?? null,
-            total: list.length,
-            active: open.filter((p) => p.status === "active").length,
-            blocked: open.filter((p) => !!p.status_note).length,
-            avgProgress: avg,
-            coreTrack: core
-              ? { name: core.name, progress: core.progress ?? 0, status: core.status }
-              : null,
-          };
-        }),
-      );
+      const allRows = orgs.map((o) => {
+        const list = byOrg.get(o.id) ?? [];
+        const open = list.filter((p) => p.status !== "done" && (p.progress ?? 0) < 100);
+        const avg = list.length
+          ? Math.round(list.reduce((s, p) => s + (p.progress ?? 0), 0) / list.length)
+          : 0;
+        // Core project track = the project published for the entity itself
+        const core =
+          list.find(
+            (p) => p.name.trim().toLowerCase() === o.name.trim().toLowerCase(),
+          ) ?? null;
+        return {
+          orgId: o.id,
+          orgName: o.name,
+          orgSlug: o.slug,
+          logoUrl: o.logo_url ?? null,
+          total: list.length,
+          active: open.filter((p) => p.status === "active").length,
+          blocked: open.filter((p) => !!p.status_note).length,
+          avgProgress: avg,
+          coreTrack: core
+            ? { name: core.name, progress: core.progress ?? 0, status: core.status }
+            : null,
+        };
+      });
+      // Same rule as "Your projects": only entities with at least one blocked project.
+      setRows(allRows.filter((r) => r.blocked > 0));
       setLoading(false);
     })();
     return () => { cancelled = true; };
@@ -110,7 +110,7 @@ export function MyEntitiesCard() {
           )}
         </CardTitle>
         <p className="text-sm text-muted-foreground mt-1.5">
-          Follow up the projects of each entity you are part of.
+          Entities with at least one blocked project.
         </p>
       </CardHeader>
 
