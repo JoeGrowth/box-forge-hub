@@ -24,6 +24,7 @@ export function MyMissionsCard() {
   const { user } = useAuth();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -72,6 +73,8 @@ export function MyMissionsCard() {
     })();
     return () => { cancelled = true; };
   }, [user]);
+
+  const visibleRows = expanded ? rows : rows.slice(0, 3);
 
   if (!loading && rows.length === 0) return null;
 
@@ -123,7 +126,7 @@ export function MyMissionsCard() {
             <Skeleton className="h-20 w-full rounded-xl" />
           </>
         ) : (
-          rows.map((m) => (
+          visibleRows.map((m) => (
             <Link
               key={m.id}
               to={`/declaration?entity=${m.entityId}&mission=${m.id}`}
@@ -155,6 +158,15 @@ export function MyMissionsCard() {
               </div>
             </Link>
           ))
+        )}
+        {!loading && rows.length > 3 && (
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            className="w-full rounded-xl border border-border bg-card py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {expanded ? "Show less" : `Show all ${rows.length}`}
+          </button>
         )}
       </CardContent>
     </Card>

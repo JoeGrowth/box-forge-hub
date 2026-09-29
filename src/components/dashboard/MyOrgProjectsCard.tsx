@@ -35,6 +35,7 @@ export function MyOrgProjectsCard() {
   const { user } = useAuth();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -95,6 +96,8 @@ export function MyOrgProjectsCard() {
     // Highest progress first
     .sort((a, b) => (b.progress ?? 0) - (a.progress ?? 0));
 
+  const visibleRows = expanded ? activeRows : activeRows.slice(0, 3);
+
   if (!loading && activeRows.length === 0) return null;
 
   const activeCount = activeRows.length;
@@ -147,7 +150,7 @@ export function MyOrgProjectsCard() {
             <Skeleton className="h-24 w-full rounded-xl" />
           </>
         ) : (
-          activeRows.map((p) => {
+          visibleRows.map((p) => {
             const meta = STATUS_META[p.status] ?? STATUS_META.planned;
             const initials = p.name
               .split(/\s+/)
@@ -214,6 +217,15 @@ export function MyOrgProjectsCard() {
               </Link>
             );
           })
+        )}
+        {!loading && activeRows.length > 3 && (
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            className="w-full rounded-xl border border-border bg-card py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {expanded ? "Show less" : `Show all ${activeRows.length}`}
+          </button>
         )}
       </CardContent>
     </Card>
