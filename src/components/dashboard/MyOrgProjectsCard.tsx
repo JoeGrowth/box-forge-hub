@@ -110,7 +110,23 @@ export function MyOrgProjectsCard() {
       {/* Accent rail */}
       <div className="h-1 w-full bg-gradient-to-r from-b4-navy via-b4-teal to-b4-coral" />
 
-      <CardHeader className="pb-4">
+      <CardHeader
+        className="pb-4"
+        {...(activeRows.length > 3 && !loading
+          ? {
+              onClick: () => setExpanded((v) => !v),
+              role: "button",
+              "aria-expanded": expanded,
+              tabIndex: 0,
+              onKeyDown: (e: React.KeyboardEvent) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setExpanded((v) => !v);
+                }
+              },
+            }
+          : {})}
+      >
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="min-w-0">
             <CardTitle className="flex items-center gap-2 text-lg">
@@ -120,6 +136,11 @@ export function MyOrgProjectsCard() {
               Your projects
               {!loading && (
                 <Badge variant="secondary" className="ml-1 font-medium">{activeRows.length}</Badge>
+              )}
+              {!loading && activeRows.length > 3 && (
+                <ChevronDown
+                  className={`w-4 h-4 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`}
+                />
               )}
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1.5">
@@ -217,15 +238,6 @@ export function MyOrgProjectsCard() {
               </Link>
             );
           })
-        )}
-        {!loading && activeRows.length > 3 && (
-          <button
-            type="button"
-            onClick={() => setExpanded((v) => !v)}
-            className="w-full rounded-xl border border-border bg-card py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            {expanded ? "Show less" : `Show all ${activeRows.length}`}
-          </button>
         )}
       </CardContent>
     </Card>
