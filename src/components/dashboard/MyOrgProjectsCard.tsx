@@ -83,7 +83,8 @@ export function MyOrgProjectsCard() {
     return () => { cancelled = true; };
   }, [user]);
 
-  const activeRows = rows.filter((r) => r.status === "active" && (r.progress ?? 0) < 100);
+  // Homepage shows only projects that have a "Blocker / where it stands" note.
+  const activeRows = rows.filter((r) => !!r.status_note);
 
   if (!loading && activeRows.length === 0) return null;
 
@@ -110,7 +111,7 @@ export function MyOrgProjectsCard() {
               )}
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1.5">
-              Active projects you can edit across your organizations.
+              Projects with a blocker / where it stands, across your organizations.
             </p>
           </div>
 
