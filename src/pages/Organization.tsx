@@ -177,8 +177,6 @@ export default function OrganizationPage() {
 
   const dailyOpenCount = dailyTasks.filter(t => !t.done).length;
 
-  const tabCount = 8 + (legalDocs.length >= 1 ? 2 : 0);
-  const desktopGrid = tabCount === 10 ? "lg:grid-cols-10" : "lg:grid-cols-8";
 
   const loadOpps = useCallback(async () => {
     if (!org) return;
@@ -411,42 +409,21 @@ export default function OrganizationPage() {
       </div>
 
       <Tabs defaultValue={searchParams.get("tab") || "legal"} className="space-y-4">
-        <TabsList className={cn("mb-2 grid h-auto w-full grid-cols-2 gap-2 p-2 sm:grid-cols-3", desktopGrid)}>
-          <TabsTrigger value="legal" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
-            <Scale className="w-4 h-4 shrink-0" /> Legal ({legalDocs.length})
-          </TabsTrigger>
-          <TabsTrigger value="daily" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
-            <CalendarCheck className="w-4 h-4 shrink-0" /> Operational ({dailyOpenCount})
-          </TabsTrigger>
+        <TabsList className="mb-2 flex h-auto w-full flex-wrap items-center gap-1.5 rounded-xl bg-muted/60 p-1.5">
+          <OrgTab icon={Scale} value="legal" count={legalDocs.length}>Legal</OrgTab>
+          <OrgTab icon={CalendarCheck} value="daily" count={dailyOpenCount}>Operational</OrgTab>
           {legalDocs.length >= 1 && (
             <>
-              <TabsTrigger value="jobs" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
-                <Briefcase className="w-4 h-4 shrink-0" /> Jobs ({jobs.length})
-              </TabsTrigger>
-              <TabsTrigger value="tenders" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
-                <FileText className="w-4 h-4 shrink-0" /> Tenders ({tenders.length})
-              </TabsTrigger>
+              <OrgTab icon={Briefcase} value="jobs" count={jobs.length}>Jobs</OrgTab>
+              <OrgTab icon={FileText} value="tenders" count={tenders.length}>Tenders</OrgTab>
             </>
           )}
-          <TabsTrigger value="distribution" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
-            <PieChart className="w-4 h-4 shrink-0" /> Distribution ({distModelCount})
-          </TabsTrigger>
-          <TabsTrigger value="declaration" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
-            <ClipboardList className="w-4 h-4 shrink-0" /> Declaration ({declarations.length})
-          </TabsTrigger>
-          <TabsTrigger value="projects" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
-            <Rocket className="w-4 h-4 shrink-0" /> Project
-          </TabsTrigger>
-          <TabsTrigger value="journey" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
-            <Lightbulb className="w-4 h-4 shrink-0" /> Product
-          </TabsTrigger>
-
-          <TabsTrigger value="people" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
-            <Heart className="w-4 h-4 shrink-0" /> People
-          </TabsTrigger>
-          <TabsTrigger value="members" className="flex min-h-11 min-w-0 items-center justify-center gap-2 whitespace-normal px-2 py-2 text-center text-xs leading-tight sm:text-sm lg:text-xs">
-            <Users className="w-4 h-4 shrink-0" /> Members ({members.length})
-          </TabsTrigger>
+          <OrgTab icon={PieChart} value="distribution" count={distModelCount}>Distribution</OrgTab>
+          <OrgTab icon={ClipboardList} value="declaration" count={declarations.length}>Declaration</OrgTab>
+          <OrgTab icon={Rocket} value="projects">Project</OrgTab>
+          <OrgTab icon={Lightbulb} value="journey">Product</OrgTab>
+          <OrgTab icon={Heart} value="people">People</OrgTab>
+          <OrgTab icon={Users} value="members" count={members.length}>Members</OrgTab>
         </TabsList>
 
 
