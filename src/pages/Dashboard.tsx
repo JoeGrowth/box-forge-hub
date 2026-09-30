@@ -129,7 +129,11 @@ const Dashboard = () => {
       // Treat "no AI draft ever generated" as accepted so returning users
       // (pre-draft feature) still see their normal dashboard.
       const noDraft = !data?.profile_draft_source;
-      setDraftAccepted(noDraft || Boolean(data?.profile_draft_accepted_at));
+      const accepted = noDraft || Boolean(data?.profile_draft_accepted_at);
+      try {
+        window.localStorage.setItem("b4:draft-accepted", accepted ? "1" : "0");
+      } catch { /* ignore */ }
+      setDraftAccepted(accepted);
     })();
     return () => { alive = false; };
   }, [user]);
