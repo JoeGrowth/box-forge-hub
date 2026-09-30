@@ -34,6 +34,12 @@ export function ManageYourBoxCard() {
   const [pendingAdvisor, setPendingAdvisor] = useState<string[]>([]);
   const [pendingManager, setPendingManager] = useState<string[]>([]);
   const [loaded, setLoaded] = useState(false);
+  // Remember per user when both box responsibilities are confirmed, so the
+  // card doesn't flash a skeleton and then disappear on every visit.
+  const doneKey = user ? `b4:manage-box-done:${user.id}` : null;
+  const cachedDone = (() => {
+    try { return doneKey ? window.localStorage.getItem(doneKey) === "1" : false; } catch { return false; }
+  })();
 
   const [advisorOpen, setAdvisorOpen] = useState(false);
   const [managerOpen, setManagerOpen] = useState(false);
@@ -121,6 +127,13 @@ export function ManageYourBoxCard() {
   const advisorDone = advisorBoxIds.length > 0;
   const managerDone = managedBoxIds.length > 0;
   const progress = Math.round(((advisorDone ? 1 : 0) + (managerDone ? 1 : 0)) / 2 * 100);
+
+  useEffect(() => {
+    if (!loaded || !doneKey) return;
+    try { window.localStorage.setItem(doneKey, advisorDone && managerDone ? "1" : "0"); } catch { /* ignore */ }
+  }, [loaded, doneKey, advisorDone, managerDone]);
+
+  if (!loaded && cachedDone) return null;
 
   if (!loaded) {
     return (
