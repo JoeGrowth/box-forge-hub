@@ -461,6 +461,10 @@ export function DashboardProgress() {
       : []),
   ];
 
+  if (cachedComplete) {
+    return <ManageYourBoxCard />;
+  }
+
   if (!loaded) {
     return (
       <Card>
