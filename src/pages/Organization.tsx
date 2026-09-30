@@ -3,7 +3,7 @@
 // Editor+ can publish jobs and tenders on behalf of the organization.
 // Viewer can browse but not edit.
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, type ReactNode } from "react";
 import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +25,7 @@ import {
   Tabs,
   TabsContent,
   TabsList,
+  TabsTrigger,
 } from "@/components/ui/tabs";
 import {
   Dialog,
