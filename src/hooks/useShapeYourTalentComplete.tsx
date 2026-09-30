@@ -13,13 +13,20 @@ const DEFAULT: ShapeYourTalentCompleteState = {
   shapeYourTalentComplete: false,
 };
 
+const LAST_UID_KEY = "b4:shape-your-talent-complete:last-uid";
+
 const cacheKey = (uid?: string | null) =>
   uid ? `b4:shape-your-talent-complete:${uid}` : null;
 
 const readCached = (uid?: string | null): boolean => {
   try {
-    const key = cacheKey(uid);
-    if (!key || typeof window === "undefined") return false;
+    if (typeof window === "undefined") return false;
+    // Before auth resolves we don't know the user id yet — fall back to the
+    // last known user on this device so returning users see their dashboard
+    // instantly instead of waiting for the full recomputation.
+    const effectiveUid = uid ?? window.localStorage.getItem(LAST_UID_KEY);
+    const key = cacheKey(effectiveUid);
+    if (!key) return false;
     return window.localStorage.getItem(key) === "1";
   } catch {
     return false;
@@ -31,6 +38,7 @@ const writeCached = (uid: string, complete: boolean) => {
     const key = cacheKey(uid);
     if (key && typeof window !== "undefined") {
       window.localStorage.setItem(key, complete ? "1" : "0");
+      window.localStorage.setItem(LAST_UID_KEY, uid);
     }
   } catch {
     /* ignore */

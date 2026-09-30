@@ -67,7 +67,15 @@ const Dashboard = () => {
   const { talentReady, loading: talentLoading } = useTalentReadiness();
   const { progression } = useNextBestActions(user?.id);
   const { shapeYourTalentComplete } = useShapeYourTalentComplete();
-  const [draftAccepted, setDraftAccepted] = useState<boolean | null>(null);
+  // Seed from cache so returning users get their full dashboard on the first
+  // paint instead of waiting for the profiles query below.
+  const [draftAccepted, setDraftAccepted] = useState<boolean | null>(() => {
+    try {
+      return window.localStorage.getItem("b4:draft-accepted") === "1" ? true : null;
+    } catch {
+      return null;
+    }
+  });
   const [allBadgesEarned, setAllBadgesEarned] = useState(false);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -121,7 +129,11 @@ const Dashboard = () => {
       // Treat "no AI draft ever generated" as accepted so returning users
       // (pre-draft feature) still see their normal dashboard.
       const noDraft = !data?.profile_draft_source;
-      setDraftAccepted(noDraft || Boolean(data?.profile_draft_accepted_at));
+      const accepted = noDraft || Boolean(data?.profile_draft_accepted_at);
+      try {
+        window.localStorage.setItem("b4:draft-accepted", accepted ? "1" : "0");
+      } catch { /* ignore */ }
+      setDraftAccepted(accepted);
     })();
     return () => { alive = false; };
   }, [user]);
