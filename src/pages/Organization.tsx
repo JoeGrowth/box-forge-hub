@@ -2594,3 +2594,31 @@ function EditableOrgDescription({
   );
 }
 
+function OrgTab({
+  icon: Icon,
+  value,
+  count,
+  children,
+}: {
+  icon: any;
+  value: string;
+  count?: number;
+  children: ReactNode;
+}) {
+  return (
+    <TabsTrigger
+      value={value}
+      className="inline-flex min-h-9 items-center gap-2 whitespace-nowrap rounded-lg border border-transparent px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-background/70 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[state=active]:border-border data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+    >
+      <Icon className="w-4 h-4 shrink-0 opacity-80" />
+      <span>{children}</span>
+      {typeof count === "number" && (
+        <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold leading-none text-muted-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+          {count}
+        </span>
+      )}
+    </TabsTrigger>
+  );
+}
+
+
