@@ -54,6 +54,10 @@ export function DashboardProgress() {
   const [orgFunded, setOrgFunded] = useState(false);
   const [ventureDone, setVentureDone] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  // Cached completion flag — resolved synchronously from localStorage, so
+  // users who finished all milestones see "Manage your box" on the first
+  // paint with no "Shape your talent" skeleton flash.
+  const { shapeYourTalentComplete: cachedComplete } = useShapeYourTalentComplete();
 
   const fetchProgress = useCallback(async () => {
     if (!user) return;
