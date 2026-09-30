@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -76,7 +76,7 @@ const Dashboard = () => {
       return null;
     }
   });
-  const [allBadgesEarned, setAllBadgesEarned] = useState(false);
+  const [allBadgesEarned, setAllBadgesEarned] = useState<boolean | null>(null);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -138,8 +138,32 @@ const Dashboard = () => {
     return () => { alive = false; };
   }, [user]);
 
-  const stageRank = STAGE_RANK[(progression?.current_state as Stage) ?? "novice"] ?? 0;
-  const isCapable = stageRank >= STAGE_RANK.capable;
+  // Cache the ladder stage and "all badges earned" per user so the cards that
+  // depend on them don't pop in and then vanish after the async queries.
+  const uid = user?.id;
+  const cachedStage = useMemo(() => {
+    try { return uid ? window.localStorage.getItem(`b4:dash-stage:${uid}`) : null; } catch { return null; }
+  }, [uid]);
+  const cachedAllBadges = useMemo(() => {
+    try { return uid ? window.localStorage.getItem(`b4:dash-all-badges:${uid}`) === "1" : false; } catch { return false; }
+  }, [uid]);
+
+  useEffect(() => {
+    if (!uid || !progression?.current_state) return;
+    try { window.localStorage.setItem(`b4:dash-stage:${uid}`, String(progression.current_state)); } catch { /* ignore */ }
+  }, [uid, progression?.current_state]);
+
+  useEffect(() => {
+    if (!uid || allBadgesEarned === null) return;
+    try { window.localStorage.setItem(`b4:dash-all-badges:${uid}`, allBadgesEarned ? "1" : "0"); } catch { /* ignore */ }
+  }, [uid, allBadgesEarned]);
+
+  const effectiveStage = (progression?.current_state as Stage) ?? (cachedStage as Stage | null) ?? "novice";
+  const allBadges = allBadgesEarned ?? cachedAllBadges;
+  const hideGuidance = allBadges;
+
+  const stageRank = STAGE_RANK[effectiveStage] ?? 0;
+  const isCapable = stageRank >= STAGE_RANK.capable || shapeYourTalentComplete;
   const isMonetizing = stageRank >= STAGE_RANK.monetizing;
   const showShapeTalent = draftAccepted === true || isCapable;
   const isFirstLogin = draftAccepted === false && !isCapable;
@@ -181,13 +205,13 @@ const Dashboard = () => {
                     {shapeYourTalentComplete && <MyEntitiesCard />}
                     {shapeYourTalentComplete && <MyMissionsCard />}
                     {isCapable && <CommitmentsPanel />}
-                    {isCapable && !allBadgesEarned && <DashboardOpportunities />}
-                    {isCapable && !allBadgesEarned && <ProgressionPathCard userId={user?.id} />}
+                    {isCapable && !hideGuidance && <DashboardOpportunities />}
+                    {isCapable && !hideGuidance && <ProgressionPathCard userId={user?.id} />}
                   </>
                 )}
               </div>
               <div className="space-y-6 md:space-y-8 min-w-0">
-                {isCapable && !allBadgesEarned && <DashboardNextSteps />}
+                {isCapable && !hideGuidance && <DashboardNextSteps />}
                 <DashboardAchievements onAllEarnedChange={setAllBadgesEarned} />
               </div>
             </div>

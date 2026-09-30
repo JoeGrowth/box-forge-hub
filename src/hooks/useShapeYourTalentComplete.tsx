@@ -51,14 +51,19 @@ const writeCached = (uid: string, complete: boolean) => {
  */
 export function useShapeYourTalentComplete(): ShapeYourTalentCompleteState {
   const { user, loading: authLoading } = useAuth();
-  const { onboardingState } = useOnboarding();
+  const { onboardingState, loading: onboardingLoading } = useOnboarding();
   const [state, setState] = useState<ShapeYourTalentCompleteState>(() => ({
     ...DEFAULT,
     shapeYourTalentComplete: readCached(user?.id),
   }));
 
   const compute = useCallback(async () => {
-    if (authLoading || !user) {
+    // While auth is still resolving, keep the cached value — resetting it to
+    // false here caused "Shape your talent" to flash before "Manage your box".
+    // Also wait for onboarding state: computing without it yields a false
+    // negative that briefly hid the projects/entities/missions cards.
+    if (authLoading || onboardingLoading) return;
+    if (!user) {
       setState({ loading: false, shapeYourTalentComplete: false });
       return;
     }
@@ -208,7 +213,7 @@ export function useShapeYourTalentComplete(): ShapeYourTalentCompleteState {
 
     writeCached(uid, complete);
     setState({ loading: false, shapeYourTalentComplete: complete });
-  }, [authLoading, user, onboardingState]);
+  }, [authLoading, onboardingLoading, user, onboardingState]);
 
   useEffect(() => {
     compute();
