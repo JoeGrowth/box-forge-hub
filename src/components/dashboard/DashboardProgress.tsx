@@ -25,6 +25,7 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
 import { useCallback } from "react";
 import { ManageYourBoxCard } from "@/components/dashboard/ManageYourBoxCard";
+import { useShapeYourTalentComplete } from "@/hooks/useShapeYourTalentComplete";
 
 interface JourneyProgress {
   type: string;
@@ -53,6 +54,10 @@ export function DashboardProgress() {
   const [orgFunded, setOrgFunded] = useState(false);
   const [ventureDone, setVentureDone] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  // Cached completion flag — resolved synchronously from localStorage, so
+  // users who finished all milestones see "Manage your box" on the first
+  // paint with no "Shape your talent" skeleton flash.
+  const { shapeYourTalentComplete: cachedComplete } = useShapeYourTalentComplete();
 
   const fetchProgress = useCallback(async () => {
     if (!user) return;
@@ -455,6 +460,10 @@ export function DashboardProgress() {
         ]
       : []),
   ];
+
+  if (cachedComplete) {
+    return <ManageYourBoxCard />;
+  }
 
   if (!loaded) {
     return (
