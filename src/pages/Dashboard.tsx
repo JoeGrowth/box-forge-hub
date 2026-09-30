@@ -76,7 +76,7 @@ const Dashboard = () => {
       return null;
     }
   });
-  const [allBadgesEarned, setAllBadgesEarned] = useState(false);
+  const [allBadgesEarned, setAllBadgesEarned] = useState<boolean | null>(null);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -160,9 +160,7 @@ const Dashboard = () => {
 
   const effectiveStage = (progression?.current_state as Stage) ?? (cachedStage as Stage | null) ?? "novice";
   const allBadges = allBadgesEarned ?? cachedAllBadges;
-  // Users who finished "Shape your talent" have all milestones — hide the
-  // generic guidance cards immediately instead of waiting on badges.
-  const hideGuidance = allBadges || shapeYourTalentComplete;
+  const hideGuidance = allBadges;
 
   const stageRank = STAGE_RANK[effectiveStage] ?? 0;
   const isCapable = stageRank >= STAGE_RANK.capable || shapeYourTalentComplete;
@@ -207,13 +205,13 @@ const Dashboard = () => {
                     {shapeYourTalentComplete && <MyEntitiesCard />}
                     {shapeYourTalentComplete && <MyMissionsCard />}
                     {isCapable && <CommitmentsPanel />}
-                    {isCapable && !allBadgesEarned && <DashboardOpportunities />}
-                    {isCapable && !allBadgesEarned && <ProgressionPathCard userId={user?.id} />}
+                    {isCapable && !hideGuidance && <DashboardOpportunities />}
+                    {isCapable && !hideGuidance && <ProgressionPathCard userId={user?.id} />}
                   </>
                 )}
               </div>
               <div className="space-y-6 md:space-y-8 min-w-0">
-                {isCapable && !allBadgesEarned && <DashboardNextSteps />}
+                {isCapable && !hideGuidance && <DashboardNextSteps />}
                 <DashboardAchievements onAllEarnedChange={setAllBadgesEarned} />
               </div>
             </div>
