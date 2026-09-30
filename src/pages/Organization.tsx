@@ -409,7 +409,7 @@ export default function OrganizationPage() {
       </div>
 
       <Tabs defaultValue={searchParams.get("tab") || "legal"} className="space-y-4">
-        <TabsList className="mb-2 flex h-auto w-full flex-wrap items-center gap-1.5 rounded-xl bg-muted/60 p-1.5">
+        <TabsList className="mb-2 flex h-auto w-full flex-wrap items-center gap-x-1.5 gap-y-1.5 rounded-xl bg-muted/60 p-1.5">
           <OrgTab icon={Scale} value="legal" count={legalDocs.length}>Legal</OrgTab>
           <OrgTab icon={CalendarCheck} value="daily" count={dailyOpenCount}>Operational</OrgTab>
           {legalDocs.length >= 1 && (
@@ -422,7 +422,8 @@ export default function OrganizationPage() {
           <OrgTab icon={ClipboardList} value="declaration" count={declarations.length}>Declaration</OrgTab>
           <OrgTab icon={Rocket} value="projects">Project</OrgTab>
           <OrgTab icon={Lightbulb} value="journey">Product</OrgTab>
-          <OrgTab icon={Heart} value="people">People</OrgTab>
+          <div aria-hidden className="mx-1 hidden h-6 w-px self-center bg-border md:block" />
+          <OrgTab icon={Heart} value="people" className="ml-auto">People</OrgTab>
           <OrgTab icon={Users} value="members" count={members.length}>Members</OrgTab>
         </TabsList>
 
@@ -2598,17 +2599,22 @@ function OrgTab({
   icon: Icon,
   value,
   count,
+  className,
   children,
 }: {
   icon: any;
   value: string;
   count?: number;
+  className?: string;
   children: ReactNode;
 }) {
   return (
     <TabsTrigger
       value={value}
-      className="inline-flex min-h-9 items-center gap-2 whitespace-nowrap rounded-lg border border-transparent px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-background/70 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[state=active]:border-border data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+      className={cn(
+        "inline-flex min-h-9 items-center gap-2 whitespace-nowrap rounded-lg border border-transparent px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-background/70 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[state=active]:border-border data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm",
+        className,
+      )}
     >
       <Icon className="w-4 h-4 shrink-0 opacity-80" />
       <span>{children}</span>
