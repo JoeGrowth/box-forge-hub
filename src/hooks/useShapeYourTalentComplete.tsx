@@ -58,7 +58,10 @@ export function useShapeYourTalentComplete(): ShapeYourTalentCompleteState {
   }));
 
   const compute = useCallback(async () => {
-    if (authLoading || !user) {
+    // While auth is still resolving, keep the cached value — resetting it to
+    // false here caused "Shape your talent" to flash before "Manage your box".
+    if (authLoading) return;
+    if (!user) {
       setState({ loading: false, shapeYourTalentComplete: false });
       return;
     }

@@ -138,8 +138,34 @@ const Dashboard = () => {
     return () => { alive = false; };
   }, [user]);
 
-  const stageRank = STAGE_RANK[(progression?.current_state as Stage) ?? "novice"] ?? 0;
-  const isCapable = stageRank >= STAGE_RANK.capable;
+  // Cache the ladder stage and "all badges earned" per user so the cards that
+  // depend on them don't pop in and then vanish after the async queries.
+  const uid = user?.id;
+  const cachedStage = useMemo(() => {
+    try { return uid ? window.localStorage.getItem(`b4:dash-stage:${uid}`) : null; } catch { return null; }
+  }, [uid]);
+  const cachedAllBadges = useMemo(() => {
+    try { return uid ? window.localStorage.getItem(`b4:dash-all-badges:${uid}`) === "1" : false; } catch { return false; }
+  }, [uid]);
+
+  useEffect(() => {
+    if (!uid || !progression?.current_state) return;
+    try { window.localStorage.setItem(`b4:dash-stage:${uid}`, String(progression.current_state)); } catch { /* ignore */ }
+  }, [uid, progression?.current_state]);
+
+  useEffect(() => {
+    if (!uid || allBadgesEarned === null) return;
+    try { window.localStorage.setItem(`b4:dash-all-badges:${uid}`, allBadgesEarned ? "1" : "0"); } catch { /* ignore */ }
+  }, [uid, allBadgesEarned]);
+
+  const effectiveStage = (progression?.current_state as Stage) ?? (cachedStage as Stage | null) ?? "novice";
+  const allBadges = allBadgesEarned ?? cachedAllBadges;
+  // Users who finished "Shape your talent" have all milestones — hide the
+  // generic guidance cards immediately instead of waiting on badges.
+  const hideGuidance = allBadges || shapeYourTalentComplete;
+
+  const stageRank = STAGE_RANK[effectiveStage] ?? 0;
+  const isCapable = stageRank >= STAGE_RANK.capable || shapeYourTalentComplete;
   const isMonetizing = stageRank >= STAGE_RANK.monetizing;
   const showShapeTalent = draftAccepted === true || isCapable;
   const isFirstLogin = draftAccepted === false && !isCapable;
