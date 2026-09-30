@@ -25,6 +25,7 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { supabase } from "@/integrations/supabase/client";
 import { useCallback } from "react";
 import { ManageYourBoxCard } from "@/components/dashboard/ManageYourBoxCard";
+import { useShapeYourTalentComplete } from "@/hooks/useShapeYourTalentComplete";
 
 interface JourneyProgress {
   type: string;

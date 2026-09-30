@@ -176,7 +176,7 @@ const Dashboard = () => {
                   <AIProfileDraftCard />
                 ) : (
                   <>
-                    {showShapeTalent && !shapeYourTalentComplete && <DashboardProgress />}
+                    {showShapeTalent && <DashboardProgress />}
                     {shapeYourTalentComplete && <MyOrgProjectsCard />}
                     {shapeYourTalentComplete && <MyEntitiesCard />}
                     {shapeYourTalentComplete && <MyMissionsCard />}
