@@ -31,7 +31,14 @@ type OrgProject = {
   target_date: string | null;
   progress: number;
   status_note: string | null;
+  project_kind: string;
 };
+
+const KINDS = [
+  { value: "internal", label: "Internal", hint: "Helps build the entity or gets it ready to be sold as a product", icon: Building2 },
+  { value: "external", label: "External", hint: "Client delivery", icon: Send },
+];
+const kindMeta = (k: string) => KINDS.find((x) => x.value === k) ?? KINDS[0];
 
 const STATUSES = [
   { value: "planned", label: "Planned", className: "bg-muted text-muted-foreground" },
