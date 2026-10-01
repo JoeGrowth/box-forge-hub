@@ -35,7 +35,7 @@ export function MyOrgProjectsCard() {
   const { user } = useAuth();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,7 +96,7 @@ export function MyOrgProjectsCard() {
     // Highest progress first
     .sort((a, b) => (b.progress ?? 0) - (a.progress ?? 0));
 
-  const visibleRows = expanded ? activeRows : activeRows.slice(0, 3);
+  const visibleRows = activeRows;
 
   if (!loading && activeRows.length === 0) return null;
 
@@ -164,6 +164,7 @@ export function MyOrgProjectsCard() {
         </div>
       </CardHeader>
 
+      {(activeRows.length <= 3 || expanded) && (
       <CardContent className="space-y-3">
         {loading ? (
           <>
@@ -240,6 +241,7 @@ export function MyOrgProjectsCard() {
           })
         )}
       </CardContent>
+      )}
     </Card>
   );
 }

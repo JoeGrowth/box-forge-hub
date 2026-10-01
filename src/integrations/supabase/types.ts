@@ -4346,6 +4346,7 @@ export type Database = {
           organization_id: string
           position: number
           progress: number
+          project_kind: string
           start_date: string | null
           status: string
           status_note: string | null
@@ -4362,6 +4363,7 @@ export type Database = {
           organization_id: string
           position?: number
           progress?: number
+          project_kind?: string
           start_date?: string | null
           status?: string
           status_note?: string | null
@@ -4378,6 +4380,7 @@ export type Database = {
           organization_id?: string
           position?: number
           progress?: number
+          project_kind?: string
           start_date?: string | null
           status?: string
           status_note?: string | null
