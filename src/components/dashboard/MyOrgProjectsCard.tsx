@@ -241,6 +241,7 @@ export function MyOrgProjectsCard() {
           })
         )}
       </CardContent>
+      )}
     </Card>
   );
 }

@@ -27,7 +27,7 @@ export function MyEntitiesCard() {
   const { user } = useAuth();
   const [rows, setRows] = useState<EntityRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -98,7 +98,7 @@ export function MyEntitiesCard() {
     return () => { cancelled = true; };
   }, [user]);
 
-  const visibleRows = expanded ? rows : rows.slice(0, 3);
+  const visibleRows = rows;
 
   if (!loading && rows.length === 0) return null;
 
@@ -143,6 +143,7 @@ export function MyEntitiesCard() {
         </p>
       </CardHeader>
 
+      {(rows.length <= 3 || expanded) && (
       <CardContent className="space-y-3">
         {loading ? (
           <>
@@ -209,6 +210,7 @@ export function MyEntitiesCard() {
           ))
         )}
       </CardContent>
+      )}
     </Card>
   );
 }
