@@ -1,4 +1,4 @@
-// Project — manage internal projects of an organization.
+// Project — manage internal projects (build the entity / ready to be sold as product) and external projects (deliveries).
 import { useCallback, useEffect, useState, type MouseEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Pencil, Trash2, Rocket, CalendarDays, User, Loader2, AlertTriangle, Archive, ChevronDown, ChevronUp, RotateCcw } from "lucide-react";
+import { Plus, Pencil, Trash2, Rocket, CalendarDays, User, Loader2, AlertTriangle, Archive, ChevronDown, ChevronUp, RotateCcw, Building2, Send } from "lucide-react";
 
 type TalentCandidate = { user_id: string; full_name: string | null; avatar_url: string | null };
 
@@ -31,7 +31,14 @@ type OrgProject = {
   target_date: string | null;
   progress: number;
   status_note: string | null;
+  project_kind: string;
 };
+
+const KINDS = [
+  { value: "internal", label: "Internal", hint: "Helps build the entity or gets it ready to be sold as a product", icon: Building2 },
+  { value: "external", label: "External", hint: "Delivered to a client", icon: Send },
+];
+const kindMeta = (k: string) => KINDS.find((x) => x.value === k) ?? KINDS[0];
 
 const STATUSES = [
   { value: "planned", label: "Planned", className: "bg-muted text-muted-foreground" },
@@ -44,6 +51,7 @@ const statusMeta = (s: string) => STATUSES.find((x) => x.value === s) ?? STATUSE
 const emptyDraft = {
   name: "", description: "", status: "planned", lead: "",
   start_date: "", target_date: "", progress: 0, status_note: "",
+  project_kind: "internal",
 };
 
 export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: string; orgName?: string; canEdit: boolean; userId?: string }) {
@@ -101,6 +109,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
       target_date: p.target_date ?? "",
       progress: p.progress ?? 0,
       status_note: p.status_note ?? "",
+      project_kind: p.project_kind ?? "internal",
     });
     setOpen(true);
   };
@@ -118,6 +127,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
       target_date: draft.target_date || null,
       progress: progressValue,
       status_note: draft.status_note.trim() || null,
+      project_kind: draft.project_kind === "external" ? "external" : "internal",
     };
     const { error } = editing
       ? await supabase.from("organization_projects" as any).update(payload).eq("id", editing.id)
@@ -163,6 +173,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
         description: `Core project track for ${orgName}.`,
         status: "active",
         progress: 0,
+        project_kind: "internal",
         created_by: userId ?? null,
       });
       if (error) {
@@ -192,12 +203,69 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
   const counts = STATUSES.map((s) => ({ ...s, count: projects.filter((p) => p.status === s.value).length }));
   const hasOrgProject = !!orgName && projects.some((p) => p.name.trim().toLowerCase() === orgName.trim().toLowerCase());
 
+  const renderCard = (p: OrgProject) => {
+    const meta = statusMeta(p.status);
+    return (
+      <div key={p.id} className="rounded-xl border border-border bg-card p-4">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h4 className="font-semibold text-foreground truncate">{p.name}</h4>
+              <Badge variant="outline" className={meta.className}>{meta.label}</Badge>
+            </div>
+            {p.description && <p className="text-sm text-muted-foreground mt-1">{p.description}</p>}
+            <div className="flex items-center gap-4 flex-wrap mt-2 text-xs text-muted-foreground">
+              {p.lead && <span className="flex items-center gap-1"><User className="w-3 h-3" /> {p.lead}</span>}
+              {(p.start_date || p.target_date) && (
+                <span className="flex items-center gap-1">
+                  <CalendarDays className="w-3 h-3" />
+                  {p.start_date || "—"} → {p.target_date || "—"}
+                </span>
+              )}
+             </div>
+             {p.status_note && (
+               <div className="mt-2 flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1.5 text-xs text-amber-700 dark:text-amber-400">
+                 <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                 <span>{p.status_note}</span>
+               </div>
+             )}
+           </div>
+          {canEdit && (
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" onClick={() => openEdit(p)} title="Edit project">
+                <Pencil className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => remove(p)} title="Delete project">
+                <Trash2 className="w-4 h-4 text-destructive" />
+              </Button>
+            </div>
+          )}
+        </div>
+        <div className="mt-3">
+          <div className="flex justify-between text-xs text-muted-foreground mb-1">
+            <span>Progress{canEdit && " · click the bar to update"}</span><span>{p.progress}%</span>
+          </div>
+          <div
+            onClick={canEdit ? (e) => handleBarInteract(e, p) : undefined}
+            className={canEdit ? "cursor-pointer group" : undefined}
+            title={canEdit ? "Click to set progress" : undefined}
+          >
+            <Progress
+              value={p.progress}
+              className={`h-2 pointer-events-none ${canEdit ? "group-hover:h-3 transition-all" : ""}`}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 className="text-lg font-semibold text-foreground">Project</h3>
-          <p className="text-sm text-muted-foreground">Projects run inside this organization, with status and progress.</p>
+          <p className="text-sm text-muted-foreground">Internal projects build the entity or get it ready to be sold as a product. External projects are client deliveries.</p>
         </div>
         {canEdit && (
           <Dialog open={open} onOpenChange={setOpen}>
@@ -214,6 +282,16 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                 <div>
                   <Label>Description</Label>
                   <Textarea value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} placeholder="Scope, objective, expected outcome" />
+                </div>
+                <div>
+                  <Label>Type</Label>
+                  <Select value={draft.project_kind} onValueChange={(v) => setDraft({ ...draft, project_kind: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {KINDS.map((k) => <SelectItem key={k.value} value={k.value}>{k.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">{kindMeta(draft.project_kind).hint}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -323,63 +401,23 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {openProjects.length === 0 && (
-            <p className="text-sm text-muted-foreground">All projects are finished — see the archive below.</p>
-          )}
-          {openProjects.map((p) => {
-            const meta = statusMeta(p.status);
+        <div className="space-y-6">
+          {KINDS.map((kind) => {
+            const items = openProjects.filter((p) => (p.project_kind ?? "internal") === kind.value);
+            const KindIcon = kind.icon;
             return (
-              <div key={p.id} className="rounded-xl border border-border bg-card p-4">
-                <div className="flex items-start justify-between gap-3 flex-wrap">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h4 className="font-semibold text-foreground truncate">{p.name}</h4>
-                      <Badge variant="outline" className={meta.className}>{meta.label}</Badge>
-                    </div>
-                    {p.description && <p className="text-sm text-muted-foreground mt-1">{p.description}</p>}
-                    <div className="flex items-center gap-4 flex-wrap mt-2 text-xs text-muted-foreground">
-                      {p.lead && <span className="flex items-center gap-1"><User className="w-3 h-3" /> {p.lead}</span>}
-                      {(p.start_date || p.target_date) && (
-                        <span className="flex items-center gap-1">
-                          <CalendarDays className="w-3 h-3" />
-                          {p.start_date || "—"} → {p.target_date || "—"}
-                        </span>
-                      )}
-                     </div>
-                     {p.status_note && (
-                       <div className="mt-2 flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1.5 text-xs text-amber-700 dark:text-amber-400">
-                         <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-                         <span>{p.status_note}</span>
-                       </div>
-                     )}
-                   </div>
-                  {canEdit && (
-                    <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => openEdit(p)} title="Edit project">
-                        <Pencil className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => remove(p)} title="Delete project">
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                      </Button>
-                    </div>
-                  )}
+              <div key={kind.value} className="space-y-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <KindIcon className="w-4 h-4 text-muted-foreground" />
+                  <h4 className="text-sm font-semibold text-foreground">{kind.label} projects</h4>
+                  <span className="text-xs text-muted-foreground">· {kind.hint}</span>
+                  <Badge variant="outline" className="ml-auto">{items.length}</Badge>
                 </div>
-                <div className="mt-3">
-                  <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                    <span>Progress{canEdit && " · click the bar to update"}</span><span>{p.progress}%</span>
-                  </div>
-                  <div
-                    onClick={canEdit ? (e) => handleBarInteract(e, p) : undefined}
-                    className={canEdit ? "cursor-pointer group" : undefined}
-                    title={canEdit ? "Click to set progress" : undefined}
-                  >
-                    <Progress
-                      value={p.progress}
-                      className={`h-2 pointer-events-none ${canEdit ? "group-hover:h-3 transition-all" : ""}`}
-                    />
-                  </div>
-                </div>
+                {items.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No {kind.label.toLowerCase()} projects yet.</p>
+                ) : (
+                  items.map(renderCard)
+                )}
               </div>
             );
           })}
@@ -404,10 +442,15 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
           </button>
           {showArchive && (
             <div className="px-4 pb-4 space-y-2">
-              {archivedProjects.map((p) => (
+              {archivedProjects.map((p) => {
+                const km = kindMeta(p.project_kind);
+                return (
                 <div key={p.id} className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-3 py-2">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{p.name}</p>
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {p.name}
+                      <Badge variant="outline" className="ml-2 text-[10px] px-1.5 py-0">{km.label}</Badge>
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       Closed at {p.progress}%{p.target_date ? ` · ${p.target_date}` : ""}{p.lead ? ` · ${p.lead}` : ""}
                     </p>
@@ -423,7 +466,8 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                     </div>
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
