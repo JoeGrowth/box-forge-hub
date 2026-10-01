@@ -102,6 +102,12 @@ export function MyEntitiesCard() {
 
   if (!loading && rows.length === 0) return null;
 
+  const blockedTotal = rows.reduce((s, e) => s + e.blocked, 0);
+  const coreRows = rows.filter((e) => e.coreTrack);
+  const avgCore = coreRows.length
+    ? Math.round(coreRows.reduce((s, e) => s + (e.coreTrack?.progress ?? 0), 0) / coreRows.length)
+    : 0;
+
   return (
     <Card className="overflow-hidden border-border/70">
       {/* Accent rail */}
@@ -124,23 +130,41 @@ export function MyEntitiesCard() {
             }
           : {})}
       >
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary">
-            <Building2 className="w-4 h-4" />
-          </span>
-          Your entities
-          {!loading && (
-            <Badge variant="secondary" className="ml-1 font-medium">{rows.length}</Badge>
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="min-w-0">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary">
+                <Building2 className="w-4 h-4" />
+              </span>
+              Your entities
+              {!loading && (
+                <Badge variant="secondary" className="ml-1 font-medium">{rows.length}</Badge>
+              )}
+              {!loading && rows.length > 3 && (
+                <ChevronDown
+                  className={`w-4 h-4 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`}
+                />
+              )}
+            </CardTitle>
+            <p className="text-sm text-muted-foreground mt-1.5">
+              Entities with at least one blocked project.
+            </p>
+          </div>
+
+          {!loading && rows.length > 0 && (
+            <div className="flex items-center gap-4 text-right shrink-0">
+              <div>
+                <p className="text-lg font-semibold leading-none text-foreground">{blockedTotal}</p>
+                <p className="text-[11px] uppercase tracking-wide text-muted-foreground mt-1">Blocked</p>
+              </div>
+              <div className="h-8 w-px bg-border" />
+              <div>
+                <p className="text-lg font-semibold leading-none text-foreground">{avgCore}%</p>
+                <p className="text-[11px] uppercase tracking-wide text-muted-foreground mt-1">Avg</p>
+              </div>
+            </div>
           )}
-          {!loading && rows.length > 3 && (
-            <ChevronDown
-              className={`w-4 h-4 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`}
-            />
-          )}
-        </CardTitle>
-        <p className="text-sm text-muted-foreground mt-1.5">
-          Entities with at least one blocked project.
-        </p>
+        </div>
       </CardHeader>
 
       {(rows.length <= 3 || expanded) && (
