@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { FinancialAudit } from "@/components/earnings/FinancialAudit";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -557,6 +558,7 @@ export default function Earnings() {
               </Card>
             ))
           )}
+          <FinancialAudit userId={user?.id} />
         </div>
       </PageTransition>
       <Footer />
