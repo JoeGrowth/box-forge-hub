@@ -174,17 +174,25 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
       )
       .subscribe();
 
-    const onVisible = () => {
-      if (document.visibilityState === "visible") fetchOnboardingData();
+    // Throttled refetch: focus + visibilitychange fire together, and realtime
+    // already pushes changes, so refetch at most once every 30s.
+    let lastFetch = Date.now();
+    const throttled = () => {
+      if (Date.now() - lastFetch < 30000) return;
+      lastFetch = Date.now();
+      fetchOnboardingData();
     };
-    const onFocus = () => fetchOnboardingData();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") throttled();
+    };
+    const onFocus = () => throttled();
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("focus", onFocus);
 
-    // Safety-net poll every 60s to catch any missed realtime events.
+    // Safety-net poll every 5 min to catch any missed realtime events.
     const interval = window.setInterval(() => {
-      if (document.visibilityState === "visible") fetchOnboardingData();
-    }, 60000);
+      if (document.visibilityState === "visible") throttled();
+    }, 300000);
 
     return () => {
       supabase.removeChannel(channel);
