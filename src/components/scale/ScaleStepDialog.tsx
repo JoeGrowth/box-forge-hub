@@ -182,6 +182,7 @@ export const ScaleStepDialog = ({ open, onOpenChange, stepNumber, onComplete }: 
   const [completedMissions, setCompletedMissions] = useState<ConsultantOpportunity[]>([]);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingDataRef = useRef<Record<number, PhaseData>>({});
+  const lastSavedRef = useRef<Record<number, string>>({});
 
   const relevantPhases = STEP_TO_PHASES[stepNumber];
   const phasesConfig = PHASES.filter((p) => relevantPhases.includes(p.id));
@@ -268,6 +269,7 @@ export const ScaleStepDialog = ({ open, onOpenChange, stepNumber, onComplete }: 
     responses?.forEach((response) => {
       const phaseResponses = (response.responses as PhaseData) || {};
       dataMap[response.phase_number] = phaseResponses;
+      lastSavedRef.current[response.phase_number] = JSON.stringify(phaseResponses);
       if (response.is_completed) {
         completed.push(response.phase_number);
       }
@@ -302,6 +304,12 @@ export const ScaleStepDialog = ({ open, onOpenChange, stepNumber, onComplete }: 
             });
           })();
 
+          // Skip phases whose data hasn't changed since the last save —
+          // previously every save rewrote every phase, hammering the database.
+          const snapshot = JSON.stringify(currentData);
+          if (lastSavedRef.current[phase.id] === snapshot) continue;
+          if (Object.keys(currentData).length === 0 && lastSavedRef.current[phase.id] === undefined) continue;
+
           const { data: existingResponse } = await supabase
             .from("journey_phase_responses")
             .select("id")
@@ -330,6 +338,7 @@ export const ScaleStepDialog = ({ open, onOpenChange, stepNumber, onComplete }: 
               completed_at: allTasksComplete ? new Date().toISOString() : null,
             });
           }
+          lastSavedRef.current[phase.id] = snapshot;
 
           if (allTasksComplete && !completedPhases.includes(phase.id)) {
             setCompletedPhases((prev) => [...prev, phase.id]);
@@ -344,6 +353,9 @@ export const ScaleStepDialog = ({ open, onOpenChange, stepNumber, onComplete }: 
     [user, journeyId, phasesConfig, completedPhases],
   );
 
+  const autoSaveRef = useRef(autoSave);
+  autoSaveRef.current = autoSave;
+
   // Debounced save trigger
   const triggerAutoSave = useCallback(
     (newData: Record<number, PhaseData>) => {
@@ -354,24 +366,25 @@ export const ScaleStepDialog = ({ open, onOpenChange, stepNumber, onComplete }: 
       }
 
       saveTimeoutRef.current = setTimeout(() => {
-        autoSave(pendingDataRef.current);
-      }, 1000); // 1 second debounce
+        saveTimeoutRef.current = null;
+        autoSaveRef.current(pendingDataRef.current);
+      }, 2000);
     },
-    [autoSave],
+    [],
   );
 
-  // Cleanup timeout on unmount
+  // Flush a pending save only on real unmount (not on every re-render).
   useEffect(() => {
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
-        // Save any pending data on unmount
+        saveTimeoutRef.current = null;
         if (Object.keys(pendingDataRef.current).length > 0) {
-          autoSave(pendingDataRef.current);
+          autoSaveRef.current(pendingDataRef.current);
         }
       }
     };
-  }, [autoSave]);
+  }, []);
 
   const handleInputChange = (phaseId: number, taskId: string, value: string | boolean) => {
     setPhaseData((prev) => {
