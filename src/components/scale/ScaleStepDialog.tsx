@@ -182,6 +182,7 @@ export const ScaleStepDialog = ({ open, onOpenChange, stepNumber, onComplete }: 
   const [completedMissions, setCompletedMissions] = useState<ConsultantOpportunity[]>([]);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingDataRef = useRef<Record<number, PhaseData>>({});
+  const lastSavedRef = useRef<Record<number, string>>({});
 
   const relevantPhases = STEP_TO_PHASES[stepNumber];
   const phasesConfig = PHASES.filter((p) => relevantPhases.includes(p.id));
@@ -268,6 +269,7 @@ export const ScaleStepDialog = ({ open, onOpenChange, stepNumber, onComplete }: 
     responses?.forEach((response) => {
       const phaseResponses = (response.responses as PhaseData) || {};
       dataMap[response.phase_number] = phaseResponses;
+      lastSavedRef.current[response.phase_number] = JSON.stringify(phaseResponses);
       if (response.is_completed) {
         completed.push(response.phase_number);
       }
