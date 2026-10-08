@@ -59,8 +59,17 @@ const Auth = () => {
     setMode(routeMode);
   }, [routeMode]);
 
+  // Fallback: never let a slow/hung onboarding fetch trap the user on
+  // "Signing in...". After 4s we proceed with whatever state we have.
+  const [onboardingTimedOut, setOnboardingTimedOut] = useState(false);
   useEffect(() => {
-    if (user && !onboardingLoading) {
+    if (!user || !onboardingLoading) return;
+    const t = window.setTimeout(() => setOnboardingTimedOut(true), 4000);
+    return () => window.clearTimeout(t);
+  }, [user, onboardingLoading]);
+
+  useEffect(() => {
+    if (user && (!onboardingLoading || onboardingTimedOut)) {
       // Fresh signup → compressed onboarding (P0.6 cold-start funnel)
       if (justSignedUp) {
         navigate("/onboarding", { replace: true });

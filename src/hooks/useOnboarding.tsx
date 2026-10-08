@@ -147,6 +147,14 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user, authLoading]);
 
+  // Safety net: if a fetch hangs (network stall), never leave `loading`
+  // true forever — downstream redirects (e.g. post-login) depend on it.
+  useEffect(() => {
+    if (!loading) return;
+    const t = window.setTimeout(() => setLoading(false), 8000);
+    return () => window.clearTimeout(t);
+  }, [loading]);
+
   // Realtime + focus/visibility refetch so admin-side updates (e.g. approval)
   // become visible without requiring a full page reload.
   useEffect(() => {
