@@ -87,12 +87,18 @@ export function MyEntitiesCard() {
             : null,
         };
       });
-      // Same rule as "Your projects": only entities with at least one blocked project,
-      // ranked by core project track progress, highest first.
+      // Same rule as "Your projects": only entities with at least one blocked project.
+      // Entities with no picture come first, then those with a picture;
+      // within each group, ranked by core project track progress, highest first.
       setRows(
         allRows
           .filter((r) => r.blocked > 0)
-          .sort((a, b) => (b.coreTrack?.progress ?? 0) - (a.coreTrack?.progress ?? 0)),
+          .sort((a, b) => {
+            const aHasLogo = a.logoUrl ? 1 : 0;
+            const bHasLogo = b.logoUrl ? 1 : 0;
+            if (aHasLogo !== bHasLogo) return aHasLogo - bHasLogo;
+            return (b.coreTrack?.progress ?? 0) - (a.coreTrack?.progress ?? 0);
+          }),
       );
       setLoading(false);
     })();
