@@ -201,8 +201,8 @@ const Dashboard = () => {
                 ) : (
                   <>
                     {showShapeTalent && <DashboardProgress />}
-                    {shapeYourTalentComplete && <MyOrgProjectsCard />}
                     {shapeYourTalentComplete && <MyEntitiesCard />}
+                    {shapeYourTalentComplete && <MyOrgProjectsCard />}
                     {shapeYourTalentComplete && <MyMissionsCard />}
                     {isCapable && <CommitmentsPanel />}
                     {isCapable && !hideGuidance && <DashboardOpportunities />}
