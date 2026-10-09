@@ -20,6 +20,7 @@ type Row = {
   target_date: string | null;
   progress: number;
   status_note: string | null;
+  kind: string | null;
   orgName: string;
   orgSlug: string;
 };
@@ -35,7 +36,8 @@ export function MyOrgProjectsCard() {
   const { user } = useAuth();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState(true);
+  // Cards open only when the user clicks the header — closed by default.
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -75,6 +77,7 @@ export function MyOrgProjectsCard() {
           target_date: p.target_date,
           progress: p.progress ?? 0,
           status_note: p.status_note,
+          kind: p.project_kind ?? null,
           orgName: byId.get(p.organization_id)?.name ?? "",
           orgSlug: byId.get(p.organization_id)?.slug ?? "",
         })),
@@ -111,8 +114,8 @@ export function MyOrgProjectsCard() {
       <div className="h-1 w-full bg-gradient-to-r from-b4-navy via-b4-teal to-b4-coral" />
 
       <CardHeader
-        className={`pb-4 ${activeRows.length > 3 && !loading ? "cursor-pointer select-none hover:bg-muted/30 transition-colors" : ""}`}
-        {...(activeRows.length > 3 && !loading
+        className={`pb-4 ${!loading ? "cursor-pointer select-none hover:bg-muted/30 transition-colors" : ""}`}
+        {...(!loading
           ? {
               onClick: () => setExpanded((v) => !v),
               role: "button",
@@ -137,7 +140,7 @@ export function MyOrgProjectsCard() {
               {!loading && (
                 <Badge variant="secondary" className="ml-1 font-medium">{activeRows.length}</Badge>
               )}
-              {!loading && activeRows.length > 3 && (
+              {!loading && activeRows.length > 0 && (
                 <ChevronDown
                   className={`w-4 h-4 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`}
                 />
@@ -164,7 +167,7 @@ export function MyOrgProjectsCard() {
         </div>
       </CardHeader>
 
-      {(activeRows.length <= 3 || expanded) && (
+      {expanded && (
       <CardContent className="space-y-3">
         {loading ? (
           <>
@@ -200,6 +203,16 @@ export function MyOrgProjectsCard() {
                         <p className="text-xs text-muted-foreground truncate mt-0.5">{p.orgName}</p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
+                        <Badge
+                          variant="outline"
+                          className={
+                            p.kind === "external"
+                              ? "bg-b4-teal/10 text-b4-teal border-b4-teal/30"
+                              : "bg-muted text-muted-foreground"
+                          }
+                        >
+                          {p.kind === "external" ? "External" : "Internal"}
+                        </Badge>
                         <Badge variant="outline" className={meta.className}>{meta.label}</Badge>
                         <ArrowRight className="w-4 h-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
                       </div>
