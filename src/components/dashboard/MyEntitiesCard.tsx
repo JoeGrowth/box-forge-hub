@@ -27,7 +27,8 @@ export function MyEntitiesCard() {
   const { user } = useAuth();
   const [rows, setRows] = useState<EntityRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState(true);
+  // Cards open only when the user clicks the header — closed by default.
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -114,8 +115,8 @@ export function MyEntitiesCard() {
       <div className="h-1 w-full bg-gradient-to-r from-b4-navy via-b4-teal to-b4-coral" />
 
       <CardHeader
-        className={`pb-4 ${rows.length > 3 && !loading ? "cursor-pointer select-none hover:bg-muted/30 transition-colors" : ""}`}
-        {...(rows.length > 3 && !loading
+        className={`pb-4 ${!loading ? "cursor-pointer select-none hover:bg-muted/30 transition-colors" : ""}`}
+        {...(!loading
           ? {
               onClick: () => setExpanded((v) => !v),
               role: "button",
@@ -140,7 +141,7 @@ export function MyEntitiesCard() {
               {!loading && (
                 <Badge variant="secondary" className="ml-1 font-medium">{rows.length}</Badge>
               )}
-              {!loading && rows.length > 3 && (
+              {!loading && rows.length > 0 && (
                 <ChevronDown
                   className={`w-4 h-4 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`}
                 />
@@ -167,7 +168,7 @@ export function MyEntitiesCard() {
         </div>
       </CardHeader>
 
-      {(rows.length <= 3 || expanded) && (
+      {expanded && (
       <CardContent className="space-y-3">
         {loading ? (
           <>
