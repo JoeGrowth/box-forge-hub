@@ -430,7 +430,7 @@ export default function OrganizationPage() {
         </div>
       </div>
 
-      <Tabs defaultValue={searchParams.get("tab") || "legal"} className="space-y-4">
+      <Tabs defaultValue={searchParams.get("tab") || "legal"} className="space-y-4" onValueChange={() => { loadCounts(); }}>
         <TabsList className="mb-2 flex h-auto w-full flex-wrap items-center justify-start gap-x-1.5 gap-y-1.5 rounded-xl bg-muted/60 p-1.5">
           <OrgTab icon={Scale} value="legal" count={legalDocs.length}>Legal</OrgTab>
           <OrgTab icon={CalendarCheck} value="daily" count={dailyOpenCount}>Operational</OrgTab>
