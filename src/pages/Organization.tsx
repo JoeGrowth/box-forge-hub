@@ -177,6 +177,28 @@ export default function OrganizationPage() {
 
   const dailyOpenCount = dailyTasks.filter(t => !t.done).length;
 
+  // Tab badge counts for Project / Product / People. Products only count when
+  // they have at least one shipped (logged) iteration — same rule as the
+  // public organization page, so both views always agree.
+  const [projectCount, setProjectCount] = useState(0);
+  const [productCount, setProductCount] = useState(0);
+  const [peopleCount, setPeopleCount] = useState(0);
+  const loadCounts = useCallback(async () => {
+    if (!org?.id) return;
+    const [pj, pp, prods, iters] = await Promise.all([
+      supabase.from("organization_projects").select("id", { count: "exact", head: true }).eq("organization_id", org.id),
+      supabase.from("organization_people").select("id", { count: "exact", head: true }).eq("organization_id", org.id),
+      supabase.from("organization_products").select("id").eq("organization_id", org.id).is("archived_at", null),
+      supabase.from("organization_product_iterations").select("product_id").eq("organization_id", org.id).is("archived_at", null),
+    ]);
+    setProjectCount(pj.count ?? 0);
+    setPeopleCount(pp.count ?? 0);
+    const shippedProductIds = new Set(((iters.data as any[]) ?? []).map((i) => i.product_id));
+    setProductCount(((prods.data as any[]) ?? []).filter((p) => shippedProductIds.has(p.id)).length);
+  }, [org?.id]);
+  useEffect(() => { loadCounts(); }, [loadCounts]);
+
+
 
   const loadOpps = useCallback(async () => {
     if (!org) return;
@@ -408,7 +430,7 @@ export default function OrganizationPage() {
         </div>
       </div>
 
-      <Tabs defaultValue={searchParams.get("tab") || "legal"} className="space-y-4">
+      <Tabs defaultValue={searchParams.get("tab") || "legal"} className="space-y-4" onValueChange={() => { loadCounts(); }}>
         <TabsList className="mb-2 flex h-auto w-full flex-wrap items-center justify-start gap-x-1.5 gap-y-1.5 rounded-xl bg-muted/60 p-1.5">
           <OrgTab icon={Scale} value="legal" count={legalDocs.length}>Legal</OrgTab>
           <OrgTab icon={CalendarCheck} value="daily" count={dailyOpenCount}>Operational</OrgTab>
@@ -420,10 +442,10 @@ export default function OrganizationPage() {
           )}
           <OrgTab icon={PieChart} value="distribution" count={distModelCount}>Distribution</OrgTab>
           <OrgTab icon={ClipboardList} value="declaration" count={declarations.length}>Declaration</OrgTab>
-          <OrgTab icon={Rocket} value="projects">Project</OrgTab>
-          <OrgTab icon={Lightbulb} value="journey">Product</OrgTab>
+          <OrgTab icon={Rocket} value="projects" count={projectCount}>Project</OrgTab>
+          <OrgTab icon={Lightbulb} value="journey" count={productCount}>Product</OrgTab>
           <div aria-hidden className="mx-1 hidden h-6 w-px self-center bg-border md:block" />
-          <OrgTab icon={Heart} value="people">People</OrgTab>
+          <OrgTab icon={Heart} value="people" count={peopleCount}>People</OrgTab>
           <OrgTab icon={Users} value="members" count={members.length}>Members</OrgTab>
         </TabsList>
 
