@@ -177,6 +177,28 @@ export default function OrganizationPage() {
 
   const dailyOpenCount = dailyTasks.filter(t => !t.done).length;
 
+  // Tab badge counts for Project / Product / People. Products only count when
+  // they have at least one shipped (logged) iteration — same rule as the
+  // public organization page, so both views always agree.
+  const [projectCount, setProjectCount] = useState(0);
+  const [productCount, setProductCount] = useState(0);
+  const [peopleCount, setPeopleCount] = useState(0);
+  const loadCounts = useCallback(async () => {
+    if (!org?.id) return;
+    const [pj, pp, prods, iters] = await Promise.all([
+      supabase.from("organization_projects").select("id", { count: "exact", head: true }).eq("organization_id", org.id),
+      supabase.from("organization_people").select("id", { count: "exact", head: true }).eq("organization_id", org.id),
+      supabase.from("organization_products").select("id").eq("organization_id", org.id).is("archived_at", null),
+      supabase.from("organization_product_iterations").select("product_id").eq("organization_id", org.id).is("archived_at", null),
+    ]);
+    setProjectCount(pj.count ?? 0);
+    setPeopleCount(pp.count ?? 0);
+    const shippedProductIds = new Set(((iters.data as any[]) ?? []).map((i) => i.product_id));
+    setProductCount(((prods.data as any[]) ?? []).filter((p) => shippedProductIds.has(p.id)).length);
+  }, [org?.id]);
+  useEffect(() => { loadCounts(); }, [loadCounts]);
+
+
 
   const loadOpps = useCallback(async () => {
     if (!org) return;
