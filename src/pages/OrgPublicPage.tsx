@@ -131,12 +131,15 @@ export default function OrgPublicPage() {
     m.setAttribute("content", org.description?.slice(0, 155) || `${clean}: projects, products and people.`);
   }, [org]);
 
-  const shipped = useMemo(() => iterations.filter((i) => i.shipped_at), [iterations]);
+  // Each logged iteration counts as one shipped delivery — same rule as the
+  // organization workspace Product tab, so both views always agree.
+  const shipped = useMemo(() => iterations, [iterations]);
   const shippedByProduct = useMemo(() => {
     const counts: Record<string, number> = {};
-    for (const i of iterations) if (i.shipped_at) counts[i.product_id ?? ""] = (counts[i.product_id ?? ""] ?? 0) + 1;
+    for (const i of iterations) counts[i.product_id ?? ""] = (counts[i.product_id ?? ""] ?? 0) + 1;
     return counts;
   }, [iterations]);
+
   const liveProducts = useMemo(
     () => products.filter((p) => (shippedByProduct[p.id] ?? 0) > 0),
     [products, shippedByProduct],
