@@ -32,6 +32,8 @@ type OrgProject = {
   progress: number;
   status_note: string | null;
   project_kind: string;
+  product_id?: string | null;
+  product_iteration_id?: string | null;
 };
 
 const KINDS = [
@@ -52,6 +54,7 @@ const emptyDraft = {
   name: "", description: "", status: "planned", lead: "",
   start_date: "", target_date: "", progress: 0, status_note: "",
   project_kind: "internal",
+  product_name: "",
 };
 
 export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: string; orgName?: string; canEdit: boolean; userId?: string }) {
@@ -66,6 +69,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
   const [leadFocused, setLeadFocused] = useState(false);
   const [showArchive, setShowArchive] = useState(false);
   const [legacyLinked, setLegacyLinked] = useState(true);
+  const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
 
   const searchTalents = async (q: string) => {
     setDraft((d) => ({ ...d, lead: q }));
@@ -82,14 +86,16 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [{ data }, { data: idea }] = await Promise.all([
+    const [{ data }, { data: idea }, { data: prods }] = await Promise.all([
       supabase
         .from("organization_projects" as any)
         .select("*")
         .eq("organization_id", orgId)
         .order("created_at", { ascending: false }),
       supabase.from("startup_ideas").select("id").eq("organization_id", orgId).maybeSingle(),
+      supabase.from("organization_products").select("id, name").eq("organization_id", orgId).is("archived_at", null).order("position"),
     ]);
+    setProducts((prods as any[]) ?? []);
     setProjects(((data as any[]) ?? []) as OrgProject[]);
     setLegacyLinked(!!idea?.id);
     setLoading(false);
@@ -110,12 +116,34 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
       progress: p.progress ?? 0,
       status_note: p.status_note ?? "",
       project_kind: p.project_kind ?? "internal",
+      product_name: "",
     });
+    if (p.product_id) {
+      supabase.from("organization_products").select("name").eq("id", p.product_id).maybeSingle()
+        .then(({ data }) => data && setDraft((d) => ({ ...d, product_name: (data as any).name })));
+    }
     setOpen(true);
   };
 
   const save = async () => {
     if (!draft.name.trim()) return;
+    const isExternal = draft.project_kind === "external";
+    const productName = draft.product_name.trim();
+    if (isExternal && !productName) {
+      return toast({ title: "Product required", description: "External projects must be linked to a product.", variant: "destructive" });
+    }
+    let productId: string | null = null;
+    if (isExternal) {
+      const existing = products.find((x) => x.name.trim().toLowerCase() === productName.toLowerCase());
+      if (existing) productId = existing.id;
+      else {
+        const { data: np, error: pe } = await supabase.from("organization_products")
+          .insert({ organization_id: orgId, name: productName, created_by: userId!, position: products.length + 1 } as any)
+          .select("id").single();
+        if (pe) return toast({ title: "Product creation failed", description: pe.message, variant: "destructive" });
+        productId = (np as any).id;
+      }
+    }
     const progressValue = Math.max(0, Math.min(100, Number(draft.progress) || 0));
     const payload: any = {
       organization_id: orgId,
@@ -127,12 +155,36 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
       target_date: draft.target_date || null,
       progress: progressValue,
       status_note: draft.status_note.trim() || null,
-      project_kind: draft.project_kind === "external" ? "external" : "internal",
+      project_kind: isExternal ? "external" : "internal",
+      product_id: productId,
     };
-    const { error } = editing
-      ? await supabase.from("organization_projects" as any).update(payload).eq("id", editing.id)
-      : await supabase.from("organization_projects" as any).insert({ ...payload, created_by: userId ?? null });
+    const { data: saved, error } = editing
+      ? await supabase.from("organization_projects" as any).update(payload).eq("id", editing.id).select("*").single()
+      : await supabase.from("organization_projects" as any).insert({ ...payload, created_by: userId ?? null }).select("*").single();
     if (error) return toast({ title: "Save failed", description: error.message, variant: "destructive" });
+    const sp = saved as any as OrgProject;
+    // Sync shipped iteration in Products
+    if (productId) {
+      let itId = sp.product_iteration_id ?? null;
+      if (itId) {
+        const { data: it } = await supabase.from("organization_product_iterations").select("id").eq("id", itId).maybeSingle();
+        if (!it) itId = null;
+      }
+      if (itId) {
+        await supabase.from("organization_product_iterations").update({ product_id: productId, title: payload.name } as any).eq("id", itId);
+      } else if (userId) {
+        const { count } = await supabase.from("organization_product_iterations")
+          .select("id", { count: "exact", head: true }).eq("product_id", productId);
+        const { data: newIt } = await supabase.from("organization_product_iterations").insert({
+          organization_id: orgId, product_id: productId, title: payload.name,
+          description: payload.description, version_number: (count ?? 0) + 1,
+          implementation_type: "client_project",
+          shipped_at: payload.target_date || new Date().toISOString().slice(0, 10),
+          created_by: userId,
+        } as any).select("id").single();
+        if (newIt) await supabase.from("organization_projects" as any).update({ product_iteration_id: (newIt as any).id }).eq("id", sp.id);
+      }
+    }
     toast({ title: editing ? "Project updated" : "Project added" });
     setOpen(false);
     load();
@@ -293,6 +345,18 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                   </Select>
                   <p className="text-xs text-muted-foreground mt-1">{kindMeta(draft.project_kind).hint}</p>
                 </div>
+                {draft.project_kind === "external" && (
+                  <div>
+                    <Label>Product delivered *</Label>
+                    <Input list={`org-products-${orgId}`} value={draft.product_name}
+                      onChange={(e) => setDraft({ ...draft, product_name: e.target.value })}
+                      placeholder="Pick from your products or type a new one" />
+                    <datalist id={`org-products-${orgId}`}>
+                      {products.map((p) => <option key={p.id} value={p.name} />)}
+                    </datalist>
+                    <p className="text-xs text-muted-foreground mt-1">This project is counted as a shipped delivery of the product.</p>
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label>Status</Label>
