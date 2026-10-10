@@ -132,6 +132,16 @@ export default function OrgPublicPage() {
   }, [org]);
 
   const shipped = useMemo(() => iterations.filter((i) => i.shipped_at), [iterations]);
+  const shippedByProduct = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const i of iterations) if (i.shipped_at) counts[i.product_id ?? ""] = (counts[i.product_id ?? ""] ?? 0) + 1;
+    return counts;
+  }, [iterations]);
+  const liveProducts = useMemo(
+    () => products.filter((p) => (shippedByProduct[p.id] ?? 0) > 0),
+    [products, shippedByProduct],
+  );
+
   const activeProjects = useMemo(() => projects.filter((p) => p.status !== "done"), [projects]);
   const doneProjects = useMemo(() => projects.filter((p) => p.status === "done"), [projects]);
   const peopleByTier = useMemo(() => ({
@@ -178,7 +188,7 @@ export default function OrgPublicPage() {
     { icon: Layers, value: projects.length, label: "Projects" },
     { icon: CheckCircle2, value: doneProjects.length, label: "Delivered" },
     { icon: Package, value: products.length, label: "Products" },
-    { icon: Rocket, value: shipped.length, label: "Shipped iterations" },
+    { icon: Rocket, value: shipped.length, label: "Shipped" },
     { icon: Users, value: people.length, label: "People" },
     { icon: CalendarDays, value: years, label: years === 1 ? "Year active" : "Years active" },
   ];
@@ -186,7 +196,7 @@ export default function OrgPublicPage() {
   const navItems = [
     { id: "about", label: "About" },
     ...(projects.length ? [{ id: "projects", label: "Projects" }] : []),
-    ...(products.length ? [{ id: "products", label: "Products" }] : []),
+    ...(liveProducts.length ? [{ id: "products", label: "Products" }] : []),
     ...(people.length ? [{ id: "people", label: "People" }] : []),
   ];
 
@@ -337,22 +347,20 @@ export default function OrgPublicPage() {
         )}
 
         {/* PRODUCTS */}
-        {products.length > 0 && (
+        {liveProducts.length > 0 && (
           <Section
             id="products"
             eyebrow="Offer"
             title="Products"
-            subtitle={`${shipped.length} shipped iterations across ${products.length} product${products.length > 1 ? "s" : ""}`}
+            subtitle={`${shipped.length} shipped across ${liveProducts.length} product${liveProducts.length > 1 ? "s" : ""}`}
           >
             <div className="grid md:grid-cols-3 gap-4">
-              {products.map((pr) => {
-                const its = iterations.filter((i) => i.product_id === pr.id);
-                const ship = its.filter((i) => i.shipped_at).length;
+              {liveProducts.map((pr) => {
+                const ship = shippedByProduct[pr.id] ?? 0;
                 const maturity =
-                  ship >= 3 ? { label: "Repeatable", className: "bg-emerald-500/10 text-emerald-700 border-emerald-200" }
-                  : ship === 2 ? { label: "Validated", className: "bg-blue-500/10 text-blue-700 border-blue-200" }
-                  : ship === 1 ? { label: "First delivery", className: "bg-amber-500/10 text-amber-700 border-amber-200" }
-                  : { label: "In build", className: "bg-muted text-muted-foreground border-border" };
+                  ship >= 3 ? { label: "Sell", className: "bg-emerald-500/10 text-emerald-700 border-emerald-200" }
+                  : ship === 2 ? { label: "Expand", className: "bg-blue-500/10 text-blue-700 border-blue-200" }
+                  : { label: "Focus", className: "bg-amber-500/10 text-amber-700 border-amber-200" };
                 return (
                   <div key={pr.id} className="rounded-2xl border border-border bg-card p-5 transition hover:border-primary/40 hover:shadow-sm">
                     <div className="flex items-start justify-between gap-2">
@@ -360,15 +368,14 @@ export default function OrgPublicPage() {
                       <Badge variant="outline" className={maturity.className}>{maturity.label}</Badge>
                     </div>
                     {pr.description && <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{pr.description}</p>}
-                    <p className="text-xs text-muted-foreground mt-4">
-                      {its.length} iteration{its.length === 1 ? "" : "s"} · {ship} shipped
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-4">{ship} shipped</p>
                   </div>
                 );
               })}
             </div>
           </Section>
         )}
+
 
         {/* PEOPLE */}
         {people.length > 0 && (
