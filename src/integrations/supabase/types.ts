@@ -4345,6 +4345,8 @@ export type Database = {
           name: string
           organization_id: string
           position: number
+          product_id: string | null
+          product_iteration_id: string | null
           progress: number
           project_kind: string
           start_date: string | null
@@ -4362,6 +4364,8 @@ export type Database = {
           name: string
           organization_id: string
           position?: number
+          product_id?: string | null
+          product_iteration_id?: string | null
           progress?: number
           project_kind?: string
           start_date?: string | null
@@ -4379,6 +4383,8 @@ export type Database = {
           name?: string
           organization_id?: string
           position?: number
+          product_id?: string | null
+          product_iteration_id?: string | null
           progress?: number
           project_kind?: string
           start_date?: string | null
@@ -4393,6 +4399,20 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_projects_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "organization_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_projects_product_iteration_id_fkey"
+            columns: ["product_iteration_id"]
+            isOneToOne: false
+            referencedRelation: "organization_product_iterations"
             referencedColumns: ["id"]
           },
         ]
