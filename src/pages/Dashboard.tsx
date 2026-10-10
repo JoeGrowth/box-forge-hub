@@ -16,6 +16,7 @@ import { DashboardProgress } from "@/components/dashboard/DashboardProgress";
 import { DashboardNextSteps } from "@/components/dashboard/DashboardNextSteps";
 import { DashboardOpportunities } from "@/components/dashboard/DashboardOpportunities";
 import { DashboardAchievements } from "@/components/dashboard/DashboardAchievements";
+import { DashboardNotes } from "@/components/dashboard/DashboardNotes";
 import { ProgressionPathCard } from "@/components/profile/ProgressionPathCard";
 import { CommitmentsPanel } from "@/components/commitments/CommitmentsPanel";
 import { MyOrgProjectsCard } from "@/components/dashboard/MyOrgProjectsCard";
@@ -213,6 +214,7 @@ const Dashboard = () => {
               <div className="space-y-6 md:space-y-8 min-w-0">
                 {isCapable && !hideGuidance && <DashboardNextSteps />}
                 <DashboardAchievements onAllEarnedChange={setAllBadgesEarned} />
+                <DashboardNotes />
               </div>
             </div>
 
