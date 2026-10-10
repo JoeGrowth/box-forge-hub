@@ -40,7 +40,9 @@ type Org = {
 type Project = {
   id: string; name: string; description: string | null; status: string;
   progress: number; lead: string | null; target_date: string | null; status_note: string | null;
+  project_kind: string | null;
 };
+
 
 type Product = { id: string; name: string; description: string | null; created_at: string };
 type Iteration = { id: string; product_id: string | null; title: string; shipped_at: string | null; version_number: number };
@@ -100,7 +102,7 @@ export default function OrgPublicPage() {
       const orgId = (data as Org).id;
       const [pj, pr, it, pe] = await Promise.all([
         supabase.from("organization_projects")
-          .select("id, name, description, status, progress, lead, target_date, status_note")
+          .select("id, name, description, status, progress, lead, target_date, status_note, project_kind")
           .eq("organization_id", orgId).order("position", { ascending: true }),
         supabase.from("organization_products")
           .select("id, name, description, created_at")
@@ -141,9 +143,16 @@ export default function OrgPublicPage() {
   }, [iterations]);
 
   const liveProducts = useMemo(
-    () => products.filter((p) => (shippedByProduct[p.id] ?? 0) > 0),
+    () => products
+      .filter((p) => (shippedByProduct[p.id] ?? 0) > 0)
+      .sort((a, b) => (shippedByProduct[b.id] ?? 0) - (shippedByProduct[a.id] ?? 0)),
     [products, shippedByProduct],
   );
+  const orderedProjects = useMemo(() => {
+    const rank: Record<string, number> = { active: 0, planned: 1, on_hold: 2, done: 3 };
+    return [...projects].sort((a, b) => (rank[a.status] ?? 4) - (rank[b.status] ?? 4));
+  }, [projects]);
+
 
   const activeProjects = useMemo(() => projects.filter((p) => p.status !== "done"), [projects]);
   const doneProjects = useMemo(() => projects.filter((p) => p.status === "done"), [projects]);
@@ -312,14 +321,25 @@ export default function OrgPublicPage() {
             subtitle={`${activeProjects.length} in motion · ${doneProjects.length} delivered`}
           >
             <div className="grid md:grid-cols-2 gap-4">
-              {[...activeProjects, ...doneProjects].map((p) => (
+              {orderedProjects.map((p) => (
                 <div key={p.id} className="rounded-2xl border border-border bg-card p-5 transition hover:border-primary/40 hover:shadow-sm">
                   <div className="flex items-start justify-between gap-3">
                     <h3 className="font-semibold text-foreground">{p.name}</h3>
-                    <Badge variant="outline" className={STATUS_STYLE[p.status] ?? STATUS_STYLE.planned}>
-                      {p.status.replace("_", " ")}
-                    </Badge>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Badge
+                        variant="outline"
+                        className={p.project_kind === "external"
+                          ? "bg-b4-teal/10 text-b4-teal border-b4-teal/30"
+                          : "bg-muted text-muted-foreground"}
+                      >
+                        {p.project_kind === "external" ? "External" : "Internal"}
+                      </Badge>
+                      <Badge variant="outline" className={STATUS_STYLE[p.status] ?? STATUS_STYLE.planned}>
+                        {p.status.replace("_", " ")}
+                      </Badge>
+                    </div>
                   </div>
+
                   {p.description && (
                     <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{p.description}</p>
                   )}
