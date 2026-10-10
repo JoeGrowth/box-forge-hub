@@ -1,0 +1,1 @@
+ALTER TABLE public.organization_projects ADD COLUMN IF NOT EXISTS product_id uuid REFERENCES public.organization_products(id) ON DELETE SET NULL, ADD COLUMN IF NOT EXISTS product_iteration_id uuid REFERENCES public.organization_product_iterations(id) ON DELETE SET NULL;
