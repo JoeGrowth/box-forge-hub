@@ -623,6 +623,7 @@ export default function OrganizationPage() {
 
         {/* LEGAL */}
         <TabsContent value="legal" className="space-y-3">
+          <LegalEntityCard org={org} canEdit={canEdit} onSaved={loadOpps} />
           <LegalTab
             orgId={org.id}
             orgName={org.name}
