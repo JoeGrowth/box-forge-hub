@@ -22,6 +22,13 @@
       "when": 1791600245526,
       "tag": "0002_project_product_link",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791687490087,
+      "tag": "0003_organizations_legal_entity",
+      "breakpoints": true
     }
   ]
 }

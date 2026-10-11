@@ -4424,6 +4424,9 @@ export type Database = {
           description: string | null
           id: string
           is_public: boolean
+          legal_entity_details: string | null
+          legal_entity_name: string | null
+          legal_status: string
           lifecycle_stage: Database["public"]["Enums"]["org_lifecycle_stage"]
           logo_url: string | null
           name: string
@@ -4440,6 +4443,9 @@ export type Database = {
           description?: string | null
           id?: string
           is_public?: boolean
+          legal_entity_details?: string | null
+          legal_entity_name?: string | null
+          legal_status?: string
           lifecycle_stage?: Database["public"]["Enums"]["org_lifecycle_stage"]
           logo_url?: string | null
           name: string
@@ -4456,6 +4462,9 @@ export type Database = {
           description?: string | null
           id?: string
           is_public?: boolean
+          legal_entity_details?: string | null
+          legal_entity_name?: string | null
+          legal_status?: string
           lifecycle_stage?: Database["public"]["Enums"]["org_lifecycle_stage"]
           logo_url?: string | null
           name?: string
