@@ -18,6 +18,9 @@ export interface Organization {
   created_by: string;
   created_at: string;
   lifecycle_stage?: "venture" | "business" | "startup" | "mature";
+  legal_status?: "none" | "billed_via" | "registered";
+  legal_entity_name?: string | null;
+  legal_entity_details?: string | null;
 }
 
 

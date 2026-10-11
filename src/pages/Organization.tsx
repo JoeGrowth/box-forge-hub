@@ -14,6 +14,7 @@ import {
   useOrgMembers,
   roleAtLeast,
   type OrgRole,
+  type Organization,
 } from "@/hooks/useOrganizations";
 import { OrgLogo, invalidateOrgLogo } from "@/components/organization/OrgLogo";
 import { Button } from "@/components/ui/button";
@@ -623,6 +624,7 @@ export default function OrganizationPage() {
 
         {/* LEGAL */}
         <TabsContent value="legal" className="space-y-3">
+          <LegalEntityCard org={org} canEdit={canEdit} onSaved={loadOpps} />
           <LegalTab
             orgId={org.id}
             orgName={org.name}
@@ -1107,6 +1109,136 @@ function InviteMemberRow({ orgId, onAdded }: { orgId: string; onAdded: () => voi
 }
 
 type LegalDoc = { id: string; name: string; storage_path: string; created_at: string; size_bytes: number | null };
+
+const LEGAL_STATUS_OPTIONS = [
+  { value: "none", label: "No legal entity yet", hint: "Platform organization only — cannot invoice" },
+  { value: "billed_via", label: "Billed via another legal entity", hint: "Work is invoiced through a legal person or business (e.g. a patente physique)" },
+  { value: "registered", label: "Registered company", hint: "This organization is itself a registered legal entity" },
+] as const;
+
+function LegalEntityCard({ org, canEdit, onSaved }: { org: Organization; canEdit: boolean; onSaved: () => void }) {
+  const { toast } = useToast();
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState<string>(org.legal_status ?? "none");
+  const [entityName, setEntityName] = useState(org.legal_entity_name ?? "");
+  const [details, setDetails] = useState(org.legal_entity_details ?? "");
+
+  const current = LEGAL_STATUS_OPTIONS.find((o) => o.value === status) ?? LEGAL_STATUS_OPTIONS[0];
+
+  const save = async () => {
+    setSaving(true);
+    const { error } = await supabase
+      .from("organizations")
+      .update({
+        legal_status: status,
+        legal_entity_name: entityName.trim() || null,
+        legal_entity_details: details.trim() || null,
+      } as never)
+      .eq("id", org.id);
+    setSaving(false);
+    if (error) {
+      toast({ title: "Save failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Legal entity updated" });
+    setEditing(false);
+    onSaved();
+  };
+
+  return (
+    <div className="rounded-xl border bg-card p-4 space-y-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Scale className="h-4 w-4 text-primary" />
+          <h3 className="text-sm font-semibold">Legal entity</h3>
+        </div>
+        {canEdit && !editing && (
+          <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
+            {org.legal_status && org.legal_status !== "none" ? "Edit" : "Define"}
+          </Button>
+        )}
+      </div>
+
+      {!editing ? (
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge variant={status === "none" ? "outline" : "secondary"}>{current.label}</Badge>
+            {status === "none" && (
+              <span className="text-xs text-amber-600 dark:text-amber-400">
+                No billing entity recorded — invoices cannot be issued in this organization's name.
+              </span>
+            )}
+          </div>
+          {status !== "none" && org.legal_entity_name && (
+            <p className="text-sm">
+              <span className="text-muted-foreground">Billed through: </span>
+              <span className="font-medium">{org.legal_entity_name}</span>
+            </p>
+          )}
+          {status === "billed_via" && (
+            <p className="text-xs text-muted-foreground">
+              The organization pursues the work; the legal person or business above issues the invoices. Platform profit allocations are internal — they are not legal ownership.
+            </p>
+          )}
+          {status === "registered" && (
+            <p className="text-xs text-muted-foreground">
+              This record is linked to the registered company. Platform-configured profit allocations remain distinct from legally established ownership.
+            </p>
+          )}
+          {org.legal_entity_details && (
+            <p className="text-xs text-muted-foreground whitespace-pre-wrap">{org.legal_entity_details}</p>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <div className="grid gap-2 sm:grid-cols-3">
+            {LEGAL_STATUS_OPTIONS.map((o) => (
+              <button
+                key={o.value}
+                type="button"
+                onClick={() => setStatus(o.value)}
+                className={`rounded-lg border p-3 text-left transition-colors ${
+                  status === o.value ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
+                }`}
+              >
+                <div className="text-sm font-medium">{o.label}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">{o.hint}</div>
+              </button>
+            ))}
+          </div>
+          {status !== "none" && (
+            <>
+              <div>
+                <Label>{status === "registered" ? "Registered company name" : "Billing legal entity name"}</Label>
+                <Input
+                  value={entityName}
+                  onChange={(e) => setEntityName(e.target.value)}
+                  placeholder={status === "registered" ? "e.g. Pengry SARL" : "e.g. Houssem Kaabi — patente physique (Angry Penguin)"}
+                />
+              </div>
+              <div>
+                <Label>Details (registration number, patente reference, legal associates…)</Label>
+                <Textarea
+                  value={details}
+                  onChange={(e) => setDetails(e.target.value)}
+                  rows={3}
+                  placeholder="Registration number, tax reference, legally established associates vs platform-configured allocations…"
+                />
+              </div>
+            </>
+          )}
+          <div className="flex gap-2">
+            <Button size="sm" onClick={save} disabled={saving}>
+              {saving ? "Saving…" : "Save"}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setEditing(false)}>Cancel</Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function LegalTab({
   orgId, orgName, userId, canEdit, canDelete, docs, reload,
