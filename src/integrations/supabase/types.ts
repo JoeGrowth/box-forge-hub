@@ -1894,6 +1894,50 @@ export type Database = {
         }
         Relationships: []
       }
+      earnings_bank_receipts: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          earning_role: string
+          entity_id: string
+          id: string
+          received_at: string
+          source_key: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency: string
+          earning_role: string
+          entity_id: string
+          id?: string
+          received_at?: string
+          source_key: string
+          user_id?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          earning_role?: string
+          entity_id?: string
+          id?: string
+          received_at?: string
+          source_key?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "earnings_bank_receipts_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "declaration_entities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       entity_role_assignments: {
         Row: {
           accepted_at: string | null
