@@ -1,0 +1,3 @@
+- [x] Rename declaration team and third-party headings.
+- [x] Separate Money generated and Personal financial audit; calculate individual declaration earnings.
+- [x] Persist personal bank receipts and verify the receipt flow.

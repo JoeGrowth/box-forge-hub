@@ -29,6 +29,13 @@
       "when": 1791687490087,
       "tag": "0003_organizations_legal_entity",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791768750410,
+      "tag": "0004_individual_earnings_receipts",
+      "breakpoints": true
     }
   ]
 }

@@ -1138,7 +1138,7 @@ export default function Declaration() {
               {/* Internal */}
               <div>
                 <h4 className="text-sm font-medium flex items-center gap-2 mb-3">
-                  <Users className="h-3.5 w-3.5 text-muted-foreground" /> Internal
+                  <Users className="h-3.5 w-3.5 text-muted-foreground" /> Entity core team
                 </h4>
                 <div className="flex flex-wrap gap-2 mb-3">
                   {roster.map((n, i) => (
@@ -1442,8 +1442,8 @@ export default function Declaration() {
 
             <CardContent className="pt-6 space-y-6">
               <PayeeSection
-                title="Internal"
-                subtitle="Internal members"
+                title="Entity core team"
+                subtitle="Core team allocations"
                 accent="primary"
                 currency={activeMission.currency || "TND"}
                 payees={activeMission.internal}
@@ -1457,8 +1457,8 @@ export default function Declaration() {
               />
 
               <PayeeSection
-                title="External"
-                subtitle="External providers"
+                title="Operation Task Force and Third Party Charges"
+                subtitle="Operational and third-party allocations"
                 accent="muted"
                 currency={activeMission.currency || "TND"}
                 payees={activeMission.external}
@@ -1474,8 +1474,8 @@ export default function Declaration() {
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <Stat label="Budget" value={activeMission.budget} currency={activeMission.currency || "TND"} />
-                <Stat label="Internal" value={activeTotal.intT} currency={activeMission.currency || "TND"} />
-                <Stat label="External" value={activeTotal.extT} currency={activeMission.currency || "TND"} />
+                <Stat label="Entity core team" value={activeTotal.intT} currency={activeMission.currency || "TND"} />
+                <Stat label="Operation Task Force and Third Party Charges" value={activeTotal.extT} currency={activeMission.currency || "TND"} />
                 <Stat
                   label="Structural reserve"
                   value={activeTotal.rest}
@@ -1595,7 +1595,7 @@ function PayeeSection({
                 {nameOptions ? (
                   <Select value={p.name} onValueChange={(v) => onUpdate(p.id, { name: v })}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Internal member" />
+                      <SelectValue placeholder="Core team member" />
                     </SelectTrigger>
                     <SelectContent>
                       {nameOptions.map((n) => (
