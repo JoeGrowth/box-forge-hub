@@ -61,7 +61,7 @@ export function calculateIndividualEarnings(entities: EarningsEntity[], missions
       allocation[entity.id] = (allocation[entity.id] ?? 0) + share * 100;
       const recognition = Math.min(45, Math.max(0, Number(entity.split_config?.recognitionPct ?? 30)));
       for (const [currency, rest] of Object.entries(rests)) {
-        const amount = rest >= 1000 ? rest * recognition / 100 * share : 0;
+        const amount = rest >= 1000 ? Math.round((rest * recognition / 100 * share + Number.EPSILON) * 100) / 100 : 0;
         if (amount <= 0) continue;
         items.push({ sourceKey: `associate:${entity.id}:${slot.role_slug}:${currency}`, entityId: entity.id,
           title: "Statement of the organization · Recognition", role: "associe", roleLabel: slot.label ?? partner.name,
