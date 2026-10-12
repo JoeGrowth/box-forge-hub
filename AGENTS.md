@@ -1,0 +1,1 @@
+- Earnings entitlements come from organization declarations; bank receipts are separate user-owned confirmations, never inferred from allocations or company payment flags, to avoid confusing expected and received money.
