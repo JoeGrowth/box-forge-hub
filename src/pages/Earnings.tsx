@@ -15,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Banknote, Building2, CheckCircle2, ClipboardList, Clock, Loader2, Trash2 } from "lucide-react";
+import { Banknote, Building2, CheckCircle2, ChevronDown, ClipboardList, Loader2, Trash2 } from "lucide-react";
 import { calculateIndividualEarnings, type EarningsEntity, type EarningsMission, type EarningsSlot, type IndividualEarning } from "@/lib/individualEarnings";
 
 interface Org { id: string; name: string; slug: string }
@@ -40,6 +40,8 @@ export default function Earnings() {
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(today());
   const [saving, setSaving] = useState(false);
+  const [expandedEntities, setExpandedEntities] = useState<string[]>([]);
+  const toggleEntity = (id: string) => setExpandedEntities(previous => previous.includes(id) ? previous.filter(value => value !== id) : [...previous, id]);
   useEffect(() => {
     if (!user) return;
     let alive = true;
@@ -69,12 +71,6 @@ export default function Earnings() {
   const calculated = useMemo(() => calculateIndividualEarnings(entities, missions, slots, user?.id ?? "", fullName), [entities, missions, slots, user?.id, fullName]);
   const receivedFor = (item: IndividualEarning) => receipts.filter(r => r.source_key === item.sourceKey && r.currency === item.currency).reduce((sum, r) => sum + Number(r.amount), 0);
   const groups = entities.filter(entity => calculated.items.some(i => i.entityId === entity.id) || slots.some(s => s.entity_id === entity.id) || receipts.some(r => r.entity_id === entity.id));
-  const totals: Record<string, { generated: number; bank: number; awaiting: number }> = {};
-  calculated.items.forEach(item => {
-    const total = totals[item.currency] ??= { generated: 0, bank: 0, awaiting: 0 };
-    total.generated += item.amount; total.awaiting += Math.max(0, item.amount - receivedFor(item));
-  });
-  receipts.forEach(receipt => { (totals[receipt.currency] ??= { generated: 0, bank: 0, awaiting: 0 }).bank += Number(receipt.amount); });
   const beginReceipt = (item: IndividualEarning) => { setSelected(item); setAmount((Math.max(0, item.amount - receivedFor(item))).toFixed(2)); setDate(today()); };
   const outstanding = selected ? Math.max(0, selected.amount - receivedFor(selected)) : 0;
   const parsed = Number(amount.replace(",", "."));
@@ -111,10 +107,6 @@ export default function Earnings() {
         </TabsList>
         <TabsContent value="money" className="space-y-6">
           {loading ? <div className="space-y-4"><Skeleton className="h-28 w-full" /><Skeleton className="h-60 w-full" /></div> : error ? <div role="alert" className="space-y-3"><p className="text-destructive">{error}</p><Button variant="outline" onClick={() => setRetry(v => v + 1)}>Retry</Button></div> : <>
-            <div className="grid gap-4 sm:grid-cols-3">
-              {([['Generated for you', 'generated', Banknote], ['Received in bank account', 'bank', CheckCircle2], ['Awaiting bank receipt', 'awaiting', Clock]] as const).map(([label, key, Icon]) => <Card key={key}><CardContent className="p-5"><div className="flex items-center gap-2 text-sm text-muted-foreground"><Icon className="h-4 w-4" />{label}</div><div className="mt-3 space-y-1">{Object.entries(totals).length ? Object.entries(totals).map(([currency, total]) => <p className="text-xl font-semibold break-words" key={currency}>{fmt(total[key])} <span className="text-sm text-muted-foreground">{currency}</span></p>) : <p className="text-xl">—</p>}</div></CardContent></Card>)}
-            </div>
-            <p className="text-xs text-muted-foreground">Per declaration · All recorded periods · Bank receipts are your confirmations, not a live bank balance.</p>
             {groups.length === 0 && <p className="py-8 text-muted-foreground">No personal allocations in your accessible declarations.</p>}
             {groups.map(entity => {
               const items = calculated.items.filter(i => i.entityId === entity.id);
@@ -123,12 +115,14 @@ export default function Earnings() {
               const generated: Record<string, number> = {}, bank: Record<string, number> = {}, due: Record<string, number> = {}, associateProfit: Record<string, number> = {};
               items.forEach(i => { generated[i.currency] = (generated[i.currency] ?? 0) + i.amount; due[i.currency] = (due[i.currency] ?? 0) + Math.max(0, i.amount - receivedFor(i)); if (i.role === "associe") associateProfit[i.currency] = (associateProfit[i.currency] ?? 0) + i.amount; });
               entityReceipts.forEach(r => { bank[r.currency] = (bank[r.currency] ?? 0) + Number(r.amount); });
-              return <Card key={entity.id}>
-                <CardHeader className="space-y-3"><div className="flex flex-wrap items-center justify-between gap-3"><CardTitle className="flex items-center gap-2 text-lg"><Building2 className="h-5 w-5 shrink-0" />{org?.name ?? entity.name}</CardTitle><Button asChild variant="outline" size="sm"><Link to={`/declaration?entity=${entity.id}`}>Open statement</Link></Button></div>
+              const expanded = expandedEntities.includes(entity.id);
+              return <Card key={entity.id} className="cursor-pointer" onClick={event => { if (!(event.target instanceof Element) || event.target.closest('a, button, [data-earnings-details]')) return; toggleEntity(entity.id); }}>
+                <CardHeader className="space-y-3"><div className="flex flex-wrap items-center justify-between gap-3"><CardTitle className="min-w-0 text-lg"><Button variant="ghost" className="h-auto max-w-full justify-start gap-2 whitespace-normal px-0 text-left text-lg hover:bg-transparent" aria-expanded={expanded} aria-controls={`earnings-details-${entity.id}`} onClick={() => toggleEntity(entity.id)}><Building2 className="h-5 w-5 shrink-0" />{org?.name ?? entity.name}<ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`} /></Button></CardTitle><Button asChild variant="outline" size="sm"><Link to={`/declaration?entity=${entity.id}`}>Open statement</Link></Button></div>
                   <div className="flex flex-wrap gap-2">{[...new Set(items.map(i => i.role))].map(role => <Badge variant="secondary" className="whitespace-normal" key={role}>{roleLabels[role]}</Badge>)}</div>
                 </CardHeader>
                 <CardContent className="space-y-5">
                   <dl className="grid gap-4 sm:grid-cols-3 text-sm">{[["Generated for you", money(generated)], ["Received in bank account", money(bank)], ["Awaiting bank receipt", money(due)]].map(([label, value]) => <div key={label}><dt className="text-muted-foreground">{label}</dt><dd className="mt-1 font-semibold">{value}</dd></div>)}</dl>
+                  {expanded && <div id={`earnings-details-${entity.id}`} data-earnings-details className="cursor-auto space-y-5">
                   {calculated.allocation[entity.id] !== undefined && <div className="flex flex-wrap gap-x-6 gap-y-2 border-y py-3 text-xs text-muted-foreground"><span>Configured associate allocation: {fmt(calculated.allocation[entity.id])}%</span><span>Profit in entity: {money(calculated.profit[entity.id] ?? {})}</span><span>Your share of profit: {money(associateProfit)}</span></div>}
                   <div className="divide-y">{items.map(item => {
                     const received = receivedFor(item), pending = Math.max(0, item.amount - received);
@@ -138,6 +132,7 @@ export default function Earnings() {
                     </div>;
                   })}</div>
                   {entityReceipts.length > 0 && <details className="border-t pt-3"><summary className="cursor-pointer text-sm font-medium">Bank receipt history ({entityReceipts.length})</summary><div className="divide-y mt-2">{entityReceipts.map(receipt => <div key={receipt.id} className="flex items-center justify-between gap-3 py-2 text-xs"><span>{receipt.received_at} · {fmt(Number(receipt.amount))} {receipt.currency} · {roleLabels[receipt.earning_role as keyof typeof roleLabels]}</span><Button variant="ghost" size="icon" disabled={saving} aria-label={`Remove receipt ${receipt.id}`} title="Remove mistaken receipt" onClick={() => removeReceipt(receipt)}><Trash2 className="h-4 w-4" /></Button></div>)}</div></details>}
+                  </div>}
                 </CardContent>
               </Card>;
             })}
