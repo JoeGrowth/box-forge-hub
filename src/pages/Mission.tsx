@@ -78,6 +78,8 @@ export default function Mission() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [people, setPeople] = useState<string[]>(["Person (1)", "Person (2)"]);
   const [modelName, setModelName] = useState<string>("");
+  const [orgSlug, setOrgSlug] = useState("");
+
   const [dirty, setDirty] = useState(false);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
   const readyRef = useRef(false);
@@ -109,6 +111,24 @@ export default function Mission() {
     setTimeout(() => {
       readyRef.current = true;
     }, 0);
+    // A mission belongs to one organization's Distribution workspace: the folder id is
+    // the part of `kind` before ":". Resolve it so Back returns to that workspace.
+    setOrgSlug("");
+    const folderId = String(data.kind || "").split(":")[0];
+    if (!folderId) return;
+    const { data: folder } = await (supabase.from("distribution_entities" as never) as never as any)
+      .select("org_id")
+      .eq("id", folderId)
+      .maybeSingle();
+    const orgId = (folder as { org_id?: string } | null)?.org_id;
+    if (!orgId) return;
+    const { data: org } = await supabase
+      .from("organizations")
+      .select("slug")
+      .eq("id", orgId)
+      .maybeSingle();
+    if (org?.slug) setOrgSlug(org.slug);
+
   }, [id]);
 
   useEffect(() => {
@@ -277,9 +297,15 @@ export default function Mission() {
       <PageTransition>
         <main className="pt-24 pb-16">
           <div className="container mx-auto max-w-6xl px-4 space-y-6">
-            <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="-ml-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => (orgSlug ? navigate(`/org/${orgSlug}?tab=distribution`) : navigate(-1))}
+              className="-ml-2"
+            >
               <ArrowLeft className="mr-1 h-4 w-4" /> Back
             </Button>
+
 
             {loading ? (
               <Card>
