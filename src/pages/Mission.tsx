@@ -43,7 +43,7 @@ const isReserveLabel = (label: string) =>
   );
 // The structural reserve is always present, counted as an amount, never split per person.
 const normalizeTaskLocks = (items: Task[]): Task[] => {
-  const mapped = items.map((task) => {
+  const mapped: Task[] = items.map((task): Task => {
     if (isReserveLabel(task.label)) return { ...task, locked: true };
     const { locked: _locked, ...splitTask } = task;
     return splitTask;
