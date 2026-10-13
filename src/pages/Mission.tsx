@@ -37,15 +37,24 @@ type Task = { id: string; label: string; percent: number; locked?: boolean; pers
 type Charge = { id: string; label: string; amount: number; fixed?: boolean; percent?: number; system?: boolean };
 
 const uid = () => Math.random().toString(36).slice(2, 9);
-const normalizeTaskLocks = (items: Task[]): Task[] =>
-  items.map((task) => {
-    const isReserve = /structural reserve|rest structure|rest for the structure/.test(
-      String(task.label || "").trim().toLowerCase(),
-    );
-    if (isReserve) return { ...task, locked: true };
+const isReserveLabel = (label: string) =>
+  /structural reserve|restes? (de )?(la )?structure|rest (for the )?structure/.test(
+    String(label || "").trim().toLowerCase(),
+  );
+// The structural reserve is always present, counted as an amount, never split per person.
+const normalizeTaskLocks = (items: Task[]): Task[] => {
+  const mapped = items.map((task) => {
+    if (isReserveLabel(task.label)) return { ...task, locked: true };
     const { locked: _locked, ...splitTask } = task;
     return splitTask;
   });
+  if (mapped.some((t) => t.locked)) {
+    // Keep the reserve last.
+    return [...mapped.filter((t) => !t.locked), ...mapped.filter((t) => t.locked)];
+  }
+  const used = mapped.reduce((s, t) => s + (Number(t.percent) || 0), 0);
+  return [...mapped, { id: uid(), label: "Structural reserve", percent: Math.max(0, 100 - used), locked: true }];
+};
 const fmt = (n: number) =>
   new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
     Number.isFinite(n) ? n : 0,
