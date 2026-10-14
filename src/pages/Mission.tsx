@@ -449,10 +449,10 @@ export default function Mission() {
                   <CardHeader className="flex flex-col gap-2 border-b border-border/60 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <CardTitle className="flex items-center gap-2 text-base">
-                        <ClipboardList className="h-4 w-4 text-b4-coral" /> Charges
+                        <ClipboardList className="h-4 w-4 text-b4-coral" /> Entity core team
                       </CardTitle>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        External costs deducted from the budget before distribution.
+                        Broker, Administration, Quality Assurance, Platform Fees and other entity charges deducted first.
                       </p>
                     </div>
                     <Button
@@ -551,7 +551,7 @@ export default function Mission() {
                             );
                           })}
                           <TableRow className="bg-muted/40 font-semibold">
-                            <TableCell>Total charges</TableCell>
+                            <TableCell>Total entity core team</TableCell>
                             <TableCell className="text-right">
                               {(Number(budget) || 0) > 0
                                 ? `${(Math.round((chargesTotal / (Number(budget) || 1)) * 10000) / 100).toFixed(2)}%`
@@ -561,7 +561,7 @@ export default function Mission() {
                             <TableCell />
                           </TableRow>
                           <TableRow className="font-semibold">
-                            <TableCell>Total Structural reserve</TableCell>
+                            <TableCell>Remaining pool</TableCell>
                             <TableCell className="text-right">
                               {(Number(budget) || 0) > 0
                                 ? `${(Math.round((internalPool / (Number(budget) || 1)) * 10000) / 100).toFixed(2)}%`
@@ -623,7 +623,7 @@ export default function Mission() {
                   <CardHeader className="flex flex-col gap-2 border-b border-border/60 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <CardTitle className="flex items-center gap-2 text-base">
-                        <ListChecks className="h-4 w-4 text-primary" /> Internal &amp; Structure — task distribution
+                        <ListChecks className="h-4 w-4 text-primary" /> Operation Task Force and Third Party Charges
                         <Badge variant={totalPercent === 100 ? "secondary" : "destructive"}>{totalPercent}%</Badge>
                       </CardTitle>
                       <p className="mt-1 text-xs text-muted-foreground">
@@ -651,8 +651,8 @@ export default function Mission() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {tasks.map((t, idx) => (
-                            <TableRow key={t.id} className={t.locked ? "bg-muted/30" : ""}>
+                          {tasks.map((t, idx) => t.locked ? null : (
+                            <TableRow key={t.id}>
                               <TableCell>
                                 {t.locked ? (
                                   <span className="text-sm font-medium">
@@ -717,7 +717,7 @@ export default function Mission() {
                             </TableRow>
                           ))}
                           <TableRow className="border-t-2 font-semibold">
-                            <TableCell>Total</TableCell>
+                            <TableCell>Total (incl. Reste Structure)</TableCell>
                             <TableCell className="text-right">{totalPercent}%</TableCell>
                             <TableCell className="text-right font-mono tabular-nums">{fmt(internalPool)}</TableCell>
                             {people.map((_, pi) => (
@@ -730,6 +730,40 @@ export default function Mission() {
                         </TableBody>
                       </Table>
                     </div>
+                  </CardContent>
+                </Card>
+
+
+                {/* Reste Structure */}
+                <Card>
+                  <CardHeader className="border-b border-border/60">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <ListChecks className="h-4 w-4 text-b4-coral" /> Reste Structure
+                    </CardTitle>
+                    <p className="mt-1 text-xs text-muted-foreground">Separate percentage of the pool, kept by the entity and never split per person.</p>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Item</TableHead>
+                          <TableHead className="w-24 text-right">%</TableHead>
+                          <TableHead className="w-32 text-right">Amount</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {tasks.map((t, idx) => !t.locked ? null : (
+                          <TableRow key={t.id}>
+                            <TableCell className="font-medium">{t.label}</TableCell>
+                            <TableCell>
+                              <Input type="number" className="text-right" value={t.percent}
+                                onChange={(e) => updateTask(t.id, { percent: parseFloat(e.target.value) || 0 })} />
+                            </TableCell>
+                            <TableCell className="text-right font-mono tabular-nums">{fmt(taskAmounts[idx])} {currency}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                   </CardContent>
                 </Card>
 
