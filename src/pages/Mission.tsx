@@ -638,7 +638,7 @@ export default function Mission() {
                         <Badge variant={totalPercent === 100 ? "secondary" : "destructive"}>{totalPercent}%</Badge>
                       </CardTitle>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Pool of {fmt(internalPool)} {currency} split by task, then by person.
+                         Pool of {fmt(opPool)} {currency} (remaining pool minus Reste Structure) split by task, then by person.
                       </p>
                     </div>
                     <Button size="sm" variant="outline" className="self-start sm:self-auto" onClick={addTask}>
@@ -728,9 +728,9 @@ export default function Mission() {
                             </TableRow>
                           ))}
                           <TableRow className="border-t-2 font-semibold">
-                            <TableCell>Total (incl. Reste Structure)</TableCell>
+                             <TableCell>Total</TableCell>
                             <TableCell className="text-right">{totalPercent}%</TableCell>
-                            <TableCell className="text-right font-mono tabular-nums">{fmt(internalPool)}</TableCell>
+                            <TableCell className="text-right font-mono tabular-nums">{fmt(opPool)}</TableCell>
                             {people.map((_, pi) => (
                               <TableCell key={pi} className="text-right font-mono tabular-nums">
                                 {fmt(perPersonTotal[pi] || 0)}
@@ -751,7 +751,7 @@ export default function Mission() {
                     <CardTitle className="flex items-center gap-2 text-base">
                       <ListChecks className="h-4 w-4 text-b4-coral" /> Reste Structure
                     </CardTitle>
-                    <p className="mt-1 text-xs text-muted-foreground">Separate percentage of the pool, kept by the entity and never split per person.</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Separate percentage of the full mission budget, kept by the entity and never split per person.</p>
                   </CardHeader>
                   <CardContent>
                     <Table>
@@ -782,7 +782,7 @@ export default function Mission() {
                   <div className="flex flex-wrap gap-2">
                     <Badge variant={totalPercent === 100 ? "secondary" : "destructive"}>Tasks {totalPercent}%</Badge>
                     <Badge variant="outline">
-                      Pool {fmt(internalPool)} {currency}
+                      Pool {fmt(opPool)} {currency}
                     </Badge>
                   </div>
                   <Button onClick={save} disabled={saving}>
