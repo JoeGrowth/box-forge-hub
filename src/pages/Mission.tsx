@@ -157,8 +157,19 @@ export default function Mission() {
 
   const chargesTotal = useMemo(() => charges.reduce((s, c) => s + (Number(c.amount) || 0), 0), [charges]);
   const internalPool = Math.max(0, (Number(budget) || 0) - chargesTotal);
-  const totalPercent = useMemo(() => tasks.reduce((s, t) => s + (Number(t.percent) || 0), 0), [tasks]);
-  const taskAmounts = tasks.map((t) => (internalPool * (Number(t.percent) || 0)) / 100);
+  // Reste Structure is a percentage of the FULL budget; the Operation Task Force
+  // pool is what remains of the pool after the reserve is taken out.
+  const reserveTask = tasks.find((t) => t.locked);
+  const reservePercent = Number(reserveTask?.percent) || 0;
+  const reserveAmount = ((Number(budget) || 0) * reservePercent) / 100;
+  const opPool = Math.max(0, internalPool - reserveAmount);
+  const totalPercent = useMemo(
+    () => tasks.filter((t) => !t.locked).reduce((s, t) => s + (Number(t.percent) || 0), 0),
+    [tasks],
+  );
+  const taskAmounts = tasks.map((t) =>
+    t.locked ? reserveAmount : (opPool * (Number(t.percent) || 0)) / 100,
+  );
 
   const getShares = (t: Task): number[] => {
     const n = people.length;
