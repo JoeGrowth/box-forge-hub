@@ -493,53 +493,8 @@ export function DistributionModels({
               </div>
 
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs uppercase tracking-wide text-muted-foreground">Tasks</Label>
-                  <Badge variant={totalPercent === 100 ? "secondary" : "destructive"}>{totalPercent}%</Badge>
-                </div>
-                {editing.tasks.map((t, i) => (
-                  <div key={t.id} className="flex items-center gap-2">
-                    <Input
-                      value={t.label}
-                      onChange={(e) => {
-                        const tasks = [...editing.tasks];
-                        tasks[i] = { ...t, label: e.target.value };
-                        setEditing({ ...editing, tasks });
-                      }}
-                      className="flex-1"
-                    />
-                    <Input
-                      type="number"
-                      value={t.percent}
-                      onChange={(e) => {
-                        const tasks = [...editing.tasks];
-                        tasks[i] = { ...t, percent: Number(e.target.value) || 0 };
-                        setEditing({ ...editing, tasks });
-                      }}
-                      className="w-20 text-right font-mono"
-                    />
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                      onClick={() => setEditing({ ...editing, tasks: editing.tasks.filter((x) => x.id !== t.id) })}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                ))}
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setEditing({ ...editing, tasks: [...editing.tasks, { id: uid(), label: "New task", percent: 0 }] })}
-                >
-                  <Plus className="mr-1 h-3 w-3" /> Add task
-                </Button>
-              </div>
-
-              <div className="space-y-2">
                 <Label className="text-xs uppercase tracking-wide text-muted-foreground">
-                  Charges (fixed % first, then default amounts)
+                  Entity core team (Broker, Administration, Quality Assurance, Platform Fees…)
                 </Label>
                 {editing.charges.map((c, i) => (
                   <div key={c.id} className="flex items-center gap-2">
@@ -609,6 +564,76 @@ export function DistributionModels({
                 >
                   <Plus className="mr-1 h-3 w-3" /> Add charge
                 </Button>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs uppercase tracking-wide text-muted-foreground">Operation Task Force and Third Party Charges</Label>
+                  <Badge variant={totalPercent === 100 ? "secondary" : "destructive"}>{totalPercent}%</Badge>
+                </div>
+                {editing.tasks.map((t, i) => isStructuralReserve(t.label) ? null : (
+                  <div key={t.id} className="flex items-center gap-2">
+                    <Input
+                      value={t.label}
+                      onChange={(e) => {
+                        const tasks = [...editing.tasks];
+                        tasks[i] = { ...t, label: e.target.value };
+                        setEditing({ ...editing, tasks });
+                      }}
+                      className="flex-1"
+                    />
+                    <Input
+                      type="number"
+                      value={t.percent}
+                      onChange={(e) => {
+                        const tasks = [...editing.tasks];
+                        tasks[i] = { ...t, percent: Number(e.target.value) || 0 };
+                        setEditing({ ...editing, tasks });
+                      }}
+                      className="w-20 text-right font-mono"
+                    />
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                      onClick={() => setEditing({ ...editing, tasks: editing.tasks.filter((x) => x.id !== t.id) })}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setEditing({ ...editing, tasks: [...editing.tasks, { id: uid(), label: "New task", percent: 0 }] })}
+                >
+                  <Plus className="mr-1 h-3 w-3" /> Add task
+                </Button>
+              </div>
+
+              <div className="space-y-2 rounded-md border border-dashed border-border p-3">
+                <Label className="text-xs uppercase tracking-wide text-muted-foreground">Reste Structure (separate %, not split per person)</Label>
+                {editing.tasks.map((t, i) => !isStructuralReserve(t.label) ? null : (
+                  <div key={t.id} className="flex items-center gap-2">
+                    <Input value={t.label} readOnly className="flex-1 bg-muted/40 font-medium" />
+                    <Input
+                      type="number"
+                      value={t.percent}
+                      onChange={(e) => {
+                        const tasks = [...editing.tasks];
+                        tasks[i] = { ...t, percent: Number(e.target.value) || 0 };
+                        setEditing({ ...editing, tasks });
+                      }}
+                      className="w-20 text-right font-mono"
+                    />
+                    <span className="flex h-8 w-8 items-center justify-center text-muted-foreground"><Lock className="h-3.5 w-3.5" /></span>
+                  </div>
+                ))}
+                {!editing.tasks.some((t) => isStructuralReserve(t.label)) && (
+                  <Button size="sm" variant="outline" onClick={() => setEditing({ ...editing, tasks: [...editing.tasks, { id: uid(), label: "Structural reserve", percent: 0, locked: true }] })}>
+                    <Plus className="mr-1 h-3 w-3" /> Add Reste Structure
+                  </Button>
+                )}
               </div>
             </div>
           )}
