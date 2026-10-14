@@ -157,8 +157,19 @@ export default function Mission() {
 
   const chargesTotal = useMemo(() => charges.reduce((s, c) => s + (Number(c.amount) || 0), 0), [charges]);
   const internalPool = Math.max(0, (Number(budget) || 0) - chargesTotal);
-  const totalPercent = useMemo(() => tasks.reduce((s, t) => s + (Number(t.percent) || 0), 0), [tasks]);
-  const taskAmounts = tasks.map((t) => (internalPool * (Number(t.percent) || 0)) / 100);
+  // Reste Structure is a percentage of the FULL budget; the Operation Task Force
+  // pool is what remains of the pool after the reserve is taken out.
+  const reserveTask = tasks.find((t) => t.locked);
+  const reservePercent = Number(reserveTask?.percent) || 0;
+  const reserveAmount = ((Number(budget) || 0) * reservePercent) / 100;
+  const opPool = Math.max(0, internalPool - reserveAmount);
+  const totalPercent = useMemo(
+    () => tasks.filter((t) => !t.locked).reduce((s, t) => s + (Number(t.percent) || 0), 0),
+    [tasks],
+  );
+  const taskAmounts = tasks.map((t) =>
+    t.locked ? reserveAmount : (opPool * (Number(t.percent) || 0)) / 100,
+  );
 
   const getShares = (t: Task): number[] => {
     const n = people.length;
@@ -627,7 +638,7 @@ export default function Mission() {
                         <Badge variant={totalPercent === 100 ? "secondary" : "destructive"}>{totalPercent}%</Badge>
                       </CardTitle>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Pool of {fmt(internalPool)} {currency} split by task, then by person.
+                         Pool of {fmt(opPool)} {currency} (remaining pool minus Reste Structure) split by task, then by person.
                       </p>
                     </div>
                     <Button size="sm" variant="outline" className="self-start sm:self-auto" onClick={addTask}>
@@ -717,9 +728,9 @@ export default function Mission() {
                             </TableRow>
                           ))}
                           <TableRow className="border-t-2 font-semibold">
-                            <TableCell>Total (incl. Reste Structure)</TableCell>
+                             <TableCell>Total</TableCell>
                             <TableCell className="text-right">{totalPercent}%</TableCell>
-                            <TableCell className="text-right font-mono tabular-nums">{fmt(internalPool)}</TableCell>
+                            <TableCell className="text-right font-mono tabular-nums">{fmt(opPool)}</TableCell>
                             {people.map((_, pi) => (
                               <TableCell key={pi} className="text-right font-mono tabular-nums">
                                 {fmt(perPersonTotal[pi] || 0)}
@@ -740,7 +751,7 @@ export default function Mission() {
                     <CardTitle className="flex items-center gap-2 text-base">
                       <ListChecks className="h-4 w-4 text-b4-coral" /> Reste Structure
                     </CardTitle>
-                    <p className="mt-1 text-xs text-muted-foreground">Separate percentage of the pool, kept by the entity and never split per person.</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Separate percentage of the full mission budget, kept by the entity and never split per person.</p>
                   </CardHeader>
                   <CardContent>
                     <Table>
@@ -771,7 +782,7 @@ export default function Mission() {
                   <div className="flex flex-wrap gap-2">
                     <Badge variant={totalPercent === 100 ? "secondary" : "destructive"}>Tasks {totalPercent}%</Badge>
                     <Badge variant="outline">
-                      Pool {fmt(internalPool)} {currency}
+                      Pool {fmt(opPool)} {currency}
                     </Badge>
                   </div>
                   <Button onClick={save} disabled={saving}>
