@@ -34,7 +34,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { exportMissionPdf } from "@/lib/missionPdfExport";
 
-type Task = { id: string; label: string; percent: number; locked?: boolean; personShares?: number[] };
+type Task = { id: string; label: string; percent: number; locked?: boolean; thirdParty?: boolean; amount?: number; personShares?: number[] };
 type Charge = { id: string; label: string; amount: number; fixed?: boolean; percent?: number; system?: boolean };
 
 const uid = () => Math.random().toString(36).slice(2, 9);
@@ -49,12 +49,13 @@ const normalizeTaskLocks = (items: Task[]): Task[] => {
     const { locked: _locked, ...splitTask } = task;
     return splitTask;
   });
-  if (mapped.some((t) => t.locked)) {
-    // Keep the reserve last.
-    return [...mapped.filter((t) => !t.locked), ...mapped.filter((t) => t.locked)];
-  }
-  const used = mapped.reduce((s, t) => s + (Number(t.percent) || 0), 0);
-  return [...mapped, { id: uid(), label: "Structural reserve", percent: Math.max(0, 100 - used), locked: true }];
+  // Order: task-force tasks, then third-party charges, then the reserve last.
+  const regular = mapped.filter((t) => !t.locked && !t.thirdParty);
+  const thirdParty = mapped.filter((t) => !t.locked && t.thirdParty);
+  const reserves = mapped.filter((t) => t.locked);
+  if (reserves.length) return [...regular, ...thirdParty, ...reserves];
+  const used = regular.reduce((s, t) => s + (Number(t.percent) || 0), 0);
+  return [...regular, ...thirdParty, { id: uid(), label: "Structural reserve", percent: Math.max(0, 100 - used), locked: true }];
 };
 const fmt = (n: number) =>
   new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
@@ -183,13 +184,16 @@ export default function Mission() {
   const reserveTask = tasks.find((t) => t.locked);
   const reservePercent = Number(reserveTask?.percent) || 0;
   const reserveAmount = ((Number(budget) || 0) * reservePercent) / 100;
-  const opPool = Math.max(0, internalPool - reserveAmount);
+  // Third-party charges are fixed amounts paid out of the pool; their % is derived from the budget.
+  const thirdPartyTasks = tasks.filter((t) => t.thirdParty && !t.locked);
+  const thirdPartyTotal = thirdPartyTasks.reduce((s, t) => s + (Number(t.amount) || 0), 0);
+  const opPool = Math.max(0, internalPool - reserveAmount - thirdPartyTotal);
   const totalPercent = useMemo(
-    () => tasks.filter((t) => !t.locked).reduce((s, t) => s + (Number(t.percent) || 0), 0),
+    () => tasks.filter((t) => !t.locked && !t.thirdParty).reduce((s, t) => s + (Number(t.percent) || 0), 0),
     [tasks],
   );
   const taskAmounts = tasks.map((t) =>
-    t.locked ? reserveAmount : (opPool * (Number(t.percent) || 0)) / 100,
+    t.locked ? reserveAmount : t.thirdParty ? Number(t.amount) || 0 : (opPool * (Number(t.percent) || 0)) / 100,
   );
 
   const getShares = (t: Task): number[] => {
@@ -203,7 +207,7 @@ export default function Mission() {
   };
   const taskShareSum = (t: Task) => getShares(t).reduce((s, v) => s + v, 0);
   const perPersonPerTask: (number | null)[][] = tasks.map((t, i) => {
-    if (t.locked || people.length === 0) return people.map(() => null);
+    if (t.locked || t.thirdParty || people.length === 0) return people.map(() => null);
     return getShares(t).map((s) => (taskAmounts[i] * s) / 100);
   });
   const perPersonTotal = people.map((_, pi) =>
@@ -226,11 +230,20 @@ export default function Mission() {
 
   const addTask = () =>
     setTasks((p) => {
-      const lockedIdx = p.findIndex((t) => t.locked);
+      const insertIdx = p.findIndex((t) => t.locked || t.thirdParty);
       const newTask: Task = { id: uid(), label: "New task", percent: 0 };
-      if (lockedIdx === -1) return [...p, newTask];
+      if (insertIdx === -1) return [...p, newTask];
       const copy = [...p];
-      copy.splice(lockedIdx, 0, newTask);
+      copy.splice(insertIdx, 0, newTask);
+      return copy;
+    });
+  const addThirdParty = () =>
+    setTasks((p) => {
+      const lockedIdx = p.findIndex((t) => t.locked);
+      const newCharge: Task = { id: uid(), label: "Third party charge", percent: 0, amount: 0, thirdParty: true };
+      if (lockedIdx === -1) return [...p, newCharge];
+      const copy = [...p];
+      copy.splice(lockedIdx, 0, newCharge);
       return copy;
     });
 
@@ -679,11 +692,11 @@ export default function Mission() {
                     >
                       <div>
                         <CardTitle className="flex items-center gap-2 text-base">
-                          <ListChecks className="h-4 w-4 text-primary" /> Operation Task Force and Third Party Charges
+                          <ListChecks className="h-4 w-4 text-primary" /> Operation Task Force
                           <Badge variant={totalPercent === 100 ? "secondary" : "destructive"}>{totalPercent}%</Badge>
                         </CardTitle>
                         <p className="mt-1 text-xs text-muted-foreground">
-                          Pool of {fmt(opPool)} {currency} (remaining pool minus Reste Structure) split by task, then by person.
+                          Pool of {fmt(opPool)} {currency} (remaining pool minus Reste Structure and Third Party Charges) split by task, then by person.
                         </p>
                       </div>
                       <ChevronDown
@@ -712,7 +725,7 @@ export default function Mission() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {tasks.map((t, idx) => t.locked ? null : (
+                          {tasks.map((t, idx) => (t.locked || t.thirdParty) ? null : (
                             <TableRow key={t.id}>
                               <TableCell>
                                 {t.locked ? (
@@ -796,8 +809,100 @@ export default function Mission() {
                 </Card>
 
 
-                {/* Reste Structure */}
+                {/* Third Party Charges */}
                 <Card>
+                  <CardHeader className="flex flex-col gap-2 border-b border-border/60 sm:flex-row sm:items-center sm:justify-between">
+                    <div
+                      className="flex flex-1 cursor-pointer select-none items-start justify-between gap-2"
+                      onClick={() => toggleSection("thirdParty")}
+                    >
+                      <div>
+                        <CardTitle className="flex items-center gap-2 text-base">
+                          <Wallet className="h-4 w-4 text-b4-teal" /> Third Party Charges
+                          <Badge variant="secondary">{fmt(thirdPartyTotal)} {currency}</Badge>
+                        </CardTitle>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Fixed amounts paid to third parties, taken out of the pool before the task force split. The % is derived from the amount.
+                        </p>
+                      </div>
+                      <ChevronDown
+                        className={`mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform ${collapsed.thirdParty ? "" : "rotate-180"}`}
+                      />
+                    </div>
+                    <Button size="sm" variant="outline" className="self-start sm:self-auto" onClick={addThirdParty}>
+                      <Plus className="mr-1 h-4 w-4" /> Add charge
+                    </Button>
+                  </CardHeader>
+                  {!collapsed.thirdParty && (
+                  <CardContent>
+                    <div className="-mx-6 overflow-x-auto px-6">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Third party charge</TableHead>
+                            <TableHead className="w-32 text-right">Amount</TableHead>
+                            <TableHead className="w-24 text-right">%</TableHead>
+                            <TableHead className="w-12" />
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {thirdPartyTasks.length === 0 && (
+                            <TableRow>
+                              <TableCell colSpan={4} className="text-center text-sm text-muted-foreground">
+                                No third party charges yet.
+                              </TableCell>
+                            </TableRow>
+                          )}
+                          {tasks.map((t, idx) => !t.thirdParty || t.locked ? null : (
+                            <TableRow key={t.id}>
+                              <TableCell>
+                                <Input value={t.label} onChange={(e) => updateTask(t.id, { label: e.target.value })} />
+                              </TableCell>
+                              <TableCell>
+                                <Input
+                                  type="number"
+                                  className="text-right"
+                                  value={t.amount ?? 0}
+                                  onChange={(e) => updateTask(t.id, { amount: parseFloat(e.target.value) || 0 })}
+                                />
+                              </TableCell>
+                              <TableCell className="text-right font-mono tabular-nums text-muted-foreground">
+                                {(Number(budget) || 0) > 0
+                                  ? `${(Math.round(((Number(t.amount) || 0) / (Number(budget) || 1)) * 10000) / 100).toFixed(2)}%`
+                                  : "—"}
+                              </TableCell>
+                              <TableCell>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => setTasks((p) => p.filter((x) => x.id !== t.id))}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          {thirdPartyTasks.length > 0 && (
+                            <TableRow className="border-t-2 font-semibold">
+                              <TableCell>Total third party charges</TableCell>
+                              <TableCell className="text-right font-mono tabular-nums">{fmt(thirdPartyTotal)}</TableCell>
+                              <TableCell className="text-right font-mono tabular-nums">
+                                {(Number(budget) || 0) > 0
+                                  ? `${(Math.round((thirdPartyTotal / (Number(budget) || 1)) * 10000) / 100).toFixed(2)}%`
+                                  : "—"}
+                              </TableCell>
+                              <TableCell />
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </CardContent>
+                  )}
+                </Card>
+
+                {/* Reste Structure */}
+                 <Card>
                   <CardHeader className="border-b border-border/60">
                     <div
                       className="flex cursor-pointer select-none items-start justify-between gap-2"
