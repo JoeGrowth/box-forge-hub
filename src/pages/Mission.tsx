@@ -35,6 +35,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { exportMissionPdf } from "@/lib/missionPdfExport";
+import { fetchMissionProducts, type MissionProduct } from "@/hooks/useMissionProducts";
+import { MissionProductSelect } from "@/components/organization/MissionProductSelect";
 
 type Task = { id: string; label: string; percent: number; locked?: boolean; thirdParty?: boolean; amount?: number; personShares?: number[] };
 type Charge = { id: string; label: string; amount: number; fixed?: boolean; percent?: number; system?: boolean };
@@ -84,7 +86,7 @@ export default function Mission() {
   const [modelName, setModelName] = useState<string>("");
   const [orgSlug, setOrgSlug] = useState("");
   const [organizationName, setOrganizationName] = useState("");
-  const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
+  const [products, setProducts] = useState<MissionProduct[]>([]);
   const [productId, setProductId] = useState("");
   const [pdfOpen, setPdfOpen] = useState(false);
   const [pdfDate, setPdfDate] = useState("");
@@ -159,21 +161,38 @@ export default function Mission() {
     const orgId = (folder as { org_id?: string } | null)?.org_id;
     if (!orgId) return;
     setProductsLoading(true);
-    const [{ data: org }, { data: orgProducts, error: productsError }] = await Promise.all([
-      supabase.from("organizations").select("slug, name").eq("id", orgId).maybeSingle(),
-      supabase.from("organization_products").select("id, name").eq("organization_id", orgId).is("archived_at", null).order("position"),
-    ]);
-    if (org?.slug) setOrgSlug(org.slug);
-    setOrganizationName(org?.name || "");
-    setProducts(orgProducts || []);
-    setProductError(Boolean(productsError));
-    setProductsLoading(false);
+    try {
+      const [{ data: org }, orgProducts] = await Promise.all([
+        supabase.from("organizations").select("slug, name").eq("id", orgId).maybeSingle(),
+        fetchMissionProducts(orgId),
+      ]);
+      if (org?.slug) setOrgSlug(org.slug);
+      setOrganizationName(org?.name || "");
+      setProducts(orgProducts);
+      const matched = orgProducts.find((p) => p.name === data.title);
+      if (matched) {
+        setProductId(matched.id);
+        setIteration(matched.shippedCount);
+      }
+      setProductError(false);
+    } catch {
+      setProductError(true);
+    } finally {
+      setProductsLoading(false);
+    }
 
   }, [id]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  const selectProduct = (product: MissionProduct) => {
+    setProductId(product.id);
+    setTitle(product.name);
+    setIteration(product.shippedCount);
+    setDirty(true);
+  };
 
   // Percentage-driven charges keep their amount in sync with the budget.
   useEffect(() => {
@@ -276,12 +295,17 @@ export default function Mission() {
         if (!silent) toast.error("Mission title is required.");
         return false;
       }
+      const selectedProduct = products.find((p) => p.id === productId);
+      if (productsLoading || productError || !selectedProduct) {
+        if (!silent) toast.error("Select a shipped organization product as the mission title.");
+        return false;
+      }
       setSaving(true);
       const { data, error } = await (supabase.from("distribution_records" as never) as never as any)
         .update({
           client: client.trim() || null,
-          title: title.trim(),
-          iteration: Math.max(1, Number(iteration) || 1),
+          title: selectedProduct.name,
+          iteration: selectedProduct.shippedCount,
           budget,
           currency,
           charges,
@@ -303,7 +327,7 @@ export default function Mission() {
       setDirty(false);
       return true;
     },
-    [id, user, title, client, iteration, budget, currency, charges, tasks, people],
+    [id, user, title, client, iteration, budget, currency, charges, tasks, people, products, productId, productsLoading, productError],
   );
 
   const save = async () => {
@@ -327,7 +351,7 @@ export default function Mission() {
       return;
     }
     const selectedProduct = products.find((p) => p.id === productId);
-    if (products.length && !selectedProduct) {
+    if (!selectedProduct) {
       toast.error("Select a product from this organization's product list.");
       return;
     }
@@ -461,10 +485,7 @@ export default function Mission() {
                       </div>
                       <div className="space-y-1.5">
                         <Label htmlFor="pdf-mission-product">Product</Label>
-                        <Select value={productId} onValueChange={setProductId} disabled={productsLoading || !products.length}>
-                          <SelectTrigger id="pdf-mission-product"><SelectValue placeholder={productsLoading ? "Loading products…" : "Select organization product"} /></SelectTrigger>
-                          <SelectContent>{products.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
-                        </Select>
+                        <Input id="pdf-mission-product" value={products.find((p) => p.id === productId)?.name || ""} readOnly />
                         {productError ? <p className="text-sm text-destructive">Products could not be loaded. Reload to retry.</p> : !productsLoading && !products.length ? <p className="text-sm text-muted-foreground">No products listed for this organization.</p> : null}
                       </div>
                       <div className="space-y-1.5">
@@ -475,7 +496,7 @@ export default function Mission() {
                     </div>
                     <DialogFooter>
                       <Button variant="outline" onClick={() => setPdfOpen(false)}>Cancel</Button>
-                      <Button onClick={downloadPdf} disabled={productsLoading || productError || (products.length > 0 && !productId)}><FileDown className="mr-2 h-4 w-4" />Download PDF</Button>
+                      <Button onClick={downloadPdf} disabled={productsLoading || productError || !productId}><FileDown className="mr-2 h-4 w-4" />Download PDF</Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
@@ -494,15 +515,14 @@ export default function Mission() {
                     </div>
                     <div className="space-y-1.5">
                       <Label>Mission title</Label>
-                      <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+                      <MissionProductSelect products={products} value={productId} onSelect={selectProduct} loading={productsLoading} error={productError} />
                     </div>
                     <div className="space-y-1.5">
                       <Label>Number of iteration</Label>
                       <Input
-                        type="number"
-                        min={1}
-                        value={iteration}
-                        onChange={(e) => setIteration(Math.max(1, parseInt(e.target.value) || 1))}
+                        aria-label="Number of iteration"
+                        value={productId ? iteration : ""}
+                        readOnly
                       />
                     </div>
                     <div className="space-y-1.5">
