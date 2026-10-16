@@ -346,22 +346,12 @@ export default function Mission() {
   }, [dirty, loading, notFound, persist]);
 
   const downloadPdf = () => {
-    if (productsLoading || productError) {
-      toast.error("Organization products are unavailable. Please reload and try again.");
-      return;
-    }
-    const selectedProduct = products.find((p) => p.id === productId);
-    if (!selectedProduct) {
-      toast.error("Select a product from this organization's product list.");
-      return;
-    }
     try {
     exportMissionPdf({
       title,
       client,
       date: pdfDate,
       context: pdfContext.trim(),
-      product: selectedProduct?.name,
       organizationName,
       operationPool: opPool,
       reserveAmount,
