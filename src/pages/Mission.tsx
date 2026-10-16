@@ -207,7 +207,7 @@ export default function Mission() {
   };
   const taskShareSum = (t: Task) => getShares(t).reduce((s, v) => s + v, 0);
   const perPersonPerTask: (number | null)[][] = tasks.map((t, i) => {
-    if (t.locked || people.length === 0) return people.map(() => null);
+    if (t.locked || t.thirdParty || people.length === 0) return people.map(() => null);
     return getShares(t).map((s) => (taskAmounts[i] * s) / 100);
   });
   const perPersonTotal = people.map((_, pi) =>
@@ -230,11 +230,20 @@ export default function Mission() {
 
   const addTask = () =>
     setTasks((p) => {
-      const lockedIdx = p.findIndex((t) => t.locked);
+      const insertIdx = p.findIndex((t) => t.locked || t.thirdParty);
       const newTask: Task = { id: uid(), label: "New task", percent: 0 };
-      if (lockedIdx === -1) return [...p, newTask];
+      if (insertIdx === -1) return [...p, newTask];
       const copy = [...p];
-      copy.splice(lockedIdx, 0, newTask);
+      copy.splice(insertIdx, 0, newTask);
+      return copy;
+    });
+  const addThirdParty = () =>
+    setTasks((p) => {
+      const lockedIdx = p.findIndex((t) => t.locked);
+      const newCharge: Task = { id: uid(), label: "Third party charge", percent: 0, amount: 0, thirdParty: true };
+      if (lockedIdx === -1) return [...p, newCharge];
+      const copy = [...p];
+      copy.splice(lockedIdx, 0, newCharge);
       return copy;
     });
 
