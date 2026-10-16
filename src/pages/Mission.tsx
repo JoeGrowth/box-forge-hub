@@ -692,11 +692,11 @@ export default function Mission() {
                     >
                       <div>
                         <CardTitle className="flex items-center gap-2 text-base">
-                          <ListChecks className="h-4 w-4 text-primary" /> Operation Task Force and Third Party Charges
+                          <ListChecks className="h-4 w-4 text-primary" /> Operation Task Force
                           <Badge variant={totalPercent === 100 ? "secondary" : "destructive"}>{totalPercent}%</Badge>
                         </CardTitle>
                         <p className="mt-1 text-xs text-muted-foreground">
-                          Pool of {fmt(opPool)} {currency} (remaining pool minus Reste Structure) split by task, then by person.
+                          Pool of {fmt(opPool)} {currency} (remaining pool minus Reste Structure and Third Party Charges) split by task, then by person.
                         </p>
                       </div>
                       <ChevronDown
@@ -725,7 +725,7 @@ export default function Mission() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {tasks.map((t, idx) => t.locked ? null : (
+                          {tasks.map((t, idx) => (t.locked || t.thirdParty) ? null : (
                             <TableRow key={t.id}>
                               <TableCell>
                                 {t.locked ? (
