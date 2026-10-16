@@ -792,6 +792,7 @@ export default function Mission() {
                       </Table>
                     </div>
                   </CardContent>
+                  )}
                 </Card>
 
 
