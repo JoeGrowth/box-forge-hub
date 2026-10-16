@@ -17,6 +17,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+import { useMissionProducts } from "@/hooks/useMissionProducts";
+import { MissionProductSelect } from "@/components/organization/MissionProductSelect";
 
 
 
@@ -72,7 +74,6 @@ function DistributionBuilder({
   defaultCharges,
   defaultClient = "",
   defaultBudget = 0,
-  autoIteration = false,
 }: {
   kind: Kind;
   kindLabel?: string;
@@ -82,13 +83,14 @@ function DistributionBuilder({
   defaultCharges: Charge[];
   defaultClient?: string;
   defaultBudget?: number;
-  autoIteration?: boolean;
 }) {
   const label = kindLabel ?? kind;
   const { user } = useAuth();
   const [resetKey, setResetKey] = useState(0);
   const [client, setClient] = useState(defaultClient);
   const [title, setTitle] = useState(defaultTitle);
+  const { products, loading: productsLoading, error: productsError, hasOrganization } = useMissionProducts({ kind });
+  const selectedProduct = products.find((p) => p.name === title);
   const [iteration, setIteration] = useState<number>(1);
   const [budget, setBudget] = useState<number>(defaultBudget);
   const [currency, setCurrency] = useState<string>("TND");
@@ -119,12 +121,9 @@ function DistributionBuilder({
     fetchSaved();
   }, [fetchSaved]);
 
-  // When a mission is created from a distribution model, the iteration number is
-  // derived from how many missions were already distributed with that model.
   useEffect(() => {
-    if (!autoIteration || editingId) return;
-    setIteration(saved.length + 1);
-  }, [autoIteration, saved, editingId]);
+    if (selectedProduct) setIteration(selectedProduct.shippedCount);
+  }, [selectedProduct]);
 
 
   // Fixed charges are percentage-driven: keep their amount in sync with the budget.
@@ -252,17 +251,21 @@ function DistributionBuilder({
 
   const titleTaken = useMemo(
     () =>
-      saved.some(
+      !hasOrganization && saved.some(
         (r) =>
           r.id !== editingId &&
           r.title.trim().toLowerCase() === title.trim().toLowerCase(),
       ),
-    [saved, title, editingId],
+    [saved, title, editingId, hasOrganization],
   );
 
   const handleSave = async () => {
     if (!user) {
       toast.error("Sign in to save distributions.");
+      return;
+    }
+    if (productsLoading || productsError || (hasOrganization && !selectedProduct)) {
+      toast.error("Select a shipped organization product as the mission title.");
       return;
     }
     if (!title.trim()) {
@@ -283,7 +286,7 @@ function DistributionBuilder({
       kind,
       client: client.trim() || null,
       title: title.trim(),
-      iteration: Math.max(1, Number(iteration) || 1),
+      iteration: selectedProduct?.shippedCount ?? Math.max(1, Number(iteration) || 1),
       budget_label: budgetLabel,
       budget,
       currency,
@@ -313,6 +316,7 @@ function DistributionBuilder({
 
   const handleTitleBlur = async () => {
     if (!user) return;
+    if (hasOrganization || productsLoading || productsError) return;
     if (!title.trim()) return;
     if (titleTaken) return;
 
@@ -487,12 +491,12 @@ function DistributionBuilder({
           </div>
           <div className="space-y-1.5">
             <Label>Mission title</Label>
-            <Input
+            {hasOrganization ? <MissionProductSelect products={products} value={selectedProduct?.id || ""} onSelect={(p) => { setTitle(p.name); setIteration(p.shippedCount); }} loading={productsLoading} error={productsError} /> : <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               onBlur={handleTitleBlur}
               className={titleTaken ? "border-destructive focus-visible:ring-destructive" : ""}
-            />
+            />}
             {titleTaken && (
               <p className="text-xs text-destructive">
                 A {label} distribution with this title already exists.
@@ -504,7 +508,9 @@ function DistributionBuilder({
             <Input
               type="number"
               min={1}
-              value={iteration}
+              aria-label="Number of iteration"
+              value={hasOrganization ? selectedProduct?.shippedCount ?? "" : iteration}
+              readOnly={hasOrganization}
               onChange={(e) => setIteration(Math.max(1, parseInt(e.target.value) || 1))}
             />
           </div>
@@ -1599,7 +1605,6 @@ export function EntityCategories({
             defaultTitle={missionPrefill?.title ?? ""}
             defaultClient={missionPrefill?.client ?? ""}
             defaultBudget={missionPrefill?.budget ?? 0}
-            autoIteration={!!missionPrefill}
             defaultBudgetLabel="Budget"
             defaultTasks={
               useModel
