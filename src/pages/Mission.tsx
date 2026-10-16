@@ -631,57 +631,6 @@ export default function Mission() {
                   )}
                 </Card>
 
-                {/* People */}
-                <Card>
-                  <CardHeader className="flex flex-col gap-2 border-b border-border/60 sm:flex-row sm:items-center sm:justify-between">
-                    <div
-                      className="flex flex-1 cursor-pointer select-none items-start justify-between gap-2"
-                      onClick={() => toggleSection("people")}
-                    >
-                      <div>
-                        <CardTitle className="flex items-center gap-2 text-base">
-                          <Users className="h-4 w-4 text-b4-teal" /> People splitting the pool
-                          <Badge variant="secondary">{people.length}</Badge>
-                        </CardTitle>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          Each person receives a share of every task (in %).
-                        </p>
-                      </div>
-                      <ChevronDown
-                        className={`mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform ${collapsed.people ? "" : "rotate-180"}`}
-                      />
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      <Button size="sm" variant="outline" onClick={() => setPeople((p) => [...p, `Person (${p.length + 1})`])}>
-                        <Plus className="mr-1 h-4 w-4" /> Add person
-                      </Button>
-                      <Button size="sm" variant="ghost" onClick={() => setPeople((p) => (p.length > 1 ? p.slice(0, -1) : p))}>
-                        <Trash2 className="mr-1 h-4 w-4" /> Remove last
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  {!collapsed.people && (
-                  <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {people.map((p, i) => (
-                      <div key={i} className="flex items-center gap-3 rounded-lg border border-border bg-muted/20 p-2.5">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                          {(p || "?").trim().charAt(0).toUpperCase() || "?"}
-                        </div>
-                        <div className="min-w-0 flex-1 space-y-1">
-                          <Input
-                            value={p}
-                            onChange={(e) => setPeople((prev) => prev.map((v, idx) => (idx === i ? e.target.value : v)))}
-                            className="h-8"
-                          />
-                          <p className="font-mono text-[11px] tabular-nums text-muted-foreground">
-                            {fmt(perPersonTotal[i] || 0)} {currency}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </CardContent>
-                  )}
-                </Card>
 
                 {/* Tasks */}
                 <Card>
