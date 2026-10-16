@@ -673,19 +673,28 @@ export default function Mission() {
                 {/* Tasks */}
                 <Card>
                   <CardHeader className="flex flex-col gap-2 border-b border-border/60 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <CardTitle className="flex items-center gap-2 text-base">
-                        <ListChecks className="h-4 w-4 text-primary" /> Operation Task Force and Third Party Charges
-                        <Badge variant={totalPercent === 100 ? "secondary" : "destructive"}>{totalPercent}%</Badge>
-                      </CardTitle>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                         Pool of {fmt(opPool)} {currency} (remaining pool minus Reste Structure) split by task, then by person.
-                      </p>
+                    <div
+                      className="flex flex-1 cursor-pointer select-none items-start justify-between gap-2"
+                      onClick={() => toggleSection("tasks")}
+                    >
+                      <div>
+                        <CardTitle className="flex items-center gap-2 text-base">
+                          <ListChecks className="h-4 w-4 text-primary" /> Operation Task Force and Third Party Charges
+                          <Badge variant={totalPercent === 100 ? "secondary" : "destructive"}>{totalPercent}%</Badge>
+                        </CardTitle>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Pool of {fmt(opPool)} {currency} (remaining pool minus Reste Structure) split by task, then by person.
+                        </p>
+                      </div>
+                      <ChevronDown
+                        className={`mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform ${collapsed.tasks ? "" : "rotate-180"}`}
+                      />
                     </div>
                     <Button size="sm" variant="outline" className="self-start sm:self-auto" onClick={addTask}>
                       <Plus className="mr-1 h-4 w-4" /> Add task
                     </Button>
                   </CardHeader>
+                  {!collapsed.tasks && (
                   <CardContent>
                     <div className="-mx-6 overflow-x-auto px-6">
                       <Table>
