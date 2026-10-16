@@ -63,6 +63,7 @@ const Auth = () => {
   // "Signing in...". After 4s we proceed with whatever state we have.
   const [onboardingTimedOut, setOnboardingTimedOut] = useState(false);
   useEffect(() => {
+    setOnboardingTimedOut(false);
     if (!user || !onboardingLoading) return;
     const t = window.setTimeout(() => setOnboardingTimedOut(true), 4000);
     return () => window.clearTimeout(t);
@@ -100,7 +101,7 @@ const Auth = () => {
         navigate("/onboarding", { replace: true });
       }
     }
-  }, [user, onboardingState, onboardingLoading, navigate, justSignedUp]);
+  }, [user, onboardingState, onboardingLoading, onboardingTimedOut, navigate, justSignedUp]);
 
   const validateForm = () => {
     const newErrors: typeof errors = {};
@@ -146,7 +147,9 @@ const Auth = () => {
           } else {
             toast({
               title: "Login Failed",
-              description: error.message,
+              description: /failed to fetch|network|fetch failed/i.test(error.message)
+                ? "Unable to reach the login service. Please try again shortly."
+                : error.message,
               variant: "destructive",
             });
           }
@@ -180,6 +183,14 @@ const Auth = () => {
           });
         }
       }
+    } catch (error: unknown) {
+      toast({
+        title: "Connection error",
+        description: error instanceof Error && !/failed to fetch|network|fetch failed/i.test(error.message)
+          ? error.message
+          : "Unable to reach the login service. Please try again shortly.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }

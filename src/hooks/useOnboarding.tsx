@@ -59,15 +59,18 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
   const [onboardingState, setOnboardingState] = useState<OnboardingState | null>(null);
   const [naturalRole, setNaturalRole] = useState<NaturalRole | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadedUserId, setLoadedUserId] = useState<string | null>(null);
 
   const fetchOnboardingData = async () => {
     if (!user) {
       setOnboardingState(null);
       setNaturalRole(null);
+      setLoadedUserId(null);
       setLoading(false);
       return;
     }
 
+    setLoading(true);
     try {
       // Fetch legacy onboarding state and current 5-question onboarding session.
       const [{ data: stateData, error: stateError }, { data: sessionData, error: sessionError }] = await Promise.all([
@@ -137,6 +140,7 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error("Error fetching onboarding data:", error);
     } finally {
+      setLoadedUserId(user.id);
       setLoading(false);
     }
   };
@@ -325,7 +329,7 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
       value={{
         onboardingState,
         naturalRole,
-        loading,
+        loading: loading || (!!user && loadedUserId !== user.id),
         needsOnboarding,
         updateOnboardingState,
         updateNaturalRole,
