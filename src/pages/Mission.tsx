@@ -474,11 +474,6 @@ export default function Mission() {
                         <Textarea id="pdf-mission-context" value={pdfContext} onChange={(e) => setPdfContext(e.target.value)} placeholder="Mission context" />
                       </div>
                       <div className="space-y-1.5">
-                        <Label htmlFor="pdf-mission-product">Product</Label>
-                        <Input id="pdf-mission-product" value={products.find((p) => p.id === productId)?.name || ""} readOnly />
-                        {productError ? <p className="text-sm text-destructive">Products could not be loaded. Reload to retry.</p> : !productsLoading && !products.length ? <p className="text-sm text-muted-foreground">No products listed for this organization.</p> : null}
-                      </div>
-                      <div className="space-y-1.5">
                         <Label>Human Resources Allocated</Label>
                         <p className="text-sm text-foreground">{people.join(", ") || "None"}</p>
                       </div>
