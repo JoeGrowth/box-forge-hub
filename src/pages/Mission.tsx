@@ -493,7 +493,7 @@ export default function Mission() {
                     </CardTitle>
                     <p className="mt-1 text-xs text-muted-foreground">Client, mission title, iteration and budget.</p>
                   </CardHeader>
-                  <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[1.2fr_2fr_130px_1.6fr]">
                     <div className="space-y-1.5">
                       <Label>Client</Label>
                       <Input value={client} onChange={(e) => setClient(e.target.value)} placeholder="Client name" />
@@ -506,6 +506,7 @@ export default function Mission() {
                       <Label>Number of iteration</Label>
                       <Input
                         aria-label="Number of iteration"
+                        className="w-full"
                         value={productId ? iteration : ""}
                         readOnly
                       />
@@ -540,7 +541,7 @@ export default function Mission() {
                     <p className="text-[11px] text-muted-foreground">{currency}</p>
                   </div>
                   <div className="rounded-xl border border-border bg-card p-4">
-                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Total charges</p>
+                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Entity core team</p>
                     <p className="mt-1 font-mono text-xl font-semibold tabular-nums text-b4-coral">{fmt(chargesTotal)}</p>
                     <p className="text-[11px] text-muted-foreground">
                       {(Number(budget) || 0) > 0
@@ -549,10 +550,10 @@ export default function Mission() {
                     </p>
                   </div>
                   <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
-                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Pool to distribute</p>
-                    <p className="mt-1 font-mono text-xl font-semibold tabular-nums text-primary">{fmt(internalPool)}</p>
+                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Pool to distribute to Operation Task Force</p>
+                    <p className="mt-1 font-mono text-xl font-semibold tabular-nums text-primary">{fmt(opPool)}</p>
                     <p className="text-[11px] text-muted-foreground">
-                      {people.length} {people.length > 1 ? "people" : "person"}
+                      {people.length} {people.length > 1 ? "people" : "person"} · after Reste Structure and Third Party Charges
                     </p>
                   </div>
                   <div className="rounded-xl border border-border bg-card p-4">
