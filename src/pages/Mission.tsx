@@ -667,6 +667,7 @@ export default function Mission() {
                       </div>
                     ))}
                   </CardContent>
+                  )}
                 </Card>
 
                 {/* Tasks */}
