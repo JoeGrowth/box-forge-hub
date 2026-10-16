@@ -809,8 +809,100 @@ export default function Mission() {
                 </Card>
 
 
-                {/* Reste Structure */}
+                {/* Third Party Charges */}
                 <Card>
+                  <CardHeader className="flex flex-col gap-2 border-b border-border/60 sm:flex-row sm:items-center sm:justify-between">
+                    <div
+                      className="flex flex-1 cursor-pointer select-none items-start justify-between gap-2"
+                      onClick={() => toggleSection("thirdParty")}
+                    >
+                      <div>
+                        <CardTitle className="flex items-center gap-2 text-base">
+                          <Wallet className="h-4 w-4 text-b4-teal" /> Third Party Charges
+                          <Badge variant="secondary">{fmt(thirdPartyTotal)} {currency}</Badge>
+                        </CardTitle>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Fixed amounts paid to third parties, taken out of the pool before the task force split. The % is derived from the amount.
+                        </p>
+                      </div>
+                      <ChevronDown
+                        className={`mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform ${collapsed.thirdParty ? "" : "rotate-180"}`}
+                      />
+                    </div>
+                    <Button size="sm" variant="outline" className="self-start sm:self-auto" onClick={addThirdParty}>
+                      <Plus className="mr-1 h-4 w-4" /> Add charge
+                    </Button>
+                  </CardHeader>
+                  {!collapsed.thirdParty && (
+                  <CardContent>
+                    <div className="-mx-6 overflow-x-auto px-6">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Third party charge</TableHead>
+                            <TableHead className="w-32 text-right">Amount</TableHead>
+                            <TableHead className="w-24 text-right">%</TableHead>
+                            <TableHead className="w-12" />
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {thirdPartyTasks.length === 0 && (
+                            <TableRow>
+                              <TableCell colSpan={4} className="text-center text-sm text-muted-foreground">
+                                No third party charges yet.
+                              </TableCell>
+                            </TableRow>
+                          )}
+                          {tasks.map((t, idx) => !t.thirdParty || t.locked ? null : (
+                            <TableRow key={t.id}>
+                              <TableCell>
+                                <Input value={t.label} onChange={(e) => updateTask(t.id, { label: e.target.value })} />
+                              </TableCell>
+                              <TableCell>
+                                <Input
+                                  type="number"
+                                  className="text-right"
+                                  value={t.amount ?? 0}
+                                  onChange={(e) => updateTask(t.id, { amount: parseFloat(e.target.value) || 0 })}
+                                />
+                              </TableCell>
+                              <TableCell className="text-right font-mono tabular-nums text-muted-foreground">
+                                {(Number(budget) || 0) > 0
+                                  ? `${(Math.round(((Number(t.amount) || 0) / (Number(budget) || 1)) * 10000) / 100).toFixed(2)}%`
+                                  : "—"}
+                              </TableCell>
+                              <TableCell>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => setTasks((p) => p.filter((x) => x.id !== t.id))}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          {thirdPartyTasks.length > 0 && (
+                            <TableRow className="border-t-2 font-semibold">
+                              <TableCell>Total third party charges</TableCell>
+                              <TableCell className="text-right font-mono tabular-nums">{fmt(thirdPartyTotal)}</TableCell>
+                              <TableCell className="text-right font-mono tabular-nums">
+                                {(Number(budget) || 0) > 0
+                                  ? `${(Math.round((thirdPartyTotal / (Number(budget) || 1)) * 10000) / 100).toFixed(2)}%`
+                                  : "—"}
+                              </TableCell>
+                              <TableCell />
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </CardContent>
+                  )}
+                </Card>
+
+                {/* Reste Structure */}
+                 <Card>
                   <CardHeader className="border-b border-border/60">
                     <div
                       className="flex cursor-pointer select-none items-start justify-between gap-2"
