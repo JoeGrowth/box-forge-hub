@@ -157,6 +157,26 @@ export function DistributionModels({
   const selectedProduct = products.find((p) => p.id === applyTitle);
   const [applyBudget, setApplyBudget] = useState<string>("");
   const [creating, setCreating] = useState(false);
+  // The whole Distribution models card can be collapsed; the choice is remembered
+  // per organization so a long template list doesn't push the rest of the tab down.
+  const collapseKey = `org-models-collapse:${orgId}`;
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(collapseKey) === "1";
+    } catch {
+      return false;
+    }
+  });
+  const toggleCollapsed = () =>
+    setCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(collapseKey, next ? "1" : "0");
+      } catch {
+        /* storage unavailable — collapsing still works for this session */
+      }
+      return next;
+    });
   const [missions, setMissions] = useState<any[]>([]);
   const navigate = useNavigate();
 
