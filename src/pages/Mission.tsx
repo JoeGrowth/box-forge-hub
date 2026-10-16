@@ -479,13 +479,21 @@ export default function Mission() {
                 {/* Charges */}
                 <Card>
                   <CardHeader className="flex flex-col gap-2 border-b border-border/60 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <CardTitle className="flex items-center gap-2 text-base">
-                        <ClipboardList className="h-4 w-4 text-b4-coral" /> Entity core team
-                      </CardTitle>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Broker, Administration, Quality Assurance, Platform Fees and other entity charges deducted first.
-                      </p>
+                    <div
+                      className="flex flex-1 cursor-pointer select-none items-start justify-between gap-2"
+                      onClick={() => toggleSection("charges")}
+                    >
+                      <div>
+                        <CardTitle className="flex items-center gap-2 text-base">
+                          <ClipboardList className="h-4 w-4 text-b4-coral" /> Entity core team
+                        </CardTitle>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Broker, Administration, Quality Assurance, Platform Fees and other entity charges deducted first.
+                        </p>
+                      </div>
+                      <ChevronDown
+                        className={`mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform ${collapsed.charges ? "" : "rotate-180"}`}
+                      />
                     </div>
                     <Button
                       size="sm"
@@ -496,6 +504,7 @@ export default function Mission() {
                       <Plus className="mr-1 h-4 w-4" /> Add charge
                     </Button>
                   </CardHeader>
+                  {!collapsed.charges && (
                   <CardContent>
                     <div className="-mx-6 overflow-x-auto px-6">
                       <Table>
