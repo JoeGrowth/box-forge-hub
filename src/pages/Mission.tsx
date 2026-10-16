@@ -550,7 +550,7 @@ export default function Mission() {
                     </p>
                   </div>
                   <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
-                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Pool to distribute to Operation Task Force</p>
+                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Operation Task Force</p>
                     <p className="mt-1 font-mono text-xl font-semibold tabular-nums text-primary">{fmt(opPool)}</p>
                     <p className="text-[11px] text-muted-foreground">
                       {people.length} {people.length > 1 ? "people" : "person"} · after Reste Structure and Third Party Charges
