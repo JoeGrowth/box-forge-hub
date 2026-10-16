@@ -92,7 +92,7 @@ export function createMissionPdf(d: MissionPdfData) {
       styles: { font: "helvetica", fontSize: 9, cellPadding: 7, overflow: "linebreak", textColor: NAVY },
       headStyles: { fillColor: NAVY, textColor: 255, fontStyle: "bold" },
       alternateRowStyles: { fillColor: LIGHT },
-      columnStyles: Object.fromEntries(numeric.map((i) => [i, { halign: "right", cellWidth: i === head.length - 1 ? 112 : 66 }])),
+      columnStyles: Object.fromEntries(numeric.map((i) => [i, { halign: "right", cellWidth: i === head.length - 1 ? 112 : 82 }])),
       rowPageBreak: "avoid", showHead: "everyPage",
     });
     y = ((doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y) + 20;
@@ -128,7 +128,7 @@ export function createMissionPdf(d: MissionPdfData) {
   section("Entity core team distribution", `${pct(d.chargesTotal)} of budget | ${amount(d.chargesTotal)}`);
   table(["Role / responsibilities", "% of budget", `Amount (${d.currency})`],
     d.charges.length ? d.charges.map((c) => [
-      `${c.label}${responsibility(c.label) ? `\n${responsibility(c.label)}` : ""}`, pct(c.amount), money(c.amount),
+      `${c.label.replace(/quality ensurance/gi, "Quality Assurance")}${responsibility(c.label) ? `\n${responsibility(c.label)}` : ""}`, pct(c.amount), money(c.amount),
     ]) : [["No core-team charges", pct(0), money(0)]], [1, 2]);
   section("People splitting the pool", `Operation Task Force: ${pct(d.operationPool)} of budget | ${amount(d.operationPool)}`);
   table(["Person", "% of budget", `Allocated (${d.currency})`],
