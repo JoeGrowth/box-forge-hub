@@ -26,6 +26,8 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { createDistEntity } from "@/pages/Distribution";
+import { useMissionProducts } from "@/hooks/useMissionProducts";
+import { MissionProductSelect } from "@/components/organization/MissionProductSelect";
 
 import { Plus, Trash2, Layers, ArrowRight, Copy, Pencil, Lock, FileText } from "lucide-react";
 
@@ -151,6 +153,8 @@ export function DistributionModels({
   const [applyEntity, setApplyEntity] = useState<string>("");
   const [applyClient, setApplyClient] = useState("");
   const [applyTitle, setApplyTitle] = useState("");
+  const { products, loading: productsLoading, error: productsError } = useMissionProducts({ orgId });
+  const selectedProduct = products.find((p) => p.id === applyTitle);
   const [applyBudget, setApplyBudget] = useState<string>("");
   const [creating, setCreating] = useState(false);
   const [missions, setMissions] = useState<any[]>([]);
@@ -160,8 +164,8 @@ export function DistributionModels({
   // from the selected model and open /mission/<id>.
   const createMissionPage = async () => {
     if (!applyTarget || !user) return;
-    const title = applyTitle.trim();
-    if (!title) return;
+    if (!selectedProduct || productsLoading || productsError) return;
+    const title = selectedProduct.name;
     setCreating(true);
     // No distribution folder yet → create a default one so the flow never blocks.
     let entityId = applyEntity;
@@ -178,7 +182,6 @@ export function DistributionModels({
     }
     const kind = `${entityId}:model-${applyTarget.id}`;
     const table = () => supabase.from("distribution_records" as never) as never as any;
-    const { count } = await table().select("id", { count: "exact", head: true }).eq("kind", kind);
 
     const budgetNum = Number(applyBudget) || 0;
     const charges = withBaseCharges(applyTarget.charges).map((c) => ({
@@ -195,7 +198,7 @@ export function DistributionModels({
         kind,
         client: applyClient.trim() || null,
         title,
-        iteration: (count ?? 0) + 1,
+        iteration: selectedProduct.shippedCount,
         budget_label: applyTarget.name,
         budget: budgetNum,
         currency: "TND",
@@ -691,11 +694,11 @@ export function DistributionModels({
             </div>
             <div>
               <Label className="text-xs uppercase tracking-wide text-muted-foreground">Mission title</Label>
-              <Input
-                value={applyTitle}
-                onChange={(e) => setApplyTitle(e.target.value)}
-                placeholder="e.g. Digital audit — phase 1"
-              />
+              <MissionProductSelect products={products} value={applyTitle} onSelect={(p) => setApplyTitle(p.id)} loading={productsLoading} error={productsError} />
+            </div>
+            <div>
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Number of iteration</Label>
+              <Input aria-label="Number of iteration" value={selectedProduct?.shippedCount ?? ""} readOnly />
             </div>
             <div>
               <Label className="text-xs uppercase tracking-wide text-muted-foreground">Budget</Label>
@@ -707,12 +710,9 @@ export function DistributionModels({
                 className="text-right font-mono"
               />
             </div>
-            <p className="text-xs text-muted-foreground">
-              The iteration number is calculated automatically from how many times this model has already been used.
-            </p>
           </div>
           <DialogFooter>
-            <Button onClick={createMissionPage} disabled={!applyTitle.trim() || creating}>
+            <Button onClick={createMissionPage} disabled={!selectedProduct || productsLoading || productsError || creating}>
               {creating ? "Creating…" : "Create mission page"} <ArrowRight className="ml-1 h-3 w-3" />
             </Button>
           </DialogFooter>
