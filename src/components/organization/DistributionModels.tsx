@@ -427,6 +427,8 @@ export function DistributionModels({
         )}
       </div>
 
+      {!collapsed && (
+        <>
       {models.length === 0 ? (
         <p className="rounded-lg border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
           No models yet. {canEdit ? "Start from a preset above to create one." : "An editor needs to create one."}
