@@ -422,12 +422,14 @@ export default function Mission() {
               <>
                 <div className="rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-background to-b4-teal/10 p-6">
                   <Badge variant="outline" className="mb-2 gap-1">
-                    <Wallet className="h-3 w-3" /> Mission page
+                    <Wallet className="h-3 w-3" />
+                    {organizationName ? <>Mission page · {organizationName}</> : "Mission page"}
                   </Badge>
                   <h1 className="font-display text-3xl font-bold tracking-tight text-foreground md:text-4xl">
                     {title || "Untitled mission"}
                   </h1>
                   <p className="mt-1 text-muted-foreground">
+                    {organizationName ? <>Entity · <strong className="text-foreground">{organizationName}</strong> · </> : null}
                     {client ? <>Client · <strong className="text-foreground">{client}</strong> · </> : null}
                     Iteration ({iteration}){modelName ? <> · model {modelName}</> : null}
                   </p>
