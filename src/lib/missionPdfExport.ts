@@ -10,11 +10,19 @@ export type MissionPdfTask = {
   percent: number;
   amount: number;
   locked?: boolean;
+  thirdParty?: boolean;
   perPerson: (number | null)[];
 };
 
 export type MissionPdfData = {
   title: string;
+  date?: string;
+  context?: string;
+  product?: string;
+  organizationName?: string;
+  operationPool: number;
+  reserveAmount: number;
+  thirdPartyTotal: number;
   client: string;
   iteration: number;
   modelName?: string;
@@ -33,147 +41,132 @@ const NAVY: [number, number, number] = [15, 35, 66];
 const TEAL: [number, number, number] = [17, 138, 137];
 const LIGHT: [number, number, number] = [240, 244, 248];
 
-const money = (n: number) =>
-  new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
-    Number.isFinite(n) ? n : 0,
-  );
+// Standard spaces keep French monetary grouping readable in PDF's built-in Latin font.
+const money = (n: number) => new Intl.NumberFormat("fr-FR", {
+  minimumFractionDigits: 2, maximumFractionDigits: 2,
+}).format(Number.isFinite(n) ? n : 0).replace(/[\u00a0\u202f]/g, " ");
+const text = (s: string) => s.replace(/[\u00a0\u202f]/g, " ").replace(/[–—]/g, "-");
 
-export function exportMissionPdf(d: MissionPdfData) {
-  const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+export function createMissionPdf(d: MissionPdfData) {
+  const doc = new jsPDF({ unit: "pt", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
-  const M = 40;
-
-  // Header
+  const H = doc.internal.pageSize.getHeight();
+  const M = 36;
+  const width = W - M * 2;
+  const pct = (amount: number) => `${money(d.budget > 0 ? amount / d.budget * 100 : 0)}%`;
+  const amount = (n: number) => `${money(n)} ${d.currency}`;
+  let y = 112;
+  doc.setProperties({ title: `${d.title} - Mission distribution`, author: "Box 4 Solutions" });
   doc.setFillColor(...NAVY);
-  doc.rect(0, 0, W, 86, "F");
+  doc.rect(0, 0, W, 94, "F");
   doc.setTextColor(255, 255, 255);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
-  doc.text(d.title || "Untitled mission", M, 38);
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  const sub = [
-    d.client ? `Client · ${d.client}` : null,
-    `Iteration (${d.iteration})`,
-    d.modelName ? `model ${d.modelName}` : null,
-  ]
-    .filter(Boolean)
-    .join("  ·  ");
-  doc.text(sub, M, 58);
-  doc.setFontSize(8);
-  doc.text("Mission distribution page — Box 4 Solutions", M, 74);
+  doc.setFontSize(9);
+  doc.text("MISSION DISTRIBUTION", M, 24);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(17);
+  const titleLines = doc.splitTextToSize(text(d.title || "Untitled mission"), width);
+  doc.text(titleLines.slice(0, 2), M, 46);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text(text(`${d.organizationName || "Box 4 Solutions"} | Iteration ${d.iteration}`), M, 82);
 
-  // KPI strip
-  let y = 104;
-  const kpis: Array<[string, string]> = [
-    ["Budget", `${money(d.budget)} ${d.currency}`],
-    [
-      "Total charges",
-      `${money(d.chargesTotal)} (${d.budget > 0 ? ((d.chargesTotal / d.budget) * 100).toFixed(2) : "0.00"}%)`,
-    ],
-    ["Pool to distribute", `${money(d.internalPool)} ${d.currency}`],
-    ["Tasks allocated", `${d.totalPercent}%`],
-  ];
-  const cardW = (W - M * 2 - 18) / 4;
-  kpis.forEach(([label, value], i) => {
-    const x = M + i * (cardW + 6);
-    doc.setFillColor(...LIGHT);
-    doc.roundedRect(x, y, cardW, 46, 4, 4, "F");
-    doc.setTextColor(110, 120, 135);
-    doc.setFontSize(7.5);
-    doc.setFont("helvetica", "normal");
-    doc.text(label.toUpperCase(), x + 10, y + 16);
-    doc.setTextColor(...NAVY);
+  const section = (label: string, summary?: string) => {
+    if (y > H - 100) { doc.addPage(); y = M; }
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.text(value, x + 10, y + 34);
-  });
-  y += 66;
-
-  const section = (label: string, startY: number) => {
     doc.setTextColor(...TEAL);
-    doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
-    doc.text(label, M, startY);
-    return startY + 8;
+    doc.text(text(label), M, y + 12);
+    y += 23;
+    if (summary) {
+      doc.setTextColor(...NAVY);
+      doc.setFontSize(9);
+      doc.text(text(summary), M, y + 5);
+      y += 16;
+    }
+  };
+  const table = (head: string[], body: string[][], numeric: number[] = []) => {
+    autoTable(doc, {
+      startY: y, margin: { left: M, right: M, top: M, bottom: 42 },
+      head: [head], body: body.map((row) => row.map(text)),
+      styles: { font: "helvetica", fontSize: 9, cellPadding: 7, overflow: "linebreak", textColor: NAVY },
+      headStyles: { fillColor: NAVY, textColor: 255, fontStyle: "bold" },
+      alternateRowStyles: { fillColor: LIGHT },
+      columnStyles: Object.fromEntries(numeric.map((i) => [i, { halign: "right", cellWidth: i === head.length - 1 ? 112 : 66 }])),
+      rowPageBreak: "avoid", showHead: "everyPage",
+    });
+    y = ((doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? y) + 20;
+  };
+  const responsibility = (label: string) => {
+    if (/broker|sales|commercial/i.test(label)) return "Technical and financial proposal writing; assurance of client email exchanges.";
+    if (/administration|admin/i.test(label)) return "Draft mission distribution; prepare the invoice and send it to the broker / salesperson; add the mission card in Declaration and follow up until payment.";
+    if (/quality|qualit/i.test(label)) return `Manage the process and ensure respect of ${d.organizationName || "the organization's"} delivery quality standards, with a rating above 70%.`;
+    if (/platform/i.test(label)) return "Platform fees.";
+    return "";
   };
 
-  // Charges
-  let cursor = section("Charges", y);
-  autoTable(doc, {
-    startY: cursor,
-    margin: { left: M, right: M },
-    head: [["Item", "%", "Amount"]],
-    body: [
-      ...d.charges.map((c) => [c.label, `${c.percent.toFixed(2)}%`, money(c.amount)]),
-      [
-        "Total charges",
-        `${d.budget > 0 ? ((d.chargesTotal / d.budget) * 100).toFixed(2) : "0.00"}%`,
-        money(d.chargesTotal),
-      ],
-      [
-        "Total structural reserve",
-        `${d.budget > 0 ? ((d.internalPool / d.budget) * 100).toFixed(2) : "0.00"}%`,
-        money(d.internalPool),
-      ],
-    ],
-    styles: { fontSize: 9, cellPadding: 5 },
-    headStyles: { fillColor: NAVY, textColor: 255, fontStyle: "bold" },
-    columnStyles: { 1: { halign: "right" }, 2: { halign: "right" } },
-    didParseCell: (data) => {
-      if (data.section === "body" && data.row.index >= d.charges.length) {
-        data.cell.styles.fontStyle = "bold";
-        data.cell.styles.fillColor = LIGHT;
-      }
-    },
-  });
+  section("Mission brief");
+  table(["Detail", "Value"], [
+    ["Client", d.client || "Not specified"],
+    ["Date", d.date || "Not specified"],
+    ["Context", d.context || "Not specified"],
+    ["Product", d.product || "Not specified"],
+    ["Human Resources Allocated", d.people.join(", ") || "None"],
+    ["Budget", amount(d.budget)],
+  ]);
+  section("Distribution overview");
+  table(["Allocation", "% of budget", `Amount (${d.currency})`], [
+    ["Entity core team", pct(d.chargesTotal), money(d.chargesTotal)],
+    ["Operation Task Force", pct(d.operationPool), money(d.operationPool)],
+    ["Third Party Charges", pct(d.thirdPartyTotal), money(d.thirdPartyTotal)],
+    ["Reste Structure", pct(d.reserveAmount), money(d.reserveAmount)],
+    ["Total distribution", pct(d.chargesTotal + d.operationPool + d.thirdPartyTotal + d.reserveAmount), money(d.chargesTotal + d.operationPool + d.thirdPartyTotal + d.reserveAmount)],
+  ], [1, 2]);
+  if (d.chargesTotal + d.reserveAmount + d.thirdPartyTotal > d.budget) {
+    section("Budget warning", "Core charges, reserve and third-party charges exceed the mission budget.");
+  }
+  section("Entity core team distribution", `${pct(d.chargesTotal)} of budget | ${amount(d.chargesTotal)}`);
+  table(["Role / responsibilities", "% of budget", `Amount (${d.currency})`],
+    d.charges.length ? d.charges.map((c) => [
+      `${c.label}${responsibility(c.label) ? `\n${responsibility(c.label)}` : ""}`, pct(c.amount), money(c.amount),
+    ]) : [["No core-team charges", pct(0), money(0)]], [1, 2]);
+  section("People splitting the pool", `Operation Task Force: ${pct(d.operationPool)} of budget | ${amount(d.operationPool)}`);
+  table(["Person", "% of budget", `Allocated (${d.currency})`],
+    d.people.length ? d.people.map((p, i) => [p, pct(d.perPersonTotal[i] || 0), money(d.perPersonTotal[i] || 0)]) : [["No people allocated", pct(0), money(0)]], [1, 2]);
+  const taskForce = d.tasks.filter((t) => !t.locked && !t.thirdParty);
+  section("Operation Task Force - task distribution", `Task percentages apply to the task-force pool. Allocated: ${money(d.totalPercent)}%.`);
+  table(["Task", "% of task pool", `Amount (${d.currency})`],
+    taskForce.length ? taskForce.map((t) => [t.label, `${money(t.percent)}%`, money(t.amount)]) : [["No tasks", "0,00%", "0,00"]], [1, 2]);
+  if (d.people.length && taskForce.length) {
+    section("Task allocations by person");
+    table(["Task / person", `Amount (${d.currency})`], taskForce.flatMap((t) => d.people.map((p, i) => [
+      `${t.label} / ${p}`, money(t.perPerson[i] || 0),
+    ])), [1]);
+  }
+  section("Third Party Charges", `${pct(d.thirdPartyTotal)} of budget | ${amount(d.thirdPartyTotal)}`);
+  const thirdParty = d.tasks.filter((t) => t.thirdParty && !t.locked);
+  table(["Third party / charge", "% of budget", `Amount (${d.currency})`],
+    thirdParty.length ? thirdParty.map((t) => [t.label, pct(t.amount), money(t.amount)]) : [["No third-party charges", pct(0), money(0)]], [1, 2]);
+  section("Reste Structure", "Percentage of the full mission budget; not distributed among people.");
+  table(["Reserve", "% of budget", `Amount (${d.currency})`], [["Reste Structure", pct(d.reserveAmount), money(d.reserveAmount)]], [1, 2]);
+  const allocated = d.perPersonTotal.reduce((sum, v) => sum + v, 0);
+  if (Math.abs(allocated - d.operationPool) > 0.01) {
+    section("Allocation balance", `Task-force pool: ${amount(d.operationPool)} | Allocated to people: ${amount(allocated)}`);
+    table(["Balance", `Amount (${d.currency})`], [["Unallocated / (overallocated)", money(d.operationPool - allocated)]], [1]);
+  }
+  const pages = doc.getNumberOfPages();
+  for (let i = 1; i <= pages; i++) {
+    doc.setPage(i);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(...NAVY);
+    doc.text("Box 4 Solutions | Distribution allocation - not a bank receipt", M, H - 22);
+    doc.text(`${i} / ${pages}`, W - M, H - 22, { align: "right" });
+  }
+  return doc;
+}
 
-  // People
-  cursor = ((doc as any).lastAutoTable?.finalY ?? cursor) + 26;
-  cursor = section("People splitting the pool", cursor);
-  autoTable(doc, {
-    startY: cursor,
-    margin: { left: M, right: M },
-    head: [["Person", `Total (${d.currency})`]],
-    body: d.people.map((p, i) => [p, money(d.perPersonTotal[i] || 0)]),
-    styles: { fontSize: 9, cellPadding: 5 },
-    headStyles: { fillColor: TEAL, textColor: 255, fontStyle: "bold" },
-    columnStyles: { 1: { halign: "right" } },
-  });
-
-  // Tasks
-  cursor = ((doc as any).lastAutoTable?.finalY ?? cursor) + 26;
-  cursor = section("Internal & Structure — task distribution", cursor);
-  autoTable(doc, {
-    startY: cursor,
-    margin: { left: M, right: M },
-    head: [["Task", "%", "Amount", ...d.people]],
-    body: [
-      ...d.tasks.map((t) => [
-        t.locked ? `${t.label} (not split)` : t.label,
-        `${t.percent}%`,
-        money(t.amount),
-        ...t.perPerson.map((v) => (v === null ? "—" : money(v))),
-      ]),
-      [
-        "Total",
-        `${d.totalPercent}%`,
-        money(d.internalPool),
-        ...d.perPersonTotal.map((v) => money(v || 0)),
-      ],
-    ],
-    styles: { fontSize: 8.5, cellPadding: 4.5 },
-    headStyles: { fillColor: NAVY, textColor: 255, fontStyle: "bold" },
-    columnStyles: { 1: { halign: "right" }, 2: { halign: "right" } },
-    didParseCell: (data) => {
-      if (data.column.index >= 3) data.cell.styles.halign = "right";
-      if (data.section === "body" && data.row.index === d.tasks.length) {
-        data.cell.styles.fontStyle = "bold";
-        data.cell.styles.fillColor = LIGHT;
-      }
-    },
-  });
-
+export function exportMissionPdf(d: MissionPdfData) {
   const safe = (d.title || "mission").replace(/[^a-z0-9]+/gi, "-").toLowerCase();
-  doc.save(`${safe}-iteration-${d.iteration}.pdf`);
+  createMissionPdf(d).save(`${safe}-iteration-${d.iteration}.pdf`);
 }
