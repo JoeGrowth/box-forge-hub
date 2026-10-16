@@ -346,22 +346,12 @@ export default function Mission() {
   }, [dirty, loading, notFound, persist]);
 
   const downloadPdf = () => {
-    if (productsLoading || productError) {
-      toast.error("Organization products are unavailable. Please reload and try again.");
-      return;
-    }
-    const selectedProduct = products.find((p) => p.id === productId);
-    if (!selectedProduct) {
-      toast.error("Select a product from this organization's product list.");
-      return;
-    }
     try {
     exportMissionPdf({
       title,
       client,
       date: pdfDate,
       context: pdfContext.trim(),
-      product: selectedProduct?.name,
       organizationName,
       operationPool: opPool,
       reserveAmount,
@@ -484,11 +474,6 @@ export default function Mission() {
                         <Textarea id="pdf-mission-context" value={pdfContext} onChange={(e) => setPdfContext(e.target.value)} placeholder="Mission context" />
                       </div>
                       <div className="space-y-1.5">
-                        <Label htmlFor="pdf-mission-product">Product</Label>
-                        <Input id="pdf-mission-product" value={products.find((p) => p.id === productId)?.name || ""} readOnly />
-                        {productError ? <p className="text-sm text-destructive">Products could not be loaded. Reload to retry.</p> : !productsLoading && !products.length ? <p className="text-sm text-muted-foreground">No products listed for this organization.</p> : null}
-                      </div>
-                      <div className="space-y-1.5">
                         <Label>Human Resources Allocated</Label>
                         <p className="text-sm text-foreground">{people.join(", ") || "None"}</p>
                       </div>
@@ -496,7 +481,7 @@ export default function Mission() {
                     </div>
                     <DialogFooter>
                       <Button variant="outline" onClick={() => setPdfOpen(false)}>Cancel</Button>
-                      <Button onClick={downloadPdf} disabled={productsLoading || productError || !productId}><FileDown className="mr-2 h-4 w-4" />Download PDF</Button>
+                      <Button onClick={downloadPdf}><FileDown className="mr-2 h-4 w-4" />Download PDF</Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>

@@ -18,7 +18,6 @@ export type MissionPdfData = {
   title: string;
   date?: string;
   context?: string;
-  product?: string;
   organizationName?: string;
   operationPool: number;
   reserveAmount: number;
@@ -72,7 +71,9 @@ export function createMissionPdf(d: MissionPdfData) {
   doc.text(text(`${d.organizationName || "Box 4 Solutions"} | Iteration ${d.iteration}`), M, 82);
 
   const section = (label: string, summary?: string) => {
-    if (y > H - 100) { doc.addPage(); y = M; }
+    // Keep a section heading with its table: move the whole block when the page
+    // cannot hold the heading plus the first table row.
+    if (y + 150 > H - 42) { doc.addPage(); y = M; }
     doc.setFont("helvetica", "bold");
     doc.setTextColor(...TEAL);
     doc.setFontSize(11);
@@ -86,6 +87,9 @@ export function createMissionPdf(d: MissionPdfData) {
     }
   };
   const table = (head: string[], body: string[][], numeric: number[] = []) => {
+    // Keep a table header with at least one row: never start a table so low that
+    // only the header fits before the page break.
+    if (y + 110 > H - 42) { doc.addPage(); y = M; }
     autoTable(doc, {
       startY: y, margin: { left: M, right: M, top: M, bottom: 42 },
       head: [head], body: body.map((row) => row.map(text)),
@@ -110,7 +114,6 @@ export function createMissionPdf(d: MissionPdfData) {
     ["Client", d.client || "Not specified"],
     ["Date", d.date || "Not specified"],
     ["Context", d.context || "Not specified"],
-    ["Product", d.product || "Not specified"],
     ["Human Resources Allocated", d.people.join(", ") || "None"],
     ["Budget", amount(d.budget)],
   ]);
