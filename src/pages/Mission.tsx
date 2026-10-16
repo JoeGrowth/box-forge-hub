@@ -838,6 +838,7 @@ export default function Mission() {
                       </TableBody>
                     </Table>
                   </CardContent>
+                  )}
                 </Card>
 
                 <div className="flex flex-wrap items-center justify-between gap-3">
