@@ -34,7 +34,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { exportMissionPdf } from "@/lib/missionPdfExport";
 
-type Task = { id: string; label: string; percent: number; locked?: boolean; personShares?: number[] };
+type Task = { id: string; label: string; percent: number; locked?: boolean; thirdParty?: boolean; amount?: number; personShares?: number[] };
 type Charge = { id: string; label: string; amount: number; fixed?: boolean; percent?: number; system?: boolean };
 
 const uid = () => Math.random().toString(36).slice(2, 9);
@@ -49,11 +49,12 @@ const normalizeTaskLocks = (items: Task[]): Task[] => {
     const { locked: _locked, ...splitTask } = task;
     return splitTask;
   });
-  if (mapped.some((t) => t.locked)) {
-    // Keep the reserve last.
-    return [...mapped.filter((t) => !t.locked), ...mapped.filter((t) => t.locked)];
-  }
-  const used = mapped.reduce((s, t) => s + (Number(t.percent) || 0), 0);
+  // Order: task-force tasks, then third-party charges, then the reserve last.
+  const regular = mapped.filter((t) => !t.locked && !t.thirdParty);
+  const thirdParty = mapped.filter((t) => !t.locked && t.thirdParty);
+  const reserves = mapped.filter((t) => t.locked);
+  if (reserves.length) return [...regular, ...thirdParty, ...reserves];
+  const used = regular.reduce((s, t) => s + (Number(t.percent) || 0), 0);
   return [...mapped, { id: uid(), label: "Structural reserve", percent: Math.max(0, 100 - used), locked: true }];
 };
 const fmt = (n: number) =>
