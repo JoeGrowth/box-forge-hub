@@ -85,6 +85,9 @@ export function createMissionPdf(d: MissionPdfData) {
     }
   };
   const table = (head: string[], body: string[][], numeric: number[] = []) => {
+    // Keep a table header with at least one row: never start a table so low that
+    // only the header fits before the page break.
+    if (y + 110 > H - 42) { doc.addPage(); y = M; }
     autoTable(doc, {
       startY: y, margin: { left: M, right: M, top: M, bottom: 42 },
       head: [head], body: body.map((row) => row.map(text)),
