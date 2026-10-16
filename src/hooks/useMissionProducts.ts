@@ -30,7 +30,7 @@ export function useMissionProducts({ orgId, kind }: { orgId?: string; kind?: str
     void (async () => {
       try {
         let resolvedId = orgId;
-        if (!resolvedId && kind) {
+        if (!resolvedId && kind && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(kind.split(":")[0])) {
           const { data, error: folderError } = await supabase.from("distribution_entities").select("org_id").eq("id", kind.split(":")[0]).maybeSingle();
           if (folderError) throw folderError;
           resolvedId = data?.org_id || undefined;
