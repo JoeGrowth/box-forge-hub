@@ -71,7 +71,9 @@ export function createMissionPdf(d: MissionPdfData) {
   doc.text(text(`${d.organizationName || "Box 4 Solutions"} | Iteration ${d.iteration}`), M, 82);
 
   const section = (label: string, summary?: string) => {
-    if (y > H - 100) { doc.addPage(); y = M; }
+    // Keep a section heading with its table: move the whole block when the page
+    // cannot hold the heading plus the first table row.
+    if (y + 150 > H - 42) { doc.addPage(); y = M; }
     doc.setFont("helvetica", "bold");
     doc.setTextColor(...TEAL);
     doc.setFontSize(11);
