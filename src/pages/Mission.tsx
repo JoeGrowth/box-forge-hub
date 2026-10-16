@@ -81,6 +81,26 @@ export default function Mission() {
   const [modelName, setModelName] = useState<string>("");
   const [orgSlug, setOrgSlug] = useState("");
 
+  // Collapsible distribution sections, remembered per mission.
+  const COLLAPSE_KEY = `mission-card-collapse:${id || "new"}`;
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(`mission-card-collapse:${id || "new"}`) || "{}");
+    } catch {
+      return {};
+    }
+  });
+  const toggleSection = (key: string) =>
+    setCollapsed((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      try {
+        localStorage.setItem(COLLAPSE_KEY, JSON.stringify(next));
+      } catch {
+        /* ignore storage errors */
+      }
+      return next;
+    });
+
   const [dirty, setDirty] = useState(false);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
   const readyRef = useRef(false);
