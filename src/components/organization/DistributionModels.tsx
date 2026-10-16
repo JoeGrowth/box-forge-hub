@@ -2,7 +2,7 @@
 // A model = a named split template (tasks with % + charges) that can be
 // applied to any mission inside the Distribution workspace.
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
