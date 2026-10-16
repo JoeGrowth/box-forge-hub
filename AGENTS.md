@@ -1,2 +1,3 @@
 - Earnings entitlements come from organization declarations; bank receipts are separate user-owned confirmations, never inferred from allocations or company payment flags, to avoid confusing expected and received money.
 - Onboarding loading must remain true for a newly signed-in user until that user's onboarding fetch settles, so post-login routing never uses the previous guest's empty state.
+- Mission PDF generation consumes the mission page's calculated pools and allocations, separates third-party charges and reserves from people, and uses an export-only brief dialog with organization-scoped product choices; this prevents PDF calculations drifting from the live distribution without changing stored mission data.

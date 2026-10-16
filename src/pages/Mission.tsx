@@ -10,6 +10,8 @@ import { PageTransition } from "@/components/layout/PageTransition";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -81,6 +83,14 @@ export default function Mission() {
   const [people, setPeople] = useState<string[]>(["Person (1)", "Person (2)"]);
   const [modelName, setModelName] = useState<string>("");
   const [orgSlug, setOrgSlug] = useState("");
+  const [organizationName, setOrganizationName] = useState("");
+  const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
+  const [productId, setProductId] = useState("");
+  const [pdfOpen, setPdfOpen] = useState(false);
+  const [pdfDate, setPdfDate] = useState("");
+  const [pdfContext, setPdfContext] = useState("");
+  const [productsLoading, setProductsLoading] = useState(false);
+  const [productError, setProductError] = useState(false);
 
   // Collapsible distribution sections, remembered per mission.
   const COLLAPSE_KEY = `mission-card-collapse:${id || "new"}`;
@@ -127,6 +137,7 @@ export default function Mission() {
     setTasks(normalizeTaskLocks(Array.isArray(data.tasks) ? data.tasks : []));
     setPeople(Array.isArray(data.people) && data.people.length ? data.people : ["Person (1)", "Person (2)"]);
     setModelName(data.budget_label && data.budget_label !== "Budget" ? data.budget_label : "");
+    setPdfDate(String(data.created_at || "").slice(0, 10));
     setLoading(false);
     readyRef.current = false;
     setDirty(false);
@@ -136,6 +147,9 @@ export default function Mission() {
     // A mission belongs to one organization's Distribution workspace: the folder id is
     // the part of `kind` before ":". Resolve it so Back returns to that workspace.
     setOrgSlug("");
+    setProducts([]);
+    setProductId("");
+    setOrganizationName("");
     const folderId = String(data.kind || "").split(":")[0];
     if (!folderId) return;
     const { data: folder } = await (supabase.from("distribution_entities" as never) as never as any)
@@ -144,12 +158,16 @@ export default function Mission() {
       .maybeSingle();
     const orgId = (folder as { org_id?: string } | null)?.org_id;
     if (!orgId) return;
-    const { data: org } = await supabase
-      .from("organizations")
-      .select("slug")
-      .eq("id", orgId)
-      .maybeSingle();
+    setProductsLoading(true);
+    const [{ data: org }, { data: orgProducts, error: productsError }] = await Promise.all([
+      supabase.from("organizations").select("slug, name").eq("id", orgId).maybeSingle(),
+      supabase.from("organization_products").select("id, name").eq("organization_id", orgId).is("archived_at", null).order("position"),
+    ]);
     if (org?.slug) setOrgSlug(org.slug);
+    setOrganizationName(org?.name || "");
+    setProducts(orgProducts || []);
+    setProductError(Boolean(productsError));
+    setProductsLoading(false);
 
   }, [id]);
 
@@ -304,9 +322,26 @@ export default function Mission() {
   }, [dirty, loading, notFound, persist]);
 
   const downloadPdf = () => {
+    if (productsLoading || productError) {
+      toast.error("Organization products are unavailable. Please reload and try again.");
+      return;
+    }
+    const selectedProduct = products.find((p) => p.id === productId);
+    if (products.length && !selectedProduct) {
+      toast.error("Select a product from this organization's product list.");
+      return;
+    }
+    try {
     exportMissionPdf({
       title,
       client,
+      date: pdfDate,
+      context: pdfContext.trim(),
+      product: selectedProduct?.name,
+      organizationName,
+      operationPool: opPool,
+      reserveAmount,
+      thirdPartyTotal,
       iteration,
       modelName,
       budget: Number(budget) || 0,
@@ -331,9 +366,14 @@ export default function Mission() {
         percent: Number(t.percent) || 0,
         amount: taskAmounts[i] || 0,
         locked: t.locked,
+        thirdParty: t.thirdParty,
         perPerson: perPersonPerTask[i],
       })),
     });
+    setPdfOpen(false);
+    } catch {
+      toast.error("The PDF could not be exported. Please try again.");
+    }
   };
 
   return (
@@ -378,7 +418,7 @@ export default function Mission() {
                     Iteration ({iteration}){modelName ? <> · model {modelName}</> : null}
                   </p>
                   <div className="mt-4 flex flex-wrap items-center gap-2">
-                    <Button size="sm" variant="outline" onClick={downloadPdf}>
+                    <Button size="sm" variant="outline" onClick={() => setPdfOpen(true)}>
                       <FileDown className="mr-1 h-4 w-4" /> Export PDF
                     </Button>
                     <Button size="sm" onClick={save} disabled={saving}>
@@ -403,6 +443,42 @@ export default function Mission() {
                     </span>
                   </div>
                 </div>
+
+                <Dialog open={pdfOpen} onOpenChange={setPdfOpen}>
+                  <DialogContent className="max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Export mission distribution</DialogTitle>
+                      <DialogDescription>{client || "Client not specified"} · {title || "Untitled mission"}</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="pdf-mission-date">Date</Label>
+                        <Input id="pdf-mission-date" type="date" value={pdfDate} onChange={(e) => setPdfDate(e.target.value)} />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="pdf-mission-context">Context</Label>
+                        <Textarea id="pdf-mission-context" value={pdfContext} onChange={(e) => setPdfContext(e.target.value)} placeholder="Mission context" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="pdf-mission-product">Product</Label>
+                        <Select value={productId} onValueChange={setProductId} disabled={productsLoading || !products.length}>
+                          <SelectTrigger id="pdf-mission-product"><SelectValue placeholder={productsLoading ? "Loading products…" : "Select organization product"} /></SelectTrigger>
+                          <SelectContent>{products.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+                        </Select>
+                        {productError ? <p className="text-sm text-destructive">Products could not be loaded. Reload to retry.</p> : !productsLoading && !products.length ? <p className="text-sm text-muted-foreground">No products listed for this organization.</p> : null}
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>Human Resources Allocated</Label>
+                        <p className="text-sm text-foreground">{people.join(", ") || "None"}</p>
+                      </div>
+                      <p className="font-mono text-sm tabular-nums">Budget: {fmt(Number(budget) || 0)} {currency}</p>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setPdfOpen(false)}>Cancel</Button>
+                      <Button onClick={downloadPdf} disabled={productsLoading || productError || (products.length > 0 && !productId)}><FileDown className="mr-2 h-4 w-4" />Download PDF</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
 
                 <Card>
                   <CardHeader className="border-b border-border/60">
