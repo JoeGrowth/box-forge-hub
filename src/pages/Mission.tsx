@@ -27,6 +27,7 @@ import {
   ArrowLeft,
   FileDown,
   Check,
+  ChevronDown,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -79,6 +80,26 @@ export default function Mission() {
   const [people, setPeople] = useState<string[]>(["Person (1)", "Person (2)"]);
   const [modelName, setModelName] = useState<string>("");
   const [orgSlug, setOrgSlug] = useState("");
+
+  // Collapsible distribution sections, remembered per mission.
+  const COLLAPSE_KEY = `mission-card-collapse:${id || "new"}`;
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(`mission-card-collapse:${id || "new"}`) || "{}");
+    } catch {
+      return {};
+    }
+  });
+  const toggleSection = (key: string) =>
+    setCollapsed((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      try {
+        localStorage.setItem(COLLAPSE_KEY, JSON.stringify(next));
+      } catch {
+        /* ignore storage errors */
+      }
+      return next;
+    });
 
   const [dirty, setDirty] = useState(false);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
@@ -458,13 +479,21 @@ export default function Mission() {
                 {/* Charges */}
                 <Card>
                   <CardHeader className="flex flex-col gap-2 border-b border-border/60 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <CardTitle className="flex items-center gap-2 text-base">
-                        <ClipboardList className="h-4 w-4 text-b4-coral" /> Entity core team
-                      </CardTitle>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Broker, Administration, Quality Assurance, Platform Fees and other entity charges deducted first.
-                      </p>
+                    <div
+                      className="flex flex-1 cursor-pointer select-none items-start justify-between gap-2"
+                      onClick={() => toggleSection("charges")}
+                    >
+                      <div>
+                        <CardTitle className="flex items-center gap-2 text-base">
+                          <ClipboardList className="h-4 w-4 text-b4-coral" /> Entity core team
+                        </CardTitle>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Broker, Administration, Quality Assurance, Platform Fees and other entity charges deducted first.
+                        </p>
+                      </div>
+                      <ChevronDown
+                        className={`mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform ${collapsed.charges ? "" : "rotate-180"}`}
+                      />
                     </div>
                     <Button
                       size="sm"
@@ -475,6 +504,7 @@ export default function Mission() {
                       <Plus className="mr-1 h-4 w-4" /> Add charge
                     </Button>
                   </CardHeader>
+                  {!collapsed.charges && (
                   <CardContent>
                     <div className="-mx-6 overflow-x-auto px-6">
                       <Table>
@@ -585,19 +615,28 @@ export default function Mission() {
                       </Table>
                     </div>
                   </CardContent>
+                  )}
                 </Card>
 
                 {/* People */}
                 <Card>
                   <CardHeader className="flex flex-col gap-2 border-b border-border/60 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <CardTitle className="flex items-center gap-2 text-base">
-                        <Users className="h-4 w-4 text-b4-teal" /> People splitting the pool
-                        <Badge variant="secondary">{people.length}</Badge>
-                      </CardTitle>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Each person receives a share of every task (in %).
-                      </p>
+                    <div
+                      className="flex flex-1 cursor-pointer select-none items-start justify-between gap-2"
+                      onClick={() => toggleSection("people")}
+                    >
+                      <div>
+                        <CardTitle className="flex items-center gap-2 text-base">
+                          <Users className="h-4 w-4 text-b4-teal" /> People splitting the pool
+                          <Badge variant="secondary">{people.length}</Badge>
+                        </CardTitle>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Each person receives a share of every task (in %).
+                        </p>
+                      </div>
+                      <ChevronDown
+                        className={`mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform ${collapsed.people ? "" : "rotate-180"}`}
+                      />
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <Button size="sm" variant="outline" onClick={() => setPeople((p) => [...p, `Person (${p.length + 1})`])}>
@@ -608,6 +647,7 @@ export default function Mission() {
                       </Button>
                     </div>
                   </CardHeader>
+                  {!collapsed.people && (
                   <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {people.map((p, i) => (
                       <div key={i} className="flex items-center gap-3 rounded-lg border border-border bg-muted/20 p-2.5">
@@ -627,24 +667,34 @@ export default function Mission() {
                       </div>
                     ))}
                   </CardContent>
+                  )}
                 </Card>
 
                 {/* Tasks */}
                 <Card>
                   <CardHeader className="flex flex-col gap-2 border-b border-border/60 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <CardTitle className="flex items-center gap-2 text-base">
-                        <ListChecks className="h-4 w-4 text-primary" /> Operation Task Force and Third Party Charges
-                        <Badge variant={totalPercent === 100 ? "secondary" : "destructive"}>{totalPercent}%</Badge>
-                      </CardTitle>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                         Pool of {fmt(opPool)} {currency} (remaining pool minus Reste Structure) split by task, then by person.
-                      </p>
+                    <div
+                      className="flex flex-1 cursor-pointer select-none items-start justify-between gap-2"
+                      onClick={() => toggleSection("tasks")}
+                    >
+                      <div>
+                        <CardTitle className="flex items-center gap-2 text-base">
+                          <ListChecks className="h-4 w-4 text-primary" /> Operation Task Force and Third Party Charges
+                          <Badge variant={totalPercent === 100 ? "secondary" : "destructive"}>{totalPercent}%</Badge>
+                        </CardTitle>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Pool of {fmt(opPool)} {currency} (remaining pool minus Reste Structure) split by task, then by person.
+                        </p>
+                      </div>
+                      <ChevronDown
+                        className={`mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform ${collapsed.tasks ? "" : "rotate-180"}`}
+                      />
                     </div>
                     <Button size="sm" variant="outline" className="self-start sm:self-auto" onClick={addTask}>
                       <Plus className="mr-1 h-4 w-4" /> Add task
                     </Button>
                   </CardHeader>
+                  {!collapsed.tasks && (
                   <CardContent>
                     <div className="-mx-6 overflow-x-auto px-6">
                       <Table>
@@ -742,17 +792,29 @@ export default function Mission() {
                       </Table>
                     </div>
                   </CardContent>
+                  )}
                 </Card>
 
 
                 {/* Reste Structure */}
                 <Card>
                   <CardHeader className="border-b border-border/60">
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <ListChecks className="h-4 w-4 text-b4-coral" /> Reste Structure
-                    </CardTitle>
-                    <p className="mt-1 text-xs text-muted-foreground">Separate percentage of the full mission budget, kept by the entity and never split per person.</p>
+                    <div
+                      className="flex cursor-pointer select-none items-start justify-between gap-2"
+                      onClick={() => toggleSection("reserve")}
+                    >
+                      <div>
+                        <CardTitle className="flex items-center gap-2 text-base">
+                          <ListChecks className="h-4 w-4 text-b4-coral" /> Reste Structure
+                        </CardTitle>
+                        <p className="mt-1 text-xs text-muted-foreground">Separate percentage of the full mission budget, kept by the entity and never split per person.</p>
+                      </div>
+                      <ChevronDown
+                        className={`mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform ${collapsed.reserve ? "" : "rotate-180"}`}
+                      />
+                    </div>
                   </CardHeader>
+                  {!collapsed.reserve && (
                   <CardContent>
                     <Table>
                       <TableHeader>
@@ -776,6 +838,7 @@ export default function Mission() {
                       </TableBody>
                     </Table>
                   </CardContent>
+                  )}
                 </Card>
 
                 <div className="flex flex-wrap items-center justify-between gap-3">
