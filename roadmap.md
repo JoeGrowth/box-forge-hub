@@ -5,4 +5,4 @@
 - [x] Investigate login recovery and fix confirmed app-side connection issues.
 - [x] Verify server-validated authenticated access and connection-error recovery in preview.
 - [ ] Verify live email/password sign-in — awaiting user retry; no password-test credentials available.
-- [ ] Update mission PDF with mission details, organization product selection, current distribution sections, and readable numbers; verify authenticated download and rendered PDF.
+- [x] Update mission PDF with mission details, organization product selection, current distribution sections, and readable numbers; authenticated download and both rendered pages verified.
