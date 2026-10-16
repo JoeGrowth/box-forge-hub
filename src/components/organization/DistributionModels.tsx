@@ -29,7 +29,7 @@ import { createDistEntity } from "@/pages/Distribution";
 import { useMissionProducts } from "@/hooks/useMissionProducts";
 import { MissionProductSelect } from "@/components/organization/MissionProductSelect";
 
-import { Plus, Trash2, Layers, ArrowRight, Copy, Pencil, Lock, FileText } from "lucide-react";
+import { Plus, Trash2, Layers, ArrowRight, Copy, Pencil, Lock, FileText, ChevronDown } from "lucide-react";
 
 type ModelTask = { id: string; label: string; percent: number; locked?: boolean };
 type ModelCharge = { id: string; label: string; amount: number; percent?: number; fixed?: boolean; system?: boolean };
@@ -157,6 +157,26 @@ export function DistributionModels({
   const selectedProduct = products.find((p) => p.id === applyTitle);
   const [applyBudget, setApplyBudget] = useState<string>("");
   const [creating, setCreating] = useState(false);
+  // The whole Distribution models card can be collapsed; the choice is remembered
+  // per organization so a long template list doesn't push the rest of the tab down.
+  const collapseKey = `org-models-collapse:${orgId}`;
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(collapseKey) === "1";
+    } catch {
+      return false;
+    }
+  });
+  const toggleCollapsed = () =>
+    setCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(collapseKey, next ? "1" : "0");
+      } catch {
+        /* storage unavailable — collapsing still works for this session */
+      }
+      return next;
+    });
   const [missions, setMissions] = useState<any[]>([]);
   const navigate = useNavigate();
 
@@ -378,14 +398,24 @@ export function DistributionModels({
   return (
     <div className="rounded-xl border border-border bg-card p-4 space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="min-w-0">
-          <p className="flex items-center gap-2 font-medium text-foreground">
-            <Layers className="h-4 w-4 text-primary" /> Distribution models
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Reusable split templates for {orgName} — pick one to distribute a mission.
-          </p>
-        </div>
+        <button
+          type="button"
+          onClick={toggleCollapsed}
+          aria-expanded={!collapsed}
+          className="flex min-w-0 flex-1 items-start gap-2 text-left"
+        >
+          <ChevronDown
+            className={`mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition-transform ${collapsed ? "-rotate-90" : ""}`}
+          />
+          <span className="min-w-0">
+            <span className="flex items-center gap-2 font-medium text-foreground">
+              <Layers className="h-4 w-4 text-primary" /> Distribution models
+            </span>
+            <span className="block text-xs text-muted-foreground">
+              Reusable split templates for {orgName} — pick one to distribute a mission.
+            </span>
+          </span>
+        </button>
         {canEdit && (
           <div className="flex flex-wrap gap-2">
             {(["Consulting", "Training", "Event", "Blank"] as const).map((p) => (
@@ -397,6 +427,8 @@ export function DistributionModels({
         )}
       </div>
 
+      {!collapsed && (
+        <>
       {models.length === 0 ? (
         <p className="rounded-lg border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
           No models yet. {canEdit ? "Start from a preset above to create one." : "An editor needs to create one."}
@@ -502,6 +534,8 @@ export function DistributionModels({
           </div>
         )}
       </div>
+        </>
+      )}
 
       {/* Create / edit model */}
       <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setEditing(null); }}>
