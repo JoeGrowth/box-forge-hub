@@ -398,14 +398,24 @@ export function DistributionModels({
   return (
     <div className="rounded-xl border border-border bg-card p-4 space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="min-w-0">
-          <p className="flex items-center gap-2 font-medium text-foreground">
-            <Layers className="h-4 w-4 text-primary" /> Distribution models
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Reusable split templates for {orgName} — pick one to distribute a mission.
-          </p>
-        </div>
+        <button
+          type="button"
+          onClick={toggleCollapsed}
+          aria-expanded={!collapsed}
+          className="flex min-w-0 flex-1 items-start gap-2 text-left"
+        >
+          <ChevronDown
+            className={`mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition-transform ${collapsed ? "-rotate-90" : ""}`}
+          />
+          <span className="min-w-0">
+            <span className="flex items-center gap-2 font-medium text-foreground">
+              <Layers className="h-4 w-4 text-primary" /> Distribution models
+            </span>
+            <span className="block text-xs text-muted-foreground">
+              Reusable split templates for {orgName} — pick one to distribute a mission.
+            </span>
+          </span>
+        </button>
         {canEdit && (
           <div className="flex flex-wrap gap-2">
             {(["Consulting", "Training", "Event", "Blank"] as const).map((p) => (
