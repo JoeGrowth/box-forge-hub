@@ -2,3 +2,6 @@
 - [x] Separate Money generated and Personal financial audit; calculate individual declaration earnings.
 - [x] Persist personal bank receipts and verify the receipt flow.
 - [x] Verify collapsed earnings cards, expansion, and receipt controls.
+- [ ] Investigate login recovery and fix confirmed app-side connection issues.
+- [ ] Verify sign-in with authenticated access before resuming PDF export changes.
+- [ ] Update distribution PDF sections and number readability after login verification.
