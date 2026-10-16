@@ -18,7 +18,6 @@ export type MissionPdfData = {
   title: string;
   date?: string;
   context?: string;
-  product?: string;
   organizationName?: string;
   operationPool: number;
   reserveAmount: number;
