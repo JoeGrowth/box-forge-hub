@@ -799,11 +799,22 @@ export default function Mission() {
                 {/* Reste Structure */}
                 <Card>
                   <CardHeader className="border-b border-border/60">
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <ListChecks className="h-4 w-4 text-b4-coral" /> Reste Structure
-                    </CardTitle>
-                    <p className="mt-1 text-xs text-muted-foreground">Separate percentage of the full mission budget, kept by the entity and never split per person.</p>
+                    <div
+                      className="flex cursor-pointer select-none items-start justify-between gap-2"
+                      onClick={() => toggleSection("reserve")}
+                    >
+                      <div>
+                        <CardTitle className="flex items-center gap-2 text-base">
+                          <ListChecks className="h-4 w-4 text-b4-coral" /> Reste Structure
+                        </CardTitle>
+                        <p className="mt-1 text-xs text-muted-foreground">Separate percentage of the full mission budget, kept by the entity and never split per person.</p>
+                      </div>
+                      <ChevronDown
+                        className={`mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform ${collapsed.reserve ? "" : "rotate-180"}`}
+                      />
+                    </div>
                   </CardHeader>
+                  {!collapsed.reserve && (
                   <CardContent>
                     <Table>
                       <TableHeader>
