@@ -2,7 +2,7 @@
 // A model = a named split template (tasks with % + charges) that can be
 // applied to any mission inside the Distribution workspace.
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -273,6 +273,39 @@ export function DistributionModels({
   useEffect(() => {
     void reload();
   }, [reload]);
+
+  // Auto-create one distribution model per shipped product (named after the
+  // product, e.g. "Complete platform development"). Editors only; skips
+  // products that already have a model with the same name.
+  const seededRef = useRef(false);
+  useEffect(() => {
+    if (seededRef.current || !canEdit || !user || productsLoading || productsError) return;
+    const existing = new Set(models.map((m) => norm(m.name)));
+    const missing = products.filter((p) => p.shippedCount > 0 && !existing.has(norm(p.name)));
+    if (missing.length === 0) return;
+    seededRef.current = true;
+    void (async () => {
+      const table = supabase.from("distribution_models" as never) as never as any;
+      for (const product of missing) {
+        const { error } = await table.insert({
+          user_id: user.id,
+          org_id: orgId,
+          name: product.name,
+          description: `Distribution template for ${product.name} deliveries.`,
+          tasks: normalizeTaskLocks([
+            { id: uid(), label: "Delivery / execution", percent: 85 },
+            { id: uid(), label: "Structural reserve", percent: 15, locked: true },
+          ]),
+          charges: withBaseCharges([]),
+        });
+        if (error) {
+          seededRef.current = false;
+          return;
+        }
+      }
+      void reload();
+    })();
+  }, [canEdit, user, products, productsLoading, productsError, models, orgId, reload]);
 
   const startNew = (preset: keyof typeof PRESETS = "Consulting") => {
     const p = PRESETS[preset];
