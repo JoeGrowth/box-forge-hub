@@ -55,7 +55,7 @@ const normalizeTaskLocks = (items: Task[]): Task[] => {
   const reserves = mapped.filter((t) => t.locked);
   if (reserves.length) return [...regular, ...thirdParty, ...reserves];
   const used = regular.reduce((s, t) => s + (Number(t.percent) || 0), 0);
-  return [...mapped, { id: uid(), label: "Structural reserve", percent: Math.max(0, 100 - used), locked: true }];
+  return [...regular, ...thirdParty, { id: uid(), label: "Structural reserve", percent: Math.max(0, 100 - used), locked: true }];
 };
 const fmt = (n: number) =>
   new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
@@ -184,13 +184,16 @@ export default function Mission() {
   const reserveTask = tasks.find((t) => t.locked);
   const reservePercent = Number(reserveTask?.percent) || 0;
   const reserveAmount = ((Number(budget) || 0) * reservePercent) / 100;
-  const opPool = Math.max(0, internalPool - reserveAmount);
+  // Third-party charges are fixed amounts paid out of the pool; their % is derived from the budget.
+  const thirdPartyTasks = tasks.filter((t) => t.thirdParty && !t.locked);
+  const thirdPartyTotal = thirdPartyTasks.reduce((s, t) => s + (Number(t.amount) || 0), 0);
+  const opPool = Math.max(0, internalPool - reserveAmount - thirdPartyTotal);
   const totalPercent = useMemo(
-    () => tasks.filter((t) => !t.locked).reduce((s, t) => s + (Number(t.percent) || 0), 0),
+    () => tasks.filter((t) => !t.locked && !t.thirdParty).reduce((s, t) => s + (Number(t.percent) || 0), 0),
     [tasks],
   );
   const taskAmounts = tasks.map((t) =>
-    t.locked ? reserveAmount : (opPool * (Number(t.percent) || 0)) / 100,
+    t.locked ? reserveAmount : t.thirdParty ? Number(t.amount) || 0 : (opPool * (Number(t.percent) || 0)) / 100,
   );
 
   const getShares = (t: Task): number[] => {
