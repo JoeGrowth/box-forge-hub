@@ -110,7 +110,6 @@ export function createMissionPdf(d: MissionPdfData) {
     ["Client", d.client || "Not specified"],
     ["Date", d.date || "Not specified"],
     ["Context", d.context || "Not specified"],
-    ["Product", d.product || "Not specified"],
     ["Human Resources Allocated", d.people.join(", ") || "None"],
     ["Budget", amount(d.budget)],
   ]);

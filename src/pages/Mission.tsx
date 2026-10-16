@@ -481,7 +481,7 @@ export default function Mission() {
                     </div>
                     <DialogFooter>
                       <Button variant="outline" onClick={() => setPdfOpen(false)}>Cancel</Button>
-                      <Button onClick={downloadPdf} disabled={productsLoading || productError || !productId}><FileDown className="mr-2 h-4 w-4" />Download PDF</Button>
+                      <Button onClick={downloadPdf}><FileDown className="mr-2 h-4 w-4" />Download PDF</Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
