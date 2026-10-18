@@ -557,6 +557,11 @@ export default function Mission() {
                     <p className="text-[11px] text-muted-foreground">
                       {people.length} {people.length > 1 ? "people" : "person"} · after Reste Structure and Third Party Charges
                     </p>
+                    {internalPool - reserveAmount - thirdPartyTotal < 0 && (
+                      <p className="mt-1 text-[11px] font-medium text-destructive">
+                        Over budget by {fmt(reserveAmount + thirdPartyTotal - internalPool)} {currency}: reduce Third Party Charges or Reste Structure.
+                      </p>
+                    )}
                   </div>
                   <div className="rounded-xl border border-border bg-card p-4">
                     <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Tasks allocated</p>
