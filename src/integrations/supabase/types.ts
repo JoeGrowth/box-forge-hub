@@ -7343,6 +7343,18 @@ export type Database = {
           verified_skills_count: number
         }[]
       }
+      list_org_people_public: {
+        Args: { _org_id: string }
+        Returns: {
+          activities_count: number
+          crew_type: string
+          full_name: string
+          has_expertise: boolean
+          id: string
+          tier: string
+          years_contribution: number
+        }[]
+      }
       match_advisors_for_request: {
         Args: { _limit?: number; _request_id: string }
         Returns: {
