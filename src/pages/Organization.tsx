@@ -188,12 +188,12 @@ export default function OrganizationPage() {
     if (!org?.id) return;
     const [pj, pp, prods, iters] = await Promise.all([
       supabase.from("organization_projects").select("id", { count: "exact", head: true }).eq("organization_id", org.id),
-      supabase.from("organization_people").select("id", { count: "exact", head: true }).eq("organization_id", org.id),
+      (supabase as any).rpc("list_org_people_public", { _org_id: org.id }),
       supabase.from("organization_products").select("id").eq("organization_id", org.id).is("archived_at", null),
       supabase.from("organization_product_iterations").select("product_id").eq("organization_id", org.id).is("archived_at", null),
     ]);
     setProjectCount(pj.count ?? 0);
-    setPeopleCount(pp.count ?? 0);
+    setPeopleCount(((pp.data as any[]) ?? []).length);
     const shippedProductIds = new Set(((iters.data as any[]) ?? []).map((i) => i.product_id));
     setProductCount(((prods.data as any[]) ?? []).filter((p) => shippedProductIds.has(p.id)).length);
   }, [org?.id]);

@@ -36,6 +36,13 @@
       "when": 1791768750410,
       "tag": "0004_individual_earnings_receipts",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792432740537,
+      "tag": "0005_restrict_org_people_contacts",
+      "breakpoints": true
     }
   ]
 }

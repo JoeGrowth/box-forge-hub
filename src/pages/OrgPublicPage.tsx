@@ -110,9 +110,8 @@ export default function OrgPublicPage() {
         supabase.from("organization_product_iterations")
           .select("id, product_id, title, shipped_at, version_number")
           .eq("organization_id", orgId).is("archived_at", null),
-        supabase.from("organization_people")
-          .select("id, full_name, tier, crew_type, activities_count, years_contribution, has_expertise")
-          .eq("organization_id", orgId),
+        // Contact details stay private to members; the public page uses a safe list.
+        (supabase as any).rpc("list_org_people_public", { _org_id: orgId }),
       ]);
       if (cancelled) return;
       setProjects((pj.data as Project[]) ?? []);
