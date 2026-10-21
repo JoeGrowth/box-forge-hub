@@ -4612,6 +4612,36 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_activity_visits: {
+        Row: {
+          id: string
+          occurred_at: string
+          page_path: string
+          returning_visit: boolean
+          session_id: string
+          session_start: boolean
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          occurred_at?: string
+          page_path: string
+          returning_visit?: boolean
+          session_id: string
+          session_start?: boolean
+          user_id: string
+        }
+        Update: {
+          id?: string
+          occurred_at?: string
+          page_path?: string
+          returning_visit?: boolean
+          session_id?: string
+          session_start?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       platform_partners: {
         Row: {
           active: boolean
@@ -6978,6 +7008,15 @@ export type Database = {
         Args: { _aggregate_type: string; _event_type: string }
         Returns: string
       }
+      admin_activity_log: {
+        Args: {
+          _days?: number
+          _kind?: string
+          _offset?: number
+          _user_id?: string
+        }
+        Returns: Json
+      }
       admin_create_org_from_idea: {
         Args: { _idea_id: string }
         Returns: string
@@ -7418,6 +7457,10 @@ export type Database = {
       recompute_revenue: { Args: { _user_id: string }; Returns: undefined }
       recompute_role_affinity: { Args: { _user_id: string }; Returns: number }
       recompute_trust: { Args: { _user_id: string }; Returns: undefined }
+      record_platform_visit: {
+        Args: { _page_path: string }
+        Returns: undefined
+      }
       record_recommendation_outcome: {
         Args: {
           _context: Json
