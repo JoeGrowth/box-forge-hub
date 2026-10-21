@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -32,6 +33,7 @@ import {
   ShieldCheck,
   Brain,
   Bug,
+  Activity,
 } from "lucide-react";
 
 const Admin = () => {
@@ -189,6 +191,7 @@ const Admin = () => {
               <h1 className="font-display text-3xl font-bold">Admin Dashboard</h1>
             </div>
             <p className="text-primary-foreground/80">Manage users, applications, and notifications</p>
+            <Button variant="hero-outline" size="sm" className="mt-4" onClick={() => navigate("/admin/activity-log")}><Activity />Activity Log</Button>
           </div>
         </section>
 

@@ -85,6 +85,7 @@ import JourneyTimeline from "./pages/JourneyTimeline";
 import ActivationHub from "./pages/ActivationHub";
 import AdvisorWorkQueue from "./pages/AdvisorWorkQueue";
 import ClickAnalytics from "./pages/admin/ClickAnalytics";
+import ActivityLog from "./pages/admin/ActivityLog";
 import Distribution from "./pages/Distribution";
 import Mission from "./pages/Mission";
 import ConsultingGrowth from "./pages/ConsultingGrowth";
@@ -102,6 +103,7 @@ import Portfolio from "./pages/Portfolio";
 import Kanban from "./pages/Kanban";
 
 import { ClickTracker } from "./components/analytics/ClickTracker";
+import { ActivityTracker } from "./components/analytics/ActivityTracker";
 import { ReportBetaIssueButton } from "./components/beta/ReportBetaIssueButton";
 
 
@@ -119,6 +121,7 @@ const App = () => (
               <BrowserRouter>
                 <ScrollToTop />
                 <ClickTracker />
+                <ActivityTracker />
                 <ReportBetaIssueButton />
                 <Routes>
                   <Route path="/" element={<Index />} />
@@ -158,6 +161,7 @@ const App = () => (
                   <Route path="/admin/beta" element={<ProtectedRoute requireLevel="admin"><BetaConsole /></ProtectedRoute>} />
                   <Route path="/admin/lifecycle-integrity" element={<ProtectedRoute requireLevel="admin"><LifecycleIntegrity /></ProtectedRoute>} />
                   <Route path="/admin/click-analytics" element={<ProtectedRoute requireLevel="admin"><ClickAnalytics /></ProtectedRoute>} />
+                  <Route path="/admin/activity-log" element={<ProtectedRoute requireLevel="admin"><ActivityLog /></ProtectedRoute>} />
                   <Route element={<PersistentNavbarLayout />}>
                   <Route path="/opportunities" element={<GatedRoute talentGate><Opportunities /></GatedRoute>} />
                   <Route path="/organizations" element={<GatedRoute minStage="emerging"><Organizations /></GatedRoute>} />
