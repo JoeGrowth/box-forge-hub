@@ -379,6 +379,8 @@ export function DistributionModels({
   };
 
   return (
+    <>
+    {/* Distribution models — its own card */}
     <div className="rounded-xl border border-border bg-card p-4 space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <button
@@ -468,9 +470,10 @@ export function DistributionModels({
           ))}
         </div>
       )}
+    </div>
 
-      {/* Mission distribution pages created from models */}
-      <div className="space-y-2 border-t border-border pt-3">
+    {/* Mission distribution pages — separate card from Distribution models */}
+    <div className="mt-4 rounded-xl border border-border bg-card p-4 space-y-3">
         <p className="flex items-center gap-2 text-sm font-medium text-foreground">
           <FileText className="h-4 w-4 text-primary" /> Mission distribution pages ({missions.length})
         </p>
@@ -517,8 +520,6 @@ export function DistributionModels({
           </div>
         )}
       </div>
-        </>
-      )}
 
       {/* Create / edit model */}
       <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setEditing(null); }}>
@@ -769,6 +770,6 @@ export function DistributionModels({
         </DialogContent>
       </Dialog>
 
-    </div>
+    </>
   );
 }
