@@ -476,10 +476,21 @@ export function DistributionModels({
 
     {/* Mission distribution pages — separate card from Distribution models */}
     <div className="mt-4 rounded-xl border border-border bg-card p-4 space-y-3">
-        <p className="flex items-center gap-2 text-sm font-medium text-foreground">
-          <FileText className="h-4 w-4 text-primary" /> Mission distribution pages ({missions.length})
-        </p>
+        <button
+          type="button"
+          onClick={toggleMissionsCollapsed}
+          aria-expanded={!missionsCollapsed}
+          className="flex w-full items-center gap-2 text-left text-sm font-medium text-foreground"
+        >
+          <ChevronDown
+            className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${missionsCollapsed ? "-rotate-90" : ""}`}
+          />
+          <FileText className="h-4 w-4 shrink-0 text-primary" /> Mission distribution pages ({missions.length})
+        </button>
+        {!missionsCollapsed && (
+        <>
         {missions.length === 0 ? (
+
           <p className="rounded-lg border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
             No mission pages yet — distribute a mission with a model above.
           </p>
