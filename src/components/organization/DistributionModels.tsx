@@ -160,6 +160,10 @@ export function DistributionModels({
   // The card always starts closed so the tab opens short; clicking the header opens it.
   const [collapsed, setCollapsed] = useState(true);
   const toggleCollapsed = () => setCollapsed((prev) => !prev);
+  // Mission pages card starts closed too — same behaviour as Distribution models.
+  const [missionsCollapsed, setMissionsCollapsed] = useState(true);
+  const toggleMissionsCollapsed = () => setMissionsCollapsed((prev) => !prev);
+
   const [missions, setMissions] = useState<any[]>([]);
   const navigate = useNavigate();
 
