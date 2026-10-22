@@ -521,7 +521,10 @@ export function DistributionModels({
             })}
           </div>
         )}
-      </div>
+        </>
+      )}
+    </div>
+
 
       {/* Create / edit model */}
       <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setEditing(null); }}>
