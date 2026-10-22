@@ -470,6 +470,8 @@ export function DistributionModels({
           ))}
         </div>
       )}
+        </>
+      )}
     </div>
 
     {/* Mission distribution pages — separate card from Distribution models */}
