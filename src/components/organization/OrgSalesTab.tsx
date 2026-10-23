@@ -38,6 +38,13 @@ export function OrgSalesTab({ orgId, orgName, logoPath, canAdmin, serviceBased, 
   const [products, setProducts] = useState<string[]>([]);
   const [openDoc, setOpenDoc] = useState<string | null>(null);
   const [showArchive, setShowArchive] = useState(false);
+  const [openOpps, setOpenOpps] = useState<Set<string>>(new Set());
+  const toggleOpp = (id: string) => setOpenOpps((prev) => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+
 
   const load = useCallback(async () => {
     const [d, o, p] = await Promise.all([
