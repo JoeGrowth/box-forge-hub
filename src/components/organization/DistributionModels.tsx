@@ -293,7 +293,12 @@ export function DistributionModels({
     seededRef.current = true;
     void (async () => {
       const table = supabase.from("distribution_models" as never) as never as any;
+      // Authoritative re-check against the DB: local `models` state can be
+      // stale/empty on first load, which previously caused duplicate inserts.
+      const { data: existingRows } = await table.select("name").eq("org_id", orgId);
+      const existingNames = new Set(((existingRows as any[]) ?? []).map((r) => norm(r.name)));
       for (const product of missing) {
+        if (existingNames.has(norm(product.name))) continue;
         const { error } = await table.insert({
           user_id: user.id,
           org_id: orgId,
@@ -309,6 +314,7 @@ export function DistributionModels({
           seededRef.current = false;
           return;
         }
+        existingNames.add(norm(product.name));
       }
       void reload();
     })();
