@@ -44,7 +44,8 @@ export async function exportSalesDocPdf(d: SalesDocPdf) {
   const drawLogo = () => {
     if (!logo) return;
     const h = 16, w = Math.min(40, (logo.w / logo.h) * h);
-    doc.addImage(logo.data, "PNG", 14, 10, w, h);
+    // Transparent PNG, anchored to the top-right corner
+    doc.addImage(logo.data, "PNG", W - 14 - w, 10, w, h);
   };
   const isService = d.kind === "service_proposal";
   const docType = isService ? "Technical & Financial Proposal" : "Technical & Financial Product File";
