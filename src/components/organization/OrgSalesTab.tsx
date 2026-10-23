@@ -38,6 +38,13 @@ export function OrgSalesTab({ orgId, orgName, logoPath, canAdmin, serviceBased, 
   const [products, setProducts] = useState<string[]>([]);
   const [openDoc, setOpenDoc] = useState<string | null>(null);
   const [showArchive, setShowArchive] = useState(false);
+  const [openOpps, setOpenOpps] = useState<Set<string>>(new Set());
+  const toggleOpp = (id: string) => setOpenOpps((prev) => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+
 
   const load = useCallback(async () => {
     const [d, o, p] = await Promise.all([
@@ -179,48 +186,61 @@ export function OrgSalesTab({ orgId, orgName, logoPath, canAdmin, serviceBased, 
 
   const renderOpp = (o: SalesOpp) => {
     const stage = computeStage(o.checks);
+    const open = openOpps.has(o.id);
     return (
-      <div key={o.id} className="rounded-lg border p-3 space-y-3">
-        <div className="grid gap-2 md:grid-cols-[1fr_1fr_140px_160px_auto] items-end">
-          <div><Label className="text-xs">Client</Label><Input disabled={!canAdmin} defaultValue={o.client_name} onBlur={(e) => updateOpp(o.id, { client_name: e.target.value })} /></div>
-          <div><Label className="text-xs">Title of the client</Label><Input disabled={!canAdmin} defaultValue={o.client_title} onBlur={(e) => updateOpp(o.id, { client_title: e.target.value })} /></div>
-          <div><Label className="text-xs">Channel</Label>
-            <Select disabled={!canAdmin} value={o.channel} onValueChange={(v) => updateOpp(o.id, { channel: v })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent><SelectItem value="wom">Word of mouth</SelectItem><SelectItem value="linkedin">LinkedIn</SelectItem></SelectContent>
-            </Select>
-          </div>
-          <div><Label className="text-xs">Status</Label>
-            <Select disabled={!canAdmin} value={o.status} onValueChange={(v) => updateOpp(o.id, { status: v as SalesStatus })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>{Object.entries(STATUS_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
-            </Select>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge>{STAGE_LABEL[stage]}</Badge>
-            {canAdmin && <Button size="icon" variant="ghost" onClick={() => deleteOpp(o.id)}><Trash2 className="w-4 h-4" /></Button>}
-          </div>
-        </div>
-        <div className="grid gap-2 md:grid-cols-4">
-          {FUNNEL_GATES.map((g, gi) => {
-            const prevDone = gi === 0 || FUNNEL_GATES.slice(0, gi).every((pg) => pg.checks.every((c) => o.checks?.[c.key]));
-            return (
-              <div key={g.to} className={`rounded-md border p-2 space-y-1 ${prevDone ? "" : "opacity-50"}`}>
-                <p className="text-xs font-semibold">→ {g.label}</p>
-                {g.checks.map((c) => (
-                  <label key={c.key} className="flex items-center gap-2 text-xs">
-                    <Checkbox disabled={!canAdmin || !prevDone} checked={!!o.checks?.[c.key]}
-                      onCheckedChange={(v) => updateOpp(o.id, { checks: { ...o.checks, [c.key]: !!v } })} />
-                    {c.label}
-                  </label>
-                ))}
+      <div key={o.id} className="rounded-lg border">
+        <button type="button" onClick={() => toggleOpp(o.id)} className="w-full flex items-center gap-2 p-3 text-left">
+          {open ? <ChevronDown className="w-4 h-4 shrink-0" /> : <ChevronRight className="w-4 h-4 shrink-0" />}
+          <span className="font-medium flex-1 truncate">{o.client_name || "Unnamed client"}</span>
+          {o.client_title && <span className="hidden md:inline text-xs text-muted-foreground truncate max-w-[220px]">{o.client_title}</span>}
+          <Badge variant="outline" className="shrink-0">{STAGE_LABEL[stage]}</Badge>
+          <span className="hidden sm:inline text-xs text-muted-foreground shrink-0">{STATUS_LABEL[o.status]}</span>
+        </button>
+        {open && (
+          <div className="border-t p-3 space-y-3">
+            <div className="grid gap-2 md:grid-cols-[1fr_1fr_140px_160px_auto] items-end">
+              <div><Label className="text-xs">Client</Label><Input disabled={!canAdmin} defaultValue={o.client_name} onBlur={(e) => updateOpp(o.id, { client_name: e.target.value })} /></div>
+              <div><Label className="text-xs">Title of the client</Label><Input disabled={!canAdmin} defaultValue={o.client_title} onBlur={(e) => updateOpp(o.id, { client_title: e.target.value })} /></div>
+              <div><Label className="text-xs">Channel</Label>
+                <Select disabled={!canAdmin} value={o.channel} onValueChange={(v) => updateOpp(o.id, { channel: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="wom">Word of mouth</SelectItem><SelectItem value="linkedin">LinkedIn</SelectItem></SelectContent>
+                </Select>
               </div>
-            );
-          })}
-        </div>
+              <div><Label className="text-xs">Status</Label>
+                <Select disabled={!canAdmin} value={o.status} onValueChange={(v) => updateOpp(o.id, { status: v as SalesStatus })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{Object.entries(STATUS_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge>{STAGE_LABEL[stage]}</Badge>
+                {canAdmin && <Button size="icon" variant="ghost" onClick={() => deleteOpp(o.id)}><Trash2 className="w-4 h-4" /></Button>}
+              </div>
+            </div>
+            <div className="grid gap-2 md:grid-cols-4">
+              {FUNNEL_GATES.map((g, gi) => {
+                const prevDone = gi === 0 || FUNNEL_GATES.slice(0, gi).every((pg) => pg.checks.every((c) => o.checks?.[c.key]));
+                return (
+                  <div key={g.to} className={`rounded-md border p-2 space-y-1 ${prevDone ? "" : "opacity-50"}`}>
+                    <p className="text-xs font-semibold">→ {g.label}</p>
+                    {g.checks.map((c) => (
+                      <label key={c.key} className="flex items-center gap-2 text-xs">
+                        <Checkbox disabled={!canAdmin || !prevDone} checked={!!o.checks?.[c.key]}
+                          onCheckedChange={(v) => updateOpp(o.id, { checks: { ...o.checks, [c.key]: !!v } })} />
+                        {c.label}
+                      </label>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     );
   };
+
 
   return (
     <div className="space-y-4">
