@@ -4052,6 +4052,115 @@ export type Database = {
         }
         Relationships: []
       }
+      org_sales_documents: {
+        Row: {
+          client_name: string
+          created_at: string
+          created_by: string
+          currency: string
+          doc_date: string
+          financial_items: Json
+          id: string
+          kind: string
+          linked_item: string
+          notes: string
+          organization_id: string
+          technical_content: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          client_name?: string
+          created_at?: string
+          created_by?: string
+          currency?: string
+          doc_date?: string
+          financial_items?: Json
+          id?: string
+          kind?: string
+          linked_item?: string
+          notes?: string
+          organization_id: string
+          technical_content?: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          client_name?: string
+          created_at?: string
+          created_by?: string
+          currency?: string
+          doc_date?: string
+          financial_items?: Json
+          id?: string
+          kind?: string
+          linked_item?: string
+          notes?: string
+          organization_id?: string
+          technical_content?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_sales_documents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_sales_opportunities: {
+        Row: {
+          channel: string
+          checks: Json
+          client_name: string
+          client_title: string
+          created_at: string
+          created_by: string
+          id: string
+          notes: string
+          organization_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          channel?: string
+          checks?: Json
+          client_name?: string
+          client_title?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          notes?: string
+          organization_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          channel?: string
+          checks?: Json
+          client_name?: string
+          client_title?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          notes?: string
+          organization_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_sales_opportunities_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_legal_documents: {
         Row: {
           created_at: string
@@ -4475,6 +4584,8 @@ export type Database = {
           logo_url: string | null
           name: string
           name_history: string[]
+          sales_product_based: boolean
+          sales_service_based: boolean
           slug: string
           source_idea_id: string | null
           type: string
@@ -4494,6 +4605,8 @@ export type Database = {
           logo_url?: string | null
           name: string
           name_history?: string[]
+          sales_product_based?: boolean
+          sales_service_based?: boolean
           slug: string
           source_idea_id?: string | null
           type?: string
@@ -4513,6 +4626,8 @@ export type Database = {
           logo_url?: string | null
           name?: string
           name_history?: string[]
+          sales_product_based?: boolean
+          sales_service_based?: boolean
           slug?: string
           source_idea_id?: string | null
           type?: string

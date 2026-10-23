@@ -41,6 +41,8 @@ import { EntityRoleSlots } from "@/components/entity-roles/EntityRoleSlots";
 import { OrgPeopleTab } from "@/components/organization/OrgPeopleTab";
 import { DistributionModels } from "@/components/organization/DistributionModels";
 import { OrgProjectsTab } from "@/components/organization/OrgProjectsTab";
+import { OrgSalesTab } from "@/components/organization/OrgSalesTab";
+import { TrendingUp as SalesIcon } from "lucide-react";
 
 import {
   Select,
@@ -444,6 +446,7 @@ export default function OrganizationPage() {
           <OrgTab icon={PieChart} value="distribution" count={distModelCount}>Distribution</OrgTab>
           <OrgTab icon={ClipboardList} value="declaration" count={declarations.length}>Declaration</OrgTab>
           <OrgTab icon={Rocket} value="projects" count={projectCount}>Project</OrgTab>
+          <OrgTab icon={SalesIcon} value="sales">Sales</OrgTab>
           <OrgTab icon={Lightbulb} value="journey" count={productCount}>Product</OrgTab>
           <div aria-hidden className="mx-1 hidden h-6 w-px self-center bg-border md:block" />
           <OrgTab icon={Heart} value="people" count={peopleCount}>People</OrgTab>
@@ -728,6 +731,19 @@ export default function OrganizationPage() {
         {/* PROJECT JOURNEY (internal projects) */}
         <TabsContent value="projects" className="space-y-3">
           <OrgProjectsTab orgId={org.id} orgName={org.name} canEdit={canEdit} userId={user?.id} />
+        </TabsContent>
+
+        {/* SALES */}
+        <TabsContent value="sales" className="space-y-3">
+          <OrgSalesTab
+            orgId={org.id}
+            orgName={org.name}
+            logoPath={org.logo_url}
+            canAdmin={canAdmin}
+            serviceBased={!!(org as any).sales_service_based}
+            productBased={!!(org as any).sales_product_based}
+            onModesChange={(m) => setOrg((c) => c ? ({ ...c, sales_service_based: m.serviceBased, sales_product_based: m.productBased } as any) : c)}
+          />
         </TabsContent>
 
 
