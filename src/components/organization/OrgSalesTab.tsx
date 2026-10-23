@@ -245,6 +245,37 @@ export function OrgSalesTab({ orgId, orgName, logoPath, canAdmin, serviceBased, 
   return (
     <div className="space-y-4">
       <datalist id={`sales-items-${orgId}`}>{products.map((p) => <option key={p} value={p} />)}</datalist>
+      <section className="rounded-xl border bg-card p-4 space-y-3">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div>
+            <h3 className="font-semibold">Sales opportunities</h3>
+            <p className="text-xs text-muted-foreground">Every opportunity starts as Traffic. 3 checks move it to the next stage. "No answer" sends it to archive.</p>
+          </div>
+          {canAdmin && (serviceBased || productBased) && <Button size="sm" onClick={addOpp}><Plus className="w-4 h-4 mr-1" />Add opportunity</Button>}
+        </div>
+        {(serviceBased || productBased) ? (
+          <>
+            <div className="flex gap-2 flex-wrap">
+              {(["traffic", "lead", "mql", "sql", "client"] as const).map((s) => (
+                <Badge key={s} variant="outline">{STAGE_LABEL[s]}: {stageCounts[s]}</Badge>
+              ))}
+            </div>
+            {active.length === 0 && <p className="text-sm text-muted-foreground">No active opportunities.</p>}
+            {active.map(renderOpp)}
+            {archived.length > 0 && (
+              <div>
+                <button type="button" onClick={() => setShowArchive((v) => !v)} className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <Archive className="w-4 h-4" />Archive ({archived.length}) {showArchive ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                </button>
+                {showArchive && <div className="mt-2 space-y-2">{archived.map(renderOpp)}</div>}
+              </div>
+            )}
+          </>
+        ) : (
+          <p className="text-xs text-muted-foreground">Check at least one organization type below to start tracking opportunities.</p>
+        )}
+      </section>
+
       <section className="rounded-xl border bg-card p-4">
         <h3 className="font-semibold mb-2">Organization type</h3>
         <div className="flex gap-6 flex-wrap">
@@ -256,33 +287,6 @@ export function OrgSalesTab({ orgId, orgName, logoPath, canAdmin, serviceBased, 
 
       {serviceBased && renderDocs("service_proposal")}
       {productBased && renderDocs("product_file")}
-
-      {(serviceBased || productBased) && (
-        <section className="rounded-xl border bg-card p-4 space-y-3">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <div>
-              <h3 className="font-semibold">Sales opportunities</h3>
-              <p className="text-xs text-muted-foreground">Every opportunity starts as Traffic. 3 checks move it to the next stage. "No answer" sends it to archive.</p>
-            </div>
-            {canAdmin && <Button size="sm" onClick={addOpp}><Plus className="w-4 h-4 mr-1" />Add opportunity</Button>}
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            {(["traffic", "lead", "mql", "sql", "client"] as const).map((s) => (
-              <Badge key={s} variant="outline">{STAGE_LABEL[s]}: {stageCounts[s]}</Badge>
-            ))}
-          </div>
-          {active.length === 0 && <p className="text-sm text-muted-foreground">No active opportunities.</p>}
-          {active.map(renderOpp)}
-          {archived.length > 0 && (
-            <div>
-              <button type="button" onClick={() => setShowArchive((v) => !v)} className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                <Archive className="w-4 h-4" />Archive ({archived.length}) {showArchive ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-              </button>
-              {showArchive && <div className="mt-2 space-y-2">{archived.map(renderOpp)}</div>}
-            </div>
-          )}
-        </section>
-      )}
     </div>
   );
 }
