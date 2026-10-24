@@ -17,6 +17,7 @@ import {
   type Organization,
 } from "@/hooks/useOrganizations";
 import { OrgLogo, invalidateOrgLogo } from "@/components/organization/OrgLogo";
+import { getEntityLabel, isCertificateDoc } from "@/lib/entityLabels";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -364,10 +365,10 @@ export default function OrganizationPage() {
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-bold">{org.name.split(" — ")[0]}</h1>
               {(() => {
-                const hasCert = legalDocs.some((d) => d.name.toLowerCase().startsWith("certificate of incorporation"));
+                const hasCert = legalDocs.some((d) => isCertificateDoc(d.name));
                 return (
-                  <Badge variant="outline" className="capitalize">
-                    {hasCert ? "Company" : "Organization"}
+                  <Badge variant="outline">
+                    {getEntityLabel({ hasCertificate: hasCert, memberCount: members.length })}
                   </Badge>
                 );
               })()}

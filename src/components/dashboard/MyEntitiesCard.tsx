@@ -10,12 +10,14 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Building2, ArrowRight, Rocket, ChevronDown } from "lucide-react";
 import { OrgLogo } from "@/components/organization/OrgLogo";
+import { fetchEntityLabelInputs, getEntityLabel } from "@/lib/entityLabels";
 
 type EntityRow = {
   orgId: string;
   orgName: string;
   orgSlug: string;
   logoUrl: string | null;
+  label: string | null;
   total: number;
   active: number;
   blocked: number;
@@ -49,10 +51,10 @@ export function MyEntitiesCard() {
         return;
       }
 
-      const { data: projects } = await supabase
-        .from("organization_projects" as any)
-        .select("*")
-        .in("organization_id", orgs.map((o) => o.id));
+      const [{ data: projects }, labelInputs] = await Promise.all([
+        supabase.from("organization_projects" as any).select("*").in("organization_id", orgs.map((o) => o.id)),
+        fetchEntityLabelInputs(orgs.map((o) => o.id)),
+      ]);
 
       const byOrg = new Map<string, any[]>();
       ((projects as any[]) ?? []).forEach((p) => {
@@ -78,6 +80,7 @@ export function MyEntitiesCard() {
           orgName: o.name,
           orgSlug: o.slug,
           logoUrl: o.logo_url ?? null,
+          label: labelInputs.get(o.id) ? getEntityLabel(labelInputs.get(o.id)!) : null,
           total: list.length,
           active: open.filter((p) => p.status === "active").length,
           blocked: open.filter((p) => !!p.status_note).length,
@@ -198,9 +201,16 @@ export function MyEntitiesCard() {
                     )}
                   </div>
                   <div className="min-w-0">
-                    <p className="font-medium text-foreground truncate group-hover:text-primary transition-colors">
-                      {e.orgName}
-                    </p>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <p className="font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                        {e.orgName}
+                      </p>
+                      {e.label && (
+                        <Badge variant="outline" className="shrink-0 text-[10px] px-1.5 py-0 h-4 font-normal text-muted-foreground">
+                          {e.label}
+                        </Badge>
+                      )}
+                    </div>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {e.total === 0
                         ? "No projects yet"
