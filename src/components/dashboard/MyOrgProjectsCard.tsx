@@ -136,7 +136,7 @@ export function MyOrgProjectsCard() {
               <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary">
                 <Rocket className="w-4 h-4" />
               </span>
-              Your projects
+              Projects of the Entities You&apos;re Part Of
               {!loading && (
                 <Badge variant="secondary" className="ml-1 font-medium">{activeRows.length}</Badge>
               )}
