@@ -45,6 +45,7 @@ import {
   GripVertical,
 } from "lucide-react";
 import { OrgLogo } from "@/components/organization/OrgLogo";
+import { fetchEntityLabelInputs, getEntityLabel } from "@/lib/entityLabels";
 
 type LifecycleStage = "venture" | "business" | "startup" | "mature";
 const STAGE_META: Record<LifecycleStage, { label: string; icon: typeof Rocket; className: string }> = {
@@ -88,7 +89,7 @@ export function MyOrganizationsSection() {
   const [saving, setSaving] = useState(false);
   const [filter, setFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
-  const [incorporatedIds, setIncorporatedIds] = useState<Set<string>>(new Set());
+  const [labelInputs, setLabelInputs] = useState<Record<string, { hasCertificate: boolean; memberCount: number }>>({});
   const [sortBy, setSortBy] = useState<SortKey>("default");
   const [moneyBox, setMoneyBox] = useState<Record<string, MoneyBox>>({});
   const [moneyBoxLoading, setMoneyBoxLoading] = useState(false);
@@ -101,25 +102,25 @@ export function MyOrganizationsSection() {
     [memberships],
   );
 
+  // Orgs of type "company" count as incorporated once a certificate of incorporation is uploaded.
+  const incorporatedIds = useMemo(
+    () => new Set(companyOrgIds.filter((id) => labelInputs[id]?.hasCertificate)),
+    [companyOrgIds, labelInputs],
+  );
+
+  // Entity legal-form labels: certificate of incorporation + member count per organization.
+  const allOrgIdsKey = memberships.map(m => m.organization.id).join(",");
   useEffect(() => {
-    if (companyOrgIds.length === 0) { setIncorporatedIds(new Set()); return; }
+    const ids = allOrgIdsKey ? allOrgIdsKey.split(",") : [];
+    if (!ids.length) { setLabelInputs({}); return; }
     let cancelled = false;
     (async () => {
-      const { data } = await supabase
-        .from("organization_legal_documents")
-        .select("organization_id, name")
-        .in("organization_id", companyOrgIds);
+      const map = await fetchEntityLabelInputs(ids);
       if (cancelled) return;
-      const ids = new Set<string>();
-      (data ?? []).forEach((d: any) => {
-        if (typeof d.name === "string" && d.name.toLowerCase().includes("certificate of incorporation")) {
-          ids.add(d.organization_id);
-        }
-      });
-      setIncorporatedIds(ids);
+      setLabelInputs(Object.fromEntries(map));
     })();
     return () => { cancelled = true; };
-  }, [companyOrgIds.join(",")]);
+  }, [allOrgIdsKey]);
 
   // Load Money Box outflows for all user's organizations
   useEffect(() => {
@@ -495,6 +496,11 @@ export function MyOrganizationsSection() {
                               <Badge variant="outline" className={`${StageMeta.className} text-[10px] py-0 px-1.5 h-4`}>
                                 <StageIcon className="w-2.5 h-2.5 mr-0.5" /> {StageMeta.label}
                               </Badge>
+                              {labelInputs[o.id] && (
+                                <Badge variant="outline" className="bg-muted/50 text-muted-foreground text-[10px] py-0 px-1.5 h-4">
+                                  {getEntityLabel(labelInputs[o.id])}
+                                </Badge>
+                              )}
                               {o.type === "company" && incorporatedIds.has(o.id) && (
                                 <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 border-emerald-200 text-[10px] py-0 px-1.5 h-4">
                                   <ShieldCheck className="w-2.5 h-2.5 mr-0.5" /> Incorporated
