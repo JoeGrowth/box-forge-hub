@@ -1,5 +1,5 @@
-// Your entities — follow up projects per organization on the dashboard.
-// Shown below "Your projects" once "Shape your talent" is complete.
+// Entities you're part of — follow up projects per organization on the dashboard.
+// Shown below "Projects of the Entities You're Part Of" once "Shape your talent" is complete.
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -87,7 +87,7 @@ export function MyEntitiesCard() {
             : null,
         };
       });
-      // Same rule as "Your projects": only entities with at least one blocked project.
+      // Same rule as "Projects of the Entities You're Part Of": only entities with at least one blocked project.
       // Entities with no picture come first, then those with a picture;
       // within each group, ranked by core project track progress, highest first.
       setRows(
@@ -143,7 +143,7 @@ export function MyEntitiesCard() {
               <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary">
                 <Building2 className="w-4 h-4" />
               </span>
-              Your entities
+              Entities You&apos;re Part Of
               {!loading && (
                 <Badge variant="secondary" className="ml-1 font-medium">{rows.length}</Badge>
               )}

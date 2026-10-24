@@ -89,7 +89,7 @@ export function MyOrgProjectsCard() {
 
   // Homepage shows only projects that have a "Blocker / where it stands" note.
   // Core project track (published for the entity itself) is followed up in
-  // "Your entities" instead, so it never appears here.
+  // "Entities You're Part Of" instead, so it never appears here.
   const activeRows = rows
     .filter(
       (r) =>
@@ -136,7 +136,7 @@ export function MyOrgProjectsCard() {
               <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary">
                 <Rocket className="w-4 h-4" />
               </span>
-              Your projects
+              Projects of the Entities You&apos;re Part Of
               {!loading && (
                 <Badge variant="secondary" className="ml-1 font-medium">{activeRows.length}</Badge>
               )}
@@ -147,7 +147,7 @@ export function MyOrgProjectsCard() {
               )}
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1.5">
-              Projects with a blocker / where it stands, across your organizations.
+              Projects with a blocker / where it stands, across the entities you&apos;re part of.
             </p>
           </div>
 

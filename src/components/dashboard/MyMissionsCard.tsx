@@ -109,7 +109,7 @@ export function MyMissionsCard() {
               <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-b4-coral/10 text-b4-coral">
                 <Wallet className="w-4 h-4" />
               </span>
-              Awaiting Payment
+              Awaiting Payment in the Entities You&apos;re Part Of
               {!loading && (
                 <Badge variant="secondary" className="ml-1 font-medium">{rows.length}</Badge>
               )}
@@ -120,7 +120,7 @@ export function MyMissionsCard() {
               )}
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1.5">
-              Missions still waiting to be paid.
+              Missions in your entities still waiting to be paid.
             </p>
           </div>
 
