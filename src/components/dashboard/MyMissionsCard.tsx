@@ -120,7 +120,7 @@ export function MyMissionsCard() {
               )}
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1.5">
-              Missions still waiting to be paid.
+              Missions in your entities still waiting to be paid.
             </p>
           </div>
 
