@@ -14,9 +14,12 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+import { createDistEntity } from "@/pages/Distribution";
+import { withBaseCharges, normalizeTaskLocks } from "@/components/organization/DistributionModels";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Pencil, Trash2, Rocket, CalendarDays, User, Loader2, AlertTriangle, Archive, ChevronDown, ChevronUp, RotateCcw, Building2, Send } from "lucide-react";
+import { Plus, Pencil, Trash2, Rocket, CalendarDays, User, Loader2, AlertTriangle, Archive, ChevronDown, ChevronUp, RotateCcw, Building2, Send, Calculator } from "lucide-react";
 
 type TalentCandidate = { user_id: string; full_name: string | null; avatar_url: string | null };
 
@@ -34,6 +37,8 @@ type OrgProject = {
   project_kind: string;
   product_id?: string | null;
   product_iteration_id?: string | null;
+  budget?: number | null;
+  distribution_record_id?: string | null;
 };
 
 const KINDS = [
@@ -55,10 +60,13 @@ const emptyDraft = {
   start_date: "", target_date: "", progress: 0, status_note: "",
   project_kind: "internal",
   product_name: "",
+  budget: "",
 };
 
 export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: string; orgName?: string; canEdit: boolean; userId?: string }) {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [distBusy, setDistBusy] = useState(false);
   const [projects, setProjects] = useState<OrgProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -117,6 +125,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
       status_note: p.status_note ?? "",
       project_kind: p.project_kind ?? "internal",
       product_name: "",
+      budget: p.budget != null ? String(p.budget) : "",
     });
     if (p.product_id) {
       supabase.from("organization_products").select("name").eq("id", p.product_id).maybeSingle()
@@ -125,7 +134,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
     setOpen(true);
   };
 
-  const save = async () => {
+  const save = async (goDistribution = false) => {
     if (!draft.name.trim()) return;
     const isExternal = draft.project_kind === "external";
     const productName = draft.product_name.trim();
@@ -157,6 +166,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
       status_note: draft.status_note.trim() || null,
       project_kind: isExternal ? "external" : "internal",
       product_id: productId,
+      budget: draft.budget.trim() === "" ? null : Number(draft.budget) || 0,
     };
     const { data: saved, error } = editing
       ? await supabase.from("organization_projects" as any).update(payload).eq("id", editing.id).select("*").single()
@@ -188,6 +198,76 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
     toast({ title: editing ? "Project updated" : "Project added" });
     setOpen(false);
     load();
+    if (goDistribution) await openDistribution({ ...sp, budget: payload.budget, product_id: productId }, productName);
+  };
+
+  // Open (or create once) the mission distribution page for this project,
+  // using the distribution model named after the linked product.
+  const openDistribution = async (p: OrgProject, productNameHint?: string) => {
+    if (!userId) return;
+    setDistBusy(true);
+    try {
+      const recTable = () => supabase.from("distribution_records" as never) as never as any;
+      if (p.distribution_record_id) {
+        const { data: rec } = await recTable().select("id").eq("id", p.distribution_record_id).maybeSingle();
+        if (rec?.id) {
+          await recTable().update({ budget: Number(p.budget) || 0, title: p.name }).eq("id", rec.id);
+          navigate(`/mission/${rec.id}`);
+          return;
+        }
+      }
+      let productName = productNameHint?.trim() || "";
+      if (!productName && p.product_id) {
+        const { data } = await supabase.from("organization_products").select("name").eq("id", p.product_id).maybeSingle();
+        productName = (data as any)?.name ?? "";
+      }
+      if (!productName) {
+        toast({ title: "Product required", description: "Link this project to a delivered product to use its distribution model.", variant: "destructive" });
+        return;
+      }
+      const { data: models } = await (supabase.from("distribution_models" as never) as never as any)
+        .select("id,name,tasks,charges").eq("org_id", orgId).order("created_at", { ascending: true });
+      const norm = (v: string) => v.trim().toLowerCase();
+      const model = ((models as any[]) ?? []).find((m) => norm(m.name) === norm(productName));
+      if (!model) {
+        toast({ title: "No distribution model", description: `Create a distribution model named "${productName}" first.`, variant: "destructive" });
+        return;
+      }
+      const { data: ents } = await (supabase.from("distribution_entities" as never) as never as any)
+        .select("id").eq("org_id", orgId).order("created_at", { ascending: true }).limit(1);
+      let entityId: string | undefined = (ents as any[])?.[0]?.id;
+      if (!entityId) entityId = (await createDistEntity(`${orgName ?? "Organization"} distribution`, userId, orgId)).id;
+      const { count } = await supabase.from("organization_product_iterations")
+        .select("id", { count: "exact", head: true }).eq("product_id", p.product_id!).is("archived_at", null);
+      const budgetNum = Number(p.budget) || 0;
+      const uid = () => Math.random().toString(36).slice(2, 9);
+      const charges = withBaseCharges(model.charges ?? []).map((c: any) => ({
+        ...c,
+        id: uid(),
+        amount: c.fixed && c.percent != null ? Math.round(((Number(c.percent) || 0) / 100) * budgetNum * 100) / 100 : Number(c.amount) || 0,
+      }));
+      const { data: rec, error } = await recTable().insert({
+        user_id: userId,
+        kind: `${entityId}:model-${model.id}`,
+        client: null,
+        title: p.name,
+        iteration: count ?? 1,
+        budget_label: model.name,
+        budget: budgetNum,
+        currency: "TND",
+        charges,
+        tasks: normalizeTaskLocks(model.tasks ?? []).map((t: any) => ({ ...t, id: uid() })),
+        people: ["Person (1)", "Person (2)"],
+      }).select("id").maybeSingle();
+      if (error || !rec?.id) {
+        toast({ title: "Could not create the mission page", description: error?.message, variant: "destructive" });
+        return;
+      }
+      await supabase.from("organization_projects" as any).update({ distribution_record_id: rec.id }).eq("id", p.id);
+      navigate(`/mission/${rec.id}`);
+    } finally {
+      setDistBusy(false);
+    }
   };
 
   const updateProgress = async (p: OrgProject, value: number) => {
@@ -357,6 +437,10 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                     <p className="text-xs text-muted-foreground mt-1">This project is counted as a shipped delivery of the product.</p>
                   </div>
                 )}
+                <div>
+                  <Label>Budget (TND)</Label>
+                  <Input type="number" min={0} value={draft.budget} onChange={(e) => setDraft({ ...draft, budget: e.target.value })} placeholder="e.g. 2000" />
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label>Status</Label>
@@ -423,7 +507,10 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                </div>
                <DialogFooter>
                 <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                <Button onClick={save}>{editing ? "Save changes" : "Add project"}</Button>
+                <Button variant="secondary" onClick={() => save(true)} disabled={distBusy || draft.project_kind !== "external"} title={draft.project_kind !== "external" ? "Budget distribution uses the delivered product's model (External projects)" : "Save and open the mission distribution page"}>
+                  {distBusy ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Calculator className="w-4 h-4 mr-1" />}Budget Distribution
+                </Button>
+                <Button onClick={() => save()}>{editing ? "Save changes" : "Add project"}</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
