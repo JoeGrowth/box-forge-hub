@@ -58,14 +58,14 @@ const BASE_LABELS = BASE_CHARGES.flatMap((b) => [b.label, ...(b.aliases ?? [])])
 const isStructuralReserve = (label: unknown) =>
   /structural reserve|rest structure|rest for the structure/.test(norm(label));
 
-const normalizeTaskLocks = (tasks: ModelTask[]): ModelTask[] =>
+export const normalizeTaskLocks = (tasks: ModelTask[]): ModelTask[] =>
   tasks.map((task) =>
     isStructuralReserve(task.label)
       ? { ...task, locked: true }
       : (({ locked: _locked, ...splitTask }) => splitTask)(task),
   );
 
-const withBaseCharges = (list: ModelCharge[]): ModelCharge[] => {
+export const withBaseCharges = (list: ModelCharge[]): ModelCharge[] => {
   const arr = Array.isArray(list) ? list : [];
   const rest = arr.filter((c) => !BASE_LABELS.some((l) => norm(l) === norm(c.label)));
   const base = BASE_CHARGES.map((b) => {

@@ -4490,9 +4490,11 @@ export type Database = {
       }
       organization_projects: {
         Row: {
+          budget: number | null
           created_at: string
           created_by: string | null
           description: string | null
+          distribution_record_id: string | null
           id: string
           lead: string | null
           name: string
@@ -4509,9 +4511,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          budget?: number | null
           created_at?: string
           created_by?: string | null
           description?: string | null
+          distribution_record_id?: string | null
           id?: string
           lead?: string | null
           name: string
@@ -4528,9 +4532,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          budget?: number | null
           created_at?: string
           created_by?: string | null
           description?: string | null
+          distribution_record_id?: string | null
           id?: string
           lead?: string | null
           name?: string

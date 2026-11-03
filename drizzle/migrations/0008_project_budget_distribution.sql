@@ -1,0 +1,1 @@
+ALTER TABLE public.organization_projects ADD COLUMN IF NOT EXISTS budget numeric, ADD COLUMN IF NOT EXISTS distribution_record_id uuid;
