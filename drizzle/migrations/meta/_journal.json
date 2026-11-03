@@ -57,6 +57,13 @@
       "when": 1792785983667,
       "tag": "0007_org_sales",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793716650717,
+      "tag": "0008_project_budget_distribution",
+      "breakpoints": true
     }
   ]
 }
