@@ -195,9 +195,9 @@ export function MyOrgProjectsCard() {
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-3">
+                    <div className="flex flex-col-reverse sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3">
                       <div className="min-w-0">
-                        <p className="font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                        <p className="font-medium text-foreground break-words group-hover:text-primary transition-colors">
                           {p.name}
                         </p>
                         <p className="text-xs text-muted-foreground truncate mt-0.5">{p.orgName}</p>
