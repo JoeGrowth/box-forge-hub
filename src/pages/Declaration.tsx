@@ -1609,7 +1609,7 @@ function PayeeSection({
                   <Input placeholder="Nom" value={p.name} onChange={(e) => onUpdate(p.id, { name: e.target.value })} />
                 )}
               </div>
-              <div className="col-span-5 md:col-span-3">
+              <div className="col-span-4 md:col-span-3">
                 <Input
                   type="number"
                   placeholder="Montant"
@@ -1617,7 +1617,7 @@ function PayeeSection({
                   onChange={(e) => onUpdate(p.id, { amount: +e.target.value })}
                 />
               </div>
-              <div className="col-span-5 md:col-span-3 flex items-center gap-2 min-w-0">
+              <div className="col-span-6 md:col-span-3 flex items-center gap-2 min-w-0">
                 <Switch checked={p.paid} onCheckedChange={(v) => onUpdate(p.id, { paid: v })} id={`paid-${p.id}`} />
                 <Label htmlFor={`paid-${p.id}`} className="text-xs cursor-pointer flex items-center gap-1">
                   {p.paid ? (
@@ -1632,7 +1632,7 @@ function PayeeSection({
                 </Label>
               </div>
               <div className="col-span-2 md:col-span-1 flex justify-end">
-                <Button variant="ghost" size="icon" onClick={() => onRemove(p.id)} aria-label="Remove">
+                <Button variant="ghost" size="icon" onClick={() => onRemove(p.id)} aria-label="Remove" className="h-8 w-8">
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
