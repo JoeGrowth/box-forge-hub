@@ -192,7 +192,7 @@ export function MyEntitiesCard() {
               className="group block rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/40 hover:bg-muted/40 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3 min-w-0">
+                <div className="flex items-start gap-3 min-w-0 flex-1">
                   <div className="shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 to-b4-teal/15 flex items-center justify-center text-xs font-semibold text-primary overflow-hidden">
                     {e.logoUrl ? (
                       <OrgLogo path={e.logoUrl} alt={`${e.orgName} logo`} className="w-full h-full object-cover" iconClassName="w-5 h-5 text-primary" />
@@ -201,12 +201,12 @@ export function MyEntitiesCard() {
                     )}
                   </div>
                   <div className="min-w-0">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <p className="font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <p className="font-medium text-foreground break-words group-hover:text-primary transition-colors">
                         {e.orgName}
                       </p>
                       {e.label && (
-                        <Badge variant="outline" className="shrink-0 text-[10px] px-1.5 py-0 h-4 font-normal text-muted-foreground">
+                        <Badge variant="outline" className="shrink-0 whitespace-nowrap text-[10px] px-1.5 py-0 font-normal text-muted-foreground">
                           {e.label}
                         </Badge>
                       )}
@@ -220,7 +220,7 @@ export function MyEntitiesCard() {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   {e.blocked > 0 && (
-                    <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30">
+                    <Badge variant="outline" className="whitespace-nowrap bg-amber-500/10 text-amber-600 border-amber-500/30">
                       {e.blocked} blocked
                     </Badge>
                   )}
