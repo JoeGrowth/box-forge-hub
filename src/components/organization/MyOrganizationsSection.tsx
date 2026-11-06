@@ -425,7 +425,7 @@ export function MyOrganizationsSection() {
               No organizations match your filter.
             </div>
           ) : (
-            <div className="grid gap-4">
+            <div className="grid grid-cols-1 gap-4 min-w-0">
               {filtered.map(({ organization: o, role }, index) => {
                 const RoleIcon = ROLE_ICON[role];
                 const canDelete = role === "admin";
@@ -446,7 +446,7 @@ export function MyOrganizationsSection() {
                 const StageIcon = StageMeta.icon;
                 const showLine = canReorder && draggingId && draggingId !== o.id && dropIndex === index;
                 return (
-                  <div key={o.id}>
+                  <div key={o.id} className="min-w-0">
                     {showLine && <div className="mb-2 h-0.5 rounded-full bg-primary" />}
                     <div
                       draggable={canReorder}
@@ -482,8 +482,8 @@ export function MyOrganizationsSection() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <Link to={`/org/${o.slug}`} className="font-semibold text-foreground hover:underline truncate block">
+                          <div className="min-w-0 flex-1">
+                            <Link to={`/org/${o.slug}`} className="font-semibold text-foreground hover:underline break-words block">
                             {o.name.split(" — ")[0]}
                             </Link>
                             <div className="flex flex-wrap items-center gap-1.5 mt-1">
@@ -497,7 +497,7 @@ export function MyOrganizationsSection() {
                                 <StageIcon className="w-2.5 h-2.5 mr-0.5" /> {StageMeta.label}
                               </Badge>
                               {labelInputs[o.id] && (
-                                <Badge variant="outline" className="bg-muted/50 text-muted-foreground text-[10px] py-0 px-1.5 h-4">
+                                <Badge variant="outline" className="bg-muted/50 text-muted-foreground text-[10px] py-0 px-1.5 h-4 whitespace-nowrap">
                                   {getEntityLabel(labelInputs[o.id])}
                                 </Badge>
                               )}
