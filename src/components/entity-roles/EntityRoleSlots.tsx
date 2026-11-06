@@ -41,13 +41,13 @@ export function EntityRoleSlots({ entityType, entityId, canManage }: Props) {
       <button
         type="button"
         onClick={() => setRolesOpen((v) => !v)}
-        className="w-full flex items-center justify-between text-left"
+        className="w-full flex items-center justify-between gap-3 text-left"
       >
-        <h3 className="text-sm font-semibold flex items-center gap-2 leading-none m-0">
+        <h3 className="text-sm font-semibold flex items-center gap-2 leading-none m-0 shrink-0">
           <UserCog className="h-4 w-4 text-primary" /> Roles
         </h3>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">
+          <span className="hidden sm:inline text-xs text-muted-foreground">
             Optional. Linking unlocks verified evidence for that person.
           </span>
           {rolesOpen ? (

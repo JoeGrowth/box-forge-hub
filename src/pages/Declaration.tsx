@@ -1575,12 +1575,12 @@ function PayeeSection({
 }) {
   return (
     <div className={`rounded-lg border p-4 ${accent === "primary" ? "border-primary/20 bg-primary/[0.02]" : ""}`}>
-      <div className="flex items-center justify-between mb-3">
-        <div>
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="min-w-0">
           <h3 className="font-semibold">{title}</h3>
           <p className="text-xs text-muted-foreground">{subtitle}</p>
         </div>
-        <Button size="sm" variant="outline" onClick={onAdd}>
+        <Button size="sm" variant="outline" onClick={onAdd} className="shrink-0">
           <Plus className="h-3 w-3 mr-1" /> Ajouter
         </Button>
       </div>
@@ -1609,7 +1609,7 @@ function PayeeSection({
                   <Input placeholder="Nom" value={p.name} onChange={(e) => onUpdate(p.id, { name: e.target.value })} />
                 )}
               </div>
-              <div className="col-span-7 md:col-span-3">
+              <div className="col-span-5 md:col-span-3">
                 <Input
                   type="number"
                   placeholder="Montant"
@@ -1617,7 +1617,7 @@ function PayeeSection({
                   onChange={(e) => onUpdate(p.id, { amount: +e.target.value })}
                 />
               </div>
-              <div className="col-span-4 md:col-span-3 flex items-center gap-2">
+              <div className="col-span-5 md:col-span-3 flex items-center gap-2 min-w-0">
                 <Switch checked={p.paid} onCheckedChange={(v) => onUpdate(p.id, { paid: v })} id={`paid-${p.id}`} />
                 <Label htmlFor={`paid-${p.id}`} className="text-xs cursor-pointer flex items-center gap-1">
                   {p.paid ? (
@@ -1631,8 +1631,8 @@ function PayeeSection({
                   )}
                 </Label>
               </div>
-              <div className="col-span-1 flex justify-end">
-                <Button variant="ghost" size="icon" onClick={() => onRemove(p.id)}>
+              <div className="col-span-2 md:col-span-1 flex justify-end">
+                <Button variant="ghost" size="icon" onClick={() => onRemove(p.id)} aria-label="Remove">
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
