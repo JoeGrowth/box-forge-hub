@@ -216,7 +216,7 @@ export function MyOrganizationsSection() {
       if (!card || !bar) return;
       const cardTop = card.getBoundingClientRect().top;
       const barBottom = bar.getBoundingClientRect().bottom;
-      setCompact((prev) => (prev ? cardTop > barBottom + 120 : cardTop < barBottom + 4));
+      setCompact((prev) => (prev ? cardTop < barBottom + 120 : cardTop < barBottom + 4));
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
