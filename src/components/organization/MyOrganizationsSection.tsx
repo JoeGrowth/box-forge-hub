@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -96,6 +96,11 @@ export function MyOrganizationsSection() {
   const [orgOrder, setOrgOrder] = useState<Record<string, number>>({});
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [compact, setCompact] = useState(false);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
+  const cardsRef = useRef<HTMLDivElement>(null);
 
   const companyOrgIds = useMemo(
     () => memberships.filter(m => m.organization.type === "company").map(m => m.organization.id),
@@ -202,6 +207,26 @@ export function MyOrganizationsSection() {
     });
   }, [memberships, filter, typeFilter, sortBy, moneyBox, orgOrder]);
 
+  // The header collapses into the pinned toolbar once the 3rd organization card is reached.
+  useEffect(() => {
+    if (loading || filtered.length < 3) { setCompact(false); return; }
+    const onScroll = () => {
+      const card = cardsRef.current?.children[2] as HTMLElement | undefined;
+      const bar = toolbarRef.current;
+      if (!card || !bar) return;
+      const cardTop = card.getBoundingClientRect().top;
+      const barBottom = bar.getBoundingClientRect().bottom;
+      setCompact((prev) => (prev ? cardTop < barBottom + 120 : cardTop < barBottom + 4));
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [loading, filtered.length]);
+
   // Load the user's saved organization order
   useEffect(() => {
     if (!user) { setOrgOrder({}); return; }
@@ -273,7 +298,14 @@ export function MyOrganizationsSection() {
 
   return (
     <div className="space-y-6">
-      {/* Header — styled like Your Assets */}
+      {/* Header — collapses into the pinned toolbar once the 3rd organization is reached */}
+      <div
+        ref={headerRef}
+        aria-hidden={compact}
+        className={`overflow-hidden transition-all duration-300 ease-out ${
+          compact ? "max-h-0 opacity-0" : "max-h-[560px] opacity-100"
+        }`}
+      >
       <div className="rounded-xl border border-border bg-gradient-to-br from-primary/5 via-card to-card p-5">
         <div className="flex flex-col sm:flex-row sm:items-start gap-4">
           <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -304,12 +336,51 @@ export function MyOrganizationsSection() {
               </div>
             )}
           </div>
+        </div>
+      </div>
+      </div>
+
+      {/* Pinned toolbar — filter toggle + new organization */}
+      <div
+        ref={toolbarRef}
+        className="sticky top-16 md:top-20 z-30 -mx-4 px-4 py-2 bg-background/95 backdrop-blur supports-[backdrop-blur]:bg-background/80"
+      >
+        <div className="flex items-center justify-between gap-2">
+          {(filter || typeFilter || sortBy !== "default") && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2 text-xs text-muted-foreground"
+              onClick={() => { setFilter(""); setTypeFilter(""); setSortBy("default"); }}
+            >
+              Clear filters
+            </Button>
+          )}
+          <div className="flex items-center gap-1.5">
+          <Button
+            size="icon"
+            variant={filtersOpen || filter || typeFilter || sortBy !== "default" ? "default" : "outline"}
+            className="h-8 w-8 shrink-0"
+            onClick={() => setFiltersOpen((v) => !v)}
+            aria-label="Filter organizations"
+            aria-expanded={filtersOpen}
+            title="Filter organizations"
+          >
+            <Filter className="w-4 h-4" />
+          </Button>
           {talentReady && (
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 w-full sm:w-auto">
-              <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger asChild>
-                  <Button className="w-full sm:w-auto"><Plus className="w-4 h-4 mr-1" /> New organization</Button>
-                </DialogTrigger>
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="h-8 w-8 shrink-0"
+                  aria-label="New organization"
+                  title="New organization"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>Create an organization</DialogTitle>
@@ -357,11 +428,56 @@ export function MyOrganizationsSection() {
                       {saving ? "Creating…" : "Create organization"}
                     </Button>
                   </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
+              </DialogContent>
+            </Dialog>
           )}
+          </div>
         </div>
+
+        {filtersOpen && (
+          <div className="mt-2 rounded-xl border border-border bg-card p-3 shadow-md">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                placeholder="Filter by name, type, or description…"
+                className="pl-9"
+              />
+            </div>
+            <div className="sm:w-44">
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger className="w-full">
+                  <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground shrink-0" />
+                  <SelectValue placeholder="All types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All types</SelectItem>
+                  <SelectItem value="organization">Organization</SelectItem>
+                  <SelectItem value="company">Company</SelectItem>
+                  <SelectItem value="ministry">Ministry</SelectItem>
+                  <SelectItem value="ngo">NGO</SelectItem>
+                  <SelectItem value="startup">Startup</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="sm:w-56">
+              <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortKey)}>
+                <SelectTrigger className="w-full">
+                  <Wallet className="w-3.5 h-3.5 mr-1.5 text-muted-foreground shrink-0" />
+                  <SelectValue placeholder="Sort by…" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">Default order</SelectItem>
+                  <SelectItem value="total-out">Outflow: Total (highest)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          </div>
+        )}
       </div>
 
       {loading ? (
@@ -378,54 +494,12 @@ export function MyOrganizationsSection() {
         </div>
       ) : (
         <div className="space-y-4">
-          {memberships.length > 0 && (
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  value={filter}
-                  onChange={(e) => setFilter(e.target.value)}
-                  placeholder="Filter by name, type, or description…"
-                  className="pl-9"
-                />
-              </div>
-              <div className="sm:w-44">
-                <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger className="w-full">
-                    <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground shrink-0" />
-                    <SelectValue placeholder="All types" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All types</SelectItem>
-                    <SelectItem value="organization">Organization</SelectItem>
-                    <SelectItem value="company">Company</SelectItem>
-                    <SelectItem value="ministry">Ministry</SelectItem>
-                    <SelectItem value="ngo">NGO</SelectItem>
-                    <SelectItem value="startup">Startup</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="sm:w-56">
-                <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortKey)}>
-                  <SelectTrigger className="w-full">
-                    <Wallet className="w-3.5 h-3.5 mr-1.5 text-muted-foreground shrink-0" />
-                    <SelectValue placeholder="Sort by…" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="default">Default order</SelectItem>
-                    <SelectItem value="total-out">Outflow: Total (highest)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
           {filtered.length === 0 ? (
             <div className="text-sm text-muted-foreground text-center py-8">
               No organizations match your filter.
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-4 min-w-0">
+            <div ref={cardsRef} className="grid grid-cols-1 gap-4 min-w-0">
               {filtered.map(({ organization: o, role }, index) => {
                 const RoleIcon = ROLE_ICON[role];
                 const canDelete = role === "admin";
