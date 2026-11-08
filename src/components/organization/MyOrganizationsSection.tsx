@@ -348,7 +348,7 @@ export function MyOrganizationsSection() {
         <div className="flex items-center justify-end gap-1.5">
           <Button
             size="icon"
-            variant={filtersOpen ? "default" : "outline"}
+            variant={filtersOpen || filter || typeFilter || sortBy !== "default" ? "default" : "outline"}
             className="h-8 w-8 shrink-0"
             onClick={() => setFiltersOpen((v) => !v)}
             aria-label="Filter organizations"
