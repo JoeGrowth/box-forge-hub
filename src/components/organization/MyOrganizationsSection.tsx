@@ -480,54 +480,12 @@ export function MyOrganizationsSection() {
         </div>
       ) : (
         <div className="space-y-4">
-          {memberships.length > 0 && (
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  value={filter}
-                  onChange={(e) => setFilter(e.target.value)}
-                  placeholder="Filter by name, type, or description…"
-                  className="pl-9"
-                />
-              </div>
-              <div className="sm:w-44">
-                <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger className="w-full">
-                    <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground shrink-0" />
-                    <SelectValue placeholder="All types" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All types</SelectItem>
-                    <SelectItem value="organization">Organization</SelectItem>
-                    <SelectItem value="company">Company</SelectItem>
-                    <SelectItem value="ministry">Ministry</SelectItem>
-                    <SelectItem value="ngo">NGO</SelectItem>
-                    <SelectItem value="startup">Startup</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="sm:w-56">
-                <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortKey)}>
-                  <SelectTrigger className="w-full">
-                    <Wallet className="w-3.5 h-3.5 mr-1.5 text-muted-foreground shrink-0" />
-                    <SelectValue placeholder="Sort by…" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="default">Default order</SelectItem>
-                    <SelectItem value="total-out">Outflow: Total (highest)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
           {filtered.length === 0 ? (
             <div className="text-sm text-muted-foreground text-center py-8">
               No organizations match your filter.
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-4 min-w-0">
+            <div ref={cardsRef} className="grid grid-cols-1 gap-4 min-w-0">
               {filtered.map(({ organization: o, role }, index) => {
                 const RoleIcon = ROLE_ICON[role];
                 const canDelete = role === "admin";
