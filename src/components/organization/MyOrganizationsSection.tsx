@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -96,6 +96,11 @@ export function MyOrganizationsSection() {
   const [orgOrder, setOrgOrder] = useState<Record<string, number>>({});
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [compact, setCompact] = useState(false);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
+  const cardsRef = useRef<HTMLDivElement>(null);
 
   const companyOrgIds = useMemo(
     () => memberships.filter(m => m.organization.type === "company").map(m => m.organization.id),
