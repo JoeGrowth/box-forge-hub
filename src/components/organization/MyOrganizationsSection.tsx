@@ -336,12 +336,40 @@ export function MyOrganizationsSection() {
               </div>
             )}
           </div>
+        </div>
+      </div>
+      </div>
+
+      {/* Pinned toolbar — filter toggle + new organization */}
+      <div
+        ref={toolbarRef}
+        className="sticky top-16 md:top-20 z-30 -mx-4 px-4 py-2 bg-background/95 backdrop-blur supports-[backdrop-blur]:bg-background/80"
+      >
+        <div className="flex items-center justify-end gap-1.5">
+          <Button
+            size="icon"
+            variant={filtersOpen ? "default" : "outline"}
+            className="h-8 w-8 shrink-0"
+            onClick={() => setFiltersOpen((v) => !v)}
+            aria-label="Filter organizations"
+            aria-expanded={filtersOpen}
+            title="Filter organizations"
+          >
+            <Filter className="w-4 h-4" />
+          </Button>
           {talentReady && (
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 w-full sm:w-auto">
-              <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger asChild>
-                  <Button className="w-full sm:w-auto"><Plus className="w-4 h-4 mr-1" /> New organization</Button>
-                </DialogTrigger>
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="h-8 w-8 shrink-0"
+                  aria-label="New organization"
+                  title="New organization"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>Create an organization</DialogTitle>
@@ -389,11 +417,53 @@ export function MyOrganizationsSection() {
                       {saving ? "Creating…" : "Create organization"}
                     </Button>
                   </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
+              </DialogContent>
+            </Dialog>
           )}
         </div>
+
+        {filtersOpen && (
+          <div className="mt-2 flex flex-col sm:flex-row gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                placeholder="Filter by name, type, or description…"
+                className="pl-9"
+              />
+            </div>
+            <div className="sm:w-44">
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger className="w-full">
+                  <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground shrink-0" />
+                  <SelectValue placeholder="All types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All types</SelectItem>
+                  <SelectItem value="organization">Organization</SelectItem>
+                  <SelectItem value="company">Company</SelectItem>
+                  <SelectItem value="ministry">Ministry</SelectItem>
+                  <SelectItem value="ngo">NGO</SelectItem>
+                  <SelectItem value="startup">Startup</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="sm:w-56">
+              <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortKey)}>
+                <SelectTrigger className="w-full">
+                  <Wallet className="w-3.5 h-3.5 mr-1.5 text-muted-foreground shrink-0" />
+                  <SelectValue placeholder="Sort by…" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">Default order</SelectItem>
+                  <SelectItem value="total-out">Outflow: Total (highest)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        )}
       </div>
 
       {loading ? (
