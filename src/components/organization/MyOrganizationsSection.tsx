@@ -97,8 +97,6 @@ export function MyOrganizationsSection() {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [drawerH, setDrawerH] = useState(0);
-  const drawerRef = useRef<HTMLDivElement>(null);
   const [compact, setCompact] = useState(false);
   const headerRef = useRef<HTMLDivElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -208,18 +206,6 @@ export function MyOrganizationsSection() {
       return new Date(b.organization.created_at).getTime() - new Date(a.organization.created_at).getTime();
     });
   }, [memberships, filter, typeFilter, sortBy, moneyBox, orgOrder]);
-
-  // The filter drawer is pinned, so reserve its height in the list flow while it is open.
-  useEffect(() => {
-    if (!filtersOpen) { setDrawerH(0); return; }
-    const el = drawerRef.current;
-    if (!el) return;
-    const measure = () => setDrawerH(el.getBoundingClientRect().height);
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [filtersOpen]);
 
   // The header collapses into the pinned toolbar once the 3rd organization card is reached.
   useEffect(() => {
@@ -493,10 +479,6 @@ export function MyOrganizationsSection() {
           </div>
         )}
       </div>
-
-      {filtersOpen && drawerH > 0 && (
-        <div aria-hidden className="pointer-events-none -mt-6" style={{ height: drawerH }} />
-      )}
 
       {loading ? (
         <div className="text-sm text-muted-foreground">Loading…</div>
