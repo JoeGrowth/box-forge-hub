@@ -207,6 +207,26 @@ export function MyOrganizationsSection() {
     });
   }, [memberships, filter, typeFilter, sortBy, moneyBox, orgOrder]);
 
+  // The header collapses into the pinned toolbar once the 3rd organization card is reached.
+  useEffect(() => {
+    if (loading || filtered.length < 3) { setCompact(false); return; }
+    const onScroll = () => {
+      const card = cardsRef.current?.children[2] as HTMLElement | undefined;
+      const bar = toolbarRef.current;
+      if (!card || !bar) return;
+      const cardTop = card.getBoundingClientRect().top;
+      const barBottom = bar.getBoundingClientRect().bottom;
+      setCompact((prev) => (prev ? cardTop > barBottom + 120 : cardTop < barBottom + 4));
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [loading, filtered.length]);
+
   // Load the user's saved organization order
   useEffect(() => {
     if (!user) { setOrgOrder({}); return; }
@@ -278,7 +298,14 @@ export function MyOrganizationsSection() {
 
   return (
     <div className="space-y-6">
-      {/* Header — styled like Your Assets */}
+      {/* Header — collapses into the pinned toolbar once the 3rd organization is reached */}
+      <div
+        ref={headerRef}
+        aria-hidden={compact}
+        className={`overflow-hidden transition-all duration-300 ease-out ${
+          compact ? "max-h-0 opacity-0" : "max-h-[560px] opacity-100"
+        }`}
+      >
       <div className="rounded-xl border border-border bg-gradient-to-br from-primary/5 via-card to-card p-5">
         <div className="flex flex-col sm:flex-row sm:items-start gap-4">
           <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
