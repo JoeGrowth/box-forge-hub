@@ -449,7 +449,7 @@ export function MyOrganizationsSection() {
         </div>
 
         {filtersOpen && (
-          <div className="mt-2 rounded-xl border border-border bg-card p-3 shadow-md">
+          <div ref={drawerRef} className="mt-2 rounded-xl border border-border bg-card p-3 shadow-md">
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -493,6 +493,10 @@ export function MyOrganizationsSection() {
           </div>
         )}
       </div>
+
+      {filtersOpen && drawerH > 0 && (
+        <div aria-hidden className="pointer-events-none -mt-6" style={{ height: drawerH }} />
+      )}
 
       {loading ? (
         <div className="text-sm text-muted-foreground">Loading…</div>
