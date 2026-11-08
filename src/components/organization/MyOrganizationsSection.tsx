@@ -345,7 +345,18 @@ export function MyOrganizationsSection() {
         ref={toolbarRef}
         className="sticky top-16 md:top-20 z-30 -mx-4 px-4 py-2 bg-background/95 backdrop-blur supports-[backdrop-blur]:bg-background/80"
       >
-        <div className="flex items-center justify-end gap-1.5">
+        <div className="flex items-center justify-between gap-2">
+          {(filter || typeFilter || sortBy !== "default") && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2 text-xs text-muted-foreground"
+              onClick={() => { setFilter(""); setTypeFilter(""); setSortBy("default"); }}
+            >
+              Clear filters
+            </Button>
+          )}
+          <div className="flex items-center gap-1.5">
           <Button
             size="icon"
             variant={filtersOpen || filter || typeFilter || sortBy !== "default" ? "default" : "outline"}
@@ -420,10 +431,12 @@ export function MyOrganizationsSection() {
               </DialogContent>
             </Dialog>
           )}
+          </div>
         </div>
 
         {filtersOpen && (
-          <div className="mt-2 flex flex-col sm:flex-row gap-2">
+          <div className="mt-2 rounded-xl border border-border bg-card p-3 shadow-md">
+          <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -462,6 +475,7 @@ export function MyOrganizationsSection() {
                 </SelectContent>
               </Select>
             </div>
+          </div>
           </div>
         )}
       </div>
