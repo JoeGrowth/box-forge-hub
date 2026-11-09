@@ -6,21 +6,7 @@ The detailed report is available in Files as **B4_Phase_1_Stabilization_Plan_202
 
 ## Verified starting point
 
-- All 33 existing tests passed across five files. They do not establish security or delivery/payment coverage.
-- Account deletion checks admin authority only when the request declares an admin action, while bulk target arrays are independently used.
-- The active signup function assigns roles from user-editable metadata. This is an additional release blocker beyond the earlier audit.
-- Deletion challenges can be inserted/updated by their user, lack action/target binding, use weak randomness and may be returned when email fails.
-- Notification recipients and authoritative notification types are caller-selected after login.
-- Invitations lack durable entity authorization; message update policies rely on conversation participation rather than authorship.
-- Background/diagnostic handlers lack in-handler caller checks; current deployed gateway and scheduler settings remain unverified.
-- Sales documents and opportunities lack stable links to each other and to projects. Distribution records and declaration missions are separate concepts.
-- Eight duplicate organization/model-name groups remain, with eight excess models. Same names alone are not sufficient evidence to delete them.
-- Project save can create a shipped delivery before acceptance; model selection and some earnings attribution still depend on names.
-- Customer payment flags and personal bank confirmations are not a verified cash ledger.
-
-Saved scans contain overlapping historical findings. They are triage evidence, not a fresh count of exploitable defects. Intended public networking/catalog visibility must be preserved rather than blanket-restricted.
-
-**Not verified:** live password sign-in, reset-email delivery, production endpoint settings, hostile signup/deletion/message tests, provider eligibility, recovery drill or workload capacity. No destructive production tests were performed.
+All 33 existing tests passed; they do not cover security or delivery/payment flows. Confirmed source/catalog risks include bulk deletion authorization, an active signup trigger trusting role metadata, user-writable deletion challenges, caller-selected notifications, permissive message updates, and missing stable financial links. Eight duplicate model-name groups remain. Hosted endpoint settings, actual password login/reset delivery, hostile security flows, provider eligibility and recovery are unverified. Saved scans are historical/overlapping; intentional public discovery must not be blanket-locked.
 
 ## Priority 1 — Security remediation
 
@@ -65,30 +51,19 @@ Reconciliation → Exceptions, reversals and audit evidence
 
 ## Priority 3 — Product simplification
 
-Preserve Admin, Box Manager, Entrepreneur, Co-Builder and Guest as B4's five user-facing types. Keep platform roles, organization permissions, responsibilities, certifications, growth evidence, economic allocations and legal ownership separate.
+Preserve Admin, Box Manager, Entrepreneur, Co-Builder and Guest. Separate platform roles, organization permissions, responsibilities, certifications, growth evidence, economic allocations and legal ownership. Keep Sales organization-admin-only; contributors negotiate only their own compensation and confirm only their own receipts.
 
-Keep Sales admin-only for organization editing. Contributors negotiate only their own compensation and confirm only their own bank receipts. No certification, title or equity percentage automatically grants organization authority.
-
-Preserve current-user onboarding loading and prevent delayed previous-user responses from overwriting new state. Fix personal-assessment state reset; defer new financial-advice/cloud-sync scope.
-
-Pause new modules, frameworks, marketplace expansion, graph/AI feature expansion, payroll/tax, bank sync, automated legal-equity claims and microservices. Pause expansion—not existing data, journeys or earned credentials. Any bypass of certification gates needs separate approval.
+Protect current-user onboarding loading and prevent stale responses/state. Keep personal assessment private and optional. Pause expansion of modules, frameworks, marketplace, AI/graph features, payroll/tax, bank sync and legal-equity automation—not existing data or credentials. Certification-gate changes need approval.
 
 ## Priority 4 — Six-week pilot
 
-Proposed cohort: three small consulting/training organizations with real collaborative delivery, a named admin and approximately 2–10 contributors each. Start only after security and recovery gates.
+Propose three consulting/training organizations with real delivery, a named admin and 2–10 contributors. Start after security/recovery gates. Week 1 setup/team/baseline; week 2 opportunity/proposal/project/split; week 3 delivery; week 4 collection/payables; week 5 transfers/confirmations/reconciliation; week 6 outcomes/renewal/export.
 
-- Week 1: organization/legal/billing setup, team permissions and baseline measurements.
-- Week 2: real opportunity, accepted proposal, linked project/mission and valid allocation.
-- Week 3: delivery milestones, blockers and acceptance evidence.
-- Week 4: customer collection/payable review; explain externally delayed collection explicitly.
-- Week 5: contributor transfers, personal confirmations and reconciliation.
-- Week 6: outcomes, renewal evidence, support burden and data export.
+Manual first: setup, proposal acceptance, invoices, payment checks, transfers, tax, disputes, legacy mapping, subscriptions and customer success. No fund custody or claimed live bank balances.
 
-Manual first: onboarding, proposal acceptance, invoicing, payment verification, bank transfers, taxes, disputes, legacy mapping, subscriptions and weekly customer success. B4 does not hold funds or claim live bank balances.
+Proposed—not observed—targets: two of three activated in week 1, meaningfully active in week 4 and completing accepted delivery/reconciliation by week 6; every approved allocation balanced; zero private tenant exposure; measure administrative time against baseline. Externally delayed collection is reported, not counted as success.
 
-Proposed success targets: two of three activated in week 1; two complete accepted delivery/reconciled split by week 6; two meaningfully active in week 4; every approved allocation balanced; no private tenant exposure; measure a proposed 30% administrative-time reduction against actual baselines. Targets are not current results.
-
-Propose organization subscriptions with manual invoicing initially. Founder chooses price/limits; provider integration waits for seller-country and service eligibility checks. SaaS subscription fees remain separate from mission platform-fee allocations.
+Propose organization subscriptions with manual invoices. Founder sets price/limits; provider integration waits for eligibility checks. Subscription fees stay separate from mission platform fees.
 
 ## Priority 5 — Independently testable releases
 
