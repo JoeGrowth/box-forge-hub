@@ -86,17 +86,9 @@ Review duplicates before archiving; shadow-compare organization/currency/benefic
 
 ## Proposed 30-day implementation window
 
-Day 1 begins only after explicit authorization. Assumes two experienced engineers, shared QA/security review and a founder/customer-success owner; a single engineer needs a longer schedule.
+Starts only after authorization. Assumes two engineers, QA/security reviewer and founder/customer-success owner; one engineer needs longer.
 
-- Days 1–5: R1A and recovery/test foundations.
-- Days 4–8: R1B with parallel security review.
-- Days 9–12: R2 stable links and reliable saves.
-- Days 13–18: R3 accepted delivery, calculations and snapshots.
-- Days 19–24: R4 cash/payables/reconciliation.
-- Days 25–27: R5 pilot operations/subscription readiness.
-- Days 28–30: role/tenant/mobile/regression tests, realistic workload and restore/incident drill; go/no-go.
-
-Failed gates delay the pilot; the schedule is not permission to waive blockers or a guaranteed delivery date.
+Days 1–5 R1A; 4–8 R1B; 9–12 R2; 13–18 R3; 19–24 R4; 25–27 R5; 28–30 regression/mobile/tenant/workload and restore/incident drills. Failed gates delay pilot; this is not a guaranteed schedule.
 
 ## Founder decisions before implementation
 
