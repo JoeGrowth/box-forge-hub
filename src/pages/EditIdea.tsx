@@ -102,6 +102,7 @@ const EditIdea = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (title.trim().length > 20) { toast({ title: "Name too long", description: "The idea name is limited to 20 letters.", variant: "destructive" }); return; }
     if (!title.trim() || !description.trim()) {
       toast({
         title: "Missing Information",
@@ -291,10 +292,11 @@ const EditIdea = () => {
                       id="title"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      placeholder="e.g., HealthTrack - AI Health Monitoring"
+                      placeholder="e.g., HealthTrack"
                       className="mt-1"
-                      maxLength={100}
+                      maxLength={20}
                     />
+<p className={`mt-1 text-xs ${title.trim().length > 20 ? "text-destructive" : "text-muted-foreground"}`}>{title.trim().length}/20 letters max</p>
                   </div>
 
                   <div>
