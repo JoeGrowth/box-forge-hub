@@ -18,7 +18,7 @@ export interface Evaluation {
   legalForm: string; registeredName: string; registration: string; legalNotes: string;
   evaluations: Record<Section, string>;
 }
-export function evaluationOrganizations<T extends { organization: { id: string } }>(memberships: T[]) {
+export function evaluationOrganizations<T extends { organization: { id: string } }>(memberships: T[]): T["organization"][] {
   return memberships.filter((m, i) => memberships.findIndex(other => other.organization.id === m.organization.id) === i).map(m => m.organization);
 }
 export const numeric = (value: string) => { const n = Number(value.replace(",", ".")); return Number.isFinite(n) ? n : 0; };
