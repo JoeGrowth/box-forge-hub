@@ -36,6 +36,9 @@
     --border: 214 20% 88%;
     --input: 214 20% 88%;
     --ring: 180 60% 40%;
+    --evaluation-developing: 33 92% 36%;
+    --evaluation-success: 151 60% 32%;
+    --evaluation-link: 232 85% 62%;
 
     --radius: 0.75rem;
 
@@ -87,6 +90,9 @@
     --border: 220 30% 18%;
     --input: 220 30% 18%;
     --ring: 180 60% 50%;
+    --evaluation-developing: 35 90% 65%;
+    --evaluation-success: 151 55% 62%;
+    --evaluation-link: 232 85% 76%;
 
     --sidebar-background: 220 30% 8%;
     --sidebar-foreground: 210 20% 95%;

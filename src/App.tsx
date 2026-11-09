@@ -91,6 +91,7 @@ import Mission from "./pages/Mission";
 import ConsultingGrowth from "./pages/ConsultingGrowth";
 import Income from "./pages/Income";
 import Earnings from "./pages/Earnings";
+import BusinessEvaluation from "./pages/BusinessEvaluation";
 import BrandEntity from "./pages/BrandEntity";
 import Calcul from "./pages/Calcul";
 import PublishTalent from "./pages/PublishTalent";
@@ -186,6 +187,7 @@ const App = () => (
                   <Route path="/consulting-growth" element={<ProtectedRoute><ConsultingGrowth /></ProtectedRoute>} />
 <Route path="/income" element={<ProtectedRoute><Income /></ProtectedRoute>} />
                   <Route path="/earnings" element={<ProtectedRoute><Earnings /></ProtectedRoute>} />
+                  <Route path="/business-evaluation" element={<ProtectedRoute><BusinessEvaluation /></ProtectedRoute>} />
                   <Route path="/opportunities/:category/:id" element={<GatedRoute talentGate><OpportunityDetail /></GatedRoute>} />
                   {/* Legacy: old links pointed at startup ideas only. */}
                   <Route path="/opportunities/:id" element={<GatedRoute talentGate><OpportunityDetail /></GatedRoute>} />

@@ -5,6 +5,8 @@
 - [x] Investigate login recovery and fix confirmed app-side connection issues.
 - [x] Verify server-validated authenticated access and connection-error recovery in preview.
 - [ ] Verify live email/password sign-in — awaiting user retry; no password-test credentials available.
+- [x] Create screenshot-matched Business Evaluation with membership-only entity choices and Pengry example.
+- [x] Verify evaluation editing, calculations, saved answers, and mobile layout; four tests passed, authenticated Pengry edit/reload and Dizy isolation checked, signed-out access redirected.
 - [x] Update mission PDF with mission details, organization product selection, current distribution sections, and readable numbers; authenticated download and both rendered pages verified.
 - [x] Require shipped organization products as mission titles and derive iteration from shipped count across distribution flows; verified a two-delivery product saves and reloads as iteration 2, then removed the test mission.
 - [x] Remove the product row from the mission distribution export form and PDF; verified dialog, download, and both rendered pages.
