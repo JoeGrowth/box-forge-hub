@@ -78,6 +78,6 @@ export function statementSummary(entity: StatementEntity, missions: StatementMis
   return { turnover: r2(turnover), charges: r2(turnover - profit), profit: r2(profit), rows };
 }
 export interface EvaluationAuto {
-  leader: string; teamSize: number; products: { name: string; shipped: number }[];
+  leader: string; teamSize: number; teamBreakdown: string; products: { name: string; shipped: number }[];
   entities: StatementEntity[]; missions: (StatementMission & { entity_id: string })[]; associateNames: Record<string, string[]>;
 }
