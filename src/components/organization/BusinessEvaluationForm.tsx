@@ -9,8 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { productMaturity, statementSummary, normalizePersonName, type EvaluationAuto } from "@/lib/businessEvaluation";
 import { beneficiaryAmount, currencies, evaluationOptions, externalCommunicationOptions, internalCommunicationOptions, numeric, periods, productStages, productTypes, profitFor, sections, systemsOptions, type Evaluation, type Section } from "@/lib/businessEvaluation";
 
-function Choice({ label, value, options, onChange, placeholder = "Select" }: { label: string; value: string; options: readonly string[]; onChange: (value: string) => void; placeholder?: string }) {
-  return <Select value={value} onValueChange={onChange}><SelectTrigger aria-label={label} className="h-auto min-h-11 w-full min-w-0 gap-2 bg-card text-left text-base font-normal sm:min-h-10 sm:text-sm [&>span]:whitespace-normal [&>span]:break-words"><SelectValue placeholder={placeholder} /></SelectTrigger><SelectContent>{options.map(option => <SelectItem key={option} value={option} className="min-h-11 sm:min-h-8">{option}</SelectItem>)}</SelectContent></Select>;
+function Choice({ label, value, options, onChange, placeholder = "Select", labels }: { label: string; value: string; options: readonly string[]; onChange: (value: string) => void; placeholder?: string; labels?: Record<string, string> }) {
+  return <Select value={value} onValueChange={onChange}><SelectTrigger aria-label={label} className="h-auto min-h-11 w-full min-w-0 gap-2 bg-card text-left text-base font-normal sm:min-h-10 sm:text-sm [&>span]:whitespace-normal [&>span]:break-words"><SelectValue placeholder={placeholder} /></SelectTrigger><SelectContent>{options.map(option => <SelectItem key={option} value={option} className="min-h-11 sm:min-h-8">{labels?.[option] ?? option}</SelectItem>)}</SelectContent></Select>;
 }
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return <div className="min-w-0 space-y-2"><Label className="text-sm font-semibold text-muted-foreground">{label}</Label>{children}</div>;
@@ -46,8 +46,8 @@ export function BusinessEvaluationForm({ data, onChange, auto }: { data: Evaluat
       <div className="grid gap-4 sm:grid-cols-2"><Field label="Period"><Choice label="Period" value={data.period} options={periods} onChange={v => update("period", v)} /></Field><Field label="Currency"><Choice label="Currency" value={data.currency} options={currencies} onChange={v => update("currency", v)} /></Field></div>
       {data.period === "Threshold" ? <div className="space-y-4">
         {!auto ? <p className="text-sm text-muted-foreground">Loading declarations…</p> : auto.entities.length === 0 ? <p className="text-sm text-muted-foreground">No declaration is linked to this organization.</p> : <>
-          <Field label="Declaration"><Choice label="Declaration" value={statementEntity?.id ?? ""} options={auto.entities.map(e => e.id)} onChange={setEntityId} /></Field>
-          <p className="-mt-2 text-sm text-muted-foreground break-words">{statementEntity?.name} · {statementCurrency} statement{data.currency === "USD" ? " (USD not declared — showing TND)" : ""}</p>
+          <Field label="Declaration"><Choice label="Declaration" value={statementEntity?.id ?? ""} options={auto.entities.map(e => e.id)} labels={Object.fromEntries(auto.entities.map(e => [e.id, e.name]))} onChange={setEntityId} /></Field>
+          <p className="-mt-2 text-sm text-muted-foreground break-words">{statementCurrency} statement{data.currency === "USD" ? " (USD not declared — showing TND)" : ""}</p>
           {statement && <><div className="grid gap-4 sm:grid-cols-3">
             <Field label="Turnover"><Input aria-label="Turnover" value={statement.turnover.toFixed(2)} readOnly /></Field>
             <Field label="Charges / expenses"><Input aria-label="Charges / expenses" value={statement.charges.toFixed(2)} readOnly /></Field>
