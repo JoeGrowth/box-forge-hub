@@ -6,7 +6,39 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BusinessEvaluationForm } from "@/components/organization/BusinessEvaluationForm";
-import { evaluationOrganizations, evaluationStorageKey, initialEvaluation, type Evaluation } from "@/lib/businessEvaluation";
+import { supabase } from "@/integrations/supabase/client";
+import { evaluationOrganizations, evaluationStorageKey, initialEvaluation, normalizePersonName, productMaturity, supposedLeader, teamSizeFrom, type Evaluation, type EvaluationAuto } from "@/lib/businessEvaluation";
+
+async function loadAuto(orgId: string): Promise<EvaluationAuto> {
+  const [ents, people, products, iterations] = await Promise.all([
+    supabase.from("declaration_entities").select("id,name,split_config").eq("organization_id", orgId),
+    supabase.from("organization_people").select("full_name").eq("organization_id", orgId).eq("tier", "crew"),
+    supabase.from("organization_products").select("id,name").eq("organization_id", orgId).is("archived_at", null),
+    supabase.from("organization_product_iterations").select("product_id").eq("organization_id", orgId).is("archived_at", null),
+  ]);
+  const entities = (ents.data ?? []) as EvaluationAuto["entities"];
+  const ids = entities.map(e => e.id);
+  const [missions, slots] = ids.length ? await Promise.all([
+    supabase.from("declaration_missions").select("entity_id,budget,currency,internal,external").in("entity_id", ids),
+    supabase.from("entity_role_assignments").select("entity_id,role_slug,linked_user_id").in("entity_id", ids).eq("status", "accepted"),
+  ]) : [{ data: [] }, { data: [] }];
+  const userIds = [...new Set((slots.data ?? []).map((s: any) => s.linked_user_id).filter(Boolean))];
+  const profiles = userIds.length ? (await supabase.from("profiles").select("user_id,full_name").in("user_id", userIds)).data ?? [] : [];
+  const nameOf = (id: string) => profiles.find((p: any) => p.user_id === id)?.full_name ?? "";
+  const accepted = (slots.data ?? []).filter((s: any) => /^(associe_|internal_)/.test(s.role_slug));
+  const associateNames: Record<string, string[]> = {};
+  for (const s of accepted as any[]) if (s.role_slug.startsWith("associe_")) (associateNames[s.entity_id] ??= [])[Number(s.role_slug.slice(8)) - 1] = nameOf(s.linked_user_id);
+  const firstAssociate = (accepted as any[]).find(s => s.role_slug === "associe_1");
+  const counts: Record<string, number> = {};
+  for (const it of iterations.data ?? []) if (it.product_id) counts[it.product_id] = (counts[it.product_id] ?? 0) + 1;
+  return {
+    leader: firstAssociate ? supposedLeader(nameOf(firstAssociate.linked_user_id)) : "",
+    teamSize: teamSizeFrom([...accepted.map((s: any) => nameOf(s.linked_user_id)), ...(people.data ?? []).map(p => p.full_name)]),
+    products: (products.data ?? []).map(p => ({ name: p.name, shipped: counts[p.id] ?? 0 })),
+    entities, missions: (missions.data ?? []) as EvaluationAuto["missions"], associateNames,
+  };
+}
+
 
 function OrganizationEvaluation({ userId, org }: { userId: string; org: { id: string; name: string; slug: string } }) {
   const key = evaluationStorageKey(userId, org.id);
@@ -21,12 +53,24 @@ function OrganizationEvaluation({ userId, org }: { userId: string; org: { id: st
       return { ...initial, ...parsed, evaluations: { ...initial.evaluations, ...parsed.evaluations } };
     } catch { return initial; }
   });
+  const [auto, setAuto] = useState<EvaluationAuto | null>(null);
+  useEffect(() => { let live = true; loadAuto(org.id).then(a => live && setAuto(a)).catch(() => {}); return () => { live = false; }; }, [org.id]);
+  useEffect(() => {
+    if (!auto) return;
+    setData(prev => {
+      const have = new Set(prev.products.map(p => normalizePersonName(p.name)));
+      const added = auto.products.filter(p => productMaturity(p.shipped) && !have.has(normalizePersonName(p.name))).map(p => ({ id: crypto.randomUUID(), name: p.name, type: "", stage: "" }));
+      const next = { ...prev, leader: auto.leader || prev.leader, teamSize: auto.teamSize ? String(auto.teamSize) : prev.teamSize, products: [...prev.products, ...added] };
+      try { localStorage.setItem(key, JSON.stringify(next)); } catch { /* shown on next edit */ }
+      return next;
+    });
+  }, [auto, key]);
   const change = (next: Evaluation) => {
     setData(next);
     try { localStorage.setItem(key, JSON.stringify(next)); setSaveError(false); }
     catch { setSaveError(true); }
   };
-  return <><BusinessEvaluationForm data={data} onChange={change} /><p className={`mt-4 text-center text-xs ${saveError ? "text-destructive" : "text-muted-foreground"}`} role="status">{saveError ? "Changes could not be saved in this browser. Keep this page open." : "Changes are saved automatically in this browser. Financial figures and legal information are entered by you."}</p></>;
+  return <><BusinessEvaluationForm data={data} onChange={change} auto={auto} /><p className={`mt-4 text-center text-xs ${saveError ? "text-destructive" : "text-muted-foreground"}`} role="status">{saveError ? "Changes could not be saved in this browser. Keep this page open." : "Changes are saved automatically in this browser. Financial figures and legal information are entered by you."}</p></>;
 }
 
 export default function BusinessEvaluation() {
