@@ -77,3 +77,7 @@ export function statementSummary(entity: StatementEntity, missions: StatementMis
   ].map(row => ({ ...row, amount: r2(profit * row.pct / 100) }));
   return { turnover: r2(turnover), charges: r2(turnover - profit), profit: r2(profit), rows };
 }
+export interface EvaluationAuto {
+  leader: string; teamSize: number; products: { name: string; shipped: number }[];
+  entities: StatementEntity[]; missions: (StatementMission & { entity_id: string })[]; associateNames: Record<string, string[]>;
+}
