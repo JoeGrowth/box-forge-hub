@@ -33,6 +33,7 @@ async function loadAuto(orgId: string): Promise<EvaluationAuto> {
   for (const it of iterations.data ?? []) if (it.product_id) counts[it.product_id] = (counts[it.product_id] ?? 0) + 1;
   return {
     leader: firstAssociate ? supposedLeader(nameOf(firstAssociate.linked_user_id)) : "",
+    teamBreakdown: (() => { const core = teamSizeFrom(accepted.map((s: any) => nameOf(s.linked_user_id))); const total = teamSizeFrom([...accepted.map((s: any) => nameOf(s.linked_user_id)), ...(people.data ?? []).map(p => p.full_name)]); return `${core} associés / core team + ${total - core} other crew members = ${total} (same full name counted once)`; })(),
     teamSize: teamSizeFrom([...accepted.map((s: any) => nameOf(s.linked_user_id)), ...(people.data ?? []).map(p => p.full_name)]),
     products: (products.data ?? []).map(p => ({ name: p.name, shipped: counts[p.id] ?? 0 })),
     entities, missions: (missions.data ?? []) as EvaluationAuto["missions"], associateNames,
@@ -76,7 +77,19 @@ function OrganizationEvaluation({ userId, org }: { userId: string; org: { id: st
 export default function BusinessEvaluation() {
   const { user } = useAuth();
   const { memberships, loading, reload } = useMyOrganizations(user?.id);
-  const orgs = useMemo(() => evaluationOrganizations(memberships), [memberships]);
+  const [order, setOrder] = useState<Record<string, number>>({});
+  useEffect(() => {
+    if (!user) return;
+    (supabase.from as any)("organization_orders").select("organization_id, position").eq("user_id", user.id)
+      .then(({ data }: any) => setOrder(Object.fromEntries((data ?? []).map((r: any) => [r.organization_id, r.position]))));
+  }, [user?.id]);
+  // Same default order as /organizations: saved rank, then logo first, then newest.
+  const orgs = useMemo(() => [...evaluationOrganizations(memberships)].sort((a: any, b: any) => {
+    const ap = order[a.id], bp = order[b.id];
+    if (ap !== undefined || bp !== undefined) { if (ap === undefined) return 1; if (bp === undefined) return -1; if (ap !== bp) return ap - bp; }
+    if (!!a.logo_url !== !!b.logo_url) return a.logo_url ? -1 : 1;
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  }), [memberships, order]);
   const [selectedId, setSelectedId] = useState("");
   const selected = orgs.find(org => org.id === selectedId) ?? orgs[0];
   useEffect(() => { document.title = "Business Evaluation | Box4Solutions"; }, []);
