@@ -79,6 +79,7 @@ const moreLinks: Array<{
   { name: "Programs", path: "/programs", icon: BookOpen },
   { name: "Paths", path: "/paths", icon: Activity },
   { name: "Earnings", path: "/earnings", icon: Wallet },
+  { name: "Business Evaluation", path: "/business-evaluation", icon: BarChart3 },
 ];
 
 // Synchronous read of cached admin flag so first paint is stable.

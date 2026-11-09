@@ -21,6 +21,9 @@ export default {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
+        "evaluation-developing": "hsl(var(--evaluation-developing))",
+        "evaluation-success": "hsl(var(--evaluation-success))",
+        "evaluation-link": "hsl(var(--evaluation-link))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
