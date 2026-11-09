@@ -80,13 +80,9 @@ The report supplies affected files/database entities, migrations, security contr
 
 ## Migration and rollback
 
-Additive changes only after authorization. Inventory and securely back up affected schema/records; rehearse restore. Add nullable IDs, constrained server commands and normalized approved financial lines with explicit grants/RLS.
+After authorization: inventory/back up securely, rehearse restore, add nullable IDs and normalized approved financial lines with explicit grants/RLS. Keep a legacy mapping registry and historical amounts/JSON/source keys. Names and paid flags never prove beneficiary identity or cash.
 
-Maintain a legacy-to-canonical mapping registry with provenance. Never infer beneficiaries or confirmed cash from names/booleans. Review duplicates/content/references before archiving candidates. Preserve historical JSON, source keys and amounts.
-
-Run shadow comparisons per organization/currency/beneficiary, then cut over one pilot organization. Use one authoritative writer, idempotency and version locks. Keep legacy compatibility readers. No old table/column removal in Phase 1.
-
-Financial rollback preserves committed entries and uses compensating records. A database restore is not an atomic undo of identity deletion or external transfers. Security rollback must fail closed.
+Review duplicates before archiving; shadow-compare organization/currency/beneficiary totals; cut over one pilot with one authoritative writer, idempotency and version locks. Keep compatibility readers; no old table/column removal in Phase 1. Preserve committed payments and use reversals. Security rollback fails closed; database restoration cannot undo external identity deletion/transfers atomically.
 
 ## Proposed 30-day implementation window
 
