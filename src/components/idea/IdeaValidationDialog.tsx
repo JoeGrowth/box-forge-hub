@@ -487,7 +487,7 @@ export const IdeaValidationDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="grid-cols-1 max-sm:inset-0 max-sm:left-0 max-sm:top-0 max-sm:translate-x-0 max-sm:translate-y-0 max-sm:h-[100dvh] max-sm:max-h-none max-sm:max-w-none max-sm:w-full max-sm:rounded-none max-sm:border-0 sm:max-w-3xl sm:max-h-[90vh] overflow-y-auto overflow-x-hidden p-4 sm:p-6 [&>*]:min-w-0">
+      <DialogContent className="grid-cols-1 gap-3 sm:gap-4 max-sm:left-0 max-sm:right-0 max-sm:top-auto max-sm:bottom-0 max-sm:translate-x-0 max-sm:translate-y-0 max-sm:w-full max-sm:max-w-none max-sm:max-h-[88dvh] max-sm:rounded-t-3xl max-sm:rounded-b-none max-sm:border-x-0 max-sm:border-b-0 max-sm:pt-7 max-sm:data-[state=open]:slide-in-from-bottom-full max-sm:data-[state=closed]:slide-out-to-bottom-full sm:max-w-3xl sm:max-h-[90vh] overflow-y-auto overflow-x-hidden overscroll-contain p-4 sm:p-6 [&>*]:min-w-0 before:sm:hidden before:absolute before:top-2.5 before:left-1/2 before:-translate-x-1/2 before:h-1.5 before:w-10 before:rounded-full before:bg-muted-foreground/30">
         <DialogHeader className="text-left pr-8">
           <DialogTitle className="font-display text-lg sm:text-xl pr-6 break-words">
             Validate: {ideaTitle}
@@ -519,7 +519,7 @@ export const IdeaValidationDialog = ({
               <Progress value={progress} className="h-2" />
             </div>
 
-            <div className="-mx-4 px-4 sm:mx-0 sm:px-0 flex gap-2 overflow-x-auto pb-2 snap-x [scrollbar-width:none]">
+            <div className="sticky -top-4 z-10 -mx-4 px-4 py-2 bg-background/95 backdrop-blur border-b sm:static sm:border-0 sm:mx-0 sm:px-0 sm:py-0 sm:pb-2 flex gap-2 overflow-x-auto snap-x [scrollbar-width:none]">
               {VALIDATION_PHASES.map((p) => {
                 const isCompleted = phaseProgress[p.number]?.is_completed;
                 const isCurrent = p.number === currentPhase;
@@ -530,7 +530,7 @@ export const IdeaValidationDialog = ({
                     key={p.number}
                     onClick={() => isAccessible && setCurrentPhase(p.number)}
                     disabled={!isAccessible}
-                    className={`flex-shrink-0 snap-start px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border transition-all ${
+                    className={`flex-shrink-0 snap-start px-3 py-1.5 sm:px-4 sm:py-2 rounded-full sm:rounded-lg border text-xs sm:text-sm transition-all ${
                       isCurrent
                         ? "bg-primary text-primary-foreground border-primary"
                         : isCompleted
@@ -549,8 +549,8 @@ export const IdeaValidationDialog = ({
               })}
             </div>
 
-            <Card>
-              <CardHeader className="p-4 sm:p-6">
+            <Card className="max-sm:border-0 max-sm:shadow-none max-sm:bg-transparent">
+              <CardHeader className="px-0 pt-1 pb-3 sm:p-6">
                 <div className="flex items-center gap-3">
                   <div className={`p-2 rounded-lg bg-gradient-to-r ${phase.color}`}>
                     <phase.icon className="w-5 h-5 text-white" />
@@ -561,7 +561,7 @@ export const IdeaValidationDialog = ({
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-5 p-4 pt-0 sm:p-6 sm:pt-0">
+              <CardContent className="space-y-5 px-0 pb-0 sm:p-6 sm:pt-0">
                 {phase.tasks.map((task) => (
                   <div key={task.id} className="space-y-2">
                     <label className="text-sm font-medium">{task.label}</label>
@@ -570,12 +570,12 @@ export const IdeaValidationDialog = ({
                       value={responses[task.id] || ""}
                       onChange={(e) => handleResponseChange(task.id, e.target.value)}
                       placeholder="Enter your response..."
-                      rows={4}
+                      rows={3}
                     />
                   </div>
                 ))}
 
-                <div className="flex flex-col gap-3 pt-4 border-t">
+                <div className="sticky -bottom-4 z-10 -mx-4 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] bg-background/95 backdrop-blur flex flex-col gap-2 border-t sm:static sm:mx-0 sm:px-0 sm:pb-0 sm:pt-4 sm:gap-3 sm:bg-transparent">
                   {currentPhase === summaryPhaseNumber && (
                     <Button
                       variant="teal"
@@ -591,7 +591,7 @@ export const IdeaValidationDialog = ({
                       Generate with AI
                     </Button>
                   )}
-                  <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-4">
+                  <div className="flex gap-2 sm:gap-4">
                     <Button
                       variant="outline"
                       onClick={handleSaveProgress}
