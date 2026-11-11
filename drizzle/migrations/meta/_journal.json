@@ -64,6 +64,13 @@
       "when": 1793716650717,
       "tag": "0008_project_budget_distribution",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794358342574,
+      "tag": "0009_security_hardening_batch",
+      "breakpoints": true
     }
   ]
 }

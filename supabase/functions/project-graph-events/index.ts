@@ -154,6 +154,33 @@ const EVENT_RULES: Record<EventType, {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
+  // Worker auth: only the scheduled job (shared secret held in the database) or an admin may run it.
+  {
+    const deny = () => new Response(JSON.stringify({ error: "Forbidden" }), {
+      status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+    const svc = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const workerSecret = req.headers.get("x-worker-secret") ?? "";
+    let allowed = false;
+    if (workerSecret) {
+      const { data } = await svc.rpc("verify_worker_secret", { _secret: workerSecret });
+      allowed = data === true;
+    }
+    if (!allowed) {
+      const authHeader = req.headers.get("Authorization") ?? "";
+      const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+      if (token) {
+        const { data: claims } = await svc.auth.getClaims(token);
+        const uid = claims?.claims?.sub;
+        if (uid) {
+          const { data: isAdmin } = await svc.rpc("has_role", { _user_id: uid, _role: "admin" });
+          allowed = isAdmin === true;
+        }
+      }
+    }
+    if (!allowed) return deny();
+  }
+
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,

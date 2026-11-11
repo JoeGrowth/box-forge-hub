@@ -588,6 +588,45 @@ const handler = async (req: Request): Promise<Response> => {
 
     let { to, userName, userId, type, data } = validation.data;
 
+    // Bind recipient to the caller's authority: self, admin, or a user sharing a startup with the caller.
+    {
+      const admin = createClient(supabaseUrl, supabaseServiceKey);
+      const callerEmail = (userData.user.email || "").toLowerCase();
+      const { data: isAdmin } = await admin.rpc("has_role", { _user_id: callerUserId, _role: "admin" });
+      const forbid = () => new Response(
+        JSON.stringify({ error: "Recipient not allowed" }),
+        { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+      if (!isAdmin) {
+        if (userId && userId !== callerUserId) {
+          const [{ data: ideas }] = await Promise.all([
+            admin.from("startup_ideas").select("id, creator_id").in("creator_id", [callerUserId, userId]),
+          ]);
+          const callerIdeas = (ideas ?? []).filter((i: any) => i.creator_id === callerUserId).map((i: any) => i.id);
+          const targetIdeas = (ideas ?? []).filter((i: any) => i.creator_id === userId).map((i: any) => i.id);
+          let related = false;
+          const linked = async (ideaIds: string[], member: string) => {
+            if (!ideaIds.length) return false;
+            const [{ count: m }, { count: a }] = await Promise.all([
+              admin.from("startup_team_members").select("id", { count: "exact", head: true }).in("startup_id", ideaIds).eq("member_user_id", member),
+              admin.from("startup_applications").select("id", { count: "exact", head: true }).in("startup_id", ideaIds).eq("applicant_id", member),
+            ]);
+            return (m ?? 0) + (a ?? 0) > 0;
+          };
+          related = (await linked(callerIdeas, userId)) || (await linked(targetIdeas, callerUserId));
+          if (!related) return forbid();
+          // Never trust a caller-supplied address for another user; resolve it server-side.
+          to = "";
+        } else if (!userId) {
+          if (to && to.toLowerCase() !== callerEmail) return forbid();
+          to = callerEmail;
+          userId = callerUserId;
+        } else if (to && to.toLowerCase() !== callerEmail) {
+          to = callerEmail;
+        }
+      }
+    }
+
     // Resolve `to` from userId via admin when the client couldn't provide it.
     if (!to && userId) {
       try {
