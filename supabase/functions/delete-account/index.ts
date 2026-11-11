@@ -122,6 +122,14 @@ Deno.serve(async (req) => {
     const { deleteType, action, confirmationCode, targetUserId, targetUserIds, isAdminAction, isBulkAction } = body
     console.log(`Action: ${action || 'delete'}, Delete type: ${deleteType}, Admin action: ${isAdminAction}, Bulk: ${isBulkAction}`)
 
+    // Bulk or other-user actions always require admin privileges.
+    if ((isBulkAction || (targetUserId && targetUserId !== user.id)) && !isAdminAction) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - admin privileges required' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     // Verify admin privileges for admin actions
     if (isAdminAction) {
       const { data: adminRole, error: roleError } = await supabaseAdmin
@@ -167,7 +175,9 @@ Deno.serve(async (req) => {
       }
 
       // Generate 6-digit code
-      const code = Math.floor(100000 + Math.random() * 900000).toString()
+      const codeBytes = new Uint32Array(1)
+      crypto.getRandomValues(codeBytes)
+      const code = (100000 + (codeBytes[0] % 900000)).toString()
       const expiresAt = new Date(Date.now() + 15 * 60 * 1000)
 
       // Delete any existing unused tokens for this action
@@ -246,7 +256,7 @@ Deno.serve(async (req) => {
     // Handle soft delete
     if (deleteType === 'soft') {
       // Handle bulk or single soft deletion
-      const userIdsToDelete = isBulkAction && targetUserIds ? targetUserIds : [effectiveTargetUserId]
+      const userIdsToDelete = isAdminAction && isBulkAction && Array.isArray(targetUserIds) ? targetUserIds : [effectiveTargetUserId]
       console.log(`Soft deleting ${userIdsToDelete.length} user(s)`)
 
       let successCount = 0
@@ -330,7 +340,7 @@ Deno.serve(async (req) => {
         .eq('id', tokenData.id)
 
       // Handle bulk or single deletion
-      const userIdsToDelete = isBulkAction && targetUserIds ? targetUserIds : [effectiveTargetUserId]
+      const userIdsToDelete = isAdminAction && isBulkAction && Array.isArray(targetUserIds) ? targetUserIds : [effectiveTargetUserId]
       console.log(`Deleting ${userIdsToDelete.length} user(s)`)
 
       let successCount = 0
