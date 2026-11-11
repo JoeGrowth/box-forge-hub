@@ -133,16 +133,17 @@ export function ExternalProjectLink({
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>Adequate External Project</DialogTitle></DialogHeader>
-          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Project name" autoFocus />
-          <div className="max-h-64 overflow-y-auto space-y-1">
+        <DialogContent className="max-w-md w-full max-sm:top-auto max-sm:bottom-0 max-sm:translate-y-0 max-sm:rounded-b-none max-sm:rounded-t-2xl max-sm:max-h-[85dvh] max-sm:p-4 flex flex-col gap-3 overflow-hidden">
+          <div className="sm:hidden mx-auto h-1.5 w-10 rounded-full bg-muted-foreground/30 -mt-1" />
+          <DialogHeader><DialogTitle className="text-left pr-6">Adequate External Project</DialogTitle></DialogHeader>
+          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Project name" className="h-11 text-base" />
+          <div className="flex-1 min-h-0 max-h-64 max-sm:max-h-none overflow-y-auto space-y-1.5 -mx-1 px-1">
             {matches.map((p) => (
               <button
                 key={p.id}
                 disabled={busy}
                 onClick={() => choose(p.id)}
-                className={`w-full text-left rounded-md border px-3 py-2 text-sm hover:bg-muted ${p.id === projectId ? "border-primary" : ""}`}
+                className={`w-full text-left rounded-md border px-3 py-3 text-sm hover:bg-muted min-h-11 ${p.id === projectId ? "border-primary" : ""}`}
               >
                 <div className="font-medium break-words">{p.name}</div>
                 <div className="text-xs text-muted-foreground">{p.status} · {p.progress ?? 0}%</div>
@@ -151,7 +152,7 @@ export function ExternalProjectLink({
             {matches.length === 0 && <p className="text-xs text-muted-foreground py-2">No matching external project.</p>}
           </div>
           {query.trim() && !exact && (
-            <Button onClick={create} disabled={busy}>
+            <Button onClick={create} disabled={busy} className="w-full h-11 whitespace-normal h-auto min-h-11 text-left">
               <Plus className="h-4 w-4 mr-1" /> Create “{query.trim()}” as new project
             </Button>
           )}
