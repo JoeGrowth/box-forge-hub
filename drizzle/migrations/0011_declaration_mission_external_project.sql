@@ -1,0 +1,1 @@
+ALTER TABLE public.declaration_missions ADD COLUMN IF NOT EXISTS external_project_id uuid REFERENCES public.organization_projects(id) ON DELETE SET NULL;
