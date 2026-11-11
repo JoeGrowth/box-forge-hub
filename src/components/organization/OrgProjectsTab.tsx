@@ -130,9 +130,10 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
 
   useEffect(() => { load(); }, [load]);
 
-  const openNew = () => { setEditing(null); setDraft({ ...emptyDraft }); setOpen(true); };
+  const openNew = () => { setEditing(null); setDraft({ ...emptyDraft }); setNoteTouched(false); setOpen(true); };
   const openEdit = (p: OrgProject) => {
     setEditing(p);
+    setNoteTouched(!!(p.status_note ?? "").trim());
     setDraft({
       name: p.name,
       description: p.description ?? "",
