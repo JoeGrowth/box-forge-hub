@@ -547,7 +547,7 @@ export const IdeaGrowthDialog = ({
               <Progress value={progress} className="h-2" />
             </div>
 
-            <div className="sticky -top-4 z-10 -mx-4 px-4 py-2 bg-background/95 backdrop-blur border-b sm:static sm:border-0 sm:mx-0 sm:px-0 sm:py-0 sm:pb-2 flex gap-2 overflow-x-auto snap-x [scrollbar-width:none]">
+            <div className="sticky -top-4 max-sm:-top-7 z-10 -mx-4 px-4 py-2 bg-background/95 backdrop-blur border-b sm:static sm:border-0 sm:mx-0 sm:px-0 sm:py-0 sm:pb-2 flex gap-2 overflow-x-auto snap-x [scrollbar-width:none]">
               {GROWTH_PHASES.map((p) => {
                 const isCompleted = phaseProgress[p.number]?.is_completed;
                 const isCurrent = p.number === currentPhase;
@@ -603,7 +603,7 @@ export const IdeaGrowthDialog = ({
                   </div>
                 ))}
 
-                <div className="sticky -bottom-4 z-10 -mx-4 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] bg-background/95 backdrop-blur flex flex-col gap-2 border-t sm:static sm:mx-0 sm:px-0 sm:pb-0 sm:pt-4 sm:gap-3 sm:bg-transparent">
+                <div className="sticky -bottom-4 z-10 -mx-4 px-4 [&_button]:min-w-0 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] bg-background/95 backdrop-blur flex flex-col gap-2 border-t sm:static sm:mx-0 sm:px-0 sm:pb-0 sm:pt-4 sm:gap-3 sm:bg-transparent">
                   {currentPhase === summaryPhaseNumber && (
                     <Button
                       variant="teal"
