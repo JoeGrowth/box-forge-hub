@@ -98,7 +98,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [{ data }, { data: idea }, { data: prods }] = await Promise.all([
+    const [{ data }, { data: idea }, { data: prods }, { data: its }] = await Promise.all([
       supabase
         .from("organization_projects" as any)
         .select("*")
@@ -106,8 +106,23 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
         .order("created_at", { ascending: false }),
       supabase.from("startup_ideas").select("id").eq("organization_id", orgId).maybeSingle(),
       supabase.from("organization_products").select("id, name").eq("organization_id", orgId).is("archived_at", null).order("position"),
+      supabase.from("organization_product_iterations").select("product_id, shipped_at").eq("organization_id", orgId).is("archived_at", null),
     ]);
     setProducts((prods as any[]) ?? []);
+    const stats: Record<string, { count: number; first: string | null; last: string | null }> = {};
+    for (const it of (its as any[]) ?? []) {
+      const pid = it?.product_id;
+      if (!pid) continue;
+      const at = it.shipped_at ? String(it.shipped_at).slice(0, 10) : null;
+      const cur = stats[pid] ?? { count: 0, first: null, last: null };
+      cur.count += 1;
+      if (at) {
+        if (!cur.first || at < cur.first) cur.first = at;
+        if (!cur.last || at > cur.last) cur.last = at;
+      }
+      stats[pid] = cur;
+    }
+    setDeliveryStats(stats);
     setProjects(((data as any[]) ?? []) as OrgProject[]);
     setLegacyLinked(!!idea?.id);
     setLoading(false);
