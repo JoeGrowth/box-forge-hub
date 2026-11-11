@@ -422,7 +422,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
             <DialogTrigger asChild>
               <Button onClick={openNew}><Plus className="w-4 h-4 mr-1" /> Add project</Button>
             </DialogTrigger>
-            <DialogContent className="max-w-lg">
+            <DialogContent className="max-w-lg max-h-[90dvh] overflow-y-auto">
               <DialogHeader><DialogTitle>{editing ? "Edit project" : "New project"}</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <div>
