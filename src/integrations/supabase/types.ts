@@ -7723,6 +7723,7 @@ export type Database = {
         Returns: undefined
       }
       unique_org_slug: { Args: { _base: string }; Returns: string }
+      verify_worker_secret: { Args: { _secret: string }; Returns: boolean }
     }
     Enums: {
       app_org_role: "viewer" | "editor" | "admin"
