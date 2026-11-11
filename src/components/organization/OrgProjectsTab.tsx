@@ -154,6 +154,22 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
     setOpen(true);
   };
 
+  // "Blocker / where it stands" is filled from the delivered product's length and the budget.
+  const selectedProduct = products.find((x) => x.name.trim().toLowerCase() === draft.product_name.trim().toLowerCase());
+  const selectedStats = selectedProduct ? deliveryStats[selectedProduct.id] : undefined;
+  const generatedNote = buildStatusNote({
+    productName: draft.product_name.trim() || null,
+    startDate: draft.start_date,
+    targetDate: draft.target_date,
+    deliverySpanDays: daysBetween(selectedStats?.first ?? null, selectedStats?.last ?? null),
+    budget: draft.budget,
+  });
+
+  useEffect(() => {
+    if (noteTouched || !generatedNote) return;
+    setDraft((d) => (d.status_note === generatedNote ? d : { ...d, status_note: generatedNote }));
+  }, [generatedNote, noteTouched]);
+
   const save = async (goDistribution = false) => {
     if (!draft.name.trim()) return;
     const isExternal = draft.project_kind === "external";
