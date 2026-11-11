@@ -1600,6 +1600,7 @@ export type Database = {
           currency: string
           entity_id: string
           external: Json
+          external_project_id: string | null
           id: string
           internal: Json
           sort_order: number
@@ -1614,6 +1615,7 @@ export type Database = {
           currency?: string
           entity_id: string
           external?: Json
+          external_project_id?: string | null
           id?: string
           internal?: Json
           sort_order?: number
@@ -1628,6 +1630,7 @@ export type Database = {
           currency?: string
           entity_id?: string
           external?: Json
+          external_project_id?: string | null
           id?: string
           internal?: Json
           sort_order?: number
@@ -1640,6 +1643,13 @@ export type Database = {
             columns: ["entity_id"]
             isOneToOne: false
             referencedRelation: "declaration_entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "declaration_missions_external_project_id_fkey"
+            columns: ["external_project_id"]
+            isOneToOne: false
+            referencedRelation: "organization_projects"
             referencedColumns: ["id"]
           },
         ]

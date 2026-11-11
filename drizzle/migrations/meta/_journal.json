@@ -78,6 +78,13 @@
       "when": 1794359234972,
       "tag": "0010_scope_org_logo_reads",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1794418019074,
+      "tag": "0011_declaration_mission_external_project",
+      "breakpoints": true
     }
   ]
 }
