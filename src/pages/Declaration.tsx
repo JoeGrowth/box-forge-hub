@@ -35,6 +35,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { ExternalProjectLink } from "@/components/declaration/ExternalProjectLink";
 import { EntityRoleSlots } from "@/components/entity-roles/EntityRoleSlots";
 
 type Payee = { id: string; name: string; role?: string; amount: number; paid: boolean };
@@ -51,6 +52,7 @@ type Mission = {
   internal: Payee[];
   external: Payee[];
   sort_order: number;
+  external_project_id?: string | null;
 };
 type Entity = { id: string; owner_id: string; name: string; organization_id?: string | null; organization?: { name: string } | null };
 type Collaborator = { id: string; entity_id: string; collaborator_email: string; access: "view" | "edit" };
@@ -293,6 +295,7 @@ export default function Declaration() {
       internal: Array.isArray(m.internal) ? m.internal : [],
       external: Array.isArray(m.external) ? m.external : [],
       sort_order: m.sort_order,
+      external_project_id: m.external_project_id ?? null,
     }));
     setMissions(parsed);
     setActiveId(parsed[0]?.id ?? null);
@@ -1483,6 +1486,15 @@ export default function Declaration() {
                   highlight={activeTotal.rest >= 0 ? "positive" : "negative"}
                 />
               </div>
+
+              <ExternalProjectLink
+                organizationId={activeEntity?.organization_id}
+                missionId={activeMission.id}
+                projectId={activeMission.external_project_id}
+                defaultName={activeMission.client}
+                budget={activeMission.budget}
+                onLinked={(id) => setMissions((ms) => ms.map((m) => (m.id === activeMission.id ? { ...m, external_project_id: id } : m)))}
+              />
             </CardContent>
           </Card>
         ) : (

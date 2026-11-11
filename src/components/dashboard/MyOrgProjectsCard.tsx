@@ -97,7 +97,12 @@ export function MyOrgProjectsCard() {
         !(r.description ?? "").toLowerCase().includes("core project track"),
     )
     // Highest progress first
-    .sort((a, b) => (b.progress ?? 0) - (a.progress ?? 0));
+    // External first, then Internal; highest progress first within each
+    .sort(
+      (a, b) =>
+        (a.kind === "external" ? 0 : 1) - (b.kind === "external" ? 0 : 1) ||
+        (b.progress ?? 0) - (a.progress ?? 0),
+    );
 
   const visibleRows = activeRows;
 
