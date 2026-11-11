@@ -515,8 +515,8 @@ export const IdeaGrowthDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-1rem)] max-w-3xl max-h-[92dvh] overflow-y-auto overflow-x-hidden p-4 sm:p-6 rounded-xl">
-        <DialogHeader>
+      <DialogContent className="grid-cols-1 max-sm:inset-0 max-sm:left-0 max-sm:top-0 max-sm:translate-x-0 max-sm:translate-y-0 max-sm:h-[100dvh] max-sm:max-h-none max-sm:max-w-none max-sm:w-full max-sm:rounded-none max-sm:border-0 sm:max-w-3xl sm:max-h-[90vh] overflow-y-auto overflow-x-hidden p-4 sm:p-6 [&>*]:min-w-0">
+        <DialogHeader className="text-left pr-8">
           <DialogTitle className="font-display text-lg sm:text-xl pr-6 break-words">
             Grow: {ideaTitle}
           </DialogTitle>
