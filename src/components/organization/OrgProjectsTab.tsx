@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { LIFECYCLE_STEPS, progressForCompleted, completedFromProgress, currentStep } from "@/lib/projectLifecycle";
+import { buildStatusNote, daysBetween } from "@/lib/projectStatusNote";
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
@@ -79,6 +80,8 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
   const [showArchive, setShowArchive] = useState(false);
   const [legacyLinked, setLegacyLinked] = useState(true);
   const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
+  const [deliveryStats, setDeliveryStats] = useState<Record<string, { count: number; first: string | null; last: string | null }>>({});
+  const [noteTouched, setNoteTouched] = useState(false);
 
   const searchTalents = async (q: string) => {
     setDraft((d) => ({ ...d, lead: q }));
