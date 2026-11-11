@@ -76,6 +76,43 @@ const IDEA_DEVELOP_PHASES = [
     ],
   },
   {
+    number: 7,
+    name: "MVP",
+    description: "Turn the ideation vision into the smallest product that proves it — avoid the big idea trap",
+    icon: Target,
+    color: "from-orange-500 to-rose-500",
+    tasks: [
+      {
+        id: "mvp_product_vision",
+        label: "Product vision in one sentence",
+        type: "question",
+        description:
+          "Translate your vision into a product statement: For [who], [product] solves [problem] by [core action]. One sentence. No feature lists.",
+      },
+      {
+        id: "mvp_core_feature",
+        label: "The one core feature",
+        type: "question",
+        description:
+          "Name the single feature that delivers the value. If you removed it, the product would be useless. Everything else is out of scope.",
+      },
+      {
+        id: "mvp_cut_list",
+        label: "What you will NOT build now",
+        type: "question",
+        description:
+          "List the features, markets, and integrations you deliberately exclude from version 1. This is your defense against the big idea trap.",
+      },
+      {
+        id: "mvp_test",
+        label: "Build in 30 days and prove with first users",
+        type: "question",
+        description:
+          "Describe the simplest version you can ship in 30 days or less (manual, no-code, or prototype), the first 10 users who will use it, and the single metric that proves it works.",
+      },
+    ],
+  },
+  {
     number: 1,
     name: "Structuring",
     description: "Build your business model and identify key roles",
@@ -248,7 +285,7 @@ export const IdeaDevelopDialog = ({
       Object.entries(responses).forEach(([k, v]) => {
         if (v && v.trim() && !(k in priorResponses)) priorResponses[k] = v;
       });
-      const summaryPhase = IDEA_DEVELOP_PHASES[6];
+      const summaryPhase = IDEA_DEVELOP_PHASES.find((p) => p.number === 6)!;
       const { data, error } = await supabase.functions.invoke("generate-episode-summary", {
         body: {
           ideaTitle,
@@ -301,9 +338,11 @@ export const IdeaDevelopDialog = ({
   };
 
 
-  const phase = IDEA_DEVELOP_PHASES[currentPhase];
+  // Phases are stored by `number`; array order is the display/unlock order (MVP = 7 sits after Ideation).
+  const phaseIndex = Math.max(0, IDEA_DEVELOP_PHASES.findIndex((p) => p.number === currentPhase));
+  const phase = IDEA_DEVELOP_PHASES[phaseIndex];
   const totalPhases = IDEA_DEVELOP_PHASES.length;
-  const isLastPhase = currentPhase === totalPhases - 1;
+  const isLastPhase = phaseIndex === totalPhases - 1;
 
   // Check if Team Building (phase 4) is complete
   const isTeamBuildingComplete = hasTeamMembers;
@@ -318,7 +357,7 @@ export const IdeaDevelopDialog = ({
 
       setIsAutoSaving(true);
       try {
-        const currentPhaseName = IDEA_DEVELOP_PHASES[phaseNum].name;
+        const currentPhaseName = IDEA_DEVELOP_PHASES.find((p) => p.number === phaseNum)?.name ?? "";
         const { data: existing } = await supabase
           .from("idea_journey_progress")
           .select("id")
@@ -593,7 +632,7 @@ export const IdeaDevelopDialog = ({
 
       // Move to next phase if not last
       if (!isLastPhase) {
-        setCurrentPhase((prev) => prev + 1);
+        setCurrentPhase(IDEA_DEVELOP_PHASES[phaseIndex + 1].number);
       } else {
         // Last phase completed - update startup to validation episode
         await supabase
@@ -626,22 +665,25 @@ export const IdeaDevelopDialog = ({
     setHasTeamMembers((count || 0) > 0);
   };
 
-  const progress = ((currentPhase + 1) / totalPhases) * 100;
+  const progress = ((phaseIndex + 1) / totalPhases) * 100;
 
   const canAccessPhase = (phaseNum: number) => {
     // Phase 0 is always accessible
     if (phaseNum === 0) return true;
     // Phase 5 (Launch) requires Phase 4 (Team Building) to be complete
     if (phaseNum === 5) return phaseProgress[4]?.is_completed || false;
-    // Other phases require previous phase to be complete
-    return phaseProgress[phaseNum - 1]?.is_completed || false;
+    if (phaseProgress[phaseNum]?.is_completed) return true;
+    // Other phases require the previous phase (in display order) to be complete
+    const idx = IDEA_DEVELOP_PHASES.findIndex((p) => p.number === phaseNum);
+    const prev = IDEA_DEVELOP_PHASES[idx - 1];
+    return prev ? phaseProgress[prev.number]?.is_completed || false : false;
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[calc(100vw-1rem)] max-w-3xl max-h-[92dvh] overflow-y-auto overflow-x-hidden p-4 sm:p-6 rounded-xl">
         <DialogHeader>
-          <DialogTitle className="font-display text-xl">Develop: {ideaTitle}</DialogTitle>
+          <DialogTitle className="font-display text-lg sm:text-xl pr-6 break-words">Develop: {ideaTitle}</DialogTitle>
           <DialogDescription>Complete each phase to bring your startup idea to life</DialogDescription>
         </DialogHeader>
 
@@ -669,7 +711,7 @@ export const IdeaDevelopDialog = ({
             </div>
 
             {/* Phase Navigation */}
-            <div className="flex gap-2 overflow-x-auto pb-2">
+            <div className="-mx-4 px-4 sm:mx-0 sm:px-0 flex gap-2 overflow-x-auto pb-2 snap-x [scrollbar-width:none]">
               {IDEA_DEVELOP_PHASES.map((p) => {
                 const isCompleted = phaseProgress[p.number]?.is_completed;
                 const isCurrent = p.number === currentPhase;
@@ -680,7 +722,7 @@ export const IdeaDevelopDialog = ({
                     key={p.number}
                     onClick={() => isAccessible && setCurrentPhase(p.number)}
                     disabled={!isAccessible}
-                    className={`flex-shrink-0 px-4 py-2 rounded-lg border transition-all ${
+                    className={`flex-shrink-0 snap-start px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border transition-all ${
                       isCurrent
                         ? "bg-primary text-primary-foreground border-primary"
                         : isCompleted
@@ -705,7 +747,7 @@ export const IdeaDevelopDialog = ({
 
             {/* Current Phase Content */}
             <Card>
-              <CardHeader>
+              <CardHeader className="p-4 sm:p-6">
                 <div className="flex items-center gap-3">
                   <div className={`p-2 rounded-lg bg-gradient-to-r ${phase.color}`}>
                     <phase.icon className="w-5 h-5 text-white" />
@@ -716,7 +758,7 @@ export const IdeaDevelopDialog = ({
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-5 p-4 pt-0 sm:p-6 sm:pt-0">
                 {/* Locked state for Launch phase */}
                 {currentPhase === 5 && !canAccessPhase(5) && (
                   <div className="flex items-center gap-3 p-4 rounded-lg bg-amber-50 border border-amber-200 dark:bg-amber-950/20 dark:border-amber-800">
@@ -800,7 +842,7 @@ export const IdeaDevelopDialog = ({
                       Generate with AI
                     </Button>
                   )}
-                  <div className="flex gap-4">
+                  <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-4">
                     <Button
                       variant="outline"
                       onClick={handleSaveProgress}

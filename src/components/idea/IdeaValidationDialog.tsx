@@ -487,9 +487,9 @@ export const IdeaValidationDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[calc(100vw-1rem)] max-w-3xl max-h-[92dvh] overflow-y-auto overflow-x-hidden p-4 sm:p-6 rounded-xl">
         <DialogHeader>
-          <DialogTitle className="font-display text-xl">
+          <DialogTitle className="font-display text-lg sm:text-xl pr-6 break-words">
             Validate: {ideaTitle}
           </DialogTitle>
           <DialogDescription>
@@ -519,7 +519,7 @@ export const IdeaValidationDialog = ({
               <Progress value={progress} className="h-2" />
             </div>
 
-            <div className="flex gap-2 overflow-x-auto pb-2">
+            <div className="-mx-4 px-4 sm:mx-0 sm:px-0 flex gap-2 overflow-x-auto pb-2 snap-x [scrollbar-width:none]">
               {VALIDATION_PHASES.map((p) => {
                 const isCompleted = phaseProgress[p.number]?.is_completed;
                 const isCurrent = p.number === currentPhase;
@@ -530,7 +530,7 @@ export const IdeaValidationDialog = ({
                     key={p.number}
                     onClick={() => isAccessible && setCurrentPhase(p.number)}
                     disabled={!isAccessible}
-                    className={`flex-shrink-0 px-4 py-2 rounded-lg border transition-all ${
+                    className={`flex-shrink-0 snap-start px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border transition-all ${
                       isCurrent
                         ? "bg-primary text-primary-foreground border-primary"
                         : isCompleted
@@ -550,7 +550,7 @@ export const IdeaValidationDialog = ({
             </div>
 
             <Card>
-              <CardHeader>
+              <CardHeader className="p-4 sm:p-6">
                 <div className="flex items-center gap-3">
                   <div className={`p-2 rounded-lg bg-gradient-to-r ${phase.color}`}>
                     <phase.icon className="w-5 h-5 text-white" />
@@ -561,7 +561,7 @@ export const IdeaValidationDialog = ({
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-5 p-4 pt-0 sm:p-6 sm:pt-0">
                 {phase.tasks.map((task) => (
                   <div key={task.id} className="space-y-2">
                     <label className="text-sm font-medium">{task.label}</label>
@@ -591,7 +591,7 @@ export const IdeaValidationDialog = ({
                       Generate with AI
                     </Button>
                   )}
-                  <div className="flex gap-4">
+                  <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-4">
                     <Button
                       variant="outline"
                       onClick={handleSaveProgress}
