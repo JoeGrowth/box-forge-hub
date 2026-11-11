@@ -572,12 +572,25 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                     <p className="mt-2 text-xs text-muted-foreground">Progress: <span className="font-semibold text-foreground">{progressForCompleted(completedFromProgress(draft.progress))}%</span>{currentStep(draft.progress) ? ` · now in step ${currentStep(draft.progress)}` : " · all steps done"}</p>
                   </div>
                    <div>
-                     <Label>Blocker / where it stands</Label>
+                     <div className="flex flex-wrap items-center justify-between gap-2">
+                       <Label>Blocker / where it stands</Label>
+                       <button
+                         type="button"
+                         onClick={() => { setNoteTouched(false); setDraft({ ...draft, status_note: generatedNote }); }}
+                         disabled={!generatedNote}
+                         className="text-xs font-medium text-primary underline-offset-2 hover:underline disabled:opacity-40 disabled:no-underline"
+                       >
+                         Fill from delivery length &amp; budget
+                       </button>
+                     </div>
                      <Input
                        value={draft.status_note}
-                       onChange={(e) => setDraft({ ...draft, status_note: e.target.value })}
+                       onChange={(e) => { setNoteTouched(true); setDraft({ ...draft, status_note: e.target.value }); }}
                        placeholder="e.g. Waiting for Mehdi to give access"
                      />
+                     <p className="text-xs text-muted-foreground mt-1">
+                       Fills itself from the delivered product's length and the budget while you haven't typed here.
+                     </p>
                    </div>
                  </div>
                </div>
