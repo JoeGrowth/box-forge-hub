@@ -95,7 +95,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [{ data }, { data: idea }, { data: prods }, { data: its }] = await Promise.all([
+    const [{ data }, { data: idea }, { data: prods }] = await Promise.all([
       supabase
         .from("organization_projects" as any)
         .select("*")
@@ -103,23 +103,8 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
         .order("created_at", { ascending: false }),
       supabase.from("startup_ideas").select("id").eq("organization_id", orgId).maybeSingle(),
       supabase.from("organization_products").select("id, name").eq("organization_id", orgId).is("archived_at", null).order("position"),
-      supabase.from("organization_product_iterations").select("product_id, shipped_at").eq("organization_id", orgId).is("archived_at", null),
     ]);
     setProducts((prods as any[]) ?? []);
-    const stats: Record<string, { count: number; first: string | null; last: string | null }> = {};
-    for (const it of (its as any[]) ?? []) {
-      const pid = it?.product_id;
-      if (!pid) continue;
-      const at = it.shipped_at ? String(it.shipped_at).slice(0, 10) : null;
-      const cur = stats[pid] ?? { count: 0, first: null, last: null };
-      cur.count += 1;
-      if (at) {
-        if (!cur.first || at < cur.first) cur.first = at;
-        if (!cur.last || at > cur.last) cur.last = at;
-      }
-      stats[pid] = cur;
-    }
-    setDeliveryStats(stats);
     setProjects(((data as any[]) ?? []) as OrgProject[]);
     setLegacyLinked(!!idea?.id);
     setLoading(false);
@@ -127,10 +112,9 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
 
   useEffect(() => { load(); }, [load]);
 
-  const openNew = () => { setEditing(null); setDraft({ ...emptyDraft }); setNoteTouched(false); setOpen(true); };
+  const openNew = () => { setEditing(null); setDraft({ ...emptyDraft }); setOpen(true); };
   const openEdit = (p: OrgProject) => {
     setEditing(p);
-    setNoteTouched(!!(p.status_note ?? "").trim());
     setDraft({
       name: p.name,
       description: p.description ?? "",
@@ -150,22 +134,6 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
     }
     setOpen(true);
   };
-
-  // "Blocker / where it stands" is filled from the delivered product's length and the budget.
-  const selectedProduct = products.find((x) => x.name.trim().toLowerCase() === draft.product_name.trim().toLowerCase());
-  const selectedStats = selectedProduct ? deliveryStats[selectedProduct.id] : undefined;
-  const generatedNote = buildStatusNote({
-    productName: draft.product_name.trim() || null,
-    startDate: draft.start_date,
-    targetDate: draft.target_date,
-    deliverySpanDays: daysBetween(selectedStats?.first ?? null, selectedStats?.last ?? null),
-    budget: draft.budget,
-  });
-
-  useEffect(() => {
-    if (noteTouched || !generatedNote) return;
-    setDraft((d) => (d.status_note === generatedNote ? d : { ...d, status_note: generatedNote }));
-  }, [generatedNote, noteTouched]);
 
   const save = async (goDistribution = false) => {
     if (!draft.name.trim()) return;
@@ -568,26 +536,14 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                     </div>
                     <p className="mt-2 text-xs text-muted-foreground">Progress: <span className="font-semibold text-foreground">{progressForCompleted(completedFromProgress(draft.progress))}%</span>{currentStep(draft.progress) ? ` · now in step ${currentStep(draft.progress)}` : " · all steps done"}</p>
                   </div>
-                   <div>
-                     <div className="flex flex-wrap items-center justify-between gap-2">
-                       <Label>Blocker / where it stands</Label>
-                       <button
-                         type="button"
-                         onClick={() => { setNoteTouched(false); setDraft({ ...draft, status_note: generatedNote }); }}
-                         disabled={!generatedNote}
-                         className="text-xs font-medium text-primary underline-offset-2 hover:underline disabled:opacity-40 disabled:no-underline"
-                       >
-                         Fill from delivery length &amp; budget
-                       </button>
-                     </div>
-                     <Input
+                   <div className="col-span-full">
+                     <Label>Blocker / where it stands</Label>
+                     <Textarea
+                       rows={4}
                        value={draft.status_note}
-                       onChange={(e) => { setNoteTouched(true); setDraft({ ...draft, status_note: e.target.value }); }}
+                       onChange={(e) => setDraft({ ...draft, status_note: e.target.value })}
                        placeholder="e.g. Waiting for Mehdi to give access"
                      />
-                     <p className="text-xs text-muted-foreground mt-1">
-                       Fills itself from the delivered product's length and the budget while you haven't typed here.
-                     </p>
                    </div>
                  </div>
                </div>
