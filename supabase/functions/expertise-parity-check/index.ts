@@ -19,6 +19,24 @@ const corsHeaders = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
+  // Admin-only diagnostic: verify caller JWT and admin role before any privileged read.
+  {
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+    const deny = () => new Response(JSON.stringify({ error: "Forbidden" }), {
+      status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+    if (!token) return deny();
+    const authClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: claims } = await authClient.auth.getClaims(token);
+    const uid = claims?.claims?.sub;
+    if (!uid) return deny();
+    const { data: isAdmin } = await authClient.rpc("has_role", { _user_id: uid, _role: "admin" });
+    if (!isAdmin) return deny();
+  }
+
   const url = new URL(req.url);
   const singleUser = url.searchParams.get("user_id");
   const limit = Math.min(Number(url.searchParams.get("limit") ?? "25"), 200);
