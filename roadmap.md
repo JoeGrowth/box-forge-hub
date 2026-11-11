@@ -11,3 +11,4 @@
 - [x] Require shipped organization products as mission titles and derive iteration from shipped count across distribution flows; verified a two-delivery product saves and reloads as iteration 2, then removed the test mission.
 - [x] Remove the product row from the mission distribution export form and PDF; verified dialog, download, and both rendered pages.
 - [x] Add admin-only Activity Log with actions, page visits, and returning-user tracking; admin browser recording/read-back, user drill-down, dashboard link, signed-out rejection, grants/RLS inspection, and four privacy tests passed. Non-admin session test not executed: SQL role impersonation is denied in this environment.
+- [ ] Auto-fill project "Blocker / where it stands" from delivery length and budget; tests plus phone/laptop form check pending.
