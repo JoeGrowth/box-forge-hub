@@ -63,7 +63,7 @@ const EPISODES = [
     id: "development",
     number: 1,
     name: "Part 1: Foundation",
-    description: "Ideation, Structuring, Role Definition, Equity & Responsibility, Team Building, Launch",
+    description: "Ideation, MVP, Structuring, Role Definition, Equity & Responsibility, Team Building, Launch",
     color: "from-violet-500 to-purple-500",
     icon: Rocket,
     phases: [
@@ -493,7 +493,7 @@ export const IdeaEpisodesDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden">
+      <DialogContent className="w-[calc(100vw-1rem)] max-w-2xl max-h-[92dvh] overflow-hidden p-4 sm:p-6 rounded-xl">
         <DialogHeader>
           <DialogTitle className="text-xl font-display">
             Episodes: {startupTitle}

@@ -205,6 +205,7 @@ const Dashboard = () => {
                     {shapeYourTalentComplete && <MyEntitiesCard />}
                     {shapeYourTalentComplete && <MyOrgProjectsCard />}
                     {shapeYourTalentComplete && <MyMissionsCard />}
+                    {shapeYourTalentComplete && <DashboardNotes />}
                     {isCapable && <CommitmentsPanel />}
                     {isCapable && !hideGuidance && <DashboardOpportunities />}
                     {isCapable && !hideGuidance && <ProgressionPathCard userId={user?.id} />}
@@ -214,7 +215,7 @@ const Dashboard = () => {
               <div className="space-y-6 md:space-y-8 min-w-0">
                 {isCapable && !hideGuidance && <DashboardNextSteps />}
                 <DashboardAchievements onAllEarnedChange={setAllBadgesEarned} />
-                <DashboardNotes />
+                {(isFirstLogin || !shapeYourTalentComplete) && <DashboardNotes />}
               </div>
             </div>
 

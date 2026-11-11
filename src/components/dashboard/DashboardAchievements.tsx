@@ -184,6 +184,17 @@ export function DashboardAchievements({ onAllEarnedChange }: DashboardAchievemen
     }
   }, [achievements, earnedCount, onAllEarnedChange]);
 
+  // Once all 8 are earned, keep the card visible for 3 days, then hide it.
+  const allEarned = achievements.length > 0 && earnedCount === achievements.length;
+  const completedKey = user ? `achievements_all_earned_at:${user.id}` : null;
+  let hideAfterGrace = false;
+  if (allEarned && completedKey) {
+    let at = Number(localStorage.getItem(completedKey));
+    if (!at) { at = Date.now(); localStorage.setItem(completedKey, String(at)); }
+    hideAfterGrace = Date.now() - at > 3 * 24 * 60 * 60 * 1000;
+  }
+  if (hideAfterGrace) return null;
+
   return (
     <Card>
       <CardHeader>
