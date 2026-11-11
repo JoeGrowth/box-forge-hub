@@ -536,9 +536,10 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                     </div>
                     <p className="mt-2 text-xs text-muted-foreground">Progress: <span className="font-semibold text-foreground">{progressForCompleted(completedFromProgress(draft.progress))}%</span>{currentStep(draft.progress) ? ` · now in step ${currentStep(draft.progress)}` : " · all steps done"}</p>
                   </div>
-                   <div>
+                   <div className="col-span-full">
                      <Label>Blocker / where it stands</Label>
-                     <Input
+                     <Textarea
+                       rows={4}
                        value={draft.status_note}
                        onChange={(e) => setDraft({ ...draft, status_note: e.target.value })}
                        placeholder="e.g. Waiting for Mehdi to give access"
