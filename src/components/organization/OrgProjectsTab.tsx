@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { LIFECYCLE_STEPS, progressForCompleted, completedFromProgress, currentStep } from "@/lib/projectLifecycle";
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
@@ -153,7 +154,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
         productId = (np as any).id;
       }
     }
-    const progressValue = Math.max(0, Math.min(100, Number(draft.progress) || 0));
+    const progressValue = progressForCompleted(completedFromProgress(Number(draft.progress) || 0));
     const payload: any = {
       organization_id: orgId,
       name: draft.name.trim(),
@@ -355,12 +356,6 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                 </span>
               )}
              </div>
-             {p.status_note && (
-               <div className="mt-2 flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1.5 text-xs text-amber-700 dark:text-amber-400">
-                 <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-                 <span>{p.status_note}</span>
-               </div>
-             )}
            </div>
           {canEdit && (
             <div className="flex items-center gap-1">
@@ -374,19 +369,42 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
           )}
         </div>
         <div className="mt-3">
-          <div className="flex justify-between text-xs text-muted-foreground mb-1">
-            <span>Progress{canEdit && " · click the bar to update"}</span><span>{p.progress}%</span>
-          </div>
-          <div
-            onClick={canEdit ? (e) => handleBarInteract(e, p) : undefined}
-            className={canEdit ? "cursor-pointer group" : undefined}
-            title={canEdit ? "Click to set progress" : undefined}
-          >
-            <Progress
-              value={p.progress}
-              className={`h-2 pointer-events-none ${canEdit ? "group-hover:h-3 transition-all" : ""}`}
-            />
-          </div>
+          {(() => {
+            const done = completedFromProgress(p.progress);
+            const cur = currentStep(p.progress);
+            const curMeta = cur ? LIFECYCLE_STEPS[cur - 1] : null;
+            return (
+              <>
+                <div className="flex justify-between gap-2 text-xs text-muted-foreground mb-1.5">
+                  <span className="truncate">{curMeta ? <>Step {cur}/6 · <span className="font-medium text-foreground">{curMeta.label}</span></> : "All steps done"}</span>
+                  <span className="font-semibold text-foreground">{progressForCompleted(done)}%</span>
+                </div>
+                <div className="flex gap-1">
+                  {LIFECYCLE_STEPS.map((st) => {
+                    const isDone = done >= st.n;
+                    const isCur = cur === st.n;
+                    return (
+                      <button
+                        type="button"
+                        key={st.n}
+                        disabled={!canEdit}
+                        onClick={() => updateProgress(p, progressForCompleted(isDone && done === st.n ? st.n - 1 : st.n))}
+                        title={`${st.n}. ${st.label} (${st.weight}%)${canEdit ? " — click to mark done" : ""}`}
+                        style={{ flexGrow: st.weight, flexBasis: 0 }}
+                        className={`h-2 rounded-full transition-all ${isDone ? "bg-primary" : isCur ? (p.status_note ? "bg-amber-500/60" : "bg-primary/30") : "bg-muted"} ${canEdit ? "hover:h-3 cursor-pointer" : "cursor-default"}`}
+                      />
+                    );
+                  })}
+                </div>
+                {p.status_note && (
+                  <div className="mt-2 flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1.5 text-xs text-amber-700 dark:text-amber-400">
+                    <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                    <span className="min-w-0">{curMeta && <span className="font-semibold">Blocked at {cur}. {curMeta.label}: </span>}{p.status_note}</span>
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </div>
       </div>
     );
@@ -404,7 +422,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
             <DialogTrigger asChild>
               <Button onClick={openNew}><Plus className="w-4 h-4 mr-1" /> Add project</Button>
             </DialogTrigger>
-            <DialogContent className="max-w-lg">
+            <DialogContent className="max-w-lg max-h-[90dvh] overflow-y-auto">
               <DialogHeader><DialogTitle>{editing ? "Edit project" : "New project"}</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <div>
@@ -491,10 +509,33 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                     <Label>Target date</Label>
                     <Input type="date" value={draft.target_date} onChange={(e) => setDraft({ ...draft, target_date: e.target.value })} />
                   </div>
-                  <div>
-                    <Label>Progress (%)</Label>
-                    <Input type="number" min={0} max={100} value={draft.progress} onChange={(e) => setDraft({ ...draft, progress: Number(e.target.value) })} />
-                   </div>
+                  <div className="col-span-full">
+                    <Label>Project step</Label>
+                    <p className="text-xs text-muted-foreground mb-2">Tick the last step that is fully done. Progress follows the step weights.</p>
+                    <div className="space-y-1.5">
+                      {LIFECYCLE_STEPS.map((st) => {
+                        const done = completedFromProgress(draft.progress) >= st.n;
+                        const isCurrent = currentStep(draft.progress) === st.n;
+                        return (
+                          <button
+                            type="button"
+                            key={st.n}
+                            onClick={() => setDraft({ ...draft, progress: progressForCompleted(done && completedFromProgress(draft.progress) === st.n ? st.n - 1 : st.n) })}
+                            className={`w-full flex items-start gap-3 rounded-lg border px-3 py-2 text-left transition-colors ${done ? "border-primary/40 bg-primary/5" : isCurrent ? "border-amber-500/40 bg-amber-500/5" : "border-border hover:bg-muted"}`}
+                          >
+                            <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${done ? "bg-primary text-primary-foreground" : isCurrent ? "bg-amber-500/20 text-amber-700 dark:text-amber-400" : "bg-muted text-muted-foreground"}`}>{st.n}</span>
+                            <span className="min-w-0 flex-1">
+                              <span className="flex items-center justify-between gap-2 text-sm font-medium text-foreground">
+                                {st.label}<span className="text-xs font-normal text-muted-foreground">{st.weight}%</span>
+                              </span>
+                              <span className="block text-xs text-muted-foreground">{st.hint}</span>
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="mt-2 text-xs text-muted-foreground">Progress: <span className="font-semibold text-foreground">{progressForCompleted(completedFromProgress(draft.progress))}%</span>{currentStep(draft.progress) ? ` · now in step ${currentStep(draft.progress)}` : " · all steps done"}</p>
+                  </div>
                    <div>
                      <Label>Blocker / where it stands</Label>
                      <Input
