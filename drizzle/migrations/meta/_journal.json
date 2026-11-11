@@ -71,6 +71,13 @@
       "when": 1794358342574,
       "tag": "0009_security_hardening_batch",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1794359234972,
+      "tag": "0010_scope_org_logo_reads",
+      "breakpoints": true
     }
   ]
 }
