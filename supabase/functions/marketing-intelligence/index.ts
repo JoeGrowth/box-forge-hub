@@ -75,7 +75,8 @@ Deno.serve(async (req) => {
         model: "openai/gpt-6-astra",
         instructions: system,
         input: `${ctx}\nRewrite ONLY the field "${field}" of this row in section "${section}": ${rowCtx}. Return JSON {"value": string} and nothing else. Keep it under 30 words.`,
-      });
+        reasoning: { effort: "low" },
+      } as any);
       const value = String(parseJson(extractText(res)).value ?? "").slice(0, 600);
       return json({ value });
     }
