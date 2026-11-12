@@ -959,14 +959,15 @@ function SystematizationPhase({ done, autoCounts, milestones, state, progress, o
         onOpenChange={setInviteOpen}
         currentUserId={userId}
         brandName={brandName}
+        orgSlug={orgSlug}
         onInvited={() => onToggleMilestone("invite_cobuilder", true)}
       />
     </div>
   );
 }
 
-function CoBuilderInviteDialog({ open, onOpenChange, currentUserId, brandName, onInvited }: {
-  open: boolean; onOpenChange: (v: boolean) => void; currentUserId: string; brandName: string; onInvited: () => void;
+function CoBuilderInviteDialog({ open, onOpenChange, currentUserId, brandName, orgSlug, onInvited }: {
+  open: boolean; onOpenChange: (v: boolean) => void; currentUserId: string; brandName: string; orgSlug: string | null; onInvited: () => void;
 }) {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"platform" | "email">("platform");
@@ -1015,9 +1016,10 @@ function CoBuilderInviteDialog({ open, onOpenChange, currentUserId, brandName, o
   const inviteEmail = async () => {
     const clean = email.trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean)) { toast.error("Enter a valid email"); return; }
+    if (!orgSlug) { toast.error("Create the organization first to send email invites"); return; }
     setSendingEmail(true);
     const { error } = await supabase.functions.invoke("send-collaborator-invite", {
-      body: { email: clean, entityName: brandName, access: "edit" },
+      body: { email: clean, orgSlug, access: "edit" },
     });
     setSendingEmail(false);
     if (error) { toast.error("Failed to send email invite"); return; }
