@@ -4924,6 +4924,60 @@ export type Database = {
           },
         ]
       }
+      product_marketing_analyses: {
+        Row: {
+          content: Json
+          created_at: string
+          created_by: string
+          generated_at: string | null
+          id: string
+          offer_kind: string
+          organization_id: string
+          product_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          created_by?: string
+          generated_at?: string | null
+          id?: string
+          offer_kind: string
+          organization_id: string
+          product_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          created_by?: string
+          generated_at?: string | null
+          id?: string
+          offer_kind?: string
+          organization_id?: string
+          product_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_marketing_analyses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_marketing_analyses_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "organization_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professional_state_weights: {
         Row: {
           created_at: string
