@@ -85,6 +85,13 @@
       "when": 1794418019074,
       "tag": "0011_declaration_mission_external_project",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1794492541100,
+      "tag": "0012_tighten_config_reads_box_feed_bug_uploads",
+      "breakpoints": true
     }
   ]
 }
