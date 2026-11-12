@@ -11,6 +11,12 @@ const corsHeaders = {
 
 const APP_URL = "https://box4solutions.com";
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function escapeHtml(v: string): string {
+  return v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 255;
 }
@@ -43,52 +49,54 @@ serve(async (req) => {
 
     const body = await req.json().catch(() => null);
     const email = String(body?.email || "").trim().toLowerCase();
-    const entityName = String(body?.entityName || "").trim().slice(0, 120) || "an entity";
     const access = body?.access === "edit" ? "edit" : "view";
+    const entityId = typeof body?.entityId === "string" ? body.entityId : "";
+    const orgSlug = typeof body?.orgSlug === "string" ? body.orgSlug.trim().slice(0, 120) : "";
+    const json = (b: unknown, status: number) => new Response(JSON.stringify(b), {
+      status, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
 
-    if (!isValidEmail(email)) {
-      return new Response(JSON.stringify({ error: "Invalid email" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    if (!isValidEmail(email)) return json({ error: "Invalid email" }, 400);
 
-    // Check if invitee already has an account (service role)
     const admin = createClient(supabaseUrl, serviceKey);
-    let isRegistered = false;
-    try {
-      // listUsers paginates; we filter manually
-      let page = 1;
-      while (page <= 10) {
-        const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 200 });
-        if (error) break;
-        if (data.users.some((u) => (u.email || "").toLowerCase() === email)) {
-          isRegistered = true; break;
-        }
-        if (!data.users.length || data.users.length < 200) break;
-        page++;
-      }
-    } catch (e) {
-      console.warn("listUsers failed", e);
+    const callerId = userData.user.id;
+    let entityName = "";
+
+    if (entityId && UUID_RE.test(entityId)) {
+      // Caller must own/edit the declaration entity, and the invitee must already be a listed collaborator.
+      const { data: role } = await admin.rpc("declaration_entity_access", { _entity_id: entityId, _user_id: callerId });
+      if (role !== "owner" && role !== "edit") return json({ error: "Forbidden" }, 403);
+      const { data: collab } = await admin
+        .from("declaration_entity_collaborators")
+        .select("id")
+        .eq("entity_id", entityId)
+        .ilike("collaborator_email", email)
+        .maybeSingle();
+      if (!collab) return json({ error: "Invitee is not a collaborator of this entity" }, 403);
+      const { data: ent } = await admin.from("declaration_entities").select("name").eq("id", entityId).maybeSingle();
+      entityName = ent?.name || "";
+    } else if (orgSlug) {
+      // Caller must administer the organization.
+      const { data: org } = await admin.from("organizations").select("id,name,created_by").eq("slug", orgSlug).maybeSingle();
+      if (!org) return json({ error: "Forbidden" }, 403);
+      const { data: isAdmin } = await admin.rpc("has_org_role", { _user: callerId, _org: org.id, _min_role: "admin" });
+      if (!isAdmin && org.created_by !== callerId) return json({ error: "Forbidden" }, 403);
+      entityName = org.name || "";
+    } else {
+      return json({ error: "entityId or orgSlug is required" }, 400);
     }
 
-    const inviterName =
-      (userData.user.user_metadata?.full_name as string) ||
-      userData.user.email ||
-      "A collaborator";
+    const safeEntity = escapeHtml(entityName.slice(0, 120) || "an entity");
+    const inviterName = escapeHtml(
+      String((userData.user.user_metadata?.full_name as string) || "A collaborator").slice(0, 100),
+    );
+    const safeEmail = escapeHtml(email);
 
-    const declarationUrl = `${APP_URL}/declaration`;
-    const signupUrl = `${APP_URL}/auth?mode=signup&email=${encodeURIComponent(email)}`;
-
-    const subject = isRegistered
-      ? `You've been added to "${entityName}" on B4 Platform`
-      : `${inviterName} invited you to collaborate on "${entityName}"`;
-
-    const ctaLabel = isRegistered ? "Open Declaration" : "Create your account";
-    const ctaUrl = isRegistered ? declarationUrl : signupUrl;
-
-    const intro = isRegistered
-      ? `<strong>${inviterName}</strong> added you as a <strong>${access}</strong> collaborator on the entity <strong>"${entityName}"</strong>. Sign in to access the Declaration workspace for this entity.`
-      : `<strong>${inviterName}</strong> invited you to collaborate (<strong>${access}</strong>) on the entity <strong>"${entityName}"</strong> on B4 Platform. Create your account with this email (<strong>${email}</strong>) to unlock the shared Declaration workspace.`;
+    const signupUrl = `${APP_URL}/auth?email=${encodeURIComponent(email)}`;
+    const subject = `${inviterName.replace(/&[a-z#0-9]+;/g, "")} invited you to collaborate on "${entityName.slice(0, 120).replace(/[\r\n<>]/g, "")}"`;
+    const ctaLabel = "Open B4 Platform";
+    const ctaUrl = escapeHtml(signupUrl);
+    const intro = `<strong>${inviterName}</strong> invited you to collaborate (<strong>${access}</strong>) on the entity <strong>"${safeEntity}"</strong> on B4 Platform. Sign in or create your account with this email (<strong>${safeEmail}</strong>) to access the shared workspace.`;
 
     const html = `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
@@ -121,18 +129,18 @@ serve(async (req) => {
     });
 
     if (sendErr) {
-      console.error("Resend error", sendErr);
-      return new Response(JSON.stringify({ error: sendErr.message || "Email failed" }), {
+      console.error("Resend error");
+      return new Response(JSON.stringify({ error: "Email failed" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    return new Response(JSON.stringify({ ok: true, isRegistered }), {
+    return new Response(JSON.stringify({ ok: true }), {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e: any) {
-    console.error(e);
-    return new Response(JSON.stringify({ error: e?.message || "Server error" }), {
+    console.error("send-collaborator-invite failed");
+    return new Response(JSON.stringify({ error: "Server error" }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
