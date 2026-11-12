@@ -174,7 +174,7 @@ export default function MarketingIntelligence() {
   const links = researchLinks(kind, row.title);
 
   return (
-    <div className="max-w-6xl mx-auto px-3 sm:px-6 py-6 space-y-5">
+    <div className="max-w-6xl mx-auto px-3 sm:px-6 pt-20 pb-6 space-y-5">
       <Link to={`/org/${slug}?tab=journey`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground print:hidden">
         <ArrowLeft className="w-4 h-4" /> Back to products
       </Link>
@@ -214,7 +214,7 @@ export default function MarketingIntelligence() {
             {content.researchedOn && <span className="ml-2">· Researched {content.researchedOn}</span>}
           </p>
         </div>
-        <div className="flex gap-2 print:hidden">
+        <div className="flex flex-wrap gap-2 print:hidden">
           <Button variant="outline" onClick={generate} disabled={generating}>
             {generating ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-1" />} Refresh with latest research
           </Button>
