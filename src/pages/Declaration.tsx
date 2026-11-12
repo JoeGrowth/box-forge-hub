@@ -381,15 +381,13 @@ export default function Declaration() {
 
     // Send invitation email
     try {
-      const { data: invRes, error: invErr } = await supabase.functions.invoke("send-collaborator-invite", {
-        body: { email, entityName: activeEntity?.name || "", access: collabAccess },
+      const { error: invErr } = await supabase.functions.invoke("send-collaborator-invite", {
+        body: { email, entityId: activeEntityId, access: collabAccess },
       });
       if (invErr) throw invErr;
       toast({
         title: "Invitation envoyée",
-        description: invRes?.isRegistered
-          ? `${email} a accès à « ${activeEntity?.name || ""} »`
-          : `${email} a été invité à créer un compte`,
+        description: `${email} — « ${activeEntity?.name || ""} »`,
       });
     } catch (e: any) {
       toast({

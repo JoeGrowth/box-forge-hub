@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
       )
     }
 
-    console.log('User authenticated:', user.id, user.email)
+    console.log('User authenticated:', user.id)
 
     const body = await req.json()
     const { deleteType, action, confirmationCode, targetUserId, targetUserIds, isAdminAction, isBulkAction } = body
@@ -246,7 +246,7 @@ Deno.serve(async (req) => {
         )
       }
 
-      console.log('Confirmation email sent to:', emailRecipient)
+      console.log('Confirmation email sent')
       return new Response(
         JSON.stringify({ success: true, message: 'Confirmation code sent to your email' }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

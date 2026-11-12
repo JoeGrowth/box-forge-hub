@@ -77,7 +77,11 @@ function isValidUUID(str: string): boolean {
 }
 
 function sanitizeString(str: string, maxLength: number): string {
-  return String(str).trim().slice(0, maxLength);
+  return escapeHtml(String(str).trim().slice(0, maxLength));
+}
+
+function escapeHtml(v: string): string {
+  return v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
 function validateRequest(body: any): { valid: true; data: NotificationEmailRequest } | { valid: false; error: string } {
@@ -645,7 +649,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    console.log(`Sending ${type} email to ${to} for user ${userName}`);
+    console.log(`Sending ${type} email`);
 
     const emailContent = getEmailContent(type, userName, data);
     const { subject, html, inAppTitle, inAppMessage, inAppLink } = emailContent as any;
@@ -658,7 +662,7 @@ const handler = async (req: Request): Promise<Response> => {
       html,
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    console.log("Email sent successfully");
 
     // Also create in-app notification if userId is provided (using service role to bypass RLS)
     if (userId && inAppTitle && inAppMessage) {
