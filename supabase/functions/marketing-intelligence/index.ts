@@ -84,6 +84,7 @@ Deno.serve(async (req) => {
       model: "openai/gpt-6-astra",
       instructions: system,
       tools: [{ type: "web_search" }],
+      reasoning: { effort: "low" },
       input: `${ctx}\nProduce a Product & Service Analysis framework for this offer. Return ONLY valid JSON matching this shape:\n${SHAPE}`,
     } as any);
     const content = { ...parseJson(extractText(res)), researchedOn: today };
