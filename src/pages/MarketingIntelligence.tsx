@@ -175,7 +175,7 @@ export default function MarketingIntelligence() {
 
   return (
     <div className="max-w-6xl mx-auto px-3 sm:px-6 py-6 space-y-5">
-      <Link to={`/org/${slug}?tab=product`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground print:hidden">
+      <Link to={`/org/${slug}?tab=journey`} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground print:hidden">
         <ArrowLeft className="w-4 h-4" /> Back to products
       </Link>
 
