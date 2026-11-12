@@ -43,6 +43,7 @@ import { OrgPeopleTab } from "@/components/organization/OrgPeopleTab";
 import { DistributionModels } from "@/components/organization/DistributionModels";
 import { OrgProjectsTab } from "@/components/organization/OrgProjectsTab";
 import { OrgSalesTab } from "@/components/organization/OrgSalesTab";
+import { MarketingIntelligenceButton } from "@/components/organization/MarketingIntelligenceButton";
 import { TrendingUp as SalesIcon } from "lucide-react";
 
 import {
@@ -2365,6 +2366,7 @@ function ProductBlock({
           <Button size="sm" variant="outline" onClick={() => { if (collapsed) setCollapsed(false); setOpen((o) => !o); }}>
             <Plus className="w-4 h-4 mr-1" /> {open ? "Cancel" : "Add iteration"}
           </Button>
+          <MarketingIntelligenceButton orgId={orgId} productId={product.id} productName={currentName} />
           {canEdit && !editingName && (
             <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setEditingName(true); }} title="Rename product journey">
               <Pencil className="w-4 h-4" />

@@ -33,6 +33,7 @@ import BetaConsole from "./pages/BetaConsole";
 import LifecycleIntegrity from "./pages/admin/LifecycleIntegrity";
 import Organizations from "./pages/Organizations";
 import OrganizationPage from "./pages/Organization";
+import MarketingIntelligence from "./pages/MarketingIntelligence";
 import PostSignupOnboarding from "./pages/PostSignupOnboarding";
 import ProfessionalMap from "./pages/ProfessionalMap";
 import Opportunities from "./pages/Opportunities";
@@ -167,6 +168,7 @@ const App = () => (
                   <Route path="/opportunities" element={<GatedRoute talentGate><Opportunities /></GatedRoute>} />
                   <Route path="/organizations" element={<GatedRoute minStage="emerging"><Organizations /></GatedRoute>} />
                   <Route path="/org/:slug" element={<GatedRoute minStage="emerging"><OrganizationPage /></GatedRoute>} />
+                  <Route path="/org/:slug/marketing/:analysisId" element={<GatedRoute minStage="emerging"><MarketingIntelligence /></GatedRoute>} />
                   <Route path="/people" element={<GatedRoute minStage="emerging"><CoBuilders /></GatedRoute>} />
                   <Route path="/certifications" element={<ProtectedRoute><Certifications /></ProtectedRoute>} />
                   <Route path="/certifications/:section" element={<ProtectedRoute><CertificationDetail /></ProtectedRoute>} />
