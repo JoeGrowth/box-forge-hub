@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { isFinishedProject } from "@/lib/projectLifecycle";
 import { toast } from "@/hooks/use-toast";
 
 type Project = { id: string; name: string; status: string; progress: number };
@@ -29,6 +30,7 @@ export function ExternalProjectLink({
   const [slug, setSlug] = useState("");
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [typed, setTyped] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const load = async () => {
@@ -49,10 +51,13 @@ export function ExternalProjectLink({
   useEffect(() => { load(); }, [organizationId]);
 
   const linked = projects.find((p) => p.id === projectId);
+  // The suggested name sits in the box for one-click creation, but it must not
+  // hide the rest of the list: only text the user actually types narrows it.
+  const searching = typed && query.trim().length > 0;
   const matches = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return q ? projects.filter((p) => p.name.toLowerCase().includes(q)) : projects;
-  }, [projects, query]);
+    return searching ? projects.filter((p) => p.name.toLowerCase().includes(q)) : projects;
+  }, [projects, query, searching]);
   const exact = projects.some((p) => p.name.trim().toLowerCase() === query.trim().toLowerCase());
 
   const save = async (id: string) => {
@@ -111,7 +116,7 @@ export function ExternalProjectLink({
           size="sm"
           variant="outline"
           disabled={!organizationId}
-          onClick={() => { setQuery(linked?.name ?? defaultName ?? ""); setOpen(true); }}
+          onClick={() => { setQuery(linked?.name ?? defaultName ?? ""); setTyped(false); setOpen(true); }}
         >
           <Link2 className="h-4 w-4 mr-1" /> Adequate External Project
         </Button>
@@ -136,7 +141,16 @@ export function ExternalProjectLink({
         <DialogContent className="max-w-md w-full max-sm:top-auto max-sm:bottom-0 max-sm:translate-y-0 max-sm:rounded-b-none max-sm:rounded-t-2xl max-sm:max-h-[85dvh] max-sm:p-4 flex flex-col gap-3 overflow-hidden">
           <div className="sm:hidden mx-auto h-1.5 w-10 rounded-full bg-muted-foreground/30 -mt-1" />
           <DialogHeader><DialogTitle className="text-left pr-6">Adequate External Project</DialogTitle></DialogHeader>
-          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Project name" className="h-11 text-base" />
+          <Input
+            value={query}
+            onChange={(e) => { setQuery(e.target.value); setTyped(true); }}
+            placeholder="Search external projects"
+            className="h-11 text-base"
+          />
+          <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+            <span>External projects ({matches.length})</span>
+            <span>Including finished ones</span>
+          </div>
           <div className="flex-1 min-h-0 max-h-64 max-sm:max-h-none overflow-y-auto space-y-1.5 -mx-1 px-1">
             {matches.map((p) => (
               <button
@@ -146,7 +160,9 @@ export function ExternalProjectLink({
                 className={`w-full text-left rounded-md border px-3 py-3 text-sm hover:bg-muted min-h-11 ${p.id === projectId ? "border-primary" : ""}`}
               >
                 <div className="font-medium break-words">{p.name}</div>
-                <div className="text-xs text-muted-foreground">{p.status} · {p.progress ?? 0}%</div>
+                <div className="text-xs text-muted-foreground">
+                  {isFinishedProject(p) ? "Finished" : p.status} · {p.progress ?? 0}%
+                </div>
               </button>
             ))}
             {matches.length === 0 && <p className="text-xs text-muted-foreground py-2">No matching external project.</p>}
