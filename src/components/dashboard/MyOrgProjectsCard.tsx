@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LIFECYCLE_STEPS, currentStep } from "@/lib/projectLifecycle";
 
-import { Rocket, ArrowRight, CalendarDays, User, AlertTriangle, ChevronDown } from "lucide-react";
+import { Rocket, ArrowRight, CalendarDays, User, AlertTriangle, ChevronDown, Building2 } from "lucide-react";
 
 type Row = {
   id: string;
@@ -22,6 +22,7 @@ type Row = {
   progress: number;
   status_note: string | null;
   kind: string | null;
+  serviceName: string | null;
   orgName: string;
   orgSlug: string;
 };
