@@ -21,4 +21,21 @@ describe("project lifecycle", () => {
   it("100% has no current step", () => {
     expect(currentStep(100)).toBeNull();
   });
+
+  it("project named like the entity is the Core project", () => {
+    expect(isCoreProjectTrack({ name: "  pengry " }, "Pengry")).toBe(true);
+    expect(isCoreProjectTrack({ name: "Zomita" }, "Pengry")).toBe(false);
+  });
+
+  it("core track is recognized from its description without an org name", () => {
+    expect(isCoreProjectTrack({ name: "Pengry", description: "Core project track for Pengry." })).toBe(true);
+    expect(isCoreProjectTrack({ name: "Cyber Audit", description: "Client delivery" })).toBe(false);
+  });
+
+  it("core, internal and external projects land in separate groups", () => {
+    expect(projectGroup({ name: "Pengry", project_kind: "internal" }, "Pengry")).toBe("core");
+    expect(projectGroup({ name: "Website rebuild", project_kind: "internal" }, "Pengry")).toBe("internal");
+    expect(projectGroup({ name: "ASF workshop", project_kind: "external" }, "Pengry")).toBe("external");
+    expect(projectGroup({ name: "Pengry", project_kind: "external" }, "Pengry")).toBe("core");
+  });
 });
