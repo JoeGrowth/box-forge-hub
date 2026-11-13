@@ -222,7 +222,13 @@ export function MyOrgProjectsCard() {
                         <p className="font-medium text-foreground break-words group-hover:text-primary transition-colors">
                           {p.name}
                         </p>
-                        <p className="text-xs text-muted-foreground truncate mt-0.5">{p.orgName}</p>
+                        <div className="flex items-center gap-3 flex-wrap mt-0.5 text-xs text-muted-foreground">
+                          <span className="inline-flex items-center gap-1 min-w-0">
+                            <Building2 className="w-3 h-3 shrink-0" />
+                            <span className="truncate">{p.orgName}</span>
+                          </span>
+                          {p.serviceName && <span className="truncate">{p.serviceName}</span>}
+                        </div>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         <Badge
