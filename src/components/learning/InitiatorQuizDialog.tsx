@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import {
@@ -313,6 +314,7 @@ export function InitiatorQuizDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [journeyId, setJourneyId] = useState<string | null>(null);
   const [isReviewMode, setIsReviewMode] = useState(false);
+  const [ideaName, setIdeaName] = useState("");
 
   const draftKey =
     user && stepNumber
@@ -330,6 +332,7 @@ export function InitiatorQuizDialog({
     if (draft.answers) setAnswers(draft.answers);
     if (draft.matchingSelections) setMatchingSelections(draft.matchingSelections);
     if (Array.isArray(draft.orderItems)) setOrderItems(draft.orderItems);
+    if (typeof draft.ideaName === "string") setIdeaName(draft.ideaName);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, draftKey]);
 
@@ -390,6 +393,17 @@ export function InitiatorQuizDialog({
     })();
   }, [open, journeyId, stepNumber]);
 
+  // Pre-fill practice templates so the user only fills in the blanks
+  // instead of rewriting the structure.
+  useEffect(() => {
+    if (!open || isReviewMode || phase !== "quiz" || !stepContent) return;
+    const quiz = stepContent.quizzes[currentQuizIndex];
+    if (!quiz || !["fill-blank", "reflection"].includes(quiz.type) || !quiz.placeholder) return;
+    setAnswers((prev) =>
+      prev[quiz.id] !== undefined ? prev : { ...prev, [quiz.id]: quiz.placeholder as string }
+    );
+  }, [open, isReviewMode, phase, currentQuizIndex, stepContent]);
+
   // Autosave whatever the user has typed / selected
   useEffect(() => {
     if (!open || !draftKey || isReviewMode) return;
@@ -399,6 +413,7 @@ export function InitiatorQuizDialog({
       answers,
       matchingSelections,
       orderItems,
+      ideaName,
     });
   }, [
     open,
@@ -409,6 +424,7 @@ export function InitiatorQuizDialog({
     answers,
     matchingSelections,
     orderItems,
+    ideaName,
   ]);
 
 
@@ -499,6 +515,14 @@ export function InitiatorQuizDialog({
     try {
       // Format responses for storage
       const formattedResponses: Record<string, any> = {};
+      if (ideaName.trim()) {
+        formattedResponses.idea_name = {
+          question: "The idea this step is practiced on",
+          type: "idea",
+          answer: ideaName.trim(),
+          isCorrect: null,
+        };
+      }
       stepContent.quizzes.forEach((quiz) => {
         const answer = answers[quiz.id];
         formattedResponses[`quiz_${quiz.id}`] = {
@@ -574,6 +598,7 @@ export function InitiatorQuizDialog({
     setMatchingSelections({});
     setOrderItems([]);
     setIsReviewMode(false);
+    setIdeaName("");
   };
 
   const handleClose = () => {
@@ -586,8 +611,9 @@ export function InitiatorQuizDialog({
     if (!currentQuiz) return false;
     
     if (currentQuiz.type === "fill-blank" || currentQuiz.type === "reflection") {
-      const answer = answers[currentQuiz.id] as string;
-      return answer && answer.trim().length >= 10;
+      const answer = (answers[currentQuiz.id] as string) || "";
+      // The template is pre-filled — require the user to have actually filled blanks in.
+      return answer.trim().length >= 10 && answer !== currentQuiz.placeholder;
     }
     
     if (currentQuiz.type === "matching") {
@@ -684,14 +710,42 @@ export function InitiatorQuizDialog({
               </div>
             </div>
 
+            {/* Idea First — practice is based on your own idea */}
+            <Card className="border-amber-500/30 bg-amber-500/5">
+              <CardContent className="pt-4 space-y-3">
+                <div className="flex items-start gap-3">
+                  <Lightbulb className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-foreground mb-1">Your idea comes first</h4>
+                    <p className="text-sm text-muted-foreground">
+                      The practice questions in this step are based on <strong>your own idea</strong>.
+                      Write it down now — you will fill in the blanks of ready templates with it.
+                    </p>
+                  </div>
+                </div>
+                <Input
+                  value={ideaName}
+                  onChange={(e) => setIdeaName(e.target.value)}
+                  placeholder="Your idea name (e.g. Device Verification for Phones & Laptops)"
+                  maxLength={60}
+                />
+              </CardContent>
+            </Card>
+
             {/* Start Quiz Button */}
             <Button 
-              onClick={handleStartQuiz} 
+              onClick={handleStartQuiz}
+              disabled={!ideaName.trim()}
               className={`w-full bg-gradient-to-r ${stepContent.color} hover:opacity-90`}
             >
               Start Quiz
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
+            {!ideaName.trim() && (
+              <p className="text-xs text-muted-foreground text-center -mt-3">
+                Enter your idea above to start — the practice is built around it.
+              </p>
+            )}
           </div>
         ) : (
           // Quiz Phase
@@ -768,6 +822,22 @@ export function InitiatorQuizDialog({
             {/* Fill-in-the-blank / Reflection */}
             {(currentQuiz.type === "fill-blank" || currentQuiz.type === "reflection") && (
               <div className="space-y-3">
+                <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-foreground flex items-start gap-2">
+                  <Lightbulb className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Fill in the blanks with the ready template</strong>
+                    {ideaName.trim() && (
+                      <> — base your answer on your idea: <strong>{ideaName.trim()}</strong></>
+                    )}
+                    .
+                  </span>
+                </div>
+                {currentQuiz.placeholder && (
+                  <div className="rounded-lg border border-dashed border-border bg-muted/40 p-3">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Ready template</p>
+                    <p className="text-sm text-foreground whitespace-pre-line">{currentQuiz.placeholder}</p>
+                  </div>
+                )}
                 <Textarea
                   placeholder={currentQuiz.placeholder}
                   value={(answers[currentQuiz.id] as string) || ""}

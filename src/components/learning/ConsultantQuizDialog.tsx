@@ -369,6 +369,18 @@ export function ConsultantQuizDialog({
     })();
   }, [open, journeyId, stepNumber]);
 
+  // Pre-fill structured practice templates so the user only fills in the
+  // blanks instead of rewriting the structure.
+  useEffect(() => {
+    if (!open || isReviewMode || phase !== "quiz" || !stepContent) return;
+    const quiz = stepContent.quizzes[currentQuizIndex];
+    if (!quiz || !["mini-practice", "case-analysis", "framework-application", "communication-sim", "content-exercise", "engagement-plan", "mastery-scenario", "mentorship-exercise"].includes(quiz.type)) return;
+    if (!quiz.placeholder || !quiz.placeholder.includes("\n")) return;
+    setAnswers((prev) =>
+      prev[quiz.id] !== undefined ? prev : { ...prev, [quiz.id]: quiz.placeholder as string }
+    );
+  }, [open, isReviewMode, phase, currentQuizIndex, stepContent]);
+
 
   
   if (!stepContent) return null;
@@ -503,8 +515,9 @@ export function ConsultantQuizDialog({
     if (!currentQuiz) return false;
     
     if (["mini-practice", "case-analysis", "framework-application", "communication-sim", "content-exercise", "engagement-plan", "mastery-scenario", "mentorship-exercise"].includes(currentQuiz.type)) {
-      const answer = answers[currentQuiz.id] as string;
-      return answer && answer.trim().length >= 20;
+      const answer = (answers[currentQuiz.id] as string) || "";
+      // The template is pre-filled — require the user to have actually filled blanks in.
+      return answer.trim().length >= 20 && answer !== currentQuiz.placeholder;
     }
     
     return !!answers[currentQuiz.id];
@@ -605,6 +618,12 @@ export function ConsultantQuizDialog({
               </Card>
             )}
             <h4 className="font-medium text-foreground whitespace-pre-line">{currentQuiz.question}</h4>
+            {currentQuiz.placeholder?.includes("\n") && (
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-foreground">
+                <strong>Fill in the blanks with the ready template</strong> — the structure is
+                already written for you below. Just complete the blanks, don't rewrite the template.
+              </div>
+            )}
             <Textarea
               value={answers[currentQuiz.id] || ""}
               onChange={(e) => handleTextAnswer(e.target.value)}
@@ -612,7 +631,7 @@ export function ConsultantQuizDialog({
               className="min-h-[180px] resize-none"
             />
             <p className="text-xs text-muted-foreground">
-              Minimum 20 characters required. Be thoughtful and specific.
+              Fill in the template blanks to continue. Be thoughtful and specific.
             </p>
           </div>
         );

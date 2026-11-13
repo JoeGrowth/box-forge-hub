@@ -12,3 +12,6 @@
 - [x] Remove the product row from the mission distribution export form and PDF; verified dialog, download, and both rendered pages.
 - [x] Add admin-only Activity Log with actions, page visits, and returning-user tracking; admin browser recording/read-back, user drill-down, dashboard link, signed-out rejection, grants/RLS inspection, and four privacy tests passed. Non-admin session test not executed: SQL role impersonation is denied in this environment.
 - [x] Make the project "Blocker / where it stands" writing space full width and multi-line in add/edit project; phone and laptop dialog checked.
+- [x] Initiator certificate: idea-first input + ready-template fill-in mention; build OK
+- [x] Security certificate: pre-fill numbered templates (Risks 1/2/3, Mitigation 1/2/3); verified in preview
+- [x] Apply ready-template fill-in to all five certificates; build OK, Security verified in preview
