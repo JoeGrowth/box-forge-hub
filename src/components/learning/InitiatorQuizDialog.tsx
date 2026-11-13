@@ -332,6 +332,7 @@ export function InitiatorQuizDialog({
     if (draft.answers) setAnswers(draft.answers);
     if (draft.matchingSelections) setMatchingSelections(draft.matchingSelections);
     if (Array.isArray(draft.orderItems)) setOrderItems(draft.orderItems);
+    if (typeof draft.ideaName === "string") setIdeaName(draft.ideaName);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, draftKey]);
 
@@ -401,6 +402,7 @@ export function InitiatorQuizDialog({
       answers,
       matchingSelections,
       orderItems,
+      ideaName,
     });
   }, [
     open,
@@ -411,6 +413,7 @@ export function InitiatorQuizDialog({
     answers,
     matchingSelections,
     orderItems,
+    ideaName,
   ]);
 
 
