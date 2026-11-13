@@ -39,4 +39,12 @@ describe("project lifecycle", () => {
     expect(projectGroup({ name: "ASF workshop", project_kind: "external" }, "Pengry")).toBe("external");
     expect(projectGroup({ name: "Pengry", project_kind: "external" }, "Pengry")).toBe("core");
   });
+
+  it("a done or 100% project counts as finished", () => {
+    expect(isFinishedProject({ status: "done", progress: 100 })).toBe(true);
+    expect(isFinishedProject({ status: "active", progress: 100 })).toBe(true);
+    expect(isFinishedProject({ status: "Done", progress: 70 })).toBe(true);
+    expect(isFinishedProject({ status: "active", progress: 70 })).toBe(false);
+    expect(isFinishedProject({ status: null, progress: null })).toBe(false);
+  });
 });
