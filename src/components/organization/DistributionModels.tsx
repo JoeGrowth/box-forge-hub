@@ -359,7 +359,7 @@ export function DistributionModels({
       : await table.insert(payload);
     setSaving(false);
     if (error) {
-      toast.error(error.message);
+      toast.error(error.code === "23505" ? "A model with this name already exists. Duplicate names are not allowed." : error.message);
       return;
     }
     toast.success(editing.id ? "Model updated." : "Model created.");
