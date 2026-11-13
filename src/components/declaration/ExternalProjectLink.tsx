@@ -141,7 +141,16 @@ export function ExternalProjectLink({
         <DialogContent className="max-w-md w-full max-sm:top-auto max-sm:bottom-0 max-sm:translate-y-0 max-sm:rounded-b-none max-sm:rounded-t-2xl max-sm:max-h-[85dvh] max-sm:p-4 flex flex-col gap-3 overflow-hidden">
           <div className="sm:hidden mx-auto h-1.5 w-10 rounded-full bg-muted-foreground/30 -mt-1" />
           <DialogHeader><DialogTitle className="text-left pr-6">Adequate External Project</DialogTitle></DialogHeader>
-          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Project name" className="h-11 text-base" />
+          <Input
+            value={query}
+            onChange={(e) => { setQuery(e.target.value); setTyped(true); }}
+            placeholder="Search external projects"
+            className="h-11 text-base"
+          />
+          <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+            <span>External projects ({matches.length})</span>
+            <span>Including finished ones</span>
+          </div>
           <div className="flex-1 min-h-0 max-h-64 max-sm:max-h-none overflow-y-auto space-y-1.5 -mx-1 px-1">
             {matches.map((p) => (
               <button
@@ -151,7 +160,9 @@ export function ExternalProjectLink({
                 className={`w-full text-left rounded-md border px-3 py-3 text-sm hover:bg-muted min-h-11 ${p.id === projectId ? "border-primary" : ""}`}
               >
                 <div className="font-medium break-words">{p.name}</div>
-                <div className="text-xs text-muted-foreground">{p.status} · {p.progress ?? 0}%</div>
+                <div className="text-xs text-muted-foreground">
+                  {isFinishedProject(p) ? "Finished" : p.status} · {p.progress ?? 0}%
+                </div>
               </button>
             ))}
             {matches.length === 0 && <p className="text-xs text-muted-foreground py-2">No matching external project.</p>}

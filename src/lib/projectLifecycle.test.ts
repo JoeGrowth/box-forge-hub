@@ -4,6 +4,7 @@ import {
   completedFromProgress,
   currentStep,
   isCoreProjectTrack,
+  isFinishedProject,
   projectGroup,
 } from "./projectLifecycle";
 
