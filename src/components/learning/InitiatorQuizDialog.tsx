@@ -504,6 +504,14 @@ export function InitiatorQuizDialog({
     try {
       // Format responses for storage
       const formattedResponses: Record<string, any> = {};
+      if (ideaName.trim()) {
+        formattedResponses.idea_name = {
+          question: "The idea this step is practiced on",
+          type: "idea",
+          answer: ideaName.trim(),
+          isCorrect: null,
+        };
+      }
       stepContent.quizzes.forEach((quiz) => {
         const answer = answers[quiz.id];
         formattedResponses[`quiz_${quiz.id}`] = {
@@ -579,6 +587,7 @@ export function InitiatorQuizDialog({
     setMatchingSelections({});
     setOrderItems([]);
     setIsReviewMode(false);
+    setIdeaName("");
   };
 
   const handleClose = () => {
