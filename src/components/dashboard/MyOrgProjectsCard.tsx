@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LIFECYCLE_STEPS, currentStep } from "@/lib/projectLifecycle";
 
 import { Rocket, ArrowRight, CalendarDays, User, AlertTriangle, ChevronDown } from "lucide-react";
 
@@ -242,7 +243,11 @@ export function MyOrgProjectsCard() {
                     {p.status_note && (
                       <div className="mt-2 flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1.5 text-xs text-amber-700 dark:text-amber-400">
                         <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-                        <span>{p.status_note}</span>
+                        <span className="min-w-0">{(() => {
+                          const cur = currentStep(p.progress);
+                          const curMeta = cur ? LIFECYCLE_STEPS[cur - 1] : null;
+                          return curMeta ? <span className="font-semibold">Blocked at {cur}. {curMeta.label}: </span> : null;
+                        })()}{p.status_note}</span>
                       </div>
                     )}
 
