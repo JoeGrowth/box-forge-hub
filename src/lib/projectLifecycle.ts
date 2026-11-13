@@ -54,6 +54,13 @@ export function isCoreProjectTrack(
   return (p.description ?? "").toLowerCase().includes("core project track");
 }
 
+/** A project is finished (archived) once it is marked done or reaches 100%. */
+export type ProjectCompletion = { status?: string | null; progress?: number | null };
+
+export function isFinishedProject(p: ProjectCompletion): boolean {
+  return (p.status ?? "").trim().toLowerCase() === "done" || (p.progress ?? 0) >= 100;
+}
+
 /** Which section a project belongs to: core first, then external, then internal. */
 export function projectGroup(
   p: GroupableProject,

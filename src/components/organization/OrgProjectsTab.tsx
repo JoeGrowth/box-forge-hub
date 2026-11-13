@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { LIFECYCLE_STEPS, progressForCompleted, completedFromProgress, currentStep, projectGroup, type ProjectGroup } from "@/lib/projectLifecycle";
+import { LIFECYCLE_STEPS, progressForCompleted, completedFromProgress, currentStep, isFinishedProject, projectGroup, type ProjectGroup } from "@/lib/projectLifecycle";
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
@@ -356,7 +356,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
     load();
   };
 
-  const isClosed = (p: OrgProject) => p.status === "done" || (p.progress ?? 0) >= 100;
+  const isClosed = (p: OrgProject) => isFinishedProject(p);
   const openProjects = projects.filter((p) => !isClosed(p));
   const archivedProjects = projects.filter(isClosed);
   const counts = STATUSES.map((s) => ({ ...s, count: projects.filter((p) => p.status === s.value).length }));
