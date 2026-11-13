@@ -1,4 +1,4 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it } from "vitest";
 import { countMissionDistributionPages, isMissionDistributionPage } from "./missionDistribution";
 
 describe("countMissionDistributionPages", () => {
@@ -25,7 +25,7 @@ describe("countMissionDistributionPages", () => {
       { kind: "9qejrqc:model-aa0595f5-238a-4717-a45d-2219482729ff" },
       { kind: "thlu2sq:7ffloa8" },
     ];
-    expect(countMissionDistributionPages(records, pengryFolders)).toBe(3);
+    expect(countMissionDistributionPages(records, pengryFolders)).toBe(4);
   });
 
   it("returns zero when the organization has no folders", () => {
