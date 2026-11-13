@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS distribution_models_org_name_unique ON public.distribution_models (org_id, lower(btrim(name))) WHERE org_id IS NOT NULL;
