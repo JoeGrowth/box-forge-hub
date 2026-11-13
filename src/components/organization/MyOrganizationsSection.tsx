@@ -45,6 +45,7 @@ import {
   GripVertical,
 } from "lucide-react";
 import { OrgLogo } from "@/components/organization/OrgLogo";
+import { ClampedText } from "@/components/ui/clamped-text";
 import { fetchEntityLabelInputs, getEntityLabel } from "@/lib/entityLabels";
 
 type LifecycleStage = "venture" | "business" | "startup" | "mature";

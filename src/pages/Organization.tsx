@@ -94,6 +94,7 @@ import {
   Heart,
 } from "lucide-react";
 import jsPDF from "jspdf";
+import { ClampedText } from "@/components/ui/clamped-text";
 import { syncDistEntities, createDistEntity, deleteDistEntityRemote, type DistEntity } from "@/pages/Distribution";
 
 type LifecycleStage = "venture" | "business" | "startup" | "mature";

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { OrgLogo } from "@/components/organization/OrgLogo";
+import { ClampedText } from "@/components/ui/clamped-text";
 import {
   Building2, Globe, ArrowRight, ArrowLeft, Rocket, Sparkles, TrendingUp, Trophy,
   Users, Package, Layers, CalendarDays, Target, AlertTriangle, CheckCircle2,

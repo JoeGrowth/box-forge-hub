@@ -20,6 +20,7 @@ import { createDistEntity } from "@/pages/Distribution";
 import { withBaseCharges, normalizeTaskLocks } from "@/components/organization/DistributionModels";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ClampedText } from "@/components/ui/clamped-text";
 import { Plus, Pencil, Trash2, Rocket, CalendarDays, User, Loader2, AlertTriangle, Archive, ChevronDown, ChevronUp, RotateCcw, Building2, Send, Calculator, Eye } from "lucide-react";
 
 type TalentCandidate = { user_id: string; full_name: string | null; avatar_url: string | null };

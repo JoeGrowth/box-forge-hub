@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { ApplyToJoinDialog } from "@/components/idea/ApplyToJoinDialog";
+import { ClampedText } from "@/components/ui/clamped-text";
 
 interface StartupIdea {
   id: string;
@@ -129,9 +130,10 @@ const Ecosystem = () => {
           {project.sector && (
             <p className="text-sm text-muted-foreground italic mb-2">{project.sector}</p>
           )}
-          <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-            {organizationDescriptions[project.id] || project.description}
-          </p>
+          <ClampedText
+            text={organizationDescriptions[project.id] || project.description || ""}
+            className="text-sm text-muted-foreground mb-4"
+          />
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4 text-sm">
             <div>
