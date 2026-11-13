@@ -62,15 +62,29 @@ export function MyOrgProjectsCard() {
       }
 
       const byId = new Map(orgs.map((o) => [o.id, o]));
-      const { data: projects } = await supabase
-        .from("organization_projects" as any)
-        .select("*")
-        .in("organization_id", orgs.map((o) => o.id))
-        .order("created_at", { ascending: false });
+      const orgIds = orgs.map((o) => o.id);
+
+      // Service / product names come from the entity's product list: an external
+      // project is a delivery of one of them, so its name is the project's type of service.
+      const [projectsRes, productsRes] = await Promise.all([
+        supabase
+          .from("organization_projects" as any)
+          .select("*")
+          .in("organization_id", orgIds)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("organization_products" as any)
+          .select("id, name")
+          .in("organization_id", orgIds),
+      ]);
+
+      const productNames = new Map(
+        ((productsRes.data as any[]) ?? []).map((pr) => [pr.id as string, String(pr.name ?? "")]),
+      );
 
       if (cancelled) return;
       setRows(
-        ((projects as any[]) ?? []).map((p) => ({
+        ((projectsRes.data as any[]) ?? []).map((p) => ({
           id: p.id,
           name: p.name,
           description: p.description,
@@ -80,6 +94,7 @@ export function MyOrgProjectsCard() {
           progress: p.progress ?? 0,
           status_note: p.status_note,
           kind: p.project_kind ?? null,
+          serviceName: p.product_id ? productNames.get(p.product_id) ?? null : null,
           orgName: byId.get(p.organization_id)?.name ?? "",
           orgSlug: byId.get(p.organization_id)?.slug ?? "",
         })),
