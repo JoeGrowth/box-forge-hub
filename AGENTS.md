@@ -6,3 +6,4 @@
 - Business Evaluation uses the shared organization membership list and user/organization-scoped browser drafts; evaluation figures never update declarations, earnings, or legal records because they are self-reported assessments.
 - Product Marketing Intelligence opens the newest saved analysis by creation date within the organization/product pair and asks for offer type only when none exists; failed lookups never create replacement pages, preserving access to saved research.
 - Whether a project counts as finished/archived is decided by the single `isFinishedProject` helper in `src/lib/projectLifecycle.ts`, so project lists and pickers never disagree about archive state.
+- Project previews open linked distribution records without updating mission fields and share the organization-scoped existing-page picker with Budget Distribution, so previewing does not alter financial data.
