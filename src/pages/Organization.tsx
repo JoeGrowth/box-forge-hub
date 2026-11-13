@@ -1560,27 +1560,12 @@ function OrgDistributionsTab({ orgId, orgName, canEdit }: { orgId: string; orgNa
     <>
       <DistributionModels orgId={orgId} orgName={orgName} canEdit={canEdit} entities={entities} />
 
-      {canEdit && (
-        <div className="rounded-xl border border-dashed border-border bg-card p-4 flex gap-2 flex-wrap items-end">
-          <div className="flex-1 min-w-[220px]">
-            <Label className="text-xs uppercase tracking-wide text-muted-foreground">New distribution folder</Label>
-            <Input
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              placeholder={`e.g. ${orgName} Q1 distribution`}
-              onKeyDown={(e) => e.key === "Enter" && create()}
-            />
-          </div>
-          <Button onClick={create} disabled={!newName.trim()}>
-            <Plus className="w-3 h-3 mr-1" /> Add distribution
-          </Button>
-        </div>
       )}
       {entities.length === 0 ? (
         <EmptyState
           icon={PieChart}
           title="No distributions yet"
-          hint={canEdit ? "Create one above. It will open in the full Distribution workspace." : "An editor needs to create one."}
+          hint="Mission distribution pages appear in the section above."
         />
       ) : (
         <div className="rounded-xl border border-border bg-card divide-y divide-border">
