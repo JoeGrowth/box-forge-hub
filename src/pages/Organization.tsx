@@ -96,6 +96,7 @@ import {
 import jsPDF from "jspdf";
 import { ClampedText } from "@/components/ui/clamped-text";
 import { syncDistEntities, createDistEntity, deleteDistEntityRemote, type DistEntity } from "@/pages/Distribution";
+import { countMissionDistributionPages } from "@/lib/missionDistribution";
 
 type LifecycleStage = "venture" | "business" | "startup" | "mature";
 const STAGE_META: Record<LifecycleStage, { label: string; icon: typeof Rocket; className: string }> = {
@@ -156,7 +157,7 @@ export default function OrganizationPage() {
   const [jobs, setJobs] = useState<JobRow[]>([]);
   const [tenders, setTenders] = useState<TenderRow[]>([]);
   const [declarations, setDeclarations] = useState<{ id: string; name: string; created_at: string }[]>([]);
-  const [distModelCount, setDistModelCount] = useState(0);
+  const [missionPageCount, setMissionPageCount] = useState(0);
   const [legalDocs, setLegalDocs] = useState<{ id: string; name: string; storage_path: string; created_at: string; size_bytes: number | null }[]>([]);
   const [newDeclName, setNewDeclName] = useState("");
   const [creatingDecl, setCreatingDecl] = useState(false);
@@ -191,16 +192,23 @@ export default function OrganizationPage() {
   const [peopleCount, setPeopleCount] = useState(0);
   const loadCounts = useCallback(async () => {
     if (!org?.id) return;
-    const [pj, pp, prods, iters] = await Promise.all([
+    const [pj, pp, prods, iters, folders, recs] = await Promise.all([
       supabase.from("organization_projects").select("id", { count: "exact", head: true }).eq("organization_id", org.id),
       (supabase as any).rpc("list_org_people_public", { _org_id: org.id }),
       supabase.from("organization_products").select("id").eq("organization_id", org.id).is("archived_at", null),
       supabase.from("organization_product_iterations").select("product_id").eq("organization_id", org.id).is("archived_at", null),
+      supabase.from("distribution_entities").select("id").eq("org_id", org.id),
+      supabase.from("distribution_records").select("kind"),
     ]);
     setProjectCount(pj.count ?? 0);
     setPeopleCount(((pp.data as any[]) ?? []).length);
     const shippedProductIds = new Set(((iters.data as any[]) ?? []).map((i) => i.product_id));
     setProductCount(((prods.data as any[]) ?? []).filter((p) => shippedProductIds.has(p.id)).length);
+    // The Distribution badge counts mission distribution pages, not models.
+    setMissionPageCount(countMissionDistributionPages(
+      (recs.data as any[]) ?? [],
+      ((folders.data as any[]) ?? []).map((f) => f.id),
+    ));
   }, [org?.id]);
   useEffect(() => { loadCounts(); }, [loadCounts]);
 
@@ -208,19 +216,17 @@ export default function OrganizationPage() {
 
   const loadOpps = useCallback(async () => {
     if (!org) return;
-    const [{ data: js }, { data: ts }, { data: ds }, { data: lg }, { count: dm }] = await Promise.all([
+    const [{ data: js }, { data: ts }, { data: ds }, { data: lg }] = await Promise.all([
       supabase.from("job_opportunities").select("*").eq("organization_id", org.id).order("created_at", { ascending: false }),
       supabase.from("tenders").select("*").eq("organization_id", org.id).order("created_at", { ascending: false }),
       supabase.from("declaration_entities").select("id, name, created_at").eq("organization_id", org.id).order("created_at", { ascending: true }),
       supabase.from("organization_legal_documents").select("id, name, storage_path, created_at, size_bytes").eq("organization_id", org.id).order("created_at", { ascending: false }),
-      (supabase.from("distribution_models" as never) as never as any).select("id", { count: "exact", head: true }).eq("org_id", org.id),
     ]);
     const tenderRows = (ts as TenderRow[]) ?? [];
     setJobs((js as JobRow[]) ?? []);
     setTenders(tenderRows);
     setDeclarations((ds as any) ?? []);
     setLegalDocs((lg as any) ?? []);
-    setDistModelCount(Number(dm) || 0);
 
     if (tenderRows.length > 0) {
       const ids = tenderRows.map((t) => t.id);
@@ -446,7 +452,7 @@ export default function OrganizationPage() {
               <OrgTab icon={FileText} value="tenders" count={tenders.length}>Tenders</OrgTab>
             </>
           )}
-          <OrgTab icon={PieChart} value="distribution" count={distModelCount}>Distribution</OrgTab>
+          <OrgTab icon={PieChart} value="distribution" count={missionPageCount}>Distribution</OrgTab>
           <OrgTab icon={ClipboardList} value="declaration" count={declarations.length}>Declaration</OrgTab>
           <OrgTab icon={Rocket} value="projects" count={projectCount}>Project</OrgTab>
           <OrgTab icon={SalesIcon} value="sales">Sales</OrgTab>
