@@ -1560,7 +1560,6 @@ function OrgDistributionsTab({ orgId, orgName, canEdit }: { orgId: string; orgNa
     <>
       <DistributionModels orgId={orgId} orgName={orgName} canEdit={canEdit} entities={entities} />
 
-      )}
       {entities.length === 0 ? (
         <EmptyState
           icon={PieChart}
