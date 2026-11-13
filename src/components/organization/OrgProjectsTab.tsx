@@ -455,7 +455,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                     onClick={() => setStep(n)}
                     className={`flex-1 rounded-lg border px-2 py-1.5 text-xs font-medium transition-colors ${step === n ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-muted"}`}
                   >
-                    {n}. {n === 1 ? "Project" : n === 2 ? (draft.project_kind === "external" ? "Delivery" : "Planning") : "Set up"}
+                    {n}. {n === 1 ? "Project" : n === 2 ? (draft.project_kind === "external" ? "Proposal" : "Planning") : "Set up"}
                   </button>
                 ))}
               </div>
@@ -485,10 +485,10 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                 )}
                 {step === 2 && (
                 <section className="space-y-3 rounded-xl border border-border p-3">
-                <SectionTitle n={2} title={draft.project_kind === "external" ? "Delivery details" : "Planning"} />
+                <SectionTitle n={2} title={draft.project_kind === "external" ? "Proposal details" : "Planning"} />
                 {draft.project_kind === "external" && (
                   <div>
-                    <Label>Product delivered *</Label>
+                    <Label>Service proposed *</Label>
                     <Input list={`org-products-${orgId}`} value={draft.product_name}
                       onChange={(e) => setDraft({ ...draft, product_name: e.target.value })}
                       placeholder="Pick from your products or type a new one" />
