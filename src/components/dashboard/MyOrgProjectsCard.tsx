@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LIFECYCLE_STEPS, currentStep } from "@/lib/projectLifecycle";
 
 import { Rocket, ArrowRight, CalendarDays, User, AlertTriangle, ChevronDown } from "lucide-react";
 
