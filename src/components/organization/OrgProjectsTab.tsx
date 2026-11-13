@@ -230,11 +230,33 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
 
   // Open (or create once) the mission distribution page for this project,
   // using the distribution model named after the linked product.
-  const openDistribution = async (p: OrgProject, productNameHint?: string) => {
+  const [distChoice, setDistChoice] = useState<null | { project: OrgProject; productName?: string; pages: { id: string; title: string; label: string }[] }>(null);
+
+  const linkExistingPage = async (recordId: string) => {
+    if (!distChoice) return;
+    const { error } = await supabase.from("organization_projects" as any).update({ distribution_record_id: recordId }).eq("id", distChoice.project.id);
+    if (error) return toast({ title: "Link failed", description: error.message, variant: "destructive" });
+    setDistChoice(null);
+    load();
+    navigate(`/mission/${recordId}`);
+  };
+
+  const openDistribution = async (p: OrgProject, productNameHint?: string, forceCreate = false) => {
     if (!userId) return;
     setDistBusy(true);
     try {
       const recTable = () => supabase.from("distribution_records" as never) as never as any;
+      if (!p.distribution_record_id && !forceCreate) {
+        const { data: folders } = await (supabase.from("distribution_entities" as never) as never as any).select("id").eq("org_id", orgId);
+        const folderIds = ((folders as any[]) ?? []).map((f) => f.id);
+        let pages: { id: string; title: string; label: string }[] = [];
+        if (folderIds.length) {
+          const { data: recs } = await recTable().select("id,title,budget_label,kind").or(folderIds.map((id) => `kind.like.${id}:model-*`).join(","));
+          pages = ((recs as any[]) ?? []).map((r) => ({ id: r.id, title: r.title || "Untitled", label: r.budget_label || "" }));
+        }
+        setDistChoice({ project: p, productName: productNameHint, pages });
+        return;
+      }
       if (p.distribution_record_id) {
         const { data: rec } = await recTable().select("id").eq("id", p.distribution_record_id).maybeSingle();
         if (rec?.id) {
@@ -653,6 +675,25 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
             </DialogContent>
           </Dialog>
         )}
+        <Dialog open={!!distChoice} onOpenChange={(o) => !o && setDistChoice(null)}>
+          <DialogContent className="max-w-md max-h-[90dvh] overflow-y-auto">
+            <DialogHeader><DialogTitle>Budget distribution</DialogTitle></DialogHeader>
+            <p className="text-sm text-muted-foreground">Link "{distChoice?.project.name}" to an existing distribution page or create a new one.</p>
+            <div className="space-y-2">
+              {distChoice?.pages.length ? distChoice.pages.map((pg) => (
+                <button key={pg.id} type="button" onClick={() => linkExistingPage(pg.id)} className="w-full text-left rounded-lg border border-border p-3 hover:bg-muted/50 transition min-h-[44px]">
+                  <p className="font-medium text-foreground break-words">{pg.label || pg.title}</p>
+                  {pg.label && <p className="text-xs text-muted-foreground break-words">{pg.title}</p>}
+                </button>
+              )) : <p className="text-sm text-muted-foreground">No distribution pages yet.</p>}
+            </div>
+            <DialogFooter>
+              <Button disabled={distBusy} onClick={async () => { const c = distChoice; if (!c) return; setDistChoice(null); await openDistribution(c.project, c.productName, true); }}>
+                <Plus className="w-4 h-4 mr-1" />Create new page
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         <Dialog open={!!previewing} onOpenChange={(o) => !o && setPreviewing(null)}>
           <DialogContent className="max-w-md">
             <DialogHeader><DialogTitle className="break-words pr-6">{previewing?.name}</DialogTitle></DialogHeader>
