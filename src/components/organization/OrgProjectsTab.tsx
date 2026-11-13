@@ -53,6 +53,13 @@ const KINDS = [
 ];
 const kindMeta = (k: string) => KINDS.find((x) => x.value === k) ?? KINDS[0];
 
+// Sections shown in the Projects tab, always in this order.
+const PROJECT_GROUP_SECTIONS: { key: ProjectGroup; label: string; hint: string; empty: string; icon: typeof Building2 }[] = [
+  { key: "core", label: "Core project", hint: "The entity's own build track", empty: "No core project yet.", icon: Rocket },
+  { key: "internal", label: "Internal projects", hint: "Build the entity or get it ready to be sold as a product", empty: "No internal projects yet.", icon: Building2 },
+  { key: "external", label: "External projects", hint: "Delivered to a client", empty: "No external projects yet.", icon: Send },
+];
+
 const STATUSES = [
   { value: "planned", label: "Planned", className: "bg-muted text-muted-foreground" },
   { value: "active", label: "Active", className: "bg-primary/10 text-primary border-primary/30" },
@@ -355,10 +362,10 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
   const counts = STATUSES.map((s) => ({ ...s, count: projects.filter((p) => p.status === s.value).length }));
   const hasOrgProject = !!orgName && projects.some((p) => p.name.trim().toLowerCase() === orgName.trim().toLowerCase());
 
-  const renderCard = (p: OrgProject) => {
+  const renderCard = (p: OrgProject, highlight = false) => {
     const meta = statusMeta(p.status);
     return (
-      <div key={p.id} className="rounded-xl border border-border bg-card p-4">
+      <div key={p.id} className={`rounded-xl border p-4 ${highlight ? "border-primary/40 bg-primary/5" : "border-border bg-card"}`}>
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
