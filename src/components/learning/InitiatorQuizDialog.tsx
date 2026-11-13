@@ -393,6 +393,17 @@ export function InitiatorQuizDialog({
     })();
   }, [open, journeyId, stepNumber]);
 
+  // Pre-fill practice templates so the user only fills in the blanks
+  // instead of rewriting the structure.
+  useEffect(() => {
+    if (!open || isReviewMode || phase !== "quiz" || !stepContent) return;
+    const quiz = stepContent.quizzes[currentQuizIndex];
+    if (!quiz || !["fill-blank", "reflection"].includes(quiz.type) || !quiz.placeholder) return;
+    setAnswers((prev) =>
+      prev[quiz.id] !== undefined ? prev : { ...prev, [quiz.id]: quiz.placeholder as string }
+    );
+  }, [open, isReviewMode, phase, currentQuizIndex, stepContent]);
+
   // Autosave whatever the user has typed / selected
   useEffect(() => {
     if (!open || !draftKey || isReviewMode) return;
@@ -600,8 +611,9 @@ export function InitiatorQuizDialog({
     if (!currentQuiz) return false;
     
     if (currentQuiz.type === "fill-blank" || currentQuiz.type === "reflection") {
-      const answer = answers[currentQuiz.id] as string;
-      return answer && answer.trim().length >= 10;
+      const answer = (answers[currentQuiz.id] as string) || "";
+      // The template is pre-filled — require the user to have actually filled blanks in.
+      return answer.trim().length >= 10 && answer !== currentQuiz.placeholder;
     }
     
     if (currentQuiz.type === "matching") {
