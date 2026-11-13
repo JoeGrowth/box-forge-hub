@@ -14,3 +14,4 @@
 - [x] Make the project "Blocker / where it stands" writing space full width and multi-line in add/edit project; phone and laptop dialog checked.
 - [ ] Initiator certificate: idea-first input + ready-template fill-in mention (done, build OK)
 - [ ] Security certificate: pre-fill numbered templates (Risks 1/2/3, Mitigation 1/2/3) so users fill blanks only
+- [ ] Apply ready-template fill-in to all certificates (Initiator done, Security done, CoBuilder/Finance/Consultant pending)
