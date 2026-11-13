@@ -698,14 +698,42 @@ export function InitiatorQuizDialog({
               </div>
             </div>
 
+            {/* Idea First — practice is based on your own idea */}
+            <Card className="border-amber-500/30 bg-amber-500/5">
+              <CardContent className="pt-4 space-y-3">
+                <div className="flex items-start gap-3">
+                  <Lightbulb className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-foreground mb-1">Your idea comes first</h4>
+                    <p className="text-sm text-muted-foreground">
+                      The practice questions in this step are based on <strong>your own idea</strong>.
+                      Write it down now — you will fill in the blanks of ready templates with it.
+                    </p>
+                  </div>
+                </div>
+                <Input
+                  value={ideaName}
+                  onChange={(e) => setIdeaName(e.target.value)}
+                  placeholder="Your idea name (e.g. Device Verification for Phones & Laptops)"
+                  maxLength={60}
+                />
+              </CardContent>
+            </Card>
+
             {/* Start Quiz Button */}
             <Button 
-              onClick={handleStartQuiz} 
+              onClick={handleStartQuiz}
+              disabled={!ideaName.trim()}
               className={`w-full bg-gradient-to-r ${stepContent.color} hover:opacity-90`}
             >
               Start Quiz
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
+            {!ideaName.trim() && (
+              <p className="text-xs text-muted-foreground text-center -mt-3">
+                Enter your idea above to start — the practice is built around it.
+              </p>
+            )}
           </div>
         ) : (
           // Quiz Phase
@@ -782,6 +810,22 @@ export function InitiatorQuizDialog({
             {/* Fill-in-the-blank / Reflection */}
             {(currentQuiz.type === "fill-blank" || currentQuiz.type === "reflection") && (
               <div className="space-y-3">
+                <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-foreground flex items-start gap-2">
+                  <Lightbulb className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Fill in the blanks with the ready template</strong>
+                    {ideaName.trim() && (
+                      <> — base your answer on your idea: <strong>{ideaName.trim()}</strong></>
+                    )}
+                    .
+                  </span>
+                </div>
+                {currentQuiz.placeholder && (
+                  <div className="rounded-lg border border-dashed border-border bg-muted/40 p-3">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Ready template</p>
+                    <p className="text-sm text-foreground whitespace-pre-line">{currentQuiz.placeholder}</p>
+                  </div>
+                )}
                 <Textarea
                   placeholder={currentQuiz.placeholder}
                   value={(answers[currentQuiz.id] as string) || ""}
