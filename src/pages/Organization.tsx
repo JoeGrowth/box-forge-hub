@@ -2738,7 +2738,7 @@ function EditableOrgDescription({
     return (
       <div className="mt-2 group">
         {value ? (
-          <p className="text-sm text-muted-foreground whitespace-pre-wrap">{value}</p>
+          <ClampedText text={value} className="text-sm text-muted-foreground whitespace-pre-wrap" />
         ) : (
           <p className="text-sm text-muted-foreground italic">No description yet.</p>
         )}
