@@ -607,13 +607,29 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                    </div>
                  </div>
                 </section>
-               </div>
-               <DialogFooter>
-                <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                <Button variant="secondary" onClick={() => save(true)} disabled={distBusy || draft.project_kind !== "external"} title={draft.project_kind !== "external" ? "Budget distribution uses the delivered product's model (External projects)" : "Save and open the mission distribution page"}>
-                  {distBusy ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Calculator className="w-4 h-4 mr-1" />}Budget Distribution
-                </Button>
-                <Button onClick={() => save()}>{editing ? "Save changes" : "Add project"}</Button>
+                )}
+                </div>
+               <DialogFooter className="gap-2 sm:justify-between">
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+                  {step > 1 && <Button variant="outline" onClick={() => setStep(step - 1)}>Back</Button>}
+                </div>
+                <div className="flex gap-2">
+                  {step < 3 ? (
+                    <Button onClick={() => {
+                      if (step === 1 && !draft.name.trim()) return toast({ title: "Project name required", variant: "destructive" });
+                      if (step === 2 && draft.project_kind === "external" && !draft.product_name.trim()) return toast({ title: "Product required", description: "External projects must be linked to a product.", variant: "destructive" });
+                      setStep(step + 1);
+                    }}>Next</Button>
+                  ) : (
+                    <>
+                      <Button variant="secondary" onClick={() => save(true)} disabled={distBusy || draft.project_kind !== "external"} title={draft.project_kind !== "external" ? "Budget distribution uses the delivered product's model (External projects)" : "Save and open the mission distribution page"}>
+                        {distBusy ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Calculator className="w-4 h-4 mr-1" />}Budget Distribution
+                      </Button>
+                      <Button onClick={() => save()}>{editing ? "Save changes" : "Add project"}</Button>
+                    </>
+                  )}
+                </div>
               </DialogFooter>
             </DialogContent>
           </Dialog>
