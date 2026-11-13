@@ -4503,17 +4503,21 @@ export type Database = {
           budget: number | null
           created_at: string
           created_by: string | null
+          delivered_at: string | null
           description: string | null
           distribution_record_id: string | null
           id: string
           lead: string | null
           name: string
           organization_id: string
+          paid_at: string | null
+          point_of_contact: string | null
           position: number
           product_id: string | null
           product_iteration_id: string | null
           progress: number
           project_kind: string
+          sold_at: string | null
           start_date: string | null
           status: string
           status_note: string | null
@@ -4524,17 +4528,21 @@ export type Database = {
           budget?: number | null
           created_at?: string
           created_by?: string | null
+          delivered_at?: string | null
           description?: string | null
           distribution_record_id?: string | null
           id?: string
           lead?: string | null
           name: string
           organization_id: string
+          paid_at?: string | null
+          point_of_contact?: string | null
           position?: number
           product_id?: string | null
           product_iteration_id?: string | null
           progress?: number
           project_kind?: string
+          sold_at?: string | null
           start_date?: string | null
           status?: string
           status_note?: string | null
@@ -4545,17 +4553,21 @@ export type Database = {
           budget?: number | null
           created_at?: string
           created_by?: string | null
+          delivered_at?: string | null
           description?: string | null
           distribution_record_id?: string | null
           id?: string
           lead?: string | null
           name?: string
           organization_id?: string
+          paid_at?: string | null
+          point_of_contact?: string | null
           position?: number
           product_id?: string | null
           product_iteration_id?: string | null
           progress?: number
           project_kind?: string
+          sold_at?: string | null
           start_date?: string | null
           status?: string
           status_note?: string | null

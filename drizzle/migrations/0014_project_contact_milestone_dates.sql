@@ -1,0 +1,1 @@
+ALTER TABLE public.organization_projects ADD COLUMN IF NOT EXISTS point_of_contact text, ADD COLUMN IF NOT EXISTS sold_at date, ADD COLUMN IF NOT EXISTS delivered_at date, ADD COLUMN IF NOT EXISTS paid_at date;
