@@ -86,6 +86,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
   const [editing, setEditing] = useState<OrgProject | null>(null);
   const [previewing, setPreviewing] = useState<OrgProject | null>(null);
   const [draft, setDraft] = useState({ ...emptyDraft });
+  const [step, setStep] = useState(1);
   const [leadResults, setLeadResults] = useState<TalentCandidate[]>([]);
   const [leadSearching, setLeadSearching] = useState(false);
   const [leadFocused, setLeadFocused] = useState(false);
@@ -125,7 +126,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
 
   useEffect(() => { load(); }, [load]);
 
-  const openNew = () => { setEditing(null); setDraft({ ...emptyDraft }); setOpen(true); };
+  const openNew = () => { setEditing(null); setDraft({ ...emptyDraft }); setStep(1); setOpen(true); };
   const openEdit = (p: OrgProject) => {
     setEditing(p);
     setDraft({
@@ -142,6 +143,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
       budget: p.budget != null ? String(p.budget) : "",
       point_of_contact: p.point_of_contact ?? "", sold_at: p.sold_at ?? "", delivered_at: p.delivered_at ?? "", paid_at: p.paid_at ?? "",
     });
+    setStep(1);
     if (p.product_id) {
       supabase.from("organization_products").select("name").eq("id", p.product_id).maybeSingle()
         .then(({ data }) => data && setDraft((d) => ({ ...d, product_name: (data as any).name })));
