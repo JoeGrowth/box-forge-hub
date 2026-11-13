@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { progressForCompleted, completedFromProgress, currentStep } from "./projectLifecycle";
+import {
+  progressForCompleted,
+  completedFromProgress,
+  currentStep,
+  isCoreProjectTrack,
+  projectGroup,
+} from "./projectLifecycle";
 
 describe("project lifecycle", () => {
   it("cumulative weights 10/10/20/10/20/30", () => {

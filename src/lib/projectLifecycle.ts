@@ -29,3 +29,36 @@ export function currentStep(progress: number): number | null {
   const c = completedFromProgress(progress);
   return c >= LIFECYCLE_STEPS.length ? null : c + 1;
 }
+
+// --- Project grouping: Core project / Internal projects / External projects ---
+export type ProjectGroup = "core" | "internal" | "external";
+
+type GroupableProject = {
+  name: string;
+  description?: string | null;
+  project_kind?: string | null;
+};
+
+/**
+ * The Core project track is the project published for the entity itself:
+ * its name matches the organization name, or it was created as the core track.
+ */
+export function isCoreProjectTrack(
+  p: GroupableProject,
+  orgName?: string | null,
+): boolean {
+  const name = (p.name ?? "").trim().toLowerCase();
+  if (!name) return false;
+  const org = (orgName ?? "").trim().toLowerCase();
+  if (org && name === org) return true;
+  return (p.description ?? "").toLowerCase().includes("core project track");
+}
+
+/** Which section a project belongs to: core first, then external, then internal. */
+export function projectGroup(
+  p: GroupableProject,
+  orgName?: string | null,
+): ProjectGroup {
+  if (isCoreProjectTrack(p, orgName)) return "core";
+  return (p.project_kind ?? "internal") === "external" ? "external" : "internal";
+}
