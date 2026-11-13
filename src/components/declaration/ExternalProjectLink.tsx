@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { isFinishedProject } from "@/lib/projectLifecycle";
 import { toast } from "@/hooks/use-toast";
 
 type Project = { id: string; name: string; status: string; progress: number };
@@ -29,6 +30,7 @@ export function ExternalProjectLink({
   const [slug, setSlug] = useState("");
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [typed, setTyped] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const load = async () => {
@@ -49,10 +51,13 @@ export function ExternalProjectLink({
   useEffect(() => { load(); }, [organizationId]);
 
   const linked = projects.find((p) => p.id === projectId);
+  // The suggested name sits in the box for one-click creation, but it must not
+  // hide the rest of the list: only text the user actually types narrows it.
+  const searching = typed && query.trim().length > 0;
   const matches = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return q ? projects.filter((p) => p.name.toLowerCase().includes(q)) : projects;
-  }, [projects, query]);
+    return searching ? projects.filter((p) => p.name.toLowerCase().includes(q)) : projects;
+  }, [projects, query, searching]);
   const exact = projects.some((p) => p.name.trim().toLowerCase() === query.trim().toLowerCase());
 
   const save = async (id: string) => {
@@ -111,7 +116,7 @@ export function ExternalProjectLink({
           size="sm"
           variant="outline"
           disabled={!organizationId}
-          onClick={() => { setQuery(linked?.name ?? defaultName ?? ""); setOpen(true); }}
+          onClick={() => { setQuery(linked?.name ?? defaultName ?? ""); setTyped(false); setOpen(true); }}
         >
           <Link2 className="h-4 w-4 mr-1" /> Adequate External Project
         </Button>
