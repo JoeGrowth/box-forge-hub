@@ -565,10 +565,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                 {step === 3 && (
                 <section className="space-y-3 rounded-xl border border-border p-3">
                 <SectionTitle n={3} title="Project Set up" />
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div><Label>Sold on</Label><Input type="date" value={draft.sold_at} onChange={(e) => setDraft({ ...draft, sold_at: e.target.value })} /></div>
-                  <div><Label>Delivered on</Label><Input type="date" value={draft.delivered_at} onChange={(e) => setDraft({ ...draft, delivered_at: e.target.value })} /></div>
-                  <div><Label>Paid on</Label><Input type="date" value={draft.paid_at} onChange={(e) => setDraft({ ...draft, paid_at: e.target.value })} /></div>
+                <div className="grid grid-cols-1 gap-3">
                   <div className="col-span-full">
                     <Label>Project step</Label>
                     <p className="text-xs text-muted-foreground mb-2">Tick the last step that is fully done. Progress follows the step weights.</p>
