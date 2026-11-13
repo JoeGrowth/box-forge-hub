@@ -45,6 +45,7 @@ import {
   GripVertical,
 } from "lucide-react";
 import { OrgLogo } from "@/components/organization/OrgLogo";
+import { ClampedText } from "@/components/ui/clamped-text";
 import { fetchEntityLabelInputs, getEntityLabel } from "@/lib/entityLabels";
 
 type LifecycleStage = "venture" | "business" | "startup" | "mature";
@@ -613,7 +614,7 @@ export function MyOrganizationsSection() {
                         </div>
 
                         {o.description && (
-                          <p className="text-sm text-muted-foreground mt-3 line-clamp-2 break-words">{o.description}</p>
+                          <ClampedText text={o.description} className="text-sm text-muted-foreground mt-3 break-words" />
                         )}
 
                         {o.type === "company" && !incorporatedIds.has(o.id) && (

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { OrgLogo } from "@/components/organization/OrgLogo";
+import { ClampedText } from "@/components/ui/clamped-text";
 import {
   Building2, Globe, ArrowRight, ArrowLeft, Rocket, Sparkles, TrendingUp, Trophy,
   Users, Package, Layers, CalendarDays, Target, AlertTriangle, CheckCircle2,
@@ -238,9 +239,7 @@ export default function OrgPublicPage() {
                 </Badge>
               </div>
               {org.description && (
-                <p className="mt-5 text-primary-foreground/90 text-base md:text-lg leading-relaxed line-clamp-4 whitespace-pre-line">
-                  {org.description}
-                </p>
+                <ClampedText text={org.description} className="mt-5 text-primary-foreground/90 text-base md:text-lg leading-relaxed whitespace-pre-line" />
               )}
             </div>
             <div className="flex flex-col gap-3 shrink-0">
@@ -290,9 +289,11 @@ export default function OrgPublicPage() {
         <Section id="about" eyebrow="Identity" title={`About ${cleanName}`}>
           <div className="grid md:grid-cols-3 gap-4">
             <div className="md:col-span-2 rounded-2xl border border-border bg-card p-6">
-              <p className="text-sm text-muted-foreground whitespace-pre-line break-words leading-relaxed">
-                {org.description || "No description has been added yet."}
-              </p>
+              {org.description ? (
+                <ClampedText text={org.description} className="text-sm text-muted-foreground whitespace-pre-line break-words leading-relaxed" />
+              ) : (
+                <p className="text-sm text-muted-foreground">No description has been added yet.</p>
+              )}
             </div>
             <div className="rounded-2xl border border-border bg-card p-6 space-y-4 text-sm">
               <div>
@@ -340,7 +341,7 @@ export default function OrgPublicPage() {
                   </div>
 
                   {p.description && (
-                    <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{p.description}</p>
+                    <ClampedText text={p.description} className="text-sm text-muted-foreground mt-2" />
                   )}
                   <div className="mt-4">
                     <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
@@ -389,7 +390,7 @@ export default function OrgPublicPage() {
                       <h3 className="font-semibold text-foreground">{pr.name}</h3>
                       <Badge variant="outline" className={maturity.className}>{maturity.label}</Badge>
                     </div>
-                    {pr.description && <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{pr.description}</p>}
+                    {pr.description && <ClampedText text={pr.description} className="text-sm text-muted-foreground mt-2" />}
                     <p className="text-xs text-muted-foreground mt-4">{ship} shipped</p>
                   </div>
                 );

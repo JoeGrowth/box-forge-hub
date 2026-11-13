@@ -94,6 +94,7 @@ import {
   Heart,
 } from "lucide-react";
 import jsPDF from "jspdf";
+import { ClampedText } from "@/components/ui/clamped-text";
 import { syncDistEntities, createDistEntity, deleteDistEntityRemote, type DistEntity } from "@/pages/Distribution";
 
 type LifecycleStage = "venture" | "business" | "startup" | "mature";
@@ -397,7 +398,7 @@ export default function OrganizationPage() {
                 onSaved={(v) => setOrg((current) => current ? { ...current, description: v } : current)}
               />
             ) : (
-              org.description && <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">{org.description}</p>
+              org.description && <ClampedText text={org.description} className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap" />
             )}
             {org.website && (
               <a href={org.website} target="_blank" rel="noreferrer"
@@ -2475,7 +2476,7 @@ function ProductBlock({
                                 <span className="text-xs text-muted-foreground">{new Date(it.shipped_at).toLocaleDateString()}</span>
                               )}
                             </div>
-                            {it.description && <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{it.description}</p>}
+                            {it.description && <ClampedText text={it.description} className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap" />}
                             {it.url && (
                               <a href={it.url} target="_blank" rel="noreferrer" className="text-xs text-primary inline-flex items-center gap-1 mt-1">
                                 <ExternalLink className="w-3 h-3" /> {it.url}
@@ -2737,7 +2738,7 @@ function EditableOrgDescription({
     return (
       <div className="mt-2 group">
         {value ? (
-          <p className="text-sm text-muted-foreground whitespace-pre-wrap">{value}</p>
+          <ClampedText text={value} className="text-sm text-muted-foreground whitespace-pre-wrap" />
         ) : (
           <p className="text-sm text-muted-foreground italic">No description yet.</p>
         )}
