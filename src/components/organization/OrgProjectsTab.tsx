@@ -682,8 +682,8 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
             <div className="space-y-2">
               {distChoice?.pages.length ? distChoice.pages.map((pg) => (
                 <button key={pg.id} type="button" onClick={() => linkExistingPage(pg.id)} className="w-full text-left rounded-lg border border-border p-3 hover:bg-muted/50 transition min-h-[44px]">
-                  <p className="font-medium text-foreground break-words">{pg.label || pg.title}</p>
-                  {pg.label && <p className="text-xs text-muted-foreground break-words">{pg.title}</p>}
+                  <p className="font-medium text-foreground break-words">{pg.title}</p>
+                  {pg.label && <p className="text-xs text-muted-foreground break-words">Model: {pg.label}</p>}
                 </button>
               )) : <p className="text-sm text-muted-foreground">No distribution pages yet.</p>}
             </div>
