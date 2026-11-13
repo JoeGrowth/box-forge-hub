@@ -86,6 +86,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
   const [editing, setEditing] = useState<OrgProject | null>(null);
   const [previewing, setPreviewing] = useState<OrgProject | null>(null);
   const [draft, setDraft] = useState({ ...emptyDraft });
+  const [step, setStep] = useState(1);
   const [leadResults, setLeadResults] = useState<TalentCandidate[]>([]);
   const [leadSearching, setLeadSearching] = useState(false);
   const [leadFocused, setLeadFocused] = useState(false);
@@ -125,7 +126,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
 
   useEffect(() => { load(); }, [load]);
 
-  const openNew = () => { setEditing(null); setDraft({ ...emptyDraft }); setOpen(true); };
+  const openNew = () => { setEditing(null); setDraft({ ...emptyDraft }); setStep(1); setOpen(true); };
   const openEdit = (p: OrgProject) => {
     setEditing(p);
     setDraft({
@@ -142,6 +143,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
       budget: p.budget != null ? String(p.budget) : "",
       point_of_contact: p.point_of_contact ?? "", sold_at: p.sold_at ?? "", delivered_at: p.delivered_at ?? "", paid_at: p.paid_at ?? "",
     });
+    setStep(1);
     if (p.product_id) {
       supabase.from("organization_products").select("name").eq("id", p.product_id).maybeSingle()
         .then(({ data }) => data && setDraft((d) => ({ ...d, product_name: (data as any).name })));
@@ -445,7 +447,20 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
             </DialogTrigger>
             <DialogContent className="max-w-lg max-h-[90dvh] overflow-y-auto">
               <DialogHeader><DialogTitle>{editing ? "Edit project" : "New project"}</DialogTitle></DialogHeader>
+              <div className="flex gap-1.5">
+                {[1, 2, 3].map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setStep(n)}
+                    className={`flex-1 rounded-lg border px-2 py-1.5 text-xs font-medium transition-colors ${step === n ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-muted"}`}
+                  >
+                    {n}. {n === 1 ? "Project" : n === 2 ? (draft.project_kind === "external" ? "Delivery" : "Planning") : "Set up"}
+                  </button>
+                ))}
+              </div>
               <div className="space-y-4">
+                {step === 1 && (
                 <section className="space-y-3 rounded-xl border border-border p-3">
                 <SectionTitle n={1} title="Project" />
                 <div>
@@ -467,6 +482,8 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                   <p className="text-xs text-muted-foreground mt-1">{kindMeta(draft.project_kind).hint}</p>
                 </div>
                 </section>
+                )}
+                {step === 2 && (
                 <section className="space-y-3 rounded-xl border border-border p-3">
                 <SectionTitle n={2} title={draft.project_kind === "external" ? "Delivery details" : "Planning"} />
                 {draft.project_kind === "external" && (
@@ -485,22 +502,23 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                   <Label>Budget (TND)</Label>
                   <Input type="number" min={0} value={draft.budget} onChange={(e) => setDraft({ ...draft, budget: e.target.value })} placeholder="e.g. 2000" />
                 </div>
-                {draft.project_kind === "external" && (
-                  <div>
-                    <Label>Point of contact</Label>
-                    <Input value={draft.point_of_contact} onChange={(e) => setDraft({ ...draft, point_of_contact: e.target.value })} placeholder="Client-side contact (name, role, phone)" />
-                  </div>
-                )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {draft.project_kind !== "external" && <div>
-                    <Label>Status</Label>
-                    <Select value={draft.status} onValueChange={(v) => setDraft({ ...draft, status: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {STATUSES.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>}
+                  {draft.project_kind === "external" ? (
+                    <div>
+                      <Label>Point of contact</Label>
+                      <Input value={draft.point_of_contact} onChange={(e) => setDraft({ ...draft, point_of_contact: e.target.value })} placeholder="Client-side contact (name, role, phone)" />
+                    </div>
+                  ) : (
+                    <div>
+                      <Label>Status</Label>
+                      <Select value={draft.status} onValueChange={(v) => setDraft({ ...draft, status: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {STATUSES.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                   <div>
                     <Label>Lead</Label>
                     <div className="relative">
@@ -543,6 +561,8 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                   </div>
                 </div>
                 </section>
+                )}
+                {step === 3 && (
                 <section className="space-y-3 rounded-xl border border-border p-3">
                 <SectionTitle n={3} title="Project Set up" />
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -587,13 +607,29 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                    </div>
                  </div>
                 </section>
-               </div>
-               <DialogFooter>
-                <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                <Button variant="secondary" onClick={() => save(true)} disabled={distBusy || draft.project_kind !== "external"} title={draft.project_kind !== "external" ? "Budget distribution uses the delivered product's model (External projects)" : "Save and open the mission distribution page"}>
-                  {distBusy ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Calculator className="w-4 h-4 mr-1" />}Budget Distribution
-                </Button>
-                <Button onClick={() => save()}>{editing ? "Save changes" : "Add project"}</Button>
+                )}
+                </div>
+               <DialogFooter className="gap-2 sm:justify-between">
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+                  {step > 1 && <Button variant="outline" onClick={() => setStep(step - 1)}>Back</Button>}
+                </div>
+                <div className="flex gap-2">
+                  {step < 3 ? (
+                    <Button onClick={() => {
+                      if (step === 1 && !draft.name.trim()) return toast({ title: "Project name required", variant: "destructive" });
+                      if (step === 2 && draft.project_kind === "external" && !draft.product_name.trim()) return toast({ title: "Product required", description: "External projects must be linked to a product.", variant: "destructive" });
+                      setStep(step + 1);
+                    }}>Next</Button>
+                  ) : (
+                    <>
+                      <Button variant="secondary" onClick={() => save(true)} disabled={distBusy || draft.project_kind !== "external"} title={draft.project_kind !== "external" ? "Budget distribution uses the delivered product's model (External projects)" : "Save and open the mission distribution page"}>
+                        {distBusy ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Calculator className="w-4 h-4 mr-1" />}Budget Distribution
+                      </Button>
+                      <Button onClick={() => save()}>{editing ? "Save changes" : "Add project"}</Button>
+                    </>
+                  )}
+                </div>
               </DialogFooter>
             </DialogContent>
           </Dialog>
