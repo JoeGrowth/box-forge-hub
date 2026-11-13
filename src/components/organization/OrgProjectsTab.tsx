@@ -502,22 +502,23 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                   <Label>Budget (TND)</Label>
                   <Input type="number" min={0} value={draft.budget} onChange={(e) => setDraft({ ...draft, budget: e.target.value })} placeholder="e.g. 2000" />
                 </div>
-                {draft.project_kind === "external" && (
-                  <div>
-                    <Label>Point of contact</Label>
-                    <Input value={draft.point_of_contact} onChange={(e) => setDraft({ ...draft, point_of_contact: e.target.value })} placeholder="Client-side contact (name, role, phone)" />
-                  </div>
-                )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {draft.project_kind !== "external" && <div>
-                    <Label>Status</Label>
-                    <Select value={draft.status} onValueChange={(v) => setDraft({ ...draft, status: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {STATUSES.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>}
+                  {draft.project_kind === "external" ? (
+                    <div>
+                      <Label>Point of contact</Label>
+                      <Input value={draft.point_of_contact} onChange={(e) => setDraft({ ...draft, point_of_contact: e.target.value })} placeholder="Client-side contact (name, role, phone)" />
+                    </div>
+                  ) : (
+                    <div>
+                      <Label>Status</Label>
+                      <Select value={draft.status} onValueChange={(v) => setDraft({ ...draft, status: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {STATUSES.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                   <div>
                     <Label>Lead</Label>
                     <div className="relative">
