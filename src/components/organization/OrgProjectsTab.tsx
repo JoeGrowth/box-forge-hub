@@ -447,7 +447,20 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
             </DialogTrigger>
             <DialogContent className="max-w-lg max-h-[90dvh] overflow-y-auto">
               <DialogHeader><DialogTitle>{editing ? "Edit project" : "New project"}</DialogTitle></DialogHeader>
+              <div className="flex gap-1.5">
+                {[1, 2, 3].map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setStep(n)}
+                    className={`flex-1 rounded-lg border px-2 py-1.5 text-xs font-medium transition-colors ${step === n ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-muted"}`}
+                  >
+                    {n}. {n === 1 ? "Project" : n === 2 ? (draft.project_kind === "external" ? "Delivery" : "Planning") : "Set up"}
+                  </button>
+                ))}
+              </div>
               <div className="space-y-4">
+                {step === 1 && (
                 <section className="space-y-3 rounded-xl border border-border p-3">
                 <SectionTitle n={1} title="Project" />
                 <div>
