@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { LIFECYCLE_STEPS, progressForCompleted, completedFromProgress, currentStep } from "@/lib/projectLifecycle";
+import { LIFECYCLE_STEPS, progressForCompleted, completedFromProgress, currentStep, projectGroup, type ProjectGroup } from "@/lib/projectLifecycle";
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
@@ -52,6 +52,13 @@ const KINDS = [
   { value: "external", label: "External", hint: "Delivered to a client", icon: Send },
 ];
 const kindMeta = (k: string) => KINDS.find((x) => x.value === k) ?? KINDS[0];
+
+// Sections shown in the Projects tab, always in this order.
+const PROJECT_GROUP_SECTIONS: { key: ProjectGroup; label: string; hint: string; empty: string; icon: typeof Building2 }[] = [
+  { key: "core", label: "Core project", hint: "The entity's own build track", empty: "No core project yet.", icon: Rocket },
+  { key: "internal", label: "Internal projects", hint: "Build the entity or get it ready to be sold as a product", empty: "No internal projects yet.", icon: Building2 },
+  { key: "external", label: "External projects", hint: "Delivered to a client", empty: "No external projects yet.", icon: Send },
+];
 
 const STATUSES = [
   { value: "planned", label: "Planned", className: "bg-muted text-muted-foreground" },
@@ -355,10 +362,10 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
   const counts = STATUSES.map((s) => ({ ...s, count: projects.filter((p) => p.status === s.value).length }));
   const hasOrgProject = !!orgName && projects.some((p) => p.name.trim().toLowerCase() === orgName.trim().toLowerCase());
 
-  const renderCard = (p: OrgProject) => {
+  const renderCard = (p: OrgProject, highlight = false) => {
     const meta = statusMeta(p.status);
     return (
-      <div key={p.id} className="rounded-xl border border-border bg-card p-4">
+      <div key={p.id} className={`rounded-xl border p-4 ${highlight ? "border-primary/40 bg-primary/5" : "border-border bg-card"}`}>
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
@@ -439,7 +446,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 className="text-lg font-semibold text-foreground">Project</h3>
-          <p className="text-sm text-muted-foreground">Internal projects build the entity or get it ready to be sold as a product. External projects are client deliveries.</p>
+          <p className="text-sm text-muted-foreground">The core project is the entity's own build track. Internal projects build the entity or get it ready to be sold as a product. External projects are client deliveries.</p>
         </div>
         {canEdit && (
           <Dialog open={open} onOpenChange={setOpen}>
@@ -716,21 +723,21 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
         </div>
       ) : (
         <div className="space-y-6">
-          {KINDS.map((kind) => {
-            const items = openProjects.filter((p) => (p.project_kind ?? "internal") === kind.value);
-            const KindIcon = kind.icon;
+          {PROJECT_GROUP_SECTIONS.map((group) => {
+            const items = openProjects.filter((p) => projectGroup(p, orgName) === group.key);
+            const GroupIcon = group.icon;
             return (
-              <div key={kind.value} className="space-y-3">
+              <div key={group.key} className="space-y-3">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <KindIcon className="w-4 h-4 text-muted-foreground" />
-                  <h4 className="text-sm font-semibold text-foreground">{kind.label} projects</h4>
-                  <span className="text-xs text-muted-foreground">· {kind.hint}</span>
+                  <GroupIcon className="w-4 h-4 text-muted-foreground" />
+                  <h4 className="text-sm font-semibold text-foreground">{group.label}</h4>
+                  <span className="text-xs text-muted-foreground">· {group.hint}</span>
                   <Badge variant="outline" className="ml-auto">{items.length}</Badge>
                 </div>
                 {items.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No {kind.label.toLowerCase()} projects yet.</p>
+                  <p className="text-sm text-muted-foreground">{group.empty}</p>
                 ) : (
-                  items.map(renderCard)
+                  items.map((p) => renderCard(p, group.key === "core"))
                 )}
               </div>
             );
@@ -757,13 +764,13 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
           {showArchive && (
             <div className="px-4 pb-4 space-y-2">
               {archivedProjects.map((p) => {
-                const km = kindMeta(p.project_kind);
+                const gLabel = projectGroup(p, orgName) === "core" ? "Core" : kindMeta(p.project_kind).label;
                 return (
                 <div key={p.id} className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-3 py-2">
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">
                       {p.name}
-                      <Badge variant="outline" className="ml-2 text-[10px] px-1.5 py-0">{km.label}</Badge>
+                      <Badge variant="outline" className="ml-2 text-[10px] px-1.5 py-0">{gLabel}</Badge>
                     </p>
                     <p className="text-xs text-muted-foreground">
                       Closed at {p.progress}%{p.target_date ? ` · ${p.target_date}` : ""}{p.lead ? ` · ${p.lead}` : ""}
