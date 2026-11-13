@@ -593,8 +593,21 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                     </div>
                     <p className="mt-2 text-xs text-muted-foreground">Progress: <span className="font-semibold text-foreground">{progressForCompleted(completedFromProgress(draft.progress))}%</span>{currentStep(draft.progress) ? ` · now in step ${currentStep(draft.progress)}` : " · all steps done"}</p>
                   </div>
+                  {completedFromProgress(draft.progress) >= 5 && (
+                    <div className="col-span-full">
+                      <Label>Delivered on</Label>
+                      <Input type="date" value={draft.delivered_at} onChange={(e) => setDraft({ ...draft, delivered_at: e.target.value })} />
+                    </div>
+                  )}
+                  {completedFromProgress(draft.progress) >= 6 && (
+                    <div className="col-span-full">
+                      <Label>Paid on</Label>
+                      <Input type="date" value={draft.paid_at} onChange={(e) => setDraft({ ...draft, paid_at: e.target.value })} />
+                    </div>
+                  )}
+                  {completedFromProgress(draft.progress) < 5 && (
                    <div className="col-span-full">
-                     <Label>Blocker / where it stands</Label>
+                      <Label>Blocker / where it stands</Label>
                      <Textarea
                        rows={4}
                        value={draft.status_note}
@@ -602,6 +615,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                        placeholder="e.g. Waiting for Mehdi to give access"
                      />
                    </div>
+                  )}
                  </div>
                 </section>
                 )}
