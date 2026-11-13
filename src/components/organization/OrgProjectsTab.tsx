@@ -482,6 +482,8 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                   <p className="text-xs text-muted-foreground mt-1">{kindMeta(draft.project_kind).hint}</p>
                 </div>
                 </section>
+                )}
+                {step === 2 && (
                 <section className="space-y-3 rounded-xl border border-border p-3">
                 <SectionTitle n={2} title={draft.project_kind === "external" ? "Delivery details" : "Planning"} />
                 {draft.project_kind === "external" && (
@@ -558,6 +560,8 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                   </div>
                 </div>
                 </section>
+                )}
+                {step === 3 && (
                 <section className="space-y-3 rounded-xl border border-border p-3">
                 <SectionTitle n={3} title="Project Set up" />
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
