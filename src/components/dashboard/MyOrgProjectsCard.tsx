@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LIFECYCLE_STEPS, currentStep } from "@/lib/projectLifecycle";
 
-import { Rocket, ArrowRight, CalendarDays, User, AlertTriangle, ChevronDown } from "lucide-react";
+import { Rocket, ArrowRight, CalendarDays, User, AlertTriangle, ChevronDown, Building2 } from "lucide-react";
 
 type Row = {
   id: string;
@@ -22,6 +22,7 @@ type Row = {
   progress: number;
   status_note: string | null;
   kind: string | null;
+  serviceName: string | null;
   orgName: string;
   orgSlug: string;
 };
@@ -61,15 +62,29 @@ export function MyOrgProjectsCard() {
       }
 
       const byId = new Map(orgs.map((o) => [o.id, o]));
-      const { data: projects } = await supabase
-        .from("organization_projects" as any)
-        .select("*")
-        .in("organization_id", orgs.map((o) => o.id))
-        .order("created_at", { ascending: false });
+      const orgIds = orgs.map((o) => o.id);
+
+      // Service / product names come from the entity's product list: an external
+      // project is a delivery of one of them, so its name is the project's type of service.
+      const [projectsRes, productsRes] = await Promise.all([
+        supabase
+          .from("organization_projects" as any)
+          .select("*")
+          .in("organization_id", orgIds)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("organization_products" as any)
+          .select("id, name")
+          .in("organization_id", orgIds),
+      ]);
+
+      const productNames = new Map(
+        ((productsRes.data as any[]) ?? []).map((pr) => [pr.id as string, String(pr.name ?? "")]),
+      );
 
       if (cancelled) return;
       setRows(
-        ((projects as any[]) ?? []).map((p) => ({
+        ((projectsRes.data as any[]) ?? []).map((p) => ({
           id: p.id,
           name: p.name,
           description: p.description,
@@ -79,6 +94,7 @@ export function MyOrgProjectsCard() {
           progress: p.progress ?? 0,
           status_note: p.status_note,
           kind: p.project_kind ?? null,
+          serviceName: p.product_id ? productNames.get(p.product_id) ?? null : null,
           orgName: byId.get(p.organization_id)?.name ?? "",
           orgSlug: byId.get(p.organization_id)?.slug ?? "",
         })),
@@ -206,7 +222,13 @@ export function MyOrgProjectsCard() {
                         <p className="font-medium text-foreground break-words group-hover:text-primary transition-colors">
                           {p.name}
                         </p>
-                        <p className="text-xs text-muted-foreground truncate mt-0.5">{p.orgName}</p>
+                        <div className="flex items-center gap-3 flex-wrap mt-0.5 text-xs text-muted-foreground">
+                          <span className="inline-flex items-center gap-1 min-w-0">
+                            <Building2 className="w-3 h-3 shrink-0" />
+                            <span className="truncate">{p.orgName}</span>
+                          </span>
+                          {p.serviceName && <span className="truncate">{p.serviceName}</span>}
+                        </div>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         <Badge
