@@ -260,7 +260,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
       if (p.distribution_record_id) {
         const { data: rec } = await recTable().select("id").eq("id", p.distribution_record_id).maybeSingle();
         if (rec?.id) {
-          await recTable().update({ budget: Number(p.budget) || 0, title: p.name }).eq("id", rec.id);
+          await recTable().update({ budget: Number(p.budget) || 0 }).eq("id", rec.id);
           navigate(`/mission/${rec.id}`);
           return;
         }
