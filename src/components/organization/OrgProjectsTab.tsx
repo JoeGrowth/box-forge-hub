@@ -20,7 +20,7 @@ import { createDistEntity } from "@/pages/Distribution";
 import { withBaseCharges, normalizeTaskLocks } from "@/components/organization/DistributionModels";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Pencil, Trash2, Rocket, CalendarDays, User, Loader2, AlertTriangle, Archive, ChevronDown, ChevronUp, RotateCcw, Building2, Send, Calculator } from "lucide-react";
+import { Plus, Pencil, Trash2, Rocket, CalendarDays, User, Loader2, AlertTriangle, Archive, ChevronDown, ChevronUp, RotateCcw, Building2, Send, Calculator, Eye } from "lucide-react";
 
 type TalentCandidate = { user_id: string; full_name: string | null; avatar_url: string | null };
 
@@ -39,6 +39,10 @@ type OrgProject = {
   product_id?: string | null;
   product_iteration_id?: string | null;
   budget?: number | null;
+  point_of_contact?: string | null;
+  sold_at?: string | null;
+  delivered_at?: string | null;
+  paid_at?: string | null;
   distribution_record_id?: string | null;
 };
 
@@ -62,7 +66,15 @@ const emptyDraft = {
   project_kind: "internal",
   product_name: "",
   budget: "",
+  point_of_contact: "", sold_at: "", delivered_at: "", paid_at: "",
 };
+
+const SectionTitle = ({ n, title }: { n: number; title: string }) => (
+  <div className="flex items-center gap-2">
+    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold">{n}</span>
+    <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+  </div>
+);
 
 export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: string; orgName?: string; canEdit: boolean; userId?: string }) {
   const { toast } = useToast();
@@ -72,6 +84,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<OrgProject | null>(null);
+  const [previewing, setPreviewing] = useState<OrgProject | null>(null);
   const [draft, setDraft] = useState({ ...emptyDraft });
   const [leadResults, setLeadResults] = useState<TalentCandidate[]>([]);
   const [leadSearching, setLeadSearching] = useState(false);
@@ -127,6 +140,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
       project_kind: p.project_kind ?? "internal",
       product_name: "",
       budget: p.budget != null ? String(p.budget) : "",
+      point_of_contact: p.point_of_contact ?? "", sold_at: p.sold_at ?? "", delivered_at: p.delivered_at ?? "", paid_at: p.paid_at ?? "",
     });
     if (p.product_id) {
       supabase.from("organization_products").select("name").eq("id", p.product_id).maybeSingle()
@@ -168,6 +182,8 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
       project_kind: isExternal ? "external" : "internal",
       product_id: productId,
       budget: draft.budget.trim() === "" ? null : Number(draft.budget) || 0,
+      point_of_contact: isExternal ? (draft.point_of_contact.trim() || null) : null,
+      sold_at: draft.sold_at || null, delivered_at: draft.delivered_at || null, paid_at: draft.paid_at || null,
     };
     const { data: saved, error } = editing
       ? await supabase.from("organization_projects" as any).update(payload).eq("id", editing.id).select("*").single()
@@ -357,16 +373,21 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
               )}
              </div>
            </div>
-          {canEdit && (
-            <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1">
+            {canEdit && (
               <Button variant="ghost" size="icon" onClick={() => openEdit(p)} title="Edit project">
                 <Pencil className="w-4 h-4" />
               </Button>
+            )}
+            {canEdit && (
               <Button variant="ghost" size="icon" onClick={() => remove(p)} title="Delete project">
                 <Trash2 className="w-4 h-4 text-destructive" />
               </Button>
-            </div>
-          )}
+            )}
+            <Button variant="ghost" size="icon" onClick={() => setPreviewing(p)} title="Preview project">
+              <Eye className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
         <div className="mt-3">
           {(() => {
@@ -424,7 +445,9 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
             </DialogTrigger>
             <DialogContent className="max-w-lg max-h-[90dvh] overflow-y-auto">
               <DialogHeader><DialogTitle>{editing ? "Edit project" : "New project"}</DialogTitle></DialogHeader>
-              <div className="space-y-3">
+              <div className="space-y-4">
+                <section className="space-y-3 rounded-xl border border-border p-3">
+                <SectionTitle n={1} title="Project" />
                 <div>
                   <Label>Project name</Label>
                   <Input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} placeholder="e.g. CHU pilot deployment" />
@@ -443,6 +466,9 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                   </Select>
                   <p className="text-xs text-muted-foreground mt-1">{kindMeta(draft.project_kind).hint}</p>
                 </div>
+                </section>
+                <section className="space-y-3 rounded-xl border border-border p-3">
+                <SectionTitle n={2} title={draft.project_kind === "external" ? "Delivery details" : "Planning"} />
                 {draft.project_kind === "external" && (
                   <div>
                     <Label>Product delivered *</Label>
@@ -459,8 +485,14 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                   <Label>Budget (TND)</Label>
                   <Input type="number" min={0} value={draft.budget} onChange={(e) => setDraft({ ...draft, budget: e.target.value })} placeholder="e.g. 2000" />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                {draft.project_kind === "external" && (
                   <div>
+                    <Label>Point of contact</Label>
+                    <Input value={draft.point_of_contact} onChange={(e) => setDraft({ ...draft, point_of_contact: e.target.value })} placeholder="Client-side contact (name, role, phone)" />
+                  </div>
+                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {draft.project_kind !== "external" && <div>
                     <Label>Status</Label>
                     <Select value={draft.status} onValueChange={(v) => setDraft({ ...draft, status: v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
@@ -468,7 +500,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                         {STATUSES.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
                       </SelectContent>
                     </Select>
-                  </div>
+                  </div>}
                   <div>
                     <Label>Lead</Label>
                     <div className="relative">
@@ -509,6 +541,14 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                     <Label>Target date</Label>
                     <Input type="date" value={draft.target_date} onChange={(e) => setDraft({ ...draft, target_date: e.target.value })} />
                   </div>
+                </div>
+                </section>
+                <section className="space-y-3 rounded-xl border border-border p-3">
+                <SectionTitle n={3} title="Project Set up" />
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div><Label>Sold on</Label><Input type="date" value={draft.sold_at} onChange={(e) => setDraft({ ...draft, sold_at: e.target.value })} /></div>
+                  <div><Label>Delivered on</Label><Input type="date" value={draft.delivered_at} onChange={(e) => setDraft({ ...draft, delivered_at: e.target.value })} /></div>
+                  <div><Label>Paid on</Label><Input type="date" value={draft.paid_at} onChange={(e) => setDraft({ ...draft, paid_at: e.target.value })} /></div>
                   <div className="col-span-full">
                     <Label>Project step</Label>
                     <p className="text-xs text-muted-foreground mb-2">Tick the last step that is fully done. Progress follows the step weights.</p>
@@ -546,6 +586,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                      />
                    </div>
                  </div>
+                </section>
                </div>
                <DialogFooter>
                 <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
@@ -557,6 +598,38 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
             </DialogContent>
           </Dialog>
         )}
+        <Dialog open={!!previewing} onOpenChange={(o) => !o && setPreviewing(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader><DialogTitle className="break-words pr-6">{previewing?.name}</DialogTitle></DialogHeader>
+            {previewing && (() => {
+              const done = completedFromProgress(previewing.progress ?? 0);
+              const rows = [
+                { label: "Sold", ok: done >= 2 || !!previewing.sold_at, when: previewing.sold_at },
+                { label: "Delivered", ok: done >= 5 || !!previewing.delivered_at, when: previewing.delivered_at },
+                { label: "Paid", ok: done >= 6 || !!previewing.paid_at, when: previewing.paid_at },
+              ];
+              return (
+                <div className="space-y-3">
+                  <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                    <Badge variant="outline">{kindMeta(previewing.project_kind).label}</Badge>
+                    {previewing.budget != null && <span>Budget {Number(previewing.budget).toLocaleString()} TND</span>}
+                    {previewing.lead && <span>Lead {previewing.lead}</span>}
+                    {previewing.point_of_contact && <span>Contact {previewing.point_of_contact}</span>}
+                  </div>
+                  <div className="divide-y divide-border rounded-xl border border-border">
+                    {rows.map((r) => (
+                      <div key={r.label} className="grid grid-cols-3 items-center gap-2 px-3 py-2.5 text-sm">
+                        <span className="font-medium text-foreground">{r.label}</span>
+                        <Badge variant="outline" className={r.ok ? "border-primary/40 text-primary w-fit" : "text-muted-foreground w-fit"}>{r.ok ? "Yes" : "Not yet"}</Badge>
+                        <span className="text-right text-muted-foreground">{r.when || "—"}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
