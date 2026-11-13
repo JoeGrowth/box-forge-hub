@@ -364,7 +364,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
               <h4 className="font-semibold text-foreground truncate">{p.name}</h4>
               <Badge variant="outline" className={meta.className}>{meta.label}</Badge>
             </div>
-            {p.description && <p className="text-sm text-muted-foreground mt-1">{p.description}</p>}
+            {p.description && <ClampedText text={p.description} className="text-sm text-muted-foreground mt-1" />}
             <div className="flex items-center gap-4 flex-wrap mt-2 text-xs text-muted-foreground">
               {p.lead && <span className="flex items-center gap-1"><User className="w-3 h-3" /> {p.lead}</span>}
               {(p.start_date || p.target_date) && (

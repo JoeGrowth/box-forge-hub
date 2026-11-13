@@ -613,7 +613,7 @@ export function MyOrganizationsSection() {
                         </div>
 
                         {o.description && (
-                          <p className="text-sm text-muted-foreground mt-3 line-clamp-2 break-words">{o.description}</p>
+                          <ClampedText text={o.description} className="text-sm text-muted-foreground mt-3 break-words" />
                         )}
 
                         {o.type === "company" && !incorporatedIds.has(o.id) && (
