@@ -93,6 +93,9 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<OrgProject | null>(null);
   const [previewing, setPreviewing] = useState<OrgProject | null>(null);
+  const [previewDistribution, setPreviewDistribution] = useState<{ id: string; title: string } | null>(null);
+  const [previewDistributionLoading, setPreviewDistributionLoading] = useState(false);
+  const [previewDistributionError, setPreviewDistributionError] = useState(false);
   const [draft, setDraft] = useState({ ...emptyDraft });
   const [step, setStep] = useState(1);
   const [leadResults, setLeadResults] = useState<TalentCandidate[]>([]);
@@ -133,6 +136,25 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
   }, [orgId]);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    let active = true;
+    setPreviewDistribution(null);
+    setPreviewDistributionError(false);
+    const recordId = previewing?.distribution_record_id;
+    setPreviewDistributionLoading(!!recordId);
+    if (recordId) {
+      (supabase.from("distribution_records" as never) as never as any)
+        .select("id,title").eq("id", recordId).maybeSingle()
+        .then(({ data, error }: { data: { id: string; title: string } | null; error: unknown }) => {
+          if (!active) return;
+          setPreviewDistribution(data);
+          setPreviewDistributionError(!!error);
+          setPreviewDistributionLoading(false);
+        });
+    }
+    return () => { active = false; };
+  }, [previewing]);
 
   const openNew = () => { setEditing(null); setDraft({ ...emptyDraft }); setStep(1); setOpen(true); };
   const openEdit = (p: OrgProject) => {
@@ -241,20 +263,35 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
     navigate(`/mission/${recordId}`);
   };
 
+  const chooseDistribution = async (p: OrgProject, productName?: string) => {
+    setDistBusy(true);
+    try {
+      const { data: folders, error: folderError } = await (supabase.from("distribution_entities" as never) as never as any).select("id").eq("org_id", orgId);
+      if (folderError) throw folderError;
+      const folderIds = ((folders as { id: string }[]) ?? []).map((f) => f.id);
+      let pages: { id: string; title: string; label: string }[] = [];
+      if (folderIds.length) {
+        const { data: recs, error } = await (supabase.from("distribution_records" as never) as never as any)
+          .select("id,title,budget_label,kind").or(folderIds.map((id) => `kind.like.${id}:model-*`).join(","));
+        if (error) throw error;
+        pages = ((recs as { id: string; title: string; budget_label: string }[]) ?? []).map((r) => ({ id: r.id, title: r.title || "Untitled", label: r.budget_label || "" }));
+      }
+      setPreviewing(null);
+      setDistChoice({ project: p, productName, pages });
+    } catch {
+      toast({ title: "Could not load distribution pages", description: "Try again. No project link was changed.", variant: "destructive" });
+    } finally {
+      setDistBusy(false);
+    }
+  };
+
   const openDistribution = async (p: OrgProject, productNameHint?: string, forceCreate = false) => {
     if (!userId) return;
     setDistBusy(true);
     try {
       const recTable = () => supabase.from("distribution_records" as never) as never as any;
       if (!p.distribution_record_id && !forceCreate) {
-        const { data: folders } = await (supabase.from("distribution_entities" as never) as never as any).select("id").eq("org_id", orgId);
-        const folderIds = ((folders as any[]) ?? []).map((f) => f.id);
-        let pages: { id: string; title: string; label: string }[] = [];
-        if (folderIds.length) {
-          const { data: recs } = await recTable().select("id,title,budget_label,kind").or(folderIds.map((id) => `kind.like.${id}:model-*`).join(","));
-          pages = ((recs as any[]) ?? []).map((r) => ({ id: r.id, title: r.title || "Untitled", label: r.budget_label || "" }));
-        }
-        setDistChoice({ project: p, productName: productNameHint, pages });
+        await chooseDistribution(p, productNameHint);
         return;
       }
       if (p.distribution_record_id) {
@@ -681,10 +718,10 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
             <p className="text-sm text-muted-foreground">Link "{distChoice?.project.name}" to an existing distribution page or create a new one.</p>
             <div className="space-y-2">
               {distChoice?.pages.length ? distChoice.pages.map((pg) => (
-                <button key={pg.id} type="button" onClick={() => linkExistingPage(pg.id)} className="w-full text-left rounded-lg border border-border p-3 hover:bg-muted/50 transition min-h-[44px]">
-                  <p className="font-medium text-foreground break-words">{pg.title}</p>
-                  {pg.label && <p className="text-xs text-muted-foreground break-words">Model: {pg.label}</p>}
-                </button>
+                <Button key={pg.id} type="button" variant="outline" onClick={() => linkExistingPage(pg.id)} className="w-full h-auto flex-col items-start whitespace-normal text-left p-3 min-h-[44px]">
+                  <span className="font-medium text-foreground break-words">{pg.title}</span>
+                  {pg.label && <span className="text-xs text-muted-foreground break-words">Model: {pg.label}</span>}
+                </Button>
               )) : <p className="text-sm text-muted-foreground">No distribution pages yet.</p>}
             </div>
             <DialogFooter>
@@ -695,7 +732,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
           </DialogContent>
         </Dialog>
         <Dialog open={!!previewing} onOpenChange={(o) => !o && setPreviewing(null)}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md max-h-[90dvh] overflow-y-auto">
             <DialogHeader><DialogTitle className="break-words pr-6">{previewing?.name}</DialogTitle></DialogHeader>
             {previewing && (() => {
               const done = completedFromProgress(previewing.progress ?? 0);
@@ -720,6 +757,27 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                         <span className="text-right text-muted-foreground">{r.when || "—"}</span>
                       </div>
                     ))}
+                  </div>
+                  <div className="space-y-2 border-t border-border pt-3">
+                    <p className="text-sm font-medium text-foreground">Adequate Distribution page</p>
+                    {previewDistributionLoading ? (
+                      <p className="text-sm text-muted-foreground">Loading distribution page…</p>
+                    ) : previewDistributionError ? (
+                      <p className="text-sm text-destructive">Could not load the linked page. Close and reopen this preview to retry.</p>
+                    ) : previewDistribution ? (
+                      <Button variant="outline" className="h-auto min-h-11 w-full justify-start whitespace-normal text-left" onClick={() => navigate(`/mission/${previewDistribution.id}`)}>
+                        <Eye className="mr-2 h-4 w-4 shrink-0" />
+                        <span className="break-words">{previewDistribution.title || "Open distribution page"}</span>
+                      </Button>
+                    ) : (
+                      <>
+                        <p className="text-sm text-muted-foreground">No distribution page linked.</p>
+                        {canEdit && <Button variant="outline" disabled={distBusy} className="h-auto min-h-11 w-full whitespace-normal" onClick={() => chooseDistribution(previewing)}>
+                          {distBusy ? <Loader2 className="mr-2 h-4 w-4 shrink-0 animate-spin" /> : <Calculator className="mr-2 h-4 w-4 shrink-0" />}
+                          Link existing distribution page
+                        </Button>}
+                      </>
+                    )}
                   </div>
                 </div>
               );
@@ -817,16 +875,19 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                       Closed at {p.progress}%{p.target_date ? ` · ${p.target_date}` : ""}{p.lead ? ` · ${p.lead}` : ""}
                     </p>
                   </div>
-                  {canEdit && (
                     <div className="flex items-center gap-1 shrink-0">
+                      <Button variant="ghost" size="icon" onClick={() => setPreviewing(p)} title="Preview project">
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      {canEdit && <>
                       <Button variant="ghost" size="icon" onClick={() => updateProgress(p, 90)} title="Reopen project">
                         <RotateCcw className="w-4 h-4" />
                       </Button>
                       <Button variant="ghost" size="icon" onClick={() => remove(p)} title="Delete project">
                         <Trash2 className="w-4 h-4 text-destructive" />
                       </Button>
+                      </>}
                     </div>
-                  )}
                 </div>
                 );
               })}

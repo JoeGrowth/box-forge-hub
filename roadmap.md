@@ -15,3 +15,4 @@
 - [x] Initiator certificate: idea-first input + ready-template fill-in mention; build OK
 - [x] Security certificate: pre-fill numbered templates (Risks 1/2/3, Mitigation 1/2/3); verified in preview
 - [x] Apply ready-template fill-in to all five certificates; build OK, Security verified in preview
+- [ ] Add archived project previews and distribution links/selection beneath Paid; verify phone and laptop.
