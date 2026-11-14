@@ -423,6 +423,10 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
 
   const renderCard = (p: OrgProject, highlight = false) => {
     const meta = statusMeta(p.status);
+    // For external projects the delivered service (linked product) is shown beside the person.
+    const serviceName = p.project_kind === "external" && p.product_id
+      ? products.find((x) => x.id === p.product_id)?.name ?? null
+      : null;
     return (
       <div key={p.id} className={`rounded-xl border p-4 ${highlight ? "border-primary/40 bg-primary/5" : "border-border bg-card"}`}>
         <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -433,7 +437,12 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
             </div>
             {p.description && <ClampedText text={p.description} className="text-sm text-muted-foreground mt-1" />}
             <div className="flex items-center gap-4 flex-wrap mt-2 text-xs text-muted-foreground">
-              {p.lead && <span className="flex items-center gap-1"><User className="w-3 h-3" /> {p.lead}</span>}
+              {p.lead && (
+                <span className="flex items-center gap-1">
+                  <User className="w-3 h-3" />
+                  <span className="truncate">{p.lead}{serviceName ? ` - ${serviceName}` : ""}</span>
+                </span>
+              )}
               {(p.start_date || p.target_date) && (
                 <span className="flex items-center gap-1">
                   <CalendarDays className="w-3 h-3" />
@@ -864,6 +873,9 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
             <div className="px-4 pb-4 space-y-2">
               {archivedProjects.map((p) => {
                 const gLabel = projectGroup(p, orgName) === "core" ? "Core" : kindMeta(p.project_kind).label;
+                const archivedService = p.project_kind === "external" && p.product_id
+                  ? products.find((x) => x.id === p.product_id)?.name ?? null
+                  : null;
                 return (
                 <div key={p.id} className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-3 py-2">
                   <div className="min-w-0">
@@ -872,7 +884,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                       <Badge variant="outline" className="ml-2 text-[10px] px-1.5 py-0">{gLabel}</Badge>
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Closed at {p.progress}%{p.target_date ? ` · ${p.target_date}` : ""}{p.lead ? ` · ${p.lead}` : ""}
+                      Closed at {p.progress}%{p.target_date ? ` · ${p.target_date}` : ""}{p.lead ? ` · ${p.lead}${archivedService ? ` - ${archivedService}` : ""}` : ""}
                     </p>
                   </div>
                     <div className="flex items-center gap-1 shrink-0">
