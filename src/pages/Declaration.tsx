@@ -677,17 +677,15 @@ export default function Declaration() {
         {/* Header with entity selector */}
         <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
           <div className="flex-1 min-w-[260px]">
-            <Button
+            <button
               type="button"
-              variant="outline"
-              size="sm"
               onClick={goBackToPrevious}
               title="Back to the previous page"
-              className="mb-3 h-8 gap-1.5 rounded-full px-3 text-xs"
+              className="mb-3 inline-flex w-fit items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-foreground shadow-sm hover:text-primary"
             >
-              <ArrowUp className="h-3.5 w-3.5" />
+              <ArrowUp className="h-4 w-4" />
               Back to previous page
-            </Button>
+            </button>
             <h1 className="text-3xl font-bold tracking-tight">Statement of the organization</h1>
             <p className="text-muted-foreground mt-1">Active entity · monitoring of shipments and cash flow</p>
           </div>
