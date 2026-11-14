@@ -18,7 +18,7 @@ import {
   UserPlus,
   ChevronDown,
   ChevronUp,
-  ArrowUp,
+  ArrowLeft,
   GripVertical,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -683,7 +683,7 @@ export default function Declaration() {
               title="Back to the previous page"
               className="mb-3 inline-flex w-fit items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-foreground shadow-sm hover:text-primary"
             >
-              <ArrowUp className="h-4 w-4" />
+              <ArrowLeft className="h-4 w-4" />
               Back to previous page
             </button>
             <h1 className="text-3xl font-bold tracking-tight">Statement of the organization</h1>
