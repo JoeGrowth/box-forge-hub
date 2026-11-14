@@ -18,6 +18,7 @@ import {
   UserPlus,
   ChevronDown,
   ChevronUp,
+  ArrowUp,
   GripVertical,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -139,6 +140,14 @@ export default function Declaration() {
 
   const activeEntity = entities.find((e) => e.id === activeEntityId);
   const isOwner = !!activeEntity && activeEntity.owner_id === user?.id;
+
+  // Up arrow: return to wherever the user came from (org page, earnings, missions...).
+  // Falls back to the organizations list when the statement was opened directly.
+  const goBackToPrevious = () => {
+    const idx = (window.history.state as { idx?: number } | null)?.idx;
+    if (typeof idx === "number" && idx > 0) navigate(-1);
+    else navigate("/organizations");
+  };
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth");
@@ -668,6 +677,17 @@ export default function Declaration() {
         {/* Header with entity selector */}
         <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
           <div className="flex-1 min-w-[260px]">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={goBackToPrevious}
+              title="Back to the previous page"
+              className="mb-3 h-8 gap-1.5 rounded-full px-3 text-xs"
+            >
+              <ArrowUp className="h-3.5 w-3.5" />
+              Back to previous page
+            </Button>
             <h1 className="text-3xl font-bold tracking-tight">Statement of the organization</h1>
             <p className="text-muted-foreground mt-1">Active entity · monitoring of shipments and cash flow</p>
           </div>
