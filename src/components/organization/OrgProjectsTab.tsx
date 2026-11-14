@@ -423,6 +423,10 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
 
   const renderCard = (p: OrgProject, highlight = false) => {
     const meta = statusMeta(p.status);
+    // For external projects the delivered service (linked product) is shown beside the person.
+    const serviceName = p.project_kind === "external" && p.product_id
+      ? products.find((x) => x.id === p.product_id)?.name ?? null
+      : null;
     return (
       <div key={p.id} className={`rounded-xl border p-4 ${highlight ? "border-primary/40 bg-primary/5" : "border-border bg-card"}`}>
         <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -433,7 +437,12 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
             </div>
             {p.description && <ClampedText text={p.description} className="text-sm text-muted-foreground mt-1" />}
             <div className="flex items-center gap-4 flex-wrap mt-2 text-xs text-muted-foreground">
-              {p.lead && <span className="flex items-center gap-1"><User className="w-3 h-3" /> {p.lead}</span>}
+              {p.lead && (
+                <span className="flex items-center gap-1">
+                  <User className="w-3 h-3" />
+                  <span className="truncate">{p.lead}{serviceName ? ` - ${serviceName}` : ""}</span>
+                </span>
+              )}
               {(p.start_date || p.target_date) && (
                 <span className="flex items-center gap-1">
                   <CalendarDays className="w-3 h-3" />
