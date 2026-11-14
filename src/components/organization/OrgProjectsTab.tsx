@@ -873,6 +873,9 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
             <div className="px-4 pb-4 space-y-2">
               {archivedProjects.map((p) => {
                 const gLabel = projectGroup(p, orgName) === "core" ? "Core" : kindMeta(p.project_kind).label;
+                const archivedService = p.project_kind === "external" && p.product_id
+                  ? products.find((x) => x.id === p.product_id)?.name ?? null
+                  : null;
                 return (
                 <div key={p.id} className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-3 py-2">
                   <div className="min-w-0">
@@ -881,7 +884,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                       <Badge variant="outline" className="ml-2 text-[10px] px-1.5 py-0">{gLabel}</Badge>
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Closed at {p.progress}%{p.target_date ? ` · ${p.target_date}` : ""}{p.lead ? ` · ${p.lead}` : ""}
+                      Closed at {p.progress}%{p.target_date ? ` · ${p.target_date}` : ""}{p.lead ? ` · ${p.lead}${archivedService ? ` - ${archivedService}` : ""}` : ""}
                     </p>
                   </div>
                     <div className="flex items-center gap-1 shrink-0">
