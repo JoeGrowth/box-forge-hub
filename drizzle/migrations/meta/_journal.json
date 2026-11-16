@@ -113,6 +113,13 @@
       "when": 1794601582928,
       "tag": "0015_unique_distribution_model_names",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1794841872501,
+      "tag": "0016_migration",
+      "breakpoints": true
     }
   ]
 }

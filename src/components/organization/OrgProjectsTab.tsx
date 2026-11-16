@@ -20,6 +20,7 @@ import { createDistEntity } from "@/pages/Distribution";
 import { withBaseCharges, normalizeTaskLocks } from "@/components/organization/DistributionModels";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ExternalProjectDetails } from "@/components/organization/ExternalProjectPreview";
 import { ClampedText } from "@/components/ui/clamped-text";
 import { Plus, Pencil, Trash2, Rocket, CalendarDays, User, Loader2, AlertTriangle, Archive, ChevronDown, ChevronUp, RotateCcw, Building2, Send, Calculator, Eye } from "lucide-react";
 
@@ -45,6 +46,10 @@ type OrgProject = {
   delivered_at?: string | null;
   paid_at?: string | null;
   distribution_record_id?: string | null;
+  client?: string | null;
+  context?: string | null;
+  contract_signed?: boolean | null;
+  advance_paid_percent?: number | null;
 };
 
 const KINDS = [
@@ -75,6 +80,7 @@ const emptyDraft = {
   product_name: "",
   budget: "",
   point_of_contact: "", sold_at: "", delivered_at: "", paid_at: "",
+  client: "", context: "", contract_signed: false, advance_paid_percent: "",
 };
 
 const SectionTitle = ({ n, title }: { n: number; title: string }) => (
@@ -172,6 +178,8 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
       product_name: "",
       budget: p.budget != null ? String(p.budget) : "",
       point_of_contact: p.point_of_contact ?? "", sold_at: p.sold_at ?? "", delivered_at: p.delivered_at ?? "", paid_at: p.paid_at ?? "",
+      client: p.client ?? "", context: p.context ?? "", contract_signed: !!p.contract_signed,
+      advance_paid_percent: p.advance_paid_percent != null ? String(p.advance_paid_percent) : "",
     });
     setStep(1);
     if (p.product_id) {
@@ -216,6 +224,10 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
       budget: draft.budget.trim() === "" ? null : Number(draft.budget) || 0,
       point_of_contact: isExternal ? (draft.point_of_contact.trim() || null) : null,
       sold_at: draft.sold_at || null, delivered_at: draft.delivered_at || null, paid_at: draft.paid_at || null,
+      client: isExternal ? (draft.client.trim() || null) : null,
+      context: isExternal ? (draft.context.trim() || null) : null,
+      contract_signed: isExternal ? !!draft.contract_signed : false,
+      advance_paid_percent: isExternal && draft.advance_paid_percent.trim() !== "" ? Math.max(0, Math.min(100, Number(draft.advance_paid_percent) || 0)) : null,
     };
     const { data: saved, error } = editing
       ? await supabase.from("organization_projects" as any).update(payload).eq("id", editing.id).select("*").single()
@@ -578,6 +590,36 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                   <Label>Budget (TND)</Label>
                   <Input type="number" min={0} value={draft.budget} onChange={(e) => setDraft({ ...draft, budget: e.target.value })} placeholder="e.g. 2000" />
                 </div>
+                {draft.project_kind === "external" && (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <Label>Client</Label>
+                        <Input value={draft.client} onChange={(e) => setDraft({ ...draft, client: e.target.value })} placeholder="e.g. Focus Gabes" />
+                      </div>
+                      <div>
+                        <Label>Context</Label>
+                        <Input value={draft.context} onChange={(e) => setDraft({ ...draft, context: e.target.value })} placeholder="e.g. Oasis Days" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <Label>Contract</Label>
+                        <Select value={draft.contract_signed ? "yes" : "no"} onValueChange={(v) => setDraft({ ...draft, contract_signed: v === "yes" })}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="no">No contract signed</SelectItem>
+                            <SelectItem value="yes">Contract signed</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Advance paid (%)</Label>
+                        <Input type="number" min={0} max={100} value={draft.advance_paid_percent} onChange={(e) => setDraft({ ...draft, advance_paid_percent: e.target.value })} placeholder="e.g. 30" />
+                      </div>
+                    </div>
+                  </>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {draft.project_kind === "external" ? (
                     <div>
@@ -750,8 +792,10 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                 { label: "Delivered", ok: done >= 5 || !!previewing.delivered_at, when: previewing.delivered_at },
                 { label: "Paid", ok: done >= 6 || !!previewing.paid_at, when: previewing.paid_at },
               ];
+              const isExt = previewing.project_kind === "external";
               return (
                 <div className="space-y-3">
+                  {isExt ? <ExternalProjectDetails project={previewing} /> : <>
                   <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
                     <Badge variant="outline">{kindMeta(previewing.project_kind).label}</Badge>
                     {previewing.budget != null && <span>Budget {Number(previewing.budget).toLocaleString()} TND</span>}
@@ -767,6 +811,7 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                       </div>
                     ))}
                   </div>
+                  </>}
                   <div className="space-y-2 border-t border-border pt-3">
                     <p className="text-sm font-medium text-foreground">Adequate Distribution page</p>
                     {previewDistributionLoading ? (

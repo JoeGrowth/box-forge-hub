@@ -3,6 +3,7 @@
 // Editor+ can publish jobs and tenders on behalf of the organization.
 // Viewer can browse but not edit.
 
+import { ExternalProjectsKanban } from "@/components/organization/ExternalProjectsKanban";
 import { useEffect, useState, useCallback, type ReactNode } from "react";
 import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -950,6 +951,7 @@ function DailyTab({ orgId, canEdit, tasks, onTasksChange }: { orgId: string; can
           </div>
         )}
       </div>
+      <ExternalProjectsKanban orgId={orgId} />
     </div>
   );
 }
