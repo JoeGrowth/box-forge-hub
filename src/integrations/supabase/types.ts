@@ -4500,7 +4500,11 @@ export type Database = {
       }
       organization_projects: {
         Row: {
+          advance_paid_percent: number | null
           budget: number | null
+          client: string | null
+          context: string | null
+          contract_signed: boolean
           created_at: string
           created_by: string | null
           delivered_at: string | null
@@ -4525,7 +4529,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          advance_paid_percent?: number | null
           budget?: number | null
+          client?: string | null
+          context?: string | null
+          contract_signed?: boolean
           created_at?: string
           created_by?: string | null
           delivered_at?: string | null
@@ -4550,7 +4558,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          advance_paid_percent?: number | null
           budget?: number | null
+          client?: string | null
+          context?: string | null
+          contract_signed?: boolean
           created_at?: string
           created_by?: string | null
           delivered_at?: string | null
