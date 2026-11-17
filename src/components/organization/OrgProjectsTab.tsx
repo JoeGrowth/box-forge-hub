@@ -535,15 +535,16 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
             </DialogTrigger>
             <DialogContent className="max-w-lg max-h-[90dvh] overflow-y-auto">
               <DialogHeader><DialogTitle>{editing ? "Edit project" : "New project"}</DialogTitle></DialogHeader>
-              <div className="flex gap-1.5">
+              <div className="grid grid-cols-3 gap-1.5">
                 {[1, 2, 3].map((n) => (
                   <button
                     key={n}
                     type="button"
                     onClick={() => setStep(n)}
-                    className={`flex-1 rounded-lg border px-2 py-1.5 text-xs font-medium transition-colors ${step === n ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-muted"}`}
+                    className={`flex min-w-0 items-center justify-center gap-1 rounded-lg border px-2 py-2 text-xs font-medium transition-colors ${step === n ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-muted"}`}
                   >
-                    {n}. {n === 1 ? "Project" : n === 2 ? (draft.project_kind === "external" ? "Proposal" : "Planning") : "Set up"}
+                    <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${step === n ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{n}</span>
+                    <span className="truncate">{n === 1 ? "Project" : n === 2 ? (draft.project_kind === "external" ? "Proposal" : "Planning") : "Set up"}</span>
                   </button>
                 ))}
               </div>
@@ -738,12 +739,11 @@ export function OrgProjectsTab({ orgId, orgName, canEdit, userId }: { orgId: str
                 </section>
                 )}
                 </div>
-               <DialogFooter className="gap-2 sm:justify-between">
+               <DialogFooter className="flex-wrap gap-2 sm:justify-between">
                 <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
                   {step > 1 && <Button variant="outline" onClick={() => setStep(step - 1)}>Back</Button>}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {step < 3 ? (
                     <Button onClick={() => {
                       if (step === 1 && !draft.name.trim()) return toast({ title: "Project name required", variant: "destructive" });
