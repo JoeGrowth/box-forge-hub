@@ -4292,6 +4292,7 @@ export type Database = {
           crew_type: string | null
           email: string | null
           events_participated: string | null
+          first_touch_context: string | null
           full_name: string
           has_expertise: boolean
           id: string
@@ -4312,6 +4313,7 @@ export type Database = {
           crew_type?: string | null
           email?: string | null
           events_participated?: string | null
+          first_touch_context?: string | null
           full_name: string
           has_expertise?: boolean
           id?: string
@@ -4332,6 +4334,7 @@ export type Database = {
           crew_type?: string | null
           email?: string | null
           events_participated?: string | null
+          first_touch_context?: string | null
           full_name?: string
           has_expertise?: boolean
           id?: string

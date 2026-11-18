@@ -34,7 +34,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Heart, Users, GraduationCap, Plus, Trash2, Pencil, Activity, CalendarClock, ChevronDown, ChevronRight, Search, MoveRight, X, Database } from "lucide-react";
+import { Heart, Users, GraduationCap, Plus, Trash2, Pencil, Activity, CalendarClock, ChevronDown, ChevronRight, Search, MoveRight, X, Database, Upload } from "lucide-react";
 
 
 type Tier = "database" | "friend" | "crew" | "mentor";
@@ -56,6 +56,7 @@ export interface OrgPerson {
   age: number | null;
   birth_date: string | null;
   events_participated: string | null;
+  first_touch_context: string | null;
 }
 
 
@@ -106,6 +107,7 @@ export function OrgPeopleTab({
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<OrgPerson | null>(null);
   const [presetTier, setPresetTier] = useState<Tier>("friend");
+  const [importOpen, setImportOpen] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<OrgPerson | null>(null);
   const [collapsed, setCollapsed] = useState<Set<Tier>>(new Set(["friend"]));
 
@@ -243,9 +245,9 @@ export function OrgPeopleTab({
   };
 
   const groups: { tier: Tier; title: string; subtitle: string; icon: typeof Heart; addLabel: string }[] = [
-    { tier: "database", title: "Data base", subtitle: "Name only — drag the card later to Friend, Crew or Mentor.", icon: Database, addLabel: "Add" },
-    { tier: "friend", title: `Friend of ${orgName}`, subtitle: "Interested participant.", icon: Heart, addLabel: "Add friend" },
-    { tier: "crew", title: `Crew members with ${orgName} (Core Team & Task force)`, subtitle: "Trusted contributor with proven contribution.", icon: Users, addLabel: "Add crew" },
+    { tier: "database", title: "Data base", subtitle: "Potential people — name plus email or phone. Import a list or add one by one.", icon: Database, addLabel: "Add" },
+    { tier: "friend", title: `Friend of ${orgName}`, subtitle: "First contact made — email, phone and first-touch context.", icon: Heart, addLabel: "Add friend" },
+    { tier: "crew", title: `Crew members with ${orgName} (Core Team & Task force)`, subtitle: "Joined the crew — contribution as Chouch Ward, Ch3ir or Helba.", icon: Users, addLabel: "Add crew" },
     { tier: "mentor", title: `Mentor / Support System ${orgName}`, subtitle: "Knowledge carrier and ecosystem builder.", icon: GraduationCap, addLabel: "Add mentor" },
   ];
 
@@ -256,26 +258,6 @@ export function OrgPeopleTab({
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h3 className="text-lg font-semibold text-foreground">People</h3>
-          <p className="text-sm text-muted-foreground">
-            Community layers around {orgName} — from interest to proven contribution.
-          </p>
-          {canEdit && (
-            <p className="mt-1 text-xs text-muted-foreground">
-              Drag a card onto another layer — or use the card menu — to move someone between layers.
-            </p>
-          )}
-        </div>
-        {canEdit && (
-          <Button size="sm" onClick={() => startAdd("database")}>
-            <Plus className="w-4 h-4 mr-1" /> Add person
-          </Button>
-        )}
-      </div>
-
-
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
         {[
           { label: "People", shortLabel: "People", value: stats.total, icon: Users },
@@ -301,7 +283,7 @@ export function OrgPeopleTab({
         })}
       </div>
 
-      {groups.map((g) => {
+      {groups.map((g, gi) => {
         const ts = state[g.tier];
         const rows = ts.rows;
         const Icon = g.icon;
@@ -318,8 +300,35 @@ export function OrgPeopleTab({
         };
 
         return (
+          <div key={g.tier} className="space-y-3">
+          {gi === 0 && canEdit && (
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="text-lg font-semibold text-foreground">Data base</h3>
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}>
+                  <Upload className="w-4 h-4 mr-1" /> Import list
+                </Button>
+                <Button size="sm" onClick={() => startAdd("database")}>
+                  <Plus className="w-4 h-4 mr-1" /> Add
+                </Button>
+              </div>
+            </div>
+          )}
+          {gi === 1 && (
+            <div className="pt-4">
+              <h3 className="text-lg font-semibold text-foreground">People</h3>
+              <p className="text-sm text-muted-foreground">
+                Community layers around {orgName} — from interest to proven contribution.
+              </p>
+              {canEdit && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Drag a card onto another layer — or use the card menu — to move someone. Required details are asked on each move.
+                </p>
+              )}
+            </div>
+          )}
           <div
-            key={g.tier}
+
             onDragOver={(e) => { if (dragId && canEdit) { e.preventDefault(); setDragOver(g.tier); } }}
             onDragLeave={() => setDragOver((t) => (t === g.tier ? null : t))}
             onDrop={(e) => { e.preventDefault(); handleDrop(g.tier); }}
@@ -477,6 +486,12 @@ export function OrgPeopleTab({
                             </div>
                             <div className="min-w-0 flex-1">
                               <p className="truncate font-medium text-foreground">{p.full_name}</p>
+                              {(p.email || p.phone) && (
+                                <p className="truncate text-xs text-muted-foreground">{[p.email, p.phone].filter(Boolean).join(" · ")}</p>
+                              )}
+                              {p.tier === "friend" && p.first_touch_context && (
+                                <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">First touch: {p.first_touch_context}</p>
+                              )}
                               {p.tier !== "friend" && p.tier !== "database" && (
                                 <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                                   {p.tier === "crew" && p.present_type && (
@@ -539,6 +554,7 @@ export function OrgPeopleTab({
               </>
             )}
           </div>
+          </div>
         );
       })}
       <AlertDialog open={!!pendingDelete} onOpenChange={(v) => !v && setPendingDelete(null)}>
@@ -567,6 +583,7 @@ export function OrgPeopleTab({
         defaultTier={presetTier}
         onSaved={() => { setOpen(false); reloadAll(); }}
       />
+      <ImportDialog open={importOpen} onOpenChange={setImportOpen} orgId={orgId} onSaved={() => { setImportOpen(false); reloadAll(); }} />
 
     </div>
   );
@@ -602,6 +619,7 @@ function PersonDialog({
   const [phone, setPhone] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [events, setEvents] = useState("");
+  const [firstTouch, setFirstTouch] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -619,6 +637,7 @@ function PersonDialog({
     setPhone(person?.phone ?? "");
     setBirthDate(person?.birth_date ?? "");
     setEvents(person?.events_participated ?? "");
+    setFirstTouch(person?.first_touch_context ?? "");
   }, [open, person, defaultTier]);
 
 
@@ -640,6 +659,8 @@ function PersonDialog({
     if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       toast({ title: "Invalid email", variant: "destructive" }); return;
     }
+    const missing = missingFor(tier, { email, phone, firstTouch });
+    if (missing) { toast({ title: missing, variant: "destructive" }); return; }
     setSaving(true);
     const hasExpertise =
       (tier === "crew" && crewType === "helba") || tier === "mentor" ? true : expertise === "yes";
@@ -653,11 +674,12 @@ function PersonDialog({
       activities_count: tier === "friend" || tier === "database" ? 0 : Number(activities) || 0,
       years_contribution: tier === "friend" || tier === "database" ? 0 : Number(years) || 0,
       notes: tier === "friend" || tier === "database" ? null : notes.trim() || null,
-      email: tier === "friend" ? email.trim() || null : null,
-      phone: tier === "friend" ? phone.trim() || null : null,
-      age: tier === "friend" ? computedAge : null,
-      birth_date: tier === "friend" ? (birthDate || null) : null,
-      events_participated: tier === "friend" ? events.trim() || null : null,
+      email: email.trim() || null,
+      phone: phone.trim() || null,
+      age: computedAge,
+      birth_date: birthDate || null,
+      events_participated: events.trim() || null,
+      first_touch_context: firstTouch.trim() || null,
     };
 
     const { error } = person
@@ -669,7 +691,7 @@ function PersonDialog({
   };
 
   const TIERS: { value: Tier; label: string; desc: string; icon: typeof Heart }[] = [
-    { value: "database", label: "Data base", desc: "Name only, sort later", icon: Database },
+    { value: "database", label: "Data base", desc: "Email or phone", icon: Database },
     { value: "friend", label: "Friend", desc: "Interested participant", icon: Heart },
     { value: "crew", label: "Crew Member", desc: "Proven contributor", icon: Users },
     { value: "mentor", label: "Mentor", desc: "Support system", icon: GraduationCap },
@@ -724,10 +746,9 @@ function PersonDialog({
             </div>
           </div>
 
-          {tier === "friend" && (
-            <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label htmlFor="person-email">Email</Label>
+                <Label htmlFor="person-email">Email{tier === "database" ? "" : " *"}</Label>
                 <Input
                   id="person-email"
                   type="email"
@@ -737,7 +758,7 @@ function PersonDialog({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="person-phone">Phone</Label>
+                <Label htmlFor="person-phone">Phone{tier === "database" ? "" : " *"}</Label>
                 <Input
                   id="person-phone"
                   type="tel"
@@ -746,8 +767,16 @@ function PersonDialog({
                   placeholder="+216 00 000 000"
                 />
               </div>
+              {tier === "database" && (
+                <p className="text-xs text-muted-foreground sm:col-span-2">Email or phone — at least one is required.</p>
+              )}
+              {tier !== "database" && (<>
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label htmlFor="person-first-touch">Context of first touch *</Label>
+                <Textarea id="person-first-touch" rows={2} value={firstTouch} onChange={(e) => setFirstTouch(e.target.value)} placeholder="Where and how the first contact with the crew happened" />
+              </div>
               <div className="space-y-1.5">
-                <Label htmlFor="person-birthdate">Birth date</Label>
+                <Label htmlFor="person-birthdate">Birth date (optional)</Label>
                 <Input
                   id="person-birthdate"
                   type="date"
@@ -768,13 +797,13 @@ function PersonDialog({
                   placeholder="e.g. Zomita Launch, Community Day 2026"
                 />
               </div>
-            </div>
-          )}
+              </>)}
+          </div>
 
 
           {tier === "crew" && (
             <div className="space-y-2">
-              <Label>Crew type</Label>
+              <Label>How they want to contribute *</Label>
               <div className="grid gap-2 sm:grid-cols-3">
                 {(Object.keys(CREW_META) as CrewType[]).map((ct) => {
                   const active = crewType === ct;
@@ -914,3 +943,61 @@ function PersonDialog({
   );
 }
 
+
+export function missingFor(tier: Tier, v: { email: string; phone: string; firstTouch: string }): string | null {
+  const e = v.email.trim(), p = v.phone.trim();
+  if (tier === "database") return e || p ? null : "Email or phone required";
+  if (tier === "mentor") return null;
+  if (!e || !p) return "Email and phone are both required";
+  if (!v.firstTouch.trim()) return "Context of first touch required";
+  return null;
+}
+
+export function parseImport(text: string): { full_name: string; email: string | null; phone: string | null }[] {
+  return text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).map((l) => {
+    const parts = l.split(/[,;\t]/).map((x) => x.trim()).filter(Boolean);
+    const full_name = parts.find((x) => !x.includes("@") && !/^[+\d][\d\s().-]{5,}$/.test(x)) ?? "";
+    const email = parts.find((x) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x)) ?? null;
+    const phone = parts.find((x) => /^[+\d][\d\s().-]{5,}$/.test(x)) ?? null;
+    return { full_name, email, phone };
+  }).filter((r) => r.full_name && (r.email || r.phone));
+}
+
+function ImportDialog({ open, onOpenChange, orgId, onSaved }: { open: boolean; onOpenChange: (v: boolean) => void; orgId: string; onSaved: () => void }) {
+  const { toast } = useToast();
+  const [text, setText] = useState("");
+  const [saving, setSaving] = useState(false);
+  useEffect(() => { if (open) setText(""); }, [open]);
+  const lines = text.split(/\r?\n/).filter((l) => l.trim()).length;
+  const rows = parseImport(text);
+  const onFile = async (f: File | undefined) => { if (f) setText(await f.text()); };
+  const save = async () => {
+    if (!rows.length) return;
+    setSaving(true);
+    const { error } = await (supabase as any).from("organization_people").insert(
+      rows.map((r) => ({ organization_id: orgId, tier: "database", full_name: r.full_name, email: r.email, phone: r.phone, has_expertise: false, activities_count: 0, years_contribution: 0 })),
+    );
+    setSaving(false);
+    if (error) toast({ title: "Import failed", description: error.message, variant: "destructive" });
+    else { toast({ title: `${rows.length} people imported` }); onSaved(); }
+  };
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Import a list</DialogTitle>
+          <DialogDescription>One person per line: Name & last name, email, phone. Email or phone is required.</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <Input type="file" accept=".csv,.txt" onChange={(e) => onFile(e.target.files?.[0])} />
+          <Textarea rows={8} value={text} onChange={(e) => setText(e.target.value)} placeholder={"Imen Harrazi, imen@example.com, +216 20 000 000\nSami Ben Ali, , +216 50 000 000"} />
+          <p className="text-xs text-muted-foreground">{rows.length} valid of {lines} lines{lines > rows.length ? " — lines without a name and an email or phone are skipped" : ""}.</p>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button onClick={save} disabled={saving || !rows.length}>{saving ? "Importing…" : `Import ${rows.length}`}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

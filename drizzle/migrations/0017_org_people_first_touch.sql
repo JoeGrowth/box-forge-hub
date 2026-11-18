@@ -1,0 +1,1 @@
+ALTER TABLE public.organization_people ADD COLUMN IF NOT EXISTS first_touch_context text;
