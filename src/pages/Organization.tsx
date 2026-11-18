@@ -453,11 +453,11 @@ export default function OrganizationPage() {
               <OrgTab icon={FileText} value="tenders" count={tenders.length}>Tenders</OrgTab>
             </>
           )}
-          <OrgTab icon={PieChart} value="distribution" count={missionPageCount}>Distribution</OrgTab>
-          <OrgTab icon={ClipboardList} value="declaration" count={declarations.length}>Declaration</OrgTab>
           <OrgTab icon={Rocket} value="projects" count={projectCount}>Project</OrgTab>
+          <OrgTab icon={PieChart} value="distribution" count={missionPageCount}>Distribution</OrgTab>
           <OrgTab icon={SalesIcon} value="sales">Sales</OrgTab>
           <OrgTab icon={Lightbulb} value="journey" count={productCount}>Product</OrgTab>
+          <OrgTab icon={ClipboardList} value="declaration" count={declarations.length}>Declaration</OrgTab>
           <div aria-hidden className="mx-1 hidden h-6 w-px self-center bg-border md:block" />
           <OrgTab icon={Heart} value="people" count={peopleCount}>People</OrgTab>
           <OrgTab icon={Users} value="members" count={members.length}>Members</OrgTab>
