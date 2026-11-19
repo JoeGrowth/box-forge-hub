@@ -332,7 +332,7 @@ export function DistributionModels({
     setOpen(true);
   };
 
-  const totalPercent = (editing?.tasks ?? []).reduce((s, t) => s + (Number(t.percent) || 0), 0);
+  const totalPercent = (editing?.tasks ?? []).filter((t) => !isStructuralReserve(t.label)).reduce((s, t) => s + (Number(t.percent) || 0), 0);
 
   const save = async () => {
     if (!editing || !user) return;
