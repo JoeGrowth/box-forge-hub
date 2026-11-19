@@ -103,7 +103,7 @@ export function createMissionPdf(d: MissionPdfData) {
   };
   const responsibility = (label: string) => {
     if (/broker|sales|commercial/i.test(label)) return "Technical and financial proposal writing; assurance of client email exchanges.";
-    if (/administration|admin/i.test(label)) return "Draft mission distribution; prepare the invoice and send it to the broker / salesperson; add the mission card in Declaration and follow up until payment.";
+    if (/administration|admin/i.test(label)) return 'Export first "budget distribution" to ensuring the delivery, prepare the invoice in order to use by the broker in the mail exchange, Add and Fill the "Adequate Declaration Card" based on last agreed "budget distribution" version exported and follow up until payment of all elements and close of the project.';
     if (/quality|qualit/i.test(label)) return `Manage the process and ensure respect of ${d.organizationName || "the organization's"} delivery quality standards, with a rating above 70%.`;
     if (/platform/i.test(label)) return "Platform usage fee for the Box 4 Solutions ecosystem.";
     return "";
