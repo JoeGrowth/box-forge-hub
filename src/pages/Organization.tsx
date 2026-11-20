@@ -749,7 +749,8 @@ export default function OrganizationPage() {
             orgId={org.id}
             orgName={org.name}
             logoPath={org.logo_url}
-            canAdmin={canAdmin}
+            canAdmin={canEdit}
+            canManageModes={canAdmin}
             serviceBased={!!(org as any).sales_service_based}
             productBased={!!(org as any).sales_product_based}
             onModesChange={(m) => setOrg((c) => c ? ({ ...c, sales_service_based: m.serviceBased, sales_product_based: m.productBased } as any) : c)}

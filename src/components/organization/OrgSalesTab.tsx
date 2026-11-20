@@ -23,7 +23,7 @@ interface SalesOpp {
 }
 
 interface Props {
-  orgId: string; orgName: string; logoPath: string | null; canAdmin: boolean;
+  orgId: string; orgName: string; logoPath: string | null; canAdmin: boolean; canManageModes?: boolean;
   serviceBased: boolean; productBased: boolean;
   onModesChange: (m: { serviceBased: boolean; productBased: boolean }) => void;
 }
@@ -31,7 +31,7 @@ interface Props {
 const db = supabase as any;
 const STATUS_LABEL: Record<SalesStatus, string> = { in_negotiation: "In negotiation", delivered: "Delivered", no_answer: "No answer" };
 
-export function OrgSalesTab({ orgId, orgName, logoPath, canAdmin, serviceBased, productBased, onModesChange }: Props) {
+export function OrgSalesTab({ orgId, orgName, logoPath, canAdmin, canManageModes = canAdmin, serviceBased, productBased, onModesChange }: Props) {
   const { toast } = useToast();
   const [docs, setDocs] = useState<SalesDoc[]>([]);
   const [opps, setOpps] = useState<SalesOpp[]>([]);
@@ -279,8 +279,8 @@ export function OrgSalesTab({ orgId, orgName, logoPath, canAdmin, serviceBased, 
       <section className="rounded-xl border bg-card p-4">
         <h3 className="font-semibold mb-2">Organization type</h3>
         <div className="flex gap-6 flex-wrap">
-          <label className="flex items-center gap-2 text-sm"><Checkbox disabled={!canAdmin} checked={serviceBased} onCheckedChange={(v) => setMode("sales_service_based", !!v)} />Service based</label>
-          <label className="flex items-center gap-2 text-sm"><Checkbox disabled={!canAdmin} checked={productBased} onCheckedChange={(v) => setMode("sales_product_based", !!v)} />Product based</label>
+          <label className="flex items-center gap-2 text-sm"><Checkbox disabled={!canManageModes} checked={serviceBased} onCheckedChange={(v) => setMode("sales_service_based", !!v)} />Service based</label>
+          <label className="flex items-center gap-2 text-sm"><Checkbox disabled={!canManageModes} checked={productBased} onCheckedChange={(v) => setMode("sales_product_based", !!v)} />Product based</label>
         </div>
         {!serviceBased && !productBased && <p className="text-xs text-muted-foreground mt-2">Check at least one type to start drafting proposals.</p>}
       </section>

@@ -1,0 +1,12 @@
+drop policy if exists "Org admins insert sales opps" on public.org_sales_opportunities;
+drop policy if exists "Org admins update sales opps" on public.org_sales_opportunities;
+drop policy if exists "Org admins delete sales opps" on public.org_sales_opportunities;
+drop policy if exists "Org admins insert sales docs" on public.org_sales_documents;
+drop policy if exists "Org admins update sales docs" on public.org_sales_documents;
+drop policy if exists "Org admins delete sales docs" on public.org_sales_documents;
+create policy "Org editors insert sales opps" on public.org_sales_opportunities for insert to authenticated with check (public.has_org_role(auth.uid(), organization_id, 'editor'));
+create policy "Org editors update sales opps" on public.org_sales_opportunities for update to authenticated using (public.has_org_role(auth.uid(), organization_id, 'editor')) with check (public.has_org_role(auth.uid(), organization_id, 'editor'));
+create policy "Org editors delete sales opps" on public.org_sales_opportunities for delete to authenticated using (public.has_org_role(auth.uid(), organization_id, 'editor'));
+create policy "Org editors insert sales docs" on public.org_sales_documents for insert to authenticated with check (public.has_org_role(auth.uid(), organization_id, 'editor'));
+create policy "Org editors update sales docs" on public.org_sales_documents for update to authenticated using (public.has_org_role(auth.uid(), organization_id, 'editor')) with check (public.has_org_role(auth.uid(), organization_id, 'editor'));
+create policy "Org editors delete sales docs" on public.org_sales_documents for delete to authenticated using (public.has_org_role(auth.uid(), organization_id, 'editor'));
