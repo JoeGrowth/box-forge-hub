@@ -134,6 +134,13 @@
       "when": 1795175699171,
       "tag": "0018_sales_editors",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1795175767032,
+      "tag": "0019_org_members_editor_insert",
+      "breakpoints": true
     }
   ]
 }

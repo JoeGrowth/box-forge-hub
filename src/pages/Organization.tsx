@@ -659,7 +659,7 @@ export default function OrganizationPage() {
         {/* MEMBERS */}
         <TabsContent value="members" className="space-y-3">
           <EntityRoleSlots entityType="organization" entityId={org.id} canManage={canAdmin} />
-          {canAdmin && <InviteMemberRow orgId={org.id} onAdded={reloadMembers} />}
+          {canEdit && <InviteMemberRow orgId={org.id} canGrantAdmin={canAdmin} onAdded={reloadMembers} />}
           <div className="rounded-xl border border-border bg-card divide-y divide-border">
             {members.map((m) => {
               const RoleIcon = ROLE_ICON[m.role];
@@ -1087,7 +1087,7 @@ function CreateOpportunityDialog({
   );
 }
 
-function InviteMemberRow({ orgId, onAdded }: { orgId: string; onAdded: () => void }) {
+function InviteMemberRow({ orgId, canGrantAdmin, onAdded }: { orgId: string; canGrantAdmin: boolean; onAdded: () => void }) {
   const { toast } = useToast();
   const [userId, setUserId] = useState("");
   const [role, setRole] = useState<OrgRole>("viewer");
@@ -1126,7 +1126,7 @@ function InviteMemberRow({ orgId, onAdded }: { orgId: string; onAdded: () => voi
           <SelectContent>
             <SelectItem value="viewer">Viewer</SelectItem>
             <SelectItem value="editor">Editor</SelectItem>
-            <SelectItem value="admin">Admin</SelectItem>
+            {canGrantAdmin && <SelectItem value="admin">Admin</SelectItem>}
           </SelectContent>
         </Select>
         <Button onClick={add} disabled={saving || !userId.trim()}>Add</Button>
