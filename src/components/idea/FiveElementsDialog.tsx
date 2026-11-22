@@ -98,7 +98,13 @@ export const FiveElementsDialog = ({ open, onOpenChange, idea }: FiveElementsDia
       setElements(data);
       setHasSaved(false);
     } catch (err: any) {
-      toast({ title: "Generation failed", description: err.message || "Could not generate", variant: "destructive" });
+      const status = err?.context?.status;
+      const msg = status === 402
+        ? "AI credits are used up. Add credits or wait for the next monthly credits, then try again."
+        : status === 429
+          ? "Too many requests. Wait a moment and try again."
+          : err.message || "Could not generate";
+      toast({ title: "Generation failed", description: msg, variant: "destructive" });
     } finally {
       setLoading(false);
     }
