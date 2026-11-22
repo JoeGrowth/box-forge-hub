@@ -6084,6 +6084,47 @@ export type Database = {
           },
         ]
       }
+      startup_team_invites: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          email: string
+          id: string
+          invited_by: string
+          role_type: string
+          startup_id: string
+          status: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          invited_by: string
+          role_type?: string
+          startup_id: string
+          status?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          invited_by?: string
+          role_type?: string
+          startup_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_team_invites_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startup_ideas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       startup_team_members: {
         Row: {
           added_at: string
@@ -7557,6 +7598,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      invite_startup_team_member: {
+        Args: { _email: string; _role?: string; _startup_id: string }
+        Returns: string
       }
       is_approved_cobuilder: { Args: { _user_id: string }; Returns: boolean }
       is_declaration_entity_collaborator: {

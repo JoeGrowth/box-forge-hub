@@ -29,6 +29,9 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { CompensationDialog } from "./CompensationDialog";
 import { TrustBlock } from "@/components/trust/TrustBlock";
+import { Input } from "@/components/ui/input";
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface NegotiationSnapshot {
   status: string;
@@ -456,6 +459,104 @@ export const TeamManagementDialog = ({
     }
   };
 
+  const [addText, setAddText] = useState("");
+  const [addBusy, setAddBusy] = useState(false);
+  const [nameMatches, setNameMatches] = useState<{ user_id: string; full_name: string | null }[]>([]);
+  const [invites, setInvites] = useState<{ id: string; email: string; status: string }[]>([]);
+
+  const loadInvites = useCallback(async () => {
+    const { data } = await supabase
+      .from("startup_team_invites")
+      .select("id,email,status")
+      .eq("startup_id", startupId)
+      .eq("status", "pending")
+      .order("created_at", { ascending: false });
+    setInvites(data || []);
+  }, [startupId]);
+
+  useEffect(() => {
+    if (open) loadInvites();
+  }, [open, loadInvites]);
+
+  const addMemberById = async (userId: string, name: string | null) => {
+    setAddBusy(true);
+    try {
+      if (teamMembers.some((m) => m.member_user_id === userId)) {
+        toast({ title: "Already in the team", description: name || undefined });
+        return;
+      }
+      const { error } = await supabase.from("startup_team_members").insert({
+        startup_id: startupId,
+        member_user_id: userId,
+        added_by: currentUserId,
+        role_type: "MMCB",
+      });
+      if (error) throw error;
+      await supabase.from("user_notifications").insert({
+        user_id: userId,
+        title: "Added to a team",
+        message: `You were added to Team-${startupTitle}.`,
+        notification_type: "team_member_added",
+        link: "/start?section=cobuilder",
+      });
+      toast({ title: "Member added", description: `${name || "User"} joined Team-${startupTitle}.` });
+      setAddText("");
+      setNameMatches([]);
+      await fetchData();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setAddBusy(false);
+    }
+  };
+
+  const handleAdd = async () => {
+    const text = addText.trim();
+    if (!text) return;
+    setAddBusy(true);
+    try {
+      if (EMAIL_RE.test(text)) {
+        const { data, error } = await supabase.rpc("invite_startup_team_member" as any, {
+          _startup_id: startupId,
+          _email: text,
+        });
+        if (error) throw error;
+        if (data === "added") {
+          toast({ title: "Member added", description: `${text} already has a profile and joined the team.` });
+        } else {
+          const { error: mailErr } = await supabase.functions.invoke("send-collaborator-invite", {
+            body: { email: text.toLowerCase(), startupId },
+          });
+          toast(
+            mailErr
+              ? { title: "Invite saved, email failed", description: "They will still join once they sign up with this email.", variant: "destructive" }
+              : { title: "Invitation sent", description: `${text} will join Team-${startupTitle} once they create a profile.` },
+          );
+        }
+        setAddText("");
+        await Promise.all([fetchData(), loadInvites()]);
+      } else {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("user_id,full_name")
+          .ilike("full_name", `%${text}%`)
+          .limit(6);
+        if (error) throw error;
+        if (!data?.length) toast({ title: "No user found", description: "Enter an email to invite them instead." });
+        setNameMatches(data || []);
+      }
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setAddBusy(false);
+    }
+  };
+
+  const cancelInvite = async (id: string) => {
+    await supabase.from("startup_team_invites").delete().eq("id", id);
+    loadInvites();
+  };
+
   const acceptedCount = applicants.filter((a) => a.status === "accepted").length;
   const pendingCount = applicants.filter((a) => a.status === "pending").length;
 
@@ -706,6 +807,46 @@ export const TeamManagementDialog = ({
             <TabsContent value="team" className="flex-1 min-h-0 mt-0">
               <ScrollArea className="h-[calc(85vh-200px)]">
                 <div className="p-6 pt-4 space-y-3">
+                  <div className="rounded-lg border p-3 space-y-2">
+                    <div className="flex gap-2">
+                      <Input
+                        value={addText}
+                        onChange={(e) => { setAddText(e.target.value); setNameMatches([]); }}
+                        onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+                        placeholder="User name or email to invite"
+                        className="flex-1"
+                      />
+                      <Button onClick={handleAdd} disabled={addBusy || !addText.trim()}>
+                        {addBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : EMAIL_RE.test(addText.trim()) ? <Mail className="w-4 h-4 mr-1.5" /> : <UserPlus className="w-4 h-4 mr-1.5" />}
+                        Add
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      An email sends an invitation to join box4solutions.com; the person joins Team-{startupTitle} once their profile is created.
+                    </p>
+                    {nameMatches.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {nameMatches.map((m) => (
+                          <Button key={m.user_id} size="sm" variant="outline" disabled={addBusy} onClick={() => addMemberById(m.user_id, m.full_name)}>
+                            <UserPlus className="w-3.5 h-3.5 mr-1" /> {m.full_name || "Unnamed"}
+                          </Button>
+                        ))}
+                      </div>
+                    )}
+                    {invites.length > 0 && (
+                      <div className="space-y-1 pt-1">
+                        <p className="text-xs font-medium text-foreground">Pending invitations</p>
+                        {invites.map((i) => (
+                          <div key={i.id} className="flex items-center justify-between gap-2 text-xs">
+                            <span className="flex items-center gap-1.5 min-w-0 truncate"><Mail className="w-3 h-3 shrink-0" />{i.email}</span>
+                            <Button size="sm" variant="ghost" className="h-6 px-2" onClick={() => cancelInvite(i.id)}>
+                              <X className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   {teamMembers.length === 0 ? (
                     <div className="text-center py-8">
                       <Users className="w-10 h-10 mx-auto text-muted-foreground/40 mb-3" />

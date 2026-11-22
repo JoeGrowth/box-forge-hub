@@ -51,6 +51,8 @@ serve(async (req) => {
     const email = String(body?.email || "").trim().toLowerCase();
     const access = body?.access === "edit" ? "edit" : "view";
     const entityId = typeof body?.entityId === "string" ? body.entityId : "";
+    const startupId = typeof body?.startupId === "string" ? body.startupId : "";
+    let isTeam = false;
     const orgSlug = typeof body?.orgSlug === "string" ? body.orgSlug.trim().slice(0, 120) : "";
     const json = (b: unknown, status: number) => new Response(JSON.stringify(b), {
       status, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -62,7 +64,14 @@ serve(async (req) => {
     const callerId = userData.user.id;
     let entityName = "";
 
-    if (entityId && UUID_RE.test(entityId)) {
+    if (startupId && UUID_RE.test(startupId)) {
+      const { data: idea } = await admin.from("startup_ideas").select("title,creator_id").eq("id", startupId).maybeSingle();
+      if (!idea || idea.creator_id !== callerId) return json({ error: "Forbidden" }, 403);
+      const { data: inv } = await admin.from("startup_team_invites").select("id").eq("startup_id", startupId).eq("email", email).maybeSingle();
+      if (!inv) return json({ error: "No pending invite" }, 403);
+      entityName = `Team-${idea.title || ""}`;
+      isTeam = true;
+    } else if (entityId && UUID_RE.test(entityId)) {
       // Caller must own/edit the declaration entity, and the invitee must already be a listed collaborator.
       const { data: role } = await admin.rpc("declaration_entity_access", { _entity_id: entityId, _user_id: callerId });
       if (role !== "owner" && role !== "edit") return json({ error: "Forbidden" }, 403);
@@ -96,7 +105,9 @@ serve(async (req) => {
     const subject = `${inviterName.replace(/&[a-z#0-9]+;/g, "")} invited you to collaborate on "${entityName.slice(0, 120).replace(/[\r\n<>]/g, "")}"`;
     const ctaLabel = "Open B4 Platform";
     const ctaUrl = escapeHtml(signupUrl);
-    const intro = `<strong>${inviterName}</strong> invited you to collaborate (<strong>${access}</strong>) on the entity <strong>"${safeEntity}"</strong> on B4 Platform. Sign in or create your account with this email (<strong>${safeEmail}</strong>) to access the shared workspace.`;
+    const intro = isTeam
+      ? `<strong>${inviterName}</strong> invited you to join <strong>"${safeEntity}"</strong> on box4solutions.com. Create your profile with this email (<strong>${safeEmail}</strong>) and you will be added to the team automatically.`
+      : `<strong>${inviterName}</strong> invited you to collaborate (<strong>${access}</strong>) on the entity <strong>"${safeEntity}"</strong> on B4 Platform. Sign in or create your account with this email (<strong>${safeEmail}</strong>) to access the shared workspace.`;
 
     const html = `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
