@@ -25,7 +25,7 @@ serve(async (req) => {
   {
     const authHeader = req.headers.get("Authorization") ?? "";
     const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
-    const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2.49.1");
+    const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2.86.0");
     const authClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
       global: { headers: { Authorization: authHeader } },
     });
