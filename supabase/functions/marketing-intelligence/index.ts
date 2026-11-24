@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
       const field = String(body?.field ?? "").slice(0, 40);
       const rowCtx = JSON.stringify(body?.row ?? {}).slice(0, 1500);
       const res = await generateResponse({
-        model: "openai/gpt-6-astra",
+        model: "openai/gpt-5.4-mini",
         instructions: system,
         input: `${ctx}\nRewrite ONLY the field "${field}" of this row in section "${section}": ${rowCtx}. Return JSON {"value": string} and nothing else. Keep it under 30 words.`,
         reasoning: { effort: "low" },
@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
     }
 
     const res = await generateResponse({
-      model: "openai/gpt-6-astra",
+      model: "openai/gpt-5.4-mini",
       instructions: system,
       tools: [{ type: "web_search" }],
       reasoning: { effort: "low" },
